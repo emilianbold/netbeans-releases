@@ -201,6 +201,7 @@ final class IntroduceVariableFix extends IntroduceFixBase implements Fix {
                 VariableTree newVariable = make.Variable(mods, name, make.Type(tm), expression);
                 nueStatements.add(index, make.asReplacementOf(newVariable, resolved.getLeaf(), true));
                 if (expressionStatement) {
+                    make.asReplacementOf(newVariable, resolved.getParentPath().getLeaf());
                     nueStatements.remove(resolved.getParentPath().getLeaf());
                 }
                 IntroduceHint.doReplaceInBlockCatchSingleStatement(parameter, new HashMap<Tree, Tree>(), statement, nueStatements);

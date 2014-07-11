@@ -1280,7 +1280,7 @@ public class CasualDiff {
             printer.print(newT.name);
         }
         if (newT.init != null && oldT.init != null) {
-            copyTo(localPointer, localPointer = getOldPos(oldT.init));
+            copyTo(localPointer, localPointer = getCommentCorrectedOldPos(oldT.init));
             localPointer = diffTree(oldT.init, newT.init, new int[] { localPointer, endPos(oldT.init) });
         } else {
             if (oldT.init != null && newT.init == null) {
@@ -3756,6 +3756,7 @@ public class CasualDiff {
                 localPointer);
     }
     
+    // note: the oldTreeStartPos must be the real start, without preceding comments.
     protected int diffPrecedingComments(JCTree oldT, JCTree newT, int oldTreeStartPos, int localPointer, boolean doNotDelete) {
         CommentSet cs = getCommentsForTree(newT, true);
         CommentSet old = getCommentsForTree(oldT, true);
@@ -3767,7 +3768,7 @@ public class CasualDiff {
                 return localPointer;
             }
             int newP = oldPrecedingComments.get(oldPrecedingComments.size() - 1).endPos();
-            if (newP > localPointer) {
+            if (newP > localPointer && newP < oldTreeStartPos) {
                 copyTo(localPointer, newP);
                 return newP;
             } else {
@@ -5392,7 +5393,7 @@ public class CasualDiff {
             return localpointer;
         } else {
             // next statement can to seem redundant, but is not, see 117774
-            copyTo(elementBounds[0], elementBounds[0] = getBounds(oldT)[0]);
+            copyTo(elementBounds[0], elementBounds[0] = getCommentCorrectedBounds(oldT)[0]);
             return diffTree(oldT, newT, elementBounds);
         }
     }
