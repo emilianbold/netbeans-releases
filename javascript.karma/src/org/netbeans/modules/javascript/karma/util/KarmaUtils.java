@@ -51,6 +51,7 @@ import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.exec.KarmaExecutable;
+import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
@@ -96,7 +97,16 @@ public final class KarmaUtils {
         return null;
     }
 
-    public static File getConfigDir(Project project) {
+    public static File getKarmaConfigDir(Project project) {
+        // prefer directory for current karma config file
+        String karmaConfig = KarmaPreferences.getConfig(project);
+        if (karmaConfig != null) {
+            File karmaConfigFile = new File(karmaConfig);
+            if (karmaConfigFile.isFile()) {
+                return karmaConfigFile.getParentFile();
+            }
+        }
+        // try to find project config dir
         ProjectDirectoriesProvider directoriesProvider = project.getLookup().lookup(ProjectDirectoriesProvider.class);
         if (directoriesProvider != null) {
             FileObject configDirectory = directoriesProvider.getConfigDirectory();

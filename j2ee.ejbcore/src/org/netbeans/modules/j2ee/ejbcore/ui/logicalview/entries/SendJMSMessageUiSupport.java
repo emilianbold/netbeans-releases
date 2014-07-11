@@ -86,14 +86,14 @@ import org.openide.util.NbBundle;
  * @see MessageDestinationUiSupport
  */
 public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSupport {
-    
+
     /**
      * Get list of message-driven beans with all required properties.
      * @return list of message-driven beans.
      */
     public static List<MdbHolder> getMdbs(ChangeListener listener) {
         List<MdbHolder> mdbs = new ArrayList<>();
-        
+
         Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
         for (Project p : openProjects) {
             if (EjbJar.getEjbJars(p).length > 0) {
@@ -105,10 +105,10 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
                 }
             }
         }
-        
+
         return mdbs;
     }
-    
+
     /**
      * Populate given combo box and text field with given message-driven beans.
      * @param mdbs message-driven beans for given combo box and text field.
@@ -120,12 +120,12 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
         assert mdbs != null;
         assert comboBox != null;
         assert textField != null;
-        
+
         comboBox.setRenderer(new MdbHolderListCellRenderer());
-        
-        List<MdbHolder> sortedMdbs = new ArrayList<MdbHolder>(mdbs);
+
+        List<MdbHolder> sortedMdbs = new ArrayList<>(mdbs);
         Collections.sort(sortedMdbs, new MdbHolderComparator());
-        
+
         comboBox.removeAllItems();
         textField.setText("");
         for (MdbHolder mdbHolder : sortedMdbs) {
@@ -139,7 +139,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
         });
         populateMdbTextField(comboBox, textField);
     }
-    
+
     private static void populateMdbTextField(final JComboBox comboBox, final JTextField textField) {
         MdbHolder selectedItem = (MdbHolder) comboBox.getSelectedItem();
         if (selectedItem != null) {
@@ -147,29 +147,39 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
             textField.setText(md != null ? md.getName() : "");
         }
     }
-    
+
     private static void populateMdbs(List<MdbHolder> mdbs, final Map<String, MessageDestination> drivens, final Project project) {
+        J2eeModuleProvider j2eeModuleProvider = getJ2eeModuleProvider(project);
         for (Map.Entry<String, MessageDestination> mdbEntry : drivens.entrySet()) {
-            J2eeModuleProvider j2eeModuleProvider = getJ2eeModuleProvider(project);
             try {
                 String mdbName = mdbEntry.getKey();
-                MessageDestination messageDest = mdbEntry.getValue();
-                String messageDestName = messageDest.getName();
-                String serverDestName = j2eeModuleProvider.getConfigSupport().findMessageDestinationName(messageDestName);
-                if (serverDestName == null && messageDestName != null) {
-                    serverDestName = messageDestName;
-                }
-                if (serverDestName != null) {
-                    MessageDestination messageDestination = j2eeModuleProvider.getConfigSupport().findMessageDestination(serverDestName);
-                    if (messageDestination == null) {
-                        messageDestination = messageDest;
-                    }
-                    mdbs.add(new MdbHolder(mdbName, messageDestination, project));
-                }
+                MessageDestination destination = mdbEntry.getValue();
+
+                // handle message destination deployment setup if any
+                MessageDestination serverDestination = getServerMessageDestination(j2eeModuleProvider, destination.getName());
+                destination = serverDestination != null ? serverDestination : destination;
+
+                mdbs.add(new MdbHolder(mdbName, destination, project));
             } catch (ConfigurationException ce) {
                 Exceptions.printStackTrace(ce);
             }
         }
+    }
+
+    private static MessageDestination getServerMessageDestination(J2eeModuleProvider j2eeModuleProvider, String destinationName) throws ConfigurationException {
+        // handle message destination deployment setup if any
+        J2eeModuleProvider.ConfigSupport configSupport = j2eeModuleProvider.getConfigSupport();
+        String serverDestName = configSupport.findMessageDestinationName(destinationName);
+
+        if (serverDestName == null && destinationName != null) {
+            serverDestName = destinationName;
+        }
+
+        if (serverDestName == null) {
+            return null;
+        }
+
+        return configSupport.findMessageDestination(serverDestName);
     }
 
     private static J2eeModuleProvider getJ2eeModuleProvider(Project project) {
@@ -178,7 +188,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
 
     // kay ejb-name and value is mapped-name
     private static Map<String, MessageDestination> getMdbs(Project project, final ChangeListener listener) throws IOException {
-        
+
         Map<String, MessageDestination> mdbs = new HashMap<>();
 
         for (EjbJar ejbModule : EjbJar.getEjbJars(project)) {
@@ -188,7 +198,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
 
             // read current model data
             mdbsInModule.putAll(metadataModel.runReadAction(mdbReadAction));
-            
+
             // read all data once processing/scanning is gone if requires (means not null listener)
             if (!metadataModel.isReady() && listener != null) {
                 final MetadataModelReadHelper<EjbJarMetadata, Void> readHelper =
@@ -246,7 +256,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
             return result;
         }
     }
-    
+
     // fix for 162899
     // not very nice solution, but the interface
     // org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven is not nice too.
@@ -283,7 +293,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
      * Holder for message-driven bean and its properties.
      */
     public static class MdbHolder {
-        
+    
         private final String mdbEjbName;
         private final MessageDestination messageDestination;
         private final Project project;
@@ -293,7 +303,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
             assert mdbEjbName != null;
 //            assert messageDestination != null;
             assert project != null;
-            
+
             this.mdbEjbName = mdbEjbName;
             this.messageDestination = messageDestination;
             this.project = project;
@@ -306,15 +316,15 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
         public Project getProject() {
             return project;
         }
-        
+
         public String getMdbEjbName() {
             return mdbEjbName;
         }
-        
+
         public String getProjectName() {
             return ProjectUtils.getInformation(project).getDisplayName();
         }
-        
+
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
@@ -329,31 +339,31 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
             return sb.toString();
         }
     }
-    
+
     // optional - create factory method for this class
     private static class MdbHolderComparator implements Comparator<MdbHolder> {
-        
+
         @Override
         public int compare(MdbHolder mdbHolder1, MdbHolder mdbHolder2) {
-            
+
             if (mdbHolder1 == null) {
                 return mdbHolder2 == null ? 0 : -1;
             }
-            
+
             if (mdbHolder2 == null) {
                 return 1;
             }
-            
+
             String name1 = mdbHolder1.getMdbEjbName();
             String name2 = mdbHolder2.getMdbEjbName();
             if (name1 == null) {
                 return name2 == null ? 0 : -1;
             }
-            
+
             return name2 == null ? 1 : name1.compareToIgnoreCase(name2);
         }
     }
-    
+
     // optional - create factory method for this class
     private static class MdbHolderListCellRenderer extends DefaultListCellRenderer {
 
@@ -371,7 +381,10 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
 
             if (value instanceof MdbHolder) {
                 MdbHolder mdbHolder = (MdbHolder) value;
-                setText(mdbHolder.getMdbEjbName());
+
+                // "ejbName (projectName)"
+                setText(mdbHolder.getMdbEjbName() + " (" + mdbHolder.getProjectName() + ")"); //NOI18N
+
                 // tooltip
                 MessageDestination messageDestination = mdbHolder.getMessageDestination();
                 if (messageDestination == null) {

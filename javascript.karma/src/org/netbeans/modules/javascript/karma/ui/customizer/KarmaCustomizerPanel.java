@@ -40,53 +40,69 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.jstesting;
+package org.netbeans.modules.javascript.karma.ui.customizer;
 
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
+import java.awt.EventQueue;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
+import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.web.clientproject.spi.jstesting.CustomizerPanelImplementation;
-import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
-import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.nodes.Node;
 
-public abstract class JsTestingProviderAccessor {
+public final class KarmaCustomizerPanel implements CustomizerPanelImplementation {
 
-    private static volatile JsTestingProviderAccessor accessor;
+    private final Project project;
+
+    // creation @GuardedBy("this")
+    private volatile CustomizerKarma customizerKarma;
 
 
-    public static synchronized JsTestingProviderAccessor getDefault() {
-        if (accessor != null) {
-            return accessor;
-        }
-        Class<?> c = JsTestingProvider.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            assert false : ex;
-        }
-        assert accessor != null;
-        return accessor;
+    public KarmaCustomizerPanel(Project project) {
+        assert project != null;
+        this.project = project;
     }
 
-    public static void setDefault(JsTestingProviderAccessor accessor) {
-        if (JsTestingProviderAccessor.accessor != null) {
-            throw new IllegalStateException("Already initialized accessor");
-        }
-        JsTestingProviderAccessor.accessor = accessor;
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        getComponent().addChangeListener(listener);
     }
 
-    public abstract JsTestingProvider create(JsTestingProviderImplementation jsTestingProviderImplementation);
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        getComponent().removeChangeListener(listener);
+    }
 
-    public abstract boolean isEnabled(JsTestingProvider jsTestingProvider, Project project);
+    @Override
+    public synchronized CustomizerKarma getComponent() {
+        if (customizerKarma == null) {
+            customizerKarma = new CustomizerKarma(project);
+        }
+        return customizerKarma;
+    }
 
-    public abstract void notifyEnabled(JsTestingProvider jsTestingProvider, Project project, boolean enabled);
+    @Override
+    public boolean isValid() {
+        return getErrorMessage() == null;
+    }
 
-    @CheckForNull
-    public abstract NodeList<Node> createNodeList(JsTestingProvider jsTestingProvider, Project project);
+    @Override
+    public String getErrorMessage() {
+        return getComponent().getErrorMessage();
+    }
 
-    @CheckForNull
-    public abstract CustomizerPanelImplementation createCustomizerPanel(JsTestingProvider jsTestingProvider, @NonNull Project project);
+    @Override
+    public String getWarningMessage() {
+        return getComponent().getWarningMessage();
+    }
+
+    @Override
+    public void save() {
+        assert !EventQueue.isDispatchThread();
+        assert customizerKarma != null;
+        KarmaPreferences.setKarma(project, customizerKarma.getKarma());
+        KarmaPreferences.setConfig(project, customizerKarma.getConfig());
+        KarmaPreferences.setAutowatch(project, customizerKarma.isAutowatch());
+        KarmaPreferences.setDebug(project, customizerKarma.isDebug());
+        KarmaPreferences.setDebugBrowserId(project, customizerKarma.getSelectedBrowserId());
+    }
 
 }

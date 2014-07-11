@@ -182,7 +182,7 @@ public final class KarmaPreferences {
         if (getConfig(project) != null) {
             return;
         }
-        File config = KarmaUtils.findKarmaConfig(KarmaUtils.getConfigDir(project));
+        File config = KarmaUtils.findKarmaConfig(KarmaUtils.getKarmaConfigDir(project));
         if (config != null) {
             setConfig(project, config.getAbsolutePath());
         }

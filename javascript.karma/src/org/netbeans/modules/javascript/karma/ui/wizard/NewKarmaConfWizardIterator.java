@@ -152,7 +152,7 @@ public class NewKarmaConfWizardIterator implements WizardDescriptor.Instantiatin
     }
 
     private void ensureProperTargetFolder(Project project) {
-        Templates.setTargetFolder(wizard, FileUtil.toFileObject(KarmaUtils.getConfigDir(project)));
+        Templates.setTargetFolder(wizard, FileUtil.toFileObject(KarmaUtils.getKarmaConfigDir(project)));
     }
 
     private SourceGroup[] getSourceGroups(Project project) {

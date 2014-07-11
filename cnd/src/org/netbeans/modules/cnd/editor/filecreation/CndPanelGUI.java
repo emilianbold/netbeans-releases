@@ -93,6 +93,10 @@ public abstract class CndPanelGUI  extends javax.swing.JPanel implements Documen
     protected abstract void updateCreatedFile();
     public abstract void initValues( FileObject template, FileObject preselectedFolder, String documentName );
 
+    protected Project getProject() {
+        return project;
+    }
+
     @Override
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
         updateCreatedFile();

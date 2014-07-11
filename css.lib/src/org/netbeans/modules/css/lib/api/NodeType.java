@@ -408,7 +408,53 @@ public enum NodeType {
     
     cp_term_symbol,
     
-    less_selector_interpolation
+    less_selector_interpolation,
+    
+    /**
+     * SASS values map
+     * 
+     * "$colors: (
+     *     header: #b06,
+     *     text: #334,
+     *     footer: #666777,
+     * )"
+     */
+    sass_map,
+    
+     /**
+     * SASS values map -- the name of the map variable (including the dollar sign)
+     * 
+     * "$colors": (
+     *     header: #b06,
+     *     text: #334,
+     *     footer: #666777,
+     * )
+     */
+    sass_map_name,
+    
+    
+    /**
+     * SASS values map -- content of the parenthesis
+     * 
+     * $colors: ("
+     *     header: #b06,
+     *     text: #334,
+     *     footer: #666777,
+     * ")
+     */
+    sass_map_pairs,
+    
+    /**
+     * SASS values map -- the key: value pair
+     * 
+     * $colors: (
+     *     "header: #b06",
+     *     "text: #334",
+     *     "footer: #666777",
+     * )
+     */
+    sass_map_pair
+    
     
     ;
     
