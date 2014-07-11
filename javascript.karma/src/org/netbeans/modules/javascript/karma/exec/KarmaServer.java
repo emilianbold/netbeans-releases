@@ -458,22 +458,26 @@ public final class KarmaServer implements PropertyChangeListener {
         @Override
         public void fileChanged(FileEvent fe) {
             // XXX ugly
-            assert KarmaServers.getInstance().isServerRunning(project) : project.getProjectDirectory();
-            KarmaServers.getInstance().restartServer(project);
+            // #245548
+            if (KarmaServers.getInstance().isServerRunning(project)) {
+                KarmaServers.getInstance().restartServer(project);
+            }
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
             // XXX ugly
-            assert KarmaServers.getInstance().isServerRunning(project) : project.getProjectDirectory();
-            KarmaServers.getInstance().stopServer(project, false);
+            if (KarmaServers.getInstance().isServerRunning(project)) {
+                KarmaServers.getInstance().stopServer(project, false);
+            }
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             // XXX ugly
-            assert KarmaServers.getInstance().isServerRunning(project) : project.getProjectDirectory();
-            KarmaServers.getInstance().stopServer(project, false);
+            if (KarmaServers.getInstance().isServerRunning(project)) {
+                KarmaServers.getInstance().stopServer(project, false);
+            }
         }
 
     }
