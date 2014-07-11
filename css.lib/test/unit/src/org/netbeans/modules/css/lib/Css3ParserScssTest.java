@@ -1545,5 +1545,40 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    columns: 8,\n"
                 + "    gutters: 1/10\n"
                 + ");");
+
     }
+
+    public void testSassMapInBlock() {
+        assertParses("div { $colors: (\n"
+                + "  header: #b06,\n"
+                + "  footer: $another_var,\n"
+                + ") }");
+
+        assertParses(".clz {\n $susy: (\n"
+                + "    columns: 8,\n"
+                + "    gutters: 1/10\n"
+                + "); }");
+    }
+
+    public void testSassMapComplex() {
+        //bit more complex example
+        assertParses("$var: red;\n"
+                + "\n"
+                + "$map: ( cool: 'pink');\n"
+                + "\n"
+                + "div {\n"
+                + "\n"
+                + "    $colors: (\n"
+                + "        header: $var,\n"
+                + "        text: #334,\n"
+                + "        color: map-get($map, cool),\n"
+                + "        );\n"
+                + "\n"
+                + "    .pink {\n"
+                + "        color: map-get($colors, color);\n"
+                + "    }\n"
+                + "\n"
+                + "}\n");
+    }
+    
 }

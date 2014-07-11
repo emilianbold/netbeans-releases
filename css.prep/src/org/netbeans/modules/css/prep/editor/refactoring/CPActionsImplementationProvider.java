@@ -43,24 +43,26 @@ package org.netbeans.modules.css.prep.editor.refactoring;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.css.lib.api.CssParserFactory;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import static org.netbeans.modules.css.lib.api.NodeType.cp_mixin_name;
 import static org.netbeans.modules.css.lib.api.NodeType.cp_variable;
 import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.prep.editor.CPUtils;
+import org.netbeans.modules.css.prep.editor.less.LessLanguage;
+import org.netbeans.modules.css.prep.editor.scss.ScssLanguage;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
@@ -84,9 +86,21 @@ import org.openide.windows.TopComponent;
  * The css refactoring just provides the rename plugin which handles css links
  * possibly affected by the folder rename.
  *
+ * Notice this ActionsImplementationProvider needs to be registered BEFORE the
+ * CssActionsImplementationProvider from css.editor module! As we can't regularly parse
+ * the file in canRename/FindUsages method as it runs in EDT, there's no
+ * reliable way how to ensure the the correct provider is active. The workaround
+ * is not to do the parsing in CssActionsImplementationProvider at all as the parser
+ * result for pure css code needs to be obtained from EmbeddingProviders (via the
+ * parsing infrastructure) but do some css parsing for sass/less files w/o 
+ * the parsing infrastructure as we are always the top level language and hence
+ * do not need the EmbeddingProviders. This way the CPActionsImplementationProvider
+ * first checks if the caret is on a SASS/LESS content and if not fallbacks to 
+ * the pure CssActionsImplementationProvider.
+ *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = ActionsImplementationProvider.class, position = 1050)
+@ServiceProvider(service = ActionsImplementationProvider.class, position = 1033)
 public class CPActionsImplementationProvider extends ActionsImplementationProvider {
 
     private static final Logger LOG = Logger.getLogger(CPActionsImplementationProvider.class.getName());
@@ -102,6 +116,7 @@ public class CPActionsImplementationProvider extends ActionsImplementationProvid
         if (isFromEditor(ec)) {
             //editor refactoring
             new TextComponentTask(ec) {
+
                 @Override
                 protected RefactoringUI createRefactoringUI(RefactoringElementContext context) {
                     return new CPRenameRefactoringUI(context);
@@ -122,7 +137,17 @@ public class CPActionsImplementationProvider extends ActionsImplementationProvid
         if (nodes.size() != 1) {
             return false;
         }
-        return isRefactorableEditorElement(nodes.iterator().next());
+        Node node = nodes.iterator().next();
+
+        //can refactor only in less/sass files
+        FileObject file = getFileObjectFromNode(node);
+        if (file != null) {
+            String mimeType = file.getMIMEType();
+            if (LessLanguage.getLanguageInstance().mimeType().equals(mimeType) || ScssLanguage.getLanguageInstance().mimeType().equals(mimeType)) {
+                return isRefactorableEditorElement(node);
+            }
+        }
+        return false;
     }
 
     @Override
@@ -130,6 +155,7 @@ public class CPActionsImplementationProvider extends ActionsImplementationProvid
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (isFromEditor(ec)) {
             new TextComponentTask(ec) {
+
                 //editor element context
                 @Override
                 protected RefactoringUI createRefactoringUI(RefactoringElementContext context) {
@@ -148,6 +174,7 @@ public class CPActionsImplementationProvider extends ActionsImplementationProvid
             public Document document;
         }
         final Context context = Mutex.EVENT.readAccess(new Mutex.Action<Context>() {
+
             @Override
             public Context run() {
                 EditorCookie ec = node.getLookup().lookup(EditorCookie.class);
@@ -166,34 +193,25 @@ public class CPActionsImplementationProvider extends ActionsImplementationProvid
             return false;
         }
         Source source = Source.create(context.document);
-        final AtomicBoolean res = new AtomicBoolean(false);
+        Snapshot snapshot = source.createSnapshot();
+        //we can't do the parsing via the parsing infrastructure as this may block the EDT for long time
+        Parser cssParser = CssParserFactory.getDefault().createParser(Collections.singleton(snapshot));
         try {
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, "text/css");
-                    if (cssRi != null) {
-                        CssParserResult result = (CssParserResult) cssRi.getParserResult();
-                        org.netbeans.modules.css.lib.api.Node leaf = NodeUtil.findNonTokenNodeAtOffset(result.getParseTree(), context.caret);
-                        if (leaf != null) {
-                            switch (leaf.type()) {
-                                case cp_variable:
-                                case cp_mixin_name:
-                                    res.set(true);
-                                    break;
-                                default:
-                                    res.set(false);
-                            }
-                        }
-                    }
-
+            cssParser.parse(snapshot, null, null);
+            CssParserResult result = (CssParserResult) cssParser.getResult(null);
+            org.netbeans.modules.css.lib.api.Node leaf = NodeUtil.findNonTokenNodeAtOffset(result.getParseTree(), context.caret);
+            if (leaf != null) {
+                switch (leaf.type()) {
+                    case cp_variable:
+                    case cp_mixin_name:
+                        return true;
+                    default:
+                        return false;
                 }
-            });
-            return res.get();
+            }
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
-
         return false;
     }
 
@@ -212,7 +230,7 @@ public class CPActionsImplementationProvider extends ActionsImplementationProvid
         return false;
     }
 
-    public static abstract class TextComponentTask extends UserTask implements Runnable {
+    private static abstract class TextComponentTask extends UserTask implements Runnable {
 
         private final Document document;
         private final int caretOffset;

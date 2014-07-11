@@ -247,7 +247,7 @@ public class CPModelTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
 
-        TestUtil.dumpResult(result);
+//        TestUtil.dumpResult(result);
         
         CPModel model = CPModel.getModel(result);
         assertNotNull(model);
@@ -279,7 +279,7 @@ public class CPModelTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
 
-        TestUtil.dumpResult(result);
+//        TestUtil.dumpResult(result);
         
         CPModel model = CPModel.getModel(result);
         assertNotNull(model);
@@ -316,5 +316,36 @@ public class CPModelTest extends CssTestBase {
         assertEquals(42, scope.getEnd());
 
      }
+      
+     public void testSassMapVariableDeclaration() {
+        String source = 
+                "$colors: (\n"
+                + "  header: #b06,\n"
+                + "  footer: red\n"
+                + ")";
+
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+
+        TestUtil.dumpResult(result);
+        
+        CPModel model = CPModel.getModel(result);
+        assertNotNull(model);
+
+        Collection<CPElement> variables = model.getVariables();
+        assertNotNull(variables);
+        assertEquals(1, variables.size());
+        
+        CPElement var = variables.iterator().next();
+        
+        assertEquals("$colors", var.getName());
+        assertEquals(CPElementType.VARIABLE_GLOBAL_DECLARATION, var.getType());
+        
+        OffsetRange range = var.getRange();
+        assertEquals(0, range.getStart());
+        assertEquals(7, range.getEnd());
+
+     }
+      
      
 }

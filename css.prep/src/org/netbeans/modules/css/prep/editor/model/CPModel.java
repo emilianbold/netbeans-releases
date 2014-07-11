@@ -263,6 +263,7 @@ public class CPModel {
                         break;
 
                     case cp_variable_declaration:
+                    case sass_map: //also represents a variable declaration
                         in_cp_variable_declaration = true;
 
                         _visitChildren(this, node);
