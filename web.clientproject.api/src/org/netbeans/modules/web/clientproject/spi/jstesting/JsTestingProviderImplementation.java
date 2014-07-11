@@ -48,7 +48,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.netbeans.spi.project.ui.support.NodeList;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
@@ -118,12 +117,13 @@ public interface JsTestingProviderImplementation {
     URL toServer(@NonNull Project project, @NonNull FileObject projectFile);
 
     /**
-     * Create project customizer for the given project.
+     * Create project customizer panel for the given project.
      * @param project  the project; never {@code null}
-     * @return project customizer, can be {@code null} if not supported
+     * @return project customizer panel, can be {@code null} if not supported
+     * @since 1.60
      */
     @CheckForNull
-    ProjectCustomizer.CompositeCategoryProvider createCustomizer(@NonNull Project project);
+    CustomizerPanelImplementation createCustomizerPanel(@NonNull Project project);
 
     /**
      * Notify provider that it has been enabled/disabled in the given project (so

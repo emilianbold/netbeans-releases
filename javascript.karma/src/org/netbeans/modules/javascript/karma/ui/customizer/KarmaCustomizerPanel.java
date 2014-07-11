@@ -42,31 +42,67 @@
 
 package org.netbeans.modules.javascript.karma.ui.customizer;
 
-import javax.swing.JComponent;
+import java.awt.EventQueue;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
+import org.netbeans.modules.web.clientproject.spi.jstesting.CustomizerPanelImplementation;
 
-public final class KarmaCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+public final class KarmaCustomizerPanel implements CustomizerPanelImplementation {
 
-    public static final String IDENTIFIER = "Karma"; // NOI18N
+    private final Project project;
+
+    // creation @GuardedBy("this")
+    private volatile CustomizerKarma customizerKarma;
 
 
-    @NbBundle.Messages("KarmaCustomizer.name=Karma")
-    @Override
-    public ProjectCustomizer.Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                IDENTIFIER,
-                Bundle.KarmaCustomizer_name(),
-                null);
+    public KarmaCustomizerPanel(Project project) {
+        assert project != null;
+        this.project = project;
     }
 
     @Override
-    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        Project project = context.lookup(Project.class);
-        assert project != null : "Cannot find project in lookup: " + context;
-        return new CustomizerKarma(category, project);
+    public void addChangeListener(ChangeListener listener) {
+        getComponent().addChangeListener(listener);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        getComponent().removeChangeListener(listener);
+    }
+
+    @Override
+    public synchronized CustomizerKarma getComponent() {
+        if (customizerKarma == null) {
+            customizerKarma = new CustomizerKarma(project);
+        }
+        return customizerKarma;
+    }
+
+    @Override
+    public boolean isValid() {
+        return getErrorMessage() == null;
+    }
+
+    @Override
+    public String getErrorMessage() {
+        return getComponent().getErrorMessage();
+    }
+
+    @Override
+    public String getWarningMessage() {
+        return getComponent().getWarningMessage();
+    }
+
+    @Override
+    public void save() {
+        assert !EventQueue.isDispatchThread();
+        assert customizerKarma != null;
+        KarmaPreferences.setKarma(project, customizerKarma.getKarma());
+        KarmaPreferences.setConfig(project, customizerKarma.getConfig());
+        KarmaPreferences.setAutowatch(project, customizerKarma.isAutowatch());
+        KarmaPreferences.setDebug(project, customizerKarma.isDebug());
+        KarmaPreferences.setDebugBrowserId(project, customizerKarma.getSelectedBrowserId());
     }
 
 }

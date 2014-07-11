@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript.karma.ui.customizer;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -62,6 +63,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
@@ -71,27 +73,35 @@ import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class CustomizerKarma extends JPanel {
 
-    private final ProjectCustomizer.Category category;
     private final Project project;
     private final BrowserUISupport.BrowserComboBoxModel browserModel;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    private volatile String karma;
+    private volatile String config;
+    private volatile boolean autowatch;
+    private volatile boolean debug;
+    private volatile String selectedBrowserId;
+
+    // @GuardedBy("EDT")
+    private ValidationResult validationResult;
 
 
-    public CustomizerKarma(ProjectCustomizer.Category category, Project project) {
-        assert category != null;
+    public CustomizerKarma(Project project) {
+        assert EventQueue.isDispatchThread();
         assert project != null;
 
-        this.category = category;
         this.project = project;
 
         browserModel = BrowserUISupport.createBrowserModel(KarmaPreferences.getDebugBrowserId(project), KarmaUtils.getDebugBrowsers());
@@ -100,7 +110,52 @@ public class CustomizerKarma extends JPanel {
         init();
     }
 
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    public String getKarma() {
+        return karma;
+    }
+
+    public String getConfig() {
+        return config;
+    }
+
+    public boolean isAutowatch() {
+        return autowatch;
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public String getSelectedBrowserId() {
+        return selectedBrowserId;
+    }
+
+    public String getWarningMessage() {
+        assert EventQueue.isDispatchThread();
+        for (ValidationResult.Message message : validationResult.getWarnings()) {
+            return message.getMessage();
+        }
+        return null;
+    }
+
+    public String getErrorMessage() {
+        assert EventQueue.isDispatchThread();
+        for (ValidationResult.Message message : validationResult.getErrors()) {
+            return message.getMessage();
+        }
+        return null;
+    }
+
     private void init() {
+        assert EventQueue.isDispatchThread();
         // data
         karmaTextField.setText(KarmaPreferences.getKarma(project));
         configTextField.setText(KarmaPreferences.getConfig(project));
@@ -114,13 +169,6 @@ public class CustomizerKarma extends JPanel {
         addListeners();
         // initial validation
         validateData();
-        // store listener
-        category.setStoreListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                storeData();
-            }
-        });
     }
 
     private void addListeners() {
@@ -135,31 +183,18 @@ public class CustomizerKarma extends JPanel {
     }
 
     void validateData() {
-        ValidationResult result = new KarmaPreferencesValidator()
-                .validateKarma(karmaTextField.getText())
-                .validateConfig(configTextField.getText())
-                .validateDebug(debugCheckBox.isSelected(), browserModel.getSelectedBrowserId())
+        assert EventQueue.isDispatchThread();
+        karma = karmaTextField.getText();
+        config = configTextField.getText();
+        debug = debugCheckBox.isSelected();
+        autowatch = autowatchCheckBox.isSelected();
+        selectedBrowserId = browserModel.getSelectedBrowserId();
+        validationResult = new KarmaPreferencesValidator()
+                .validateKarma(karma)
+                .validateConfig(config)
+                .validateDebug(debug, selectedBrowserId)
                 .getResult();
-        for (ValidationResult.Message message : result.getErrors()) {
-            category.setErrorMessage(message.getMessage());
-            category.setValid(false);
-            return;
-        }
-        for (ValidationResult.Message message : result.getWarnings()) {
-            category.setErrorMessage(message.getMessage());
-            category.setValid(true);
-            return;
-        }
-        category.setErrorMessage(null);
-        category.setValid(true);
-    }
-
-    void storeData() {
-        KarmaPreferences.setKarma(project, karmaTextField.getText());
-        KarmaPreferences.setConfig(project, configTextField.getText());
-        KarmaPreferences.setAutowatch(project, autowatchCheckBox.isSelected());
-        KarmaPreferences.setDebug(project, debugCheckBox.isSelected());
-        KarmaPreferences.setDebugBrowserId(project, browserModel.getSelectedBrowserId());
+        changeSupport.fireChange();
     }
 
     void enableDebugBrowserComboBox(boolean enabled) {
@@ -357,6 +392,7 @@ public class CustomizerKarma extends JPanel {
 
     @NbBundle.Messages("CustomizerKarma.chooser.karma=Select Karma file")
     private void karmaBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_karmaBrowseButtonActionPerformed
+        assert EventQueue.isDispatchThread();
         File file = new FileChooserBuilder(CustomizerKarma.class)
                 .setTitle(Bundle.CustomizerKarma_chooser_karma())
                 .setFilesOnly(true)
@@ -370,6 +406,7 @@ public class CustomizerKarma extends JPanel {
 
     @NbBundle.Messages("CustomizerKarma.chooser.config=Select Karma configuration file")
     private void configBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configBrowseButtonActionPerformed
+        assert EventQueue.isDispatchThread();
         File file = new FileChooserBuilder(CustomizerKarma.class)
                 .setTitle(Bundle.CustomizerKarma_chooser_config())
                 .setFilesOnly(true)
@@ -383,9 +420,10 @@ public class CustomizerKarma extends JPanel {
 
     @NbBundle.Messages("CustomizerKarma.karma.none=No Karma executable was found.")
     private void karmaSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_karmaSearchButtonActionPerformed
-        File karma = KarmaUtils.findKarma(project);
-        if (karma != null) {
-            karmaTextField.setText(karma.getAbsolutePath());
+        assert EventQueue.isDispatchThread();
+        File karmaExecutable = KarmaUtils.findKarma(project);
+        if (karmaExecutable != null) {
+            karmaTextField.setText(karmaExecutable.getAbsolutePath());
             return;
         }
         // no karma found
@@ -394,6 +432,7 @@ public class CustomizerKarma extends JPanel {
 
     @NbBundle.Messages("CustomizerKarma.config.none=No Karma configuration was found.")
     private void configSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configSearchButtonActionPerformed
+        assert EventQueue.isDispatchThread();
         File karmaConfig = KarmaUtils.findKarmaConfig(KarmaUtils.getKarmaConfigDir(project));
         if (karmaConfig != null) {
             configTextField.setText(karmaConfig.getAbsolutePath());
@@ -404,10 +443,12 @@ public class CustomizerKarma extends JPanel {
     }//GEN-LAST:event_configSearchButtonActionPerformed
 
     private void coverageLearnMoreLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_coverageLearnMoreLabelMouseEntered
+        assert EventQueue.isDispatchThread();
         evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }//GEN-LAST:event_coverageLearnMoreLabelMouseEntered
 
     private void coverageLearnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_coverageLearnMoreLabelMousePressed
+        assert EventQueue.isDispatchThread();
         try {
             URL url = new URL("https://github.com/karma-runner/karma-coverage"); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
@@ -415,7 +456,6 @@ public class CustomizerKarma extends JPanel {
             Exceptions.printStackTrace(ex);
         }
     }//GEN-LAST:event_coverageLearnMoreLabelMousePressed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JCheckBox autowatchCheckBox;
