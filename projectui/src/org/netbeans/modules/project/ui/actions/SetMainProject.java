@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -202,6 +203,19 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
             //The action is the garbage collected and the sub menu does not react on changes of opened projects.
             //The action instance has to exists as long as the subMenu:
             subMenu.putClientProperty(SetMainProject.class, this);
+        } else {
+            List<Project> projectList = Arrays.asList(projects);
+            for(Component componentIter : subMenu.getMenuComponents()) {
+                if(componentIter instanceof JRadioButtonMenuItem) {
+                    Project p = (Project) ((JRadioButtonMenuItem)componentIter).getClientProperty(PROJECT_KEY);
+                    if(p != null && !projectList.contains(p)) {
+                        ProjectInformation projectInformation = p.getLookup().lookup(ProjectInformation.class);
+                        if(projectInformation != null) {
+                            projectInformation.removePropertyChangeListener(WeakListeners.propertyChange(this, projectInformation));
+                        }
+                    }
+                }
+            }
         }
         
         subMenu.removeAll();
@@ -215,6 +229,10 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
         
         // Fill menu with items
         for ( int i = 0; i < projects.length; i++ ) {
+            ProjectInformation projectInformation = projects[i].getLookup().lookup(ProjectInformation.class);
+            if(projectInformation != null) {
+                projectInformation.addPropertyChangeListener(WeakListeners.propertyChange(this, projectInformation));
+            }
             ProjectInformation pi = ProjectUtils.getInformation(projects[i]);
             JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(pi.getDisplayName(), pi.getIcon(), false);
             subMenu.add( jmi );
@@ -262,7 +280,8 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
     
     @Override public void propertyChange(PropertyChangeEvent e) {
         
-        if ( OpenProjectList.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
+        if ( OpenProjectList.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() )
+                || ProjectInformation.PROP_NAME.equals( e.getPropertyName() )) {
             final Project projects[] = OpenProjectList.getDefault().getOpenProjects();
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
