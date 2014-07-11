@@ -3900,7 +3900,10 @@ public class CasualDiff {
             if (first && trailing && localPointer < cStart) {
                 copyTo(localPointer, cStart);
             }
-            if (first && doNotDeleteIfMissing) {
+            // special handling for whitespace to be preserved:
+            if (oldC.style() == Style.WHITESPACE) {
+                localPointer = cStart;
+            } else if (first && doNotDeleteIfMissing) {
                 localPointer = cStart;
             } else {
                 first = false;
