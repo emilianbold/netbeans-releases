@@ -82,6 +82,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Action
     private static final ComboBoxModel WAIT_MODEL = SourceGroupSupport.getWaitModel();
     private final boolean isMaven;
     SourceGroupSupport support;
+    private String previousControllerName;
 
     private ConfigureFXMLControllerPanelVisual(Panel observer, SourceGroupSupport support, boolean isMaven) {
         this.support = support;
@@ -552,7 +553,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Action
     
     private void updateText() {
         String controllerName = getNewControllerName();
-        if (controllerName == null) {
+        if (controllerName == null  || controllerName.equals(previousControllerName)) {
             controllerName = support.getParent().getCurrentFileName();
             if (controllerName.contains(SPACE_CHAR)) {
                 String[] splittedName = controllerName.trim().split(SPACE_CHAR);
@@ -568,6 +569,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Action
                 controllerName = firstChar + otherChars + NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "TXT_FileNameControllerPostfix"); // NOI18N
             }
             createdNameTextField.setText(controllerName);
+            previousControllerName = controllerName;
         }
     }
     

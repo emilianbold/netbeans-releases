@@ -79,6 +79,7 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements ActionListene
     private RequestProcessor.Task updatePackagesTask;
     private static final ComboBoxModel WAIT_MODEL = SourceGroupSupport.getWaitModel();
     SourceGroupSupport support;
+    private String previousCssName;
 
     ConfigureFXMLCSSPanelVisual(Panel observer, SourceGroupSupport support, boolean isMaven) {
         this.support = support;
@@ -541,9 +542,10 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements ActionListene
     
     private void updateText() {
         String cssName = getNewCSSName();
-        if (cssName == null) {
+        if (cssName == null  || cssName.equals(previousCssName)) {
             cssName = support.getParent().getCurrentFileName().toLowerCase() + FXMLTemplateWizardIterator.CSS_FILE_EXTENSION;
             createdNameTextField.setText(cssName);
+            previousCssName = cssName;
         }
     }
 
