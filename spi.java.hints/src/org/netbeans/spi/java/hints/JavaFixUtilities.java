@@ -560,8 +560,8 @@ public class JavaFixUtilities {
             }
             for (Tree from : order) {
                 Tree to = rewriteFromTo.get(from);
-                gen.copyComments(from, to, true);
-                gen.copyComments(from, to, false);
+//                gen.copyComments(from, to, true);
+//                gen.copyComments(from, to, false);
                 wc.rewrite(from, to);
             }
         }
@@ -678,13 +678,24 @@ public class JavaFixUtilities {
 //                        target = ((ParenthesizedTree) target).getExpression();
 //                    }
                     if (   getCurrentPath().getParentPath() != null
-                        && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.LOGICAL_COMPLEMENT
-                        && (   tp.getParentPath() == null
-                            || tp.getParentPath().getLeaf().getKind() != Kind.LOGICAL_COMPLEMENT)) {
-                        Tree negated = negate((ExpressionTree) tp.getLeaf(), getCurrentPath().getParentPath().getParentPath().getLeaf(), true);
+                        && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.LOGICAL_COMPLEMENT) {
+                        boolean rewriteNegated;
                         
-                        if (negated != null) {
-                            rewrite(getCurrentPath().getParentPath().getLeaf(), negated);
+                        if (tp.getParentPath() == null) {
+                            rewriteNegated = true;
+                        } else {
+                            Tree parent = tp.getParentPath().getLeaf();
+                            // rather disable DeMorgan rules when negating a parenthesized expression, users will be
+                            // less surprised to see just the whole parenthesis negated than whole expression changed.
+                            rewriteNegated = (parent.getKind() != Kind.LOGICAL_COMPLEMENT && parent.getKind() != Kind.PARENTHESIZED);
+                        }
+                        
+                        if (rewriteNegated) {
+                            Tree negated = negate((ExpressionTree) tp.getLeaf(), getCurrentPath().getParentPath().getParentPath().getLeaf(), true);
+
+                            if (negated != null) {
+                                rewrite(getCurrentPath().getParentPath().getLeaf(), negated);
+                            }
                         }
                     }
                     if (requiresParenthesis(target, node, getCurrentPath().getParentPath().getLeaf())) {
@@ -1230,12 +1241,24 @@ public class JavaFixUtilities {
             switch (original.getKind()) {
                 case PARENTHESIZED:
                     ExpressionTree expr = ((ParenthesizedTree) original).getExpression();
-                    ExpressionTree negatedOrNull = negate(expr, original, true);
+                    /*
+                    ExpressionTree negatedOrNull = negate(expr, original, nullOnPlainNeg);
                     if (negatedOrNull != null) {
-                        return make.Parenthesized(negatedOrNull);
-                    } else {
-                        return null;
+                        if (negatedOrNull.getKind() != Kind.PARENTHESIZED) {
+                            negatedOrNull = make.Parenthesized(negatedOrNull);
+                        }
                     }
+                    return negatedOrNull;
+                    */
+                    if (nullOnPlainNeg) {
+                        return null;
+                    } else {
+                        return make.Unary(Kind.LOGICAL_COMPLEMENT, original);
+                    }
+                    
+                case INSTANCE_OF:
+                    return make.Unary(Kind.LOGICAL_COMPLEMENT, make.Parenthesized(original));
+                    
                 case LOGICAL_COMPLEMENT:
                     newTree = ((UnaryTree) original).getExpression();
                     while (newTree.getKind() == Kind.PARENTHESIZED && !JavaFixUtilities.requiresParenthesis(((ParenthesizedTree) newTree).getExpression(), original, parent)) {

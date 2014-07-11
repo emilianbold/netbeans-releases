@@ -108,6 +108,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="nodeReplacemenHints">
+            <api name="general"/>
+            <summary>Added API to preserve comments and whitespaces in transformations</summary>
+            <version major="0" minor="137"/>
+            <date day="10" month="7" year="2014"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                If a transformation moves a Tree node elsewhere, or produces a replacement of it, it can now mark the new tree as a 'replacement' for the old one,
+                which causes whitespaces (most notably comments) to attach to the replacement node.
+            </description>
+        </change>
         <change id="findLabelSpan">
              <api name="general"/>
              <summary>Added utility methods to find span of a Label's name in the source.</summary>

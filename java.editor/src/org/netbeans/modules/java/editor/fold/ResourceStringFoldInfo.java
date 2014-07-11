@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
- */ 
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ */
+
 package org.netbeans.modules.java.editor.fold;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import org.netbeans.api.editor.fold.FoldTemplate;
-import org.netbeans.api.editor.fold.FoldType;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.editor.ext.java.JavaFoldManager;
-import org.netbeans.spi.editor.fold.FoldTypeProvider;
-import org.openide.util.NbBundle;
-
 /**
- *
+ * Describes an occurrence of a resource bundle key reference.
  * @author sdedic
  */
-@MimeRegistration(mimeType = "text/x-java", service = FoldTypeProvider.class, position = 1000)
-public class JavaFoldTypeProvider implements FoldTypeProvider {
-    private Collection<FoldType>   types = new ArrayList<FoldType>(5);
-
-    public JavaFoldTypeProvider() {
-        types.add(JavaFoldManager.CODE_BLOCK_FOLD_TYPE);
-        types.add(JavaFoldManager.INNERCLASS_TYPE);
-        types.add(JavaFoldManager.IMPORTS_FOLD_TYPE);
-        types.add(JavaFoldManager.JAVADOC_FOLD_TYPE);
-        types.add(JavaFoldManager.INITIAL_COMMENT_FOLD_TYPE);
-        types.add(JavaFoldTypeProvider.BUNDLE_STRING);
-    }
-    
-    
-    @Override
-    public Collection getValues(Class type) {
-        return types;
-    }
-
-    @Override
-    public boolean inheritable() {
-        return false;
-    }
+public final class ResourceStringFoldInfo {
+    /**
+     * Resource file name
+     */
+    private final String  resourceName;
     
     /**
-     * Represents a reference to a String in a resource bundle.
-     * Java module registers a default {@link ContentReader}, which assumes the fold data
-     * contains information [TBD] necessary to extract the actual string.
+     * The bundle key
      */
-    public static final FoldType BUNDLE_STRING = FoldType.create("bundle-string", 
-            NbBundle.getMessage(JavaFoldTypeProvider.class, "Fold_BundleString"), 
-            FoldTemplate.DEFAULT_BLOCK);
+    private final String  key;
+
+    public ResourceStringFoldInfo(String resourceName, String key) {
+        this.resourceName = resourceName;
+        this.key = key;
+    }
+
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    public String getKey() {
+        return key;
+    }
 }

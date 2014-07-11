@@ -45,8 +45,6 @@
 
 package org.netbeans.modules.java.source.transform;
 
-import javax.lang.model.util.Elements;
-import org.netbeans.modules.java.source.query.CommentHandler;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
@@ -54,21 +52,23 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.util.Context;
-import javax.lang.model.element.Element;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.QualifiedNameable;
+import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.GeneratorUtilities;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.QualIdentTree;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
+import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.save.ElementOverlay;
 
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
@@ -90,6 +90,9 @@ import static org.netbeans.modules.java.source.save.PositionEstimator.*;
  *  <br>&nbsp;&nbsp;return new_tree_to_replace_old
  *  <br>&nbsp;&nbsp;// (returning the original tree leaves it unchanged)
  *  <br>}
+ * <p/>
+ * To help code formatting and comment preservation, translated nodes are marked
+ * as replacements for their originals.
  */
 public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 
@@ -102,6 +105,10 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     private ElementOverlay overlay;
     private ImportAnalysis2 importAnalysis;
     private Map<Tree, Object> tree2Tag;
+    /**
+     * Newly created nodes will be mareked as replacements for the old ones
+     */
+    private TreeMaker tmaker;
     
     private WorkingCopy copy;
 
@@ -115,6 +122,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
         comments = CommentHandlerService.instance(context);
         model = ASTService.instance(context);
         overlay = context.get(ElementOverlay.class);
+        tmaker = copy.getTreeMaker();
         this.importAnalysis = importAnalysis;
         this.tree2Tag = tree2Tag;
     }
@@ -136,6 +144,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	    Tree t = tree.accept(this, null);
             
             if (tree2Tag != null && tree != t) {
+                t = tmaker.asReplacementOf(t, tree, true);
                 tree2Tag.put(t, tree2Tag.get(tree));
             }
             

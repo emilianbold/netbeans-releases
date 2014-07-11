@@ -165,20 +165,14 @@ public class OrganizeMembers {
                     member = maker.setLabel(tree, ((MethodTree)tree).getName());
                     break;
                 case BLOCK:
-                    member = maker.Block(((BlockTree)tree).getStatements(), ((BlockTree)tree).isStatic());
+                    member = maker.asReplacementOf(maker.Block(((BlockTree)tree).getStatements(), ((BlockTree)tree).isStatic()), tree, true);
                     break;
                 default:
                     member = tree;    
             }
-            if (member != tree) {
-                gu.copyComments(tree, member, true);
-                gu.copyComments(tree, member, false);
-            }
             members.add(member);
         }
         nue = GeneratorUtilities.get(copy).insertClassMembers(nue, members);
-        gu.copyComments(clazz, nue, true);
-        gu.copyComments(clazz, nue, false);
         copy.rewrite(clazz, nue);
     }
     
