@@ -112,6 +112,7 @@ public class LauncherAction extends AbstractAction implements ContextAwareAction
         subMenu = new JMenu(displayName);
         subMenu.setEnabled(isSubmenu);
         subMenu.putClientProperty(DynamicMenuContent.HIDE_WHEN_DISABLED, getValue(DynamicMenuContent.HIDE_WHEN_DISABLED));
+        LaunchersRegistryFactory.getInstance(project.getProjectDirectory()).assertPrivateListenerNotNull(project.getProjectDirectory());  //for debugging purposes only
         for (Launcher launcher : LaunchersRegistryFactory.getInstance(project.getProjectDirectory()).getLaunchers()) {
             subMenu.add(new LauncherExecutableAction(launcher));
         }

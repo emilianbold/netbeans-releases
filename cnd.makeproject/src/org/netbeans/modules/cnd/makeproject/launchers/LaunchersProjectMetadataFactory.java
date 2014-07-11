@@ -44,7 +44,7 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
 
 
     }
-
+    
     private void initListeners(FileChangeListener fileChangeListener, FileObject projectDir) {
         FileObject nbproject = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
         FileObject publicLaunchers = nbproject.getFileObject(NAME);
@@ -60,6 +60,7 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
             if (privateLaunchers != null) {
                 privateLaunchers.removeFileChangeListener(fileChangeListener);
                 privateLaunchers.addFileChangeListener(fileChangeListener);
+                LaunchersRegistryFactory.getInstance(projectDir).setPrivateLaucnhersListener(fileChangeListener);  //for debugging purposes only
             }
         }
     }
