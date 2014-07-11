@@ -43,19 +43,13 @@
 package org.netbeans.modules.web.clientproject.jstesting;
 
 import javax.swing.JComponent;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Pair;
 
 public final class CompositeCategoryProviderImpl implements ProjectCustomizer.CompositeCategoryProvider {
-
-    private volatile Pair<ProjectCustomizer.Category, ProjectCustomizer.CompositeCategoryProvider> jsTestingInfo;
-
 
     @NbBundle.Messages("CompositeCategoryProviderImpl.testing.title=JavaScript Testing")
     @Override
@@ -64,21 +58,10 @@ public final class CompositeCategoryProviderImpl implements ProjectCustomizer.Co
         if (project == null) {
             throw new IllegalStateException("Project must be found in context: " + context);
         }
-        initJsTestingInfo(context, project);
-        ProjectCustomizer.Category[] subCategories;
-        if (jsTestingInfo == null) {
-            // no category at all
-            subCategories = null;
-        } else {
-            assert jsTestingInfo.first() != null : jsTestingInfo;
-            assert jsTestingInfo.second() != null : jsTestingInfo;
-            subCategories = new ProjectCustomizer.Category[] {jsTestingInfo.first()};
-        }
         return ProjectCustomizer.Category.create(
                 JsTestingProviders.CUSTOMIZER_IDENT,
                 Bundle.CompositeCategoryProviderImpl_testing_title(),
-                null,
-                subCategories);
+                null);
     }
 
     @Override
@@ -88,29 +71,7 @@ public final class CompositeCategoryProviderImpl implements ProjectCustomizer.Co
             assert project != null : "Cannot find project in lookup: " + context;
             return new CustomizerJsTesting(category, project);
         }
-        // js testing panel?
-        if (jsTestingInfo != null) {
-            if (category.equals(jsTestingInfo.first())) {
-                ProjectCustomizer.CompositeCategoryProvider categoryProvider = jsTestingInfo.second();
-                jsTestingInfo = null;
-                return categoryProvider.createComponent(category, context);
-            }
-        }
         return null;
-    }
-
-    @CheckForNull
-    private void initJsTestingInfo(Lookup context, Project project) {
-        jsTestingInfo = null;
-        JsTestingProvider testingProvider = JsTestingProviders.getDefault().getJsTestingProvider(project, false);
-        if (testingProvider == null) {
-            return;
-        }
-        ProjectCustomizer.CompositeCategoryProvider categoryProvider = testingProvider.createCustomizer(project);
-        if (categoryProvider == null) {
-            return;
-        }
-        jsTestingInfo = Pair.of(categoryProvider.createCategory(context), categoryProvider);
     }
 
 }

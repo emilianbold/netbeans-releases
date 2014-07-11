@@ -233,14 +233,14 @@ public class ELPreprocessor {
             if (t.kind == ELParserConstants.EOF) {
                 break;
             } else if (t.kind == ELParserConstants.STRING_LITERAL) {
-                stringLiterals.add(new OffsetRange(t.beginColumn, t.beginColumn + t.image.length()));
+                stringLiterals.add(new OffsetRange(t.beginColumn, t.beginColumn + t.image.length() - 1));
             }
         }
     }
 
     private boolean isInsideStringLiteral(int offset) {
         for (OffsetRange offsetRange : stringLiterals) {
-            if (offsetRange.containsInclusive(offset)) {
+            if (offsetRange.getStart() <= offset && offsetRange.getEnd() > offset) {
                 return true;
             }
         }

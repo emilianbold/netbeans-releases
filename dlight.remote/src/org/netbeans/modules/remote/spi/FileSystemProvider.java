@@ -510,6 +510,17 @@ public final class FileSystemProvider {
         noProvidersWarning(env);
         return '/';
     }
+
+    /** Just a convenient shortcut */
+    public static char getFileSeparatorChar(FileObject fileObject) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileObject)) {
+                return provider.getFileSeparatorChar();
+            }
+        }
+        noProvidersWarning(fileObject);
+        return '/';
+    }
     
     public enum WarmupMode {
         FILES_CONTENT,
