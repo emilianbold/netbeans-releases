@@ -151,7 +151,7 @@ public class ResourceContentReader implements ContentReader, ChangeListener {
         return "\"" + content + "\""; // NOI18N
     }
     
-    @MimeRegistration(mimeType = "text/x-java", service = ContentReader.Factory.class)
+    @MimeRegistration(mimeType = "text/x-java", service = ContentReader.Factory.class, position = 1450)
     public static class F implements ContentReader.Factory {
         @Override
         public ContentReader createReader(FoldType ft) {
