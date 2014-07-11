@@ -1,8 +1,8 @@
 Name: ASM
-Version: 3.3
+Version: debug-all-5.0.2
 Description: Library for bytecode manipulation
 License: BSD
-Origin: http://repo1.maven.org/maven2/asm/asm-commons/3.3/asm-commons-3.3.jar
+Origin: http://prdownloads.sourceforge.net/findbugs/findbugs-3.0.0.zip
 
 Use of ASM 3.3 is governed by the terms of the license below:
 
@@ -36,4 +36,3 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
-

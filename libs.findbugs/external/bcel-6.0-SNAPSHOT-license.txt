@@ -1,10 +1,10 @@
-Name: Apache Commons Lang
-Version: 2.4
-Description: Enhanced standard libraries
+Name: BCEL
+Version: 6.0-SNAPSHOT
+Description: Library for bytecode manipulation
 License: Apache-2.0
-Origin: http://repo1.maven.org/maven2/commons-lang/commons-lang/2.4/commons-lang-2.4.jar
+Origin: http://prdownloads.sourceforge.net/findbugs/findbugs-3.0.0.zip
 
-Use of BCEL 2.0.0 is governed by the terms of the license below:
+Use of BCEL 6.0-SNAPSHOT is governed by the terms of the license below:
 
 [TEXT OF THE LICENSE]
 
