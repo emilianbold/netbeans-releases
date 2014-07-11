@@ -71,6 +71,7 @@ import org.openide.util.Utilities;
  *
  * @author Anton Chechel
  * @author Petr Somol
+ * @author Roman Svitanic
  */
 public class ConfigureFXMLControllerPanelVisual extends JPanel implements ActionListener, DocumentListener {
     
@@ -484,6 +485,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Action
     // End of variables declaration//GEN-END:variables
 
     // ActionListener implementation -------------------------------------------
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (createdLocationComboBox == e.getSource()) {
             if (!ignoreRootCombo) {
@@ -506,7 +508,6 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Action
     // DocumentListener implementation -----------------------------------------
     @Override
     public void changedUpdate(DocumentEvent e) {
-        updateText();
         updateResult();
         fireChange();
     }
@@ -629,10 +630,6 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Action
         return FXMLTemplateWizardIterator.fileExist(getPathForExistingController(getExistingControllerName()));
     }
 
-    boolean shouldUseController() {
-        return controllerCheckBox.isSelected();
-    }
-
     boolean shouldCreateController() {
         return controllerCheckBox.isSelected() && createNewRadioButton.isSelected();
     }
@@ -682,7 +679,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Action
                 return;
             }
             if (isValid()) {
-                settings.putProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_ENABLED, component.shouldUseController());
+                settings.putProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_ENABLED, component.isControllerEnabled());
                 settings.putProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_NAME_PROPERTY, 
                     component.shouldCreateController() ? component.getNewControllerName() : null);
                 settings.putProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_EXISTING_PROPERTY, 
