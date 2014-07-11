@@ -114,6 +114,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 
     public ImmutableTreeTranslator(WorkingCopy copy) {
         this.copy = copy;
+        if (copy != null) {
+            tmaker = copy.getTreeMaker();
+        }
     }
 
     public void attach(Context context, ImportAnalysis2 importAnalysis, Map<Tree, Object> tree2Tag) {
@@ -122,7 +125,6 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
         comments = CommentHandlerService.instance(context);
         model = ASTService.instance(context);
         overlay = context.get(ElementOverlay.class);
-        tmaker = copy.getTreeMaker();
         this.importAnalysis = importAnalysis;
         this.tree2Tag = tree2Tag;
     }
@@ -143,7 +145,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	else {
 	    Tree t = tree.accept(this, null);
             
-            if (tree2Tag != null && tree != t) {
+            if (tree2Tag != null && tree != t && tmaker != null) {
                 t = tmaker.asReplacementOf(t, tree, true);
                 tree2Tag.put(t, tree2Tag.get(tree));
             }
