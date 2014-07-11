@@ -80,6 +80,13 @@ public class JavaTypeSearchProvider implements SearchProvider {
         for (TypeDescriptor td : newWorker.getTypes()) {
             String displayHint = td.getFileDisplayPath();
             String htmlDisplayName = td.getSimpleName() + td.getContextName();
+            final String projectName = td.getProjectName();
+            if (projectName != null && !projectName.isEmpty()) {
+                htmlDisplayName = String.format(
+                    "%s [%s]",  //NOI18N
+                    htmlDisplayName,
+                    projectName);
+            }
             if (!response.addResult(new GoToTypeCommand(td),
                                     htmlDisplayName,
                                     displayHint,
