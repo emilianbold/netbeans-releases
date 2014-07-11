@@ -57,10 +57,10 @@ import org.netbeans.modules.javascript.jstestdriver.preferences.JsTestDriverPref
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
+import org.netbeans.modules.web.clientproject.spi.jstesting.CustomizerPanelImplementation;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.project.ui.support.NodeList;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -156,7 +156,7 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
     }
 
     @Override
-    public ProjectCustomizer.CompositeCategoryProvider createCustomizer(Project project) {
+    public CustomizerPanelImplementation createCustomizerPanel(Project project) {
         return null;
     }
 
