@@ -57,7 +57,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -85,7 +84,6 @@ import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.netbeans.spi.editor.fold.FoldInfo;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -93,7 +91,7 @@ import org.openide.util.Exceptions;
  */
 @MimeRegistrations({
     @MimeRegistration(mimeType = "text/x-java", service = TaskFactory.class),
-    @MimeRegistration(mimeType = "text/x-java", service = FoldManagerFactory.class),
+    @MimeRegistration(mimeType = "text/x-java", service = FoldManagerFactory.class, position = 1400),
 })
 public class ResourceStringFoldProvider extends ParsingFoldSupport{
     private List<MessagePattern> messages = new ArrayList<>();
