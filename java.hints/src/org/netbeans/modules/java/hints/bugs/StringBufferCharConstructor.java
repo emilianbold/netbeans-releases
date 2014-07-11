@@ -146,8 +146,6 @@ public class StringBufferCharConstructor {
             ExpressionTree newExpr = mk.NewClass(nct.getEnclosingExpression(), (List<ExpressionTree>)nct.getTypeArguments(), nct.getIdentifier(), 
                     Collections.<ExpressionTree>emptyList(), nct.getClassBody());
 
-            GeneratorUtilities.get(ctx.getWorkingCopy()).copyComments(nct, newExpr, true);
-            GeneratorUtilities.get(ctx.getWorkingCopy()).copyComments(nct, newExpr, false);
             Tree replace = mk.MethodInvocation(
                     Collections.<ExpressionTree>emptyList(), 
                     mk.MemberSelect(newExpr, "append"), // NOI18N

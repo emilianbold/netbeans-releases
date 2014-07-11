@@ -48,12 +48,17 @@ import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TreeVisitor;
+import com.sun.source.tree.TryTree;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
@@ -79,28 +84,23 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.swing.text.BadLocationException;
 import javax.tools.JavaFileObject;
-
-import com.sun.source.tree.EnhancedForLoopTree;
-import com.sun.source.tree.ForLoopTree;
-import com.sun.source.tree.TreeVisitor;
-import com.sun.source.tree.TryTree;
-import com.sun.source.util.DocTrees;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.modules.java.source.parsing.JavacParserResult;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.openide.util.Exceptions;
-import org.openide.util.Parameters;
-import static org.netbeans.api.java.source.ModificationResult.*;
+import org.netbeans.api.java.source.ModificationResult.CreateChange;
+import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.source.save.CasualDiff.Diff;
+import org.netbeans.modules.java.source.builder.CommentHandlerService;
+import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.JavacParserResult;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
+import org.netbeans.modules.java.source.query.CommentSet.RelativePosition;
 import org.netbeans.modules.java.source.save.CasualDiff;
+import org.netbeans.modules.java.source.save.CasualDiff.Diff;
 import org.netbeans.modules.java.source.save.DiffContext;
 import org.netbeans.modules.java.source.save.DiffUtilities;
 import org.netbeans.modules.java.source.save.ElementOverlay;
@@ -109,13 +109,17 @@ import org.netbeans.modules.java.source.save.OverlayTemplateAttributesProvider;
 import org.netbeans.modules.java.source.transform.ImmutableDocTreeTranslator;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
 import org.netbeans.modules.java.source.transform.TreeDuplicator;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Pair;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
+
+import static org.netbeans.api.java.source.ModificationResult.*;
 
 /**XXX: extends CompilationController now, finish method delegation
  *
@@ -138,6 +142,13 @@ public class WorkingCopy extends CompilationController {
      * and may fail on newly added trees if they're rewritten recursively
      */
     private Map<Tree, Boolean> introducedTrees;
+    
+    /**
+     * Hint information on rewrites done. Can mark a Tree as `new' which means comments will not be copied for it
+     * and it will not assume other tree's formatting on output. Can link a Tree to one or more other Trees, which
+     * causes the old trees comments to be preserved (copied) should the old trees be removed from the source.
+     */
+    private Map<Tree, Tree> rewriteHints = new HashMap<Tree, Tree>();
     
     WorkingCopy(final CompilationInfoImpl impl, ElementOverlay overlay) {
         super(impl);
@@ -226,6 +237,9 @@ public class WorkingCopy extends CompilationController {
      * {@link TreeMaker} for tree element removal. If <code>oldTree</code> is
      * null, <code>newTree</code> must be of kind
      * {@link Kind#COMPILATION_UNIT COMPILATION_UNIT}.
+     * <p>
+     * Since 0.137, comments in the rewritten node will be automatically assigned to the newTree
+     * node. Use {@link TreeMaker#asRemoved} to discard comments from the oldTree explicitly.
      * 
      * 
      * @param oldTree  tree to be replaced, use tree already represented in
@@ -239,6 +253,7 @@ public class WorkingCopy extends CompilationController {
      *         method.
      * @see GeneratorUtilities#createFromTemplate
      * @see TreeMaker
+     * @since 0.137
      */
     public synchronized void rewrite(@NullAllowed Tree oldTree, @NonNull Tree newTree) {
         checkConfinement();
@@ -255,6 +270,11 @@ public class WorkingCopy extends CompilationController {
         }
         if (oldTree == null || newTree == null)
             throw new IllegalArgumentException("Null values are not allowed.");
+        Tree t = rewriteHints.get(oldTree);
+        if (t == null) {
+            // if the old tree does not have any association to a new generated node, make an implicit association
+            associateTree(newTree, oldTree, false);
+        }
         // Perf: trees are collected just when asserts are enabled.
         assert new TreeCollector(introducedTrees, true).scan(newTree, null) != null;
         changes.put(oldTree, newTree);
@@ -433,6 +453,47 @@ public class WorkingCopy extends CompilationController {
     
     // Package private methods -------------------------------------------------        
     
+//    static final Collection<Tree>   NOT_LINKED = new ArrayList<Tree>(0);
+    static final Tree NOT_LINKED = new Tree() {
+
+        @Override
+        public Kind getKind() {
+            return Kind.OTHER;
+        }
+
+        @Override
+        public <R, D> R accept(TreeVisitor<R, D> visitor, D data) {
+            return visitor.visitOther(this, data);
+        }
+    };
+    
+    /**
+     * Associates a new tree with the original. Only one association is supported,
+     * the last association wins. 
+     * 
+     * @param nue the new tree
+     * @param original the to-be-replaced original
+     */
+    synchronized void associateTree(Tree nue, Tree original, boolean force) {
+        if (rewriteHints == null) {
+            rewriteHints = new HashMap<Tree, Tree>(7);
+        }
+        
+        if (original == null) {
+            Tree ex = rewriteHints.get(nue);
+            if (ex == null || force) {
+                rewriteHints.put(nue, NOT_LINKED);
+            }
+        } else if (original == nue) {
+            return;
+        } else {
+            Tree ex = rewriteHints.get(original);
+            if (ex == null || force) {
+                rewriteHints.put(original, nue);
+            }
+        }
+    }
+    
     private static String codeForCompilationUnit(CompilationUnitTree topLevel) throws IOException {
         return ((JCTree.JCCompilationUnit) topLevel).sourcefile.getCharContent(true).toString();
     }
@@ -500,6 +561,7 @@ public class WorkingCopy extends CompilationController {
         Map<Integer, String> userInfo = new HashMap<Integer, String>();
         final Set<Tree> oldTrees = new HashSet<Tree>();
 
+        final Map<Tree, Boolean> presentInResult = new IdentityHashMap<Tree, Boolean>();
         if (CasualDiff.OLD_TREES_VERBATIM) {
             new TreeScanner<Void, Void>() {
                 private boolean synthetic = false;
@@ -552,6 +614,7 @@ public class WorkingCopy extends CompilationController {
                 @Override
                 public Void scan(Tree node, Void p) {
                     addSyntheticTrees(diffContext, node);
+                    addPresentInResult(presentInResult, node, true);
                     return super.scan(node, p);
                 }
             }.scan(diffContext.origUnit, null);
@@ -603,18 +666,29 @@ public class WorkingCopy extends CompilationController {
                                 parent2Rewrites.put(currentParent, new IdentityHashMap<Tree, Tree>());
                             }
                         }
-                        if(changes.containsKey(tree)) {
+                        Tree rev = changes.get(tree);
+                        Tree hint = resolveRewriteHint(tree);
+                        if(rev != null) {
                             Map<Tree, Tree> rewrites = parent2Rewrites.get(currentParent);
+                            
+                            changes.remove(tree);
 
-                            Tree rev = changes.remove(tree);
-
+                            if (hint == null) {
+                                addPresentInResult(presentInResult, rev, false);
+                            }
+                            //presentInResult.remove(tree);
                             rewrites.put(tree, rev);
 
                             scan(rev, p);
                         } else {
+                            if (hint == null) {
+                                addPresentInResult(presentInResult, rev, false);
+                            }
+                            addPresentInResult(presentInResult, tree, true);
                             super.scan(tree, p);
                         }
                     } else {
+                        addPresentInResult(presentInResult, tree, true);
                         super.scan(tree, p);
                     }
                     if (currentParent != null && currentParent.getLeaf() == tree) {
@@ -763,6 +837,7 @@ public class WorkingCopy extends CompilationController {
 
             //tagging debug
             //System.err.println("brandNew=" + brandNew);
+            new CommentReplicator(presentInResult.keySet()).scan(diffContext.origUnit, null);
             
             for (ClassTree ct : classes) {
                 ia.classLeft();
@@ -796,6 +871,161 @@ public class WorkingCopy extends CompilationController {
             }
             throw ex;
         }
+    }
+    
+    private void addPresentInResult(Map<Tree, Boolean> present, Tree t, boolean mark) {
+        present.put(t, Boolean.valueOf(mark));
+        CommentSetImpl csi = CommentHandlerService.instance(impl.getJavacTask().getContext()).getComments(t);
+        for (RelativePosition pos : RelativePosition.values()) {
+            useComments(csi.getComments(pos));
+        }
+    }
+    
+    private Set<Comment> usedComments;
+    
+    /* package-private */ List<Comment> useComments(List<Comment> comments) {
+        if (usedComments == null) {
+            usedComments = new HashSet<>();
+        }
+        usedComments.addAll(comments);
+        return comments;
+    }
+    
+    /**
+     * Copies comments according to rewrite hints:<ul>
+     * <li>copies comments from a tree to an associated tree
+     * <li>
+     */
+    private class CommentReplicator extends TreePathScanner<Object, Object> {
+        private final Set<Tree>   stillPresent;
+        
+        private boolean collectCommentsFromRemovedNodes;
+        private Map<Tree, Tree> copyTo = new IdentityHashMap<Tree, Tree>();
+        private final CommentHandlerService commentHandler;
+        private Tree parentToCopy;
+        
+        CommentReplicator(Set<Tree> presentNodes) {
+            this.stillPresent = presentNodes;
+            this.commentHandler = CommentHandlerService.instance(impl.getJavacTask().getContext());
+        }
+        
+        private Object scanAndReduce(Tree node, Object p, Object r) {
+            return reduce(scan(node, p), r);
+        }
+        
+        private RelativePosition collectToPosition;
+
+        /** Scan a list of nodes.
+         */
+        @Override
+        public Object scan(Iterable<? extends Tree> nodes, Object p) {
+            Object r = null;
+            if (nodes != null) {
+                boolean first = true;
+                Tree saveParent = parentToCopy;
+                RelativePosition savePosition = this.collectToPosition;
+                collectToPosition = RelativePosition.INNER;
+                if (collectCommentsFromRemovedNodes) {
+                    // find first such node that it either survived, or has a mapping to the new state. Join all 
+                    // comments to PRECEDING of such node.
+                    for (Tree node : nodes) {
+                        Tree target = resolveRewriteHint(node);
+                        if (target != null) {
+                            if (target != NOT_LINKED) {
+                                parentToCopy = target;
+                                collectToPosition = RelativePosition.PRECEDING;
+                                break;
+                            }
+                        } else if (stillPresent.contains(node)) {
+                            parentToCopy = node;
+                            collectToPosition = RelativePosition.PRECEDING;
+                            break;
+                        }
+                    }
+                }
+                boolean reset = false;
+                for (Tree node : nodes) {
+                    if (collectCommentsFromRemovedNodes) {
+                        Tree target = resolveRewriteHint(node);
+                        if (target != null && target != NOT_LINKED) {
+                            parentToCopy = target;
+                            this.collectToPosition = RelativePosition.INNER;
+                            reset = true;
+                        } else if (stillPresent.contains(node)) {
+                            parentToCopy = node;
+                            this.collectToPosition = RelativePosition.INNER;
+                            reset = true;
+                        }
+                    }
+                    r = (first ? scan(node, p) : scanAndReduce(node, p, r));
+                    first = false;
+                    // reset to trailing, output goes to the anchor node.
+                    if (reset) {
+                        this.collectToPosition = RelativePosition.TRAILING;
+                    }
+                }
+                parentToCopy = saveParent;
+                collectToPosition = savePosition;
+            }
+            return r;
+        }
+
+        @Override
+        public Object scan(Tree l, Object p) {
+            boolean collectChildren = false;
+            Tree newParentCopy = null;
+            
+            boolean saveCollect = this.collectCommentsFromRemovedNodes;
+            Tree target = resolveRewriteHint(l);
+            if (target == NOT_LINKED) {
+                // do not copy anything from this node and its children
+                collectChildren = false;
+            } else if (target != null) {
+                if (!commentHandler.getComments(target).hasComments()) {
+                    if (!stillPresent.contains(l)) {
+                        commentHandler.copyComments(l, target, null, usedComments);
+                        newParentCopy = target;
+                        collectChildren = true;
+                    }
+                }
+            } else if (!stillPresent.contains(l)) { // target == null, node removed
+                collectChildren = collectCommentsFromRemovedNodes;
+                if (collectCommentsFromRemovedNodes) {
+                    if (parentToCopy != null) {
+                        commentHandler.copyComments(l, parentToCopy, collectToPosition, usedComments);
+                    }
+                }
+            }
+            if (stillPresent.contains(l)) {
+                newParentCopy = l;
+            }
+            Tree saveParent = parentToCopy;
+            this.collectCommentsFromRemovedNodes = collectChildren;
+            if (newParentCopy != null) {
+                parentToCopy = newParentCopy;
+            }
+            Object v = super.scan(l, p);
+            this.parentToCopy = saveParent;
+            this.collectCommentsFromRemovedNodes = saveCollect;
+            return v;
+        }
+        
+    }
+    
+    private Tree resolveRewriteHint(Tree orig) {
+        Tree last;
+        Tree target = null;
+        Tree from = orig;
+        do {
+            last = target;
+            target = from;
+            target = rewriteHints.get(target);
+            if (target == NOT_LINKED) {
+                return target;
+            }
+            from = target;
+        } while (target != null);
+        return last;
     }
     
     private List<Difference> processExternalCUs(Map<?, int[]> tag2Span, Set<Tree> syntheticTrees) {
