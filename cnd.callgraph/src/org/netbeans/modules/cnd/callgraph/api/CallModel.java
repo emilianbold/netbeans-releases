@@ -68,4 +68,6 @@ public interface CallModel {
     void setRoot(Function newRoot);
     
     String getName();
+    
+    boolean isRootVisible();
 }
