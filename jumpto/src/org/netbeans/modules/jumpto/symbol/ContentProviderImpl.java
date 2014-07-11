@@ -239,7 +239,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         private JLabel jlName = HtmlRenderer.createLabel();
         private JLabel jlOwner = new JLabel();
         private JLabel jlPrj = new JLabel();
-        private int DARKER_COLOR_COMPONENT = 5;
+        private int DARKER_COLOR_COMPONENT = 15;
         private int LIGHTER_COLOR_COMPONENT = 80;        
         private Color fgColor;
         private Color fgColorLighter;

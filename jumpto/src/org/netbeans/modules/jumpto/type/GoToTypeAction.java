@@ -678,7 +678,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private JLabel jlName = HtmlRenderer.createLabel();
         private JLabel jlPkg = new JLabel();
         private JLabel jlPrj = new JLabel();
-        private int DARKER_COLOR_COMPONENT = 5;
+        private int DARKER_COLOR_COMPONENT = 15;
         private int LIGHTER_COLOR_COMPONENT = 80;        
         private Color fgColor;
         private Color fgColorLighter;
@@ -799,12 +799,12 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             }
             else {
                 jlName.setForeground(fgColor);
-                jlName.setBackground( bgColor );
                 jlPkg.setForeground(fgColorLighter);
                 jlPrj.setForeground(fgColor);
-                rendererComponent.setBackground( index % 2 == 0 ? bgColor : bgColorDarker );
+                final Color bgc = index % 2 == 0 ? bgColor : bgColorDarker;
+                jlName.setBackground(bgc);    //Html does not support transparent bg
+                rendererComponent.setBackground(bgc);
             }
-            
             if ( value instanceof TypeDescriptor ) {
                 long time = System.currentTimeMillis();
                 TypeDescriptor td = (TypeDescriptor)value;                
