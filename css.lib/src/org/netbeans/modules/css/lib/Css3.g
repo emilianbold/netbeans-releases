@@ -660,6 +660,7 @@ declarations
 declaration
     :
     (cp_variable_declaration)=>cp_variable_declaration
+    | (sass_map)=> sass_map
     | (sass_nested_properties)=>sass_nested_properties
     | (propertyDeclaration)=>propertyDeclaration
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
