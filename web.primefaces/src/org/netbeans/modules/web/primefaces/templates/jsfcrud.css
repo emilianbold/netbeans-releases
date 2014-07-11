@@ -12,11 +12,6 @@
     text-align: center;
     text-transform: uppercase;
 }
-.ui-datatable-footer .ui-button {
-    float: left;
-    margin-top: 25px !important;
-}
-
 .ui-button {
     margin-top: 10px !important;
 }

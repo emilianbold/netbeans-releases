@@ -131,8 +131,15 @@ public class ELRenameRefactoring extends ELWhereUsedQuery {
             PositionRef[] position = RefactoringUtil.getPostionRefs(elem, targetNode);
             String renameNewName = rename.getNewName();
             if (renameNewName != null) {
-                String newName = RefactoringUtil.isPropertyAccessor(renameNewName, returnType)
-                        ? RefactoringUtil.getPropertyName(renameNewName, returnType) : renameNewName + "()"; //NOI18N
+                String newName = renameNewName + "()"; //NOI18N
+                if (RefactoringUtil.isPropertyAccessor(renameNewName, returnType)) {
+                    newName = RefactoringUtil.getPropertyName(renameNewName, returnType);
+                } else if (targetNode.jjtGetLastToken().image != null
+                        && !targetNode.jjtGetLastToken().image.endsWith(")")) {  //NOI18N
+                    // issue #245540
+                    newName = renameNewName;
+                }
+
                 differences.add(new Difference(Difference.Kind.CHANGE,
                         position[0], position[1], targetNode.getImage(), newName,
                         NbBundle.getMessage(ELRenameRefactoring.class, "LBL_Update", targetNode.getImage())));
