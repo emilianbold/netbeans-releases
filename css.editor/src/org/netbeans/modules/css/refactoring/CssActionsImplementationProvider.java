@@ -53,11 +53,9 @@ import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
-import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -78,7 +76,6 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
@@ -93,7 +90,7 @@ import org.openide.windows.TopComponent;
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = ActionsImplementationProvider.class, position = 1033)
+@ServiceProvider(service = ActionsImplementationProvider.class, position = 1050)
 public class CssActionsImplementationProvider extends ActionsImplementationProvider {
 
     private static final RequestProcessor RP = new RequestProcessor(CssActionsImplementationProvider.class);
@@ -110,11 +107,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
         //check if the file is a file with .css extension or represents
         //an opened file which code embeds a css content on the caret position
         Node node = nodes.iterator().next();
-        if (isCssFile(node) || isRefactorableEditorElement(node)) {
-            return true;
-        }
-
-        return false; //we are not interested in refactoring this object/s
+        return isCssFile(node) || isRefactorableEditorElement(node); 
 
     }
 
@@ -156,10 +149,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
         //check if the file is a file with .css extension or represents
         //an opened file which code embeds a css content on the caret position
         Node node = nodes.iterator().next();
-        if (isCssFile(node) || isRefactorableEditorElement(node)) {
-            return true;
-        }
-        return false;
+        return isCssFile(node) || isRefactorableEditorElement(node);
     }
 
     @Override
@@ -249,7 +239,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
         return node.getLookup().lookup(EditorCookie.class);
     }
 
-    public static abstract class NodeToFileTask extends UserTask implements Runnable {
+    private static abstract class NodeToFileTask extends UserTask implements Runnable {
 
         private final Node node;
         private CssElementContext context;
@@ -318,7 +308,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
         protected abstract RefactoringUI createRefactoringUI(CssElementContext context);
     }
 
-    public static abstract class TextComponentTask extends UserTask implements Runnable {
+    private static abstract class TextComponentTask extends UserTask implements Runnable {
 
         private final Document document;
         private final int caretOffset;

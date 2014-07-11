@@ -57,10 +57,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -84,6 +84,8 @@ import org.openide.util.Exceptions;
 public class ELWhereUsedQuery extends ELRefactoringPlugin {
 
     private static final Logger LOGGER = Logger.getLogger(ELWhereUsedQuery.class.getName());
+
+    private static final String FACES_EVENT_CLASS = "javax.faces.event.FacesEvent";         //NOI18N
 
     ELWhereUsedQuery(AbstractRefactoring whereUsedQuery) {
         super(whereUsedQuery);
@@ -155,9 +157,9 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         String propertyName = RefactoringUtil.getPropertyName(targetType.getSimpleName().toString(), targetType.getReturnType());
         ELIndex index = ELIndex.get(handle.getFileObject());
         final Set<IndexResult> result = new HashSet<>();
-        // search for property nodes only if the method has no params (or accepts one vararg)
-        if (targetType.getParameters().isEmpty() ||
-                (targetType.getParameters().size() == 1 && targetType.isVarArgs())) {
+
+        // search for property nodes only under specific circumstances
+        if (searchPropertyReferences(info, targetType)) {
             result.addAll(index.findPropertyReferences(propertyName));
         }
         result.addAll(index.findMethodReferences(propertyName));
@@ -181,6 +183,31 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         }
         
         return null;
+    }
+
+    private static boolean searchPropertyReferences(CompilationContext info, ExecutableElement targetType) {
+        // no params method
+        if (targetType.getParameters().isEmpty()) {
+            return true;
+        }
+
+        int argumentsNumber = targetType.getParameters().size();
+        if (argumentsNumber != 1) {
+            return false;
+        }
+
+        // method accepts one vararg parameter
+        if (targetType.isVarArgs()) {
+            return true;
+        }
+
+        // method accepts one argument which can be injected by JSF framework
+        VariableElement parameter = targetType.getParameters().get(0);
+        if (ELTypeUtilities.isSubtypeOf(info, parameter.asType(), FACES_EVENT_CLASS)) {
+            return true;
+        }
+
+        return false;
     }
 
     protected void addElements(CompilationContext info, ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {

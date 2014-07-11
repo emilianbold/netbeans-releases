@@ -55,7 +55,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Alexander Simon
  */
-public class FunctionRootNode extends AbstractNode {
+public class FunctionRootNode extends AbstractNode implements Comparable<FunctionRootNode>{
     private final Function object;
     private final CallGraphState model;
     private final boolean isCalls;
@@ -140,5 +140,10 @@ public class FunctionRootNode extends AbstractNode {
 
     /*package-local*/ Function getFunction(){
         return object;
+    }
+
+    @Override
+    public int compareTo(FunctionRootNode o) {
+        return getFunction().getName().compareTo(o.getFunction().getName());
     }
 }
