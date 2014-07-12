@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,63 +34,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.blame;
+package org.netbeans.modules.db.dataview.util;
 
-import javax.swing.*;
-import javax.swing.text.JTextComponent;
-import org.netbeans.spi.editor.SideBarFactory;
+import java.awt.Component;
+import java.nio.charset.Charset;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
+import javax.swing.JList;
 
+public class CharsetSelector extends JComboBox<Charset>{
+    
+    public CharsetSelector() {
+        super(
+                Charset.availableCharsets().values().toArray(new Charset[]{})
+        );
+        this.setRenderer(new DefaultListCellRenderer(){
 
-/**
- * @author Maros Sandor
- */
-public class AnnotationBarManager implements SideBarFactory {
-
-    private static final Object BAR_KEY = new Object();
-
-    /**
-     * Creates initially hidden annotations sidebar.
-     * It's called once by target lifetime.
-     */
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Object displayValue;
+                if(value instanceof Charset) {
+                    displayValue = ((Charset) value).displayName();
+                } else {
+                    displayValue = value;
+                }
+                return super.getListCellRendererComponent(list, displayValue, index, isSelected, cellHasFocus);
+            }
+            
+        });
+    }
+    
     @Override
-    public JComponent createSideBar(JTextComponent target) {
-        final AnnotationBar ab = new AnnotationBar(target);
-        target.putClientProperty(BAR_KEY, ab);
-        return ab;
+    public Charset getSelectedItem() {
+        return (Charset) super.getSelectedItem();
     }
-
-    /**
-     * Shows annotations sidebar.
-     */
-    static AnnotationBar showAnnotationBar(JTextComponent target) {
-        AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
-        assert ab != null: "#58828 reappeared!"; // NOI18N
-        ab.annotate();
-        return ab;
-    }
-
-    /**
-     * Shows annotations sidebar.
-     */
-    public static void hideAnnotationBar(JTextComponent target) {
-        if (target == null) return;
-        AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
-        assert ab != null: "#58828 reappeared!"; // NOI18N
-        ab.hideBar();
-    }
-
-    /**
-     * Tests wheteher given editor shows annotations.
-     */
-    public static boolean annotationBarVisible(JTextComponent target) {
-        if (target == null) return false;
-        AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
-        if (ab == null) {
-            return false;
-        }
-        return ab.isAnnotated();
-    }
+    
 }
-

@@ -51,6 +51,24 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="disabled-action-beep">
+        <api name="util"/>
+        <summary>Platform dependent sound when invoking a disabled action.</summary>
+        <version major="8" minor="39"/>
+        <date year="2014" month="7" day="9"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+                Only some platforms provide an audible notification when user 
+                tries to invoke a disabled action. So instead of Toolkit.beep() 
+                which always plays a sound a new method 
+                <code>Utilities.disabledActionSound()</code> shoud be used instead.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Utilities"/>
+        <issue number="203979"/>
+    </change>
     <change id="try-lock">
         <api name="util"/>
         <summary>Try to lock a Mutex</summary>

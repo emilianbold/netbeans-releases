@@ -219,7 +219,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
             if (action.isEnabled()) {
                 action.actionPerformed(ev);
             } else {
-                Toolkit.getDefaultToolkit().beep();
+                Utilities.disabledActionBeep();
             }
 
             return;
@@ -241,7 +241,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
             return;
         }
 
-        Toolkit.getDefaultToolkit().beep();
+        Utilities.disabledActionBeep();
     }
 
     /** Perform the action.
