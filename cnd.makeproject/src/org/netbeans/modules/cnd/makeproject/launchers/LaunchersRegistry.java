@@ -46,6 +46,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -63,7 +67,24 @@ public final class LaunchersRegistry {
     private static final String DIRECTORY_TAG = "runDir";   // NOI18N
     private static final String SYMFILES_TAG = "symbolFiles";// NOI18N    
     private static final String ENV_TAG = "env";// NOI18N
+    
+    private static Object privateLaucnhersListener = null;  //for debugging purposes only
 
+    /*package*/ void setPrivateLaucnhersListener(Object privateLaucnhersListener) {  //for debugging purposes only
+        LaunchersRegistry.privateLaucnhersListener = privateLaucnhersListener;
+    }
+    
+    public void assertPrivateListenerNotNull(FileObject dir) {  //for debugging purposes only
+            if (privateLaucnhersListener == null) {
+                LaunchersProjectMetadataFactory factoryInstance = Lookups.forPath("Projects/org-netbeans-modules-cnd-makeproject/"//NOI18N
+                        + ProjectMetadataFactory.LAYER_PATH)
+                        .lookup(LaunchersProjectMetadataFactory.class);
+                factoryInstance.read(dir);
+                
+                CndUtils.assertNotNull(null, "Private launchers listener is null for " + dir);//NOI18N
+            }
+    }
+    
     LaunchersRegistry() {
         launchers = new ArrayList<>();
     }
