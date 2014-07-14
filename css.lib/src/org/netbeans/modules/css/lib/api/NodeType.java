@@ -377,6 +377,19 @@ public enum NodeType {
     sass_else,
     sass_for,
     sass_each,
+    
+    /**
+     * List of variables in the SASS for each loop:
+     * 
+     * @each "$animal, $color, $cursor" in $animals {
+     *      .#{$animal}-icon {
+     *          background-image: url('/images/#{$animal}.png');
+     *          border: 2px solid $color;
+     *          cursor: $cursor;
+     *      }
+     * }
+     */
+    sass_each_variables,
     sass_while,
     sass_control_block,
     sass_control_expression,

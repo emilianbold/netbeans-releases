@@ -182,7 +182,7 @@ MACRO="if" | "elseif" | "else" | "ifset" | "elseifset" | "ifCurrent" | "for" | "
         "include" | "use" | "l" | "r" | "contentType" | "status" | "define" | "includeblock" | "layout" | "extends" | "link" | "plink" |
         "control" | "input" | "dump" | "debugbreak" | "widget"
 END_MACRO="if" | "ifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" | "last" | "sep" | "capture" | "cache" |
-        "syntax" | "_" | "block" | "form" | "label" | "snippet"
+        "syntax" | "_" | "block" | "form" | "label" | "snippet" | "define"
 
 
 %state ST_OTHER

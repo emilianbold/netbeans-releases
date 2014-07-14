@@ -1,4 +1,4 @@
-Name: \Nette\Utils\Foo
- \Nette\Utils\Foo --> Foo:178
 Name: BasePresenter
  BasePresenter --> BasePresenter:127
+Name: \Nette\Utils\Foo
+ \Nette\Utils\Foo --> Foo:178
