@@ -281,7 +281,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         
         text = text.trim();
         
-        if ( text.length() == 0) {
+        if ( text.length() == 0 || !Utils.isValidInput(text)) {
             panel.setModel(EMPTY_LIST_MODEL, -1);
             return;
         }

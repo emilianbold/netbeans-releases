@@ -153,7 +153,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         final boolean exact = text.endsWith(" "); // NOI18N
         final boolean isCaseSensitive = panel.isCaseSensitive();        
         text = text.trim();        
-        if ( text.length() == 0) {
+        if ( text.length() == 0 || !Utils.isValidInput(text)) {
             panel.setModel(new DefaultListModel(), -1);
             return;
         }

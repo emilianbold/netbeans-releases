@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,89 +37,66 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.jumpto.common;
 
-import java.util.regex.Pattern;
+import java.awt.Toolkit;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 import org.netbeans.api.annotations.common.NonNull;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class Utils {
-
-    private static Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
-    private static final int MAX_INPUT_LENGTH = 1<<10;
-    private static final char[] INVALID_CHARS = {
-        '\n'    //NOI18N
-    };
-
-    private Utils() {
-        throw new IllegalStateException();
-    }
-
-    public static int containsWildCard( String text ) {
-        for( int i = 0; i < text.length(); i++ ) {
-            if ( text.charAt( i ) == '?' || text.charAt( i ) == '*' ) { // NOI18N
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public static boolean isCamelCase(String text) {
-         return camelCasePattern.matcher(text).matches();
-    }
-
-    public static boolean isAllUpper( String text ) {
-        for( int i = 0; i < text.length(); i++ ) {
-            if ( !Character.isUpperCase( text.charAt( i ) ) ) {
-                return false;
-            }
-        }
-
-        return true;
+public final class UiUtils {
+    private UiUtils() {
+        throw new IllegalStateException("No instance allowed.");    //NOI18N
     }
 
     @NonNull
-    public static String removeNonNeededWildCards(@NonNull final String text) {
-        final StringBuilder sb = new StringBuilder();
-        boolean  lastAny = false;
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            switch (c) {
-                case '*':   //NOI18N
-                    if (!lastAny) {
-                        sb.append(c);
-                    }
-                    lastAny = true;
-                    break;
-                case '?':   //NOI18N
-                    if (!lastAny) {
-                        sb.append(c);
-                    }
-                    break;
-                default:
-                    sb.append(c);
-                    lastAny = false;
-            }
-        }
-        return sb.toString();
+    public static DocumentFilter newUserInputFilter() {
+        return new UserInputFilter();
     }
 
-    public static boolean isValidInput(@NonNull final String input) {
-        if (input.length() > MAX_INPUT_LENGTH) {
-            return false;
-        }
-        for (char c : INVALID_CHARS) {
-            if (input.indexOf(c) >= 0) {
-                return false;
+
+    private static final class UserInputFilter extends DocumentFilter {
+
+        @Override
+        public void insertString(
+                @NonNull final FilterBypass fb,
+                final int offset,
+                @NonNull final String string,
+                @NonNull final AttributeSet attr) throws BadLocationException {
+            if (Utils.isValidInput(string)) {
+                super.insertString(fb, offset, string, attr);
+            } else {
+                handleWrongInput();
             }
         }
-        return true;
-    }
 
+        @Override
+        public void replace(
+                @NonNull final FilterBypass fb,
+                final int offset,
+                final int length,
+                @NonNull final String text,
+                @NonNull final AttributeSet attrs) throws BadLocationException {
+            if (Utils.isValidInput(text)) {
+                super.replace(fb, offset, length, text, attrs);
+            } else {
+                handleWrongInput();
+            }
+        }
+
+        private static void handleWrongInput() {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(UiUtils.class, "TXT_IllegalContent"));
+            Toolkit.getDefaultToolkit().beep();
+        }
+    }
 }

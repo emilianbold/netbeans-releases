@@ -189,7 +189,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         }
         boolean exact = text.endsWith(" "); // NOI18N
         text = text.trim();
-        if ( text.length() == 0) {
+        if ( text.length() == 0 || !Utils.isValidInput(text)) {
             panel.setModel(EMPTY_LIST_MODEL, true);
             return;
         }
