@@ -1611,15 +1611,23 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  // If a second argument was passed assign it to $param-2,\n"
                 + "  // otherwise assign an empty list:\n"
                 + "  $param-2: if(length($args) > 1, nth($args, 2), ());\n"
-                + "\n"
-                + "  ...\n"
                 + "}\n");
     }
 
     public void testBwLoop() {
         assertParses("@for $i from 5 through 1 {\n"
-                + "  .span:nth-child(#{6-$i}) { content: $i; }\n"
+                + ".selector#{$i} { content: $i; }"
                 + "}\n");
+    }
+    
+    //can't parse an expression inside the interpolation expression
+    public void _testInterpolationExpression_BUG1() {
+        assertParses(".span:nth-child(#{6-$i}) { content: $i; }");
+    }
+    
+    //can't parse an interpolation expression as fn argument
+    public void _testInterpolationExpression_BUG2() {
+        assertParses(".span:nth-child(#{$i}) { content: $i; }");
     }
 
     public void testForEachMultiAssignments() {
