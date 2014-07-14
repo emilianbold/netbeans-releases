@@ -52,7 +52,7 @@ import org.openide.util.RequestProcessor;
  * @author mtishkov
  */
 abstract public class CallGraphAction extends AbstractAction{
-    private final RequestProcessor RP = new RequestProcessor("CallGraphAction", 1);
+    private final RequestProcessor RP = new RequestProcessor("CallGraphAction", 1);//NOI18N
     private final CallGraphActionEDTRunnable runnable;
     
     
