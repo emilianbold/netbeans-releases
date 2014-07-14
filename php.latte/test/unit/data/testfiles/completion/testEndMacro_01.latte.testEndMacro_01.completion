@@ -5,6 +5,7 @@ METHOD     /_                                         End Macro
 METHOD     /block                                     End Macro
 METHOD     /cache                                     End Macro
 METHOD     /capture                                   End Macro
+METHOD     /define                                    End Macro
 METHOD     /first                                     End Macro
 METHOD     /for                                       End Macro
 METHOD     /foreach                                   End Macro
