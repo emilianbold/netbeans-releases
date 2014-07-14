@@ -1500,39 +1500,39 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testIssue237010() {
-        assertParses("$textColorError: \"blue\";\n" +
-                "$allowTagSelectors: true;\n" +
-                "@if $allowTagSelectors != true {\n" +
-                "  .oj-text-input {\n" +
-                "    @include oj-normalize-text-input;\n" +
-                "  }\n" +
-                "  .oj-text-input[type='search'] {\n" +
-                "    @include oj-normalize-search-input;\n" +
-                "  }\n" +
-                "}\n" +
-                "$currSelectors: if($allowTagSelectors,\n" +
-                "  // here:  \n" +
-                " \".oj-date-input.oj-invalid, \n" +
-                "  input[type='url'].oj-invalid\", \n" +
-                "  // class selectors: \n" +
-                "  \".oj-text-input.oj-invalid,\n" +
-                "  .oj-textarea.oj-invalid\");\n" +
-                "#{$currSelectors} {\n" +
-                "    border: 2px solid $textColorError; \n" +
-                "}");
+        assertParses("$textColorError: \"blue\";\n"
+                + "$allowTagSelectors: true;\n"
+                + "@if $allowTagSelectors != true {\n"
+                + "  .oj-text-input {\n"
+                + "    @include oj-normalize-text-input;\n"
+                + "  }\n"
+                + "  .oj-text-input[type='search'] {\n"
+                + "    @include oj-normalize-search-input;\n"
+                + "  }\n"
+                + "}\n"
+                + "$currSelectors: if($allowTagSelectors,\n"
+                + "  // here:  \n"
+                + " \".oj-date-input.oj-invalid, \n"
+                + "  input[type='url'].oj-invalid\", \n"
+                + "  // class selectors: \n"
+                + "  \".oj-text-input.oj-invalid,\n"
+                + "  .oj-textarea.oj-invalid\");\n"
+                + "#{$currSelectors} {\n"
+                + "    border: 2px solid $textColorError; \n"
+                + "}");
     }
 
     public void testIssue236388() {
-        assertParses("@media only screen and (min-width: 768px) {\n" +
-                "    @import \"_grid.less\";\n" +
-                "    @import \"_768up.less\";\n" +
-                "}");
+        assertParses("@media only screen and (min-width: 768px) {\n"
+                + "    @import \"_grid.less\";\n"
+                + "    @import \"_768up.less\";\n"
+                + "}");
     }
 
     public void testIssue236706() {
         assertParses("@mixin web-font($fonts, $variants: (), $subsets: (), $text: '', $effects: (), $secure: false) {}");
     }
-    
+
     //new SASS 3.3 stuff
     //http://thesassway.com/news/sass-3-3-released
     public void testSassMap() {
@@ -1580,5 +1580,68 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "\n"
                 + "}\n");
     }
+
+    public void testParentSelectorSuffixes() {
+        assertParses("// Ampersand in SassScript:\n"
+                + ".button {\n"
+                + "  &-primary { background: orange; }\n"
+                + "  &-secondary { background: blue; }\n"
+                + "}\n");
+    }
+
+    public void testAtRoot() {
+        assertParses(".message {\n"
+                + "  @at-root {\n"
+                + "    .info { color: blue; }\n"
+                + "    .error { color: red; }\n"
+                + "  }\n"
+                + "}\n");
+
+        assertParses(".message {\n"
+                + "  @at-root .info { color: blue; }\n"
+                + "  @at-root .error { color: red; }\n"
+                + "}\n");
+    }
+
+    public void testIfInFn() {
+        assertParses("@function my-function($args...) {\n"
+                + "  // Assign the first argument to $param-1\n"
+                + "  $param-1: nth($args, 1);\n"
+                + "\n"
+                + "  // If a second argument was passed assign it to $param-2,\n"
+                + "  // otherwise assign an empty list:\n"
+                + "  $param-2: if(length($args) > 1, nth($args, 2), ());\n"
+                + "}\n");
+    }
+
+    public void testBwLoop() {
+        assertParses("@for $i from 5 through 1 {\n"
+                + ".selector#{$i} { content: $i; }"
+                + "}\n");
+    }
     
+    //can't parse an expression inside the interpolation expression
+    public void _testInterpolationExpression_BUG1() {
+        assertParses(".span:nth-child(#{6-$i}) { content: $i; }");
+    }
+    
+    //can't parse an interpolation expression as fn argument
+    public void _testInterpolationExpression_BUG2() {
+        assertParses(".span:nth-child(#{$i}) { content: $i; }");
+    }
+
+    public void testForEachMultiAssignments() {
+        assertParses("$animals: (puma, black, default),\n"
+                + "          (sea-slug, blue, pointer),\n"
+                + "          (egret, white, move);\n"
+                + "\n"
+                + "@each $animal, $color, $cursor in $animals {\n"
+                + "  .#{$animal}-icon {\n"
+                + "    background-image: url('/images/#{$animal}.png');\n"
+                + "    border: 2px solid $color;\n"
+                + "    cursor: $cursor;\n"
+                + "  }\n"
+                + "}\n");
+    }
+
 }

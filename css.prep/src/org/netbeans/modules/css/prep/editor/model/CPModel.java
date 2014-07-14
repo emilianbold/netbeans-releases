@@ -88,7 +88,8 @@ public class CPModel {
         "@mixin",
         "@return",
         "@warn",
-        "@while"
+        "@while",
+        "@at-root"
     });
 
     public static CPModel getModel(CssParserResult result) {
