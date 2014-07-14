@@ -120,6 +120,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         private final ClientSideProject project;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private final Listener listener;
+        private ImportantFilesNode importantFilesNode;
         
         public ImpFilesNL(Project p) {
             project = (ClientSideProject)p;
@@ -131,7 +132,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                     FileUtil.addFileChangeListener(listener, f);
                 }
             }
-            String config = project.getEvaluator().evaluate(ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
+            String config = project.getEvaluator().evaluate(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
             if (config!=null) {
                 File f = FileUtil.normalizeFile(new File(project.getProjectDirectory().getPath() + "/" + config));                
                 FileUtil.addFileChangeListener(listener, f);
@@ -178,6 +179,9 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                     f = FileUtil.normalizeFile(new File(project.getProjectDirectory().getPath() + "/" + evt.getNewValue()));                
                     FileUtil.addFileChangeListener(listener, f);
                     changeSupport.fireChange();
+                    if (importantFilesNode !=null) {
+                        ((ImportantFilesChildren) importantFilesNode.getChildren()).refreshKeys();
+                    }
                 }
             }
         }        
@@ -204,7 +208,10 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         public Node node(String key) {
             assert key.equals(IMPORTANT_FILES_NAME);
             if (project instanceof ClientSideProject) {
-                return new ImportantFilesNode((ClientSideProject) project);
+                if (importantFilesNode == null) {
+                    importantFilesNode = new ImportantFilesNode((ClientSideProject) project);
+                }
+                return importantFilesNode;
             }
             return null;
         }
@@ -454,7 +461,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
         }
 
-        private void refreshKeys() {
+        protected void refreshKeys() {
             final TreeMap<FileObject, String> files = new TreeMap<>(new FileObjectComparator());
             for (String loc : FILES.keySet()) {
                 FileObject file = project.getProjectDirectory().getFileObject(loc);
