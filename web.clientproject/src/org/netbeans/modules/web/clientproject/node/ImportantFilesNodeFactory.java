@@ -42,18 +42,22 @@
 package org.netbeans.modules.web.clientproject.node;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
@@ -66,6 +70,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
@@ -75,6 +80,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 @NodeFactory.Registration(projectType = "org-netbeans-modules-web-clientproject", position = 520)
@@ -111,12 +117,12 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
     private static class ImpFilesNL implements NodeList<String> {
 
-        private final Project project;
+        private final ClientSideProject project;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private final Listener listener;
         
         public ImpFilesNL(Project p) {
-            project = p;
+            project = (ClientSideProject)p;
             listener = new Listener();
             Set<File> temp = new HashSet();
             for (String name: ImportantFilesChildren.FILES.keySet()) {
@@ -125,9 +131,16 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                     FileUtil.addFileChangeListener(listener, f);
                 }
             }
+            String config = project.getEvaluator().evaluate(ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
+            if (config!=null) {
+                File f = FileUtil.normalizeFile(new File(project.getProjectDirectory().getPath() + "/" + config));                
+                FileUtil.addFileChangeListener(listener, f);
+        }
+            project.getEvaluator().addPropertyChangeListener(
+                    WeakListeners.propertyChange(listener, project.getEvaluator()));
         }
         
-        private class Listener extends FileChangeAdapter {
+        private class Listener extends FileChangeAdapter implements PropertyChangeListener {            
 
             public Listener() {
             }
@@ -151,6 +164,21 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             @Override
             public void fileFolderCreated(FileEvent fe) {
                 changeSupport.fireChange();
+            }
+            
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (ClientSideProjectConstants.PROJECT_CONFIG_FOLDER.equals(evt.getPropertyName())) {
+                    File f = FileUtil.normalizeFile(new File(project.getProjectDirectory().getPath() + "/" + evt.getOldValue()));                
+                    try {
+                        FileUtil.removeFileChangeListener(listener, f);
+                    } catch (IllegalArgumentException iae) {
+                        //was not listening. Ignore
+        }        
+                    f = FileUtil.normalizeFile(new File(project.getProjectDirectory().getPath() + "/" + evt.getNewValue()));                
+                    FileUtil.addFileChangeListener(listener, f);
+                    changeSupport.fireChange();
+                }
             }
         }        
 
@@ -194,6 +222,9 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 if (project.getProjectDirectory().getFileObject(name) != null) {
                     return true;
                 }
+            }
+            if (project.getConfigFolder() != null && project.getConfigFolder().getChildren().length > 0) {
+                return true;
             }
             return false;
         }
@@ -297,7 +328,6 @@ public class ImportantFilesNodeFactory implements NodeFactory {
      */
     private static final class ImportantFilesChildren extends Children.Keys<String> {
 
-        private List<String> visibleFiles = null;
         private final FileChangeListener fclStrong = new FileChangeAdapter() {
             public @Override
             void fileRenamed(FileRenameEvent fe) {
@@ -354,7 +384,6 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         protected @Override
         void removeNotify() {
             setKeys(Collections.<String>emptyList());
-            visibleFiles = null;
             removeListeners();
             super.removeNotify();
         }
@@ -426,30 +455,27 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
 
         private void refreshKeys() {
-            Set<FileObject> files = new HashSet<>();
-            List<String> newVisibleFiles = new ArrayList<>();
+            final TreeMap<FileObject, String> files = new TreeMap<>(new FileObjectComparator());
             for (String loc : FILES.keySet()) {
-                String locEval = project.getEvaluator().evaluate(loc);
-                if (locEval == null) {
-                    newVisibleFiles.remove(loc); // XXX why?
-                    continue;
-                }
-                FileObject file = project.getProjectHelper().resolveFileObject(locEval);
+                FileObject file = project.getProjectDirectory().getFileObject(loc);
                 if (file != null && FileUtil.getRelativePath(project.getProjectDirectory(), file).equals(loc)) {
-                    newVisibleFiles.add(loc);
-                    files.add(file);
+                    files.put(file, loc);
                 }
             }
-            if (!newVisibleFiles.equals(visibleFiles)) {
-                visibleFiles = newVisibleFiles;
+
+            if (project.getConfigFolder() != null) {
+                for (FileObject f : project.getConfigFolder().getChildren()) {
+                    files.put(f, FileUtil.getRelativePath(project.getProjectDirectory(), f));
+                }
+            }
+
                 getNodesSyncRP().post(new Runnable() { // #72471
                     public void run() {
-                        setKeys(visibleFiles);
+                    setKeys(files.values());
                     }
                 });
-                ((ImportantFilesNode) getNode()).setFiles(files);
+            ((ImportantFilesNode) getNode()).setFiles(files.keySet());
             }
-        }
 
         private void attachListeners() {
             try {
@@ -473,5 +499,20 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 fclWeak = null;
             }
         }
+    }
+
+    private static class FileObjectComparator implements Comparator<FileObject>{
+        public FileObjectComparator() {
+}
+
+        @Override
+        public int compare(FileObject o1, FileObject o2) {
+            try {
+                return DataFolder.SortMode.FOLDER_NAMES.compare(DataObject.find(o1), DataObject.find(o2));
+            } catch (DataObjectNotFoundException ex) {
+                return o1.getNameExt().compareTo(o2.getNameExt());
+            }
+        }
+
     }
 }

@@ -637,6 +637,10 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             if (type == BasicNodes.Sources) {
                 return false;
             }
+            if (type == BasicNodes.Configuration) {
+                //#245555
+                return true;
+            }
             FileObject root = getRootForNode(type);
             return root == null
                     || !root.isValid()
