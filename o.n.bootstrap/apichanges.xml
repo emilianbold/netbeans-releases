@@ -53,6 +53,23 @@ made subject to such option by the copyright holder.
   </apidefs>
 
   <changes>
+     <change id="disable.fallback.cache">
+        <api name="launcher"/>
+        <summary>Disable fallback cache</summary>
+        <version major="2" minor="69"/>
+        <date day="4" month="7" year="2014"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            Special property to disable usage of shared, installation
+            caches <a href="@TOP@architecture-summary.html#systemproperty-netbeans.fallback.cache">
+                netbeans.fallback.cache
+            </a> with special value which can be <code>none</code>.
+        </p>
+        </description>
+        <issue number="237919"/>
+    </change>
      <change id="patch.classes">
         <api name="launcher"/>
         <summary>Ability to patch classes</summary>
