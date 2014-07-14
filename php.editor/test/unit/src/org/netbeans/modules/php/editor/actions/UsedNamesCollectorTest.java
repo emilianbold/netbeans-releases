@@ -45,6 +45,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -138,8 +140,8 @@ public class UsedNamesCollectorTest extends PHPTestBase {
 
     private String createResultString(Map<String, List<UsedNamespaceName>> testResult) {
         StringBuilder sb = new StringBuilder();
-
-        for (String key : testResult.keySet()) {
+        SortedSet<String> keys = new TreeSet<>(testResult.keySet());
+        for (String key : keys) {
             sb.append("Name: ").append(key).append("\n");
             for (UsedNamespaceName usedNamespaceName : testResult.get(key)) {
                 sb.append(" ").append(usedNamespaceName.getName()).append(" --> ").append(usedNamespaceName.getReplaceName()).append(":").append(usedNamespaceName.getOffset()).append("\n");
