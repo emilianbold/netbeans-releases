@@ -63,10 +63,10 @@ import org.netbeans.modules.javascript.karma.coverage.CoverageProcessor;
 import org.netbeans.modules.javascript.karma.coverage.CoverageWatcher;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.run.KarmaRunInfo;
+import org.netbeans.modules.javascript.karma.ui.KarmaErrorsDialog;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -137,7 +137,7 @@ public final class KarmaServer implements PropertyChangeListener {
         if (server != null) {
             started = true;
         } else {
-            StatusDisplayer.getDefault().setStatusText(Bundle.KarmaServer_start_error());
+            KarmaErrorsDialog.getInstance().show(Bundle.KarmaServer_start_error());
         }
         addCoverageListener();
         addConfigFileListener();
