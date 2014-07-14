@@ -77,6 +77,7 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
 import org.netbeans.modules.xml.text.syntax.dom.EndTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
@@ -425,9 +426,9 @@ public class CompletionContextImpl extends CompletionContext {
                                 = tokID.equals(XMLTokenId.ERROR) && diff == 0;
         
         while (true) {
-            if (tokID.equals(XMLTokenId.TAG)) {
+            if (tokID.equals(XMLTokenId.TAG) || tokID.equals(XMLTokenId.TEXT)) {
                 if (CompletionUtil.isEndTagPrefix(tok)) break;
-                else {
+                else if (tokID.equals(XMLTokenId.TAG)) {
                     String tagName = CompletionUtil.getTokenTagName(tok);
                     if (tagName != null) {
                         int tokOffset = tokenSequence.offset(),
