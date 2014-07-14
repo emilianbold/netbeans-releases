@@ -162,6 +162,7 @@ public class LatteCompletionHandler implements CodeCompletionHandler2 {
         END_MACROS.add(LatteElement.MacroFactory.createEnd("form")); //NOI18N
         END_MACROS.add(LatteElement.MacroFactory.createEnd("label")); //NOI18N
         END_MACROS.add(LatteElement.MacroFactory.createEnd("snippet")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("define")); //NOI18N
     }
 
     static final Set<LatteElement> HELPERS = new HashSet<>();
