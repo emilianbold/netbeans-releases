@@ -136,11 +136,11 @@ public final class KarmaServer implements PropertyChangeListener {
         starting = false;
         if (server != null) {
             started = true;
+            addCoverageListener();
+            addConfigFileListener();
         } else {
             KarmaErrorsDialog.getInstance().show(Bundle.KarmaServer_start_error());
         }
-        addCoverageListener();
-        addConfigFileListener();
         fireChange();
         return started;
     }
