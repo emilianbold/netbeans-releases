@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2014-07-14 12:10:00
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2014-07-14 12:20:46
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -211,47 +211,48 @@ public class Css3Parser extends DebugParser {
     // delegators
 
     public static final String[] ruleNames = new String[] {
-        "invalidRule", "mediaBodyItem", "syncTo_SEMI", "cp_mixin_call", 
-        "synpred9_Css3", "cp_math_expressions", "selector", "sass_control_expression", 
-        "webkitKeyframes", "pseudoPage", "sass_nested_properties", "ws", 
-        "cp_mixin_call_arg", "synpred18_Css3", "sass_function_name", "synpred24_Css3", 
-        "esPred", "cp_mixin_block", "namespaces", "mediaQueryOperator", 
-        "cp_expression_atom", "synpred12_Css3", "resourceIdentifier", "synpred4_Css3", 
-        "synpred25_Css3", "elementSubsequent", "cp_args_list", "synpred44_Css3", 
-        "expressionPredicate", "propertyValue", "syncToDeclarationsRule", 
-        "synpred32_Css3", "mediaQuery", "namespacePrefixName", "operator", 
-        "synpred2_Css3", "synpred17_Css3", "bodyItem", "cp_expression", 
-        "hexColor", "mediaBody", "cssClass", "mediaFeatureValue", "synpred41_Css3", 
-        "less_condition_operator", "sass_control", "cp_math_expression_atom", 
-        "styleSheet", "synpred11_Css3", "cp_arg", "function", "cp_variable_declaration", 
-        "less_fn_name", "synpred35_Css3", "cp_variable", "sass_function_return", 
-        "declaration", "rule", "less_selector_interpolation", "imports", 
-        "synpred42_Css3", "functionName", "cp_mixin_declaration", "sass_each", 
-        "sass_content", "synpred30_Css3", "synpred21_Css3", "sass_map_pair", 
-        "synpred16_Css3", "namespace", "sass_map_name", "sass_function_declaration", 
-        "synpred23_Css3", "synpred33_Css3", "charSetValue", "at_rule", "synpred8_Css3", 
-        "sass_selector_interpolation_expression", "synpred26_Css3", "sass_while", 
-        "cp_term_symbol", "cp_mixin_call_args", "cp_propertyValue", "synpred37_Css3", 
-        "margin_sym", "syncTo_RBRACE", "term", "synpred43_Css3", "sass_control_block", 
-        "mediaExpression", "synpred36_Css3", "moz_document_function", "syncToFollow", 
-        "fnAttribute", "less_function_in_condition", "synpred14_Css3", "synpred10_Css3", 
-        "synpred39_Css3", "elementName", "cp_math_expression", "sass_if", 
-        "moz_document", "selectorsGroup", "synpred6_Css3", "synpred1_Css3", 
-        "sass_else", "property", "slAttributeValue", "sass_extend", "synpred45_Css3", 
-        "cssId", "body", "fontFace", "less_condition", "slAttribute", "propertyDeclaration", 
-        "synpred27_Css3", "sass_map_pairs", "vendorAtRule", "synpred38_Css3", 
-        "less_mixin_guarded", "synpred19_Css3", "fnAttributes", "mediaType", 
-        "synpred34_Css3", "generic_at_rule", "synpred7_Css3", "sass_interpolation_expression_var", 
-        "declarations", "counterStyle", "combinator", "synpred3_Css3", "typeSelector", 
-        "synpred22_Css3", "atRuleId", "cp_expression_list", "synpred28_Css3", 
-        "charSet", "margin", "webkitKeyframeSelectors", "fnAttributeValue", 
-        "synpred13_Css3", "synpred40_Css3", "expression", "cp_expression_operator", 
-        "sass_declaration_interpolation_expression", "media", "page", "pseudo", 
-        "sass_debug", "synpred20_Css3", "simpleSelectorSequence", "webkitKeyframesBlock", 
-        "namespacePrefix", "importItem", "synpred15_Css3", "synpred31_Css3", 
-        "mediaQueryList", "unaryOperator", "slAttributeName", "cp_mixin_name", 
-        "mediaFeature", "prio", "sass_extend_only_selector", "sass_for", 
-        "synpred29_Css3", "sass_map", "synpred5_Css3", "fnAttributeName"
+        "invalidRule", "expressionPredicate", "less_selector_interpolation", 
+        "fnAttributeValue", "sass_interpolation_expression_var", "margin", 
+        "cp_mixin_name", "synpred28_Css3", "sass_map_name", "less_mixin_guarded", 
+        "synpred16_Css3", "synpred25_Css3", "mediaQuery", "sass_control_expression", 
+        "synpred21_Css3", "cp_expression_operator", "sass_declaration_interpolation_expression", 
+        "synpred36_Css3", "cp_expression_list", "slAttributeValue", "sass_function_declaration", 
+        "synpred45_Css3", "propertyDeclaration", "sass_nested_properties", 
+        "sass_else", "synpred22_Css3", "media", "body", "cp_mixin_call_arg", 
+        "cp_expression", "mediaExpression", "propertyValue", "synpred27_Css3", 
+        "fnAttributeName", "cp_mixin_declaration", "synpred37_Css3", "margin_sym", 
+        "cp_args_list", "synpred14_Css3", "resourceIdentifier", "sass_each", 
+        "cssId", "synpred5_Css3", "less_function_in_condition", "elementName", 
+        "synpred15_Css3", "function", "expression", "declarations", "synpred6_Css3", 
+        "pseudo", "sass_debug", "synpred34_Css3", "synpred26_Css3", "cp_mixin_call_args", 
+        "sass_map", "synpred29_Css3", "elementSubsequent", "mediaBody", 
+        "styleSheet", "charSet", "synpred8_Css3", "selectorsGroup", "sass_while", 
+        "mediaFeatureValue", "synpred19_Css3", "synpred40_Css3", "synpred41_Css3", 
+        "synpred13_Css3", "property", "cp_expression_atom", "moz_document", 
+        "importItem", "sass_for", "fnAttributes", "synpred20_Css3", "sass_map_pair", 
+        "cp_math_expression_atom", "sass_control", "sass_selector_interpolation_expression", 
+        "cp_mixin_block", "sass_extend", "slAttributeName", "fnAttribute", 
+        "cp_mixin_call", "namespacePrefixName", "webkitKeyframeSelectors", 
+        "syncToDeclarationsRule", "combinator", "cp_math_expression", "synpred12_Css3", 
+        "rule", "vendorAtRule", "synpred32_Css3", "fontFace", "namespaces", 
+        "bodyItem", "prio", "hexColor", "synpred1_Css3", "sass_map_pairs", 
+        "less_condition_operator", "synpred43_Css3", "synpred23_Css3", "mediaQueryList", 
+        "synpred4_Css3", "syncTo_RBRACE", "webkitKeyframes", "sass_each_variables", 
+        "sass_content", "synpred2_Css3", "synpred24_Css3", "less_fn_name", 
+        "less_condition", "esPred", "synpred10_Css3", "synpred42_Css3", 
+        "cp_variable", "namespace", "page", "namespacePrefix", "sass_if", 
+        "cp_propertyValue", "synpred17_Css3", "selector", "ws", "synpred3_Css3", 
+        "term", "simpleSelectorSequence", "mediaType", "operator", "cp_term_symbol", 
+        "synpred35_Css3", "imports", "typeSelector", "charSetValue", "synpred33_Css3", 
+        "syncToFollow", "synpred44_Css3", "sass_control_block", "synpred31_Css3", 
+        "synpred38_Css3", "mediaBodyItem", "synpred46_Css3", "mediaFeature", 
+        "webkitKeyframesBlock", "moz_document_function", "mediaQueryOperator", 
+        "synpred39_Css3", "counterStyle", "synpred7_Css3", "syncTo_SEMI", 
+        "cp_arg", "sass_extend_only_selector", "cp_variable_declaration", 
+        "functionName", "atRuleId", "declaration", "at_rule", "slAttribute", 
+        "synpred9_Css3", "pseudoPage", "generic_at_rule", "cp_math_expressions", 
+        "sass_function_return", "unaryOperator", "synpred11_Css3", "synpred30_Css3", 
+        "cssClass", "synpred18_Css3", "sass_function_name"
     };
     public static final boolean[] decisionCanBacktrack = new boolean[] {
         false, // invalid decision
@@ -299,7 +300,8 @@ public class Css3Parser extends DebugParser {
             false, false, false, false, false, false, false, false, false, 
             false, false, false, false, false, false, false, false, false, 
             false, false, false, false, false, false, false, false, false, 
-            false, false, false, false, false, false, false
+            false, false, false, false, false, false, false, false, false, 
+            false, false
     };
 
      
@@ -19726,7 +19728,7 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "sass_each"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1309:1: sass_each : SASS_EACH ws cp_variable ws {...}? IDENT ws cp_expression_list ( ws )? sass_control_block ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1309:1: sass_each : SASS_EACH ws sass_each_variables ws {...}? IDENT ws cp_expression_list ( ws )? sass_control_block ;
     public final void sass_each() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "sass_each");
         if ( getRuleLevel()==0 ) {dbg.commence();}
@@ -19734,10 +19736,10 @@ public class Css3Parser extends DebugParser {
         dbg.location(1309, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1310:5: ( SASS_EACH ws cp_variable ws {...}? IDENT ws cp_expression_list ( ws )? sass_control_block )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1310:5: ( SASS_EACH ws sass_each_variables ws {...}? IDENT ws cp_expression_list ( ws )? sass_control_block )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1311:5: SASS_EACH ws cp_variable ws {...}? IDENT ws cp_expression_list ( ws )? sass_control_block
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1311:5: SASS_EACH ws sass_each_variables ws {...}? IDENT ws cp_expression_list ( ws )? sass_control_block
             {
             dbg.location(1311,5);
             match(input,SASS_EACH,FOLLOW_SASS_EACH_in_sass_each8328); if (state.failed) return ;
@@ -19748,38 +19750,38 @@ public class Css3Parser extends DebugParser {
             state._fsp--;
             if (state.failed) return ;
             dbg.location(1311,18);
-            pushFollow(FOLLOW_cp_variable_in_sass_each8332);
-            cp_variable();
+            pushFollow(FOLLOW_sass_each_variables_in_sass_each8332);
+            sass_each_variables();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(1311,30);
+            dbg.location(1311,38);
             pushFollow(FOLLOW_ws_in_sass_each8334);
             ws();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(1311,33);
+            dbg.location(1311,41);
             if ( !(evalPredicate(tokenNameEquals("in"),"tokenNameEquals(\"in\")")) ) {
                 if (state.backtracking>0) {state.failed=true; return ;}
                 throw new FailedPredicateException(input, "sass_each", "tokenNameEquals(\"in\")");
             }
-            dbg.location(1311,58);
+            dbg.location(1311,66);
             match(input,IDENT,FOLLOW_IDENT_in_sass_each8338); if (state.failed) return ;
-            dbg.location(1311,71);
+            dbg.location(1311,79);
             pushFollow(FOLLOW_ws_in_sass_each8342);
             ws();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(1311,74);
+            dbg.location(1311,82);
             pushFollow(FOLLOW_cp_expression_list_in_sass_each8344);
             cp_expression_list();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(1311,93);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1311:93: ( ws )?
+            dbg.location(1311,101);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1311:101: ( ws )?
             int alt342=2;
             try { dbg.enterSubRule(342);
             try { dbg.enterDecision(342, decisionCanBacktrack[342]);
@@ -19795,9 +19797,9 @@ public class Css3Parser extends DebugParser {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1311:93: ws
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1311:101: ws
                     {
-                    dbg.location(1311,93);
+                    dbg.location(1311,101);
                     pushFollow(FOLLOW_ws_in_sass_each8346);
                     ws();
 
@@ -19810,7 +19812,7 @@ public class Css3Parser extends DebugParser {
             }
             } finally {dbg.exitSubRule(342);}
 
-            dbg.location(1311,97);
+            dbg.location(1311,105);
             pushFollow(FOLLOW_sass_control_block_in_sass_each8349);
             sass_control_block();
 
@@ -19840,72 +19842,133 @@ public class Css3Parser extends DebugParser {
     // $ANTLR end "sass_each"
 
 
-    // $ANTLR start "sass_while"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1314:1: sass_while : SASS_WHILE ws sass_control_expression ( ws )? sass_control_block ;
-    public final void sass_while() throws RecognitionException {
-        try { dbg.enterRule(getGrammarFileName(), "sass_while");
+    // $ANTLR start "sass_each_variables"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1314:1: sass_each_variables : cp_variable ( ( ( ws )? COMMA )=> ( ws )? COMMA ( ws )? cp_variable )* ;
+    public final void sass_each_variables() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "sass_each_variables");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
         dbg.location(1314, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1315:5: ( SASS_WHILE ws sass_control_expression ( ws )? sass_control_block )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1315:5: ( cp_variable ( ( ( ws )? COMMA )=> ( ws )? COMMA ( ws )? cp_variable )* )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:5: SASS_WHILE ws sass_control_expression ( ws )? sass_control_block
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:5: cp_variable ( ( ( ws )? COMMA )=> ( ws )? COMMA ( ws )? cp_variable )*
             {
             dbg.location(1316,5);
-            match(input,SASS_WHILE,FOLLOW_SASS_WHILE_in_sass_while8370); if (state.failed) return ;
-            dbg.location(1316,16);
-            pushFollow(FOLLOW_ws_in_sass_while8372);
-            ws();
+            pushFollow(FOLLOW_cp_variable_in_sass_each_variables8370);
+            cp_variable();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(1316,19);
-            pushFollow(FOLLOW_sass_control_expression_in_sass_while8374);
-            sass_control_expression();
+            dbg.location(1316,17);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:17: ( ( ( ws )? COMMA )=> ( ws )? COMMA ( ws )? cp_variable )*
+            try { dbg.enterSubRule(345);
 
-            state._fsp--;
-            if (state.failed) return ;
-            dbg.location(1316,43);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:43: ( ws )?
-            int alt343=2;
-            try { dbg.enterSubRule(343);
-            try { dbg.enterDecision(343, decisionCanBacktrack[343]);
+            loop345:
+            do {
+                int alt345=2;
+                try { dbg.enterDecision(345, decisionCanBacktrack[345]);
 
-            int LA343_0 = input.LA(1);
+                try {
+                    isCyclicDecision = true;
+                    alt345 = dfa345.predict(input);
+                }
+                catch (NoViableAltException nvae) {
+                    dbg.recognitionException(nvae);
+                    throw nvae;
+                }
+                } finally {dbg.exitDecision(345);}
 
-            if ( ((LA343_0>=WS && LA343_0<=COMMENT)) ) {
-                alt343=1;
-            }
-            } finally {dbg.exitDecision(343);}
+                switch (alt345) {
+            	case 1 :
+            	    dbg.enterAlt(1);
 
-            switch (alt343) {
-                case 1 :
-                    dbg.enterAlt(1);
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:19: ( ( ws )? COMMA )=> ( ws )? COMMA ( ws )? cp_variable
+            	    {
+            	    dbg.location(1316,33);
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:33: ( ws )?
+            	    int alt343=2;
+            	    try { dbg.enterSubRule(343);
+            	    try { dbg.enterDecision(343, decisionCanBacktrack[343]);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:43: ws
-                    {
-                    dbg.location(1316,43);
-                    pushFollow(FOLLOW_ws_in_sass_while8376);
-                    ws();
+            	    int LA343_0 = input.LA(1);
 
-                    state._fsp--;
-                    if (state.failed) return ;
+            	    if ( ((LA343_0>=WS && LA343_0<=COMMENT)) ) {
+            	        alt343=1;
+            	    }
+            	    } finally {dbg.exitDecision(343);}
 
-                    }
-                    break;
+            	    switch (alt343) {
+            	        case 1 :
+            	            dbg.enterAlt(1);
 
-            }
-            } finally {dbg.exitSubRule(343);}
+            	            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:33: ws
+            	            {
+            	            dbg.location(1316,33);
+            	            pushFollow(FOLLOW_ws_in_sass_each_variables8382);
+            	            ws();
 
-            dbg.location(1316,47);
-            pushFollow(FOLLOW_sass_control_block_in_sass_while8379);
-            sass_control_block();
+            	            state._fsp--;
+            	            if (state.failed) return ;
 
-            state._fsp--;
-            if (state.failed) return ;
+            	            }
+            	            break;
+
+            	    }
+            	    } finally {dbg.exitSubRule(343);}
+
+            	    dbg.location(1316,37);
+            	    match(input,COMMA,FOLLOW_COMMA_in_sass_each_variables8385); if (state.failed) return ;
+            	    dbg.location(1316,43);
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:43: ( ws )?
+            	    int alt344=2;
+            	    try { dbg.enterSubRule(344);
+            	    try { dbg.enterDecision(344, decisionCanBacktrack[344]);
+
+            	    int LA344_0 = input.LA(1);
+
+            	    if ( ((LA344_0>=WS && LA344_0<=COMMENT)) ) {
+            	        alt344=1;
+            	    }
+            	    } finally {dbg.exitDecision(344);}
+
+            	    switch (alt344) {
+            	        case 1 :
+            	            dbg.enterAlt(1);
+
+            	            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:43: ws
+            	            {
+            	            dbg.location(1316,43);
+            	            pushFollow(FOLLOW_ws_in_sass_each_variables8387);
+            	            ws();
+
+            	            state._fsp--;
+            	            if (state.failed) return ;
+
+            	            }
+            	            break;
+
+            	    }
+            	    } finally {dbg.exitSubRule(344);}
+
+            	    dbg.location(1316,47);
+            	    pushFollow(FOLLOW_cp_variable_in_sass_each_variables8390);
+            	    cp_variable();
+
+            	    state._fsp--;
+            	    if (state.failed) return ;
+
+            	    }
+            	    break;
+
+            	default :
+            	    break loop345;
+                }
+            } while (true);
+            } finally {dbg.exitSubRule(345);}
+
 
             }
 
@@ -19920,152 +19983,46 @@ public class Css3Parser extends DebugParser {
 
         }
         finally {
-            dbg.exitRule(getGrammarFileName(), "sass_while");
+            dbg.exitRule(getGrammarFileName(), "sass_each_variables");
             decRuleLevel();
             if ( getRuleLevel()==0 ) {dbg.terminate();}
         }
 
         return ;
     }
-    // $ANTLR end "sass_while"
+    // $ANTLR end "sass_each_variables"
 
 
-    // $ANTLR start "sass_control_block"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1319:1: sass_control_block : LBRACE ( ws )? ( declarations )? RBRACE ;
-    public final void sass_control_block() throws RecognitionException {
-        try { dbg.enterRule(getGrammarFileName(), "sass_control_block");
+    // $ANTLR start "sass_while"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1319:1: sass_while : SASS_WHILE ws sass_control_expression ( ws )? sass_control_block ;
+    public final void sass_while() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "sass_while");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
         dbg.location(1319, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1320:5: ( LBRACE ( ws )? ( declarations )? RBRACE )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1320:5: ( SASS_WHILE ws sass_control_expression ( ws )? sass_control_block )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1321:5: LBRACE ( ws )? ( declarations )? RBRACE
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1321:5: SASS_WHILE ws sass_control_expression ( ws )? sass_control_block
             {
             dbg.location(1321,5);
-            match(input,LBRACE,FOLLOW_LBRACE_in_sass_control_block8400); if (state.failed) return ;
-            dbg.location(1321,12);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1321:12: ( ws )?
-            int alt344=2;
-            try { dbg.enterSubRule(344);
-            try { dbg.enterDecision(344, decisionCanBacktrack[344]);
-
-            int LA344_0 = input.LA(1);
-
-            if ( ((LA344_0>=WS && LA344_0<=COMMENT)) ) {
-                alt344=1;
-            }
-            } finally {dbg.exitDecision(344);}
-
-            switch (alt344) {
-                case 1 :
-                    dbg.enterAlt(1);
-
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1321:12: ws
-                    {
-                    dbg.location(1321,12);
-                    pushFollow(FOLLOW_ws_in_sass_control_block8402);
-                    ws();
-
-                    state._fsp--;
-                    if (state.failed) return ;
-
-                    }
-                    break;
-
-            }
-            } finally {dbg.exitSubRule(344);}
-
+            match(input,SASS_WHILE,FOLLOW_SASS_WHILE_in_sass_while8415); if (state.failed) return ;
             dbg.location(1321,16);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1321:16: ( declarations )?
-            int alt345=2;
-            try { dbg.enterSubRule(345);
-            try { dbg.enterDecision(345, decisionCanBacktrack[345]);
-
-            int LA345_0 = input.LA(1);
-
-            if ( ((LA345_0>=NAMESPACE_SYM && LA345_0<=IDENT)||(LA345_0>=CHARSET_SYM && LA345_0<=COMMA)||LA345_0==MEDIA_SYM||(LA345_0>=GEN && LA345_0<=MOZ_DOCUMENT_SYM)||LA345_0==WEBKIT_KEYFRAMES_SYM||(LA345_0>=PAGE_SYM && LA345_0<=RIGHTBOTTOM_SYM)||(LA345_0>=MINUS && LA345_0<=PIPE)||LA345_0==LESS_AND||(LA345_0>=RBRACKET && LA345_0<=SASS_VAR)||(LA345_0>=SASS_CONTENT && LA345_0<=SASS_WHILE)||LA345_0==AT_SIGN) ) {
-                alt345=1;
-            }
-            } finally {dbg.exitDecision(345);}
-
-            switch (alt345) {
-                case 1 :
-                    dbg.enterAlt(1);
-
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1321:16: declarations
-                    {
-                    dbg.location(1321,16);
-                    pushFollow(FOLLOW_declarations_in_sass_control_block8405);
-                    declarations();
-
-                    state._fsp--;
-                    if (state.failed) return ;
-
-                    }
-                    break;
-
-            }
-            } finally {dbg.exitSubRule(345);}
-
-            dbg.location(1321,30);
-            match(input,RBRACE,FOLLOW_RBRACE_in_sass_control_block8408); if (state.failed) return ;
-
-            }
-
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-        }
-        finally {
-        }
-        dbg.location(1322, 5);
-
-        }
-        finally {
-            dbg.exitRule(getGrammarFileName(), "sass_control_block");
-            decRuleLevel();
-            if ( getRuleLevel()==0 ) {dbg.terminate();}
-        }
-
-        return ;
-    }
-    // $ANTLR end "sass_control_block"
-
-
-    // $ANTLR start "sass_function_declaration"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1324:1: sass_function_declaration : SASS_FUNCTION ws sass_function_name ( ws )? LPAREN ( cp_args_list )? RPAREN ( ws )? LBRACE ( ws )? ( declarations )? RBRACE ;
-    public final void sass_function_declaration() throws RecognitionException {
-        try { dbg.enterRule(getGrammarFileName(), "sass_function_declaration");
-        if ( getRuleLevel()==0 ) {dbg.commence();}
-        incRuleLevel();
-        dbg.location(1324, 1);
-
-        try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1325:5: ( SASS_FUNCTION ws sass_function_name ( ws )? LPAREN ( cp_args_list )? RPAREN ( ws )? LBRACE ( ws )? ( declarations )? RBRACE )
-            dbg.enterAlt(1);
-
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1330:5: SASS_FUNCTION ws sass_function_name ( ws )? LPAREN ( cp_args_list )? RPAREN ( ws )? LBRACE ( ws )? ( declarations )? RBRACE
-            {
-            dbg.location(1330,5);
-            match(input,SASS_FUNCTION,FOLLOW_SASS_FUNCTION_in_sass_function_declaration8450); if (state.failed) return ;
-            dbg.location(1330,19);
-            pushFollow(FOLLOW_ws_in_sass_function_declaration8452);
+            pushFollow(FOLLOW_ws_in_sass_while8417);
             ws();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(1330,22);
-            pushFollow(FOLLOW_sass_function_name_in_sass_function_declaration8454);
-            sass_function_name();
+            dbg.location(1321,19);
+            pushFollow(FOLLOW_sass_control_expression_in_sass_while8419);
+            sass_control_expression();
 
             state._fsp--;
             if (state.failed) return ;
-            dbg.location(1330,41);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1330:41: ( ws )?
+            dbg.location(1321,43);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1321:43: ( ws )?
             int alt346=2;
             try { dbg.enterSubRule(346);
             try { dbg.enterDecision(346, decisionCanBacktrack[346]);
@@ -20081,10 +20038,10 @@ public class Css3Parser extends DebugParser {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1330:41: ws
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1321:43: ws
                     {
-                    dbg.location(1330,41);
-                    pushFollow(FOLLOW_ws_in_sass_function_declaration8456);
+                    dbg.location(1321,43);
+                    pushFollow(FOLLOW_ws_in_sass_while8421);
                     ws();
 
                     state._fsp--;
@@ -20096,17 +20053,61 @@ public class Css3Parser extends DebugParser {
             }
             } finally {dbg.exitSubRule(346);}
 
-            dbg.location(1330,45);
-            match(input,LPAREN,FOLLOW_LPAREN_in_sass_function_declaration8459); if (state.failed) return ;
-            dbg.location(1330,52);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1330:52: ( cp_args_list )?
+            dbg.location(1321,47);
+            pushFollow(FOLLOW_sass_control_block_in_sass_while8424);
+            sass_control_block();
+
+            state._fsp--;
+            if (state.failed) return ;
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        dbg.location(1322, 5);
+
+        }
+        finally {
+            dbg.exitRule(getGrammarFileName(), "sass_while");
+            decRuleLevel();
+            if ( getRuleLevel()==0 ) {dbg.terminate();}
+        }
+
+        return ;
+    }
+    // $ANTLR end "sass_while"
+
+
+    // $ANTLR start "sass_control_block"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1324:1: sass_control_block : LBRACE ( ws )? ( declarations )? RBRACE ;
+    public final void sass_control_block() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "sass_control_block");
+        if ( getRuleLevel()==0 ) {dbg.commence();}
+        incRuleLevel();
+        dbg.location(1324, 1);
+
+        try {
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1325:5: ( LBRACE ( ws )? ( declarations )? RBRACE )
+            dbg.enterAlt(1);
+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1326:5: LBRACE ( ws )? ( declarations )? RBRACE
+            {
+            dbg.location(1326,5);
+            match(input,LBRACE,FOLLOW_LBRACE_in_sass_control_block8445); if (state.failed) return ;
+            dbg.location(1326,12);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1326:12: ( ws )?
             int alt347=2;
             try { dbg.enterSubRule(347);
             try { dbg.enterDecision(347, decisionCanBacktrack[347]);
 
             int LA347_0 = input.LA(1);
 
-            if ( (LA347_0==NAMESPACE_SYM||(LA347_0>=CHARSET_SYM && LA347_0<=IMPORT_SYM)||LA347_0==MEDIA_SYM||(LA347_0>=AT_IDENT && LA347_0<=MOZ_DOCUMENT_SYM)||LA347_0==WEBKIT_KEYFRAMES_SYM||(LA347_0>=PAGE_SYM && LA347_0<=RIGHTBOTTOM_SYM)||LA347_0==SASS_AT_ROOT||LA347_0==SASS_VAR||(LA347_0>=SASS_CONTENT && LA347_0<=SASS_WHILE)||(LA347_0>=CP_DOTS && LA347_0<=LESS_REST)) ) {
+            if ( ((LA347_0>=WS && LA347_0<=COMMENT)) ) {
                 alt347=1;
             }
             } finally {dbg.exitDecision(347);}
@@ -20115,11 +20116,11 @@ public class Css3Parser extends DebugParser {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1330:52: cp_args_list
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1326:12: ws
                     {
-                    dbg.location(1330,52);
-                    pushFollow(FOLLOW_cp_args_list_in_sass_function_declaration8461);
-                    cp_args_list();
+                    dbg.location(1326,12);
+                    pushFollow(FOLLOW_ws_in_sass_control_block8447);
+                    ws();
 
                     state._fsp--;
                     if (state.failed) return ;
@@ -20130,17 +20131,15 @@ public class Css3Parser extends DebugParser {
             }
             } finally {dbg.exitSubRule(347);}
 
-            dbg.location(1330,66);
-            match(input,RPAREN,FOLLOW_RPAREN_in_sass_function_declaration8464); if (state.failed) return ;
-            dbg.location(1330,73);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1330:73: ( ws )?
+            dbg.location(1326,16);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1326:16: ( declarations )?
             int alt348=2;
             try { dbg.enterSubRule(348);
             try { dbg.enterDecision(348, decisionCanBacktrack[348]);
 
             int LA348_0 = input.LA(1);
 
-            if ( ((LA348_0>=WS && LA348_0<=COMMENT)) ) {
+            if ( ((LA348_0>=NAMESPACE_SYM && LA348_0<=IDENT)||(LA348_0>=CHARSET_SYM && LA348_0<=COMMA)||LA348_0==MEDIA_SYM||(LA348_0>=GEN && LA348_0<=MOZ_DOCUMENT_SYM)||LA348_0==WEBKIT_KEYFRAMES_SYM||(LA348_0>=PAGE_SYM && LA348_0<=RIGHTBOTTOM_SYM)||(LA348_0>=MINUS && LA348_0<=PIPE)||LA348_0==LESS_AND||(LA348_0>=RBRACKET && LA348_0<=SASS_VAR)||(LA348_0>=SASS_CONTENT && LA348_0<=SASS_WHILE)||LA348_0==AT_SIGN) ) {
                 alt348=1;
             }
             } finally {dbg.exitDecision(348);}
@@ -20149,11 +20148,11 @@ public class Css3Parser extends DebugParser {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1330:73: ws
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1326:16: declarations
                     {
-                    dbg.location(1330,73);
-                    pushFollow(FOLLOW_ws_in_sass_function_declaration8466);
-                    ws();
+                    dbg.location(1326,16);
+                    pushFollow(FOLLOW_declarations_in_sass_control_block8450);
+                    declarations();
 
                     state._fsp--;
                     if (state.failed) return ;
@@ -20164,10 +20163,62 @@ public class Css3Parser extends DebugParser {
             }
             } finally {dbg.exitSubRule(348);}
 
-            dbg.location(1330,77);
-            match(input,LBRACE,FOLLOW_LBRACE_in_sass_function_declaration8469); if (state.failed) return ;
-            dbg.location(1330,84);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1330:84: ( ws )?
+            dbg.location(1326,30);
+            match(input,RBRACE,FOLLOW_RBRACE_in_sass_control_block8453); if (state.failed) return ;
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        dbg.location(1327, 5);
+
+        }
+        finally {
+            dbg.exitRule(getGrammarFileName(), "sass_control_block");
+            decRuleLevel();
+            if ( getRuleLevel()==0 ) {dbg.terminate();}
+        }
+
+        return ;
+    }
+    // $ANTLR end "sass_control_block"
+
+
+    // $ANTLR start "sass_function_declaration"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1329:1: sass_function_declaration : SASS_FUNCTION ws sass_function_name ( ws )? LPAREN ( cp_args_list )? RPAREN ( ws )? LBRACE ( ws )? ( declarations )? RBRACE ;
+    public final void sass_function_declaration() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "sass_function_declaration");
+        if ( getRuleLevel()==0 ) {dbg.commence();}
+        incRuleLevel();
+        dbg.location(1329, 1);
+
+        try {
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1330:5: ( SASS_FUNCTION ws sass_function_name ( ws )? LPAREN ( cp_args_list )? RPAREN ( ws )? LBRACE ( ws )? ( declarations )? RBRACE )
+            dbg.enterAlt(1);
+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1335:5: SASS_FUNCTION ws sass_function_name ( ws )? LPAREN ( cp_args_list )? RPAREN ( ws )? LBRACE ( ws )? ( declarations )? RBRACE
+            {
+            dbg.location(1335,5);
+            match(input,SASS_FUNCTION,FOLLOW_SASS_FUNCTION_in_sass_function_declaration8495); if (state.failed) return ;
+            dbg.location(1335,19);
+            pushFollow(FOLLOW_ws_in_sass_function_declaration8497);
+            ws();
+
+            state._fsp--;
+            if (state.failed) return ;
+            dbg.location(1335,22);
+            pushFollow(FOLLOW_sass_function_name_in_sass_function_declaration8499);
+            sass_function_name();
+
+            state._fsp--;
+            if (state.failed) return ;
+            dbg.location(1335,41);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1335:41: ( ws )?
             int alt349=2;
             try { dbg.enterSubRule(349);
             try { dbg.enterDecision(349, decisionCanBacktrack[349]);
@@ -20183,10 +20234,10 @@ public class Css3Parser extends DebugParser {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1330:84: ws
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1335:41: ws
                     {
-                    dbg.location(1330,84);
-                    pushFollow(FOLLOW_ws_in_sass_function_declaration8471);
+                    dbg.location(1335,41);
+                    pushFollow(FOLLOW_ws_in_sass_function_declaration8501);
                     ws();
 
                     state._fsp--;
@@ -20198,15 +20249,17 @@ public class Css3Parser extends DebugParser {
             }
             } finally {dbg.exitSubRule(349);}
 
-            dbg.location(1330,88);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1330:88: ( declarations )?
+            dbg.location(1335,45);
+            match(input,LPAREN,FOLLOW_LPAREN_in_sass_function_declaration8504); if (state.failed) return ;
+            dbg.location(1335,52);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1335:52: ( cp_args_list )?
             int alt350=2;
             try { dbg.enterSubRule(350);
             try { dbg.enterDecision(350, decisionCanBacktrack[350]);
 
             int LA350_0 = input.LA(1);
 
-            if ( ((LA350_0>=NAMESPACE_SYM && LA350_0<=IDENT)||(LA350_0>=CHARSET_SYM && LA350_0<=COMMA)||LA350_0==MEDIA_SYM||(LA350_0>=GEN && LA350_0<=MOZ_DOCUMENT_SYM)||LA350_0==WEBKIT_KEYFRAMES_SYM||(LA350_0>=PAGE_SYM && LA350_0<=RIGHTBOTTOM_SYM)||(LA350_0>=MINUS && LA350_0<=PIPE)||LA350_0==LESS_AND||(LA350_0>=RBRACKET && LA350_0<=SASS_VAR)||(LA350_0>=SASS_CONTENT && LA350_0<=SASS_WHILE)||LA350_0==AT_SIGN) ) {
+            if ( (LA350_0==NAMESPACE_SYM||(LA350_0>=CHARSET_SYM && LA350_0<=IMPORT_SYM)||LA350_0==MEDIA_SYM||(LA350_0>=AT_IDENT && LA350_0<=MOZ_DOCUMENT_SYM)||LA350_0==WEBKIT_KEYFRAMES_SYM||(LA350_0>=PAGE_SYM && LA350_0<=RIGHTBOTTOM_SYM)||LA350_0==SASS_AT_ROOT||LA350_0==SASS_VAR||(LA350_0>=SASS_CONTENT && LA350_0<=SASS_WHILE)||(LA350_0>=CP_DOTS && LA350_0<=LESS_REST)) ) {
                 alt350=1;
             }
             } finally {dbg.exitDecision(350);}
@@ -20215,11 +20268,11 @@ public class Css3Parser extends DebugParser {
                 case 1 :
                     dbg.enterAlt(1);
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1330:88: declarations
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1335:52: cp_args_list
                     {
-                    dbg.location(1330,88);
-                    pushFollow(FOLLOW_declarations_in_sass_function_declaration8474);
-                    declarations();
+                    dbg.location(1335,52);
+                    pushFollow(FOLLOW_cp_args_list_in_sass_function_declaration8506);
+                    cp_args_list();
 
                     state._fsp--;
                     if (state.failed) return ;
@@ -20230,48 +20283,108 @@ public class Css3Parser extends DebugParser {
             }
             } finally {dbg.exitSubRule(350);}
 
-            dbg.location(1330,102);
-            match(input,RBRACE,FOLLOW_RBRACE_in_sass_function_declaration8477); if (state.failed) return ;
+            dbg.location(1335,66);
+            match(input,RPAREN,FOLLOW_RPAREN_in_sass_function_declaration8509); if (state.failed) return ;
+            dbg.location(1335,73);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1335:73: ( ws )?
+            int alt351=2;
+            try { dbg.enterSubRule(351);
+            try { dbg.enterDecision(351, decisionCanBacktrack[351]);
+
+            int LA351_0 = input.LA(1);
+
+            if ( ((LA351_0>=WS && LA351_0<=COMMENT)) ) {
+                alt351=1;
+            }
+            } finally {dbg.exitDecision(351);}
+
+            switch (alt351) {
+                case 1 :
+                    dbg.enterAlt(1);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1335:73: ws
+                    {
+                    dbg.location(1335,73);
+                    pushFollow(FOLLOW_ws_in_sass_function_declaration8511);
+                    ws();
+
+                    state._fsp--;
+                    if (state.failed) return ;
+
+                    }
+                    break;
 
             }
+            } finally {dbg.exitSubRule(351);}
 
-        }
-        catch (RecognitionException re) {
-            reportError(re);
-            recover(input,re);
-        }
-        finally {
-        }
-        dbg.location(1331, 5);
+            dbg.location(1335,77);
+            match(input,LBRACE,FOLLOW_LBRACE_in_sass_function_declaration8514); if (state.failed) return ;
+            dbg.location(1335,84);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1335:84: ( ws )?
+            int alt352=2;
+            try { dbg.enterSubRule(352);
+            try { dbg.enterDecision(352, decisionCanBacktrack[352]);
 
-        }
-        finally {
-            dbg.exitRule(getGrammarFileName(), "sass_function_declaration");
-            decRuleLevel();
-            if ( getRuleLevel()==0 ) {dbg.terminate();}
-        }
+            int LA352_0 = input.LA(1);
 
-        return ;
-    }
-    // $ANTLR end "sass_function_declaration"
+            if ( ((LA352_0>=WS && LA352_0<=COMMENT)) ) {
+                alt352=1;
+            }
+            } finally {dbg.exitDecision(352);}
 
+            switch (alt352) {
+                case 1 :
+                    dbg.enterAlt(1);
 
-    // $ANTLR start "sass_function_name"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1333:1: sass_function_name : IDENT ;
-    public final void sass_function_name() throws RecognitionException {
-        try { dbg.enterRule(getGrammarFileName(), "sass_function_name");
-        if ( getRuleLevel()==0 ) {dbg.commence();}
-        incRuleLevel();
-        dbg.location(1333, 1);
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1335:84: ws
+                    {
+                    dbg.location(1335,84);
+                    pushFollow(FOLLOW_ws_in_sass_function_declaration8516);
+                    ws();
 
-        try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1334:5: ( IDENT )
-            dbg.enterAlt(1);
+                    state._fsp--;
+                    if (state.failed) return ;
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1335:5: IDENT
-            {
-            dbg.location(1335,5);
-            match(input,IDENT,FOLLOW_IDENT_in_sass_function_name8498); if (state.failed) return ;
+                    }
+                    break;
+
+            }
+            } finally {dbg.exitSubRule(352);}
+
+            dbg.location(1335,88);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1335:88: ( declarations )?
+            int alt353=2;
+            try { dbg.enterSubRule(353);
+            try { dbg.enterDecision(353, decisionCanBacktrack[353]);
+
+            int LA353_0 = input.LA(1);
+
+            if ( ((LA353_0>=NAMESPACE_SYM && LA353_0<=IDENT)||(LA353_0>=CHARSET_SYM && LA353_0<=COMMA)||LA353_0==MEDIA_SYM||(LA353_0>=GEN && LA353_0<=MOZ_DOCUMENT_SYM)||LA353_0==WEBKIT_KEYFRAMES_SYM||(LA353_0>=PAGE_SYM && LA353_0<=RIGHTBOTTOM_SYM)||(LA353_0>=MINUS && LA353_0<=PIPE)||LA353_0==LESS_AND||(LA353_0>=RBRACKET && LA353_0<=SASS_VAR)||(LA353_0>=SASS_CONTENT && LA353_0<=SASS_WHILE)||LA353_0==AT_SIGN) ) {
+                alt353=1;
+            }
+            } finally {dbg.exitDecision(353);}
+
+            switch (alt353) {
+                case 1 :
+                    dbg.enterAlt(1);
+
+                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1335:88: declarations
+                    {
+                    dbg.location(1335,88);
+                    pushFollow(FOLLOW_declarations_in_sass_function_declaration8519);
+                    declarations();
+
+                    state._fsp--;
+                    if (state.failed) return ;
+
+                    }
+                    break;
+
+            }
+            } finally {dbg.exitSubRule(353);}
+
+            dbg.location(1335,102);
+            match(input,RBRACE,FOLLOW_RBRACE_in_sass_function_declaration8522); if (state.failed) return ;
 
             }
 
@@ -20286,44 +20399,32 @@ public class Css3Parser extends DebugParser {
 
         }
         finally {
-            dbg.exitRule(getGrammarFileName(), "sass_function_name");
+            dbg.exitRule(getGrammarFileName(), "sass_function_declaration");
             decRuleLevel();
             if ( getRuleLevel()==0 ) {dbg.terminate();}
         }
 
         return ;
     }
-    // $ANTLR end "sass_function_name"
+    // $ANTLR end "sass_function_declaration"
 
 
-    // $ANTLR start "sass_function_return"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1338:1: sass_function_return : SASS_RETURN ws cp_expression ;
-    public final void sass_function_return() throws RecognitionException {
-        try { dbg.enterRule(getGrammarFileName(), "sass_function_return");
+    // $ANTLR start "sass_function_name"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1338:1: sass_function_name : IDENT ;
+    public final void sass_function_name() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "sass_function_name");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
         dbg.location(1338, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1339:5: ( SASS_RETURN ws cp_expression )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1339:5: ( IDENT )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1340:5: SASS_RETURN ws cp_expression
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1340:5: IDENT
             {
             dbg.location(1340,5);
-            match(input,SASS_RETURN,FOLLOW_SASS_RETURN_in_sass_function_return8519); if (state.failed) return ;
-            dbg.location(1340,17);
-            pushFollow(FOLLOW_ws_in_sass_function_return8521);
-            ws();
-
-            state._fsp--;
-            if (state.failed) return ;
-            dbg.location(1340,20);
-            pushFollow(FOLLOW_cp_expression_in_sass_function_return8523);
-            cp_expression();
-
-            state._fsp--;
-            if (state.failed) return ;
+            match(input,IDENT,FOLLOW_IDENT_in_sass_function_name8543); if (state.failed) return ;
 
             }
 
@@ -20338,32 +20439,44 @@ public class Css3Parser extends DebugParser {
 
         }
         finally {
-            dbg.exitRule(getGrammarFileName(), "sass_function_return");
+            dbg.exitRule(getGrammarFileName(), "sass_function_name");
             decRuleLevel();
             if ( getRuleLevel()==0 ) {dbg.terminate();}
         }
 
         return ;
     }
-    // $ANTLR end "sass_function_return"
+    // $ANTLR end "sass_function_name"
 
 
-    // $ANTLR start "sass_content"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1343:1: sass_content : SASS_CONTENT ;
-    public final void sass_content() throws RecognitionException {
-        try { dbg.enterRule(getGrammarFileName(), "sass_content");
+    // $ANTLR start "sass_function_return"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1343:1: sass_function_return : SASS_RETURN ws cp_expression ;
+    public final void sass_function_return() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "sass_function_return");
         if ( getRuleLevel()==0 ) {dbg.commence();}
         incRuleLevel();
         dbg.location(1343, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1344:5: ( SASS_CONTENT )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1344:5: ( SASS_RETURN ws cp_expression )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1345:5: SASS_CONTENT
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1345:5: SASS_RETURN ws cp_expression
             {
             dbg.location(1345,5);
-            match(input,SASS_CONTENT,FOLLOW_SASS_CONTENT_in_sass_content8544); if (state.failed) return ;
+            match(input,SASS_RETURN,FOLLOW_SASS_RETURN_in_sass_function_return8564); if (state.failed) return ;
+            dbg.location(1345,17);
+            pushFollow(FOLLOW_ws_in_sass_function_return8566);
+            ws();
+
+            state._fsp--;
+            if (state.failed) return ;
+            dbg.location(1345,20);
+            pushFollow(FOLLOW_cp_expression_in_sass_function_return8568);
+            cp_expression();
+
+            state._fsp--;
+            if (state.failed) return ;
 
             }
 
@@ -20375,6 +20488,46 @@ public class Css3Parser extends DebugParser {
         finally {
         }
         dbg.location(1346, 5);
+
+        }
+        finally {
+            dbg.exitRule(getGrammarFileName(), "sass_function_return");
+            decRuleLevel();
+            if ( getRuleLevel()==0 ) {dbg.terminate();}
+        }
+
+        return ;
+    }
+    // $ANTLR end "sass_function_return"
+
+
+    // $ANTLR start "sass_content"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1348:1: sass_content : SASS_CONTENT ;
+    public final void sass_content() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "sass_content");
+        if ( getRuleLevel()==0 ) {dbg.commence();}
+        incRuleLevel();
+        dbg.location(1348, 1);
+
+        try {
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1349:5: ( SASS_CONTENT )
+            dbg.enterAlt(1);
+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1350:5: SASS_CONTENT
+            {
+            dbg.location(1350,5);
+            match(input,SASS_CONTENT,FOLLOW_SASS_CONTENT_in_sass_content8589); if (state.failed) return ;
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        dbg.location(1351, 5);
 
         }
         finally {
@@ -20396,18 +20549,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(363,45);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:363:45: ( ws )?
-        int alt351=2;
-        try { dbg.enterSubRule(351);
-        try { dbg.enterDecision(351, decisionCanBacktrack[351]);
+        int alt354=2;
+        try { dbg.enterSubRule(354);
+        try { dbg.enterDecision(354, decisionCanBacktrack[354]);
 
-        int LA351_0 = input.LA(1);
+        int LA354_0 = input.LA(1);
 
-        if ( ((LA351_0>=WS && LA351_0<=COMMENT)) ) {
-            alt351=1;
+        if ( ((LA354_0>=WS && LA354_0<=COMMENT)) ) {
+            alt354=1;
         }
-        } finally {dbg.exitDecision(351);}
+        } finally {dbg.exitDecision(354);}
 
-        switch (alt351) {
+        switch (alt354) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -20424,7 +20577,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(351);}
+        } finally {dbg.exitSubRule(354);}
 
         dbg.location(363,49);
         pushFollow(FOLLOW_mediaQueryList_in_synpred1_Css3359);
@@ -20446,18 +20599,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(366,99);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:366:99: ( ws )?
-        int alt352=2;
-        try { dbg.enterSubRule(352);
-        try { dbg.enterDecision(352, decisionCanBacktrack[352]);
+        int alt355=2;
+        try { dbg.enterSubRule(355);
+        try { dbg.enterDecision(355, decisionCanBacktrack[355]);
 
-        int LA352_0 = input.LA(1);
+        int LA355_0 = input.LA(1);
 
-        if ( ((LA352_0>=WS && LA352_0<=COMMENT)) ) {
-            alt352=1;
+        if ( ((LA355_0>=WS && LA355_0<=COMMENT)) ) {
+            alt355=1;
         }
-        } finally {dbg.exitDecision(352);}
+        } finally {dbg.exitDecision(355);}
 
-        switch (alt352) {
+        switch (alt355) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -20474,7 +20627,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(352);}
+        } finally {dbg.exitSubRule(355);}
 
         dbg.location(366,103);
         pushFollow(FOLLOW_mediaQueryList_in_synpred2_Css3423);
@@ -20496,18 +20649,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(368,101);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:368:101: ( ws )?
-        int alt353=2;
-        try { dbg.enterSubRule(353);
-        try { dbg.enterDecision(353, decisionCanBacktrack[353]);
+        int alt356=2;
+        try { dbg.enterSubRule(356);
+        try { dbg.enterDecision(356, decisionCanBacktrack[356]);
 
-        int LA353_0 = input.LA(1);
+        int LA356_0 = input.LA(1);
 
-        if ( ((LA353_0>=WS && LA353_0<=COMMENT)) ) {
-            alt353=1;
+        if ( ((LA356_0>=WS && LA356_0<=COMMENT)) ) {
+            alt356=1;
         }
-        } finally {dbg.exitDecision(353);}
+        } finally {dbg.exitDecision(356);}
 
-        switch (alt353) {
+        switch (alt356) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -20524,7 +20677,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(353);}
+        } finally {dbg.exitSubRule(356);}
 
         dbg.location(368,105);
         pushFollow(FOLLOW_mediaQueryList_in_synpred3_Css3477);
@@ -20546,18 +20699,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(383,28);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:383:28: ( ws )?
-        int alt354=2;
-        try { dbg.enterSubRule(354);
-        try { dbg.enterDecision(354, decisionCanBacktrack[354]);
+        int alt357=2;
+        try { dbg.enterSubRule(357);
+        try { dbg.enterDecision(357, decisionCanBacktrack[357]);
 
-        int LA354_0 = input.LA(1);
+        int LA357_0 = input.LA(1);
 
-        if ( ((LA354_0>=WS && LA354_0<=COMMENT)) ) {
-            alt354=1;
+        if ( ((LA357_0>=WS && LA357_0<=COMMENT)) ) {
+            alt357=1;
         }
-        } finally {dbg.exitDecision(354);}
+        } finally {dbg.exitDecision(357);}
 
-        switch (alt354) {
+        switch (alt357) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -20574,7 +20727,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(354);}
+        } finally {dbg.exitSubRule(357);}
 
         dbg.location(383,32);
         match(input,SEMI,FOLLOW_SEMI_in_synpred4_Css3599); if (state.failed) return ;
@@ -20586,28 +20739,28 @@ public class Css3Parser extends DebugParser {
     // $ANTLR start synpred5_Css3
     public final void synpred5_Css3_fragment() throws RecognitionException {   
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:391:5: ( SASS_MIXIN | ( DOT IDENT ( ws )? LPAREN (~ RPAREN )* RPAREN (~ ( LBRACE | SEMI ) )* LBRACE ) )
-        int alt358=2;
-        try { dbg.enterDecision(358, decisionCanBacktrack[358]);
+        int alt361=2;
+        try { dbg.enterDecision(361, decisionCanBacktrack[361]);
 
-        int LA358_0 = input.LA(1);
+        int LA361_0 = input.LA(1);
 
-        if ( (LA358_0==SASS_MIXIN) ) {
-            alt358=1;
+        if ( (LA361_0==SASS_MIXIN) ) {
+            alt361=1;
         }
-        else if ( (LA358_0==DOT) ) {
-            alt358=2;
+        else if ( (LA361_0==DOT) ) {
+            alt361=2;
         }
         else {
             if (state.backtracking>0) {state.failed=true; return ;}
             NoViableAltException nvae =
-                new NoViableAltException("", 358, 0, input);
+                new NoViableAltException("", 361, 0, input);
 
             dbg.recognitionException(nvae);
             throw nvae;
         }
-        } finally {dbg.exitDecision(358);}
+        } finally {dbg.exitDecision(361);}
 
-        switch (alt358) {
+        switch (alt361) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -20635,18 +20788,18 @@ public class Css3Parser extends DebugParser {
                 match(input,IDENT,FOLLOW_IDENT_in_synpred5_Css3677); if (state.failed) return ;
                 dbg.location(391,30);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:391:30: ( ws )?
-                int alt355=2;
-                try { dbg.enterSubRule(355);
-                try { dbg.enterDecision(355, decisionCanBacktrack[355]);
+                int alt358=2;
+                try { dbg.enterSubRule(358);
+                try { dbg.enterDecision(358, decisionCanBacktrack[358]);
 
-                int LA355_0 = input.LA(1);
+                int LA358_0 = input.LA(1);
 
-                if ( ((LA355_0>=WS && LA355_0<=COMMENT)) ) {
-                    alt355=1;
+                if ( ((LA358_0>=WS && LA358_0<=COMMENT)) ) {
+                    alt358=1;
                 }
-                } finally {dbg.exitDecision(355);}
+                } finally {dbg.exitDecision(358);}
 
-                switch (alt355) {
+                switch (alt358) {
                     case 1 :
                         dbg.enterAlt(1);
 
@@ -20663,29 +20816,29 @@ public class Css3Parser extends DebugParser {
                         break;
 
                 }
-                } finally {dbg.exitSubRule(355);}
+                } finally {dbg.exitSubRule(358);}
 
                 dbg.location(391,34);
                 match(input,LPAREN,FOLLOW_LPAREN_in_synpred5_Css3682); if (state.failed) return ;
                 dbg.location(391,41);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:391:41: (~ RPAREN )*
-                try { dbg.enterSubRule(356);
+                try { dbg.enterSubRule(359);
 
-                loop356:
+                loop359:
                 do {
-                    int alt356=2;
-                    try { dbg.enterDecision(356, decisionCanBacktrack[356]);
+                    int alt359=2;
+                    try { dbg.enterDecision(359, decisionCanBacktrack[359]);
 
-                    int LA356_0 = input.LA(1);
+                    int LA359_0 = input.LA(1);
 
-                    if ( ((LA356_0>=NAMESPACE_SYM && LA356_0<=LESS_IMPORT_TYPE)||(LA356_0>=MEDIA_SYM && LA356_0<=LINE_COMMENT)) ) {
-                        alt356=1;
+                    if ( ((LA359_0>=NAMESPACE_SYM && LA359_0<=LESS_IMPORT_TYPE)||(LA359_0>=MEDIA_SYM && LA359_0<=LINE_COMMENT)) ) {
+                        alt359=1;
                     }
 
 
-                    } finally {dbg.exitDecision(356);}
+                    } finally {dbg.exitDecision(359);}
 
-                    switch (alt356) {
+                    switch (alt359) {
                 	case 1 :
                 	    dbg.enterAlt(1);
 
@@ -20708,32 +20861,32 @@ public class Css3Parser extends DebugParser {
                 	    break;
 
                 	default :
-                	    break loop356;
+                	    break loop359;
                     }
                 } while (true);
-                } finally {dbg.exitSubRule(356);}
+                } finally {dbg.exitSubRule(359);}
 
                 dbg.location(391,52);
                 match(input,RPAREN,FOLLOW_RPAREN_in_synpred5_Css3690); if (state.failed) return ;
                 dbg.location(391,59);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:391:59: (~ ( LBRACE | SEMI ) )*
-                try { dbg.enterSubRule(357);
+                try { dbg.enterSubRule(360);
 
-                loop357:
+                loop360:
                 do {
-                    int alt357=2;
-                    try { dbg.enterDecision(357, decisionCanBacktrack[357]);
+                    int alt360=2;
+                    try { dbg.enterDecision(360, decisionCanBacktrack[360]);
 
-                    int LA357_0 = input.LA(1);
+                    int LA360_0 = input.LA(1);
 
-                    if ( (LA357_0==NAMESPACE_SYM||(LA357_0>=IDENT && LA357_0<=MEDIA_SYM)||(LA357_0>=RBRACE && LA357_0<=LINE_COMMENT)) ) {
-                        alt357=1;
+                    if ( (LA360_0==NAMESPACE_SYM||(LA360_0>=IDENT && LA360_0<=MEDIA_SYM)||(LA360_0>=RBRACE && LA360_0<=LINE_COMMENT)) ) {
+                        alt360=1;
                     }
 
 
-                    } finally {dbg.exitDecision(357);}
+                    } finally {dbg.exitDecision(360);}
 
-                    switch (alt357) {
+                    switch (alt360) {
                 	case 1 :
                 	    dbg.enterAlt(1);
 
@@ -20756,10 +20909,10 @@ public class Css3Parser extends DebugParser {
                 	    break;
 
                 	default :
-                	    break loop357;
+                	    break loop360;
                     }
                 } while (true);
-                } finally {dbg.exitSubRule(357);}
+                } finally {dbg.exitSubRule(360);}
 
                 dbg.location(391,75);
                 match(input,LBRACE,FOLLOW_LBRACE_in_synpred5_Css3700); if (state.failed) return ;
@@ -20788,21 +20941,21 @@ public class Css3Parser extends DebugParser {
         if (state.failed) return ;
         dbg.location(393,22);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:393:22: ( ( ws )? IMPORTANT_SYM )?
-        int alt360=2;
-        try { dbg.enterSubRule(360);
-        try { dbg.enterDecision(360, decisionCanBacktrack[360]);
+        int alt363=2;
+        try { dbg.enterSubRule(363);
+        try { dbg.enterDecision(363, decisionCanBacktrack[363]);
 
         try {
             isCyclicDecision = true;
-            alt360 = dfa360.predict(input);
+            alt363 = dfa363.predict(input);
         }
         catch (NoViableAltException nvae) {
             dbg.recognitionException(nvae);
             throw nvae;
         }
-        } finally {dbg.exitDecision(360);}
+        } finally {dbg.exitDecision(363);}
 
-        switch (alt360) {
+        switch (alt363) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -20810,18 +20963,18 @@ public class Css3Parser extends DebugParser {
                 {
                 dbg.location(393,23);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:393:23: ( ws )?
-                int alt359=2;
-                try { dbg.enterSubRule(359);
-                try { dbg.enterDecision(359, decisionCanBacktrack[359]);
+                int alt362=2;
+                try { dbg.enterSubRule(362);
+                try { dbg.enterDecision(362, decisionCanBacktrack[362]);
 
-                int LA359_0 = input.LA(1);
+                int LA362_0 = input.LA(1);
 
-                if ( ((LA359_0>=WS && LA359_0<=COMMENT)) ) {
-                    alt359=1;
+                if ( ((LA362_0>=WS && LA362_0<=COMMENT)) ) {
+                    alt362=1;
                 }
-                } finally {dbg.exitDecision(359);}
+                } finally {dbg.exitDecision(362);}
 
-                switch (alt359) {
+                switch (alt362) {
                     case 1 :
                         dbg.enterAlt(1);
 
@@ -20838,7 +20991,7 @@ public class Css3Parser extends DebugParser {
                         break;
 
                 }
-                } finally {dbg.exitSubRule(359);}
+                } finally {dbg.exitSubRule(362);}
 
                 dbg.location(393,27);
                 match(input,IMPORTANT_SYM,FOLLOW_IMPORTANT_SYM_in_synpred6_Css3724); if (state.failed) return ;
@@ -20847,22 +21000,22 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(360);}
+        } finally {dbg.exitSubRule(363);}
 
         dbg.location(393,43);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:393:43: ( ws )?
-        int alt361=2;
-        try { dbg.enterSubRule(361);
-        try { dbg.enterDecision(361, decisionCanBacktrack[361]);
+        int alt364=2;
+        try { dbg.enterSubRule(364);
+        try { dbg.enterDecision(364, decisionCanBacktrack[364]);
 
-        int LA361_0 = input.LA(1);
+        int LA364_0 = input.LA(1);
 
-        if ( ((LA361_0>=WS && LA361_0<=COMMENT)) ) {
-            alt361=1;
+        if ( ((LA364_0>=WS && LA364_0<=COMMENT)) ) {
+            alt364=1;
         }
-        } finally {dbg.exitDecision(361);}
+        } finally {dbg.exitDecision(364);}
 
-        switch (alt361) {
+        switch (alt364) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -20879,7 +21032,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(361);}
+        } finally {dbg.exitSubRule(364);}
 
         dbg.location(393,47);
         match(input,SEMI,FOLLOW_SEMI_in_synpred6_Css3731); if (state.failed) return ;
@@ -20915,24 +21068,24 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(395,8);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:395:8: (~ ( LBRACE | SEMI | RBRACE | COLON ) )+
-        int cnt362=0;
-        try { dbg.enterSubRule(362);
+        int cnt365=0;
+        try { dbg.enterSubRule(365);
 
-        loop362:
+        loop365:
         do {
-            int alt362=2;
-            try { dbg.enterDecision(362, decisionCanBacktrack[362]);
+            int alt365=2;
+            try { dbg.enterDecision(365, decisionCanBacktrack[365]);
 
-            int LA362_0 = input.LA(1);
+            int LA365_0 = input.LA(1);
 
-            if ( (LA362_0==NAMESPACE_SYM||(LA362_0>=IDENT && LA362_0<=MEDIA_SYM)||(LA362_0>=IMPORTANT_SYM && LA362_0<=GEN)||(LA362_0>=AT_IDENT && LA362_0<=LINE_COMMENT)) ) {
-                alt362=1;
+            if ( (LA365_0==NAMESPACE_SYM||(LA365_0>=IDENT && LA365_0<=MEDIA_SYM)||(LA365_0>=IMPORTANT_SYM && LA365_0<=GEN)||(LA365_0>=AT_IDENT && LA365_0<=LINE_COMMENT)) ) {
+                alt365=1;
             }
 
 
-            } finally {dbg.exitDecision(362);}
+            } finally {dbg.exitDecision(365);}
 
-            switch (alt362) {
+            switch (alt365) {
         	case 1 :
         	    dbg.enterAlt(1);
 
@@ -20955,40 +21108,40 @@ public class Css3Parser extends DebugParser {
         	    break;
 
         	default :
-        	    if ( cnt362 >= 1 ) break loop362;
+        	    if ( cnt365 >= 1 ) break loop365;
         	    if (state.backtracking>0) {state.failed=true; return ;}
                     EarlyExitException eee =
-                        new EarlyExitException(362, input);
+                        new EarlyExitException(365, input);
                     dbg.recognitionException(eee);
 
                     throw eee;
             }
-            cnt362++;
+            cnt365++;
         } while (true);
-        } finally {dbg.exitSubRule(362);}
+        } finally {dbg.exitSubRule(365);}
 
         dbg.location(395,37);
         match(input,COLON,FOLLOW_COLON_in_synpred8_Css3789); if (state.failed) return ;
         dbg.location(395,43);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:395:43: (~ ( SEMI | LBRACE | RBRACE ) )+
-        int cnt363=0;
-        try { dbg.enterSubRule(363);
+        int cnt366=0;
+        try { dbg.enterSubRule(366);
 
-        loop363:
+        loop366:
         do {
-            int alt363=2;
-            try { dbg.enterDecision(363, decisionCanBacktrack[363]);
+            int alt366=2;
+            try { dbg.enterDecision(366, decisionCanBacktrack[366]);
 
-            int LA363_0 = input.LA(1);
+            int LA366_0 = input.LA(1);
 
-            if ( (LA363_0==NAMESPACE_SYM||(LA363_0>=IDENT && LA363_0<=MEDIA_SYM)||(LA363_0>=IMPORTANT_SYM && LA363_0<=LINE_COMMENT)) ) {
-                alt363=1;
+            if ( (LA366_0==NAMESPACE_SYM||(LA366_0>=IDENT && LA366_0<=MEDIA_SYM)||(LA366_0>=IMPORTANT_SYM && LA366_0<=LINE_COMMENT)) ) {
+                alt366=1;
             }
 
 
-            } finally {dbg.exitDecision(363);}
+            } finally {dbg.exitDecision(366);}
 
-            switch (alt363) {
+            switch (alt366) {
         	case 1 :
         	    dbg.enterAlt(1);
 
@@ -21011,17 +21164,17 @@ public class Css3Parser extends DebugParser {
         	    break;
 
         	default :
-        	    if ( cnt363 >= 1 ) break loop363;
+        	    if ( cnt366 >= 1 ) break loop366;
         	    if (state.backtracking>0) {state.failed=true; return ;}
                     EarlyExitException eee =
-                        new EarlyExitException(363, input);
+                        new EarlyExitException(366, input);
                     dbg.recognitionException(eee);
 
                     throw eee;
             }
-            cnt363++;
+            cnt366++;
         } while (true);
-        } finally {dbg.exitSubRule(363);}
+        } finally {dbg.exitSubRule(366);}
 
         dbg.location(395,66);
         match(input,SEMI,FOLLOW_SEMI_in_synpred8_Css3801); if (state.failed) return ;
@@ -21047,24 +21200,24 @@ public class Css3Parser extends DebugParser {
         match(input,COLON,FOLLOW_COLON_in_synpred9_Css3816); if (state.failed) return ;
         dbg.location(396,56);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:396:56: (~ ( SEMI | LBRACE | RBRACE ) )+
-        int cnt364=0;
-        try { dbg.enterSubRule(364);
+        int cnt367=0;
+        try { dbg.enterSubRule(367);
 
-        loop364:
+        loop367:
         do {
-            int alt364=2;
-            try { dbg.enterDecision(364, decisionCanBacktrack[364]);
+            int alt367=2;
+            try { dbg.enterDecision(367, decisionCanBacktrack[367]);
 
-            int LA364_0 = input.LA(1);
+            int LA367_0 = input.LA(1);
 
-            if ( (LA364_0==NAMESPACE_SYM||(LA364_0>=IDENT && LA364_0<=MEDIA_SYM)||(LA364_0>=IMPORTANT_SYM && LA364_0<=LINE_COMMENT)) ) {
-                alt364=1;
+            if ( (LA367_0==NAMESPACE_SYM||(LA367_0>=IDENT && LA367_0<=MEDIA_SYM)||(LA367_0>=IMPORTANT_SYM && LA367_0<=LINE_COMMENT)) ) {
+                alt367=1;
             }
 
 
-            } finally {dbg.exitDecision(364);}
+            } finally {dbg.exitDecision(367);}
 
-            switch (alt364) {
+            switch (alt367) {
         	case 1 :
         	    dbg.enterAlt(1);
 
@@ -21087,17 +21240,17 @@ public class Css3Parser extends DebugParser {
         	    break;
 
         	default :
-        	    if ( cnt364 >= 1 ) break loop364;
+        	    if ( cnt367 >= 1 ) break loop367;
         	    if (state.backtracking>0) {state.failed=true; return ;}
                     EarlyExitException eee =
-                        new EarlyExitException(364, input);
+                        new EarlyExitException(367, input);
                     dbg.recognitionException(eee);
 
                     throw eee;
             }
-            cnt364++;
+            cnt367++;
         } while (true);
-        } finally {dbg.exitSubRule(364);}
+        } finally {dbg.exitSubRule(367);}
 
         dbg.location(396,79);
         match(input,SEMI,FOLLOW_SEMI_in_synpred9_Css3828); if (state.failed) return ;
@@ -21115,18 +21268,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(411,18);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:411:18: ( ws )?
-        int alt365=2;
-        try { dbg.enterSubRule(365);
-        try { dbg.enterDecision(365, decisionCanBacktrack[365]);
+        int alt368=2;
+        try { dbg.enterSubRule(368);
+        try { dbg.enterDecision(368, decisionCanBacktrack[368]);
 
-        int LA365_0 = input.LA(1);
+        int LA368_0 = input.LA(1);
 
-        if ( ((LA365_0>=WS && LA365_0<=COMMENT)) ) {
-            alt365=1;
+        if ( ((LA368_0>=WS && LA368_0<=COMMENT)) ) {
+            alt368=1;
         }
-        } finally {dbg.exitDecision(365);}
+        } finally {dbg.exitDecision(368);}
 
-        switch (alt365) {
+        switch (alt368) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -21143,7 +21296,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(365);}
+        } finally {dbg.exitSubRule(368);}
 
         dbg.location(411,22);
         match(input,COMMA,FOLLOW_COMMA_in_synpred10_Css3949); if (state.failed) return ;
@@ -21161,18 +21314,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(451,23);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:451:23: ( ws )?
-        int alt366=2;
-        try { dbg.enterSubRule(366);
-        try { dbg.enterDecision(366, decisionCanBacktrack[366]);
+        int alt369=2;
+        try { dbg.enterSubRule(369);
+        try { dbg.enterDecision(369, decisionCanBacktrack[369]);
 
-        int LA366_0 = input.LA(1);
+        int LA369_0 = input.LA(1);
 
-        if ( ((LA366_0>=WS && LA366_0<=COMMENT)) ) {
-            alt366=1;
+        if ( ((LA369_0>=WS && LA369_0<=COMMENT)) ) {
+            alt369=1;
         }
-        } finally {dbg.exitDecision(366);}
+        } finally {dbg.exitDecision(369);}
 
-        switch (alt366) {
+        switch (alt369) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -21189,7 +21342,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(366);}
+        } finally {dbg.exitSubRule(369);}
 
         dbg.location(451,27);
         match(input,SEMI,FOLLOW_SEMI_in_synpred11_Css31248); if (state.failed) return ;
@@ -21201,28 +21354,28 @@ public class Css3Parser extends DebugParser {
     // $ANTLR start synpred12_Css3
     public final void synpred12_Css3_fragment() throws RecognitionException {   
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:459:9: ( SASS_MIXIN | ( DOT IDENT ( ws )? LPAREN (~ RPAREN )* RPAREN (~ ( LBRACE | RBRACE | SEMI ) )* LBRACE ) )
-        int alt370=2;
-        try { dbg.enterDecision(370, decisionCanBacktrack[370]);
+        int alt373=2;
+        try { dbg.enterDecision(373, decisionCanBacktrack[373]);
 
-        int LA370_0 = input.LA(1);
+        int LA373_0 = input.LA(1);
 
-        if ( (LA370_0==SASS_MIXIN) ) {
-            alt370=1;
+        if ( (LA373_0==SASS_MIXIN) ) {
+            alt373=1;
         }
-        else if ( (LA370_0==DOT) ) {
-            alt370=2;
+        else if ( (LA373_0==DOT) ) {
+            alt373=2;
         }
         else {
             if (state.backtracking>0) {state.failed=true; return ;}
             NoViableAltException nvae =
-                new NoViableAltException("", 370, 0, input);
+                new NoViableAltException("", 373, 0, input);
 
             dbg.recognitionException(nvae);
             throw nvae;
         }
-        } finally {dbg.exitDecision(370);}
+        } finally {dbg.exitDecision(373);}
 
-        switch (alt370) {
+        switch (alt373) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -21250,18 +21403,18 @@ public class Css3Parser extends DebugParser {
                 match(input,IDENT,FOLLOW_IDENT_in_synpred12_Css31330); if (state.failed) return ;
                 dbg.location(459,34);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:459:34: ( ws )?
-                int alt367=2;
-                try { dbg.enterSubRule(367);
-                try { dbg.enterDecision(367, decisionCanBacktrack[367]);
+                int alt370=2;
+                try { dbg.enterSubRule(370);
+                try { dbg.enterDecision(370, decisionCanBacktrack[370]);
 
-                int LA367_0 = input.LA(1);
+                int LA370_0 = input.LA(1);
 
-                if ( ((LA367_0>=WS && LA367_0<=COMMENT)) ) {
-                    alt367=1;
+                if ( ((LA370_0>=WS && LA370_0<=COMMENT)) ) {
+                    alt370=1;
                 }
-                } finally {dbg.exitDecision(367);}
+                } finally {dbg.exitDecision(370);}
 
-                switch (alt367) {
+                switch (alt370) {
                     case 1 :
                         dbg.enterAlt(1);
 
@@ -21278,29 +21431,29 @@ public class Css3Parser extends DebugParser {
                         break;
 
                 }
-                } finally {dbg.exitSubRule(367);}
+                } finally {dbg.exitSubRule(370);}
 
                 dbg.location(459,38);
                 match(input,LPAREN,FOLLOW_LPAREN_in_synpred12_Css31335); if (state.failed) return ;
                 dbg.location(459,45);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:459:45: (~ RPAREN )*
-                try { dbg.enterSubRule(368);
+                try { dbg.enterSubRule(371);
 
-                loop368:
+                loop371:
                 do {
-                    int alt368=2;
-                    try { dbg.enterDecision(368, decisionCanBacktrack[368]);
+                    int alt371=2;
+                    try { dbg.enterDecision(371, decisionCanBacktrack[371]);
 
-                    int LA368_0 = input.LA(1);
+                    int LA371_0 = input.LA(1);
 
-                    if ( ((LA368_0>=NAMESPACE_SYM && LA368_0<=LESS_IMPORT_TYPE)||(LA368_0>=MEDIA_SYM && LA368_0<=LINE_COMMENT)) ) {
-                        alt368=1;
+                    if ( ((LA371_0>=NAMESPACE_SYM && LA371_0<=LESS_IMPORT_TYPE)||(LA371_0>=MEDIA_SYM && LA371_0<=LINE_COMMENT)) ) {
+                        alt371=1;
                     }
 
 
-                    } finally {dbg.exitDecision(368);}
+                    } finally {dbg.exitDecision(371);}
 
-                    switch (alt368) {
+                    switch (alt371) {
                 	case 1 :
                 	    dbg.enterAlt(1);
 
@@ -21323,32 +21476,32 @@ public class Css3Parser extends DebugParser {
                 	    break;
 
                 	default :
-                	    break loop368;
+                	    break loop371;
                     }
                 } while (true);
-                } finally {dbg.exitSubRule(368);}
+                } finally {dbg.exitSubRule(371);}
 
                 dbg.location(459,56);
                 match(input,RPAREN,FOLLOW_RPAREN_in_synpred12_Css31343); if (state.failed) return ;
                 dbg.location(459,63);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:459:63: (~ ( LBRACE | RBRACE | SEMI ) )*
-                try { dbg.enterSubRule(369);
+                try { dbg.enterSubRule(372);
 
-                loop369:
+                loop372:
                 do {
-                    int alt369=2;
-                    try { dbg.enterDecision(369, decisionCanBacktrack[369]);
+                    int alt372=2;
+                    try { dbg.enterDecision(372, decisionCanBacktrack[372]);
 
-                    int LA369_0 = input.LA(1);
+                    int LA372_0 = input.LA(1);
 
-                    if ( (LA369_0==NAMESPACE_SYM||(LA369_0>=IDENT && LA369_0<=MEDIA_SYM)||(LA369_0>=IMPORTANT_SYM && LA369_0<=LINE_COMMENT)) ) {
-                        alt369=1;
+                    if ( (LA372_0==NAMESPACE_SYM||(LA372_0>=IDENT && LA372_0<=MEDIA_SYM)||(LA372_0>=IMPORTANT_SYM && LA372_0<=LINE_COMMENT)) ) {
+                        alt372=1;
                     }
 
 
-                    } finally {dbg.exitDecision(369);}
+                    } finally {dbg.exitDecision(372);}
 
-                    switch (alt369) {
+                    switch (alt372) {
                 	case 1 :
                 	    dbg.enterAlt(1);
 
@@ -21371,10 +21524,10 @@ public class Css3Parser extends DebugParser {
                 	    break;
 
                 	default :
-                	    break loop369;
+                	    break loop372;
                     }
                 } while (true);
-                } finally {dbg.exitSubRule(369);}
+                } finally {dbg.exitSubRule(372);}
 
                 dbg.location(459,86);
                 match(input,LBRACE,FOLLOW_LBRACE_in_synpred12_Css31355); if (state.failed) return ;
@@ -21403,18 +21556,18 @@ public class Css3Parser extends DebugParser {
         if (state.failed) return ;
         dbg.location(461,26);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:461:26: ( ws )?
-        int alt371=2;
-        try { dbg.enterSubRule(371);
-        try { dbg.enterDecision(371, decisionCanBacktrack[371]);
+        int alt374=2;
+        try { dbg.enterSubRule(374);
+        try { dbg.enterDecision(374, decisionCanBacktrack[374]);
 
-        int LA371_0 = input.LA(1);
+        int LA374_0 = input.LA(1);
 
-        if ( ((LA371_0>=WS && LA371_0<=COMMENT)) ) {
-            alt371=1;
+        if ( ((LA374_0>=WS && LA374_0<=COMMENT)) ) {
+            alt374=1;
         }
-        } finally {dbg.exitDecision(371);}
+        } finally {dbg.exitDecision(374);}
 
-        switch (alt371) {
+        switch (alt374) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -21431,7 +21584,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(371);}
+        } finally {dbg.exitSubRule(374);}
 
         dbg.location(461,30);
         match(input,SEMI,FOLLOW_SEMI_in_synpred13_Css31386); if (state.failed) return ;
@@ -21491,18 +21644,18 @@ public class Css3Parser extends DebugParser {
         if (state.failed) return ;
         dbg.location(465,24);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:465:24: ( ws )?
-        int alt372=2;
-        try { dbg.enterSubRule(372);
-        try { dbg.enterDecision(372, decisionCanBacktrack[372]);
+        int alt375=2;
+        try { dbg.enterSubRule(375);
+        try { dbg.enterDecision(375, decisionCanBacktrack[375]);
 
-        int LA372_0 = input.LA(1);
+        int LA375_0 = input.LA(1);
 
-        if ( ((LA372_0>=WS && LA372_0<=COMMENT)) ) {
-            alt372=1;
+        if ( ((LA375_0>=WS && LA375_0<=COMMENT)) ) {
+            alt375=1;
         }
-        } finally {dbg.exitDecision(372);}
+        } finally {dbg.exitDecision(375);}
 
-        switch (alt372) {
+        switch (alt375) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -21519,7 +21672,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(372);}
+        } finally {dbg.exitSubRule(375);}
 
         dbg.location(465,28);
         match(input,COLON,FOLLOW_COLON_in_synpred16_Css31455); if (state.failed) return ;
@@ -21537,23 +21690,23 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(601,6);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:601:6: (~ ( HASH_SYMBOL | COLON ) )*
-        try { dbg.enterSubRule(373);
+        try { dbg.enterSubRule(376);
 
-        loop373:
+        loop376:
         do {
-            int alt373=2;
-            try { dbg.enterDecision(373, decisionCanBacktrack[373]);
+            int alt376=2;
+            try { dbg.enterDecision(376, decisionCanBacktrack[376]);
 
-            int LA373_0 = input.LA(1);
+            int LA376_0 = input.LA(1);
 
-            if ( ((LA373_0>=NAMESPACE_SYM && LA373_0<=GEN)||(LA373_0>=AT_IDENT && LA373_0<=TILDE)||(LA373_0>=HASH && LA373_0<=LINE_COMMENT)) ) {
-                alt373=1;
+            if ( ((LA376_0>=NAMESPACE_SYM && LA376_0<=GEN)||(LA376_0>=AT_IDENT && LA376_0<=TILDE)||(LA376_0>=HASH && LA376_0<=LINE_COMMENT)) ) {
+                alt376=1;
             }
 
 
-            } finally {dbg.exitDecision(373);}
+            } finally {dbg.exitDecision(376);}
 
-            switch (alt373) {
+            switch (alt376) {
         	case 1 :
         	    dbg.enterAlt(1);
 
@@ -21576,10 +21729,10 @@ public class Css3Parser extends DebugParser {
         	    break;
 
         	default :
-        	    break loop373;
+        	    break loop376;
             }
         } while (true);
-        } finally {dbg.exitSubRule(373);}
+        } finally {dbg.exitSubRule(376);}
 
         dbg.location(601,28);
         match(input,HASH_SYMBOL,FOLLOW_HASH_SYMBOL_in_synpred17_Css32444); if (state.failed) return ;
@@ -21599,18 +21752,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(627,28);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:627:28: ( ws )?
-        int alt374=2;
-        try { dbg.enterSubRule(374);
-        try { dbg.enterDecision(374, decisionCanBacktrack[374]);
+        int alt377=2;
+        try { dbg.enterSubRule(377);
+        try { dbg.enterDecision(377, decisionCanBacktrack[377]);
 
-        int LA374_0 = input.LA(1);
+        int LA377_0 = input.LA(1);
 
-        if ( ((LA374_0>=WS && LA374_0<=COMMENT)) ) {
-            alt374=1;
+        if ( ((LA377_0>=WS && LA377_0<=COMMENT)) ) {
+            alt377=1;
         }
-        } finally {dbg.exitDecision(374);}
+        } finally {dbg.exitDecision(377);}
 
-        switch (alt374) {
+        switch (alt377) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -21627,7 +21780,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(374);}
+        } finally {dbg.exitSubRule(377);}
 
         dbg.location(627,32);
         match(input,COMMA,FOLLOW_COMMA_in_synpred18_Css32602); if (state.failed) return ;
@@ -21645,18 +21798,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(654,26);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:654:26: ( ws )?
-        int alt375=2;
-        try { dbg.enterSubRule(375);
-        try { dbg.enterDecision(375, decisionCanBacktrack[375]);
+        int alt378=2;
+        try { dbg.enterSubRule(378);
+        try { dbg.enterDecision(378, decisionCanBacktrack[378]);
 
-        int LA375_0 = input.LA(1);
+        int LA378_0 = input.LA(1);
 
-        if ( ((LA375_0>=WS && LA375_0<=COMMENT)) ) {
-            alt375=1;
+        if ( ((LA378_0>=WS && LA378_0<=COMMENT)) ) {
+            alt378=1;
         }
-        } finally {dbg.exitDecision(375);}
+        } finally {dbg.exitDecision(378);}
 
-        switch (alt375) {
+        switch (alt378) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -21673,7 +21826,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(375);}
+        } finally {dbg.exitSubRule(378);}
 
         dbg.location(654,30);
         match(input,SEMI,FOLLOW_SEMI_in_synpred19_Css32811); if (state.failed) return ;
@@ -21769,18 +21922,18 @@ public class Css3Parser extends DebugParser {
         if (state.failed) return ;
         dbg.location(667,17);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:667:17: ( ws )?
-        int alt376=2;
-        try { dbg.enterSubRule(376);
-        try { dbg.enterDecision(376, decisionCanBacktrack[376]);
+        int alt379=2;
+        try { dbg.enterSubRule(379);
+        try { dbg.enterDecision(379, decisionCanBacktrack[379]);
 
-        int LA376_0 = input.LA(1);
+        int LA379_0 = input.LA(1);
 
-        if ( ((LA376_0>=WS && LA376_0<=COMMENT)) ) {
-            alt376=1;
+        if ( ((LA379_0>=WS && LA379_0<=COMMENT)) ) {
+            alt379=1;
         }
-        } finally {dbg.exitDecision(376);}
+        } finally {dbg.exitDecision(379);}
 
-        switch (alt376) {
+        switch (alt379) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -21797,29 +21950,29 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(376);}
+        } finally {dbg.exitSubRule(379);}
 
         dbg.location(667,21);
         match(input,COLON,FOLLOW_COLON_in_synpred24_Css32941); if (state.failed) return ;
         dbg.location(667,27);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:667:27: (~ ( LBRACE | SEMI | RBRACE ) )*
-        try { dbg.enterSubRule(377);
+        try { dbg.enterSubRule(380);
 
-        loop377:
+        loop380:
         do {
-            int alt377=2;
-            try { dbg.enterDecision(377, decisionCanBacktrack[377]);
+            int alt380=2;
+            try { dbg.enterDecision(380, decisionCanBacktrack[380]);
 
-            int LA377_0 = input.LA(1);
+            int LA380_0 = input.LA(1);
 
-            if ( (LA377_0==NAMESPACE_SYM||(LA377_0>=IDENT && LA377_0<=MEDIA_SYM)||(LA377_0>=IMPORTANT_SYM && LA377_0<=LINE_COMMENT)) ) {
-                alt377=1;
+            if ( (LA380_0==NAMESPACE_SYM||(LA380_0>=IDENT && LA380_0<=MEDIA_SYM)||(LA380_0>=IMPORTANT_SYM && LA380_0<=LINE_COMMENT)) ) {
+                alt380=1;
             }
 
 
-            } finally {dbg.exitDecision(377);}
+            } finally {dbg.exitDecision(380);}
 
-            switch (alt377) {
+            switch (alt380) {
         	case 1 :
         	    dbg.enterAlt(1);
 
@@ -21842,10 +21995,10 @@ public class Css3Parser extends DebugParser {
         	    break;
 
         	default :
-        	    break loop377;
+        	    break loop380;
             }
         } while (true);
-        } finally {dbg.exitSubRule(377);}
+        } finally {dbg.exitSubRule(380);}
 
         dbg.location(667,50);
         if ( input.LA(1)==SEMI||input.LA(1)==RBRACE ) {
@@ -21867,28 +22020,28 @@ public class Css3Parser extends DebugParser {
     // $ANTLR start synpred25_Css3
     public final void synpred25_Css3_fragment() throws RecognitionException {   
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:668:7: ( SASS_MIXIN | ( DOT IDENT ( ws )? LPAREN (~ RPAREN )* RPAREN (~ ( LBRACE | SEMI | RBRACE ) )* LBRACE ) )
-        int alt381=2;
-        try { dbg.enterDecision(381, decisionCanBacktrack[381]);
+        int alt384=2;
+        try { dbg.enterDecision(384, decisionCanBacktrack[384]);
 
-        int LA381_0 = input.LA(1);
+        int LA384_0 = input.LA(1);
 
-        if ( (LA381_0==SASS_MIXIN) ) {
-            alt381=1;
+        if ( (LA384_0==SASS_MIXIN) ) {
+            alt384=1;
         }
-        else if ( (LA381_0==DOT) ) {
-            alt381=2;
+        else if ( (LA384_0==DOT) ) {
+            alt384=2;
         }
         else {
             if (state.backtracking>0) {state.failed=true; return ;}
             NoViableAltException nvae =
-                new NoViableAltException("", 381, 0, input);
+                new NoViableAltException("", 384, 0, input);
 
             dbg.recognitionException(nvae);
             throw nvae;
         }
-        } finally {dbg.exitDecision(381);}
+        } finally {dbg.exitDecision(384);}
 
-        switch (alt381) {
+        switch (alt384) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -21916,18 +22069,18 @@ public class Css3Parser extends DebugParser {
                 match(input,IDENT,FOLLOW_IDENT_in_synpred25_Css32977); if (state.failed) return ;
                 dbg.location(668,32);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:668:32: ( ws )?
-                int alt378=2;
-                try { dbg.enterSubRule(378);
-                try { dbg.enterDecision(378, decisionCanBacktrack[378]);
+                int alt381=2;
+                try { dbg.enterSubRule(381);
+                try { dbg.enterDecision(381, decisionCanBacktrack[381]);
 
-                int LA378_0 = input.LA(1);
+                int LA381_0 = input.LA(1);
 
-                if ( ((LA378_0>=WS && LA378_0<=COMMENT)) ) {
-                    alt378=1;
+                if ( ((LA381_0>=WS && LA381_0<=COMMENT)) ) {
+                    alt381=1;
                 }
-                } finally {dbg.exitDecision(378);}
+                } finally {dbg.exitDecision(381);}
 
-                switch (alt378) {
+                switch (alt381) {
                     case 1 :
                         dbg.enterAlt(1);
 
@@ -21944,29 +22097,29 @@ public class Css3Parser extends DebugParser {
                         break;
 
                 }
-                } finally {dbg.exitSubRule(378);}
+                } finally {dbg.exitSubRule(381);}
 
                 dbg.location(668,36);
                 match(input,LPAREN,FOLLOW_LPAREN_in_synpred25_Css32982); if (state.failed) return ;
                 dbg.location(668,43);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:668:43: (~ RPAREN )*
-                try { dbg.enterSubRule(379);
+                try { dbg.enterSubRule(382);
 
-                loop379:
+                loop382:
                 do {
-                    int alt379=2;
-                    try { dbg.enterDecision(379, decisionCanBacktrack[379]);
+                    int alt382=2;
+                    try { dbg.enterDecision(382, decisionCanBacktrack[382]);
 
-                    int LA379_0 = input.LA(1);
+                    int LA382_0 = input.LA(1);
 
-                    if ( ((LA379_0>=NAMESPACE_SYM && LA379_0<=LESS_IMPORT_TYPE)||(LA379_0>=MEDIA_SYM && LA379_0<=LINE_COMMENT)) ) {
-                        alt379=1;
+                    if ( ((LA382_0>=NAMESPACE_SYM && LA382_0<=LESS_IMPORT_TYPE)||(LA382_0>=MEDIA_SYM && LA382_0<=LINE_COMMENT)) ) {
+                        alt382=1;
                     }
 
 
-                    } finally {dbg.exitDecision(379);}
+                    } finally {dbg.exitDecision(382);}
 
-                    switch (alt379) {
+                    switch (alt382) {
                 	case 1 :
                 	    dbg.enterAlt(1);
 
@@ -21989,32 +22142,32 @@ public class Css3Parser extends DebugParser {
                 	    break;
 
                 	default :
-                	    break loop379;
+                	    break loop382;
                     }
                 } while (true);
-                } finally {dbg.exitSubRule(379);}
+                } finally {dbg.exitSubRule(382);}
 
                 dbg.location(668,54);
                 match(input,RPAREN,FOLLOW_RPAREN_in_synpred25_Css32990); if (state.failed) return ;
                 dbg.location(668,61);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:668:61: (~ ( LBRACE | SEMI | RBRACE ) )*
-                try { dbg.enterSubRule(380);
+                try { dbg.enterSubRule(383);
 
-                loop380:
+                loop383:
                 do {
-                    int alt380=2;
-                    try { dbg.enterDecision(380, decisionCanBacktrack[380]);
+                    int alt383=2;
+                    try { dbg.enterDecision(383, decisionCanBacktrack[383]);
 
-                    int LA380_0 = input.LA(1);
+                    int LA383_0 = input.LA(1);
 
-                    if ( (LA380_0==NAMESPACE_SYM||(LA380_0>=IDENT && LA380_0<=MEDIA_SYM)||(LA380_0>=IMPORTANT_SYM && LA380_0<=LINE_COMMENT)) ) {
-                        alt380=1;
+                    if ( (LA383_0==NAMESPACE_SYM||(LA383_0>=IDENT && LA383_0<=MEDIA_SYM)||(LA383_0>=IMPORTANT_SYM && LA383_0<=LINE_COMMENT)) ) {
+                        alt383=1;
                     }
 
 
-                    } finally {dbg.exitDecision(380);}
+                    } finally {dbg.exitDecision(383);}
 
-                    switch (alt380) {
+                    switch (alt383) {
                 	case 1 :
                 	    dbg.enterAlt(1);
 
@@ -22037,10 +22190,10 @@ public class Css3Parser extends DebugParser {
                 	    break;
 
                 	default :
-                	    break loop380;
+                	    break loop383;
                     }
                 } while (true);
-                } finally {dbg.exitSubRule(380);}
+                } finally {dbg.exitSubRule(383);}
 
                 dbg.location(668,84);
                 match(input,LBRACE,FOLLOW_LBRACE_in_synpred25_Css33002); if (state.failed) return ;
@@ -22069,21 +22222,21 @@ public class Css3Parser extends DebugParser {
         if (state.failed) return ;
         dbg.location(670,22);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:670:22: ( ( ws )? IMPORTANT_SYM )?
-        int alt383=2;
-        try { dbg.enterSubRule(383);
-        try { dbg.enterDecision(383, decisionCanBacktrack[383]);
+        int alt386=2;
+        try { dbg.enterSubRule(386);
+        try { dbg.enterDecision(386, decisionCanBacktrack[386]);
 
         try {
             isCyclicDecision = true;
-            alt383 = dfa383.predict(input);
+            alt386 = dfa386.predict(input);
         }
         catch (NoViableAltException nvae) {
             dbg.recognitionException(nvae);
             throw nvae;
         }
-        } finally {dbg.exitDecision(383);}
+        } finally {dbg.exitDecision(386);}
 
-        switch (alt383) {
+        switch (alt386) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -22091,18 +22244,18 @@ public class Css3Parser extends DebugParser {
                 {
                 dbg.location(670,23);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:670:23: ( ws )?
-                int alt382=2;
-                try { dbg.enterSubRule(382);
-                try { dbg.enterDecision(382, decisionCanBacktrack[382]);
+                int alt385=2;
+                try { dbg.enterSubRule(385);
+                try { dbg.enterDecision(385, decisionCanBacktrack[385]);
 
-                int LA382_0 = input.LA(1);
+                int LA385_0 = input.LA(1);
 
-                if ( ((LA382_0>=WS && LA382_0<=COMMENT)) ) {
-                    alt382=1;
+                if ( ((LA385_0>=WS && LA385_0<=COMMENT)) ) {
+                    alt385=1;
                 }
-                } finally {dbg.exitDecision(382);}
+                } finally {dbg.exitDecision(385);}
 
-                switch (alt382) {
+                switch (alt385) {
                     case 1 :
                         dbg.enterAlt(1);
 
@@ -22119,7 +22272,7 @@ public class Css3Parser extends DebugParser {
                         break;
 
                 }
-                } finally {dbg.exitSubRule(382);}
+                } finally {dbg.exitSubRule(385);}
 
                 dbg.location(670,27);
                 match(input,IMPORTANT_SYM,FOLLOW_IMPORTANT_SYM_in_synpred26_Css33026); if (state.failed) return ;
@@ -22128,22 +22281,22 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(383);}
+        } finally {dbg.exitSubRule(386);}
 
         dbg.location(670,43);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:670:43: ( ws )?
-        int alt384=2;
-        try { dbg.enterSubRule(384);
-        try { dbg.enterDecision(384, decisionCanBacktrack[384]);
+        int alt387=2;
+        try { dbg.enterSubRule(387);
+        try { dbg.enterDecision(387, decisionCanBacktrack[387]);
 
-        int LA384_0 = input.LA(1);
+        int LA387_0 = input.LA(1);
 
-        if ( ((LA384_0>=WS && LA384_0<=COMMENT)) ) {
-            alt384=1;
+        if ( ((LA387_0>=WS && LA387_0<=COMMENT)) ) {
+            alt387=1;
         }
-        } finally {dbg.exitDecision(384);}
+        } finally {dbg.exitDecision(387);}
 
-        switch (alt384) {
+        switch (alt387) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -22160,7 +22313,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(384);}
+        } finally {dbg.exitSubRule(387);}
 
         dbg.location(670,47);
         match(input,SEMI,FOLLOW_SEMI_in_synpred26_Css33033); if (state.failed) return ;
@@ -22196,29 +22349,29 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(672,8);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:672:8: ( ( SASS_AT_ROOT ( ws selectorsGroup )? ) | selectorsGroup )
-        int alt386=2;
-        try { dbg.enterSubRule(386);
-        try { dbg.enterDecision(386, decisionCanBacktrack[386]);
+        int alt389=2;
+        try { dbg.enterSubRule(389);
+        try { dbg.enterDecision(389, decisionCanBacktrack[389]);
 
-        int LA386_0 = input.LA(1);
+        int LA389_0 = input.LA(1);
 
-        if ( (LA386_0==SASS_AT_ROOT) ) {
-            alt386=1;
+        if ( (LA389_0==SASS_AT_ROOT) ) {
+            alt389=1;
         }
-        else if ( (LA386_0==IDENT||LA386_0==COMMA||(LA386_0>=GEN && LA386_0<=COLON)||(LA386_0>=MINUS && LA386_0<=PLUS)||(LA386_0>=GREATER && LA386_0<=PIPE)||LA386_0==LESS_AND||LA386_0==RBRACKET||LA386_0==AT_SIGN) ) {
-            alt386=2;
+        else if ( (LA389_0==IDENT||LA389_0==COMMA||(LA389_0>=GEN && LA389_0<=COLON)||(LA389_0>=MINUS && LA389_0<=PLUS)||(LA389_0>=GREATER && LA389_0<=PIPE)||LA389_0==LESS_AND||LA389_0==RBRACKET||LA389_0==AT_SIGN) ) {
+            alt389=2;
         }
         else {
             if (state.backtracking>0) {state.failed=true; return ;}
             NoViableAltException nvae =
-                new NoViableAltException("", 386, 0, input);
+                new NoViableAltException("", 389, 0, input);
 
             dbg.recognitionException(nvae);
             throw nvae;
         }
-        } finally {dbg.exitDecision(386);}
+        } finally {dbg.exitDecision(389);}
 
-        switch (alt386) {
+        switch (alt389) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -22234,21 +22387,21 @@ public class Css3Parser extends DebugParser {
                 match(input,SASS_AT_ROOT,FOLLOW_SASS_AT_ROOT_in_synpred28_Css33081); if (state.failed) return ;
                 dbg.location(672,23);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:672:23: ( ws selectorsGroup )?
-                int alt385=2;
-                try { dbg.enterSubRule(385);
-                try { dbg.enterDecision(385, decisionCanBacktrack[385]);
+                int alt388=2;
+                try { dbg.enterSubRule(388);
+                try { dbg.enterDecision(388, decisionCanBacktrack[388]);
 
                 try {
                     isCyclicDecision = true;
-                    alt385 = dfa385.predict(input);
+                    alt388 = dfa388.predict(input);
                 }
                 catch (NoViableAltException nvae) {
                     dbg.recognitionException(nvae);
                     throw nvae;
                 }
-                } finally {dbg.exitDecision(385);}
+                } finally {dbg.exitDecision(388);}
 
-                switch (alt385) {
+                switch (alt388) {
                     case 1 :
                         dbg.enterAlt(1);
 
@@ -22271,7 +22424,7 @@ public class Css3Parser extends DebugParser {
                         break;
 
                 }
-                } finally {dbg.exitSubRule(385);}
+                } finally {dbg.exitSubRule(388);}
 
 
                 }
@@ -22295,22 +22448,22 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(386);}
+        } finally {dbg.exitSubRule(389);}
 
         dbg.location(672,63);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:672:63: ( ws )?
-        int alt387=2;
-        try { dbg.enterSubRule(387);
-        try { dbg.enterDecision(387, decisionCanBacktrack[387]);
+        int alt390=2;
+        try { dbg.enterSubRule(390);
+        try { dbg.enterDecision(390, decisionCanBacktrack[390]);
 
-        int LA387_0 = input.LA(1);
+        int LA390_0 = input.LA(1);
 
-        if ( ((LA387_0>=WS && LA387_0<=COMMENT)) ) {
-            alt387=1;
+        if ( ((LA390_0>=WS && LA390_0<=COMMENT)) ) {
+            alt390=1;
         }
-        } finally {dbg.exitDecision(387);}
+        } finally {dbg.exitDecision(390);}
 
-        switch (alt387) {
+        switch (alt390) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -22327,7 +22480,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(387);}
+        } finally {dbg.exitSubRule(390);}
 
         dbg.location(672,67);
         match(input,LBRACE,FOLLOW_LBRACE_in_synpred28_Css33099); if (state.failed) return ;
@@ -22345,23 +22498,23 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(690,11);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:690:11: (~ ( HASH_SYMBOL | LBRACE ) )*
-        try { dbg.enterSubRule(388);
+        try { dbg.enterSubRule(391);
 
-        loop388:
+        loop391:
         do {
-            int alt388=2;
-            try { dbg.enterDecision(388, decisionCanBacktrack[388]);
+            int alt391=2;
+            try { dbg.enterDecision(391, decisionCanBacktrack[391]);
 
-            int LA388_0 = input.LA(1);
+            int LA391_0 = input.LA(1);
 
-            if ( ((LA388_0>=NAMESPACE_SYM && LA388_0<=MEDIA_SYM)||(LA388_0>=RBRACE && LA388_0<=TILDE)||(LA388_0>=HASH && LA388_0<=LINE_COMMENT)) ) {
-                alt388=1;
+            if ( ((LA391_0>=NAMESPACE_SYM && LA391_0<=MEDIA_SYM)||(LA391_0>=RBRACE && LA391_0<=TILDE)||(LA391_0>=HASH && LA391_0<=LINE_COMMENT)) ) {
+                alt391=1;
             }
 
 
-            } finally {dbg.exitDecision(388);}
+            } finally {dbg.exitDecision(391);}
 
-            switch (alt388) {
+            switch (alt391) {
         	case 1 :
         	    dbg.enterAlt(1);
 
@@ -22384,10 +22537,10 @@ public class Css3Parser extends DebugParser {
         	    break;
 
         	default :
-        	    break loop388;
+        	    break loop391;
             }
         } while (true);
-        } finally {dbg.exitSubRule(388);}
+        } finally {dbg.exitSubRule(391);}
 
         dbg.location(690,38);
         match(input,HASH_SYMBOL,FOLLOW_HASH_SYMBOL_in_synpred29_Css33237); if (state.failed) return ;
@@ -22407,18 +22560,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(706,19);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:706:19: ( ws )?
-        int alt389=2;
-        try { dbg.enterSubRule(389);
-        try { dbg.enterDecision(389, decisionCanBacktrack[389]);
+        int alt392=2;
+        try { dbg.enterSubRule(392);
+        try { dbg.enterDecision(392, decisionCanBacktrack[392]);
 
-        int LA389_0 = input.LA(1);
+        int LA392_0 = input.LA(1);
 
-        if ( ((LA389_0>=WS && LA389_0<=COMMENT)) ) {
-            alt389=1;
+        if ( ((LA392_0>=WS && LA392_0<=COMMENT)) ) {
+            alt392=1;
         }
-        } finally {dbg.exitDecision(389);}
+        } finally {dbg.exitDecision(392);}
 
-        switch (alt389) {
+        switch (alt392) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -22435,7 +22588,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(389);}
+        } finally {dbg.exitSubRule(392);}
 
         dbg.location(706,23);
         pushFollow(FOLLOW_esPred_in_synpred30_Css33369);
@@ -22457,18 +22610,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(708,22);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:708:22: ( ws )?
-        int alt390=2;
-        try { dbg.enterSubRule(390);
-        try { dbg.enterDecision(390, decisionCanBacktrack[390]);
+        int alt393=2;
+        try { dbg.enterSubRule(393);
+        try { dbg.enterDecision(393, decisionCanBacktrack[393]);
 
-        int LA390_0 = input.LA(1);
+        int LA393_0 = input.LA(1);
 
-        if ( ((LA390_0>=WS && LA390_0<=COMMENT)) ) {
-            alt390=1;
+        if ( ((LA393_0>=WS && LA393_0<=COMMENT)) ) {
+            alt393=1;
         }
-        } finally {dbg.exitDecision(390);}
+        } finally {dbg.exitDecision(393);}
 
-        switch (alt390) {
+        switch (alt393) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -22485,7 +22638,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(390);}
+        } finally {dbg.exitSubRule(393);}
 
         dbg.location(708,26);
         pushFollow(FOLLOW_esPred_in_synpred31_Css33392);
@@ -22507,18 +22660,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(722,8);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:722:8: ( IDENT | STAR )?
-        int alt391=2;
-        try { dbg.enterSubRule(391);
-        try { dbg.enterDecision(391, decisionCanBacktrack[391]);
+        int alt394=2;
+        try { dbg.enterSubRule(394);
+        try { dbg.enterDecision(394, decisionCanBacktrack[394]);
 
-        int LA391_0 = input.LA(1);
+        int LA394_0 = input.LA(1);
 
-        if ( (LA391_0==IDENT||LA391_0==STAR) ) {
-            alt391=1;
+        if ( (LA394_0==IDENT||LA394_0==STAR) ) {
+            alt394=1;
         }
-        } finally {dbg.exitDecision(391);}
+        } finally {dbg.exitDecision(394);}
 
-        switch (alt391) {
+        switch (alt394) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -22541,7 +22694,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(391);}
+        } finally {dbg.exitSubRule(394);}
 
         dbg.location(722,24);
         match(input,PIPE,FOLLOW_PIPE_in_synpred32_Css33484); if (state.failed) return ;
@@ -22559,21 +22712,21 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(898,15);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:15: ( ws | ( ( ws )? operator ( ws )? ) | )
-        int alt394=3;
-        try { dbg.enterSubRule(394);
-        try { dbg.enterDecision(394, decisionCanBacktrack[394]);
+        int alt397=3;
+        try { dbg.enterSubRule(397);
+        try { dbg.enterDecision(397, decisionCanBacktrack[397]);
 
         try {
             isCyclicDecision = true;
-            alt394 = dfa394.predict(input);
+            alt397 = dfa397.predict(input);
         }
         catch (NoViableAltException nvae) {
             dbg.recognitionException(nvae);
             throw nvae;
         }
-        } finally {dbg.exitDecision(394);}
+        } finally {dbg.exitDecision(397);}
 
-        switch (alt394) {
+        switch (alt397) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -22601,18 +22754,18 @@ public class Css3Parser extends DebugParser {
                 {
                 dbg.location(898,23);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:23: ( ws )?
-                int alt392=2;
-                try { dbg.enterSubRule(392);
-                try { dbg.enterDecision(392, decisionCanBacktrack[392]);
+                int alt395=2;
+                try { dbg.enterSubRule(395);
+                try { dbg.enterDecision(395, decisionCanBacktrack[395]);
 
-                int LA392_0 = input.LA(1);
+                int LA395_0 = input.LA(1);
 
-                if ( ((LA392_0>=WS && LA392_0<=COMMENT)) ) {
-                    alt392=1;
+                if ( ((LA395_0>=WS && LA395_0<=COMMENT)) ) {
+                    alt395=1;
                 }
-                } finally {dbg.exitDecision(392);}
+                } finally {dbg.exitDecision(395);}
 
-                switch (alt392) {
+                switch (alt395) {
                     case 1 :
                         dbg.enterAlt(1);
 
@@ -22629,7 +22782,7 @@ public class Css3Parser extends DebugParser {
                         break;
 
                 }
-                } finally {dbg.exitSubRule(392);}
+                } finally {dbg.exitSubRule(395);}
 
                 dbg.location(898,27);
                 pushFollow(FOLLOW_operator_in_synpred33_Css34891);
@@ -22639,18 +22792,18 @@ public class Css3Parser extends DebugParser {
                 if (state.failed) return ;
                 dbg.location(898,36);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:898:36: ( ws )?
-                int alt393=2;
-                try { dbg.enterSubRule(393);
-                try { dbg.enterDecision(393, decisionCanBacktrack[393]);
+                int alt396=2;
+                try { dbg.enterSubRule(396);
+                try { dbg.enterDecision(396, decisionCanBacktrack[396]);
 
-                int LA393_0 = input.LA(1);
+                int LA396_0 = input.LA(1);
 
-                if ( ((LA393_0>=WS && LA393_0<=COMMENT)) ) {
-                    alt393=1;
+                if ( ((LA396_0>=WS && LA396_0<=COMMENT)) ) {
+                    alt396=1;
                 }
-                } finally {dbg.exitDecision(393);}
+                } finally {dbg.exitDecision(396);}
 
-                switch (alt393) {
+                switch (alt396) {
                     case 1 :
                         dbg.enterAlt(1);
 
@@ -22667,7 +22820,7 @@ public class Css3Parser extends DebugParser {
                         break;
 
                 }
-                } finally {dbg.exitSubRule(393);}
+                } finally {dbg.exitSubRule(396);}
 
 
                 }
@@ -22684,7 +22837,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(394);}
+        } finally {dbg.exitSubRule(397);}
 
         dbg.location(898,58);
         pushFollow(FOLLOW_term_in_synpred33_Css34902);
@@ -22712,18 +22865,18 @@ public class Css3Parser extends DebugParser {
         if (state.failed) return ;
         dbg.location(905,23);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:905:23: ( ws )?
-        int alt395=2;
-        try { dbg.enterSubRule(395);
-        try { dbg.enterDecision(395, decisionCanBacktrack[395]);
+        int alt398=2;
+        try { dbg.enterSubRule(398);
+        try { dbg.enterDecision(398, decisionCanBacktrack[398]);
 
-        int LA395_0 = input.LA(1);
+        int LA398_0 = input.LA(1);
 
-        if ( ((LA395_0>=WS && LA395_0<=COMMENT)) ) {
-            alt395=1;
+        if ( ((LA398_0>=WS && LA398_0<=COMMENT)) ) {
+            alt398=1;
         }
-        } finally {dbg.exitDecision(395);}
+        } finally {dbg.exitDecision(398);}
 
-        switch (alt395) {
+        switch (alt398) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -22740,7 +22893,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(395);}
+        } finally {dbg.exitSubRule(398);}
 
         dbg.location(905,27);
         match(input,LPAREN,FOLLOW_LPAREN_in_synpred34_Css34980); if (state.failed) return ;
@@ -22764,18 +22917,18 @@ public class Css3Parser extends DebugParser {
         if (state.failed) return ;
         dbg.location(966,26);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:966:26: ( ws )?
-        int alt396=2;
-        try { dbg.enterSubRule(396);
-        try { dbg.enterDecision(396, decisionCanBacktrack[396]);
+        int alt399=2;
+        try { dbg.enterSubRule(399);
+        try { dbg.enterDecision(399, decisionCanBacktrack[399]);
 
-        int LA396_0 = input.LA(1);
+        int LA399_0 = input.LA(1);
 
-        if ( ((LA396_0>=WS && LA396_0<=COMMENT)) ) {
-            alt396=1;
+        if ( ((LA399_0>=WS && LA399_0<=COMMENT)) ) {
+            alt399=1;
         }
-        } finally {dbg.exitDecision(396);}
+        } finally {dbg.exitDecision(399);}
 
-        switch (alt396) {
+        switch (alt399) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -22792,7 +22945,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(396);}
+        } finally {dbg.exitSubRule(399);}
 
         dbg.location(966,30);
         if ( input.LA(1)==COLON||input.LA(1)==OPEQ ) {
@@ -22820,21 +22973,21 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(979,21);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:979:21: ( ws | ( ( ws )? SOLIDUS ( ws )? ) | )
-        int alt399=3;
-        try { dbg.enterSubRule(399);
-        try { dbg.enterDecision(399, decisionCanBacktrack[399]);
+        int alt402=3;
+        try { dbg.enterSubRule(402);
+        try { dbg.enterDecision(402, decisionCanBacktrack[402]);
 
         try {
             isCyclicDecision = true;
-            alt399 = dfa399.predict(input);
+            alt402 = dfa402.predict(input);
         }
         catch (NoViableAltException nvae) {
             dbg.recognitionException(nvae);
             throw nvae;
         }
-        } finally {dbg.exitDecision(399);}
+        } finally {dbg.exitDecision(402);}
 
-        switch (alt399) {
+        switch (alt402) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -22862,18 +23015,18 @@ public class Css3Parser extends DebugParser {
                 {
                 dbg.location(979,29);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:979:29: ( ws )?
-                int alt397=2;
-                try { dbg.enterSubRule(397);
-                try { dbg.enterDecision(397, decisionCanBacktrack[397]);
+                int alt400=2;
+                try { dbg.enterSubRule(400);
+                try { dbg.enterDecision(400, decisionCanBacktrack[400]);
 
-                int LA397_0 = input.LA(1);
+                int LA400_0 = input.LA(1);
 
-                if ( ((LA397_0>=WS && LA397_0<=COMMENT)) ) {
-                    alt397=1;
+                if ( ((LA400_0>=WS && LA400_0<=COMMENT)) ) {
+                    alt400=1;
                 }
-                } finally {dbg.exitDecision(397);}
+                } finally {dbg.exitDecision(400);}
 
-                switch (alt397) {
+                switch (alt400) {
                     case 1 :
                         dbg.enterAlt(1);
 
@@ -22890,24 +23043,24 @@ public class Css3Parser extends DebugParser {
                         break;
 
                 }
-                } finally {dbg.exitSubRule(397);}
+                } finally {dbg.exitSubRule(400);}
 
                 dbg.location(979,33);
                 match(input,SOLIDUS,FOLLOW_SOLIDUS_in_synpred36_Css35636); if (state.failed) return ;
                 dbg.location(979,41);
                 // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:979:41: ( ws )?
-                int alt398=2;
-                try { dbg.enterSubRule(398);
-                try { dbg.enterDecision(398, decisionCanBacktrack[398]);
+                int alt401=2;
+                try { dbg.enterSubRule(401);
+                try { dbg.enterDecision(401, decisionCanBacktrack[401]);
 
-                int LA398_0 = input.LA(1);
+                int LA401_0 = input.LA(1);
 
-                if ( ((LA398_0>=WS && LA398_0<=COMMENT)) ) {
-                    alt398=1;
+                if ( ((LA401_0>=WS && LA401_0<=COMMENT)) ) {
+                    alt401=1;
                 }
-                } finally {dbg.exitDecision(398);}
+                } finally {dbg.exitDecision(401);}
 
-                switch (alt398) {
+                switch (alt401) {
                     case 1 :
                         dbg.enterAlt(1);
 
@@ -22924,7 +23077,7 @@ public class Css3Parser extends DebugParser {
                         break;
 
                 }
-                } finally {dbg.exitSubRule(398);}
+                } finally {dbg.exitSubRule(401);}
 
 
                 }
@@ -22941,7 +23094,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(399);}
+        } finally {dbg.exitSubRule(402);}
 
         dbg.location(979,63);
         pushFollow(FOLLOW_term_in_synpred36_Css35647);
@@ -22963,18 +23116,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(1014,7);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1014:7: ( ws )?
-        int alt400=2;
-        try { dbg.enterSubRule(400);
-        try { dbg.enterDecision(400, decisionCanBacktrack[400]);
+        int alt403=2;
+        try { dbg.enterSubRule(403);
+        try { dbg.enterDecision(403, decisionCanBacktrack[403]);
 
-        int LA400_0 = input.LA(1);
+        int LA403_0 = input.LA(1);
 
-        if ( ((LA400_0>=WS && LA400_0<=COMMENT)) ) {
-            alt400=1;
+        if ( ((LA403_0>=WS && LA403_0<=COMMENT)) ) {
+            alt403=1;
         }
-        } finally {dbg.exitDecision(400);}
+        } finally {dbg.exitDecision(403);}
 
-        switch (alt400) {
+        switch (alt403) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -22991,24 +23144,24 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(400);}
+        } finally {dbg.exitSubRule(403);}
 
         dbg.location(1014,11);
         match(input,COMMA,FOLLOW_COMMA_in_synpred37_Css36073); if (state.failed) return ;
         dbg.location(1014,17);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1014:17: ( ws )?
-        int alt401=2;
-        try { dbg.enterSubRule(401);
-        try { dbg.enterDecision(401, decisionCanBacktrack[401]);
+        int alt404=2;
+        try { dbg.enterSubRule(404);
+        try { dbg.enterDecision(404, decisionCanBacktrack[404]);
 
-        int LA401_0 = input.LA(1);
+        int LA404_0 = input.LA(1);
 
-        if ( ((LA401_0>=WS && LA401_0<=COMMENT)) ) {
-            alt401=1;
+        if ( ((LA404_0>=WS && LA404_0<=COMMENT)) ) {
+            alt404=1;
         }
-        } finally {dbg.exitDecision(401);}
+        } finally {dbg.exitDecision(404);}
 
-        switch (alt401) {
+        switch (alt404) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -23025,7 +23178,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(401);}
+        } finally {dbg.exitSubRule(404);}
 
         dbg.location(1014,21);
         pushFollow(FOLLOW_cp_expression_in_synpred37_Css36078);
@@ -23047,18 +23200,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(1031,10);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1031:10: ( ws )?
-        int alt402=2;
-        try { dbg.enterSubRule(402);
-        try { dbg.enterDecision(402, decisionCanBacktrack[402]);
+        int alt405=2;
+        try { dbg.enterSubRule(405);
+        try { dbg.enterDecision(405, decisionCanBacktrack[405]);
 
-        int LA402_0 = input.LA(1);
+        int LA405_0 = input.LA(1);
 
-        if ( ((LA402_0>=WS && LA402_0<=COMMENT)) ) {
-            alt402=1;
+        if ( ((LA405_0>=WS && LA405_0<=COMMENT)) ) {
+            alt405=1;
         }
-        } finally {dbg.exitDecision(402);}
+        } finally {dbg.exitDecision(405);}
 
-        switch (alt402) {
+        switch (alt405) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -23075,7 +23228,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(402);}
+        } finally {dbg.exitSubRule(405);}
 
         dbg.location(1031,14);
         pushFollow(FOLLOW_cp_expression_operator_in_synpred38_Css36142);
@@ -23097,18 +23250,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(1032,12);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1032:12: ( ws )?
-        int alt403=2;
-        try { dbg.enterSubRule(403);
-        try { dbg.enterDecision(403, decisionCanBacktrack[403]);
+        int alt406=2;
+        try { dbg.enterSubRule(406);
+        try { dbg.enterDecision(406, decisionCanBacktrack[406]);
 
-        int LA403_0 = input.LA(1);
+        int LA406_0 = input.LA(1);
 
-        if ( ((LA403_0>=WS && LA403_0<=COMMENT)) ) {
-            alt403=1;
+        if ( ((LA406_0>=WS && LA406_0<=COMMENT)) ) {
+            alt406=1;
         }
-        } finally {dbg.exitDecision(403);}
+        } finally {dbg.exitDecision(406);}
 
-        switch (alt403) {
+        switch (alt406) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -23125,7 +23278,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(403);}
+        } finally {dbg.exitSubRule(406);}
 
         dbg.location(1032,16);
         pushFollow(FOLLOW_cp_expression_atom_in_synpred39_Css36171);
@@ -23165,18 +23318,18 @@ public class Css3Parser extends DebugParser {
         {
         dbg.location(1072,14);
         // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1072:14: ( ws )?
-        int alt404=2;
-        try { dbg.enterSubRule(404);
-        try { dbg.enterDecision(404, decisionCanBacktrack[404]);
+        int alt407=2;
+        try { dbg.enterSubRule(407);
+        try { dbg.enterDecision(407, decisionCanBacktrack[407]);
 
-        int LA404_0 = input.LA(1);
+        int LA407_0 = input.LA(1);
 
-        if ( ((LA404_0>=WS && LA404_0<=COMMENT)) ) {
-            alt404=1;
+        if ( ((LA407_0>=WS && LA407_0<=COMMENT)) ) {
+            alt407=1;
         }
-        } finally {dbg.exitDecision(404);}
+        } finally {dbg.exitDecision(407);}
 
-        switch (alt404) {
+        switch (alt407) {
             case 1 :
                 dbg.enterAlt(1);
 
@@ -23193,7 +23346,7 @@ public class Css3Parser extends DebugParser {
                 break;
 
         }
-        } finally {dbg.exitSubRule(404);}
+        } finally {dbg.exitSubRule(407);}
 
         dbg.location(1072,18);
         if ( (input.LA(1)>=SOLIDUS && input.LA(1)<=PLUS)||input.LA(1)==STAR ) {
@@ -23283,6 +23436,52 @@ public class Css3Parser extends DebugParser {
         }
     }
     // $ANTLR end synpred45_Css3
+
+    // $ANTLR start synpred46_Css3
+    public final void synpred46_Css3_fragment() throws RecognitionException {   
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:19: ( ( ws )? COMMA )
+        dbg.enterAlt(1);
+
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:20: ( ws )? COMMA
+        {
+        dbg.location(1316,20);
+        // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:20: ( ws )?
+        int alt408=2;
+        try { dbg.enterSubRule(408);
+        try { dbg.enterDecision(408, decisionCanBacktrack[408]);
+
+        int LA408_0 = input.LA(1);
+
+        if ( ((LA408_0>=WS && LA408_0<=COMMENT)) ) {
+            alt408=1;
+        }
+        } finally {dbg.exitDecision(408);}
+
+        switch (alt408) {
+            case 1 :
+                dbg.enterAlt(1);
+
+                // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:20: ws
+                {
+                dbg.location(1316,20);
+                pushFollow(FOLLOW_ws_in_synpred46_Css38375);
+                ws();
+
+                state._fsp--;
+                if (state.failed) return ;
+
+                }
+                break;
+
+        }
+        } finally {dbg.exitSubRule(408);}
+
+        dbg.location(1316,24);
+        match(input,COMMA,FOLLOW_COMMA_in_synpred46_Css38378); if (state.failed) return ;
+
+        }
+    }
+    // $ANTLR end synpred46_Css3
 
     // Delegated rules
 
@@ -23686,6 +23885,22 @@ public class Css3Parser extends DebugParser {
         state.failed=false;
         return success;
     }
+    public final boolean synpred46_Css3() {
+        state.backtracking++;
+        dbg.beginBacktrack(state.backtracking);
+        int start = input.mark();
+        try {
+            synpred46_Css3_fragment(); // can never throw exception
+        } catch (RecognitionException re) {
+            System.err.println("impossible: "+re);
+        }
+        boolean success = !state.failed;
+        input.rewind(start);
+        dbg.endBacktrack(state.backtracking, success);
+        state.backtracking--;
+        state.failed=false;
+        return success;
+    }
     public final boolean synpred5_Css3() {
         state.backtracking++;
         dbg.beginBacktrack(state.backtracking);
@@ -24077,11 +24292,12 @@ public class Css3Parser extends DebugParser {
     protected DFA333 dfa333 = new DFA333(this);
     protected DFA340 dfa340 = new DFA340(this);
     protected DFA339 dfa339 = new DFA339(this);
-    protected DFA360 dfa360 = new DFA360(this);
-    protected DFA383 dfa383 = new DFA383(this);
-    protected DFA385 dfa385 = new DFA385(this);
-    protected DFA394 dfa394 = new DFA394(this);
-    protected DFA399 dfa399 = new DFA399(this);
+    protected DFA345 dfa345 = new DFA345(this);
+    protected DFA363 dfa363 = new DFA363(this);
+    protected DFA386 dfa386 = new DFA386(this);
+    protected DFA388 dfa388 = new DFA388(this);
+    protected DFA397 dfa397 = new DFA397(this);
+    protected DFA402 dfa402 = new DFA402(this);
     static final String DFA3_eotS =
         "\5\uffff";
     static final String DFA3_eofS =
@@ -24243,9 +24459,9 @@ public class Css3Parser extends DebugParser {
                         int index4_1 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (!(evalPredicate(((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))),""))) ) {s = 39;}
+                        if ( (!(evalPredicate((evalPredicate(isLessSource(),"isLessSource()")||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))),""))) ) {s = 39;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 2;}
+                        else if ( ((evalPredicate(isLessSource(),"isLessSource()")||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 2;}
 
                          
                         input.seek(index4_1);
@@ -24478,9 +24694,9 @@ public class Css3Parser extends DebugParser {
                         int index17_29 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (!(evalPredicate(((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isLessSource(),"isLessSource()")||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))),""))) ) {s = 39;}
+                        if ( (!(evalPredicate(((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isLessSource(),"isLessSource()")||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))),""))) ) {s = 39;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isLessSource(),"isLessSource()")||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 1;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isLessSource(),"isLessSource()")||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 1;}
 
                          
                         input.seek(index17_29);
@@ -24844,7 +25060,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred1_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index20_7);
@@ -24859,7 +25075,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred1_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 9;}
 
                          
                         input.seek(index20_8);
@@ -24874,7 +25090,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred1_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 9;}
 
                          
                         input.seek(index20_12);
@@ -24889,7 +25105,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred1_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index20_13);
@@ -24904,7 +25120,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred1_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index20_16);
@@ -24919,7 +25135,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred1_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index20_17);
@@ -24934,7 +25150,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred1_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index20_18);
@@ -24949,7 +25165,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred1_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index20_19);
@@ -24964,7 +25180,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred1_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index20_20);
@@ -24979,7 +25195,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred1_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index20_21);
@@ -24994,7 +25210,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred1_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index20_22);
@@ -25129,7 +25345,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred1_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index20_43);
@@ -25144,7 +25360,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred1_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index20_44);
@@ -25159,7 +25375,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred1_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index20_45);
@@ -25484,7 +25700,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred2_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index26_7);
@@ -25499,7 +25715,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred2_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 9;}
 
                          
                         input.seek(index26_8);
@@ -25514,7 +25730,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred2_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 9;}
 
                          
                         input.seek(index26_12);
@@ -25529,7 +25745,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred2_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index26_13);
@@ -25544,7 +25760,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred2_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index26_16);
@@ -25559,7 +25775,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred2_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index26_17);
@@ -25574,7 +25790,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred2_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index26_18);
@@ -25589,7 +25805,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred2_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index26_19);
@@ -25604,7 +25820,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred2_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index26_20);
@@ -25619,7 +25835,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred2_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index26_21);
@@ -25634,7 +25850,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred2_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index26_22);
@@ -25769,7 +25985,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred2_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index26_43);
@@ -25784,7 +26000,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred2_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
 
                          
                         input.seek(index26_44);
@@ -25799,7 +26015,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred2_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index26_45);
@@ -26059,7 +26275,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred3_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index31_7);
@@ -26074,7 +26290,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred3_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 9;}
 
                          
                         input.seek(index31_8);
@@ -26089,7 +26305,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred3_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index31_12);
@@ -26104,7 +26320,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred3_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index31_13);
@@ -26119,7 +26335,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred3_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index31_16);
@@ -26134,7 +26350,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred3_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index31_17);
@@ -26149,7 +26365,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred3_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index31_18);
@@ -26164,7 +26380,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred3_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index31_19);
@@ -26179,7 +26395,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred3_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index31_20);
@@ -26194,7 +26410,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred3_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index31_21);
@@ -26209,7 +26425,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred3_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index31_22);
@@ -26344,7 +26560,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred3_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index31_43);
@@ -26359,7 +26575,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred3_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index31_44);
@@ -26374,7 +26590,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred3_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 6;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 9;}
 
                          
                         input.seek(index31_45);
@@ -26620,7 +26836,7 @@ public class Css3Parser extends DebugParser {
 
                         else if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                          
                         input.seek(index46_2);
@@ -26639,7 +26855,7 @@ public class Css3Parser extends DebugParser {
 
                         else if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                          
                         input.seek(index46_3);
@@ -26739,7 +26955,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                         else if ( (evalPredicate(isScssSource(),"isScssSource()")) ) {s = 42;}
 
@@ -26756,7 +26972,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 40;}
 
-                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 41;}
+                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 41;}
 
                          
                         input.seek(index46_10);
@@ -26771,7 +26987,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                         else if ( (evalPredicate(isScssSource(),"isScssSource()")) ) {s = 43;}
 
@@ -26788,7 +27004,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                         else if ( (evalPredicate(isScssSource(),"isScssSource()")) ) {s = 44;}
 
@@ -26805,7 +27021,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                         else if ( (evalPredicate(isScssSource(),"isScssSource()")) ) {s = 44;}
 
@@ -26822,7 +27038,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                         else if ( (evalPredicate(isScssSource(),"isScssSource()")) ) {s = 44;}
 
@@ -26839,7 +27055,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                         else if ( (evalPredicate(isScssSource(),"isScssSource()")) ) {s = 44;}
 
@@ -26856,7 +27072,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                         else if ( (evalPredicate(isScssSource(),"isScssSource()")) ) {s = 45;}
 
@@ -26873,9 +27089,9 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
-                        else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 46;}
+                        else if ( ((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 46;}
 
                          
                         input.seek(index46_17);
@@ -26890,7 +27106,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                         else if ( (true) ) {s = 20;}
 
@@ -26907,7 +27123,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                         else if ( (true) ) {s = 47;}
 
@@ -26941,7 +27157,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                         else if ( (true) ) {s = 48;}
 
@@ -26958,7 +27174,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                         else if ( (true) ) {s = 49;}
 
@@ -26975,7 +27191,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                         else if ( (true) ) {s = 49;}
 
@@ -26992,7 +27208,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                         else if ( (true) ) {s = 49;}
 
@@ -27009,7 +27225,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                         else if ( (true) ) {s = 50;}
 
@@ -27026,7 +27242,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred8_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( ((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||(((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
+                        else if ( (((((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred9_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 41;}
 
                          
                         input.seek(index46_36);
@@ -28320,7 +28536,7 @@ public class Css3Parser extends DebugParser {
 
                         else if ( ((((synpred16_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred16_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 40;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 42;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))) ) {s = 42;}
 
                          
                         input.seek(index73_28);
@@ -29120,7 +29336,7 @@ public class Css3Parser extends DebugParser {
                         int index148_1 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29143,7 +29359,7 @@ public class Css3Parser extends DebugParser {
                         int index148_2 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 40;}
 
@@ -29284,7 +29500,7 @@ public class Css3Parser extends DebugParser {
                         int index148_9 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29309,7 +29525,7 @@ public class Css3Parser extends DebugParser {
                         int index148_10 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29332,7 +29548,7 @@ public class Css3Parser extends DebugParser {
                         int index148_11 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29374,7 +29590,7 @@ public class Css3Parser extends DebugParser {
                         int index148_23 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29397,7 +29613,7 @@ public class Css3Parser extends DebugParser {
                         int index148_24 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29420,7 +29636,7 @@ public class Css3Parser extends DebugParser {
                         int index148_25 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29443,7 +29659,7 @@ public class Css3Parser extends DebugParser {
                         int index148_26 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29466,7 +29682,7 @@ public class Css3Parser extends DebugParser {
                         int index148_27 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29489,7 +29705,7 @@ public class Css3Parser extends DebugParser {
                         int index148_28 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29512,7 +29728,7 @@ public class Css3Parser extends DebugParser {
                         int index148_29 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29535,7 +29751,7 @@ public class Css3Parser extends DebugParser {
                         int index148_30 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29558,7 +29774,7 @@ public class Css3Parser extends DebugParser {
                         int index148_31 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29581,7 +29797,7 @@ public class Css3Parser extends DebugParser {
                         int index148_32 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29604,7 +29820,7 @@ public class Css3Parser extends DebugParser {
                         int index148_33 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29627,7 +29843,7 @@ public class Css3Parser extends DebugParser {
                         int index148_34 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29650,7 +29866,7 @@ public class Css3Parser extends DebugParser {
                         int index148_35 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29673,7 +29889,7 @@ public class Css3Parser extends DebugParser {
                         int index148_36 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29696,7 +29912,7 @@ public class Css3Parser extends DebugParser {
                         int index148_37 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29719,7 +29935,7 @@ public class Css3Parser extends DebugParser {
                         int index148_38 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
+                        if ( ((((synpred20_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))||((synpred20_Css3()&&evalPredicate(isScssSource(),"isScssSource()"))&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 39;}
 
                         else if ( ((synpred21_Css3()&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 40;}
 
@@ -29872,9 +30088,9 @@ public class Css3Parser extends DebugParser {
     static final String DFA152_acceptS =
         "\4\uffff\1\2\6\uffff\5\1\3\uffff\1\1\13\uffff\1\1\3\uffff";
     static final String DFA152_specialS =
-        "\1\16\1\22\1\25\1\15\1\uffff\1\1\1\2\1\0\1\23\1\14\1\6\5\uffff\1"+
-        "\12\1\30\1\21\1\uffff\1\3\1\11\1\7\1\31\1\24\1\10\1\32\1\17\1\20"+
-        "\1\26\1\4\1\uffff\1\5\1\27\1\13}>";
+        "\1\31\1\13\1\30\1\6\1\uffff\1\26\1\23\1\24\1\15\1\3\1\16\5\uffff"+
+        "\1\11\1\14\1\4\1\uffff\1\25\1\17\1\20\1\21\1\5\1\22\1\7\1\12\1\27"+
+        "\1\0\1\10\1\uffff\1\2\1\32\1\1}>";
     static final String[] DFA152_transitionS = {
             "\1\3\4\uffff\1\13\12\uffff\1\4\1\12\33\uffff\1\13\1\4\1\uffff"+
             "\1\2\1\4\1\1\1\7\1\10\1\11\2\4\1\5\1\4\1\uffff\1\6\6\uffff\1"+
@@ -29985,81 +30201,42 @@ public class Css3Parser extends DebugParser {
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA152_7 = input.LA(1);
+                        int LA152_29 = input.LA(1);
 
                          
-                        int index152_7 = input.index();
+                        int index152_29 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred29_Css3()) ) {s = 19;}
+                        if ( ((LA152_29>=WS && LA152_29<=COMMENT)) && (synpred29_Css3())) {s = 13;}
 
-                        else if ( (true) ) {s = 4;}
+                        else if ( (LA152_29==LBRACE) && (synpred29_Css3())) {s = 19;}
+
+                        else if ( (LA152_29==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
+
+                        else if ( (LA152_29==IDENT||LA152_29==COMMA||LA152_29==COLON||LA152_29==MINUS||LA152_29==GREATER||(LA152_29>=HASH && LA152_29<=LBRACKET)||LA152_29==STAR||LA152_29==LESS_AND||LA152_29==RBRACKET) && (synpred29_Css3())) {s = 15;}
+
+                        else if ( (LA152_29==PIPE) ) {s = 4;}
 
                          
-                        input.seek(index152_7);
+                        input.seek(index152_29);
                         if ( s>=0 ) return s;
                         break;
                     case 1 : 
-                        int LA152_5 = input.LA(1);
+                        int LA152_34 = input.LA(1);
 
                          
-                        int index152_5 = input.index();
+                        int index152_34 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred29_Css3()) ) {s = 19;}
+                        if ( (synpred29_Css3()) ) {s = 31;}
 
                         else if ( (true) ) {s = 4;}
 
                          
-                        input.seek(index152_5);
+                        input.seek(index152_34);
                         if ( s>=0 ) return s;
                         break;
                     case 2 : 
-                        int LA152_6 = input.LA(1);
-
-                         
-                        int index152_6 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred29_Css3()) ) {s = 19;}
-
-                        else if ( (true) ) {s = 4;}
-
-                         
-                        input.seek(index152_6);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 3 : 
-                        int LA152_20 = input.LA(1);
-
-                         
-                        int index152_20 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred29_Css3()) ) {s = 31;}
-
-                        else if ( (true) ) {s = 4;}
-
-                         
-                        input.seek(index152_20);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 4 : 
-                        int LA152_30 = input.LA(1);
-
-                         
-                        int index152_30 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred29_Css3()) ) {s = 31;}
-
-                        else if ( (true) ) {s = 4;}
-
-                         
-                        input.seek(index152_30);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 5 : 
                         int LA152_32 = input.LA(1);
 
                          
@@ -30082,34 +30259,91 @@ public class Css3Parser extends DebugParser {
                         input.seek(index152_32);
                         if ( s>=0 ) return s;
                         break;
-                    case 6 : 
-                        int LA152_10 = input.LA(1);
+                    case 3 : 
+                        int LA152_9 = input.LA(1);
 
                          
-                        int index152_10 = input.index();
+                        int index152_9 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((LA152_10>=WS && LA152_10<=COMMENT)) && (synpred29_Css3())) {s = 13;}
+                        if ( ((LA152_9>=WS && LA152_9<=COMMENT)) ) {s = 27;}
 
-                        else if ( (LA152_10==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
+                        else if ( (LA152_9==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
 
-                        else if ( (LA152_10==IDENT) ) {s = 30;}
+                        else if ( (LA152_9==IDENT) ) {s = 28;}
 
-                        else if ( (LA152_10==LBRACE) && (synpred29_Css3())) {s = 19;}
+                        else if ( (LA152_9==LBRACE) && (synpred29_Css3())) {s = 19;}
 
-                        else if ( (LA152_10==COMMA||LA152_10==COLON||LA152_10==MINUS||LA152_10==GREATER||(LA152_10>=HASH && LA152_10<=LBRACKET)||LA152_10==STAR||LA152_10==LESS_AND||LA152_10==RBRACKET) && (synpred29_Css3())) {s = 15;}
+                        else if ( (LA152_9==STAR) ) {s = 29;}
 
-                        else if ( ((LA152_10>=NOT && LA152_10<=GEN)) ) {s = 4;}
+                        else if ( (LA152_9==COMMA||LA152_9==COLON||LA152_9==MINUS||LA152_9==GREATER||(LA152_9>=HASH && LA152_9<=LBRACKET)||LA152_9==LESS_AND||LA152_9==RBRACKET) && (synpred29_Css3())) {s = 15;}
+
+                        else if ( (LA152_9==PIPE) ) {s = 4;}
 
                          
-                        input.seek(index152_10);
+                        input.seek(index152_9);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 4 : 
+                        int LA152_18 = input.LA(1);
+
+                         
+                        int index152_18 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred29_Css3()) ) {s = 31;}
+
+                        else if ( (true) ) {s = 4;}
+
+                         
+                        input.seek(index152_18);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 5 : 
+                        int LA152_24 = input.LA(1);
+
+                         
+                        int index152_24 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( ((LA152_24>=WS && LA152_24<=COMMENT)) ) {s = 27;}
+
+                        else if ( (LA152_24==LBRACE) && (synpred29_Css3())) {s = 19;}
+
+                        else if ( (LA152_24==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
+
+                        else if ( (LA152_24==IDENT) ) {s = 28;}
+
+                        else if ( (LA152_24==STAR) ) {s = 29;}
+
+                        else if ( (LA152_24==COMMA||LA152_24==COLON||LA152_24==MINUS||LA152_24==GREATER||(LA152_24>=HASH && LA152_24<=LBRACKET)||LA152_24==LESS_AND||LA152_24==RBRACKET) && (synpred29_Css3())) {s = 15;}
+
+                        else if ( (LA152_24==PIPE) ) {s = 4;}
+
+                         
+                        input.seek(index152_24);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 6 : 
+                        int LA152_3 = input.LA(1);
+
+                         
+                        int index152_3 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred29_Css3()) ) {s = 19;}
+
+                        else if ( (true) ) {s = 4;}
+
+                         
+                        input.seek(index152_3);
                         if ( s>=0 ) return s;
                         break;
                     case 7 : 
-                        int LA152_22 = input.LA(1);
+                        int LA152_26 = input.LA(1);
 
                          
-                        int index152_22 = input.index();
+                        int index152_26 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (synpred29_Css3()) ) {s = 31;}
@@ -30117,37 +30351,14 @@ public class Css3Parser extends DebugParser {
                         else if ( (true) ) {s = 4;}
 
                          
-                        input.seek(index152_22);
+                        input.seek(index152_26);
                         if ( s>=0 ) return s;
                         break;
                     case 8 : 
-                        int LA152_25 = input.LA(1);
+                        int LA152_30 = input.LA(1);
 
                          
-                        int index152_25 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( ((LA152_25>=WS && LA152_25<=COMMENT)) && (synpred29_Css3())) {s = 13;}
-
-                        else if ( (LA152_25==LBRACE) && (synpred29_Css3())) {s = 19;}
-
-                        else if ( (LA152_25==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
-
-                        else if ( (LA152_25==IDENT) ) {s = 30;}
-
-                        else if ( (LA152_25==COMMA||LA152_25==COLON||LA152_25==MINUS||LA152_25==GREATER||(LA152_25>=HASH && LA152_25<=LBRACKET)||LA152_25==STAR||LA152_25==LESS_AND||LA152_25==RBRACKET) && (synpred29_Css3())) {s = 15;}
-
-                        else if ( ((LA152_25>=NOT && LA152_25<=GEN)) ) {s = 4;}
-
-                         
-                        input.seek(index152_25);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 9 : 
-                        int LA152_21 = input.LA(1);
-
-                         
-                        int index152_21 = input.index();
+                        int index152_30 = input.index();
                         input.rewind();
                         s = -1;
                         if ( (synpred29_Css3()) ) {s = 31;}
@@ -30155,10 +30366,10 @@ public class Css3Parser extends DebugParser {
                         else if ( (true) ) {s = 4;}
 
                          
-                        input.seek(index152_21);
+                        input.seek(index152_30);
                         if ( s>=0 ) return s;
                         break;
-                    case 10 : 
+                    case 9 : 
                         int LA152_16 = input.LA(1);
 
                          
@@ -30193,95 +30404,7 @@ public class Css3Parser extends DebugParser {
                         input.seek(index152_16);
                         if ( s>=0 ) return s;
                         break;
-                    case 11 : 
-                        int LA152_34 = input.LA(1);
-
-                         
-                        int index152_34 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred29_Css3()) ) {s = 31;}
-
-                        else if ( (true) ) {s = 4;}
-
-                         
-                        input.seek(index152_34);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 12 : 
-                        int LA152_9 = input.LA(1);
-
-                         
-                        int index152_9 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( ((LA152_9>=WS && LA152_9<=COMMENT)) ) {s = 27;}
-
-                        else if ( (LA152_9==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
-
-                        else if ( (LA152_9==IDENT) ) {s = 28;}
-
-                        else if ( (LA152_9==LBRACE) && (synpred29_Css3())) {s = 19;}
-
-                        else if ( (LA152_9==STAR) ) {s = 29;}
-
-                        else if ( (LA152_9==COMMA||LA152_9==COLON||LA152_9==MINUS||LA152_9==GREATER||(LA152_9>=HASH && LA152_9<=LBRACKET)||LA152_9==LESS_AND||LA152_9==RBRACKET) && (synpred29_Css3())) {s = 15;}
-
-                        else if ( (LA152_9==PIPE) ) {s = 4;}
-
-                         
-                        input.seek(index152_9);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 13 : 
-                        int LA152_3 = input.LA(1);
-
-                         
-                        int index152_3 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred29_Css3()) ) {s = 19;}
-
-                        else if ( (true) ) {s = 4;}
-
-                         
-                        input.seek(index152_3);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 14 : 
-                        int LA152_0 = input.LA(1);
-
-                         
-                        int index152_0 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA152_0==HASH_SYMBOL) ) {s = 1;}
-
-                        else if ( (LA152_0==GREATER) ) {s = 2;}
-
-                        else if ( (LA152_0==IDENT) ) {s = 3;}
-
-                        else if ( (LA152_0==GEN||LA152_0==PLUS||LA152_0==TILDE||(LA152_0>=DCOLON && LA152_0<=SASS_EXTEND_ONLY_SELECTOR)||LA152_0==PIPE||LA152_0==AT_SIGN) ) {s = 4;}
-
-                        else if ( (LA152_0==STAR) ) {s = 5;}
-
-                        else if ( (LA152_0==LESS_AND) ) {s = 6;}
-
-                        else if ( (LA152_0==HASH) ) {s = 7;}
-
-                        else if ( (LA152_0==DOT) ) {s = 8;}
-
-                        else if ( (LA152_0==LBRACKET) ) {s = 9;}
-
-                        else if ( (LA152_0==COLON) ) {s = 10;}
-
-                        else if ( (LA152_0==COMMA||LA152_0==MINUS||LA152_0==RBRACKET) && (synpred29_Css3())) {s = 11;}
-
-                         
-                        input.seek(index152_0);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 15 : 
+                    case 10 : 
                         int LA152_27 = input.LA(1);
 
                          
@@ -30302,45 +30425,7 @@ public class Css3Parser extends DebugParser {
                         input.seek(index152_27);
                         if ( s>=0 ) return s;
                         break;
-                    case 16 : 
-                        int LA152_28 = input.LA(1);
-
-                         
-                        int index152_28 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( ((LA152_28>=WS && LA152_28<=COMMENT)) ) {s = 33;}
-
-                        else if ( (LA152_28==LBRACE) && (synpred29_Css3())) {s = 19;}
-
-                        else if ( (LA152_28==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
-
-                        else if ( (LA152_28==RBRACKET) ) {s = 34;}
-
-                        else if ( (LA152_28==PIPE||(LA152_28>=OPEQ && LA152_28<=CONTAINS)) ) {s = 4;}
-
-                        else if ( (LA152_28==IDENT||LA152_28==COMMA||LA152_28==COLON||LA152_28==MINUS||LA152_28==GREATER||(LA152_28>=HASH && LA152_28<=LBRACKET)||LA152_28==STAR||LA152_28==LESS_AND) && (synpred29_Css3())) {s = 15;}
-
-                         
-                        input.seek(index152_28);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 17 : 
-                        int LA152_18 = input.LA(1);
-
-                         
-                        int index152_18 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred29_Css3()) ) {s = 31;}
-
-                        else if ( (true) ) {s = 4;}
-
-                         
-                        input.seek(index152_18);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 18 : 
+                    case 11 : 
                         int LA152_1 = input.LA(1);
 
                          
@@ -30361,7 +30446,28 @@ public class Css3Parser extends DebugParser {
                         input.seek(index152_1);
                         if ( s>=0 ) return s;
                         break;
-                    case 19 : 
+                    case 12 : 
+                        int LA152_17 = input.LA(1);
+
+                         
+                        int index152_17 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA152_17==LBRACE) && (synpred29_Css3())) {s = 31;}
+
+                        else if ( ((LA152_17>=WS && LA152_17<=COMMENT)) && (synpred29_Css3())) {s = 13;}
+
+                        else if ( (LA152_17==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
+
+                        else if ( (LA152_17==IDENT||LA152_17==COMMA||LA152_17==COLON||LA152_17==MINUS||LA152_17==GREATER||(LA152_17>=HASH && LA152_17<=LBRACKET)||LA152_17==STAR||LA152_17==LESS_AND||LA152_17==RBRACKET) && (synpred29_Css3())) {s = 15;}
+
+                        else if ( (LA152_17==NAME||LA152_17==AT_SIGN) ) {s = 4;}
+
+                         
+                        input.seek(index152_17);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 13 : 
                         int LA152_8 = input.LA(1);
 
                          
@@ -30384,32 +30490,189 @@ public class Css3Parser extends DebugParser {
                         input.seek(index152_8);
                         if ( s>=0 ) return s;
                         break;
-                    case 20 : 
-                        int LA152_24 = input.LA(1);
+                    case 14 : 
+                        int LA152_10 = input.LA(1);
 
                          
-                        int index152_24 = input.index();
+                        int index152_10 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((LA152_24>=WS && LA152_24<=COMMENT)) ) {s = 27;}
+                        if ( ((LA152_10>=WS && LA152_10<=COMMENT)) && (synpred29_Css3())) {s = 13;}
 
-                        else if ( (LA152_24==LBRACE) && (synpred29_Css3())) {s = 19;}
+                        else if ( (LA152_10==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
 
-                        else if ( (LA152_24==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
+                        else if ( (LA152_10==IDENT) ) {s = 30;}
 
-                        else if ( (LA152_24==IDENT) ) {s = 28;}
+                        else if ( (LA152_10==LBRACE) && (synpred29_Css3())) {s = 19;}
 
-                        else if ( (LA152_24==STAR) ) {s = 29;}
+                        else if ( (LA152_10==COMMA||LA152_10==COLON||LA152_10==MINUS||LA152_10==GREATER||(LA152_10>=HASH && LA152_10<=LBRACKET)||LA152_10==STAR||LA152_10==LESS_AND||LA152_10==RBRACKET) && (synpred29_Css3())) {s = 15;}
 
-                        else if ( (LA152_24==COMMA||LA152_24==COLON||LA152_24==MINUS||LA152_24==GREATER||(LA152_24>=HASH && LA152_24<=LBRACKET)||LA152_24==LESS_AND||LA152_24==RBRACKET) && (synpred29_Css3())) {s = 15;}
-
-                        else if ( (LA152_24==PIPE) ) {s = 4;}
+                        else if ( ((LA152_10>=NOT && LA152_10<=GEN)) ) {s = 4;}
 
                          
-                        input.seek(index152_24);
+                        input.seek(index152_10);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 15 : 
+                        int LA152_21 = input.LA(1);
+
+                         
+                        int index152_21 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred29_Css3()) ) {s = 31;}
+
+                        else if ( (true) ) {s = 4;}
+
+                         
+                        input.seek(index152_21);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 16 : 
+                        int LA152_22 = input.LA(1);
+
+                         
+                        int index152_22 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred29_Css3()) ) {s = 31;}
+
+                        else if ( (true) ) {s = 4;}
+
+                         
+                        input.seek(index152_22);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 17 : 
+                        int LA152_23 = input.LA(1);
+
+                         
+                        int index152_23 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( ((LA152_23>=WS && LA152_23<=COMMENT)) && (synpred29_Css3())) {s = 13;}
+
+                        else if ( (LA152_23==LBRACE) && (synpred29_Css3())) {s = 19;}
+
+                        else if ( (LA152_23==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
+
+                        else if ( (LA152_23==IDENT) ) {s = 26;}
+
+                        else if ( (LA152_23==COMMA||LA152_23==COLON||LA152_23==MINUS||LA152_23==GREATER||(LA152_23>=HASH && LA152_23<=LBRACKET)||LA152_23==STAR||LA152_23==LESS_AND||LA152_23==RBRACKET) && (synpred29_Css3())) {s = 15;}
+
+                        else if ( (LA152_23==LESS_IMPORT_TYPE||LA152_23==GEN||LA152_23==AT_SIGN) ) {s = 4;}
+
+                         
+                        input.seek(index152_23);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 18 : 
+                        int LA152_25 = input.LA(1);
+
+                         
+                        int index152_25 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( ((LA152_25>=WS && LA152_25<=COMMENT)) && (synpred29_Css3())) {s = 13;}
+
+                        else if ( (LA152_25==LBRACE) && (synpred29_Css3())) {s = 19;}
+
+                        else if ( (LA152_25==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
+
+                        else if ( (LA152_25==IDENT) ) {s = 30;}
+
+                        else if ( (LA152_25==COMMA||LA152_25==COLON||LA152_25==MINUS||LA152_25==GREATER||(LA152_25>=HASH && LA152_25<=LBRACKET)||LA152_25==STAR||LA152_25==LESS_AND||LA152_25==RBRACKET) && (synpred29_Css3())) {s = 15;}
+
+                        else if ( ((LA152_25>=NOT && LA152_25<=GEN)) ) {s = 4;}
+
+                         
+                        input.seek(index152_25);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 19 : 
+                        int LA152_6 = input.LA(1);
+
+                         
+                        int index152_6 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred29_Css3()) ) {s = 19;}
+
+                        else if ( (true) ) {s = 4;}
+
+                         
+                        input.seek(index152_6);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 20 : 
+                        int LA152_7 = input.LA(1);
+
+                         
+                        int index152_7 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred29_Css3()) ) {s = 19;}
+
+                        else if ( (true) ) {s = 4;}
+
+                         
+                        input.seek(index152_7);
                         if ( s>=0 ) return s;
                         break;
                     case 21 : 
+                        int LA152_20 = input.LA(1);
+
+                         
+                        int index152_20 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred29_Css3()) ) {s = 31;}
+
+                        else if ( (true) ) {s = 4;}
+
+                         
+                        input.seek(index152_20);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 22 : 
+                        int LA152_5 = input.LA(1);
+
+                         
+                        int index152_5 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred29_Css3()) ) {s = 19;}
+
+                        else if ( (true) ) {s = 4;}
+
+                         
+                        input.seek(index152_5);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 23 : 
+                        int LA152_28 = input.LA(1);
+
+                         
+                        int index152_28 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( ((LA152_28>=WS && LA152_28<=COMMENT)) ) {s = 33;}
+
+                        else if ( (LA152_28==LBRACE) && (synpred29_Css3())) {s = 19;}
+
+                        else if ( (LA152_28==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
+
+                        else if ( (LA152_28==RBRACKET) ) {s = 34;}
+
+                        else if ( (LA152_28==PIPE||(LA152_28>=OPEQ && LA152_28<=CONTAINS)) ) {s = 4;}
+
+                        else if ( (LA152_28==IDENT||LA152_28==COMMA||LA152_28==COLON||LA152_28==MINUS||LA152_28==GREATER||(LA152_28>=HASH && LA152_28<=LBRACKET)||LA152_28==STAR||LA152_28==LESS_AND) && (synpred29_Css3())) {s = 15;}
+
+                         
+                        input.seek(index152_28);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 24 : 
                         int LA152_2 = input.LA(1);
 
                          
@@ -30444,28 +30707,40 @@ public class Css3Parser extends DebugParser {
                         input.seek(index152_2);
                         if ( s>=0 ) return s;
                         break;
-                    case 22 : 
-                        int LA152_29 = input.LA(1);
+                    case 25 : 
+                        int LA152_0 = input.LA(1);
 
                          
-                        int index152_29 = input.index();
+                        int index152_0 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( ((LA152_29>=WS && LA152_29<=COMMENT)) && (synpred29_Css3())) {s = 13;}
+                        if ( (LA152_0==HASH_SYMBOL) ) {s = 1;}
 
-                        else if ( (LA152_29==LBRACE) && (synpred29_Css3())) {s = 19;}
+                        else if ( (LA152_0==GREATER) ) {s = 2;}
 
-                        else if ( (LA152_29==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
+                        else if ( (LA152_0==IDENT) ) {s = 3;}
 
-                        else if ( (LA152_29==IDENT||LA152_29==COMMA||LA152_29==COLON||LA152_29==MINUS||LA152_29==GREATER||(LA152_29>=HASH && LA152_29<=LBRACKET)||LA152_29==STAR||LA152_29==LESS_AND||LA152_29==RBRACKET) && (synpred29_Css3())) {s = 15;}
+                        else if ( (LA152_0==GEN||LA152_0==PLUS||LA152_0==TILDE||(LA152_0>=DCOLON && LA152_0<=SASS_EXTEND_ONLY_SELECTOR)||LA152_0==PIPE||LA152_0==AT_SIGN) ) {s = 4;}
 
-                        else if ( (LA152_29==PIPE) ) {s = 4;}
+                        else if ( (LA152_0==STAR) ) {s = 5;}
+
+                        else if ( (LA152_0==LESS_AND) ) {s = 6;}
+
+                        else if ( (LA152_0==HASH) ) {s = 7;}
+
+                        else if ( (LA152_0==DOT) ) {s = 8;}
+
+                        else if ( (LA152_0==LBRACKET) ) {s = 9;}
+
+                        else if ( (LA152_0==COLON) ) {s = 10;}
+
+                        else if ( (LA152_0==COMMA||LA152_0==MINUS||LA152_0==RBRACKET) && (synpred29_Css3())) {s = 11;}
 
                          
-                        input.seek(index152_29);
+                        input.seek(index152_0);
                         if ( s>=0 ) return s;
                         break;
-                    case 23 : 
+                    case 26 : 
                         int LA152_33 = input.LA(1);
 
                          
@@ -30486,65 +30761,6 @@ public class Css3Parser extends DebugParser {
 
                          
                         input.seek(index152_33);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 24 : 
-                        int LA152_17 = input.LA(1);
-
-                         
-                        int index152_17 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA152_17==LBRACE) && (synpred29_Css3())) {s = 31;}
-
-                        else if ( ((LA152_17>=WS && LA152_17<=COMMENT)) && (synpred29_Css3())) {s = 13;}
-
-                        else if ( (LA152_17==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
-
-                        else if ( (LA152_17==IDENT||LA152_17==COMMA||LA152_17==COLON||LA152_17==MINUS||LA152_17==GREATER||(LA152_17>=HASH && LA152_17<=LBRACKET)||LA152_17==STAR||LA152_17==LESS_AND||LA152_17==RBRACKET) && (synpred29_Css3())) {s = 15;}
-
-                        else if ( (LA152_17==NAME||LA152_17==AT_SIGN) ) {s = 4;}
-
-                         
-                        input.seek(index152_17);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 25 : 
-                        int LA152_23 = input.LA(1);
-
-                         
-                        int index152_23 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( ((LA152_23>=WS && LA152_23<=COMMENT)) && (synpred29_Css3())) {s = 13;}
-
-                        else if ( (LA152_23==LBRACE) && (synpred29_Css3())) {s = 19;}
-
-                        else if ( (LA152_23==HASH_SYMBOL) && (synpred29_Css3())) {s = 14;}
-
-                        else if ( (LA152_23==IDENT) ) {s = 26;}
-
-                        else if ( (LA152_23==COMMA||LA152_23==COLON||LA152_23==MINUS||LA152_23==GREATER||(LA152_23>=HASH && LA152_23<=LBRACKET)||LA152_23==STAR||LA152_23==LESS_AND||LA152_23==RBRACKET) && (synpred29_Css3())) {s = 15;}
-
-                        else if ( (LA152_23==LESS_IMPORT_TYPE||LA152_23==GEN||LA152_23==AT_SIGN) ) {s = 4;}
-
-                         
-                        input.seek(index152_23);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 26 : 
-                        int LA152_26 = input.LA(1);
-
-                         
-                        int index152_26 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred29_Css3()) ) {s = 31;}
-
-                        else if ( (true) ) {s = 4;}
-
-                         
-                        input.seek(index152_26);
                         if ( s>=0 ) return s;
                         break;
             }
@@ -32214,7 +32430,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred33_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 63;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index200_7);
@@ -32229,7 +32445,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred33_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 63;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index200_8);
@@ -32304,7 +32520,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred33_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 63;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index200_14);
@@ -32319,7 +32535,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred33_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 63;}
 
-                        else if ( (((evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 2;}
 
                          
                         input.seek(index200_15);
@@ -32334,7 +32550,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred33_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 63;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index200_16);
@@ -32349,7 +32565,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred33_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 63;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index200_17);
@@ -32364,7 +32580,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred33_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 63;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index200_18);
@@ -32379,7 +32595,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred33_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 63;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index200_19);
@@ -32394,7 +32610,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred33_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 63;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index200_20);
@@ -32409,7 +32625,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred33_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 63;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index200_21);
@@ -32424,7 +32640,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred33_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 63;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 2;}
 
                          
                         input.seek(index200_22);
@@ -32589,7 +32805,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred33_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 63;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index200_41);
@@ -32604,7 +32820,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred33_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 63;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index200_42);
@@ -32619,7 +32835,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred33_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 63;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index200_43);
@@ -33764,7 +33980,7 @@ public class Css3Parser extends DebugParser {
     static final String DFA221_acceptS =
         "\2\uffff\1\2\34\1";
     static final String DFA221_specialS =
-        "\1\1\1\0\35\uffff}>";
+        "\1\0\1\1\35\uffff}>";
     static final String[] DFA221_transitionS = {
             "\1\27\1\uffff\1\5\1\21\1\25\2\27\1\2\2\uffff\1\2\1\27\6\uffff"+
             "\1\24\1\uffff\2\27\3\uffff\1\27\1\7\23\27\1\3\2\4\1\27\1\uffff"+
@@ -33845,69 +34061,6 @@ public class Css3Parser extends DebugParser {
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA221_1 = input.LA(1);
-
-                         
-                        int index221_1 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (LA221_1==COMMA||LA221_1==RPAREN) ) {s = 2;}
-
-                        else if ( ((LA221_1>=WS && LA221_1<=COMMENT)) ) {s = 1;}
-
-                        else if ( ((LA221_1>=MINUS && LA221_1<=PLUS)) && (synpred36_Css3())) {s = 4;}
-
-                        else if ( (LA221_1==IDENT) && (synpred36_Css3())) {s = 5;}
-
-                        else if ( (LA221_1==NUMBER) && (synpred36_Css3())) {s = 6;}
-
-                        else if ( (LA221_1==PERCENTAGE) && (synpred36_Css3())) {s = 7;}
-
-                        else if ( (LA221_1==LENGTH) && (synpred36_Css3())) {s = 8;}
-
-                        else if ( (LA221_1==EMS) && (synpred36_Css3())) {s = 9;}
-
-                        else if ( (LA221_1==REM) && (synpred36_Css3())) {s = 10;}
-
-                        else if ( (LA221_1==EXS) && (synpred36_Css3())) {s = 11;}
-
-                        else if ( (LA221_1==ANGLE) && (synpred36_Css3())) {s = 12;}
-
-                        else if ( (LA221_1==TIME) && (synpred36_Css3())) {s = 13;}
-
-                        else if ( (LA221_1==FREQ) && (synpred36_Css3())) {s = 14;}
-
-                        else if ( (LA221_1==RESOLUTION) && (synpred36_Css3())) {s = 15;}
-
-                        else if ( (LA221_1==DIMENSION) && (synpred36_Css3())) {s = 16;}
-
-                        else if ( (LA221_1==STRING) && (synpred36_Css3())) {s = 17;}
-
-                        else if ( (LA221_1==TILDE) && (synpred36_Css3())) {s = 18;}
-
-                        else if ( (LA221_1==LESS_JS_STRING) && (synpred36_Css3())) {s = 19;}
-
-                        else if ( (LA221_1==GEN) && (synpred36_Css3())) {s = 20;}
-
-                        else if ( (LA221_1==URI) && (synpred36_Css3())) {s = 21;}
-
-                        else if ( (LA221_1==HASH) && (synpred36_Css3())) {s = 22;}
-
-                        else if ( (LA221_1==NAMESPACE_SYM||(LA221_1>=CHARSET_SYM && LA221_1<=IMPORT_SYM)||LA221_1==MEDIA_SYM||(LA221_1>=AT_IDENT && LA221_1<=MOZ_DOCUMENT_SYM)||LA221_1==WEBKIT_KEYFRAMES_SYM||(LA221_1>=PAGE_SYM && LA221_1<=RIGHTBOTTOM_SYM)||LA221_1==SASS_AT_ROOT||(LA221_1>=SASS_CONTENT && LA221_1<=SASS_WHILE)) && (synpred36_Css3())) {s = 27;}
-
-                        else if ( (LA221_1==SASS_VAR) && (synpred36_Css3())) {s = 28;}
-
-                        else if ( (LA221_1==HASH_SYMBOL) && (synpred36_Css3())) {s = 29;}
-
-                        else if ( (LA221_1==PERCENTAGE_SYMBOL) && (synpred36_Css3())) {s = 30;}
-
-                        else if ( (LA221_1==SOLIDUS) && (synpred36_Css3())) {s = 3;}
-
-                         
-                        input.seek(index221_1);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 1 : 
                         int LA221_0 = input.LA(1);
 
                          
@@ -33968,6 +34121,69 @@ public class Css3Parser extends DebugParser {
 
                          
                         input.seek(index221_0);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 1 : 
+                        int LA221_1 = input.LA(1);
+
+                         
+                        int index221_1 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA221_1==COMMA||LA221_1==RPAREN) ) {s = 2;}
+
+                        else if ( ((LA221_1>=WS && LA221_1<=COMMENT)) ) {s = 1;}
+
+                        else if ( ((LA221_1>=MINUS && LA221_1<=PLUS)) && (synpred36_Css3())) {s = 4;}
+
+                        else if ( (LA221_1==IDENT) && (synpred36_Css3())) {s = 5;}
+
+                        else if ( (LA221_1==NUMBER) && (synpred36_Css3())) {s = 6;}
+
+                        else if ( (LA221_1==PERCENTAGE) && (synpred36_Css3())) {s = 7;}
+
+                        else if ( (LA221_1==LENGTH) && (synpred36_Css3())) {s = 8;}
+
+                        else if ( (LA221_1==EMS) && (synpred36_Css3())) {s = 9;}
+
+                        else if ( (LA221_1==REM) && (synpred36_Css3())) {s = 10;}
+
+                        else if ( (LA221_1==EXS) && (synpred36_Css3())) {s = 11;}
+
+                        else if ( (LA221_1==ANGLE) && (synpred36_Css3())) {s = 12;}
+
+                        else if ( (LA221_1==TIME) && (synpred36_Css3())) {s = 13;}
+
+                        else if ( (LA221_1==FREQ) && (synpred36_Css3())) {s = 14;}
+
+                        else if ( (LA221_1==RESOLUTION) && (synpred36_Css3())) {s = 15;}
+
+                        else if ( (LA221_1==DIMENSION) && (synpred36_Css3())) {s = 16;}
+
+                        else if ( (LA221_1==STRING) && (synpred36_Css3())) {s = 17;}
+
+                        else if ( (LA221_1==TILDE) && (synpred36_Css3())) {s = 18;}
+
+                        else if ( (LA221_1==LESS_JS_STRING) && (synpred36_Css3())) {s = 19;}
+
+                        else if ( (LA221_1==GEN) && (synpred36_Css3())) {s = 20;}
+
+                        else if ( (LA221_1==URI) && (synpred36_Css3())) {s = 21;}
+
+                        else if ( (LA221_1==HASH) && (synpred36_Css3())) {s = 22;}
+
+                        else if ( (LA221_1==NAMESPACE_SYM||(LA221_1>=CHARSET_SYM && LA221_1<=IMPORT_SYM)||LA221_1==MEDIA_SYM||(LA221_1>=AT_IDENT && LA221_1<=MOZ_DOCUMENT_SYM)||LA221_1==WEBKIT_KEYFRAMES_SYM||(LA221_1>=PAGE_SYM && LA221_1<=RIGHTBOTTOM_SYM)||LA221_1==SASS_AT_ROOT||(LA221_1>=SASS_CONTENT && LA221_1<=SASS_WHILE)) && (synpred36_Css3())) {s = 27;}
+
+                        else if ( (LA221_1==SASS_VAR) && (synpred36_Css3())) {s = 28;}
+
+                        else if ( (LA221_1==HASH_SYMBOL) && (synpred36_Css3())) {s = 29;}
+
+                        else if ( (LA221_1==PERCENTAGE_SYMBOL) && (synpred36_Css3())) {s = 30;}
+
+                        else if ( (LA221_1==SOLIDUS) && (synpred36_Css3())) {s = 3;}
+
+                         
+                        input.seek(index221_1);
                         if ( s>=0 ) return s;
                         break;
             }
@@ -34574,7 +34790,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred39_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 69;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index238_9);
@@ -34589,7 +34805,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred39_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isScssSource(),"isScssSource()"))) ) {s = 69;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()")))) ) {s = 2;}
 
                          
                         input.seek(index238_10);
@@ -34619,7 +34835,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred39_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 69;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isLessSource(),"isLessSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index238_14);
@@ -34634,7 +34850,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred39_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 69;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index238_15);
@@ -34649,7 +34865,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred39_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 69;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index238_17);
@@ -34664,7 +34880,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred39_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 69;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index238_18);
@@ -34679,7 +34895,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred39_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 69;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index238_19);
@@ -34694,7 +34910,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred39_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 69;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index238_20);
@@ -34709,7 +34925,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred39_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 69;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index238_21);
@@ -34724,7 +34940,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred39_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 69;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index238_22);
@@ -34739,7 +34955,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred39_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 69;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isScssSource(),"isScssSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index238_23);
@@ -34919,7 +35135,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred39_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 69;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index238_43);
@@ -34934,7 +35150,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred39_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 69;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isScssSource(),"isScssSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index238_44);
@@ -34949,7 +35165,7 @@ public class Css3Parser extends DebugParser {
                         s = -1;
                         if ( (((synpred39_Css3()&&evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()"))&&evalPredicate(isLessSource(),"isLessSource()"))) ) {s = 69;}
 
-                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
+                        else if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||evalPredicate(isLessSource(),"isLessSource()")||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isScssSource(),"isScssSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()"))||(evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&evalPredicate(isLessSource(),"isLessSource()")))) ) {s = 2;}
 
                          
                         input.seek(index238_46);
@@ -36248,53 +36464,151 @@ public class Css3Parser extends DebugParser {
             dbg.recognitionException(nvae);
         }
     }
-    static final String DFA360_eotS =
+    static final String DFA345_eotS =
         "\4\uffff";
-    static final String DFA360_eofS =
+    static final String DFA345_eofS =
         "\4\uffff";
-    static final String DFA360_minS =
-        "\2\5\2\uffff";
-    static final String DFA360_maxS =
+    static final String DFA345_minS =
+        "\1\13\1\6\2\uffff";
+    static final String DFA345_maxS =
         "\2\130\2\uffff";
-    static final String DFA360_acceptS =
+    static final String DFA345_acceptS =
         "\2\uffff\1\1\1\2";
-    static final String DFA360_specialS =
+    static final String DFA345_specialS =
+        "\1\0\1\1\2\uffff}>";
+    static final String[] DFA345_transitionS = {
+            "\1\2\112\uffff\3\1",
+            "\1\3\4\uffff\1\2\112\uffff\3\1",
+            "",
+            ""
+    };
+
+    static final short[] DFA345_eot = DFA.unpackEncodedString(DFA345_eotS);
+    static final short[] DFA345_eof = DFA.unpackEncodedString(DFA345_eofS);
+    static final char[] DFA345_min = DFA.unpackEncodedStringToUnsignedChars(DFA345_minS);
+    static final char[] DFA345_max = DFA.unpackEncodedStringToUnsignedChars(DFA345_maxS);
+    static final short[] DFA345_accept = DFA.unpackEncodedString(DFA345_acceptS);
+    static final short[] DFA345_special = DFA.unpackEncodedString(DFA345_specialS);
+    static final short[][] DFA345_transition;
+
+    static {
+        int numStates = DFA345_transitionS.length;
+        DFA345_transition = new short[numStates][];
+        for (int i=0; i<numStates; i++) {
+            DFA345_transition[i] = DFA.unpackEncodedString(DFA345_transitionS[i]);
+        }
+    }
+
+    class DFA345 extends DFA {
+
+        public DFA345(BaseRecognizer recognizer) {
+            this.recognizer = recognizer;
+            this.decisionNumber = 345;
+            this.eot = DFA345_eot;
+            this.eof = DFA345_eof;
+            this.min = DFA345_min;
+            this.max = DFA345_max;
+            this.accept = DFA345_accept;
+            this.special = DFA345_special;
+            this.transition = DFA345_transition;
+        }
+        public String getDescription() {
+            return "()* loopback of 1316:17: ( ( ( ws )? COMMA )=> ( ws )? COMMA ( ws )? cp_variable )*";
+        }
+        public void error(NoViableAltException nvae) {
+            dbg.recognitionException(nvae);
+        }
+        public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
+            TokenStream input = (TokenStream)_input;
+        	int _s = s;
+            switch ( s ) {
+                    case 0 : 
+                        int LA345_0 = input.LA(1);
+
+                         
+                        int index345_0 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( ((LA345_0>=WS && LA345_0<=COMMENT)) ) {s = 1;}
+
+                        else if ( (LA345_0==COMMA) && (synpred46_Css3())) {s = 2;}
+
+                         
+                        input.seek(index345_0);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 1 : 
+                        int LA345_1 = input.LA(1);
+
+                         
+                        int index345_1 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (LA345_1==IDENT) ) {s = 3;}
+
+                        else if ( ((LA345_1>=WS && LA345_1<=COMMENT)) ) {s = 1;}
+
+                        else if ( (LA345_1==COMMA) && (synpred46_Css3())) {s = 2;}
+
+                         
+                        input.seek(index345_1);
+                        if ( s>=0 ) return s;
+                        break;
+            }
+            if (state.backtracking>0) {state.failed=true; return -1;}
+            NoViableAltException nvae =
+                new NoViableAltException(getDescription(), 345, _s, input);
+            error(nvae);
+            throw nvae;
+        }
+    }
+    static final String DFA363_eotS =
+        "\4\uffff";
+    static final String DFA363_eofS =
+        "\4\uffff";
+    static final String DFA363_minS =
+        "\2\5\2\uffff";
+    static final String DFA363_maxS =
+        "\2\130\2\uffff";
+    static final String DFA363_acceptS =
+        "\2\uffff\1\1\1\2";
+    static final String DFA363_specialS =
         "\4\uffff}>";
-    static final String[] DFA360_transitionS = {
+    static final String[] DFA363_transitionS = {
             "\1\3\14\uffff\1\2\103\uffff\3\1",
             "\1\3\14\uffff\1\2\103\uffff\3\1",
             "",
             ""
     };
 
-    static final short[] DFA360_eot = DFA.unpackEncodedString(DFA360_eotS);
-    static final short[] DFA360_eof = DFA.unpackEncodedString(DFA360_eofS);
-    static final char[] DFA360_min = DFA.unpackEncodedStringToUnsignedChars(DFA360_minS);
-    static final char[] DFA360_max = DFA.unpackEncodedStringToUnsignedChars(DFA360_maxS);
-    static final short[] DFA360_accept = DFA.unpackEncodedString(DFA360_acceptS);
-    static final short[] DFA360_special = DFA.unpackEncodedString(DFA360_specialS);
-    static final short[][] DFA360_transition;
+    static final short[] DFA363_eot = DFA.unpackEncodedString(DFA363_eotS);
+    static final short[] DFA363_eof = DFA.unpackEncodedString(DFA363_eofS);
+    static final char[] DFA363_min = DFA.unpackEncodedStringToUnsignedChars(DFA363_minS);
+    static final char[] DFA363_max = DFA.unpackEncodedStringToUnsignedChars(DFA363_maxS);
+    static final short[] DFA363_accept = DFA.unpackEncodedString(DFA363_acceptS);
+    static final short[] DFA363_special = DFA.unpackEncodedString(DFA363_specialS);
+    static final short[][] DFA363_transition;
 
     static {
-        int numStates = DFA360_transitionS.length;
-        DFA360_transition = new short[numStates][];
+        int numStates = DFA363_transitionS.length;
+        DFA363_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA360_transition[i] = DFA.unpackEncodedString(DFA360_transitionS[i]);
+            DFA363_transition[i] = DFA.unpackEncodedString(DFA363_transitionS[i]);
         }
     }
 
-    class DFA360 extends DFA {
+    class DFA363 extends DFA {
 
-        public DFA360(BaseRecognizer recognizer) {
+        public DFA363(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 360;
-            this.eot = DFA360_eot;
-            this.eof = DFA360_eof;
-            this.min = DFA360_min;
-            this.max = DFA360_max;
-            this.accept = DFA360_accept;
-            this.special = DFA360_special;
-            this.transition = DFA360_transition;
+            this.decisionNumber = 363;
+            this.eot = DFA363_eot;
+            this.eof = DFA363_eof;
+            this.min = DFA363_min;
+            this.max = DFA363_max;
+            this.accept = DFA363_accept;
+            this.special = DFA363_special;
+            this.transition = DFA363_transition;
         }
         public String getDescription() {
             return "393:22: ( ( ws )? IMPORTANT_SYM )?";
@@ -36303,53 +36617,53 @@ public class Css3Parser extends DebugParser {
             dbg.recognitionException(nvae);
         }
     }
-    static final String DFA383_eotS =
+    static final String DFA386_eotS =
         "\4\uffff";
-    static final String DFA383_eofS =
+    static final String DFA386_eofS =
         "\4\uffff";
-    static final String DFA383_minS =
+    static final String DFA386_minS =
         "\2\5\2\uffff";
-    static final String DFA383_maxS =
+    static final String DFA386_maxS =
         "\2\130\2\uffff";
-    static final String DFA383_acceptS =
+    static final String DFA386_acceptS =
         "\2\uffff\1\1\1\2";
-    static final String DFA383_specialS =
+    static final String DFA386_specialS =
         "\4\uffff}>";
-    static final String[] DFA383_transitionS = {
+    static final String[] DFA386_transitionS = {
             "\1\3\14\uffff\1\2\103\uffff\3\1",
             "\1\3\14\uffff\1\2\103\uffff\3\1",
             "",
             ""
     };
 
-    static final short[] DFA383_eot = DFA.unpackEncodedString(DFA383_eotS);
-    static final short[] DFA383_eof = DFA.unpackEncodedString(DFA383_eofS);
-    static final char[] DFA383_min = DFA.unpackEncodedStringToUnsignedChars(DFA383_minS);
-    static final char[] DFA383_max = DFA.unpackEncodedStringToUnsignedChars(DFA383_maxS);
-    static final short[] DFA383_accept = DFA.unpackEncodedString(DFA383_acceptS);
-    static final short[] DFA383_special = DFA.unpackEncodedString(DFA383_specialS);
-    static final short[][] DFA383_transition;
+    static final short[] DFA386_eot = DFA.unpackEncodedString(DFA386_eotS);
+    static final short[] DFA386_eof = DFA.unpackEncodedString(DFA386_eofS);
+    static final char[] DFA386_min = DFA.unpackEncodedStringToUnsignedChars(DFA386_minS);
+    static final char[] DFA386_max = DFA.unpackEncodedStringToUnsignedChars(DFA386_maxS);
+    static final short[] DFA386_accept = DFA.unpackEncodedString(DFA386_acceptS);
+    static final short[] DFA386_special = DFA.unpackEncodedString(DFA386_specialS);
+    static final short[][] DFA386_transition;
 
     static {
-        int numStates = DFA383_transitionS.length;
-        DFA383_transition = new short[numStates][];
+        int numStates = DFA386_transitionS.length;
+        DFA386_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA383_transition[i] = DFA.unpackEncodedString(DFA383_transitionS[i]);
+            DFA386_transition[i] = DFA.unpackEncodedString(DFA386_transitionS[i]);
         }
     }
 
-    class DFA383 extends DFA {
+    class DFA386 extends DFA {
 
-        public DFA383(BaseRecognizer recognizer) {
+        public DFA386(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 383;
-            this.eot = DFA383_eot;
-            this.eof = DFA383_eof;
-            this.min = DFA383_min;
-            this.max = DFA383_max;
-            this.accept = DFA383_accept;
-            this.special = DFA383_special;
-            this.transition = DFA383_transition;
+            this.decisionNumber = 386;
+            this.eot = DFA386_eot;
+            this.eof = DFA386_eof;
+            this.min = DFA386_min;
+            this.max = DFA386_max;
+            this.accept = DFA386_accept;
+            this.special = DFA386_special;
+            this.transition = DFA386_transition;
         }
         public String getDescription() {
             return "670:22: ( ( ws )? IMPORTANT_SYM )?";
@@ -36358,19 +36672,19 @@ public class Css3Parser extends DebugParser {
             dbg.recognitionException(nvae);
         }
     }
-    static final String DFA385_eotS =
+    static final String DFA388_eotS =
         "\4\uffff";
-    static final String DFA385_eofS =
+    static final String DFA388_eofS =
         "\4\uffff";
-    static final String DFA385_minS =
+    static final String DFA388_minS =
         "\1\20\1\6\2\uffff";
-    static final String DFA385_maxS =
+    static final String DFA388_maxS =
         "\1\130\1\160\2\uffff";
-    static final String DFA385_acceptS =
+    static final String DFA388_acceptS =
         "\2\uffff\1\2\1\1";
-    static final String DFA385_specialS =
+    static final String DFA388_specialS =
         "\4\uffff}>";
-    static final String[] DFA385_transitionS = {
+    static final String[] DFA388_transitionS = {
             "\1\2\105\uffff\3\1",
             "\1\3\4\uffff\1\3\4\uffff\1\2\5\uffff\2\3\33\uffff\2\3\1\uffff"+
             "\12\3\1\uffff\1\3\6\uffff\1\3\15\uffff\3\1\27\uffff\1\3",
@@ -36378,34 +36692,34 @@ public class Css3Parser extends DebugParser {
             ""
     };
 
-    static final short[] DFA385_eot = DFA.unpackEncodedString(DFA385_eotS);
-    static final short[] DFA385_eof = DFA.unpackEncodedString(DFA385_eofS);
-    static final char[] DFA385_min = DFA.unpackEncodedStringToUnsignedChars(DFA385_minS);
-    static final char[] DFA385_max = DFA.unpackEncodedStringToUnsignedChars(DFA385_maxS);
-    static final short[] DFA385_accept = DFA.unpackEncodedString(DFA385_acceptS);
-    static final short[] DFA385_special = DFA.unpackEncodedString(DFA385_specialS);
-    static final short[][] DFA385_transition;
+    static final short[] DFA388_eot = DFA.unpackEncodedString(DFA388_eotS);
+    static final short[] DFA388_eof = DFA.unpackEncodedString(DFA388_eofS);
+    static final char[] DFA388_min = DFA.unpackEncodedStringToUnsignedChars(DFA388_minS);
+    static final char[] DFA388_max = DFA.unpackEncodedStringToUnsignedChars(DFA388_maxS);
+    static final short[] DFA388_accept = DFA.unpackEncodedString(DFA388_acceptS);
+    static final short[] DFA388_special = DFA.unpackEncodedString(DFA388_specialS);
+    static final short[][] DFA388_transition;
 
     static {
-        int numStates = DFA385_transitionS.length;
-        DFA385_transition = new short[numStates][];
+        int numStates = DFA388_transitionS.length;
+        DFA388_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA385_transition[i] = DFA.unpackEncodedString(DFA385_transitionS[i]);
+            DFA388_transition[i] = DFA.unpackEncodedString(DFA388_transitionS[i]);
         }
     }
 
-    class DFA385 extends DFA {
+    class DFA388 extends DFA {
 
-        public DFA385(BaseRecognizer recognizer) {
+        public DFA388(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 385;
-            this.eot = DFA385_eot;
-            this.eof = DFA385_eof;
-            this.min = DFA385_min;
-            this.max = DFA385_max;
-            this.accept = DFA385_accept;
-            this.special = DFA385_special;
-            this.transition = DFA385_transition;
+            this.decisionNumber = 388;
+            this.eot = DFA388_eot;
+            this.eof = DFA388_eof;
+            this.min = DFA388_min;
+            this.max = DFA388_max;
+            this.accept = DFA388_accept;
+            this.special = DFA388_special;
+            this.transition = DFA388_transition;
         }
         public String getDescription() {
             return "672:23: ( ws selectorsGroup )?";
@@ -36414,19 +36728,19 @@ public class Css3Parser extends DebugParser {
             dbg.recognitionException(nvae);
         }
     }
-    static final String DFA394_eotS =
+    static final String DFA397_eotS =
         "\5\uffff";
-    static final String DFA394_eofS =
+    static final String DFA397_eofS =
         "\5\uffff";
-    static final String DFA394_minS =
+    static final String DFA397_minS =
         "\2\4\3\uffff";
-    static final String DFA394_maxS =
+    static final String DFA397_maxS =
         "\2\146\3\uffff";
-    static final String DFA394_acceptS =
+    static final String DFA397_acceptS =
         "\2\uffff\1\2\1\3\1\1";
-    static final String DFA394_specialS =
+    static final String DFA397_specialS =
         "\5\uffff}>";
-    static final String[] DFA394_transitionS = {
+    static final String[] DFA397_transitionS = {
             "\1\3\1\uffff\5\3\1\2\3\uffff\1\3\6\uffff\1\3\1\uffff\2\3\3\uffff"+
             "\25\3\1\2\3\3\1\uffff\3\3\17\uffff\15\3\3\1\1\uffff\15\3",
             "\1\4\1\uffff\5\4\1\2\3\uffff\1\4\6\uffff\1\4\1\uffff\2\4\3"+
@@ -36437,34 +36751,34 @@ public class Css3Parser extends DebugParser {
             ""
     };
 
-    static final short[] DFA394_eot = DFA.unpackEncodedString(DFA394_eotS);
-    static final short[] DFA394_eof = DFA.unpackEncodedString(DFA394_eofS);
-    static final char[] DFA394_min = DFA.unpackEncodedStringToUnsignedChars(DFA394_minS);
-    static final char[] DFA394_max = DFA.unpackEncodedStringToUnsignedChars(DFA394_maxS);
-    static final short[] DFA394_accept = DFA.unpackEncodedString(DFA394_acceptS);
-    static final short[] DFA394_special = DFA.unpackEncodedString(DFA394_specialS);
-    static final short[][] DFA394_transition;
+    static final short[] DFA397_eot = DFA.unpackEncodedString(DFA397_eotS);
+    static final short[] DFA397_eof = DFA.unpackEncodedString(DFA397_eofS);
+    static final char[] DFA397_min = DFA.unpackEncodedStringToUnsignedChars(DFA397_minS);
+    static final char[] DFA397_max = DFA.unpackEncodedStringToUnsignedChars(DFA397_maxS);
+    static final short[] DFA397_accept = DFA.unpackEncodedString(DFA397_acceptS);
+    static final short[] DFA397_special = DFA.unpackEncodedString(DFA397_specialS);
+    static final short[][] DFA397_transition;
 
     static {
-        int numStates = DFA394_transitionS.length;
-        DFA394_transition = new short[numStates][];
+        int numStates = DFA397_transitionS.length;
+        DFA397_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA394_transition[i] = DFA.unpackEncodedString(DFA394_transitionS[i]);
+            DFA397_transition[i] = DFA.unpackEncodedString(DFA397_transitionS[i]);
         }
     }
 
-    class DFA394 extends DFA {
+    class DFA397 extends DFA {
 
-        public DFA394(BaseRecognizer recognizer) {
+        public DFA397(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 394;
-            this.eot = DFA394_eot;
-            this.eof = DFA394_eof;
-            this.min = DFA394_min;
-            this.max = DFA394_max;
-            this.accept = DFA394_accept;
-            this.special = DFA394_special;
-            this.transition = DFA394_transition;
+            this.decisionNumber = 397;
+            this.eot = DFA397_eot;
+            this.eof = DFA397_eof;
+            this.min = DFA397_min;
+            this.max = DFA397_max;
+            this.accept = DFA397_accept;
+            this.special = DFA397_special;
+            this.transition = DFA397_transition;
         }
         public String getDescription() {
             return "898:15: ( ws | ( ( ws )? operator ( ws )? ) | )";
@@ -36473,19 +36787,19 @@ public class Css3Parser extends DebugParser {
             dbg.recognitionException(nvae);
         }
     }
-    static final String DFA399_eotS =
+    static final String DFA402_eotS =
         "\5\uffff";
-    static final String DFA399_eofS =
+    static final String DFA402_eofS =
         "\5\uffff";
-    static final String DFA399_minS =
+    static final String DFA402_minS =
         "\2\4\3\uffff";
-    static final String DFA399_maxS =
+    static final String DFA402_maxS =
         "\2\146\3\uffff";
-    static final String DFA399_acceptS =
+    static final String DFA402_acceptS =
         "\2\uffff\1\2\1\3\1\1";
-    static final String DFA399_specialS =
+    static final String DFA402_specialS =
         "\5\uffff}>";
-    static final String[] DFA399_transitionS = {
+    static final String[] DFA402_transitionS = {
             "\1\3\1\uffff\5\3\4\uffff\1\3\6\uffff\1\3\1\uffff\2\3\3\uffff"+
             "\25\3\1\2\3\3\1\uffff\3\3\17\uffff\15\3\3\1\1\uffff\15\3",
             "\1\4\1\uffff\5\4\4\uffff\1\4\6\uffff\1\4\1\uffff\2\4\3\uffff"+
@@ -36495,34 +36809,34 @@ public class Css3Parser extends DebugParser {
             ""
     };
 
-    static final short[] DFA399_eot = DFA.unpackEncodedString(DFA399_eotS);
-    static final short[] DFA399_eof = DFA.unpackEncodedString(DFA399_eofS);
-    static final char[] DFA399_min = DFA.unpackEncodedStringToUnsignedChars(DFA399_minS);
-    static final char[] DFA399_max = DFA.unpackEncodedStringToUnsignedChars(DFA399_maxS);
-    static final short[] DFA399_accept = DFA.unpackEncodedString(DFA399_acceptS);
-    static final short[] DFA399_special = DFA.unpackEncodedString(DFA399_specialS);
-    static final short[][] DFA399_transition;
+    static final short[] DFA402_eot = DFA.unpackEncodedString(DFA402_eotS);
+    static final short[] DFA402_eof = DFA.unpackEncodedString(DFA402_eofS);
+    static final char[] DFA402_min = DFA.unpackEncodedStringToUnsignedChars(DFA402_minS);
+    static final char[] DFA402_max = DFA.unpackEncodedStringToUnsignedChars(DFA402_maxS);
+    static final short[] DFA402_accept = DFA.unpackEncodedString(DFA402_acceptS);
+    static final short[] DFA402_special = DFA.unpackEncodedString(DFA402_specialS);
+    static final short[][] DFA402_transition;
 
     static {
-        int numStates = DFA399_transitionS.length;
-        DFA399_transition = new short[numStates][];
+        int numStates = DFA402_transitionS.length;
+        DFA402_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA399_transition[i] = DFA.unpackEncodedString(DFA399_transitionS[i]);
+            DFA402_transition[i] = DFA.unpackEncodedString(DFA402_transitionS[i]);
         }
     }
 
-    class DFA399 extends DFA {
+    class DFA402 extends DFA {
 
-        public DFA399(BaseRecognizer recognizer) {
+        public DFA402(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 399;
-            this.eot = DFA399_eot;
-            this.eof = DFA399_eof;
-            this.min = DFA399_min;
-            this.max = DFA399_max;
-            this.accept = DFA399_accept;
-            this.special = DFA399_special;
-            this.transition = DFA399_transition;
+            this.decisionNumber = 402;
+            this.eot = DFA402_eot;
+            this.eof = DFA402_eof;
+            this.min = DFA402_min;
+            this.max = DFA402_max;
+            this.accept = DFA402_accept;
+            this.special = DFA402_special;
+            this.transition = DFA402_transition;
         }
         public String getDescription() {
             return "979:21: ( ws | ( ( ws )? SOLIDUS ( ws )? ) | )";
@@ -37219,39 +37533,44 @@ public class Css3Parser extends DebugParser {
     public static final BitSet FOLLOW_sass_control_block_in_sass_for8307 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_SASS_EACH_in_sass_each8328 = new BitSet(new long[]{0x0000000000000000L,0x0000000001C00000L});
     public static final BitSet FOLLOW_ws_in_sass_each8330 = new BitSet(new long[]{0x0023FFFFA3008610L,0x0000007FFC000200L});
-    public static final BitSet FOLLOW_cp_variable_in_sass_each8332 = new BitSet(new long[]{0x0000000000000000L,0x0000000001C00000L});
+    public static final BitSet FOLLOW_sass_each_variables_in_sass_each8332 = new BitSet(new long[]{0x0000000000000000L,0x0000000001C00000L});
     public static final BitSet FOLLOW_ws_in_sass_each8334 = new BitSet(new long[]{0x0000000000000040L});
     public static final BitSet FOLLOW_IDENT_in_sass_each8338 = new BitSet(new long[]{0x0000000000000000L,0x0000000001C00000L});
     public static final BitSet FOLLOW_ws_in_sass_each8342 = new BitSet(new long[]{0x03BBFFFFE36497D0L,0x0000007FFC3FFE00L});
     public static final BitSet FOLLOW_cp_expression_list_in_sass_each8344 = new BitSet(new long[]{0x0000000000010000L,0x0000000001C00000L});
     public static final BitSet FOLLOW_ws_in_sass_each8346 = new BitSet(new long[]{0x0000000000010000L,0x0000000001C00000L});
     public static final BitSet FOLLOW_sass_control_block_in_sass_each8349 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SASS_WHILE_in_sass_while8370 = new BitSet(new long[]{0x0000000000000000L,0x0000000001C00000L});
-    public static final BitSet FOLLOW_ws_in_sass_while8372 = new BitSet(new long[]{0x03BBFFFFE36497D0L,0x0000007FFC3FFE00L});
-    public static final BitSet FOLLOW_sass_control_expression_in_sass_while8374 = new BitSet(new long[]{0x0000000000010000L,0x0000000001C00000L});
-    public static final BitSet FOLLOW_ws_in_sass_while8376 = new BitSet(new long[]{0x0000000000010000L,0x0000000001C00000L});
-    public static final BitSet FOLLOW_sass_control_block_in_sass_while8379 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_LBRACE_in_sass_control_block8400 = new BitSet(new long[]{0xFFFBFFFFA3C28E70L,0x0001007FFDC00302L});
-    public static final BitSet FOLLOW_ws_in_sass_control_block8402 = new BitSet(new long[]{0xFFFBFFFFA3C28E70L,0x0001007FFC000302L});
-    public static final BitSet FOLLOW_declarations_in_sass_control_block8405 = new BitSet(new long[]{0x0000000000020000L});
-    public static final BitSet FOLLOW_RBRACE_in_sass_control_block8408 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SASS_FUNCTION_in_sass_function_declaration8450 = new BitSet(new long[]{0x0000000000000000L,0x0000000001C00000L});
-    public static final BitSet FOLLOW_ws_in_sass_function_declaration8452 = new BitSet(new long[]{0x0000000000000040L});
-    public static final BitSet FOLLOW_sass_function_name_in_sass_function_declaration8454 = new BitSet(new long[]{0x0000000000001000L,0x0000000001C00000L});
-    public static final BitSet FOLLOW_ws_in_sass_function_declaration8456 = new BitSet(new long[]{0x0000000000001000L});
-    public static final BitSet FOLLOW_LPAREN_in_sass_function_declaration8459 = new BitSet(new long[]{0x0023FFFFA300C610L,0x0000607FFC000200L});
-    public static final BitSet FOLLOW_cp_args_list_in_sass_function_declaration8461 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_RPAREN_in_sass_function_declaration8464 = new BitSet(new long[]{0x0000000000010000L,0x0000000001C00000L});
-    public static final BitSet FOLLOW_ws_in_sass_function_declaration8466 = new BitSet(new long[]{0x0000000000010000L});
-    public static final BitSet FOLLOW_LBRACE_in_sass_function_declaration8469 = new BitSet(new long[]{0xFFFBFFFFA3C28E70L,0x0001007FFDC00302L});
-    public static final BitSet FOLLOW_ws_in_sass_function_declaration8471 = new BitSet(new long[]{0xFFFBFFFFA3C28E70L,0x0001007FFC000302L});
-    public static final BitSet FOLLOW_declarations_in_sass_function_declaration8474 = new BitSet(new long[]{0x0000000000020000L});
-    public static final BitSet FOLLOW_RBRACE_in_sass_function_declaration8477 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_IDENT_in_sass_function_name8498 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SASS_RETURN_in_sass_function_return8519 = new BitSet(new long[]{0x0000000000000000L,0x0000000001C00000L});
-    public static final BitSet FOLLOW_ws_in_sass_function_return8521 = new BitSet(new long[]{0x03BBFFFFE36497D0L,0x0000007FFC3FFE00L});
-    public static final BitSet FOLLOW_cp_expression_in_sass_function_return8523 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_SASS_CONTENT_in_sass_content8544 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_cp_variable_in_sass_each_variables8370 = new BitSet(new long[]{0x0000000000000802L,0x0000000001C00000L});
+    public static final BitSet FOLLOW_ws_in_sass_each_variables8382 = new BitSet(new long[]{0x0000000000000800L});
+    public static final BitSet FOLLOW_COMMA_in_sass_each_variables8385 = new BitSet(new long[]{0x0023FFFFA3008610L,0x0000007FFDC00200L});
+    public static final BitSet FOLLOW_ws_in_sass_each_variables8387 = new BitSet(new long[]{0x0023FFFFA3008610L,0x0000007FFC000200L});
+    public static final BitSet FOLLOW_cp_variable_in_sass_each_variables8390 = new BitSet(new long[]{0x0000000000000802L,0x0000000001C00000L});
+    public static final BitSet FOLLOW_SASS_WHILE_in_sass_while8415 = new BitSet(new long[]{0x0000000000000000L,0x0000000001C00000L});
+    public static final BitSet FOLLOW_ws_in_sass_while8417 = new BitSet(new long[]{0x03BBFFFFE36497D0L,0x0000007FFC3FFE00L});
+    public static final BitSet FOLLOW_sass_control_expression_in_sass_while8419 = new BitSet(new long[]{0x0000000000010000L,0x0000000001C00000L});
+    public static final BitSet FOLLOW_ws_in_sass_while8421 = new BitSet(new long[]{0x0000000000010000L,0x0000000001C00000L});
+    public static final BitSet FOLLOW_sass_control_block_in_sass_while8424 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LBRACE_in_sass_control_block8445 = new BitSet(new long[]{0xFFFBFFFFA3C28E70L,0x0001007FFDC00302L});
+    public static final BitSet FOLLOW_ws_in_sass_control_block8447 = new BitSet(new long[]{0xFFFBFFFFA3C28E70L,0x0001007FFC000302L});
+    public static final BitSet FOLLOW_declarations_in_sass_control_block8450 = new BitSet(new long[]{0x0000000000020000L});
+    public static final BitSet FOLLOW_RBRACE_in_sass_control_block8453 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_SASS_FUNCTION_in_sass_function_declaration8495 = new BitSet(new long[]{0x0000000000000000L,0x0000000001C00000L});
+    public static final BitSet FOLLOW_ws_in_sass_function_declaration8497 = new BitSet(new long[]{0x0000000000000040L});
+    public static final BitSet FOLLOW_sass_function_name_in_sass_function_declaration8499 = new BitSet(new long[]{0x0000000000001000L,0x0000000001C00000L});
+    public static final BitSet FOLLOW_ws_in_sass_function_declaration8501 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_LPAREN_in_sass_function_declaration8504 = new BitSet(new long[]{0x0023FFFFA300C610L,0x0000607FFC000200L});
+    public static final BitSet FOLLOW_cp_args_list_in_sass_function_declaration8506 = new BitSet(new long[]{0x0000000000004000L});
+    public static final BitSet FOLLOW_RPAREN_in_sass_function_declaration8509 = new BitSet(new long[]{0x0000000000010000L,0x0000000001C00000L});
+    public static final BitSet FOLLOW_ws_in_sass_function_declaration8511 = new BitSet(new long[]{0x0000000000010000L});
+    public static final BitSet FOLLOW_LBRACE_in_sass_function_declaration8514 = new BitSet(new long[]{0xFFFBFFFFA3C28E70L,0x0001007FFDC00302L});
+    public static final BitSet FOLLOW_ws_in_sass_function_declaration8516 = new BitSet(new long[]{0xFFFBFFFFA3C28E70L,0x0001007FFC000302L});
+    public static final BitSet FOLLOW_declarations_in_sass_function_declaration8519 = new BitSet(new long[]{0x0000000000020000L});
+    public static final BitSet FOLLOW_RBRACE_in_sass_function_declaration8522 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_IDENT_in_sass_function_name8543 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_SASS_RETURN_in_sass_function_return8564 = new BitSet(new long[]{0x0000000000000000L,0x0000000001C00000L});
+    public static final BitSet FOLLOW_ws_in_sass_function_return8566 = new BitSet(new long[]{0x03BBFFFFE36497D0L,0x0000007FFC3FFE00L});
+    public static final BitSet FOLLOW_cp_expression_in_sass_function_return8568 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_SASS_CONTENT_in_sass_content8589 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_ws_in_synpred1_Css3356 = new BitSet(new long[]{0x0123FFFFA3709650L,0x0000007FFDC00200L});
     public static final BitSet FOLLOW_mediaQueryList_in_synpred1_Css3359 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_ws_in_synpred2_Css3420 = new BitSet(new long[]{0x0123FFFFA3709650L,0x0000007FFDC00200L});
@@ -37381,5 +37700,7 @@ public class Css3Parser extends DebugParser {
     public static final BitSet FOLLOW_sass_interpolation_expression_var_in_synpred43_Css37559 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_sass_interpolation_expression_var_in_synpred44_Css37710 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_sass_interpolation_expression_var_in_synpred45_Css37827 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_ws_in_synpred46_Css38375 = new BitSet(new long[]{0x0000000000000800L});
+    public static final BitSet FOLLOW_COMMA_in_synpred46_Css38378 = new BitSet(new long[]{0x0000000000000002L});
 
 }

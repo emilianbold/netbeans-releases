@@ -1621,19 +1621,19 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  .span:nth-child(#{6-$i}) { content: $i; }\n"
                 + "}\n");
     }
-//
-//    public void testForEachMultiAssignments() {
-//        assertParses("$animals: (puma, black, default),\n"
-//                + "          (sea-slug, blue, pointer),\n"
-//                + "          (egret, white, move);\n"
-//                + "\n"
-//                + "@each $animal, $color, $cursor in $animals {\n"
-//                + "  .#{$animal}-icon {\n"
-//                + "    background-image: url('/images/#{$animal}.png');\n"
-//                + "    border: 2px solid $color;\n"
-//                + "    cursor: $cursor;\n"
-//                + "  }\n"
-//                + "}\n");
-//    }
+
+    public void testForEachMultiAssignments() {
+        assertParses("$animals: (puma, black, default),\n"
+                + "          (sea-slug, blue, pointer),\n"
+                + "          (egret, white, move);\n"
+                + "\n"
+                + "@each $animal, $color, $cursor in $animals {\n"
+                + "  .#{$animal}-icon {\n"
+                + "    background-image: url('/images/#{$animal}.png');\n"
+                + "    border: 2px solid $color;\n"
+                + "    cursor: $cursor;\n"
+                + "  }\n"
+                + "}\n");
+    }
 
 }
