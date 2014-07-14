@@ -102,7 +102,6 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         }
         //put initialization code here
         //TODO: make them visible again && implement the logic behind
-        renameFileCheckBox.addChangeListener(new RenameFileListener(lowerCaseFileNameCheckBox));
         textCheckBox.setVisible(false);
         refactorAllCheckBox.setVisible(false);
         updateReferencesCheckBox.setVisible(false);
@@ -115,6 +114,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
             renameFileCheckBox.setVisible(false);
             lowerCaseFileNameCheckBox.setVisible(false);
         }
+        renameFileCheckBox.addChangeListener(new RenameFileListener(lowerCaseFileNameCheckBox));
         initialized = true;
     }
 

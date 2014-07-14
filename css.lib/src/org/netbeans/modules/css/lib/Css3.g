@@ -637,7 +637,7 @@ sass_map_pair
 
 rule
     :
-    selectorsGroup ws?
+    ((SASS_AT_ROOT (ws selectorsGroup)?) | selectorsGroup) ws?
     LBRACE ws? syncToFollow
         declarations?
     RBRACE
@@ -669,7 +669,7 @@ declaration
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
     | (cp_mixin_call (ws? IMPORTANT_SYM)? ws? SEMI)=> {isLessSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
     | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
-    | (selectorsGroup ws? LBRACE)=>rule
+    | (((SASS_AT_ROOT (ws selectorsGroup)?) | selectorsGroup) ws? LBRACE)=>rule
     | {isCssPreprocessorSource()}? at_rule
     | {isScssSource()}? sass_control
     | {isScssSource()}? sass_extend
@@ -1002,7 +1002,7 @@ cp_variable_declaration
 cp_variable
     :
         //every token which might possibly begin with the at sign
-        {isLessSource()}? ( AT_IDENT | IMPORT_SYM | PAGE_SYM | MEDIA_SYM | NAMESPACE_SYM | CHARSET_SYM | COUNTER_STYLE_SYM | FONT_FACE_SYM | TOPLEFTCORNER_SYM | TOPLEFT_SYM | TOPCENTER_SYM | TOPRIGHT_SYM | TOPRIGHTCORNER_SYM | BOTTOMLEFTCORNER_SYM | BOTTOMLEFT_SYM | BOTTOMCENTER_SYM | BOTTOMRIGHT_SYM | BOTTOMRIGHTCORNER_SYM | LEFTTOP_SYM | LEFTMIDDLE_SYM | LEFTBOTTOM_SYM | RIGHTTOP_SYM | RIGHTMIDDLE_SYM | RIGHTBOTTOM_SYM | MOZ_DOCUMENT_SYM | WEBKIT_KEYFRAMES_SYM | SASS_CONTENT | SASS_MIXIN | SASS_INCLUDE | SASS_EXTEND | SASS_DEBUG | SASS_WARN | SASS_IF | SASS_ELSE | SASS_FOR | SASS_FUNCTION | SASS_RETURN | SASS_EACH | SASS_WHILE  )
+        {isLessSource()}? ( AT_IDENT | IMPORT_SYM | PAGE_SYM | MEDIA_SYM | NAMESPACE_SYM | CHARSET_SYM | COUNTER_STYLE_SYM | FONT_FACE_SYM | TOPLEFTCORNER_SYM | TOPLEFT_SYM | TOPCENTER_SYM | TOPRIGHT_SYM | TOPRIGHTCORNER_SYM | BOTTOMLEFTCORNER_SYM | BOTTOMLEFT_SYM | BOTTOMCENTER_SYM | BOTTOMRIGHT_SYM | BOTTOMRIGHTCORNER_SYM | LEFTTOP_SYM | LEFTMIDDLE_SYM | LEFTBOTTOM_SYM | RIGHTTOP_SYM | RIGHTMIDDLE_SYM | RIGHTBOTTOM_SYM | MOZ_DOCUMENT_SYM | WEBKIT_KEYFRAMES_SYM | SASS_CONTENT | SASS_MIXIN | SASS_INCLUDE | SASS_EXTEND | SASS_DEBUG | SASS_WARN | SASS_IF | SASS_ELSE | SASS_FOR | SASS_FUNCTION | SASS_RETURN | SASS_EACH | SASS_WHILE | SASS_AT_ROOT )
         |
         {isScssSource()}? ( SASS_VAR )
     ;
@@ -1308,9 +1308,14 @@ sass_for
 
 sass_each
     :
-    SASS_EACH ws cp_variable ws {tokenNameEquals("in")}? IDENT /*in*/ ws cp_expression_list ws? sass_control_block
+    SASS_EACH ws sass_each_variables ws {tokenNameEquals("in")}? IDENT /*in*/ ws cp_expression_list ws? sass_control_block
     ;
 
+sass_each_variables
+    :
+    cp_variable ( (ws? COMMA)=> ws? COMMA ws? cp_variable )*
+    ;
+ 
 sass_while
     :
     SASS_WHILE ws sass_control_expression ws? sass_control_block
@@ -1769,6 +1774,8 @@ SASS_RETURN         : '@RETURN';
 
 SASS_EACH           : '@EACH';
 SASS_WHILE          : '@WHILE';
+
+SASS_AT_ROOT        : '@AT-ROOT';
 
 AT_SIGN             : '@';
 AT_IDENT	    : AT_SIGN NMCHAR+;

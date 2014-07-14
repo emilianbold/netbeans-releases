@@ -85,21 +85,22 @@ public class PhpRenameRefactoringPlugin extends PhpWhereUsedQueryPlugin {
     public Problem checkParameters() {
         String newName = getRefactoring().getNewName();
         if (newName != null) {
-            if (newName.length() == 0) {
+            String trimmedNewName = newName.trim();
+            if (trimmedNewName.length() == 0) {
                 return new Problem(true, Bundle.MSG_Error_ElementEmpty());
             }
             final WhereUsedSupport usages = getUsages();
             String oldName = PhpRenameRefactoringUI.getElementName(usages.getName(), usages.getElementKind());
-            if (newName.equals(oldName)) {
+            if (trimmedNewName.equals(oldName.trim())) {
                 return new Problem(true, Bundle.MSG_Error_SameName());
             }
             RenameDeclarationFile renameDeclarationFile = getRefactoring().getContext().lookup(PhpRenameRefactoringUI.RenameDeclarationFile.class);
             FileObject declarationFileObject = usages.getDeclarationFileObject();
             if (renameDeclarationFile.renameDeclarationFile()) {
                 File parentFolder = FileUtil.toFile(declarationFileObject.getParent());
-                File possibleNewFile = new File(parentFolder, newName + "." + declarationFileObject.getExt()); //NOI18N
+                File possibleNewFile = new File(parentFolder, trimmedNewName + "." + declarationFileObject.getExt()); //NOI18N
                 if (possibleNewFile.isFile()) {
-                    return new Problem(true, Bundle.MSG_Error_FileExists(newName));
+                    return new Problem(true, Bundle.MSG_Error_FileExists(trimmedNewName));
                 }
             }
         }
