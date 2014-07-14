@@ -64,6 +64,11 @@ public final class KarmaErrorsDialog {
 
     @NbBundle.Messages("KarmaErrorsDialog.message=Review Output window for Karma warnings/errors")
     public void show() {
+        show(Bundle.KarmaErrorsDialog_message());
+    }
+
+    public void show(final String message) {
+        assert message != null;
         if (dialogShown) {
             return;
         }
@@ -72,7 +77,7 @@ public final class KarmaErrorsDialog {
             @Override
             public void run() {
                 try {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.KarmaErrorsDialog_message()));
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
                 } finally {
                     dialogShown = false;
                 }
