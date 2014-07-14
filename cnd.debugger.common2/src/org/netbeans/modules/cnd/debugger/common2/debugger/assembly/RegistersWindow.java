@@ -264,12 +264,12 @@ public final class RegistersWindow extends TopComponent
             ta.setCaretPosition(0);
 
             //Hide section registers
-            hidden_regs.add("cs\t");	// NOI18N
-            hidden_regs.add("ds\t");	// NOI18N
-            hidden_regs.add("es\t");	// NOI18N
-            hidden_regs.add("fs\t");	// NOI18N
-            hidden_regs.add("gs\t");	// NOI18N
-            hidden_regs.add("ss\t");	// NOI18N
+            hidden_regs.add("cs");	// NOI18N
+            hidden_regs.add("ds");	// NOI18N
+            hidden_regs.add("es");	// NOI18N
+            hidden_regs.add("fs");	// NOI18N
+            hidden_regs.add("gs");	// NOI18N
+            hidden_regs.add("ss");	// NOI18N
         }
         if (needInitData) {
             // Init page
@@ -288,8 +288,8 @@ public final class RegistersWindow extends TopComponent
             if (names == null) {
                 continue;
             }
-            //need to add tab here as in hidden_regs we have register name with the tab append
-            String regname = names[0] + '\t';
+            
+            String regname = names[0].trim();
             int m = 0;
             if (!hidden_regs.contains(regname)) {
                 ta.append(s);
@@ -568,7 +568,7 @@ public final class RegistersWindow extends TopComponent
             return;
         }
         for (int i = 0;  i < selectedRegisterNames.length; i++) {
-            String regname = selectedRegisterNames[i];
+            String regname = selectedRegisterNames[i].trim();
             if (!hidden_regs.contains(regname)) {
                 hidden_regs.add(regname);
             }
