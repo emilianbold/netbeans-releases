@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
  *
  * @author petrk
  */
-public interface CsmEntityResolverImplementation {
+public interface CsmExpressionResolverImplementation {
     
     /**
      * Resolves type of expression in a given context 

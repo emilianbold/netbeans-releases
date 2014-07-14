@@ -51,14 +51,14 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
-import org.netbeans.modules.cnd.spi.model.services.CsmEntityResolverImplementation;
+import org.netbeans.modules.cnd.spi.model.services.CsmExpressionResolverImplementation;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author petrk
  */
-public final class CsmEntityResolver {
+public final class CsmExpressionResolver {
     
     /**
      * Resolves expression with the given context (instantiations)
@@ -132,9 +132,9 @@ public final class CsmEntityResolver {
     
 //<editor-fold defaultstate="collapsed" desc="impl">
     
-    private static final CsmEntityResolverImplementation DEFAULT = new Default();
+    private static final CsmExpressionResolverImplementation DEFAULT = new Default();
     
-    private CsmEntityResolver() {
+    private CsmExpressionResolver() {
         throw new AssertionError("Not instantiable"); // NOI18N
     }    
     
@@ -260,21 +260,21 @@ public final class CsmEntityResolver {
     /**
      * Default implementation (just a proxy to a real service)
      */
-    private static final class Default implements CsmEntityResolverImplementation {
+    private static final class Default implements CsmExpressionResolverImplementation {
         
-        private final Lookup.Result<CsmEntityResolverImplementation> res;
+        private final Lookup.Result<CsmExpressionResolverImplementation> res;
         
-        private CsmEntityResolverImplementation delegate;
+        private CsmExpressionResolverImplementation delegate;
         
         
         private Default() {
-            res = Lookup.getDefault().lookupResult(CsmEntityResolverImplementation.class);
+            res = Lookup.getDefault().lookupResult(CsmExpressionResolverImplementation.class);
         }
         
-        private CsmEntityResolverImplementation getDelegate(){
-            CsmEntityResolverImplementation service = delegate;
+        private CsmExpressionResolverImplementation getDelegate(){
+            CsmExpressionResolverImplementation service = delegate;
             if (service == null) {
-                for (CsmEntityResolverImplementation resolver : res.allInstances()) {
+                for (CsmExpressionResolverImplementation resolver : res.allInstances()) {
                     service = resolver;
                     break;
                 }
