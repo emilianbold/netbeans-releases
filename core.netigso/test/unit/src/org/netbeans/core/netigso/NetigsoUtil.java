@@ -55,6 +55,12 @@ import org.osgi.framework.launch.Framework;
 public final class NetigsoUtil {
     private NetigsoUtil() {
     }
+    
+    static void downgradeJDK() {
+        if ("1.9".equals(System.getProperty("java.specification.version"))) {
+            System.setProperty("java.specification.version", "1.8");
+        }
+    }
 
     public static Framework framework(ModuleManager mgr) throws Exception {
         final Method nm = mgr.getClass().getDeclaredMethod("netigso");
