@@ -82,7 +82,7 @@ public class ClassPathProviderImpl implements ClassPathProvider {
             if (FileUtil.isParentOf(siteRootFolder, file)) {
                 return project.getSourceClassPath();
             }
-            FileObject testsFolder = project.getTestsFolder();
+            FileObject testsFolder = project.getTestsFolder(false);
             if (testsFolder != null
                     && FileUtil.isParentOf(testsFolder, file)) {
                 return project.getSourceClassPath();
@@ -126,7 +126,7 @@ public class ClassPathProviderImpl implements ClassPathProvider {
             if (sourcesFolder != null) {
                 l.add(sourcesFolder.toURL());
             }
-            FileObject testsFolder = project.getTestsFolder();
+            FileObject testsFolder = project.getTestsFolder(false);
             if (testsFolder != null) {
                 l.add(testsFolder.toURL());
             }
