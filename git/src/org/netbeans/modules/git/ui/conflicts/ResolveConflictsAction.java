@@ -45,7 +45,6 @@ package org.netbeans.modules.git.ui.conflicts;
 import java.io.File;
 import org.netbeans.modules.git.ui.actions.*;
 import java.util.EnumSet;
-import java.util.logging.Logger;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
@@ -67,8 +66,17 @@ import org.openide.util.RequestProcessor.Task;
 })
 public class ResolveConflictsAction extends MultipleRepositoryAction {
 
-    private static final Logger LOG = Logger.getLogger(ResolveConflictsAction.class.getName());
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/conflict-resolve.png"; //NOI18N
 
+    public ResolveConflictsAction () {
+        super(ICON_RESOURCE);
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
+    
     @Override
     protected boolean enable (Node[] activatedNodes) {
         VCSContext context = getCurrentContext(activatedNodes);

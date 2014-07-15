@@ -1192,10 +1192,11 @@ public class OptionsPanel extends JPanel {
         }
 
         public void mouseEntered (MouseEvent e) {
-            if (buttons.get(category.getID()).isEnabled() && !category.isCurrent() && categoryModel.getCurrent() != null) {
-                setHighlighted ();
-            } else {
-                categoryModel.setHighlited(categoryModel.getCategory(categoryModel.getHighlitedCategoryID()),false);
+            CategoryButton button = buttons.get(category.getID());
+            if (button != null && button.isEnabled() && !category.isCurrent() && categoryModel != null && categoryModel.getCurrent() != null) {
+                setHighlighted();
+            } else if (categoryModel != null) {
+                categoryModel.setHighlited(categoryModel.getCategory(categoryModel.getHighlitedCategoryID()), false);
             }
         }
 

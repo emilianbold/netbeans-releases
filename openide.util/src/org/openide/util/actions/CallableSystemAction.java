@@ -48,6 +48,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 
 /** Not preferred anymore, use <a href="@org-openide-awt@/org/openide/awt/Actions.html#alwaysEnabled(java.awt.event.ActionListener,%20java.lang.String,%20java.lang.String,%20boolean)">Actions.alwaysEnabled</a>
@@ -132,7 +133,7 @@ public abstract class CallableSystemAction extends SystemAction implements Prese
             );
         } else {
             // Should not normally happen.
-            Toolkit.getDefaultToolkit().beep();
+            Utilities.disabledActionBeep();
         }
     }
 

@@ -166,7 +166,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
 
     void focus () {
         noContentComponent.requestFocusInWindow();
-        getActiveFileComponent().getComponent().requestFocusInWindow();
+        getActiveFileComponent().focus();
     }
 
     JPanel getPanel () {
@@ -389,8 +389,10 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
             SystemAction.get(DiffAction.class).diff(context);
         } else if (source == panel.listButton) {
             setActiveComponent(fileListComponent);
+            fileListComponent.focus();
         } else if (source == panel.treeButton) {
             setActiveComponent(fileTreeComponent);
+            fileTreeComponent.focus();
         } else {
             Utils.postParallel(new Runnable() {
                 @Override
@@ -547,7 +549,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                         noContentComponent.requestFocusInWindow();
                     } else {
                         setVersioningComponent(getActiveFileComponent().getComponent());
-                        getActiveFileComponent().getComponent().requestFocusInWindow();
+                        getActiveFileComponent().focus();
                     }
                 }
             });

@@ -418,8 +418,10 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
 
             @Override
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                lastPopup.removePopupMenuListener(this);
-                lastPopup = null; // clear the status and stop listening
+                if (lastPopup != null) {
+                    lastPopup.removePopupMenuListener(this);
+                    lastPopup = null; // clear the status and stop listening
+                }
             }
         }
     }

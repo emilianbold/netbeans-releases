@@ -431,6 +431,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     private class ShowDiffTask extends GitProgressSupport {
         
         private File file1;
+        private File baseFile1;
         private String revision1;
         private boolean showLastDifference;
         private final RepositoryRevision.Event event2;
@@ -442,6 +443,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             if (event1 != null) {
                 revision1 = event1.getLogInfoHeader().getLog().getRevision();
                 file1 = event1.getOriginalFile();
+                baseFile1 = event1.getFile();
             }
             this.showLastDifference = showLastDifference;
         }
@@ -453,6 +455,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                 try {
                     revision1 = event2.getLogInfoHeader().getAncestorCommit(event2.getOriginalFile(), getClient(), GitUtils.NULL_PROGRESS_MONITOR);
                     file1 = event2.getOriginalFile();
+                    baseFile1 = event2.getFile();
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, null, ex);
                     showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
@@ -465,8 +468,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             String title1, title2;
             title1 = revision1 == null ? null : revision1.substring(0, 7);
             title2 = event2.getLogInfoHeader().getLog().getRevision() == null ? null : event2.getLogInfoHeader().getLog().getRevision().substring(0, 7);
-            s1 = new DiffStreamSource(file1, revision1, file1.getName() + (title1 == null ? "" : (" (" + title1 + ")"))); //NOI18N
-            s2 = new DiffStreamSource(event2.getFile(), event2.getLogInfoHeader().getLog().getRevision(), 
+            s1 = new DiffStreamSource(file1, baseFile1, revision1, file1.getName() + (title1 == null ? "" : (" (" + title1 + ")"))); //NOI18N
+            s2 = new DiffStreamSource(event2.getFile(), event2.getFile(), event2.getLogInfoHeader().getLog().getRevision(), 
                     event2.getFile().getName() + (title2 == null ? "" : (" (" + title2 + ")"))); //NOI18N
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled

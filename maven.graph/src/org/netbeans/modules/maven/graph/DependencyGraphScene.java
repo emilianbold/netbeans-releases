@@ -49,13 +49,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -69,6 +72,8 @@ import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.MoveProvider;
@@ -141,6 +146,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
 
     private static final Set<ArtifactGraphNode> EMPTY_SELECTION = new HashSet<ArtifactGraphNode>();
     private final POMModel model;
+    private final Map<Artifact, Icon> projectIcons;
     private JScrollPane pane;
     private AtomicBoolean animated = new AtomicBoolean(false);
     
@@ -187,6 +193,28 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         getActions().addAction(panAction);
         getActions().addAction(editAction);
         getActions().addAction(popupMenuAction);
+        this.projectIcons = getIconsForOpenProjects();
+    }
+
+    /**
+     * @return map of maven artifact mapped to project icon
+     */
+    private Map<Artifact, Icon> getIconsForOpenProjects() {
+        Map<Artifact, Icon> result = new HashMap<Artifact, Icon>();
+        //NOTE: surely not the best way to get the project icon
+        Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+        for (Project project : openProjects) {
+            NbMavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class);
+            if (null != mavenProject) {
+                Artifact artifact = mavenProject.getMavenProject().getArtifact();
+                //get icon from opened project
+                Icon icon = ProjectUtils.getInformation(project).getIcon();
+                if (null != icon) {
+                    result.put(artifact, icon);
+                }
+            }
+        }
+        return result;
     }
 
     void setMyZoomFactor(double zoom) {
@@ -271,7 +299,9 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         if (node.getPrimaryLevel() > maxDepth) {
             maxDepth = node.getPrimaryLevel();
         }
-        ArtifactWidget root = new ArtifactWidget(this, node);
+        Artifact artifact = node.getArtifact().getArtifact();
+        Icon icon = projectIcons.get(artifact);
+        ArtifactWidget root = new ArtifactWidget(this, node, icon);
         mainLayer.addChild(root);
         node.setWidget(root);
         root.setOpaque(true);

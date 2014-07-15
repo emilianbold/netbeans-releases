@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.util.common;
 
-import javax.swing.JComponent;
-import org.openide.cookies.EditorCookie;
-import org.openide.nodes.Node;
+package org.netbeans.modules.db.dataview.util;
 
-/**
- *
- * @author Ondrej Vrabec
- */
-public interface FileViewComponent<T extends Node> {
+import java.awt.Component;
+import java.nio.charset.Charset;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
+import javax.swing.JList;
 
-    public T getSelectedNode ();
-
-    public void setSelectedNode (T toSelect);
-
-    public T getNodeAtPosition (int position);
-
-    public T[] getNeighbouringNodes (T node, int boundary);
-
-    public T getNextNode (T node);
-
-    public T getPreviousNode (T node);
-
-    public boolean hasNextNode (T node);
-
-    public boolean hasPreviousNode (T node);
-
-    public void focus ();
-
-    int getPreferredHeaderHeight ();
-
-    JComponent getComponent ();
+public class CharsetSelector extends JComboBox<Charset>{
     
-    int getPreferredHeight ();
+    public CharsetSelector() {
+        super(
+                Charset.availableCharsets().values().toArray(new Charset[]{})
+        );
+        this.setRenderer(new DefaultListCellRenderer(){
 
-    Object prepareModel (T[] nodes);
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Object displayValue;
+                if(value instanceof Charset) {
+                    displayValue = ((Charset) value).displayName();
+                } else {
+                    displayValue = value;
+                }
+                return super.getListCellRendererComponent(list, displayValue, index, isSelected, cellHasFocus);
+            }
+            
+        });
+    }
     
-    void setModel (T[] nodes, EditorCookie[] editorCookies, Object modelData);
+    @Override
+    public Charset getSelectedItem() {
+        return (Charset) super.getSelectedItem();
+    }
     
 }

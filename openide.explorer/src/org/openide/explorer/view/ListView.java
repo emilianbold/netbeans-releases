@@ -705,7 +705,7 @@ public class ListView extends JScrollPane implements Externalizable {
             if (a.isEnabled()) {
                 a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
             } else {
-                Toolkit.getDefaultToolkit().beep();
+                Utilities.disabledActionBeep();
             }
         }
         // otherwise dive into the context
