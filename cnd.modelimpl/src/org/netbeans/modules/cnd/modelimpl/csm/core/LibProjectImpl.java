@@ -96,8 +96,10 @@ public final class LibProjectImpl extends ProjectBase {
         if (instance == null) {
             instance = new LibProjectImpl(model, fs, includePathName, sourceUnitId);
         }
-        CndUtils.assertTrue(CharSequences.comparator().compare(includePathName, ((LibProjectImpl) instance).includePath) == 0);
-        CndUtils.assertTrue(instance.getFileSystem() == fs);
+        if (CndUtils.isDebugMode()) {
+            CndUtils.assertTrue(CharSequences.comparator().compare(includePathName, ((LibProjectImpl) instance).includePath) == 0, includePathName + " vs. " + ((LibProjectImpl) instance).includePath);
+            CndUtils.assertTrue(instance.getFileSystem() == fs, instance.getFileSystem() + " vs. " + fs);
+        }
         return (LibProjectImpl) instance;
     }
 

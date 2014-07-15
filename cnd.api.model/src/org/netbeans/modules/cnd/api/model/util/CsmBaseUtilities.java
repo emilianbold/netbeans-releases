@@ -394,7 +394,7 @@ public class CsmBaseUtilities {
             }
         }
         return csmTopLevelObject;
-    }
+    }    
     
     private static boolean stopOnScope(CsmScope scope) {
         if (scope == null) {

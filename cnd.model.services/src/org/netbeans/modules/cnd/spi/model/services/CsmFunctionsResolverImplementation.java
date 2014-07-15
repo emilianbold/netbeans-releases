@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,33 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.callgraph.api.ui;
+package org.netbeans.modules.cnd.spi.model.services;
 
 import java.util.Collection;
-import javax.swing.JPanel;
-import org.netbeans.modules.cnd.callgraph.api.Call;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 
 /**
  *
- * @author Alexander Simon
+ * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public interface CallGraphUI {
+public interface CsmFunctionsResolverImplementation {
+    
     /**
-     * if method returns true the call graph shows tree and graph views.
-     * if method returns false the call graph shows only tree view.
-     * @return 
-     */
-    boolean showGraph();
+     * Resolves function by declaration text within a project
+     * 
+     * @param project
+     * @param signature
+     * @return all functions which has the same signature
+     */    
+    Collection<CsmFunction> resolveFunction(NativeProject project, CharSequence signature);    
     
-    Catalog getCatalog();
+    /**
+     * Resolves function by declaration text within a project
+     * 
+     * @param project
+     * @param signature
+     * @return all functions which has the same signature
+     */    
+    Collection<CsmFunction> resolveFunction(CsmProject project, CharSequence signature);    
     
-    JPanel getContextPanel(Call call);    
-    
-    Collection<CallGraphAction> getActions(CallGraphActionEDTRunnable runnable);
 }

@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
-import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
@@ -394,12 +394,12 @@ public class VariableProvider {
         
         CsmScope objScope = CsmKindUtilities.isScope(decl) ? (CsmScope) decl : null;
         
-        CsmType objType = CsmEntityResolver.resolveType(obj, variableFile, variableEndOffset, objScope, instantiations);
+        CsmType objType = CsmExpressionResolver.resolveType(obj, variableFile, variableEndOffset, objScope, instantiations);
         
         // This is necessary to resolve classifiers defined in macroses
         int counter = Antiloop.MAGIC_PLAIN_TYPE_RESOLVING_CONST;
         while (objType != null && !CsmBaseUtilities.isValid(objType.getClassifier()) && !CharSequenceUtils.isNullOrEmpty(objType.getClassifierText()) && counter > 0) {
-            objType = CsmEntityResolver.resolveType(
+            objType = CsmExpressionResolver.resolveType(
                 objType.getClassifierText(), 
                 variableFile, 
                 variableEndOffset, 
