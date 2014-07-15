@@ -74,7 +74,7 @@ import org.openide.util.Utilities;
  *
  * @author ak119685
  */
-public class FileObjectBasedFile extends File {
+public final class FileObjectBasedFile extends File {
 
     private final ExecutionEnvironment env;
     private FileObject fo;
