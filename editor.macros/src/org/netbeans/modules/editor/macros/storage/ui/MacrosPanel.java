@@ -175,10 +175,7 @@ public class MacrosPanel extends JPanel {
     }
     
     public void forceAddMacro(String code) {
-        MacrosModel.Macro macro = addMacro();
-        if (macro != null) {
-            macro.setCode(code);
-        }
+        MacrosModel.Macro macro = addMacro(code);
     }
     
     private void initializeFinder() {
@@ -320,7 +317,7 @@ public class MacrosPanel extends JPanel {
 
     private void bNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bNewActionPerformed
         // TODO add your handling code here:
-        addMacro();
+        addMacro(null);
     }//GEN-LAST:event_bNewActionPerformed
 
     private void bSetShortcutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bSetShortcutActionPerformed
@@ -461,7 +458,7 @@ public class MacrosPanel extends JPanel {
         }
     }
 
-    private MacrosModel.Macro addMacro() {
+    private MacrosModel.Macro addMacro(String initCode) {
         final MacrosNamePanel panel=new MacrosNamePanel();
         final DialogDescriptor descriptor = new DialogDescriptor(panel, loc("CTL_New_macro_dialog_title"));//NO18N
         panel.setChangeListener(new ChangeListener() {
@@ -477,6 +474,9 @@ public class MacrosPanel extends JPanel {
         if (DialogDisplayer.getDefault().notify(descriptor)==DialogDescriptor.OK_OPTION) {
             String macroName = panel.getNameValue().trim();
 	    final Macro macro = model.createMacro(MimePath.EMPTY, macroName);
+            if (initCode != null) {
+                macro.setCode(initCode);
+            }
 	    sorter.resortAfterModelChange();
             int sel = sorter.viewIndex(model.getAllMacros().size() - 1);
             tMacros.getSelectionModel().setSelectionInterval(sel, sel);
