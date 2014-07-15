@@ -108,6 +108,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="RemoteJavadocPolicy">
+            <api name="general"/>
+            <summary>Added a possibility to specify remote javadoc handling policy</summary>
+            <version major="0" minor="138"/>
+            <date day="15" month="7" year="2014"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Added a possibility to specify remote javadoc handling policy in <code>JavadocHelper</code>
+            </description>
+             <issue number="240501"/>
+        </change>
         <change id="nodeReplacemenHints">
             <api name="general"/>
             <summary>Added API to preserve comments and whitespaces in transformations</summary>
