@@ -1,12 +1,9 @@
-Name: Apache Commons Lang
-Version: 2.4
-Description: Enhanced standard libraries
+Name: Apache Ant
+Version: 1.9.4
+Files: ant-docs-1.9.4.zip
+Description: Ant build tool.
 License: Apache-2.0
-Origin: http://repo1.maven.org/maven2/commons-lang/commons-lang/2.4/commons-lang-2.4.jar
-
-Use of BCEL 2.0.0 is governed by the terms of the license below:
-
-[TEXT OF THE LICENSE]
+Origin: http://www.apache.org/dist/ant/binaries/apache-ant-1.9.4-bin.tar.bz2
 
                                  Apache License
                            Version 2.0, January 2004

@@ -38,15 +38,17 @@
  * Contributor(s):
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
- */
+ */ 
 package org.netbeans.modules.java.editor.fold;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.api.editor.fold.FoldTemplate;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.editor.ext.java.JavaFoldManager;
 import org.netbeans.spi.editor.fold.FoldTypeProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -62,6 +64,7 @@ public class JavaFoldTypeProvider implements FoldTypeProvider {
         types.add(JavaFoldManager.IMPORTS_FOLD_TYPE);
         types.add(JavaFoldManager.JAVADOC_FOLD_TYPE);
         types.add(JavaFoldManager.INITIAL_COMMENT_FOLD_TYPE);
+        types.add(JavaFoldTypeProvider.BUNDLE_STRING);
     }
     
     
@@ -75,4 +78,12 @@ public class JavaFoldTypeProvider implements FoldTypeProvider {
         return false;
     }
     
+    /**
+     * Represents a reference to a String in a resource bundle.
+     * Java module registers a default {@link ContentReader}, which assumes the fold data
+     * contains information [TBD] necessary to extract the actual string.
+     */
+    public static final FoldType BUNDLE_STRING = FoldType.create("bundle-string", 
+            NbBundle.getMessage(JavaFoldTypeProvider.class, "Fold_BundleString"), 
+            FoldTemplate.DEFAULT_BLOCK);
 }
