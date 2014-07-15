@@ -4,6 +4,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.launchers.actions;
 
+import org.netbeans.modules.cnd.makeproject.LaunchersRegistryAccessor;
 import org.netbeans.modules.cnd.makeproject.launchers.Launcher;
 import org.netbeans.modules.cnd.makeproject.launchers.LauncherExecutor;
 import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistryFactory;
@@ -112,6 +113,7 @@ public class LauncherAction extends AbstractAction implements ContextAwareAction
         subMenu = new JMenu(displayName);
         subMenu.setEnabled(isSubmenu);
         subMenu.putClientProperty(DynamicMenuContent.HIDE_WHEN_DISABLED, getValue(DynamicMenuContent.HIDE_WHEN_DISABLED));
+        LaunchersRegistryAccessor.getDefault().assertPrivateListenerNotNull(project.getProjectDirectory());  //for debugging purposes only
         for (Launcher launcher : LaunchersRegistryFactory.getInstance(project.getProjectDirectory()).getLaunchers()) {
             subMenu.add(new LauncherExecutableAction(launcher));
         }

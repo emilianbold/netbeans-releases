@@ -48,7 +48,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.php.latte.parser.LatteParser.LatteParserResult;
+import org.netbeans.modules.php.latte.parser.LatteParserResult;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 

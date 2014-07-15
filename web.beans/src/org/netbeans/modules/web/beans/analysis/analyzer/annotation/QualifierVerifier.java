@@ -81,7 +81,8 @@ public class QualifierVerifier implements TargetVerifier {
             Set<ElementType> targetTypes )
     {
         boolean hasRequiredTarget = false;
-        if ( isEvent() ){
+//        if ( isEvent() ){ TODO: any reason why it was different, ins specification event qualifier is just the same as usual, and example have 4 targets but it's just example? see #225556
+        //especially it was updated for evvents before but specification is new for all qualifiers. keep for now commented
             boolean hasFieldParameterTarget = targetTypes.contains(
                     ElementType.FIELD) &&
                         targetTypes.contains(ElementType.PARAMETER);
@@ -107,14 +108,14 @@ public class QualifierVerifier implements TargetVerifier {
                                 targetTypes.contains( ElementType.METHOD));
                 }
             }
-        }
-        else {
-            hasRequiredTarget = targetTypes.size() == 4 && 
-                targetTypes.contains( ElementType.METHOD) &&
-                        targetTypes.contains(ElementType.FIELD) &&
-                            targetTypes.contains(ElementType.PARAMETER)&&
-                                targetTypes.contains( ElementType.TYPE);
-        }
+//        }
+//        else {
+//            hasRequiredTarget = targetTypes.size() == 4 && 
+//                targetTypes.contains( ElementType.METHOD) &&
+//                        targetTypes.contains(ElementType.FIELD) &&
+//                            targetTypes.contains(ElementType.PARAMETER)&&
+//                                targetTypes.contains( ElementType.TYPE);
+//        }
         
         return hasRequiredTarget;
     }

@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
-import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionsFactory;
@@ -171,14 +171,14 @@ public class DeclTypeImpl extends TypeImpl {
             if (canUseCache()) {
                 synchronized (this) {
                     if (cachedType == null) {
-                        type = CsmEntityResolver.resolveType(typeExpression, instantiations.get());
+                        type = CsmExpressionResolver.resolveType(typeExpression, instantiations.get());
                         cachedType = type;
                     } else {
                         type = cachedType;
                     }
                 }
             } else {
-                type = CsmEntityResolver.resolveType(typeExpression, instantiations.get());
+                type = CsmExpressionResolver.resolveType(typeExpression, instantiations.get());
             }
         }
         
