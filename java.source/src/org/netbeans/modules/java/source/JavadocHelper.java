@@ -97,6 +97,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Union2;
 
 /**
  * Utilities to assist with retrieval of Javadoc text.
@@ -105,7 +106,55 @@ public class JavadocHelper {
 
     private static final Logger LOG = Logger.getLogger(JavadocHelper.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(JavadocHelper.class.getName(),1);
-    
+
+    /**
+     * Remote Javadoc handling policy.
+     * @since 0.138
+     */
+    public enum RemoteJavadocPolicy {
+        /**
+         * The connection to remote Javadoc is verified and when valid it's returned.
+         */
+        USE,
+        /**
+         * The connection to remote Javadoc is ignored.
+         */
+        IGNORE,
+        /**
+         * The {@link RemoteJavadocException} is thrown in case of remote Javadoc.
+         */
+        EXCEPTION,
+        /**
+         * All possible connections to remote Javadoc are returned without verification.
+         */
+        SPECULATIVE
+    }
+
+    /**
+     * A RemoteJavadocException is thrown in case of remote Javadoc with {@link RemoteJavadocPolicy#EXCEPTION} policy.
+     * @since 0.138
+     */
+    public static final class RemoteJavadocException extends Exception {
+        private final URL root;
+
+        /**
+         * Creates a new RemoteJavadocException.
+         * @param root the remote Javadoc root
+         */
+        public RemoteJavadocException(@NullAllowed URL root) {
+            this.root = root;
+        }
+
+        /**
+         * Returns the remote Javadoc root.
+         * @return the root
+         */
+        @CheckForNull
+        public URL getRoot() {
+            return root;
+        }
+    }
+
     private JavadocHelper() {}
     
     /**
@@ -256,16 +305,52 @@ public class JavadocHelper {
      * @return the javadoc page or null when the javadoc is not available.
      */
     public static TextStream getJavadoc(Element element, boolean allowRemoteJavadoc, final @NullAllowed Callable<Boolean> cancel) {
+        try {
+            final List<TextStream> res = getJavadoc(
+                element,
+                allowRemoteJavadoc ? RemoteJavadocPolicy.USE : RemoteJavadocPolicy.IGNORE,
+                cancel);
+            return res.isEmpty() ?
+                null :
+                res.get(0);
+        } catch (RemoteJavadocException rje) {
+            throw new IllegalStateException(
+                "Never thrown", //NOI18N
+                rje);
+        }
+    }
+
+    /**
+     * Returns Javadoc for given {@link Element}.
+     * Finds {@link URL} of a javadoc page for given element when available. This method
+     * uses {@link JavadocForBinaryQuery} to find the javadoc page for the give element.
+     * For {@link PackageElement} it returns the package-summary.html for given package.
+     * @param element to find the Javadoc for
+     * @param remoteJavadocPolicy the remote javadoc hanlding policy
+     * @param cancel a Callable to signal cancel request
+     * @return the javadoc pages
+     * @throws JavadocHelper.RemoteJavadocException in case of remote Javadoc and {@link RemoteJavadocPolicy#EXCEPTION} policy
+     * @since 0.138
+     */
+    @NonNull
+    public static List<TextStream> getJavadoc(
+        @NonNull final Element element,
+        @NonNull final RemoteJavadocPolicy remoteJavadocPolicy,
+        @NullAllowed final Callable<Boolean> cancel) throws RemoteJavadocException {
+        Parameters.notNull("element", element); //NOI18N
+        Parameters.notNull("remoteJavadocPolicy", remoteJavadocPolicy); //NOI18N
         synchronized (cachedJavadoc) {
-            TextStream result = cachedJavadoc.get(element);
-            if (result != null) {
-                LOG.log(Level.FINE, "cache hit on {0}", result.getLocation());
-                return result;
+            final TextStream cached = cachedJavadoc.get(element);
+            if (cached != null) {
+                LOG.log(Level.FINE, "cache hit on {0}", cached.getLocation());
+                return Collections.singletonList(cached);
             }
         }
-        TextStream result = doGetJavadoc(element, allowRemoteJavadoc, cancel);
-        synchronized (cachedJavadoc) {
-            cachedJavadoc.put(element, result);
+        final List<TextStream> result = doGetJavadoc(element, remoteJavadocPolicy, cancel);
+        if (result.size() == 1) {
+            synchronized (cachedJavadoc) {
+                cachedJavadoc.put(element, result.get(0));
+            }
         }
         return result;
     }
@@ -331,7 +416,7 @@ public class JavadocHelper {
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(value="DMI_COLLECTION_OF_URLS", justification="URLs have never host part")
-    private static TextStream doGetJavadoc(final Element element, final boolean allowRemoteJavadoc, final Callable<Boolean> cancel) {
+    private static List<TextStream> doGetJavadoc(final Element element, final RemoteJavadocPolicy remoteJavadocPolicy, final Callable<Boolean> cancel) throws RemoteJavadocException {
         if (element == null) {
             throw new IllegalArgumentException("Cannot pass null as an argument of the SourceUtils.getJavadoc"); // NOI18N
         }
@@ -348,7 +433,7 @@ public class JavadocHelper {
                 }
             }
             if (clsSym == null) {
-                return null;
+                return Collections.emptyList();
             }
             pkgName = FileObjects.convertPackage2Folder(((PackageElement) element).getQualifiedName().toString());
             pageName = PACKAGE_SUMMARY;
@@ -368,7 +453,7 @@ public class JavadocHelper {
                 e = e.getEnclosingElement();
             }
             if (clsSym == null) {
-                return null;
+                return Collections.emptyList();
             }
             pkgName = FileObjects.convertPackage2Folder(((PackageElement) e).getQualifiedName().toString());
             pageName = sb.toString();
@@ -385,12 +470,17 @@ public class JavadocHelper {
                 final String pageNameF = pageName;
                 final Collection<? extends CharSequence> fragment = buildFragment ? getFragment(element) : Collections.<CharSequence>emptySet();
                 if (cancel == null) {
-                    return findJavadoc(classFile, pkgName, pageNameF, fragment, allowRemoteJavadoc);
+                    return findJavadoc(classFile, pkgName, pageNameF, fragment, remoteJavadocPolicy);
                 }
-                final Future<TextStream> future = RP.submit(new Callable<TextStream>() {
+                final Future<Union2<List<TextStream>,RemoteJavadocException>> future = RP.submit(new Callable<Union2<List<TextStream>,RemoteJavadocException>>() {
                     @Override
-                    public TextStream call() throws Exception {
-                        return findJavadoc(classFile, pkgNameF, pageNameF, fragment, allowRemoteJavadoc);
+                    public Union2<List<TextStream>,RemoteJavadocException> call() throws Exception {
+                        try {
+                            return Union2.<List<TextStream>,RemoteJavadocException>createFirst(
+                                findJavadoc(classFile, pkgNameF, pageNameF, fragment, remoteJavadocPolicy));
+                        } catch (RemoteJavadocException rje) {
+                            return Union2.<List<TextStream>,RemoteJavadocException>createSecond(rje);
+                        }
                     }
                 });
                 do {
@@ -399,27 +489,37 @@ public class JavadocHelper {
                         break;
                     }
                     try {
-                        return future.get(100, TimeUnit.MILLISECONDS);
+                        final Union2<List<TextStream>,RemoteJavadocException> res = future.get(100, TimeUnit.MILLISECONDS);
+                        if (res == null) {
+                            break;
+                        }
+                        if (res.hasFirst()) {
+                            return res.first();
+                        }
+                        assert res.hasSecond();
+                        throw res.second();
                     } catch (TimeoutException timeOut) {
                         //Retry
                     }
                 } while (true);
-            } catch (Exception e) {
+            } catch (RemoteJavadocException rje) {
+                throw rje;
+            }catch (Exception e) {
                 LOG.log(Level.INFO, null, e);
             }
         }
-        return null;
+        return Collections.emptyList();
     }
 
     private static final String PACKAGE_SUMMARY = "package-summary"; // NOI18N
 
-    private static TextStream findJavadoc(
+    private static List<TextStream> findJavadoc(
             @NonNull final URL classFile,
             @NonNull final String pkgName,
             @NonNull final String pageName,
             @NonNull final Collection<? extends CharSequence> fragment,
-            final boolean allowRemoteJavadoc) {
-
+            @NonNull final RemoteJavadocPolicy remoteJavadocPolicy) throws RemoteJavadocException {
+        final List<TextStream> resList = new ArrayList<>();
         URL sourceRoot = null;
         Set<URL> binaries = new HashSet<URL>();
         try {
@@ -472,8 +572,7 @@ public class JavadocHelper {
                     }
                 }
             }
-
-            for (URL binary : binaries) {
+binRoots:   for (URL binary : binaries) {
                 JavadocForBinaryQuery.Result javadocResult = JavadocForBinaryQuery.findJavadoc(binary);
                 URL[] result = javadocResult.getRoots();
                 for (URL root : result) {
@@ -482,16 +581,30 @@ public class JavadocHelper {
                                 new Object[] {javadocResult.getClass(), root.toExternalForm()});
                         continue;
                     }
-                    if (!allowRemoteJavadoc && isRemote(root)) {
-                        continue;
+                    boolean isRemote = isRemote(root);
+                    boolean speculative = false;
+                    if (isRemote) {
+                        switch (remoteJavadocPolicy) {
+                            case EXCEPTION:
+                                throw new RemoteJavadocException(root);
+                            case IGNORE:
+                                continue;
+                            case USE:
+                                break;
+                            case SPECULATIVE:
+                                speculative = true;
+                                break;
+                            default:
+                                throw new IllegalArgumentException(remoteJavadocPolicy.name());
+                        }
                     }
                     URL url = new URL(root, pkgName + "/" + pageName + ".html");
                     InputStream is = null;
                     String rootS = root.toString();
-                    boolean useKnownGoodRoots = result.length == 1 && isRemote(url);
+                    boolean useKnownGoodRoots = result.length == 1 && isRemote;
                     if (useKnownGoodRoots && knownGoodRoots.contains(rootS)) {
                         LOG.log(Level.FINE, "assumed valid Javadoc stream at {0}", url);
-                    } else {
+                    } else if (!speculative || !isRemote) {
                         try {
                             is = openStream(url);
                             if (useKnownGoodRoots) {
@@ -515,7 +628,10 @@ public class JavadocHelper {
                                     replace("+", "%20"); // NOI18N
                                 urls.add(new URI(url.toExternalForm() + '#' + encodedfragment).toURL());
                             }
-                            return new TextStream(urls, is);
+                            resList.add(new TextStream(urls, is));
+                            if (!speculative) {
+                                break binRoots;
+                            }
                         } catch (URISyntaxException x) {
                             LOG.log(Level.INFO, null, x);
                         } catch (UnsupportedEncodingException x) {
@@ -524,14 +640,17 @@ public class JavadocHelper {
                             LOG.log(Level.INFO, null, x);
                         }
                     }
-                    return new TextStream(Collections.<URL>singleton(url), is);
+                    resList.add(new TextStream(Collections.<URL>singleton(url), is));
+                    if (!speculative) {
+                        break binRoots;
+                    }
                 }
             }
 
         } catch (MalformedURLException x) {
             LOG.log(Level.INFO, null, x);
         }
-        return null;
+        return resList;
     }
     
     /**
