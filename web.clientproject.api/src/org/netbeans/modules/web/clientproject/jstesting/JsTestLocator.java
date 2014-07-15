@@ -49,6 +49,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.spi.gototest.TestLocator;
 import org.openide.filesystems.FileObject;
@@ -57,7 +58,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Test locator for JS files. The current implementation simply search for the same
+ * Test locator for JS files. The current implementation simply searches for the same
  * path between Tests and Sources. Supported test file suffixes are:
  * <ul>
  * <li>spec</li>
@@ -67,6 +68,9 @@ import org.openide.util.lookup.ServiceProvider;
  * </ul>
  * <p>
  * <b>Currently, only HTML5 source groups are supported.</b>
+ * <p>
+ * If no test source groups are found, {@link ProjectDirectoriesProvider} is searched
+ * in the project lookup (so user is able to specify folder with tests).
  * @see WebClientProjectConstants
  */
 @ServiceProvider(service=TestLocator.class)
@@ -76,11 +80,11 @@ public final class JsTestLocator implements TestLocator {
 
     private static final String JS_MIME_TYPE = "text/javascript"; // NOI18N
     private static final String[] SUFFIXES = {
-        "",
-        "spec",
-        "Spec",
-        "test",
-        "Test",
+        "", // NOI18N
+        "spec", // NOI18N
+        "Spec", // NOI18N
+        "test", // NOI18N
+        "Test", // NOI18N
     };
 
 
@@ -218,7 +222,17 @@ public final class JsTestLocator implements TestLocator {
     private LocationResult findTest(Project project, FileObject fo) {
         SourceGroup[] testGroups = getSourceGroupsForTests(project);
         if (testGroups.length == 0) {
-            return null;
+            // no tests -> try to use ProjectDirectoriesProvider to be able to select test folder
+            ProjectDirectoriesProvider directoriesProvider = project.getLookup().lookup(ProjectDirectoriesProvider.class);
+            if (directoriesProvider == null) {
+                return null;
+            }
+            FileObject testDirectory = directoriesProvider.getTestDirectory(true);
+            if (testDirectory == null) {
+                return null;
+            }
+            testGroups = getSourceGroupsForTests(project);
+            assert testGroups.length != 0 : "Test groups should be now found for project: " + project.getClass().getName();
         }
         SourceGroup sourceGroup = getSourceGroupForSources(project, fo);
         assert sourceGroup != null : project;
