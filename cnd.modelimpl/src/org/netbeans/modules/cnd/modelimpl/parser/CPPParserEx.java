@@ -137,18 +137,27 @@ public class CPPParserEx extends CPPParser {
         return getInstance(file, ts, flags, new CppParserEmptyActionImpl(file));
     }
     
+    public static CPPParserEx getInstance(CharSequence fileName, TokenStream ts, int flags) {
+        return getInstance(fileName, ts, flags, new CppParserEmptyActionImpl());
+    }    
+    
     public static CPPParserEx getInstance(CsmFile file, TokenStream ts, int flags, CppParserActionEx callback) {
-        assert (ts != null);
         assert (file != null);
+        return getInstance(file.getName(), ts, flags, callback);
+    }
+    
+    public static CPPParserEx getInstance(CharSequence fileName, TokenStream ts, int flags, CppParserActionEx callback) {
+        assert (ts != null);
+        assert (fileName != null);
         CPPParserEx parser;
         if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
             parser = new CPPStraightParserEx(ts, callback);
         } else {
             parser = new CPPParserEx(ts, callback);
         }
-        parser.init(file.getName().toString(), flags);
+        parser.init(fileName.toString(), flags);
         return parser;
-    }
+    }    
 
     @Override
     protected final void init(String filename, int flags) {

@@ -799,7 +799,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                             CsmKindUtilities.isTypeBasedSpecalizationParameter(param2)) {
                                         CsmType type1 = paramsType.get(i);
                                         CsmType type2 = paramsType.get(j);
-                                        if (checkTypesEqual(type1, param1.getContainingFile(), type2, param2.getContainingFile())) {
+                                        if (CsmUtilities.checkTypesEqual(type1, param1.getContainingFile(), type2, param2.getContainingFile())) {
                                             match += 1;
                                         }
                                     }
@@ -996,52 +996,6 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             iteration--;
         }
         return 0;
-    }
-    
-    private static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2) {
-        if (type1 != null && type2 != null) {
-            boolean resolveTypeChain = false;
-            for (int i = 0; i < 2; i++) {
-                CsmClassifier tbsp1Cls = getClassifier(type1, contextFile1, resolveTypeChain);
-                if (tbsp1Cls != null) {
-                    CsmClassifier tbsp2Cls = getClassifier(type2, contextFile2, resolveTypeChain);
-                    if (tbsp2Cls != null) {
-                        if (tbsp1Cls.getQualifiedName().toString().equals(tbsp2Cls.getQualifiedName().toString())) {
-                            return true;
-                        }
-                    }
-                }
-                
-                resolveTypeChain = true;
-                
-                if (contextFile1 == null && contextFile2 == null) {
-                    break;
-                }
-            }
-        }
-        return false;
-    }
-    
-    private static CsmClassifier getClassifier(CsmType type, CsmFile contextFile, boolean resolveTypeChain) {
-        CsmClassifier cls = type.getClassifier();
-        if (resolveTypeChain && contextFile != null && CsmBaseUtilities.isValid(cls)) {
-            cls = CsmBaseUtilities.getOriginalClassifier(cls, contextFile);
-        }
-//        while (cls != null && iteration != 0) {
-//            if (CsmKindUtilities.isTypedef(cls)) {
-//                CsmTypedef td = (CsmTypedef) cls;
-//                type = td.getType();
-//                if (type instanceof Resolver.SafeClassifierProvider) {
-//                    cls = ((Resolver.SafeClassifierProvider) type).getClassifier(resolver);
-//                } else {
-//                    cls = type.getClassifier();
-//                }
-//            } else {
-//                break;
-//            }
-//            iteration--;
-//        }
-        return cls;
     }
 
     private boolean isClassForward(CsmClassifier cls) {
