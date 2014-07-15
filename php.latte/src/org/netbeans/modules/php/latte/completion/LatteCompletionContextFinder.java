@@ -47,7 +47,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.latte.lexer.LatteMarkupTokenId;
 import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
-import org.netbeans.modules.php.latte.parser.LatteParser.LatteParserResult;
+import org.netbeans.modules.php.latte.parser.LatteParserResult;
 import org.netbeans.modules.php.latte.utils.LatteLexerUtils;
 
 /**
