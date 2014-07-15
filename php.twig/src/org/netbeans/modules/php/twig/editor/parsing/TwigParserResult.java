@@ -49,17 +49,12 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
 public class TwigParserResult extends ParserResult {
-
     boolean valid = true;
     List<Error> errorList = new ArrayList<>();
     List<Block> blockList = new ArrayList<>();
 
     TwigParserResult(Snapshot snapshot) {
         super(snapshot);
-    }
-
-    public List<Error> getErrors() {
-        return errorList;
     }
 
     public void addError(String description, int offset, int length) {
@@ -79,17 +74,12 @@ public class TwigParserResult extends ParserResult {
         valid = false;
     }
 
-    public boolean isValid() {
-        return valid;
-    }
-
     @Override
     public List<? extends org.netbeans.modules.csl.api.Error> getDiagnostics() {
         return errorList;
     }
 
     public static class Error implements org.netbeans.modules.csl.api.Error {
-
         String description;
         int offset;
         int length;
@@ -105,14 +95,6 @@ public class TwigParserResult extends ParserResult {
         @Override
         public String getDescription() {
             return description;
-        }
-
-        public int getOffset() {
-            return offset;
-        }
-
-        public int getLength() {
-            return length;
         }
 
         @Override
@@ -157,7 +139,6 @@ public class TwigParserResult extends ParserResult {
     }
 
     public static class Block {
-
         CharSequence function;
         int offset;
         int length;
