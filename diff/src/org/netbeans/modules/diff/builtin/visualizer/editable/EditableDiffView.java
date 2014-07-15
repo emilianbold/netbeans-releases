@@ -815,12 +815,14 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         DiffViewManager.DecoratedDifference [] ddiffs = manager.getDecorations();
         if (Boolean.FALSE.equals(down)) {
             // moving up
-            int up = viewRect.y + viewRect.height * 1 / 3;
-            for (int i = ddiffs.length - 1; i >= 0; i--) {
-                int startLine = ddiffs[i].getTopRight();
-                int endLine = ddiffs[i].getBottomRight();
-                if (startLine < up && endLine < up) {
-                    return Math.min(ddiffs.length - 1, i + 1);
+            if (viewRect.y != 0) { // the first diff should be marked if at the top
+                int up = viewRect.y + viewRect.height * 1 / 3;
+                for (int i = ddiffs.length - 1; i >= 0; i--) {
+                    int startLine = ddiffs[i].getTopRight();
+                    int endLine = ddiffs[i].getBottomRight();
+                    if (startLine < up && endLine < up) {
+                        return Math.min(ddiffs.length - 1, i + 1);
+                    }
                 }
             }
             return ddiffs.length == 0 ? -1 : 0;
@@ -913,7 +915,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
 
         // scroll the left pane accordingly
-        manager.scroll();
+        manager.scroll(index == diffs.length - 1 || index == 0);
     }
     
     /** This method is called from within the constructor to initialize the form.
