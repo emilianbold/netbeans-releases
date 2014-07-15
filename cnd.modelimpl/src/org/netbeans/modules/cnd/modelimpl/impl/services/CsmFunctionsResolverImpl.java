@@ -84,6 +84,7 @@ public class CsmFunctionsResolverImpl implements CsmFunctionsResolverImplementat
     @Override
     public Collection<CsmFunction> resolveFunction(NativeProject project, CharSequence signature) {
         CsmProject cndProject = model.addProject(project, project.getProjectDisplayName(), true);
+        cndProject.waitParse();
         return resolveFunction(cndProject, signature);
     }
 
