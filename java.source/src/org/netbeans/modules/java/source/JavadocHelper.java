@@ -59,11 +59,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -106,6 +106,10 @@ public class JavadocHelper {
 
     private static final Logger LOG = Logger.getLogger(JavadocHelper.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(JavadocHelper.class.getName(),1);
+    private static final int DEFAULT_REMOTE_FILE_CONTENT_CACHE_SIZE = 50;
+    private static final int REMOTE_FILE_CONTENT_CACHE_SIZE = Integer.getInteger(
+        "JavadocHelper.remoteCache.size",   //NOI18N
+        DEFAULT_REMOTE_FILE_CONTENT_CACHE_SIZE);
 
     /**
      * Remote Javadoc handling policy.
@@ -163,6 +167,13 @@ public class JavadocHelper {
      * (and {@linkplain InputStream#close close} it) at least once.
      */
     public static final class TextStream {
+        private static Map<URI,byte[]> remoteFileContentCache = Collections.synchronizedMap(
+            new LinkedHashMap<URI, byte[]>(16, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<URI, byte[]> eldest) {
+                    return size() > REMOTE_FILE_CONTENT_CACHE_SIZE;
+                }
+            });
         private final List<? extends URL> urls;
         private final AtomicReference<InputStream> stream = new AtomicReference<InputStream>();
         private byte[] cache;
@@ -231,20 +242,33 @@ public class JavadocHelper {
             }
             assert !isRemote() || !EventQueue.isDispatchThread();
             InputStream uncached = stream.getAndSet(null);
-            if (uncached == null) {
-                uncached = JavadocHelper.openStream(getLocation());
-            }
             if (isRemote()) {
                 try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream(20 * 1024); // typical size for Javadoc page?
-                    FileUtil.copy(uncached, baos);
-                    cache = baos.toByteArray();
+                    final URI fileURI = getFileURI();
+                    byte[] data = fileURI == null ? null : remoteFileContentCache.get(fileURI);
+                    if (data == null) {
+                        if (uncached == null) {
+                            uncached = JavadocHelper.openStream(getLocation());
+                        }
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream(20 * 1024); // typical size for Javadoc page?
+                        FileUtil.copy(uncached, baos);
+                        data = baos.toByteArray();
+                        if (fileURI != null) {
+                            remoteFileContentCache.put(fileURI, data);
+                        }
+                    }
+                    cache = data;
                 } finally {
-                    uncached.close();
+                    if (uncached != null) {
+                        uncached.close();
+                    }
                 }
                 LOG.log(Level.FINE, "cached content for {0} ({1}k)", new Object[] {getLocation(), cache.length / 1024});
                 return new ByteArrayInputStream(cache);
             } else {
+                if (uncached == null) {
+                    uncached = JavadocHelper.openStream(getLocation());
+                }
                 return uncached;
             }
         }
@@ -253,6 +277,20 @@ public class JavadocHelper {
          */
         public boolean isRemote() {
             return JavadocHelper.isRemote(getLocation());
+        }
+
+        @CheckForNull
+        private URI getFileURI() {
+            final URL location = getLocation();
+            final String surl = location.toString();
+            final int index = surl.lastIndexOf('#');    //NOI18N
+            try {
+                return index < 0 ?
+                     location.toURI() :
+                     new URI(surl.substring(0, index));
+            } catch (URISyntaxException use) {
+                return null;
+            }
         }
     }
 
@@ -278,9 +316,7 @@ public class JavadocHelper {
         }
         return url.openStream();
     }
-    
-    private static final Map<Element,TextStream> cachedJavadoc = new WeakHashMap<Element,TextStream>();
-    
+
     /**
      * Richer version of {@link SourceUtils#getJavadoc}.
      * Finds {@link URL} of a javadoc page for given element when available. This method
@@ -339,20 +375,7 @@ public class JavadocHelper {
         @NullAllowed final Callable<Boolean> cancel) throws RemoteJavadocException {
         Parameters.notNull("element", element); //NOI18N
         Parameters.notNull("remoteJavadocPolicy", remoteJavadocPolicy); //NOI18N
-        synchronized (cachedJavadoc) {
-            final TextStream cached = cachedJavadoc.get(element);
-            if (cached != null) {
-                LOG.log(Level.FINE, "cache hit on {0}", cached.getLocation());
-                return Collections.singletonList(cached);
-            }
-        }
-        final List<TextStream> result = doGetJavadoc(element, remoteJavadocPolicy, cancel);
-        if (result.size() == 1) {
-            synchronized (cachedJavadoc) {
-                cachedJavadoc.put(element, result.get(0));
-            }
-        }
-        return result;
+        return doGetJavadoc(element, remoteJavadocPolicy, cancel);
     }
 
     /**
