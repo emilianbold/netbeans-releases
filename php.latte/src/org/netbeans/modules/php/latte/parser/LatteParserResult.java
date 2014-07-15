@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.semantic;
+
+package org.netbeans.modules.php.latte.parser;
 
 import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ColoringAttributes;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.php.latte.parser.LatteParserResult;
+import java.util.List;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteSemanticAnalyzer extends SemanticAnalyzer<LatteParserResult> {
+public class LatteParserResult extends ParserResult {
 
-    public LatteSemanticAnalyzer() {
+    LatteParserResult(Snapshot snapshot) {
+        super(snapshot);
     }
 
     @Override
-    public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
-        return Collections.<OffsetRange, Set<ColoringAttributes>>emptyMap();
+    public List<? extends org.netbeans.modules.csl.api.Error> getDiagnostics() {
+        return Collections.emptyList();
     }
 
     @Override
-    public void run(LatteParserResult result, SchedulerEvent event) {
-    }
-
-    @Override
-    public int getPriority() {
-        return 300;
-    }
-
-    @Override
-    public Class<? extends Scheduler> getSchedulerClass() {
-        return null;
-    }
-
-    @Override
-    public void cancel() {
+    protected void invalidate() {
     }
 
 }
