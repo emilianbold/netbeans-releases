@@ -54,7 +54,9 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionsResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.trace.FileModelCpp11Test;
+import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 
 /**
  *
@@ -84,7 +86,7 @@ public class CsmEntityResolverTestCase extends SelectTestBase {
     protected Iterator<CsmFunction> _getFunctions(CsmProject project, CsmFunction func) {
         String funText = func.getText().toString();
         funText = funText.replace(func.getName(), func.getQualifiedName());
-        Collection<CsmFunction> result = CsmFunctionsResolver.resolveFunction(project, funText);
+        Collection<CsmFunction> result = CsmFunctionsResolver.resolveFunction((NativeProject) project.getPlatformProject(), funText);
         return result.iterator();
     }
 
