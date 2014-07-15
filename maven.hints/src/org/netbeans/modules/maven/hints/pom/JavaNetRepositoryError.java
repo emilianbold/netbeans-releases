@@ -47,6 +47,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -76,6 +78,8 @@ public class JavaNetRepositoryError implements POMErrorFixProvider {
     static final String PROP_URLS = "urls";
     
     static final String DEFAULT_URLS = "http://download.java.net/maven/2/ http://download.java.net/maven/1/ ";
+    
+    private static final Logger LOG = Logger.getLogger(JavaNetRepositoryError.class.getName());
     
     private final Configuration configuration;
     private JComponent component;
@@ -125,14 +129,17 @@ public class JavaNetRepositoryError implements POMErrorFixProvider {
                     }
                     if (!justSelected || forbidden.contains(url)) {
                         int position = rep.findChildElementPosition(model.getPOMQNames().URL.getQName());
-                        Line line = NbEditorUtilities.getLine(model.getBaseDocument(), position, false);
-                        OverrideFix basefix = new OverrideFix(rep, container, isPlugin);
-                        toRet.add(ErrorDescriptionFactory.createErrorDescription(
-                                                        configuration.getSeverity(configuration.getPreferences()).toEditorSeverity(),
-                                                 TXT_UsesJavanetRepository(),
-                                                 Collections.<Fix>singletonList(ErrorDescriptionFactory.attachSubfixes(basefix, Collections.singletonList(new Configure(configuration)))),
-                                                 model.getBaseDocument(), line.getLineNumber() + 1));
-                        
+                        try {
+                            Line line = NbEditorUtilities.getLine(model.getBaseDocument(), position, false);
+                            OverrideFix basefix = new OverrideFix(rep, container, isPlugin);
+                            toRet.add(ErrorDescriptionFactory.createErrorDescription(
+                                                            configuration.getSeverity(configuration.getPreferences()).toEditorSeverity(),
+                                                     TXT_UsesJavanetRepository(),
+                                                     Collections.<Fix>singletonList(ErrorDescriptionFactory.attachSubfixes(basefix, Collections.singletonList(new Configure(configuration)))),
+                                                     model.getBaseDocument(), line.getLineNumber() + 1));
+                        } catch (IndexOutOfBoundsException e) {
+                            LOG.log(Level.INFO, "wrong repository pos in model for : " + url, e);
+                        }
                     }
                 }
             }
