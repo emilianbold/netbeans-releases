@@ -78,14 +78,15 @@ import org.netbeans.modules.cnd.spi.model.services.CsmFunctionsResolverImplement
 public class CsmFunctionsResolverImpl implements CsmFunctionsResolverImplementation {
     
     private static final Logger LOG = Logger.getLogger(VariableProvider.class.getSimpleName());
-    
-    private final ModelImpl model = createModel();
 
     @Override
     public Collection<CsmFunction> resolveFunction(NativeProject project, CharSequence signature) {
-        CsmProject cndProject = model.addProject(project, project.getProjectDisplayName(), true);
-        cndProject.waitParse();
-        return resolveFunction(cndProject, signature);
+        CsmProject cndProject = CsmModelAccessor.getModel().getProject(project);
+        if (cndProject != null) {
+            cndProject.waitParse();
+            return resolveFunction(cndProject, signature);
+        } 
+        return Collections.emptyList();
     }
 
     @Override
@@ -221,13 +222,13 @@ public class CsmFunctionsResolverImpl implements CsmFunctionsResolverImplementat
         return params;
     }
     
-    private static ModelImpl createModel() {
-        ModelImpl m = (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
-        if (m == null) {
-            m = new ModelImpl();
-        }
-        return m;
-    }    
+//    private static ModelImpl createModel() {
+//        ModelImpl m = (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
+//        if (m == null) {
+//            m = new ModelImpl();
+//        }
+//        return m;
+//    }    
     
     private static void printAST(StringBuilder sb, AST ast, int level) {
         if (ast != null) {
