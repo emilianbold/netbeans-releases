@@ -96,7 +96,9 @@ public class GsfReformatTask implements ReformatTask {
                         Collections.<Source> singleton (source),
                         new UserTask () {
                             public void run (ResultIterator resultIterator) throws ParseException {
-                                if (resultIterator.getSnapshot().getMimeType().equals(mimeType)) {
+                                MimePath mp = MimePath.get(resultIterator.getSnapshot().getMimeType());
+                                String inh = mp.getInheritedType();
+                                if (mp.getMimeType(0).equals(mimeType) || mimeType.equals(inh)) {
                                     Parser.Result parserResult = (ParserResult) resultIterator.getParserResult();
                                     if (!(parserResult instanceof ParserResult)) {
                                         return;
