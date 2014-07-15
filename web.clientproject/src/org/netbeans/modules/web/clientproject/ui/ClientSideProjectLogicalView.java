@@ -650,7 +650,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         private FileObject getRootForNode(BasicNodes node) {
             switch (node) {
                 case Configuration: return project.getConfigFolder();
-                case Tests: return project.getTestsFolder();
+                case Tests: return project.getTestsFolder(false);
                 case Sources: return project.getSiteRootFolder();
                 default: assert false; return null;
             }

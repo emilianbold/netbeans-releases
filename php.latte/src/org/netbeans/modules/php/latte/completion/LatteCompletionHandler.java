@@ -73,7 +73,7 @@ import org.netbeans.modules.php.latte.completion.LatteElement.HelperParameter;
 import org.netbeans.modules.php.latte.completion.LatteElement.Parameter;
 import org.netbeans.modules.php.latte.lexer.LatteMarkupTokenId;
 import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
-import org.netbeans.modules.php.latte.parser.LatteParser.LatteParserResult;
+import org.netbeans.modules.php.latte.parser.LatteParserResult;
 import org.netbeans.modules.php.latte.utils.LatteLexerUtils;
 
 /**

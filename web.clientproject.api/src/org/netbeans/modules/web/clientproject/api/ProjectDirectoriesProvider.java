@@ -54,17 +54,13 @@ import org.openide.filesystems.FileObject;
 public interface ProjectDirectoriesProvider {
 
     /**
-     * Get configuration directory.
-     * @return configuration directory; can be {@code null} for none, corrupted etc. folder
-     */
-    @CheckForNull
-    FileObject getConfigDirectory();
-
-    /**
-     * Get test directory.
+     * Get test directory. If the test directory is not set yet, user will be asked for selecting it
+     * if {@code showFileChooser} is {@code true}.
+     * @param showFileChooser show file chooser if there is no test directory set yet
      * @return test directory; can be {@code null} for none, corrupted etc. folder
+     * @since 1.61
      */
     @CheckForNull
-    FileObject getTestDirectory();
+    FileObject getTestDirectory(boolean showFileChooser);
 
 }

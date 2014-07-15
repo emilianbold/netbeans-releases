@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.templates.TemplateRegistration;
@@ -571,8 +572,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 testFolder = null;
                 configFolder = null;
             } else {
-                testFolder = getExistingDir(wizardDescriptor, TEST_ROOT, ClientSideProjectConstants.DEFAULT_TEST_FOLDER);
-                configFolder = getExistingDir(wizardDescriptor, CONFIG_ROOT, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
+                testFolder = getExistingDir(wizardDescriptor, TEST_ROOT);
+                configFolder = getExistingDir(wizardDescriptor, CONFIG_ROOT);
             }
             ClientSideProjectUtilities.initializeProject(project, siteRoot.getAbsolutePath(), testFolder, configFolder);
             return FileUtil.toFileObject(siteRoot);
@@ -585,13 +586,14 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             wizardDescriptor.putProperty(TEST_ROOT, null);
         }
 
-        private String getExistingDir(WizardDescriptor wizardDescriptor, String property, String defaultDir) throws IOException {
+        @CheckForNull
+        private String getExistingDir(WizardDescriptor wizardDescriptor, String property) {
             File dir = (File) wizardDescriptor.getProperty(property);
             if (dir != null) {
                 // dir set
                 return dir.getAbsolutePath();
             }
-            return defaultDir;
+            return null;
         }
 
     }

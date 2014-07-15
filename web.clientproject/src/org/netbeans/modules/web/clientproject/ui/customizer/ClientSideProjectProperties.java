@@ -60,9 +60,7 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhanced
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -92,7 +90,9 @@ public final class ClientSideProjectProperties {
 
     //customizer license headers
     private LicensePanelSupport licenseSupport;
-    private boolean isSiteRootModified;
+    private volatile boolean isSiteRootModified;
+    private volatile boolean isTestFolderModified;
+    private volatile boolean isConfigFolderModified;
 
     public ClientSideProjectProperties(ClientSideProject project) {
         this.project = project;
@@ -160,18 +160,36 @@ public final class ClientSideProjectProperties {
     void saveProperties() {
         // first, create possible foreign file references
         String siteRootFolderReference = createForeignFileReference(siteRootFolder);
-        String testFolderReference = createForeignFileReference(testFolder);
-        String configFolderReference = createForeignFileReference(configFolder);
+        String testFolderReference = null;
+        if (isTestFolderModified
+                && !testFolder.trim().isEmpty()) {
+            testFolderReference = createForeignFileReference(testFolder);
+        }
+        String configFolderReference = null;
+        if (isConfigFolderModified
+                && !configFolder.trim().isEmpty()) {
+            configFolderReference = createForeignFileReference(configFolder);
+        }
         // save properties
         EditableProperties privateProperties = project.getProjectHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties projectProperties = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        
+
         if (isSiteRootModified) {
             putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRootFolderReference);
             isSiteRootModified = false;
         }
-        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_TEST_FOLDER, testFolderReference);
-        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, configFolderReference);
+        if (testFolderReference != null) {
+            putProperty(projectProperties, ClientSideProjectConstants.PROJECT_TEST_FOLDER, testFolderReference);
+        } else if (isTestFolderModified) {
+            // tests dir removed
+            projectProperties.remove(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
+        }
+        if (configFolderReference != null) {
+            putProperty(projectProperties, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, configFolderReference);
+        } else if (isConfigFolderModified) {
+            // config dir removed
+            projectProperties.remove(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
+        }
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_ENCODING, encoding);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_START_FILE, startFile);
         // #227995: store PROJECT_SELECTED_BROWSER in private.properties:
@@ -228,6 +246,7 @@ public final class ClientSideProjectProperties {
     }
 
     public void setTestFolder(String testFolder) {
+        isTestFolderModified = true;
         if (testFolder == null) {
             // we need to find out that some value was set ("no value" in this case)
             testFolder = ""; // NOI18N
@@ -243,6 +262,7 @@ public final class ClientSideProjectProperties {
     }
 
     public void setConfigFolder(String configFolder) {
+        isConfigFolderModified = true;
         if (configFolder == null) {
             // we need to find out that some value was set ("no value" in this case)
             configFolder = ""; // NOI18N
