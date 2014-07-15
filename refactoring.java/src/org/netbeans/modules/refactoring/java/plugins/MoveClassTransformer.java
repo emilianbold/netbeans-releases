@@ -233,8 +233,38 @@ public class MoveClassTransformer extends RefactoringVisitor {
                         flags.addAll(modifiers.getFlags());
                     }
                     flags.add(Modifier.STATIC);
-                    newClass = make.Class(make.Modifiers(flags, modifiers.getAnnotations()), newClass.getSimpleName(), newClass.getTypeParameters(),
-                            newClass.getExtendsClause(), newClass.getImplementsClause(), newClass.getMembers());
+                    switch(newClass.getKind()) {
+                        case CLASS:
+                            newClass = make.Class(
+                                    make.Modifiers(flags, modifiers.getAnnotations()),
+                                    newClass.getSimpleName(),
+                                    newClass.getTypeParameters(),
+                                    newClass.getExtendsClause(),
+                                    newClass.getImplementsClause(),
+                                    newClass.getMembers());
+                            break;
+                        case INTERFACE:
+                            newClass = make.Interface(
+                                    make.Modifiers(flags, modifiers.getAnnotations()),
+                                    newClass.getSimpleName(),
+                                    newClass.getTypeParameters(),
+                                    newClass.getImplementsClause(),
+                                    newClass.getMembers());
+                            break;
+                        case ENUM:
+                            newClass = make.Enum(
+                                    make.Modifiers(flags, modifiers.getAnnotations()),
+                                    newClass.getSimpleName(),
+                                    newClass.getImplementsClause(),
+                                    newClass.getMembers());
+                            break;
+                        case ANNOTATION_TYPE:
+                            newClass = make.AnnotationType(
+                                    make.Modifiers(flags, modifiers.getAnnotations()),
+                                    newClass.getSimpleName(),
+                                    newClass.getMembers());
+                            break;
+                    }
                     get.copyComments(origTree, newClass, true);
                     get.copyComments(origTree, newClass, false);
                     newClass = get.insertClassMember(node, newClass);
