@@ -59,6 +59,7 @@ import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -229,6 +230,9 @@ public final class CreateElementUtilities {
 
             case IMPORT:
                 return computeImport(types, info, currentPath, unresolved, offset);
+                
+            case LAMBDA_EXPRESSION:
+                return computeLambdaRetrun(types, info, currentPath, unresolved, offset);
                 
             case BLOCK:
             case BREAK:
@@ -552,6 +556,19 @@ public final class CreateElementUtilities {
         
         
         return null;
+    }
+    
+    private static List<? extends TypeMirror> computeLambdaRetrun(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
+        LambdaExpressionTree let = (LambdaExpressionTree)parent.getLeaf();
+        if (let.getBody() != error) {
+            return null;
+        }
+        TreePath parentParent = parent.getParentPath();
+        TypeMirror m = info.getTrees().getTypeMirror(parentParent);
+        if (m.getKind() != TypeKind.ERROR && m.getKind() != TypeKind.OTHER) {
+            return Collections.singletonList(m);
+        }
+        return resolveType(types, info, parentParent, let, offset, null, null);
     }
     
     private static List<? extends TypeMirror> computeParenthesis(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
