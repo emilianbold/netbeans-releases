@@ -50,8 +50,10 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -455,10 +457,20 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     }
 
     @Override
-    public String folderName() {
-        return "java";
+    public Set<Path> excludedFolders() {
+        Set<Path> result = new HashSet<>();
+        FileObject mainDir = project().getProjectDirectory().getFileObject("src/main/java");
+        FileObject testDir = project().getProjectDirectory().getFileObject("src/test/java");
+
+        if (mainDir != null) {
+            result.add(FileUtil.toFile(mainDir).toPath());
+        }
+        if (testDir != null) {
+            result.add(FileUtil.toFile(testDir).toPath());
+        }
+        return result;
     }
-    
+
     
     public static final class OtherGroup implements SourceGroup {
         

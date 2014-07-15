@@ -44,13 +44,19 @@ package org.netbeans.modules.maven;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FilenameFilter;
+import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.URI;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -102,6 +108,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
@@ -682,26 +689,13 @@ public final class NbMavenProjectImpl implements Project {
         Set<File> toRet = new HashSet<File>();
         File fil = Utilities.toFile(uri);
         if (fil.exists()) {
-            File[] fls = fil.listFiles(new FilenameFilter() {
-
-                @Override
-                public boolean accept(File dir, String name) {
-                    for (OtherSourcesExclude rp : getLookup().lookupAll(OtherSourcesExclude.class)) {
-                        if (rp.folderName().equalsIgnoreCase(name)) {
-                            return false;
-                        }
-                    }
-                    for (JavaLikeRootProvider rp : getLookup().lookupAll(JavaLikeRootProvider.class)) {
-                        if (rp.kind().equalsIgnoreCase(name)) {
-                            return false;
-                        }
-                    }
-                    return VisibilityQuery.getDefault().isVisible(new File(dir, name));
-                }
-            });
-            if (fls != null) { //#166709 listFiles() shall not return null for existing folders
-                // but somehow it does, maybe IO problem? do a proper null check.
-                toRet.addAll(Arrays.asList(fls));
+            try {
+                Path sourceRoot = fil.toPath();
+                OtherRootsVisitor visitor = new OtherRootsVisitor(getLookup(), sourceRoot);
+                Files.walkFileTree(sourceRoot, visitor);
+                toRet.addAll(visitor.getOtherRoots());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         URI[] res = getResources(test);
@@ -714,6 +708,78 @@ public final class NbMavenProjectImpl implements Project {
             }
         }
         return toRet.toArray(new File[0]);
+    }
+
+    private static class OtherRootsVisitor extends SimpleFileVisitor<Path> {
+
+        private final Lookup lookup;
+        private final List<Path> otherRoots;
+        private final Path sourceRoot;
+
+        public OtherRootsVisitor(Lookup lookup, Path sourceRoot) {
+            this.lookup = lookup;
+            this.sourceRoot = sourceRoot;
+            this.otherRoots = new ArrayList<>();
+        }
+
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+            // To avoid including src/main and src/test directories
+            if (sourceRoot.equals(dir)) {
+                return FileVisitResult.CONTINUE;
+            }
+
+            for (OtherSourcesExclude rp : lookup.lookupAll(OtherSourcesExclude.class)) {
+                for (Path folder : rp.excludedFolders()) {
+                    // In case of excluded folders (e.g. src/main/java) we can simply skip whole subtree
+                    if (folder.equals(dir)) {
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+
+                    // We are vising directory which is a parent of one of excluded directory.
+                    // In such case we don't want to skip the subtree (b/c it might contain directories
+                    // that falling under other roots), but we also don't want to add it to the results
+                    // (to avoid adding everything)
+                    if (folder.startsWith(dir)) {
+                        return FileVisitResult.CONTINUE;
+                    }
+                }
+            }
+            for (JavaLikeRootProvider rp : lookup.lookupAll(JavaLikeRootProvider.class)) {
+                if (rp.kind().equalsIgnoreCase(dir.getFileName().toString())) {
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+            }
+
+            // If the directory wasn't excluded until now, it should be shown in Other Sources node
+            if (isOtherRoot(dir)) {
+                otherRoots.add(dir);
+            }
+            return FileVisitResult.CONTINUE;
+        }
+
+        private boolean isOtherRoot(Path dir) throws IOException {
+            if (!dir.toFile().isDirectory() || Files.isHidden(dir)) {
+                return false;
+            }
+
+            // Walk through the other roots and check if a parent of this dir is
+            // already available in other roots to avoid folder duplication
+            for (Path path : otherRoots) {
+                if (dir.startsWith(path)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public List<File> getOtherRoots() {
+            List<File> result = new ArrayList<>();
+            for (Path path : otherRoots) {
+                result.add(path.toFile());
+            }
+            return Collections.unmodifiableList(result);
+        }
     }
 
     @Override
