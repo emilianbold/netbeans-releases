@@ -602,8 +602,6 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         DependencyProjectsProvider dep = brc.getProject().getLookup().lookup(DependencyProjectsProvider.class);
         assert dep != null;
         
-        System.out.println(" +++ " + brc.getProject());
-        
         if(dep == null) {
             // issue #245181
             Project p = brc.getProject();
