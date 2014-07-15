@@ -232,7 +232,10 @@ public final class JsTestLocator implements TestLocator {
                 return null;
             }
             testGroups = getSourceGroupsForTests(project);
-            assert testGroups.length != 0 : "Test groups should be now found for project: " + project.getClass().getName();
+            if (testGroups.length == 0) {
+                // not html5 project -> not supported now, sorry
+                return null;
+            }
         }
         SourceGroup sourceGroup = getSourceGroupForSources(project, fo);
         assert sourceGroup != null : project;
