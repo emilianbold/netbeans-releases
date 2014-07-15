@@ -210,6 +210,9 @@ public final class ActionToGoalUtils {
         NetbeansActionMapping na = null;
         if (configuration != null) {
             na = configuration.getMappingForAction(action, project);
+            if (na == null) {
+                na = configuration.getProfileMappingForAction(action, project, Collections.<String,String>emptyMap());
+            }
         }
         if (na == null) {
             na = getDefaultMapping(action, project);
