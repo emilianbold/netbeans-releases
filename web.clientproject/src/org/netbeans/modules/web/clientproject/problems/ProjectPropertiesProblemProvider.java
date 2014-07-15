@@ -139,7 +139,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         "ProjectPropertiesProblemProvider.invalidTestDir.description=The directory \"{0}\" does not exist and cannot be used for Unit Tests."
     })
     private void checkTestDir(Collection<ProjectProblem> currentProblems) {
-        File invalidDirectory = getInvalidDirectory(project.getTestsFolder(), ClientSideProjectConstants.PROJECT_TEST_FOLDER);
+        File invalidDirectory = getInvalidDirectory(project.getTestsFolder(false), ClientSideProjectConstants.PROJECT_TEST_FOLDER);
         if (invalidDirectory != null) {
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.ProjectPropertiesProblemProvider_invalidTestDir_title(),

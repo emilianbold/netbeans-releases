@@ -55,9 +55,11 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphAction;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphModelFactory;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
 import org.netbeans.modules.cnd.callgraph.api.ui.Catalog;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphActionEDTRunnable;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.nodes.Node;
@@ -123,7 +125,7 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
                 }
 
                 @Override
-                public Collection<Action> getActions() {
+                public Collection<CallGraphAction> getActions(CallGraphActionEDTRunnable runnable) {
                     return Collections.EMPTY_LIST;
                 }
             };

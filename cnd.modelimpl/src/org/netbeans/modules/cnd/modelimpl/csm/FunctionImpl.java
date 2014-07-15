@@ -76,7 +76,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
-import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -610,7 +610,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         CsmType retType = operator.getReturnType();
         CsmClassifier castClassifier = retType != null ? CsmClassifierResolver.getDefault().getTypeClassifier(retType, retType.getContainingFile(), retType.getStartOffset(), true) : null;
         if (!checkResolvedClassifier(castClassifier) || (CsmKindUtilities.isTemplateParameter(castClassifier) && !retType.isTemplateBased())) {                                
-            retType = CsmEntityResolver.resolveType(retType.getText(), retType.getContainingFile(), retType.getStartOffset(), null);
+            retType = CsmExpressionResolver.resolveType(retType.getText(), retType.getContainingFile(), retType.getStartOffset(), null);
             castClassifier = retType != null ? CsmClassifierResolver.getDefault().getTypeClassifier(retType, retType.getContainingFile(), retType.getStartOffset(), true) : null;
         }                        
         if (!checkResolvedClassifier(castClassifier)) {

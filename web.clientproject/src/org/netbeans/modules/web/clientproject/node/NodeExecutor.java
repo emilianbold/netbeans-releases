@@ -45,6 +45,7 @@
 package org.netbeans.modules.web.clientproject.node;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -140,6 +141,7 @@ public final class NodeExecutor implements Runnable {
         desc = desc.showProgress(true);
         desc = desc.frontWindow(true);
         desc = desc.controllable(true);
+        desc = desc.charset(StandardCharsets.UTF_8);
         ExecutionService execution = ExecutionService.newService(creator, desc, displayName);
         try {
             execution.run().get();
