@@ -62,21 +62,23 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  *
  * @author Jirka Rechtacek
  */
-public final class FindComponentModules {
+public final class FindComponentModules extends Task {
     private static final RequestProcessor RP = new RequestProcessor("Find Modules");
     
     private final Collection<String> codeNames;
     private final FeatureInfo[] infos;
     public final String DO_CHECK = "do-check";
     private final String ENABLE_LATER = "enable-later";
-    private RequestProcessor.Task findingTask;
-    private Collection<UpdateElement> forInstall = null;
-    private Collection<UpdateElement> forEnable = null;
+    private final RequestProcessor.Task findingTask;
+    private Collection<UpdateElement> forInstall;
+    private Collection<UpdateElement> forEnable;
     
     public FindComponentModules(FeatureInfo info, FeatureInfo... additional) {
         ArrayList<FeatureInfo> l = new ArrayList<FeatureInfo>();
@@ -102,6 +104,23 @@ public final class FindComponentModules {
     public Collection<UpdateElement> getModulesForEnable () {
         findingTask.waitFinished();
         return forEnable;
+    }
+    
+    /** Associates a listener with currently running computation.
+     * One the results for {@link #getModulesForEnable()} and
+     * {@link #getModulesForInstall()} is available, the listener 
+     * will be called back.
+     * 
+     * @param l the listener which receives <code>this</code> as a task
+     *   once the result is available
+     */
+    public void onFinished(final TaskListener l) {
+        findingTask.addTaskListener(new TaskListener() {
+            @Override
+            public void taskFinished(Task task) {
+                l.taskFinished(FindComponentModules.this);
+            }
+        });
     }
     
     public void writeEnableLater (Collection<UpdateElement> modules) {
