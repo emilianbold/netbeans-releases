@@ -337,6 +337,7 @@ public class MacrosPanel extends JPanel {
                 String sc = KeyStrokeUtils.getKeyStrokesAsText(arr, " "); // NOI18N
                 if (sc.equals(shortcut)) {
                     m.setShortcuts(Collections.<String>emptySet());
+                    finder.setShortcuts(m, Collections.<String>emptySet());
                 }
             }
         }
