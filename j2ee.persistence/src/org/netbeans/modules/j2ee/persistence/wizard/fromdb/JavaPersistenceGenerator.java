@@ -559,6 +559,10 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
             }
             //actual generation loop
+            Set<String> lowCaseGeneratedEntityClasses = new HashSet<>();
+            for(String tmp:generatedEntityClasses) {
+                lowCaseGeneratedEntityClasses.add(tmp.toLowerCase());
+            }
             for (int i = 0; i < entityClasses.length; i++) {
                 final EntityClass entityClass = entityClasses[i];
                 String entityClassName = getClassName(entityClass);
@@ -575,8 +579,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
                 FileObject entityClassPackageFO = entityClass.getPackageFileObject();
                 FileObject entityClassFO0 = entityClassPackageFO.getFileObject( entityClassName, "java"); // NOI18N
+                
                 final FileObject entityClassFO = entityClassFO0;
-                final FileObject pkClassFO = entityClassPackageFO.getFileObject(createPKClassName(entityClassName), "java"); // NOI18N
+                final FileObject pkClassFO = (entityClass.isForTable() && !entityClass.isUsePkField()) ? entityClassPackageFO.getFileObject(createPKClassName(entityClassName), "java") : null; // NOI18N
                 try {
                     JavaSource javaSource = (pkClassFO != null && entityClass.getUpdateType() != UpdateType.UPDATE)
                             ? JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO, pkClassFO)

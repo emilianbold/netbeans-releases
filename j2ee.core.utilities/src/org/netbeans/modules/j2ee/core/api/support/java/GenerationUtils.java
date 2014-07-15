@@ -410,7 +410,7 @@ public final class GenerationUtils {
      * </pre>
      *
      * @param  modifiersTree the constructor modifiers.
-     * @param  constructorName the constructor name; cannot be null.
+     * @param  constructorName the constructor name; cannot be null, it's not used inside except for assertion since 2007 (or before, TODO: remove?)
      * @param  parameters the constructor parameters; cannot be null.
      * @return the new constructor; never null.
      */
