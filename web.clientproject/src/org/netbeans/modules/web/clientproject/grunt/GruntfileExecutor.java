@@ -138,7 +138,20 @@ public final class GruntfileExecutor implements Runnable {
 
                 pb = pb.workingDirectory(FileUtil.toFile(gruntFile.getParent()));
                 pb = pb.redirectErrorStream(true);
-                return pb.call();
+                try {
+                    return pb.call();
+                } catch (IOException ioe) {
+                    if (!Utilities.isWindows() && !Utilities.isMac()) {
+                        //grunt not found on path on Linux. Run bash and try run 
+                        //grunt inside bash. It will at least do output to user
+                        pb = new ExternalProcessBuilder("/bin/bash");
+                        pb = pb.addArgument("-lc");
+                        pb = pb.addArgument("grunt --no-color " + allTargets);
+                        return pb.call();
+                    } else {
+                        throw ioe;
+                    }
+                }
             }
 
         };

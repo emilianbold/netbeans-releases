@@ -45,6 +45,7 @@ package org.netbeans.modules.php.project.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
@@ -53,6 +54,8 @@ import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.common.api.UsageLogger;
 
 public final class UsageLogging {
+
+    private static final Logger LOGGER = Logger.getLogger(UsageLogging.class.getName());
 
     private final UsageLogger testConfigUsageLogger = new UsageLogger.Builder(PhpProjectUtils.USAGE_LOGGER_NAME)
             .message(PhpProjectUtils.class, "USG_TEST_CONFIG_PHP") // NOI18N
@@ -85,11 +88,13 @@ public final class UsageLogging {
 
     private void logPhpTestConfig(List<String> testingProviders) {
         assert testingProviders != null;
+        LOGGER.finest("Usage logging for PHP test config");
         testConfigUsageLogger.log(StringUtils.implode(testingProviders, "|")); // NOI18N
     }
 
     private void logPhpTestRun(List<PhpTestingProvider> testingProviders) {
         assert testingProviders != null;
+        LOGGER.finest("Usage logging for PHP test run");
         phpTestRunUsageLogger.log(getTestingProvidersForUsage(testingProviders));
     }
 
