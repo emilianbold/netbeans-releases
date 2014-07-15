@@ -40,7 +40,7 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.launchers.actions;
+package org.netbeans.modules.cnd.makeproject;
 
 import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistry;
 import org.openide.filesystems.FileObject;
