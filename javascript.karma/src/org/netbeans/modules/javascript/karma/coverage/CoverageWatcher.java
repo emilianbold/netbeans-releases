@@ -43,6 +43,7 @@
 package org.netbeans.modules.javascript.karma.coverage;
 
 import java.io.File;
+import java.util.Enumeration;
 import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -110,17 +111,29 @@ public final class CoverageWatcher {
     private final class FileChangeListenerImpl extends FileChangeAdapter {
 
         @Override
-        public void fileDataCreated(FileEvent fe) {
-            processFileEvent(fe);
+        public void fileFolderCreated(FileEvent fe) {
+            processFolder(fe.getFile());
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
-            processFileEvent(fe);
+            processFile(fe.getFile());
         }
 
-        private void processFileEvent(FileEvent fileEvent) {
-            FileObject file = fileEvent.getFile();
+        private void processFolder(FileObject folder) {
+            assert folder.isFolder() : folder;
+            // folder newly created -> try to locate any clover.xml in it
+            Enumeration<? extends FileObject> children = folder.getChildren(true);
+            while (children.hasMoreElements()) {
+                FileObject child = children.nextElement();
+                if (child.isData()) {
+                    processFile(child);
+                }
+            }
+        }
+
+        private void processFile(FileObject file) {
+            assert file.isData() : file;
             if (COVERAGE_FILENAME.equals(file.getNameExt())) {
                 process(FileUtil.toFile(file));
             }
