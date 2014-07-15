@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,40 +37,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.spi.model.services;
 
-import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmInstantiation;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmType;
+package org.netbeans.modules.cnd.callgraph.api.ui;
 
 /**
  *
- * @author petrk
+ * @author mtishkov
  */
-public interface CsmEntityResolverImplementation {
-    
-    /**
-     * Resolves type of expression in a given context 
-     * 
-     * @param expression
-     * @param instantiations - context
-     * @return type of expression
-     */
-    Collection<CsmObject> resolveObjects(CsmOffsetable expression, List<CsmInstantiation> instantiations);
-    
-    /**
-     * Resolves type of expression in a given context 
-     * 
-     * @param expression - expression to resolve
-     * @param instantiations - context
-     * @return type of expression
-     */
-    CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations);
+public interface CallGraphActionEDTRunnable extends Runnable{
     
 }

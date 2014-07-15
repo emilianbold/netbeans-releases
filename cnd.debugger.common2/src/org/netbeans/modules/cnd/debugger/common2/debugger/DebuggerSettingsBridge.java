@@ -323,7 +323,13 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 	currentRunProfile().setArgs(argv);
 	ignoreSettingsChange = false;
         
-        informListener(RunProfile.PROP_RUNARGS_CHANGED, currentRunProfile().getArgsFlat());
+        String args = currentRunProfile().getArgsFlat();
+	String redirection = currentDbgProfile().getRedirection();
+        if (redirection != null) {
+	    args += " " + redirection;//NOI18N
+	}
+
+        informListener(RunProfile.PROP_RUNARGS_CHANGED, args );
     }
 
     public void noteRedir(String infile, String outfile, boolean append) {
@@ -338,6 +344,8 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 	if (args != null)
 	    currentRunProfile().setArgsRaw(args);
 	ignoreSettingsChange = false;
+        
+        informListener(RunProfile.PROP_RUNARGS_CHANGED, args );
     } 
 
     public void noteRunDir(String dir) {

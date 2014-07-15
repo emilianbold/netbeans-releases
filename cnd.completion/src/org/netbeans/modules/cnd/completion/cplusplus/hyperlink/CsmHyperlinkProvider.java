@@ -80,7 +80,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
-import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
@@ -161,7 +161,7 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             if (jumpToken.id() == CppTokenId.DELETE) {
                 primary = null;
                 String deleteExpr = getRestExpression(doc, offset);
-                CsmType resolvedType = CsmEntityResolver.resolveType(deleteExpr, csmFile, offset, null);
+                CsmType resolvedType = CsmExpressionResolver.resolveType(deleteExpr, csmFile, offset, null);
                 if (resolvedType != null) {
                     CsmClassifier classifier = CsmClassifierResolver.getDefault().getTypeClassifier(resolvedType, csmFile, offset, true);
                     if (CsmKindUtilities.isClass(classifier)) {
@@ -172,7 +172,7 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 primary = null;
                 int startExpression = getStartExpression(doc, offset);
                 String rightOperand = getRightOperandExpression(doc, offset, CppTokenId.LTLT);
-                CsmType rightType = CsmEntityResolver.resolveType(rightOperand, csmFile, startExpression, null);
+                CsmType rightType = CsmExpressionResolver.resolveType(rightOperand, csmFile, startExpression, null);
                 if (rightType != null) {
                     CsmClassifier rightClassifier = CsmClassifierResolver.getDefault().getTypeClassifier(rightType, csmFile, offset, true);
                     if (CsmKindUtilities.isClass(rightClassifier)) {
@@ -187,7 +187,7 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                     }
                     if (primary == null) {
                         String leftOperand = getLeftmostOperandExpression(doc, offset, CppTokenId.LTLT);
-                        CsmType leftType = CsmEntityResolver.resolveType(leftOperand, csmFile, startExpression, null);
+                        CsmType leftType = CsmExpressionResolver.resolveType(leftOperand, csmFile, startExpression, null);
                         if (leftType != null) {
                             CsmClassifier leftClassifier = CsmClassifierResolver.getDefault().getTypeClassifier(leftType, csmFile, offset, true);
                             if (CsmKindUtilities.isClass(leftClassifier)) {

@@ -65,8 +65,8 @@ public final class GdbAttachType extends AttachType {
     
     private Reference<AttachPanel> customizerRef = new WeakReference<AttachPanel>(null);
     
-    @AttachType.Registration(displayName = "") // NOI18N
-    public static AttachType get() {
+    @AttachType.Registration(displayName = "#GdbDebuggerEngine") // NOI18N
+    public static synchronized AttachType get() {
         if (INSTANCE == null)  {
             INSTANCE = new GdbAttachType();
         }

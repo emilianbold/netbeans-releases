@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
 import org.netbeans.modules.cnd.callgraph.api.ui.Catalog;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphActionEDTRunnable;
 import org.netbeans.modules.cnd.callgraph.impl.CallGraphScene.LayoutKind;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
@@ -145,7 +146,14 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         }
         //add all actions from the provider
         if (graphUI != null) {
-            actions.addAll(graphUI.getActions());
+            actions.addAll(graphUI.getActions(new CallGraphActionEDTRunnable() {
+
+                @Override
+                public void run() {
+                    updateButtons();
+                    update();
+                }
+            }));
         }
         root = new AbstractNode(children){
             @Override

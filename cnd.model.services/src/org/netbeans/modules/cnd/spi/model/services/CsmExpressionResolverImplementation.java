@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,33 +34,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.callgraph.api.ui;
+package org.netbeans.modules.cnd.spi.model.services;
 
 import java.util.Collection;
-import javax.swing.JPanel;
-import org.netbeans.modules.cnd.callgraph.api.Call;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmType;
 
 /**
  *
- * @author Alexander Simon
+ * @author petrk
  */
-public interface CallGraphUI {
+public interface CsmExpressionResolverImplementation {
+    
     /**
-     * if method returns true the call graph shows tree and graph views.
-     * if method returns false the call graph shows only tree view.
-     * @return 
+     * Resolves type of expression in a given context 
+     * 
+     * @param expression
+     * @param instantiations - context
+     * @return type of expression
      */
-    boolean showGraph();
+    Collection<CsmObject> resolveObjects(CsmOffsetable expression, List<CsmInstantiation> instantiations);
     
-    Catalog getCatalog();
+    /**
+     * Resolves type of expression in a given context 
+     * 
+     * @param expression - expression to resolve
+     * @param instantiations - context
+     * @return type of expression
+     */
+    CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations);
     
-    JPanel getContextPanel(Call call);    
-    
-    Collection<CallGraphAction> getActions(CallGraphActionEDTRunnable runnable);
 }

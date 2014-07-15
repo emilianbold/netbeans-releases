@@ -49,14 +49,14 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
-import org.netbeans.modules.cnd.spi.model.services.CsmEntityResolverImplementation;
+import org.netbeans.modules.cnd.spi.model.services.CsmExpressionResolverImplementation;
 
 /**
  *
  * @author petrk
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmEntityResolverImplementation.class)
-public final class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmExpressionResolverImplementation.class)
+public final class CsmExpressionResolverImpl implements CsmExpressionResolverImplementation {
 
     @Override
     public Collection<CsmObject> resolveObjects(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
