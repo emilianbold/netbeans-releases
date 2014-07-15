@@ -43,6 +43,7 @@
 package org.netbeans.modules.javascript.jstestdriver;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -54,7 +55,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.jstestdriver.api.JsTestDriver;
 import org.netbeans.modules.javascript.jstestdriver.api.RunTests;
 import org.netbeans.modules.javascript.jstestdriver.preferences.JsTestDriverPreferences;
-import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
+import org.netbeans.modules.javascript.jstestdriver.preferences.JsTestDriverPreferencesValidator;
+import org.netbeans.modules.javascript.jstestdriver.util.ValidationResult;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.netbeans.modules.web.clientproject.spi.jstesting.CustomizerPanelImplementation;
@@ -63,6 +65,7 @@ import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -96,15 +99,12 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
         return false;
     }
 
-    @NbBundle.Messages("JsTestingProviderImpl.error.config=Cannot run tests, no jsTestDriver.conf found.")
     @Override
     public void runTests(Project project, TestRunInfo runInfo) {
         assert !EventQueue.isDispatchThread();
-        FileObject configFile = getConfigFolder(project).getFileObject("jsTestDriver.conf"); // NOI18N
+        FileObject configFile = getValidConfigFile(project);
         if (configFile == null) {
-            LOGGER.log(Level.INFO, "Cannot run tests for \"{0}\" project, no jsTestDriver.conf found", ProjectUtils.getInformation(project).getName());
-            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
-                    Bundle.JsTestingProviderImpl_error_config(), NotifyDescriptor.INFORMATION_MESSAGE));
+            LOGGER.log(Level.INFO, "Cannot run tests for \"{0}\" project, no jsTestDriver.conf provided", ProjectUtils.getInformation(project).getName());
             return;
         }
         try {
@@ -180,15 +180,49 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
         return null;
     }
 
-    private FileObject getConfigFolder(Project project) {
-        ProjectDirectoriesProvider directoriesProvider = project.getLookup().lookup(ProjectDirectoriesProvider.class);
-        if (directoriesProvider != null) {
-            FileObject configDirectory = directoriesProvider.getConfigDirectory();
-            if (configDirectory != null) {
-                return configDirectory;
+    @NbBundle.Messages({
+        "JsTestingProviderImpl.chooser.title=Select jsTestDriver.conf",
+        "JsTestingProviderImpl.error.config=Cannot run tests, no jsTestDriver.conf provided.",
+    })
+    private FileObject getValidConfigFile(Project project) {
+        // existing config
+        String config = JsTestDriverPreferences.getConfig(project);
+        ValidationResult result = new JsTestDriverPreferencesValidator()
+                .validateConfig(config)
+                .getResult();
+        if (result.isFaultless()) {
+            File configFile = new File(config);
+            FileObject fo = FileUtil.toFileObject(configFile);
+            assert fo != null : "FileObject must be found for " + config;
+            assert fo.isValid() : "Valid FileObject must be found for " + config;
+            return fo;
+        } else {
+            String message;
+            if (result.hasErrors()) {
+                message = result.getErrors().get(0).getMessage();
+            } else {
+                assert result.hasWarnings() : result;
+                message = result.getWarnings().get(0).getMessage();
             }
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
         }
-        return project.getProjectDirectory();
+        // ask user
+        File file = new FileChooserBuilder(JsTestingProviderImpl.class)
+                .setTitle(Bundle.JsTestingProviderImpl_chooser_title())
+                .setFilesOnly(true)
+                .setDefaultWorkingDirectory(FileUtil.toFile(project.getProjectDirectory()))
+                .forceUseOfDefaultWorkingDirectory(true)
+                .showOpenDialog();
+        if (file != null) {
+            JsTestDriverPreferences.setConfig(project, file.getAbsolutePath());
+            FileObject fo = FileUtil.toFileObject(file);
+            assert fo != null : "FileObject must be found for " + file;
+            assert fo.isValid() : "Valid FileObject must be found for " + file;
+            return fo;
+        }
+        // no file selected
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.JsTestingProviderImpl_error_config()));
+        return null;
     }
 
 }
