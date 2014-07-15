@@ -92,7 +92,8 @@ public class TargetModuleConverter extends DOMConvertor {
 
     private static final Logger LOGGER = Logger.getLogger(TargetModuleConverter.class.getName());
 
-    private static DOMConvertor create() {
+    // FIXME this is public only because of tests
+    public static DOMConvertor create() {
         return new TargetModuleConverter();
     }
     
