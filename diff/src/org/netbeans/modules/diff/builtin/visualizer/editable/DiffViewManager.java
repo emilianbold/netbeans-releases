@@ -168,8 +168,24 @@ class DiffViewManager implements ChangeListener {
                 doSmartScroll = !smartScrollDisabled[0];
             }
             if (doSmartScroll && valueChanged) {
-                smartScroll();
-                master.updateCurrentDifference();
+                // let the viewport update its visible area
+                final Rectangle prevVisRect = rightContentPanel.getScrollPane().getViewport().getViewRect();
+                EventQueue.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run () {
+                        smartScroll();
+                        Rectangle visRect = rightContentPanel.getScrollPane().getViewport().getViewRect();
+                        Boolean down = null;
+                        if (visRect.y > prevVisRect.y) {
+                            down = true;
+                        } else if (visRect.y < prevVisRect.y) {
+                            down = false;
+                        }
+                        master.updateCurrentDifference(down);
+                        master.getMyDivider().repaint();
+                    }
+                });
             }
         }
         master.getMyDivider().repaint();
