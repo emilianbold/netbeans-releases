@@ -53,12 +53,14 @@ import java.util.concurrent.CancellationException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.MixinNode;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.netbeans.api.annotations.common.NonNull;
@@ -93,7 +95,7 @@ public final class CompilationUnit extends org.codehaus.groovy.control.Compilati
         private final ClassNodeCache cache;
         private final GroovyParser parser;
         private final JavaSource javaSource;
-        
+
 
         public CompileUnit(GroovyParser parser, GroovyClassLoader classLoader,
                 CodeSource codeSource, CompilerConfiguration config,
@@ -111,17 +113,17 @@ public final class CompilationUnit extends org.codehaus.groovy.control.Compilati
             if (parser.isCancelled()) {
                 throw new CancellationException();
             }
-            
+
             ClassNode classNode = cache.get(name);
             if (classNode != null) {
                 return classNode;
             }
-            
+
             classNode = super.getClass(name);
             if (classNode != null) {
                 return classNode;
             }
-            
+
             if (cache.isNonExistent(name)) {
                 return null;
             }
@@ -177,32 +179,36 @@ public final class CompilationUnit extends org.codehaus.groovy.control.Compilati
         private ClassNode createInterfaceKind(String name, TypeElement typeElement) {
             int modifiers = 0;
             Set<ClassNode> interfaces = new HashSet<ClassNode>();
+            Set<GenericsType> generics = new HashSet<>();
 
-            // Fix for issue 206811 --> This still needs to be improved and we have
-            // to create ClassNodes for generics paremeters and add them into the
-            // created ClassNode via setGenericsTypes(GenericsType[] types) method
-            if (!typeElement.getTypeParameters().isEmpty()) {
-                return null;
-            }
+            for (TypeParameterElement typeParameter : typeElement.getTypeParameters()) {
+                    List<? extends TypeMirror> bounds = typeParameter.getBounds();
+                    for (TypeMirror bound : bounds) {
+                        ClassNode typeParam = getClass(bound.toString());
+                        generics.add(new GenericsType(typeParam));
+                    }
+                }
 
             modifiers |= Opcodes.ACC_INTERFACE;
             for (TypeMirror interfaceType : typeElement.getInterfaces()) {
                 interfaces.add(new ClassNode(Utilities.getClassName(interfaceType).toString(), Opcodes.ACC_INTERFACE, null));
             }
-            return createClassNode(name, modifiers, null, interfaces.toArray(new ClassNode[interfaces.size()]));
+            return createClassNode(name, modifiers, null, interfaces.toArray(new ClassNode[interfaces.size()]), generics);
         }
 
         private ClassNode createClassType(String name, TypeElement typeElement) {
             // initialize supertypes
             // super class is required for try {} catch block exception type
             Stack<DeclaredType> supers = new Stack<DeclaredType>();
+            Set<GenericsType> generics = new HashSet<>();
             while (typeElement != null && typeElement.asType().getKind() != TypeKind.NONE) {
 
-                // Fix for issue 206811 --> This still needs to be improved and we have
-                // to create ClassNodes for generics paremeters and add them into the
-                // created ClassNode via setGenericsTypes(GenericsType[] types) method
-                if (!typeElement.getTypeParameters().isEmpty()) {
-                    return null;
+                for (TypeParameterElement typeParameter : typeElement.getTypeParameters()) {
+                    List<? extends TypeMirror> bounds = typeParameter.getBounds();
+                    for (TypeMirror bound : bounds) {
+                        ClassNode typeParam = getClass(bound.toString());
+                        generics.add(new GenericsType(typeParam));
+                    }
                 }
 
                 TypeMirror type = typeElement.getSuperclass();
@@ -226,17 +232,21 @@ public final class CompilationUnit extends org.codehaus.groovy.control.Compilati
 
             ClassNode superClass = null;
             while (!supers.empty()) {
-                superClass = createClassNode(Utilities.getClassName(supers.pop()).toString(), 0, superClass, new ClassNode[0]);
+                superClass = createClassNode(Utilities.getClassName(supers.pop()).toString(), 0, superClass, new ClassNode[0], generics);
             }
 
-            return createClassNode(name, 0, superClass, new ClassNode[0]);
+            return createClassNode(name, 0, superClass, new ClassNode[0], null);
         }
 
-        private ClassNode createClassNode(String name, int modifiers, ClassNode superClass, ClassNode[] interfaces) {
+        private ClassNode createClassNode(String name, int modifiers, ClassNode superClass, ClassNode[] interfaces, Set<GenericsType> generics) {
             if ("java.lang.Object".equals(name) && superClass == null) { // NOI18N
                 return ClassHelper.OBJECT_TYPE;
             }
-            return new ClassNode(name, modifiers, superClass, interfaces, MixinNode.EMPTY_ARRAY);
+            ClassNode classNode = new ClassNode(name, modifiers, superClass, interfaces, MixinNode.EMPTY_ARRAY);
+            if (generics != null) {
+                classNode.setGenericsTypes(generics.toArray(new GenericsType[generics.size()]));
+            }
+            return classNode;
         }
     }
 }
