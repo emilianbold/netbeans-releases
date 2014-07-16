@@ -110,7 +110,7 @@ import org.openide.util.NbBundle;
  */
 public class WSUtils {
 
-    public static final String NON_JSR109_DONT_ASK = "dont_ask_for_nonjsr109_config"; //NOI18N
+    private static final String GENERATE_NON_JSR109 = "generate_nonjsr109"; //NOI18N
     private final static String SERVLET_CLASS_NAME =
             "com.sun.xml.ws.transport.http.servlet.WSServlet"; //NOI18N
     private final static String SERVLET_LISTENER =
@@ -684,18 +684,15 @@ public class WSUtils {
     
     public static boolean needNonJsr109Artifacts(Project prj){
         FileObject ddFolder = getDeploymentDescriptorFolder(prj);
-        if (ddFolder == null || ddFolder.getFileObject("sun-jaxws.xml") == null) {
-            // ask user if non jsr109 stuff should be generated
-            return WSUtils.generateNonJsr109Artifacts(prj);
-        } 
-        else {
-            return true;
-        }
+        return WSUtils.generateNonJsr109Artifacts(prj);
     }
 
     private static boolean generateNonJsr109Artifacts(Project prj) {
         Preferences prefs = ProjectUtils.getPreferences(prj, WSUtils.class, true);
-        if (prefs == null || prefs.get(NON_JSR109_DONT_ASK , null) == null) {
+        if (prefs == null) {
+            return false;
+        }
+        if (prefs.get(GENERATE_NON_JSR109 , null) == null) {
             ConfirmationPanel panel =
                 new ConfirmationPanel(NbBundle.getMessage(WSUtils.class,"MSG_GenerateDDEntries", prj.getProjectDirectory().getName()));
             DialogDescriptor dd = new DialogDescriptor(
@@ -707,18 +704,21 @@ public class WSUtils {
             Object result = DialogDisplayer.getDefault().notify(dd);
             if (panel.notAskAgain()) {
                 if (prefs != null) {
-                    prefs.put(NON_JSR109_DONT_ASK , "true"); //NOI18N
+                    prefs.put(GENERATE_NON_JSR109, (NotifyDescriptor.YES_OPTION.equals(result) ? "true" : "false")); //NOI18N
                 }
             }
             return NotifyDescriptor.YES_OPTION.equals(result);
         } else {
-            return false;
+            return "true".equals(prefs.get(GENERATE_NON_JSR109, null));
         }
     }
 
     private static boolean removeNonJsr109Artifacts(Project prj) {
         Preferences prefs = ProjectUtils.getPreferences(prj, WSUtils.class, true);
-        if (prefs == null || prefs.get(NON_JSR109_DONT_ASK , null) == null) {
+        if (prefs == null) {
+            return false;
+        }
+        if (prefs.get(GENERATE_NON_JSR109 , null) == null) {
             ConfirmationPanel panel =
                 new ConfirmationPanel(NbBundle.getMessage(WSUtils.class,"MSG_RemoveDDEntries"));
             DialogDescriptor dd = new DialogDescriptor(
@@ -730,12 +730,12 @@ public class WSUtils {
             Object result = DialogDisplayer.getDefault().notify(dd);
             if (panel.notAskAgain()) {
                 if (prefs != null) {
-                    prefs.put(NON_JSR109_DONT_ASK , "true"); //NOI18N
+                    prefs.put(GENERATE_NON_JSR109 , (NotifyDescriptor.YES_OPTION.equals(result) ? "true" : "false")); //NOI18N
                 }
             }
             return NotifyDescriptor.YES_OPTION.equals(result);
         } else {
-            return false;
+            return "true".equals(prefs.get(GENERATE_NON_JSR109, null));
         }
     }
     
@@ -1050,7 +1050,7 @@ public class WSUtils {
                                         "Cannot modify web.xml file", ex); // NOI18N
                             }
                         }
-                        else {
+                        else {                            
                             String mes = NbBundle.getMessage(
                                     MavenJAXWSSupportImpl.class,
                                     "MSG_CannotFindWEB-INF"); // NOI18N
