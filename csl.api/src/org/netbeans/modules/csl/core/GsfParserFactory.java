@@ -43,6 +43,7 @@
 package org.netbeans.modules.csl.core;
 
 import java.util.Collection;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
@@ -62,7 +63,10 @@ public final class GsfParserFactory extends ParserFactory {
 
     public @Override Parser createParser(Collection<Snapshot> snapshots) {
         for(Snapshot s : snapshots) {
-            if (!s.getMimeType().equals(mimeType)) {
+            MimePath p = MimePath.get(s.getMimeType());
+            String inhType = p.getInheritedType();
+            if (!(p.getMimeType(0).equals(mimeType) ||
+                  mimeType.equals(inhType))) {
                 return null;
             }
         }

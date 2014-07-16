@@ -99,6 +99,22 @@ public class MoveClassTest extends MoveBaseTest {
                 + "}\n"));
     }
     
+    public void test243552() throws Exception { // #204444 - Improve Move Refactoring to support nested/inner classes
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public interface A {\n"
+                + "}\n"
+                + "interface B extends A {\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), 1, src.getFileObject("t/A.java"), 0);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public interface A {\n"
+                + "    static interface B extends A {\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void test204444c() throws Exception { // #204444 - Improve Move Refactoring to support nested/inner classes
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

@@ -196,7 +196,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jTextWorkingDirectory = new javax.swing.JTextField();
         jButtonWorkingDirectoryBrowse = new javax.swing.JButton();
         jLabelVMOptions = new javax.swing.JLabel();
-        jTextVMOptions = new javax.swing.JTextField();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextVMOptions = new javax.swing.JTextArea();
         jLabelVMOptionsExample = new javax.swing.JLabel();
         customizeOptionsButton = new javax.swing.JButton();
         lblPlatform = new javax.swing.JLabel();
@@ -347,19 +348,28 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(jLabelVMOptions, gridBagConstraints);
+
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        jTextVMOptions.setColumns(20);
+        jTextVMOptions.setLineWrap(true);
+        jTextVMOptions.setRows(5);
+        jScrollPane1.setViewportView(jTextVMOptions);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        mainPanel.add(jTextVMOptions, gridBagConstraints);
-        jTextVMOptions.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_CustomizeRun_Run_VM_Options")); // NOI18N
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        mainPanel.add(jScrollPane1, gridBagConstraints);
 
         jLabelVMOptionsExample.setLabelFor(jTextFieldMainClass);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptionsExample, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options_Example")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
@@ -375,7 +385,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
@@ -703,9 +712,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JLabel jLabelVMOptions;
     private javax.swing.JLabel jLabelVMOptionsExample;
     private javax.swing.JLabel jLabelWorkingDirectory;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jTextFieldArgs;
     private javax.swing.JTextField jTextFieldMainClass;
-    private javax.swing.JTextField jTextVMOptions;
+    private javax.swing.JTextArea jTextVMOptions;
     private javax.swing.JTextField jTextWorkingDirectory;
     private javax.swing.JLabel lblPlatform;
     private javax.swing.JPanel mainPanel;

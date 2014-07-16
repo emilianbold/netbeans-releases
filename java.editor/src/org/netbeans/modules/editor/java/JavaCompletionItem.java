@@ -1769,9 +1769,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             if (sb.length() == 0) {
-                return super.substituteText(c, offset, length, text, toAdd);
+                CharSequence st = super.substituteText(c, offset, length, text, toAdd);
+                if (st != null) {
+                    sb.append(st);
+                }
+            } else {
+                super.substituteText(c, offset, length, null, null);
             }
-            super.substituteText(c, offset, length, null, null);
             if (autoImportEnclosingType) {
                 final AtomicBoolean cancel = new AtomicBoolean();
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {

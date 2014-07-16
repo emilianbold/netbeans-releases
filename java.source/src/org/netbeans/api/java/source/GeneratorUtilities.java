@@ -961,11 +961,11 @@ public final class GeneratorUtilities {
         CommentSetImpl t = handler.getComments(target);
 
         if (preceding) {
-            t.addComments(RelativePosition.PRECEDING, s.getComments(RelativePosition.PRECEDING));
-            t.addComments(RelativePosition.INNER, s.getComments(RelativePosition.INNER));
+            t.addComments(RelativePosition.PRECEDING, copy.useComments(s.getComments(RelativePosition.PRECEDING)));
+            t.addComments(RelativePosition.INNER, copy.useComments(s.getComments(RelativePosition.INNER)));
         } else {
-            t.addComments(RelativePosition.INLINE, s.getComments(RelativePosition.INLINE));
-            t.addComments(RelativePosition.TRAILING, s.getComments(RelativePosition.TRAILING));
+            t.addComments(RelativePosition.INLINE, copy.useComments(s.getComments(RelativePosition.INLINE)));
+            t.addComments(RelativePosition.TRAILING, copy.useComments(s.getComments(RelativePosition.TRAILING)));
         }
     }
 

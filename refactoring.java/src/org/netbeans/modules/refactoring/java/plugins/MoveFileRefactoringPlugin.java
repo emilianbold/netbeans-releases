@@ -152,7 +152,7 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
         for (TreePathHandle tph : refactoring.getRefactoringSource().lookupAll(TreePathHandle.class)) {
             ElementHandle elementHandle = tph.getElementHandle();
             if (elementHandle == null
-                    || (!elementHandle.getKind().isClass() && !elementHandle.getKind().isClass())) {
+                    || (!elementHandle.getKind().isClass() && !elementHandle.getKind().isInterface())) {
                 preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(
                         MoveFileRefactoringPlugin.class,
                         "ERR_NotClass"));
