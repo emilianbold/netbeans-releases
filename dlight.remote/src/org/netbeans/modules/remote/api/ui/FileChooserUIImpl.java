@@ -3058,7 +3058,8 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                         if (Thread.interrupted()) {
                             return new ValidationResult(Boolean.FALSE, null, false, curDir);
                         }
-                    }catch(Exception ex) {
+                    } catch(Exception ex) {
+                     ex.printStackTrace(System.err);
                      return new ValidationResult(Boolean.FALSE, null, false, curDir);
                     }
                 } else {
