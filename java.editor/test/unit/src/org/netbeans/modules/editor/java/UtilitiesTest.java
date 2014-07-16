@@ -222,6 +222,10 @@ public class UtilitiesTest extends NbTestCase {
                     "getName(java.lang.String)");
     }
     
+    public void testNameGuessKeywordNoShortName2() throws Exception {
+        assertEquals("aDo", Utilities.adjustName("do"));
+    }
+
     private FileObject source;
     
     private void performTest(String sourceCode, String... golden) throws Exception {

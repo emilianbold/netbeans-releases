@@ -74,10 +74,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.jumpto.SearchHistory;
+import org.netbeans.modules.jumpto.common.UiUtils;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -115,6 +117,7 @@ public class GoToPanel extends javax.swing.JPanel {
     public GoToPanel( ContentProvider contentProvider, boolean multiSelection ) throws IOException {
         this.contentProvider = contentProvider;
         initComponents();
+        ((AbstractDocument)nameField.getDocument()).setDocumentFilter(UiUtils.newUserInputFilter());
         containsScrollPane = true;
                 
         matchesList.setSelectionMode( multiSelection ? ListSelectionModel.MULTIPLE_INTERVAL_SELECTION : ListSelectionModel.SINGLE_SELECTION);

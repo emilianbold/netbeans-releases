@@ -153,7 +153,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         final boolean exact = text.endsWith(" "); // NOI18N
         final boolean isCaseSensitive = panel.isCaseSensitive();        
         text = text.trim();        
-        if ( text.length() == 0) {
+        if ( text.length() == 0 || !Utils.isValidInput(text)) {
             panel.setModel(new DefaultListModel(), -1);
             return;
         }
@@ -239,7 +239,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         private JLabel jlName = HtmlRenderer.createLabel();
         private JLabel jlOwner = new JLabel();
         private JLabel jlPrj = new JLabel();
-        private int DARKER_COLOR_COMPONENT = 5;
+        private int DARKER_COLOR_COMPONENT = 15;
         private int LIGHTER_COLOR_COMPONENT = 80;        
         private Color fgColor;
         private Color fgColorLighter;

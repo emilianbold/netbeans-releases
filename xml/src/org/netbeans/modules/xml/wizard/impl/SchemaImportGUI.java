@@ -243,31 +243,33 @@ private void primarySchemaCheckBoxActionPerformed(java.awt.event.ActionEvent evt
         try {
                 DataFolder folder = templateWizard.getTargetFolder();
                 Project project = FileOwnerQuery.getOwner(folder.getPrimaryFile());
-                //mkleint: see subprojectprovider for official contract, see #210465
-                SubprojectProvider provider = (SubprojectProvider)project.getLookup().lookup(SubprojectProvider.class);
 
                 Set refProjects = null;
                 Iterator it = null;
-                if (provider != null) {
-                    refProjects = provider.getSubprojects();
-                    it = refProjects.iterator();
-                }
 
-                rootNodes = new Node[1 + (refProjects == null ? 0 : refProjects.size())];
-                LogicalViewProvider viewProvider = (LogicalViewProvider) project.getLookup().lookup(LogicalViewProvider.class);
-                rootNodes[0] = decorator.createExternalReferenceNode(viewProvider.createLogicalView());
-                int rootIndex = 1;
+                if (project != null) {
+                    //mkleint: see subprojectprovider for official contract, see #210465
+                    SubprojectProvider provider = (SubprojectProvider)project.getLookup().lookup(SubprojectProvider.class);
+                    if (provider != null) {
+                        refProjects = provider.getSubprojects();
+                        it = refProjects.iterator();
+                    }
+                    rootNodes = new Node[1 + (refProjects == null ? 0 : refProjects.size())];
+                    LogicalViewProvider viewProvider = (LogicalViewProvider) project.getLookup().lookup(LogicalViewProvider.class);
+                    rootNodes[0] = decorator.createExternalReferenceNode(viewProvider.createLogicalView());
+                    int rootIndex = 1;
 
-                projectRoots.add(project.getProjectDirectory());
-                if (refProjects != null) {
-                    while(it.hasNext()){
-                   // for (Object o : refProjects) {
-                        Object o = it.next();
-                        Project refPrj = (Project) o;
-                        viewProvider = (LogicalViewProvider) refPrj.getLookup().
-                                lookup(LogicalViewProvider.class);
-                        rootNodes[rootIndex++] = decorator.createExternalReferenceNode(viewProvider.createLogicalView());
-                        projectRoots.add(refPrj.getProjectDirectory());
+                    projectRoots.add(project.getProjectDirectory());
+                    if (refProjects != null) {
+                        while(it.hasNext()){
+                       // for (Object o : refProjects) {
+                            Object o = it.next();
+                            Project refPrj = (Project) o;
+                            viewProvider = (LogicalViewProvider) refPrj.getLookup().
+                                    lookup(LogicalViewProvider.class);
+                            rootNodes[rootIndex++] = decorator.createExternalReferenceNode(viewProvider.createLogicalView());
+                            projectRoots.add(refPrj.getProjectDirectory());
+                        }
                     }
                 }
          } catch(Exception e){

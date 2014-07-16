@@ -560,8 +560,8 @@ public class JavaFixUtilities {
             }
             for (Tree from : order) {
                 Tree to = rewriteFromTo.get(from);
-                gen.copyComments(from, to, true);
-                gen.copyComments(from, to, false);
+//                gen.copyComments(from, to, true);
+//                gen.copyComments(from, to, false);
                 wc.rewrite(from, to);
             }
         }
@@ -659,6 +659,8 @@ public class JavaFixUtilities {
             return super.visitTypeParameter(node, p);
         }
         
+        private static final EnumSet<Kind>  COMPLEX_OPS = EnumSet.of(Kind.CONDITIONAL_AND, Kind.CONDITIONAL_OR);
+        
         private Tree handleIdentifier(String name, Tree node) {
             TreePath tp = parameters.get(name);
 
@@ -678,13 +680,30 @@ public class JavaFixUtilities {
 //                        target = ((ParenthesizedTree) target).getExpression();
 //                    }
                     if (   getCurrentPath().getParentPath() != null
-                        && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.LOGICAL_COMPLEMENT
-                        && (   tp.getParentPath() == null
-                            || tp.getParentPath().getLeaf().getKind() != Kind.LOGICAL_COMPLEMENT)) {
-                        Tree negated = negate((ExpressionTree) tp.getLeaf(), getCurrentPath().getParentPath().getParentPath().getLeaf(), true);
+                        && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.LOGICAL_COMPLEMENT) {
+                        boolean rewriteNegated;
                         
-                        if (negated != null) {
-                            rewrite(getCurrentPath().getParentPath().getLeaf(), negated);
+                        if (tp.getParentPath() == null) {
+                            rewriteNegated = true;
+                        } else {
+                            Tree parent = tp.getParentPath().getLeaf();
+                            TreePath aboveNewComplement = getCurrentPath().getParentPath().getParentPath();
+                            // Do not try to optimize too complex expressions, following the principle of the least surprise.
+                            // 1/ optimization is OK if the target is without parenthesis - extra level of parens can be avoided
+                            // 2/ if both target and original are parenthesized, then optimization should be done to avoid one extra paren level
+                            // 3/ do not optimize complex expressions - least surprise
+                            rewriteNegated = (parent.getKind() != Kind.LOGICAL_COMPLEMENT) && 
+                                             (!COMPLEX_OPS.contains(target.getKind()) || 
+                                                parent.getKind() != Kind.PARENTHESIZED || 
+                                                (aboveNewComplement != null && aboveNewComplement.getLeaf().getKind() == Kind.PARENTHESIZED));
+                        }
+                        
+                        if (rewriteNegated) {
+                            Tree negated = negate((ExpressionTree) tp.getLeaf(), getCurrentPath().getParentPath().getParentPath().getLeaf(), true);
+
+                            if (negated != null) {
+                                rewrite(getCurrentPath().getParentPath().getLeaf(), negated);
+                            }
                         }
                     }
                     if (requiresParenthesis(target, node, getCurrentPath().getParentPath().getLeaf())) {
@@ -1230,12 +1249,24 @@ public class JavaFixUtilities {
             switch (original.getKind()) {
                 case PARENTHESIZED:
                     ExpressionTree expr = ((ParenthesizedTree) original).getExpression();
-                    ExpressionTree negatedOrNull = negate(expr, original, true);
+                    ExpressionTree negatedOrNull = negate(expr, original, nullOnPlainNeg);
                     if (negatedOrNull != null) {
-                        return make.Parenthesized(negatedOrNull);
-                    } else {
-                        return null;
+                        if (negatedOrNull.getKind() != Kind.PARENTHESIZED) {
+                            negatedOrNull = make.Parenthesized(negatedOrNull);
+                        }
                     }
+                    return negatedOrNull;
+                    /**
+                    if (nullOnPlainNeg) {
+                        return null;
+                    } else {
+                        return make.Unary(Kind.LOGICAL_COMPLEMENT, original);
+                    }
+                    */
+                    
+                case INSTANCE_OF:
+                    return make.Unary(Kind.LOGICAL_COMPLEMENT, make.Parenthesized(original));
+                    
                 case LOGICAL_COMPLEMENT:
                     newTree = ((UnaryTree) original).getExpression();
                     while (newTree.getKind() == Kind.PARENTHESIZED && !JavaFixUtilities.requiresParenthesis(((ParenthesizedTree) newTree).getExpression(), original, parent)) {

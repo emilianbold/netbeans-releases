@@ -2707,7 +2707,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 !illegalForwardRefs.contains(e);
                     }
                 };
-                for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument())))
+                String suggestedName = Utilities.varNameSuggestion(Utilities.getPathElementOfKind(EnumSet.of(Tree.Kind.ASSIGNMENT, Tree.Kind.VARIABLE), env.getOriginalPath()));
+                for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, suggestedName, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument())))
                     results.add(javaCompletionItemFactory.createVariableItem(env.getController(), name, anchorOffset, true, false));
                 return;
             }
@@ -2739,7 +2740,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             !illegalForwardRefs.contains(e);
                                 }
                             };
-                            for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, null, prefix, controller.getTypes(), controller.getElements(),
+                            String suggestedName = Utilities.varNameSuggestion(Utilities.getPathElementOfKind(EnumSet.of(Tree.Kind.ASSIGNMENT, Tree.Kind.VARIABLE), env.getOriginalPath()));
+                            for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, suggestedName, prefix, controller.getTypes(), controller.getElements(),
                                     controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument())))
                                 results.add(javaCompletionItemFactory.createVariableItem(env.getController(), name, anchorOffset, true, false));
                         }
@@ -2768,7 +2770,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             !illegalForwardRefs.contains(e);
                                 }
                             };
-                            for (String name : Utilities.varNamesSuggestions(controller.getTypes().getDeclaredType(te), varKind, varMods, null, prefix, controller.getTypes(),
+                            String suggestedName = Utilities.varNameSuggestion(Utilities.getPathElementOfKind(EnumSet.of(Tree.Kind.ASSIGNMENT, Tree.Kind.VARIABLE), env.getOriginalPath()));
+                            for (String name : Utilities.varNamesSuggestions(controller.getTypes().getDeclaredType(te), varKind, varMods, suggestedName, prefix, controller.getTypes(),
                                     controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument())))
                                 results.add(javaCompletionItemFactory.createVariableItem(env.getController(), name, anchorOffset, true, false));
                         }
@@ -2873,7 +2876,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     !illegalForwardRefs.contains(e);
                         }
                     };
-                    for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument())))
+                    String suggestedName = Utilities.varNameSuggestion(Utilities.getPathElementOfKind(EnumSet.of(Tree.Kind.ASSIGNMENT, Tree.Kind.VARIABLE), env.getOriginalPath()));
+                    for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, suggestedName, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument())))
                         results.add(javaCompletionItemFactory.createVariableItem(env.getController(), name, anchorOffset, true, false));
                     break;
                 case ENUM_CONSTANT:
@@ -5583,7 +5587,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                 }
             }
-            return new Env(offset, prefix, controller, path, controller.getTrees().getSourcePositions(), null);
+            return new Env(offset, prefix, controller, path, path, controller.getTrees().getSourcePositions(), null);
         }
         
         private Env getEnvImpl(CompilationController controller, TreePath orig, TreePath path, TreePath pPath, TreePath gpPath, int offset, String prefix, boolean upToOffset) throws IOException {
@@ -5595,7 +5599,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             TreeUtilities tu = controller.getTreeUtilities();
             if (upToOffset && TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
-                return new Env(offset, prefix, controller, orig, sourcePositions, null);
+                return new Env(offset, prefix, controller, orig, orig, sourcePositions, null);
             } else if (parent != null && tree.getKind() == Tree.Kind.BLOCK
                     && (parent.getKind() == Tree.Kind.METHOD || TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()))) {
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
@@ -5645,7 +5649,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 } else {
                     tu.reattributeTreeTo(block, scope, block);
                 }
-                return new Env(offset, prefix, controller, path, sourcePositions, scope);
+                return new Env(offset, prefix, controller, path, orig, sourcePositions, scope);
             } else if (tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
                 controller.toPhase(Phase.RESOLVED);
                 Tree lambdaBody = ((LambdaExpressionTree)tree).getBody();
@@ -5686,7 +5690,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             case JAVADOC_COMMENT:
                                 break;
                             case ARROW:
-                                return new Env(offset, prefix, controller, path, sourcePositions, scope);
+                                return new Env(offset, prefix, controller, path, orig, sourcePositions, scope);
                             default:
                                 return null;
                         }
@@ -5745,7 +5749,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 } else {
                     scope = tu.reattributeTreeTo(body, scope, body);
                 }
-                return new Env(offset, prefix, controller, path, sourcePositions, scope);
+                return new Env(offset, prefix, controller, path, orig, sourcePositions, scope);
             } else if (grandParent != null && TreeUtilities.CLASS_TREE_KINDS.contains(grandParent.getKind()) &&
                     parent != null && parent.getKind() == Tree.Kind.VARIABLE && unwrapErrTree(((VariableTree)parent).getInitializer()) == tree) {
                 if (tu.isEnum((ClassTree)grandParent)) {
@@ -5778,7 +5782,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         tu.reattributeTree(init, scope);
                     }
                 }
-                return new Env(offset, prefix, controller, path, sourcePositions, scope);
+                return new Env(offset, prefix, controller, path, orig, sourcePositions, scope);
             } else if (parent != null && TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && tree.getKind() == Tree.Kind.VARIABLE &&
                     ((VariableTree)tree).getInitializer() != null && orig == path &&
                     sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) >= 0 &&
@@ -5806,7 +5810,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     path = tu.pathFor(new TreePath(path, fake), offset, sourcePositions);
                     tu.reattributeTree(init, scope);
                 }
-                return new Env(offset, prefix, controller, path, sourcePositions, scope);
+                return new Env(offset, prefix, controller, path, orig, sourcePositions, scope);
             }
             return null;
         }
@@ -5905,6 +5909,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             private boolean isCamelCasePrefix;
             private CompilationController controller;
             private TreePath path;
+            private TreePath originalPath;
             private SourcePositions sourcePositions;
             private Scope scope;
             private ReferencesCount referencesCount;
@@ -5921,12 +5926,13 @@ public class JavaCompletionProvider implements CompletionProvider {
             private int assignToVarPos = -2;
             private WhiteListQuery.WhiteList[] whiteList;
             
-            private Env(int offset, String prefix, CompilationController controller, TreePath path, SourcePositions sourcePositions, Scope scope) {
+            private Env(int offset, String prefix, CompilationController controller, TreePath path, TreePath originalPath, SourcePositions sourcePositions, Scope scope) {
                 this.offset = offset;
                 this.prefix = prefix;
                 this.isCamelCasePrefix = JavaCompletionQuery.isCamelCasePrefix(prefix);
                 this.controller = controller;
                 this.path = path;
+                this.originalPath = originalPath;
                 this.sourcePositions = sourcePositions;
                 this.scope = scope;
                 Object prop = component != null ? component.getDocument().getProperty(SKIP_ACCESSIBILITY_CHECK) : null;
@@ -5963,6 +5969,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             
             public TreePath getPath() {
                 return path;
+            }
+            
+            public TreePath getOriginalPath() {
+                return originalPath;
             }
             
             public SourcePositions getSourcePositions() {

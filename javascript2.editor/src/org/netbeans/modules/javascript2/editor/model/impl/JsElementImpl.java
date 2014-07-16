@@ -46,14 +46,18 @@ import java.util.EnumSet;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
 import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.ANONYMOUS_OBJECT;
 import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.CONSTRUCTOR;
 import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.FIELD;
@@ -67,8 +71,6 @@ import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.PROPE
 import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.PROPERTY_GETTER;
 import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.PROPERTY_SETTER;
 import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.VARIABLE;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -98,9 +100,20 @@ public abstract class JsElementImpl implements JsElement {
         this.offsetRange = offsetRange;
         this.modifiers = modifiers == null ? Collections.EMPTY_SET: modifiers;
         this.isDeclared = isDeclared;
-        assert mimeType == null || JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimeType) || JsTokenId.JSON_MIME_TYPE.equals(mimeType) : mimeType;
+        assert mimeType == null || 
+               isCorrectMimeType(mimeType) : mimeType;
         this.mimeType = mimeType;
         this.sourceLabel = sourceLabel;
+    }
+    
+    private static boolean isCorrectMimeType(String mt) {
+        if (JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mt) || 
+               JsTokenId.JSON_MIME_TYPE.equals(mt)) {
+            return true;
+        }
+        MimePath mp = MimePath.get(mt);
+        String inhType = mp.getInheritedType();
+        return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(inhType);
     }
            
     @Override

@@ -394,7 +394,9 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             return o1[0] - o2[0];
         }
     });
+    private boolean commentsEnabled;
     private final Set<Tree> trailingCommentsHandled = Collections.newSetFromMap(new IdentityHashMap<Tree, Boolean>());
+    private final Set<Tree> innerCommentsHandled = Collections.newSetFromMap(new IdentityHashMap<Tree, Boolean>());
     private void doAccept(JCTree t, boolean printComments/*XXX: should ideally always print comments?*/) {
         if (!handlePossibleOldTrees(Collections.singletonList(t), printComments)) {
             if (printComments) printPrecedingComments(t, true);
@@ -421,7 +423,10 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                     }
                 }
             } else {
+                boolean saveComments = this.commentsEnabled;
+                this.commentsEnabled = printComments;
                 t.accept(this);
+                this.commentsEnabled = saveComments;
             }
 
             int end = toString().length();
@@ -432,7 +437,10 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 tag2Span.put(tag, new int[]{start + initialOffset, end + initialOffset});
             }
         
-            if (printComments) printTrailingComments(t, true);
+            if (printComments) {
+                printInnerCommentsAsTrailing(t, true);
+                printTrailingComments(t, true);
+            }
         }
     }
     
@@ -488,7 +496,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         return true;
     }
     
-    private void doPrintOriginalTree(java.util.List<? extends JCTree> toPrint, boolean includeComments) {
+    private void doPrintOriginalTree(java.util.List<? extends JCTree> toPrint, final boolean includeComments) {
         if (out.isWhitespaceLine()) toLeftMargin();
         
         JCTree firstTree = toPrint.get(0);
@@ -512,8 +520,10 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             public Void scan(Tree node, Void p) {
                 if (node != null) {
                     CommentSetImpl old = comments.getComments(node);
-                    realEnd[0] = Math.max(realEnd[0], Math.max(CasualDiff.commentEnd(old, CommentSet.RelativePosition.INLINE), CasualDiff.commentEnd(old, CommentSet.RelativePosition.TRAILING)));
-                    trailingCommentsHandled.add(node);
+                    if (includeComments) {
+                        realEnd[0] = Math.max(realEnd[0], Math.max(CasualDiff.commentEnd(old, CommentSet.RelativePosition.INLINE), CasualDiff.commentEnd(old, CommentSet.RelativePosition.TRAILING)));
+                        trailingCommentsHandled.add(node);
+                    }
                     
                     Object tag = tree2Tag != null ? tree2Tag.get(node) : null;
 
@@ -2579,7 +2589,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 	} else {
 	    int prevPrec = this.prec;
 	    this.prec = prec;
-            doAccept(tree, false);
+            doAccept(tree, commentsEnabled);
 	    this.prec = prevPrec;
 	}
     }
@@ -2633,10 +2643,13 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             if (col) {
                 toColExactly(out.leftMargin);
             }
-	    printPrecedingComments(tree, !member);
+            // because of comment duplication 
+//	    printPrecedingComments(tree, !member);
+            printInnerCommentsAsTrailing(tree, !member);
             printExpr(tree, TreeInfo.notExpression);
 	    int tag = tree.getTag().ordinal();//XXX: comparing ordinals!!!
 	    if(JCTree.Tag.APPLY.ordinal()<=tag && tag<=JCTree.Tag.MOD_ASG.ordinal()) print(';');
+            
             printTrailingComments(tree, !member);
             blankLines(tree, false);
             if (nl) {
@@ -2761,6 +2774,11 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 	if (emptyBlock) {
             printEmptyBlockComments(tree, members);
         } else {
+            innerCommentsHandled.add(tree);
+            java.util.List<Comment> comments = commentHandler.getComments(tree).getComments(CommentSet.RelativePosition.INNER);
+            for (Comment c : comments) {
+                printComment(c, false, members);
+            }
             if (members)
                 blankLines(enclClassName.isEmpty() ? cs.getBlankLinesAfterAnonymousClassHeader() : cs.getBlankLinesAfterClassHeader());
             else
@@ -2788,8 +2806,13 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             print('>');
         }
     }
+    
+    private Set<Tree> precedingCommentsHandled = new HashSet<Tree>();
 
     private void printPrecedingComments(JCTree tree, boolean printWhitespace) {
+        if (!precedingCommentsHandled.add(tree)) {
+            return;
+        }
         CommentSet commentSet = commentHandler.getComments(tree);
         java.util.List<Comment> pc = commentSet.getComments(CommentSet.RelativePosition.PRECEDING);
         DocCommentTree doc = tree2Doc.get(tree);
@@ -2814,20 +2837,32 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         }
     }
 
+    private void printInnerCommentsAsTrailing(JCTree tree, boolean printWhitespace) {
+        if (innerCommentsHandled.contains(tree)) return ;
+        CommentSet commentSet = commentHandler.getComments(tree);
+        java.util.List<Comment> cl = commentSet.getComments(CommentSet.RelativePosition.INNER);
+        innerCommentsHandled.add(tree);
+        for (Comment comment : cl) {
+            printComment(comment, true, printWhitespace);
+        }
+    }
+
     private void printTrailingComments(JCTree tree, boolean printWhitespace) {
         if (trailingCommentsHandled.contains(tree)) return ;
         CommentSet commentSet = commentHandler.getComments(tree);
         java.util.List<Comment> cl = commentSet.getComments(CommentSet.RelativePosition.INLINE);
         for (Comment comment : cl) {
+            trailingCommentsHandled.add(tree);
             printComment(comment, true, printWhitespace);
         }
         java.util.List<Comment> tc = commentSet.getComments(CommentSet.RelativePosition.TRAILING);
         if (!tc.isEmpty()) {
+            trailingCommentsHandled.add(tree);
             for (Comment c : tc)
                 printComment(c, false, printWhitespace);
         }
     }
-
+    
     private void printEmptyBlockComments(JCTree tree, boolean printWhitespace) {
 //        LinkedList<Comment> comments = new LinkedList<Comment>();
 //        if (cInfo != null) {
@@ -2869,6 +2904,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 //                }
 //            }
 //        }
+        innerCommentsHandled.add(tree);
         java.util.List<Comment> comments = commentHandler.getComments(tree).getComments(CommentSet.RelativePosition.INNER);
         for (Comment c : comments)
             printComment(c, false, printWhitespace);

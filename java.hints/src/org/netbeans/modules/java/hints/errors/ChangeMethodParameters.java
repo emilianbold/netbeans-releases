@@ -312,7 +312,7 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
             TreePath argumentPath = new TreePath(path, argument);
             TypeMirror argumentType = info.getTrees().getTypeMirror(argumentPath);
             String type = argumentType.toString();
-            String name = Utilities.getName(argumentPath.getLeaf());
+            String name = org.netbeans.modules.editor.java.Utilities.varNameSuggestion(argumentPath);
             if (name == null) {
                 name = DEFAULT_NAME;
             }

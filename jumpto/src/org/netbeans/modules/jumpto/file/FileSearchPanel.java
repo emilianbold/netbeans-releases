@@ -72,12 +72,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.jumpto.SearchHistory;
+import org.netbeans.modules.jumpto.common.UiUtils;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
@@ -115,9 +117,9 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
     public FileSearchPanel(ContentProvider contentProvider, Project currentProject) {
         this.contentProvider = contentProvider;
         this.currentProject = currentProject;
-        
-        initComponents();        
-        
+
+        initComponents();
+        ((AbstractDocument)fileNameTextField.getDocument()).setDocumentFilter(UiUtils.newUserInputFilter());
         this.containsScrollPane = true;
         Color bgColorBrighter = new Color(
                                     Math.min(getBackground().getRed() + BRIGHTER_COLOR_COMPONENT, 255),
