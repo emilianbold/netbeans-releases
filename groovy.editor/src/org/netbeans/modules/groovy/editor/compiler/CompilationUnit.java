@@ -235,7 +235,7 @@ public final class CompilationUnit extends org.codehaus.groovy.control.Compilati
                 superClass = createClassNode(Utilities.getClassName(supers.pop()).toString(), 0, superClass, new ClassNode[0], generics);
             }
 
-            return createClassNode(name, 0, superClass, new ClassNode[0], null);
+            return createClassNode(name, 0, superClass, new ClassNode[0], generics);
         }
 
         private ClassNode createClassNode(String name, int modifiers, ClassNode superClass, ClassNode[] interfaces, Set<GenericsType> generics) {
