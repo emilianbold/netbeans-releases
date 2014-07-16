@@ -61,6 +61,9 @@ public class TrailingWhitespaceRemoveProcessor {
 
     // -J-Dorg.netbeans.modules.editor.lib2.document.TrailingWhitespaceRemoveProcessor.level=FINE
     private static final Logger LOG = Logger.getLogger(TrailingWhitespaceRemoveProcessor.class.getName());
+    
+    private static final boolean REMOVE_WHITESPACE_ON_CURRENT_LINE = Boolean.getBoolean(
+            "org.netbeans.editor.remove.whitespace.on.current.line");
 
     private static final int GET_ELEMENT_INDEX_THRESHOLD = 100;
 
@@ -152,7 +155,7 @@ public class TrailingWhitespaceRemoveProcessor {
         lineRootElement = DocumentUtilities.getParagraphRootElement(doc);
         modRootElement = ModRootElement.get(doc);
         JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
-        if (lastFocusedComponent != null && lastFocusedComponent.getDocument() == doc) {
+        if (lastFocusedComponent != null && lastFocusedComponent.getDocument() == doc && !REMOVE_WHITESPACE_ON_CURRENT_LINE) {
             int caretOffset = lastFocusedComponent.getCaretPosition();
             caretLineIndex = lineRootElement.getElementIndex(caretOffset);
             // Assign the relativeCaretOffset since the subsequent modifications

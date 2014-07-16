@@ -80,9 +80,11 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.jumpto.SearchHistory;
+import org.netbeans.modules.jumpto.common.UiUtils;
 import org.netbeans.modules.jumpto.type.UiOptions;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.openide.awt.Mnemonics;
@@ -124,7 +126,7 @@ public class GoToPanel extends javax.swing.JPanel {
         this.contentProvider = contentProvider;
         initComponents();
         containsScrollPane = true;
-                
+        ((AbstractDocument)nameField.getDocument()).setDocumentFilter(UiUtils.newUserInputFilter());
         matchesList.setSelectionMode( ListSelectionModel.SINGLE_SELECTION );
         //matchesList.setPrototypeCellValue("12345678901234567890123456789012345678901234567890123456789012345678901234567890");        
         matchesList.addListSelectionListener(null);

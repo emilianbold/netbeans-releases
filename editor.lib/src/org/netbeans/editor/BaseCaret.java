@@ -79,6 +79,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -343,6 +344,8 @@ AtomicLockListener, FoldHierarchyListener {
      * with the same cursor.
      */
     private boolean showingTextCursor = true;
+    
+    private AtomicBoolean fireStateChangedPending = new AtomicBoolean();
     
     public BaseCaret() {
         listenerImpl = new ListenerImpl();
@@ -943,28 +946,27 @@ AtomicLockListener, FoldHierarchyListener {
 
     /** Notifies listeners that caret position has changed */
     protected void fireStateChanged() {
-        Runnable runnable = new Runnable() {
-            public @Override void run() {
-                Object listeners[] = listenerList.getListenerList();
-                for (int i = listeners.length - 2; i >= 0 ; i -= 2) {
-                    if (listeners[i] == ChangeListener.class) {
-                        if (changeEvent == null) {
-                            changeEvent = new ChangeEvent(BaseCaret.this);
+        if (fireStateChangedPending.compareAndSet(false, true)) {
+            Runnable runnable = new Runnable() {
+                public @Override void run() {
+                    fireStateChangedPending.set(false);
+                    Object listeners[] = listenerList.getListenerList();
+                    for (int i = listeners.length - 2; i >= 0 ; i -= 2) {
+                        if (listeners[i] == ChangeListener.class) {
+                            if (changeEvent == null) {
+                                changeEvent = new ChangeEvent(BaseCaret.this);
+                            }
+                            ((ChangeListener)listeners[i + 1]).stateChanged(changeEvent);
                         }
-                        ((ChangeListener)listeners[i + 1]).stateChanged(changeEvent);
                     }
                 }
-            }
-        };
+            };
         
-        // Fix of #24336 - always do in AWT thread
-        // Fix of #114649 - when under document's lock repost asynchronously
-        if (inAtomicUnlock) {
+            // Fix of #24336 - always do in AWT thread
+            // Fix of #114649 - when under document's lock repost asynchronously
             SwingUtilities.invokeLater(runnable);
-        } else {
-            Utilities.runInEventDispatchThread(runnable);
+            updateSystemSelection();
         }
-        updateSystemSelection();
     }
 
     /**

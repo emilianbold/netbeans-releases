@@ -62,6 +62,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceJavadocAttacher;
@@ -118,8 +120,8 @@ public class ElementJavadoc {
     private final Callable<Boolean> cancel;
     private Hashtable<String, ElementHandle<? extends Element>> links = new Hashtable<String, ElementHandle<? extends Element>>();
     private int linkCounter = 0;
-    private URL docURL = null;
-    private AbstractAction goToSource = null;
+    private volatile URL docURL = null;
+    private volatile AbstractAction goToSource = null;
 
     private static final String PARAM_TAG = "@param"; //NOI18N
     private static final String RETURN_TAG = "@return"; //NOI18N
@@ -341,46 +343,38 @@ public class ElementJavadoc {
         return goToSource;
     }
     
-    private ElementJavadoc(CompilationInfo compilationInfo, Element element, URL url, final Callable<Boolean> cancel) {
+    private ElementJavadoc(CompilationInfo compilationInfo, Element element, final URL url, final Callable<Boolean> cancel) {
         Pair<Trees,ElementUtilities> context = Pair.of(compilationInfo.getTrees(), compilationInfo.getElementUtilities());
         this.cpInfo = compilationInfo.getClasspathInfo();
         this.handle = element == null ? null : ElementHandle.create(element);
         this.cancel = cancel;
         Doc doc = context.second().javaDocFor(element);
         boolean localized = false;
+        boolean remote = false;
         StringBuilder content = new StringBuilder();
         JavadocHelper.TextStream page = null;
-        if (element != null) {
-            page = JavadocHelper.getJavadoc(element, false, cancel);
-            if (page != null) {
-                docURL = page.getLocation();
-            }
-            localized = isLocalized(docURL, element);
-            if (!localized) {
-                final FileObject fo = SourceUtils.getFile(element, compilationInfo.getClasspathInfo());
-                if (fo != null) {
-                    goToSource = new AbstractAction() {
-                        public void actionPerformed(ActionEvent evt) {
-                            ElementOpen.open(fo, handle);
-                        }
-                    };
-                    if (docURL == null) {
-                        try {
-                            content.append("<base href=\"").append(fo.getURL()).append("\"></base>"); //NOI18N
-                        } catch (FileStateInvalidException ex) {
-                            content = new StringBuilder();
-                        }
-                    }
-                }
-                if (url != null) {
-                    docURL = url;
-                }
-            }
-        }
         try {
             //Optimisitic no http
+            if (element != null) {
+                List<JavadocHelper.TextStream> pages = JavadocHelper.getJavadoc(
+                    element,
+                    JavadocHelper.RemoteJavadocPolicy.SPECULATIVE,
+                    cancel);
+                for (JavadocHelper.TextStream ts : pages) {
+                    localized |= isLocalized(ts.getLocation(), element);
+                    remote |= ts.isRemote();
+                }
+                if (remote) {
+                    throw new JavadocHelper.RemoteJavadocException(null);
+                }
+                page = pages.isEmpty() ? null : pages.get(0);
+                docURL = page == null ? null : page.getLocation();
+                if (!localized) {
+                    assignSource(element, compilationInfo, url, content);
+                }
+            }
             this.content = prepareContent(content, doc,localized, page, cancel, true, context);
-        } catch (RemoteJavadocException re) {
+        } catch (JavadocHelper.RemoteJavadocException re) {
             final FileObject fo = compilationInfo.getFileObject();
             if (fo == null || JavaSource.forFileObject(fo) == null) {
                 final StringBuilder sb = new StringBuilder(content);
@@ -400,9 +394,13 @@ public class ElementJavadoc {
                     final CompilationController c = (CompilationController) ch.getCompilationController();
                     c.toPhase(Phase.RESOLVED);
                     final Element element = handle.resolve(c);
+                    JavadocHelper.TextStream page = JavadocHelper.getJavadoc(element, true, cancel);
+                    docURL = page == null ? null : page.getLocation();
+                    if (!isLocalized(docURL, element)) {
+                        assignSource(element, c, url, contentFin);
+                    }
                     Pair<Trees,ElementUtilities> context = Pair.of(c.getTrees(), c.getElementUtilities());
                     Doc doc = context.second().javaDocFor(element);
-                    JavadocHelper.TextStream page = JavadocHelper.getJavadoc(element, cancel);
                     return prepareContent(contentFin, doc,localizedFin, page, cancel, false, context).get();
                 }
             });
@@ -489,7 +487,7 @@ public class ElementJavadoc {
             final boolean useJavadoc,
             final JavadocHelper.TextStream page,
             final Callable<Boolean> cancel,
-            final boolean sync, Pair<Trees,ElementUtilities> ctx) throws RemoteJavadocException {
+            final boolean sync, Pair<Trees,ElementUtilities> ctx) throws JavadocHelper.RemoteJavadocException {
 
         try {
             final StringBuilder sb = new StringBuilder(header);
@@ -1437,7 +1435,7 @@ public class ElementJavadoc {
     private String inheritedDocFor(MethodDoc mdoc, ClassDoc cdoc, List<Tag> inlineTags, List<Tag> returnTags,
             Set<Integer> paramPos, Map<Integer, ParamTag> paramTags, Map<Integer, List<Tag>> paramInlineTags,
             Set<String> throwsTypes, Map<String, ThrowsTag> throwsTags, Map<String, List<Tag>> throwsInlineTags,
-            Callable<Boolean> cancel, boolean stopByRemoteJdoc, Pair<Trees,ElementUtilities> ctx) throws RemoteJavadocException {
+            Callable<Boolean> cancel, boolean stopByRemoteJdoc, Pair<Trees,ElementUtilities> ctx) throws JavadocHelper.RemoteJavadocException {
         JavadocHelper.TextStream inheritedPage = null;
         try {
             for (ClassDoc ifaceDoc : cdoc.interfaces()) {
@@ -1591,7 +1589,7 @@ public class ElementJavadoc {
                     return null;
             }
             if (stopByRemoteJdoc && inheritedPage != null && isRemote(inheritedPage, docURL)) {
-                throw new RemoteJavadocException();
+                throw new JavadocHelper.RemoteJavadocException(null);
             }
             String jdText = inheritedPage != null ? HTMLJavadocParser.getJavadocText(inheritedPage, false) : null;
             if (jdText != null)
@@ -1763,7 +1761,7 @@ public class ElementJavadoc {
                         paramPos != null && !paramPos.isEmpty() ||
                         throwsTypes != null && !throwsTypes.isEmpty()) {
                     if (stopByRemoteJdoc && inheritedPage != null && isRemote(inheritedPage,docURL)) {
-                        throw new RemoteJavadocException();
+                        throw new JavadocHelper.RemoteJavadocException(null);
                     }
                     jdText = inheritedPage != null ? HTMLJavadocParser.getJavadocText(inheritedPage, false) : null;
                     return jdText != null ? jdText : inheritedDocFor(mdoc, superclass, inlineTags,
@@ -1828,6 +1826,24 @@ public class ElementJavadoc {
         }
     }
 
-    private static class RemoteJavadocException extends Exception {        
+    private void assignSource(
+        @NonNull final Element element,
+        @NonNull final CompilationInfo compilationInfo,
+        @NullAllowed final URL url,
+        @NonNull final StringBuilder content) {
+        final FileObject fo = SourceUtils.getFile(element, compilationInfo.getClasspathInfo());
+        if (fo != null) {
+            goToSource = new AbstractAction() {
+                public void actionPerformed(ActionEvent evt) {
+                    ElementOpen.open(fo, handle);
+                }
+            };
+            if (docURL == null) {
+                content.append("<base href=\"").append(fo.toURL()).append("\"></base>"); //NOI18N
+            }
+        }
+        if (url != null) {
+            docURL = url;
+        }
     }
 }
