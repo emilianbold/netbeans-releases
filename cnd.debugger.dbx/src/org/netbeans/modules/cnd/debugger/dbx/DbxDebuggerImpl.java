@@ -2292,25 +2292,29 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     public Set<String> requestAutos() {
         Set<String> autoNames = super.requestAutos();
         
-        if (autoNames.isEmpty()) {
-	    localUpdater.batchOffForce();	// cause a pull to clear view
-	    return autoNames;
-	}
+        if (autoNames != null) {
+            if (autoNames.isEmpty()) {
+                localUpdater.batchOffForce();	// cause a pull to clear view
+                return autoNames;
+            }
 
 	// Corresponding batchOff() will happen in setChasedPointer() when
-	// it detects the sentinel routing token.
-	localUpdater.batchOn();
+            // it detects the sentinel routing token.
+            localUpdater.batchOn();
 
-	int count = 0;
-	for (String autoName : autoNames) {
-	    int rt = RT_EVAL_AUTO;
-	    if (count++ >= autoNames.size()-1) {
-		// Last one. Use sentinel routing token of 4
-		rt = RT_EVAL_AUTO_LAST;
-	    }
-	    // expr_heval's will "continue" in setChasedPointer()
-	    dbx.expr_heval(rt, "-r " + autoName);	// NOI18N
-	}
+            int count = 0;
+            for (String autoName : autoNames) {
+                int rt = RT_EVAL_AUTO;
+                if (count++ >= autoNames.size()-1) {
+                    // Last one. Use sentinel routing token of 4
+                    rt = RT_EVAL_AUTO_LAST;
+                }
+                // expr_heval's will "continue" in setChasedPointer()
+                dbx.expr_heval(rt, "-r " + autoName);	// NOI18N
+            }
+        } else {
+            autos.add(null);    // in order to let the debugger show the special warning message
+        }
         
         return autoNames;
     }
