@@ -450,7 +450,7 @@ static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* l
     return need_to_proceed();
 }
 
-static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path) {    
+static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path) {
     array_init(entries, 100);
     visit_dir_entries(path, fs_entry_creating_visitor, entries);
     array_truncate(entries);
@@ -476,7 +476,7 @@ static bool response_entry_create(buffer response_buf,
         if (link_flag) {
             char* link = work_buf.data + escaped_name_size + 1; 
             ssize_t sz = readlink(abspath, link, work_buf_size);
-            if (sz == -1) {
+           if (sz == -1) {
                 report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
                 err_set(errno, "error performing readlink for %s: %s\n", abspath, err_to_string(errno));
                 strcpy(work_buf.data, "?");
@@ -493,12 +493,12 @@ static bool response_entry_create(buffer response_buf,
                 escape_strcpy(escaped_link, link);
             }
         }
-        snprintf(response_buf.data, response_buf.size, "%i %s %li %li %li %lu %lli %i %s\n",
+        snprintf(response_buf.data, response_buf.size, "%i %s %lu %lu %lu %lu %lli %i %s\n",
                 utf8_char_count(escaped_name, escaped_name_size),
                 escaped_name,
-                (long) stat_buf.st_uid,
-                (long) stat_buf.st_gid,
-                (long) stat_buf.st_mode,
+                (unsigned long) stat_buf.st_uid,
+                (unsigned long) stat_buf.st_gid,
+                (unsigned long) stat_buf.st_mode,
                 (unsigned long) stat_buf.st_size,
                 get_mtime(&stat_buf),
                 utf8_char_count(escaped_link, escaped_link_size),
@@ -522,7 +522,7 @@ static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* l
 static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p);
 
 static void response_ls(int request_id, const char* path, bool recursive, bool inner) {
-    
+
     if (is_broken_pipe() || !state_get_proceed()) {
         return;
     }
@@ -673,14 +673,14 @@ static void response_stat(int request_id, const char* path) {
         const char* basename = get_basename(path);
         escape_strcpy(escaped_name, basename);
         int escaped_name_size = strlen(escaped_name);
-        my_fprintf(STDOUT, "%c %i %i %s %li %li %li %lu %lli %d %s\n",
+        my_fprintf(STDOUT, "%c %i %i %s %lu %lu %lu %lu %lli %d %s\n",
                 FS_RSP_ENTRY,
                 request_id,
                 utf8_char_count(escaped_name, escaped_name_size),
                 escaped_name,
-                (long) stat_buf.st_uid,
-                (long) stat_buf.st_gid,
-                (long) stat_buf.st_mode,
+                (unsigned long) stat_buf.st_uid,
+                (unsigned long) stat_buf.st_gid,
+                (unsigned long) stat_buf.st_mode,
                 (unsigned long) stat_buf.st_size,
                 get_mtime(&stat_buf),
                 0, "");

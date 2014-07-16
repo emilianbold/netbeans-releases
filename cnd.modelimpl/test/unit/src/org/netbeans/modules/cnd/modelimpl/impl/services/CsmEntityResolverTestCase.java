@@ -48,12 +48,15 @@ import java.util.Iterator;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
-import org.netbeans.modules.cnd.api.model.services.CsmFunctionsResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.trace.FileModelCpp11Test;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
@@ -86,16 +89,34 @@ public class CsmEntityResolverTestCase extends SelectTestBase {
     protected Iterator<CsmFunction> _getFunctions(CsmProject project, CsmFunction func) {
         String funText = func.getText().toString();
         funText = funText.replace(func.getName(), func.getQualifiedName());
-        Collection<CsmFunction> result = CsmFunctionsResolver.resolveFunction((NativeProject) project.getPlatformProject(), funText);
-        return result.iterator();
+        if (CsmKindUtilities.isFunctionDefinition(func)) {
+            funText = funText.substring(0, funText.indexOf('{'));
+        }
+        Collection<CsmObject> result = CsmEntityResolver.resolveEntity((NativeProject) project.getPlatformProject(), funText);
+        return ((Collection<CsmFunction>)(Object) result).iterator();
+    }
+    
+    @Override
+    protected Iterator<CsmVariable> _getVariables(CsmProject project, CsmVariable var) {
+        String varText = var.getQualifiedName().toString();
+        Collection<CsmObject> result = CsmEntityResolver.resolveEntity((NativeProject) project.getPlatformProject(), varText);
+        return ((Collection<CsmVariable>)(Object) result).iterator();
     }
 
     @Override
-    protected boolean _checkFound(CsmFunction func, Iterator<CsmFunction> answer) {
-        return answer.hasNext() && answer.next() == func;
+    protected boolean _checkFound(CsmObject obj, Iterator<? extends CsmObject> answer) {
+        return answer.hasNext() && answer.next() == obj;
     }
     
     public void testSelectModelGetFunctions() throws Exception {
         doTestGetFunctions();
     }    
+    
+    public void testSelectModelGetMethods() throws Exception {
+        doTestGetMethods();
+    }       
+    
+    public void testSelectModelGetVariables() throws Exception {
+        doTestGetVariables();
+    }
 }

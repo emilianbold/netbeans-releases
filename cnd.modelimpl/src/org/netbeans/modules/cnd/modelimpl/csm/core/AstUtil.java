@@ -265,6 +265,17 @@ public class AstUtil {
         }
         return qn;
     }
+    
+    public static AST findTypeNode(AST ast) {
+        AST typeAst = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_TYPE_BUILTIN);
+        if (typeAst == null) {
+            typeAst = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_TYPE_COMPOUND);
+            if (typeAst == null) {
+                typeAst = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_TYPE_DECLTYPE);
+            }
+        }        
+        return typeAst;
+    }
 
     public static boolean hasChildOfType(AST ast, int type) {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {

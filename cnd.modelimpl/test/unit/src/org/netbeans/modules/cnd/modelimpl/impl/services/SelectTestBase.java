@@ -45,14 +45,19 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import org.netbeans.junit.Manager;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -97,6 +102,21 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
     }
 
 
+    public void doTestGetMethods() throws Exception {
+        CsmCacheManager.enter();
+        try {
+            CsmProject project = traceModel.getProject();
+            project.waitParse();
+            _testGetMethods(project.getGlobalNamespace());
+            for (CsmProject lib : project.getLibraries()) {
+                _testGetFunctions(lib.getGlobalNamespace());
+            }
+            assertNoExceptions();
+        } finally {
+            CsmCacheManager.leave();
+        }
+    }
+    
     public void doTestGetFunctions() throws Exception {
         CsmCacheManager.enter();
         try {
@@ -110,7 +130,56 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
         } finally {
             CsmCacheManager.leave();
         }
-    }
+    }    
+    
+    public void doTestGetVariables() throws Exception {
+        CsmCacheManager.enter();
+        try {
+            CsmProject project = traceModel.getProject();
+            project.waitParse();
+            _testGetVariables(project.getGlobalNamespace());
+            for (CsmProject lib : project.getLibraries()) {
+                _testGetVariables(lib.getGlobalNamespace());
+            }
+            assertNoExceptions();
+        } finally {
+            CsmCacheManager.leave();
+        }
+    }    
+    
+    protected void _testGetMethods(CsmNamespace nsp) throws Exception {
+        CsmProject project = nsp.getProject();
+        boolean dumpProjectContainer = true;
+        for (CsmDeclaration decl : nsp.getDeclarations()) {
+            if (CsmKindUtilities.isClass(decl)) {
+                for (CsmMember member : ((CsmClass) decl).getMembers()) {
+                    if (CsmKindUtilities.isMethod(member)) {
+                        CsmFunction func = (CsmFunction) member;
+                        Iterator<CsmFunction> iter = _getFunctions(project, func);
+                        final CsmFile containingFile = func.getContainingFile();
+                        boolean ok = _checkFound(func, iter);
+                        if (!ok) {
+                            System.err.println("ERROR FOR: " + decl + "\n\tUIN=" + decl.getUniqueName() + "\n\tFQN="+decl.getQualifiedName() + "\n\tNS="+nsp);
+                            // more trace
+                            if (dumpProjectContainer && project instanceof ProjectBase) {
+                                dumpProjectContainer = false;
+                                ModelImplTest.dumpProjectContainers(System.err, (ProjectBase) project, false);
+                            }
+                            if (containingFile instanceof FileImpl) {
+                                ((FileImpl)containingFile).dumpPPStates(new PrintWriter(System.err));
+                            }
+                        }
+                        assertTrue("Function " + decl.getQualifiedName().toString() + 
+                                " from " + containingFile.getAbsolutePath() + ":" + func.getStartPosition() + 
+                                " not found in project " + project.getName(), ok);
+                    }
+                }
+            }
+        }
+        for (CsmNamespace nested : nsp.getNestedNamespaces()) {
+            _testGetFunctions(nested);
+        }
+    }    
 
     protected void _testGetFunctions(CsmNamespace nsp) throws Exception {
         CsmProject project = nsp.getProject();
@@ -142,6 +211,36 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
         }
     }
     
+    protected void _testGetVariables(CsmNamespace nsp) throws Exception {
+        CsmProject project = nsp.getProject();
+        boolean dumpProjectContainer = true;
+        for (CsmDeclaration decl : nsp.getDeclarations()) {
+            if (CsmKindUtilities.isVariable(decl)) {
+                CsmVariable var = (CsmVariable) decl;
+                Iterator<CsmVariable> iter = _getVariables(project, var);
+                final CsmFile containingFile = var.getContainingFile();
+                boolean ok = _checkFound(var, iter);
+                if (!ok) {
+                    System.err.println("ERROR FOR: " + decl + "\n\tUIN=" + decl.getUniqueName() + "\n\tFQN="+decl.getQualifiedName() + "\n\tNS="+nsp);
+                    // more trace
+                    if (dumpProjectContainer && project instanceof ProjectBase) {
+                        dumpProjectContainer = false;
+                        ModelImplTest.dumpProjectContainers(System.err, (ProjectBase) project, false);
+                    }
+                    if (containingFile instanceof FileImpl) {
+                        ((FileImpl)containingFile).dumpPPStates(new PrintWriter(System.err));
+                    }
+                }
+                assertTrue("Variable " + decl.getQualifiedName().toString() + 
+                        " from " + containingFile.getAbsolutePath() + ":" + var.getStartPosition() + 
+                        " not found in project " + project.getName(), ok);
+            }
+        }
+        for (CsmNamespace nested : nsp.getNestedNamespaces()) {
+            _testGetVariables(nested);
+        }
+    }    
+    
     protected Iterator<CsmFunction> _getFunctions(CsmProject project, CsmFunction func) {
         CharSequence qName = func.getQualifiedName();
         if (TRACE) { 
@@ -150,8 +249,11 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
         return CsmSelect.getFunctions(project, qName);
     }
     
-    protected boolean _checkFound(CsmFunction func, Iterator<CsmFunction> answer) {
+    protected Iterator<CsmVariable> _getVariables(CsmProject project, CsmVariable var) {
+        return Collections.<CsmVariable>emptyList().iterator();
+    }    
+    
+    protected boolean _checkFound(CsmObject obj, Iterator<? extends CsmObject> answer) {
         return answer.hasNext();
     }
-
 }
