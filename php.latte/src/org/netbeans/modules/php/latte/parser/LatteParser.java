@@ -165,7 +165,7 @@ public class LatteParser extends Parser {
     public void removeChangeListener(ChangeListener changeListener) {
     }
 
-    private static class Macro {
+    private static final class Macro {
         private final Token<LatteMarkupTokenId> token;
         private final int offset;
 
