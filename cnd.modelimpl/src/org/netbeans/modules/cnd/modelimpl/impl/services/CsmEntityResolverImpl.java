@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
@@ -86,6 +87,7 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.VariableProvid
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.spi.model.services.CsmEntityResolverImplementation;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -93,6 +95,10 @@ import org.netbeans.modules.cnd.spi.model.services.CsmEntityResolverImplementati
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmEntityResolverImplementation.class)
 public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
+
+    private static final String LT = "<"; // NOI18N
+    
+    private static final String GT = ">"; // NOI18N
     
     private static final Logger LOG = Logger.getLogger(VariableProvider.class.getSimpleName());
 
@@ -130,9 +136,38 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
                         case CPPTokenTypes.CSM_FUNCTION_DECLARATION: {
                             AST funNameAst = AstUtil.findMethodName(ast);
                             if (funNameAst != null) {
-                                CharSequence qualifiedName = funNameAst.getText();
-                                Iterator<CsmFunction> funIter = CsmSelect.getFunctions(project, qualifiedName);
-                                return fillFromDecls(filterFunctions(ast, funNameAst, funIter));
+//                                CharSequence qualifiedName = funNameAst.getText();
+                                CharSequence qualifiedName[] = AstRenderer.renderQualifiedId(funNameAst, null, true);
+                                
+                                Collection<CsmObject> resolvedContext = new ArrayList<>();
+                                resolveContext(project, qualifiedName, resolvedContext);
+
+                                Collection<CsmFunction> candidates = new ArrayList<>();
+                                CsmSelect.CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
+                                         CsmSelect.getFilterBuilder().createKindFilter(
+                                             CsmDeclaration.Kind.FUNCTION,
+                                             CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                                             CsmDeclaration.Kind.FUNCTION_INSTANTIATION
+                                         ),
+                                         CsmSelect.getFilterBuilder().createNameFilter(
+                                             hasTemplateSuffix(qualifiedName[qualifiedName.length - 1]) ? trimTemplateSuffix(qualifiedName[qualifiedName.length - 1]) : qualifiedName[qualifiedName.length - 1], 
+                                             true, 
+                                             true, 
+                                             false
+                                         )
+                                );                                           
+                                for (CsmObject context : resolvedContext) {
+                                    if (CsmKindUtilities.isNamespace(context)) {
+                                        CsmNamespace ns = (CsmNamespace) context;
+                                        Iterator<CsmOffsetableDeclaration> iter = CsmSelect.getDeclarations(ns, filter);
+                                        fillFromDecls((List<CsmObject>) (Object) candidates, iter);
+                                    } else if (CsmKindUtilities.isClass(context)) {
+                                        CsmClass cls = (CsmClass) context;
+                                        fillFromDecls((List<CsmObject>) (Object) candidates, CsmSelect.getClassMembers(cls, filter));
+                                    }
+                                }
+                                //Iterator<CsmFunction> funIter = CsmSelect.getFunctions(project, concat(qualifiedName, APTUtils.SCOPE));
+                                return fillFromDecls(filterFunctions(ast, funNameAst, candidates.iterator()));
                             }                            
                             break;                            
                         }
@@ -141,13 +176,15 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
                             AST typeNode = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_TYPE_COMPOUND);
                             if (typeNode != null) {
                                 CharSequence qualifiedId[] = AstRenderer.renderQualifiedId(typeNode, null, true);
+                                
                                 Collection<CsmObject> resolvedContext = new ArrayList<>();
                                 resolveContext(project, qualifiedId, resolvedContext);
+                                
+                                CsmSelect.CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
+                                         CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.VARIABLE),
+                                         CsmSelect.getFilterBuilder().createNameFilter(qualifiedId[qualifiedId.length - 1], true, true, false)
+                                );                                
                                 for (CsmObject context : resolvedContext) {
-                                    CsmSelect.CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
-                                             CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.VARIABLE),
-                                             CsmSelect.getFilterBuilder().createNameFilter(qualifiedId[qualifiedId.length - 1], true, true, false)
-                                    );
                                     if (CsmKindUtilities.isNamespace(context)) {
                                         CsmNamespace ns = (CsmNamespace) context;
                                         return fillFromDecls(CsmSelect.getDeclarations(ns, filter));
@@ -240,17 +277,6 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
         if (cnn != null) {
             if (cnn.length > 1) {
                 resolveContext(project.getGlobalNamespace(), qualifiedName, 0, result);
-//                CsmSelect.CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
-//                         CsmSelect.getFilterBuilder().createKindFilter(
-//                             CsmDeclaration.Kind.CLASS, 
-//                             CsmDeclaration.Kind.TYPEDEF,
-//                             CsmDeclaration.Kind.TYPEALIAS, 
-//                             CsmDeclaration.Kind.NAMESPACE_ALIAS
-//                         ),
-//                         CsmSelect.getFilterBuilder().createNameFilter(qualifiedName[0], true, true, false)
-//                );
-//                Iterator<CsmOffsetableDeclaration> decls = CsmSelect.getDeclarations(project.getGlobalNamespace(), filter);
-//                handleNamespaceDecls(decls, cnn, 0, result);
             } else if (cnn.length == 1) {
                 result.add(project.getGlobalNamespace());
             }
@@ -262,25 +288,24 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
         if (current >= cnn.length - 1) {
             result.add(context);
             return;
-        }
-        CsmSelect.CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
-                 CsmSelect.getFilterBuilder().createKindFilter(
-                     CsmDeclaration.Kind.CLASS, 
-                     CsmDeclaration.Kind.TYPEDEF,
-                     CsmDeclaration.Kind.TYPEALIAS,
-                     CsmDeclaration.Kind.NAMESPACE_ALIAS
-                 ),
-                 CsmSelect.getFilterBuilder().createNameFilter(qualifiedName[current], true, true, false)
-        );
+        }        
+        CsmSelect.CsmFilter filter = createNamespaceFilter(qualifiedName[current]);        
         Iterator<CsmOffsetableDeclaration> decls = CsmSelect.getDeclarations(context, filter);
+        if (!decls.hasNext() && hasTemplateSuffix(qualifiedName[current])) {
+            filter = createNamespaceFilter(trimTemplateSuffix(qualifiedName[current]));
+            decls = CsmSelect.getDeclarations(context, filter);
+        }
+        
         handleNamespaceDecls(decls, cnn, current, result);
         
-        Set<CsmNamespace> handledNamespaces = new HashSet<>();
-        for (CsmNamespace nested : context.getNestedNamespaces()) {
-            if (!handledNamespaces.contains(nested)) {
-                handledNamespaces.add(nested);
-                if (qualifiedName[current].toString().equals(nested.getName().toString())) {
-                    resolveContext(nested, qualifiedName, current + 1, result);
+        if (!hasTemplateSuffix(qualifiedName[current])) {            
+            Set<CsmNamespace> handledNamespaces = new HashSet<>();
+            for (CsmNamespace nested : context.getNestedNamespaces()) {
+                if (!handledNamespaces.contains(nested)) {
+                    handledNamespaces.add(nested);
+                    if (qualifiedName[current].toString().equals(nested.getName().toString())) {
+                        resolveContext(nested, qualifiedName, current + 1, result);
+                    }
                 }
             }
         }
@@ -292,16 +317,13 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
             result.add(context);
             return;
         }
-        CsmSelect.CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
-                 CsmSelect.getFilterBuilder().createKindFilter(
-                     CsmDeclaration.Kind.CLASS,
-                     CsmDeclaration.Kind.TYPEDEF,
-                     CsmDeclaration.Kind.TYPEALIAS                    
-                 ),
-                 CsmSelect.getFilterBuilder().createNameFilter(qualifiedName[current], true, true, false)
-        );
+        CsmSelect.CsmFilter filter = createClassFilter(qualifiedName[current]);
         Iterator<CsmMember> decls = CsmSelect.getClassMembers(context, filter);
-        handleClassDecls(decls, cnn, current, result);
+        if (!decls.hasNext() && hasTemplateSuffix(qualifiedName[current])) {
+            filter = createClassFilter(trimTemplateSuffix(qualifiedName[current]));
+            decls = CsmSelect.getClassMembers(context, filter);
+        }
+        handleClassDecls(decls, cnn, current, result);    
     }    
     
     private void handleNamespaceDecls(Iterator<CsmOffsetableDeclaration> decls, CharSequence qualifiedName[], int current, Collection<CsmObject> result) {
@@ -352,6 +374,63 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
         }
         return result;
     }
+    
+    private void fillFromDecls(List<CsmObject> list, Iterable<? extends CsmObject> decls) {
+        fillFromDecls(list, decls.iterator());
+    }    
+    
+    private void fillFromDecls(List<CsmObject> list, Iterator<? extends CsmObject> decls) {
+        while (decls.hasNext()) {
+            list.add(decls.next());
+        }
+    }
+    
+    private static String concat(CharSequence charSequences[], CharSequence separator) {
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (CharSequence cs : charSequences) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(separator);
+            }
+            sb.append(cs);
+        }
+        return sb.toString();
+    }
+    
+    private boolean hasTemplateSuffix(CharSequence qualNamePart) {
+        return CharSequences.indexOf(qualNamePart, GT) > CharSequences.indexOf(qualNamePart, LT);
+    }
+    
+    private CharSequence trimTemplateSuffix(CharSequence qualNamePart) {
+        return qualNamePart.subSequence(0, CharSequences.indexOf(qualNamePart, LT));
+    }
+    
+    private CsmSelect.CsmFilter createNamespaceFilter(CharSequence qualNamePart) {
+        return CsmSelect.getFilterBuilder().createCompoundFilter(
+                 CsmSelect.getFilterBuilder().createKindFilter(
+                     CsmDeclaration.Kind.CLASS, 
+                     CsmDeclaration.Kind.STRUCT,
+                     CsmDeclaration.Kind.TYPEDEF,
+                     CsmDeclaration.Kind.TYPEALIAS,
+                     CsmDeclaration.Kind.NAMESPACE_ALIAS
+                 ),
+                 CsmSelect.getFilterBuilder().createNameFilter(qualNamePart, true, true, false)
+        );
+    }
+    
+    private CsmSelect.CsmFilter createClassFilter(CharSequence qualNamePart) {
+        return CsmSelect.getFilterBuilder().createCompoundFilter(
+                 CsmSelect.getFilterBuilder().createKindFilter(
+                     CsmDeclaration.Kind.CLASS,
+                     CsmDeclaration.Kind.STRUCT,
+                     CsmDeclaration.Kind.TYPEDEF,
+                     CsmDeclaration.Kind.TYPEALIAS                    
+                 ),
+                 CsmSelect.getFilterBuilder().createNameFilter(qualNamePart, true, true, false)
+        );
+    }    
     
     private static void printAST(StringBuilder sb, AST ast, int level) {
         if (ast != null) {
