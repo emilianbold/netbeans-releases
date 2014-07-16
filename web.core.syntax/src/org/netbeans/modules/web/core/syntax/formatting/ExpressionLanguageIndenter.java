@@ -81,12 +81,12 @@ public class ExpressionLanguageIndenter extends AbstractIndenter<ELTokenId> {
             inExression = false;
         }
         if (inExression) {
-            ic = new IndentCommand(IndentCommand.Type.CONTINUE, context.getLineStartOffset());
+            ic = new IndentCommand(IndentCommand.Type.CONTINUE, context.getLineStartOffset(), getIndentationSize());
             if (indent != -1) {
                 ic.setFixedIndentSize(indent);
             }
         } else {
-            ic = new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getLineStartOffset());
+            ic = new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getLineStartOffset(), getIndentationSize());
             inExression = true;
             context.getJoinedTokenSequences().move(context.getLineStartOffset());
             // try to find fixed indent:
@@ -107,9 +107,9 @@ public class ExpressionLanguageIndenter extends AbstractIndenter<ELTokenId> {
         result.add(ic);
         if (context.getNextLineStartOffset() != -1) {
             if (context.isLanguageBlockEnd()) {
-                ic = new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getNextLineStartOffset());
+                ic = new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getNextLineStartOffset(), getIndentationSize());
             } else {
-                ic = new IndentCommand(IndentCommand.Type.CONTINUE, context.getNextLineStartOffset());
+                ic = new IndentCommand(IndentCommand.Type.CONTINUE, context.getNextLineStartOffset(), getIndentationSize());
             }
             preliminaryNextLineIndent.add(ic);
         }

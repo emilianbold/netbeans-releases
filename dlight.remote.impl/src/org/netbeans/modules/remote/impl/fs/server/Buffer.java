@@ -85,16 +85,24 @@ import java.nio.BufferUnderflowException;
         skipSpaces();
         //StringBuilder sb = new StringBuilder(16);
         int result = 0;
+        boolean first = true;
+        boolean negative = false;
         while (curr < text.length()) {
             char c = text.charAt(curr++);
-            if (Character.isDigit(c)) {
-                result *= 10;
-                result += (int) c - (int) '0';
+            if (c == '-' && first) {
+                first = false;
+                negative = true;
             } else {
-                break;
+                first = false;
+                if (Character.isDigit(c)) {
+                    result *= 10;
+                    result += (int) c - (int) '0';
+                } else {
+                    break;
+                }
             }
         }
-        return result;
+        return negative ? -result : result;
     }
 
     public long getLong() {

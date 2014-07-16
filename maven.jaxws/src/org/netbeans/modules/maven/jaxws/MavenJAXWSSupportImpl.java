@@ -72,8 +72,8 @@ import org.openide.util.NbBundle;
  * @author mkuchtiak
  */
 public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
-    private Project prj;
-    private List<JaxWsService> services = new LinkedList<JaxWsService>();
+    private final Project prj;
+    private final List<JaxWsService> services = new LinkedList<JaxWsService>();
     /** Path for catalog file. */
     public static final String CATALOG_PATH = "src/jax-ws-catalog.xml"; //NOI18N
 
@@ -121,9 +121,19 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         throws IOException {
 
         FileObject ddFolder = getDeploymentDescriptorFolder();
+        
+        if (ddFolder == null) {
+            File webAppFolder = FileUtilities.resolveFilePath(
+                FileUtil.toFile(prj.getProjectDirectory()), "src/main/webapp"); //NOI18N
+            if (webAppFolder.exists()) {
+                FileObject webapp = FileUtil.toFileObject(webAppFolder);
+                ddFolder = webapp.createFolder("WEB-INF"); //NOI18N
+            }
+        }
+        
         if (ddFolder != null) {
             return WSUtils.addSunJaxWsEntry(ddFolder, service);
-        } else{
+        } else {
             String mes = NbBundle.getMessage(MavenJAXWSSupportImpl.class, "MSG_CannotFindWEB-INF"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
@@ -178,10 +188,6 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         FileObject ddFolder = getDeploymentDescriptorFolder();
         if (ddFolder != null) {
             WSUtils.removeSunJaxWsEntry(ddFolder, service);
-        } else{
-            String mes = NbBundle.getMessage(MavenJAXWSSupportImpl.class, "MSG_CannotFindWEB-INF"); // NOI18N
-            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(desc);
         }
     }
 

@@ -39,8 +39,8 @@ var app = {
     <#else>
         tagName:'ul',
     </#if>
-        initialize:function () {
-            
+        initialize:function (options) {
+            this.options = options || {};
             this.model.bind("reset", this.render, this);
             var self = this;
             this.model.bind("add", function (modelName) {
@@ -74,7 +74,8 @@ var app = {
         tagName:"li",
     </#if>
         
-        initialize:function () {
+        initialize:function (options) {
+            this.options = options || {};
             this.model.bind("change", this.render, this);
             this.model.bind("destroy", this.close, this);
         },
@@ -113,7 +114,8 @@ var app = {
     
     views.ModelView = Backbone.View.extend({
  
-        initialize:function () {
+        initialize:function (options) {
+            this.options = options || {};
             this.model.bind("change", this.render, this);
         },
  
@@ -194,7 +196,8 @@ var app = {
     // This view is used to create new model element
     views.CreateView = Backbone.View.extend({
  
-        initialize:function() {
+        initialize:function(options) {
+            this.options = options || {};
             this.render();  
         },
  
