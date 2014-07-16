@@ -5350,7 +5350,7 @@ public class CasualDiff {
         // generated, but the boundary itself is still preserved. 
         while (from <= nextBlockBoundary && to >= nextBlockBoundary) {
             int off = nextBlockBoundary - from;
-            int mapped = loc.out.length() + off;
+            int mapped = loc.out.length() + (from < nextBlockBoundary ? off : 0);
             
             Integer prev = blockSequenceMap.put(nextBlockBoundary, mapped);
             if (prev != null) {
