@@ -43,65 +43,58 @@
 package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.spi.model.services.CsmFunctionsResolverImplementation;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.spi.model.services.CsmOverloadingResolverImplementation;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public class CsmFunctionsResolver {
+public final class CsmOverloadingResolver {
     
     /**
-     * Resolves function by declaration text within a project
-     * @param project
-     * @param signature
-     * @return all functions which has the same signature
+     * Determines what method is the best match for the given instantiation descriptor and paramTypes
+     * 
+     * @param methods
+     * @param instantiationDescriptor
+     * @param paramTypes
+     * 
+     * @return best matches
      */
-    public static Collection<CsmFunction> resolveFunction(NativeProject project, CharSequence signature) {
-        return DEFAULT.resolveFunction(project, signature);
-    }    
+    public static Collection<CsmFunction> resolveOverloading(Collection<CsmFunction> methods, CharSequence instantiationDescriptor, Map<CsmFunction, List<CsmType>> paramTypes) {
+        return DEFAULT.resolveOverloading(methods, instantiationDescriptor, paramTypes);
+    }
     
-    /**
-     * Resolves function by declaration text within a project
-     * @param project
-     * @param signature
-     * @return all functions which has the same signature
-     */
-    public static Collection<CsmFunction> resolveFunction(CsmProject project, CharSequence signature) {
-        return DEFAULT.resolveFunction(project, signature);
-    }        
-        
-//<editor-fold defaultstate="collapsed" desc="impl">
+//<editor-fold defaultstate="collapsed" desc="Implementation">
     
-    private static final CsmFunctionsResolverImplementation DEFAULT = new Default();
+    private static final CsmOverloadingResolverImplementation DEFAULT = new Default();
     
-    private CsmFunctionsResolver() {
+    private CsmOverloadingResolver() {
         throw new AssertionError("Not instantiable"); // NOI18N
-    }        
+    }
     
     /**
      * Default implementation (just a proxy to a real service)
      */
-    private static final class Default implements CsmFunctionsResolverImplementation {
+    private static final class Default implements CsmOverloadingResolverImplementation {
         
-        private final Lookup.Result<CsmFunctionsResolverImplementation> res;
+        private final Lookup.Result<CsmOverloadingResolverImplementation> res;
         
-        private CsmFunctionsResolverImplementation delegate;
+        private CsmOverloadingResolverImplementation delegate;
         
         
         private Default() {
-            res = Lookup.getDefault().lookupResult(CsmFunctionsResolverImplementation.class);
+            res = Lookup.getDefault().lookupResult(CsmOverloadingResolverImplementation.class);
         }
         
-        private CsmFunctionsResolverImplementation getDelegate(){
-            CsmFunctionsResolverImplementation service = delegate;
+        private CsmOverloadingResolverImplementation getDelegate(){
+            CsmOverloadingResolverImplementation service = delegate;
             if (service == null) {
-                for (CsmFunctionsResolverImplementation resolver : res.allInstances()) {
+                for (CsmOverloadingResolverImplementation resolver : res.allInstances()) {
                     service = resolver;
                     break;
                 }
@@ -111,14 +104,9 @@ public class CsmFunctionsResolver {
         }
         
         @Override
-        public Collection<CsmFunction> resolveFunction(NativeProject project, CharSequence signature) {
-            return getDelegate().resolveFunction(project, signature);
-        }    
-
-        @Override
-        public Collection<CsmFunction> resolveFunction(CsmProject project, CharSequence signature) {
-            return getDelegate().resolveFunction(project, signature);
-        }        
+        public Collection<CsmFunction> resolveOverloading(Collection<CsmFunction> methods, CharSequence instantiationDescriptor, Map<CsmFunction, List<CsmType>> paramTypes) {
+            return getDelegate().resolveOverloading(methods, instantiationDescriptor, paramTypes);
+        }
     }
-//</editor-fold>        
+//</editor-fold>    
 }
