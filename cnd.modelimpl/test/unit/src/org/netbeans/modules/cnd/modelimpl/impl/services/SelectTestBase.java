@@ -44,12 +44,14 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
@@ -116,13 +118,11 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
         for (CsmDeclaration decl : nsp.getDeclarations()) {
             if (CsmKindUtilities.isFunction(decl)) {
                 CsmFunction func = (CsmFunction) decl;
-                CharSequence qName = decl.getQualifiedName();
-                if (TRACE) { System.err.printf("Seearching for funcion %s\n", func); }
-                Iterator<CsmFunction> iter = CsmSelect.getFunctions(project, qName);
+                Iterator<CsmFunction> iter = _getFunctions(project, func);
                 final CsmFile containingFile = func.getContainingFile();
-                boolean ok = iter.hasNext();
+                boolean ok = _checkFound(func, iter);
                 if (!ok) {
-                    System.err.println("ERROR FOR: " + decl + "\n\tUIN=" + decl.getUniqueName() + "\n\tFQN="+qName + "\n\tNS="+nsp);
+                    System.err.println("ERROR FOR: " + decl + "\n\tUIN=" + decl.getUniqueName() + "\n\tFQN="+decl.getQualifiedName() + "\n\tNS="+nsp);
                     // more trace
                     if (dumpProjectContainer && project instanceof ProjectBase) {
                         dumpProjectContainer = false;
@@ -132,7 +132,7 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
                         ((FileImpl)containingFile).dumpPPStates(new PrintWriter(System.err));
                     }
                 }
-                assertTrue("Function " + qName.toString() + 
+                assertTrue("Function " + decl.getQualifiedName().toString() + 
                         " from " + containingFile.getAbsolutePath() + ":" + func.getStartPosition() + 
                         " not found in project " + project.getName(), ok);
             }
@@ -140,6 +140,18 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
         for (CsmNamespace nested : nsp.getNestedNamespaces()) {
             _testGetFunctions(nested);
         }
+    }
+    
+    protected Iterator<CsmFunction> _getFunctions(CsmProject project, CsmFunction func) {
+        CharSequence qName = func.getQualifiedName();
+        if (TRACE) { 
+            System.err.printf("Searching for function %s\n", func); 
+        }
+        return CsmSelect.getFunctions(project, qName);
+    }
+    
+    protected boolean _checkFound(CsmFunction func, Iterator<CsmFunction> answer) {
+        return answer.hasNext();
     }
 
 }

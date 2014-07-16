@@ -45,6 +45,7 @@
 package org.netbeans.modules.web.clientproject.node;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -118,7 +119,20 @@ public final class NodeExecutor implements Runnable {
 
                 pb = pb.workingDirectory(FileUtil.toFile(root));
                 pb = pb.redirectErrorStream(true);
-                return pb.call();
+                try {
+                    return pb.call();
+                } catch (IOException ioe) {
+                    if (!Utilities.isWindows() && !Utilities.isMac()) {
+                        //node not found on path on Linux. Run bash and try run 
+                        //node inside bash. It will at least do output to user
+                        pb = new ExternalProcessBuilder("/bin/bash");
+                        pb = pb.addArgument("-lc");
+                        pb = pb.addArgument(command + " " + arguments.get(0));
+                        return pb.call();
+                    } else {
+                        throw ioe;
+                    }
+                }
             }
 
         };
@@ -127,6 +141,7 @@ public final class NodeExecutor implements Runnable {
         desc = desc.showProgress(true);
         desc = desc.frontWindow(true);
         desc = desc.controllable(true);
+        desc = desc.charset(StandardCharsets.UTF_8);
         ExecutionService execution = ExecutionService.newService(creator, desc, displayName);
         try {
             execution.run().get();

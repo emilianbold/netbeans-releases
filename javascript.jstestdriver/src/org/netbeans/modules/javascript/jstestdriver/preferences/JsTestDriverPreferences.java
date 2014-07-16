@@ -42,9 +42,13 @@
 
 package org.netbeans.modules.javascript.jstestdriver.preferences;
 
+import java.io.File;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Project specific js-test-driver preferences.
@@ -52,6 +56,7 @@ import org.netbeans.api.project.ProjectUtils;
 public final class JsTestDriverPreferences {
 
     private static final String ENABLED = "enabled"; // NOI18N
+    private static final String CONFIG = "config"; // NOI18N
 
 
     private JsTestDriverPreferences() {
@@ -63,6 +68,38 @@ public final class JsTestDriverPreferences {
 
     public static void setEnabled(Project project, boolean enabled) {
         getPreferences(project).putBoolean(ENABLED, enabled);
+    }
+
+    @CheckForNull
+    public static String getConfig(Project project) {
+        return resolvePath(project, getPreferences(project).get(CONFIG, null));
+    }
+
+    public static void setConfig(Project project, String config) {
+        getPreferences(project).put(CONFIG, relativizePath(project, config));
+    }
+
+    private static String relativizePath(Project project, String filePath) {
+        if (filePath == null
+                || filePath.trim().isEmpty()) {
+            return ""; // NOI18N
+        }
+        File file = new File(filePath);
+        String path = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), file);
+        if (path == null
+                || path.startsWith("../")) { // NOI18N
+            // cannot be relativized or outside project
+            path = file.getAbsolutePath();
+        }
+        return path;
+    }
+
+    private static String resolvePath(Project project, String filePath) {
+        if (filePath == null
+                || filePath.trim().isEmpty()) {
+            return null;
+        }
+        return PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), filePath).getAbsolutePath();
     }
 
     private static Preferences getPreferences(Project project) {

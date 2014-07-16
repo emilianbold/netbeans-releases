@@ -72,15 +72,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.java.queries.BinaryForSourceQuery;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -93,12 +92,10 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
-import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.SessionGenerator;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -119,7 +116,6 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.WizardProperties;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -453,13 +449,20 @@ import org.openide.util.NbBundle;
                     LOGGER.log(Level.SEVERE, "TypeElement not found for {0}", afName);
                     LOGGER.log(Level.SEVERE, "AbstractFacade:path={0},valid={1},canRead={2},", new Object[]{
                         abstractFacadeFO.getPath(), abstractFacadeFO.isValid(), abstractFacadeFO.canRead()});
+                } else if (entityElement == null) {
+                    LOGGER.log(Level.SEVERE, "TypeElement not found for {0}", entityFQN);
                 }
 
+                TypeMirror eeType = entityElement.asType();
+                LOGGER.log(Level.INFO, "Entity element type:kind={0},type={1}", new Object[]{eeType.getKind().toString(), eeType.toString()});
+
+                DeclaredType declaredType = wc.getTypes().getDeclaredType(abstactFacadeElement, entityElement.asType());
+                Tree extendsClause = maker.Type(declaredType);
                 ClassTree newClassTree = maker.Class(
                         maker.addModifiersAnnotation(classTree.getModifiers(), genUtils.createAnnotation(EJB_STATELESS)),
                         classTree.getSimpleName(),
                         classTree.getTypeParameters(),
-                        maker.Type(wc.getTypes().getDeclaredType(abstactFacadeElement, entityElement.asType())),
+                        extendsClause,
                         implementsClause,
                         members);
 

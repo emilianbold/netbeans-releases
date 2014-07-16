@@ -100,7 +100,7 @@ public abstract class NodeProblemProvider implements ProjectProblemsProvider {
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            // noop
+            problemsProviderSupport.fireProblemsChange();
         }
 
         @Override

@@ -61,7 +61,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.php.latte.completion.LatteCompletionContext;
 import org.netbeans.modules.php.latte.completion.LatteCompletionContextFinder;
-import org.netbeans.modules.php.latte.parser.LatteParser.LatteParserResult;
+import org.netbeans.modules.php.latte.parser.LatteParserResult;
 import org.openide.util.RequestProcessor;
 
 /**

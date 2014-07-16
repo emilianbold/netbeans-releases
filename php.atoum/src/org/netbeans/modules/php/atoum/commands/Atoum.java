@@ -284,7 +284,9 @@ public final class Atoum {
         if (coverageEnabled) {
             // delete the old file
             if (COVERAGE_LOG.isFile()) {
-                COVERAGE_LOG.delete();
+                if (!COVERAGE_LOG.delete()) {
+                    LOGGER.info("Cannot delete atoum coverage log file");
+                }
             }
         }
         try {

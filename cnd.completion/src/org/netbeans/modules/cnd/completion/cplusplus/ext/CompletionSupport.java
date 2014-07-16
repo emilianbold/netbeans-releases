@@ -89,7 +89,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmReturnStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement.Kind;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
-import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
@@ -651,7 +651,7 @@ public final class CompletionSupport implements DocumentListener {
                     // TODO: run this check only if resolving was started from macros and we should use context scope
                     int counter = Antiloop.MAGIC_PLAIN_TYPE_RESOLVING_CONST;
                     while (retType != null && !CsmBaseUtilities.isValid(retType.getClassifier()) && !CharSequenceUtils.isNullOrEmpty(retType.getClassifierText()) && counter > 0) {
-                        retType = CsmEntityResolver.resolveType(
+                        retType = CsmExpressionResolver.resolveType(
                                 retType.getClassifierText(), 
                                 retType.getContainingFile(), 
                                 retType.getStartOffset(), 
