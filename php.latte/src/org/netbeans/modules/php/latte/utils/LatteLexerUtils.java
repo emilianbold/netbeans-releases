@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -62,6 +63,17 @@ import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
 public final class LatteLexerUtils {
 
     private LatteLexerUtils() {
+    }
+
+    public static LanguagePath fetchLanguagePath(TokenHierarchy<?> tokenHierarchy, Language<?> language) {
+        LanguagePath result = null;
+        for (LanguagePath languagePath : tokenHierarchy.languagePaths()) {
+            if (languagePath.endsWith(LanguagePath.get(language))) {
+                result = languagePath;
+                break;
+            }
+        }
+        return result;
     }
 
     public static TokenSequence<? extends LatteMarkupTokenId> getLatteMarkupTokenSequence(final Snapshot snapshot, final int offset) {
