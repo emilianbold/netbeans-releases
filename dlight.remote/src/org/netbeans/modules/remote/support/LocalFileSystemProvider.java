@@ -61,6 +61,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.netbeans.modules.remote.spi.FileSystemProvider.WarmupMode;
@@ -329,7 +330,7 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
 
     @Override
     public boolean isMine(File file) {
-        return file.getClass() == java.io.File.class;
+        return file.getClass() != FileObjectBasedFile.class;
     }
 
     @Override
