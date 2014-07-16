@@ -139,10 +139,10 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
 //                                CharSequence qualifiedName = funNameAst.getText();
                                 CharSequence qualifiedName[] = AstRenderer.renderQualifiedId(funNameAst, null, true);
                                 
-                                Collection<CsmObject> resolvedContext = new ArrayList<>();
+                                List<CsmObject> resolvedContext = new ArrayList<>();
                                 resolveContext(project, qualifiedName, resolvedContext);
 
-                                Collection<CsmFunction> candidates = new ArrayList<>();
+                                List<CsmFunction> candidates = new ArrayList<>();
                                 CsmSelect.CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
                                          CsmSelect.getFilterBuilder().createKindFilter(
                                              CsmDeclaration.Kind.FUNCTION,
@@ -173,26 +173,37 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
                         }
                         
                         case CPPTokenTypes.CSM_GENERIC_DECLARATION: {
-                            AST typeNode = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_TYPE_COMPOUND);
-                            if (typeNode != null) {
-                                CharSequence qualifiedId[] = AstRenderer.renderQualifiedId(typeNode, null, true);
+                            AST qualNameNode = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_TYPE_COMPOUND);
+                            if (qualNameNode != null && qualNameNode.getNextSibling() == null) {
+                                CharSequence qualifiedId[] = AstRenderer.renderQualifiedId(qualNameNode, null, true);
                                 
-                                Collection<CsmObject> resolvedContext = new ArrayList<>();
+                                List<CsmObject> resolvedContext = new ArrayList<>();
                                 resolveContext(project, qualifiedId, resolvedContext);
                                 
+                                List<CsmObject> candidates = new ArrayList<>();
                                 CsmSelect.CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
-                                         CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.VARIABLE),
+                                         CsmSelect.getFilterBuilder().createKindFilter(
+                                             CsmDeclaration.Kind.VARIABLE,
+                                             CsmDeclaration.Kind.FUNCTION,
+                                             CsmDeclaration.Kind.FUNCTION_DEFINITION,
+                                             CsmDeclaration.Kind.FUNCTION_INSTANTIATION,
+                                             CsmDeclaration.Kind.CLASS,
+                                             CsmDeclaration.Kind.STRUCT,
+                                             CsmDeclaration.Kind.TYPEDEF,
+                                             CsmDeclaration.Kind.TYPEALIAS                                             
+                                         ),
                                          CsmSelect.getFilterBuilder().createNameFilter(qualifiedId[qualifiedId.length - 1], true, true, false)
                                 );                                
                                 for (CsmObject context : resolvedContext) {
                                     if (CsmKindUtilities.isNamespace(context)) {
                                         CsmNamespace ns = (CsmNamespace) context;
-                                        return fillFromDecls(CsmSelect.getDeclarations(ns, filter));
+                                        fillFromDecls(candidates, CsmSelect.getDeclarations(ns, filter));
                                     } else if (CsmKindUtilities.isClass(context)) {
                                         CsmClass cls = (CsmClass) context;
-                                        return fillFromDecls(CsmSelect.getClassMembers(cls, filter));
+                                        fillFromDecls(candidates, CsmSelect.getClassMembers(cls, filter));
                                     }
                                 }
+                                return candidates;
                             }
                             break;
                         }                            
