@@ -402,8 +402,11 @@ public class HibernateRefactoringUtil {
                             // <many-to-many> element
                             attributeValues = new String[1];
                             attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.CLASS_ATTRIB);
+                        } else if(nodeName.equalsIgnoreCase("property") &&//NOI18N
+                                itemImage.contains("property")) {//NOI18N
+                            attributeValues = new String[1];
+                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.TYPE_ATTRIB);
                         }
-
                         if (attributeValues != null) {
                             for (int i = 0; i < attributeValues.length; i++) {
 
