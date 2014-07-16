@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.spi.model.services;
 
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -52,24 +53,25 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public interface CsmFunctionsResolverImplementation {
+public interface CsmEntityResolverImplementation {
     
     /**
-     * Resolves function by declaration text within a project
+     * Resolves entity by declaration text or qualified name within a project
      * 
      * @param project
-     * @param signature
-     * @return all functions which has the same signature
+     * @param declText
+     * 
+     * @return all entities which has the same declaration text
      */    
-    Collection<CsmFunction> resolveFunction(NativeProject project, CharSequence signature);    
-    
+    Collection<CsmObject> resolveEntity(NativeProject project, CharSequence declText);    
+
     /**
-     * Resolves function by declaration text within a project
+     * Resolves entity by declaration text or qualified name within a project
      * 
      * @param project
-     * @param signature
-     * @return all functions which has the same signature
+     * @param declText
+     * 
+     * @return all entities which has the same declaration text
      */    
-    Collection<CsmFunction> resolveFunction(CsmProject project, CharSequence signature);    
-    
+    Collection<CsmObject> resolveEntity(CsmProject project, CharSequence declText);        
 }
