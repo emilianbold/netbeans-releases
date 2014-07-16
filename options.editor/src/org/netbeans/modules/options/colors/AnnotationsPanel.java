@@ -413,10 +413,14 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
             if (currentMap.containsKey(name)) {
                 AttributeSet currentAS = currentMap.get(name);
                 AttributeSet savedAS = savedMap.get(name);
+                Color currentForeground = (Color) currentAS.getAttribute(StyleConstants.Foreground);
+                Color savedForeground = (Color) savedAS.getAttribute(StyleConstants.Foreground);
+                Color currentBackground = (Color) currentAS.getAttribute(StyleConstants.Background);
+                Color savedBackground = (Color) savedAS.getAttribute(StyleConstants.Background);
                 Color currentWave = (Color) currentAS.getAttribute(EditorStyleConstants.WaveUnderlineColor);
                 Color savedWave = (Color) savedAS.getAttribute(EditorStyleConstants.WaveUnderlineColor);
-                isChanged |= (Color) currentAS.getAttribute(StyleConstants.Foreground) != (Color) savedAS.getAttribute(StyleConstants.Foreground)
-                        || (Color) currentAS.getAttribute(StyleConstants.Background) != (Color) savedAS.getAttribute(StyleConstants.Background)
+                isChanged |= (currentForeground == null ? savedForeground != null : !currentForeground.equals(savedForeground))
+                        || (currentBackground == null ? savedBackground != null : !currentBackground.equals(savedBackground))
                         || (currentWave == null ? savedWave != null : !currentWave.equals(savedWave));
                 if(isChanged) { // no need to iterate further
                     return true;

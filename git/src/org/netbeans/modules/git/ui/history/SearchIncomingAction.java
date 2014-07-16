@@ -105,7 +105,7 @@ public class SearchIncomingAction extends MultipleRepositoryAction {
 
     private static String getActiveBranchName (File repository) {
         GitBranch activeBranch = RepositoryInfo.getInstance(repository).getActiveBranch();
-        String branchName = null;
+        String branchName = GitBranch.NO_BRANCH;
         if (activeBranch != GitBranch.NO_BRANCH_INSTANCE) {
             branchName = activeBranch.getName();
         }

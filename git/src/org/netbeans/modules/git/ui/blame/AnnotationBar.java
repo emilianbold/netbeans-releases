@@ -70,6 +70,10 @@ import java.text.MessageFormat;
 import java.util.logging.Logger;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
@@ -198,6 +202,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private FileObject referencedFileObject;
     static final Logger LOG = Logger.getLogger(AnnotationBar.class.getName());
     private String annotatedRevision;
+    
+    /**
+     * Rendering hints for annotations sidebar inherited from editor settings.
+     */
+    private final Map renderingHints;
 
     /**
      * Creates new instance initializing final fields.
@@ -210,6 +219,13 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         this.caret = textComponent.getCaret();
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         elementAnnotationsSubstitute = "";                              //NOI18N
+        if (textComponent instanceof JEditorPane) {
+            String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(textComponent);
+            FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
+            renderingHints = (Map) fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(EditorStyleConstants.RenderingHints);
+        } else {
+            renderingHints = null;
+        }
     }
 
 
@@ -1126,6 +1142,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         g.setColor(backgroundColor());
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
+        if (g instanceof Graphics2D && renderingHints != null) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.addRenderingHints(renderingHints);
+        }
 
         AbstractDocument doc = (AbstractDocument)component.getDocument();
         doc.readLock();

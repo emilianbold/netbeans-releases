@@ -732,6 +732,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 this.btv.setDefaultActionAllowed(false);
                 this.btv.getAccessibleContext().setAccessibleName(ACSN_CategoriesPanel());
                 this.btv.getAccessibleContext().setAccessibleDescription(ACSD_CategoriesPanel());
+                this.btv.setDragSource(false);
+                this.btv.setDropTarget(false);
                 Border b = (Border)UIManager.get("Nb.ScrollPane.border"); // NOI18N
                 if (b != null) {
                     this.btv.setBorder(b); 

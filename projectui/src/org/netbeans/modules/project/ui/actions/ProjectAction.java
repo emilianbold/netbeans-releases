@@ -65,6 +65,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /** Action sensitive to current project
@@ -167,7 +168,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         }
         if (!Arrays.asList(ap.getSupportedActions()).contains(command)) {
             // #47160: was a supported command (e.g. on a freeform project) but was then removed.
-            Toolkit.getDefaultToolkit().beep();
+            Utilities.disabledActionBeep();
             a.resultChanged(null);
             return;
         }

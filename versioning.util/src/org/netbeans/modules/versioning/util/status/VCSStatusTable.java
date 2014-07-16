@@ -152,6 +152,7 @@ public abstract class VCSStatusTable<T extends VCSStatusNode> implements FileVie
         }
     };
 
+    @Override
     public final void focus () {
         table.requestFocusInWindow();
     }

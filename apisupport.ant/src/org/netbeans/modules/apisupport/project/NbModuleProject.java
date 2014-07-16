@@ -1000,7 +1000,7 @@ public final class NbModuleProject implements Project {
                 Manifest mf = getManifest();
                 FileObject srcFO = getSourceDirectory();
                 if (mf != null && srcFO != null) {
-                    bundleInfo = ApisupportAntUtils.findLocalizedBundleInfo(srcFO, getManifest());
+                    bundleInfo = ApisupportAntUtils.findLocalizedBundleInfo(srcFO, mf);
                 }
                 if (bundleInfo != null) {
                     bundleInfo.addPropertyChangeListener(getLookup().lookup(Info.class));

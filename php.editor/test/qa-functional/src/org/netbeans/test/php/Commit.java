@@ -59,6 +59,7 @@ import java.util.Enumeration;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.openide.util.NbBundle;
 
@@ -435,6 +436,7 @@ public class Commit extends GeneralPHP {
         jtTree.clickOnPath(jtTree.findPath("b"));
         jtTree.clickOnPath(jtTree.findPath("c"));
         jtTree.clickOnPath(jtTree.findPath("f"));
+        new JCheckBoxOperator(jdGenerator, "Use Public Modifier").push();
 
         jbOk = new JButtonOperator(jdGenerator, "OK");
         jbOk.pushNoBlock();

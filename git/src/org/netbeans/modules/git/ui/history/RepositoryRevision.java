@@ -143,7 +143,7 @@ public class RepositoryRevision {
         text.append("\t"); //NOI18N
         text.append(getLog().getAuthor()); // NOI18N
         text.append("\n"); // NOI18N
-        text.append(getLog().getShortMessage());
+        text.append(getLog().getFullMessage());
         return text.toString();
     }
 

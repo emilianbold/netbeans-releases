@@ -52,6 +52,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -61,6 +62,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -70,6 +73,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.openide.awt.Actions;
 import org.openide.awt.DropDownButtonFactory;
@@ -78,6 +82,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.actions.Presenter;
 
@@ -89,8 +94,9 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
 
     private static WeakSet<AttachHistorySupport> ahs = null;
     
-    private Action delegate;
-    private AttachHistorySupport attachHistorySupport;
+    private final Action delegate;
+    private final DebugHistorySupport debugHistorySupport;
+    private final AttachHistorySupport attachHistorySupport;
     
     /** Creates a new instance of DebugMainProjectAction */
     public DebugMainProjectAction() {
@@ -98,6 +104,7 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
                 ActionProvider.COMMAND_DEBUG,
                 NbBundle.getMessage(DebugMainProjectAction.class, "LBL_DebugMainProjectAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debugProject.png", false)); // NOI18N
         delegate.putValue("iconBase","org/netbeans/modules/debugger/resources/debugProject.png"); //NOI18N
+        debugHistorySupport = new DebugHistorySupport();
         attachHistorySupport = new AttachHistorySupport();
     }
     
@@ -188,6 +195,7 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
 
     @Override public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
         JPopupMenu menu = (JPopupMenu)e.getSource();
+        debugHistorySupport.init(menu);
         attachHistorySupport.init(menu);
         menu.removePopupMenuListener(this);
     }
@@ -196,6 +204,117 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
     }
 
     @Override public void popupMenuCanceled(PopupMenuEvent e) {
+    }
+    
+    private static class DebugHistorySupport implements ActionListener, ChangeListener {
+
+        private JPopupMenu menu;
+        private JMenuItem[] items = new JMenuItem[0];
+        private final JSeparator separator1 = new JPopupMenu.Separator();
+        private final JSeparator separator2 = new JPopupMenu.Separator();
+        private final BuildExecutionSupportChangeSupport besc;
+        private final LinkedList<BuildExecutionSupport.ActionItem> debugItems = new LinkedList<BuildExecutionSupport.ActionItem>();
+        
+        private static final int MAX_ITEMS_COUNT = 7;
+        private static final String DEBUG_ACTION_ITEM_PROP_NAME = "debug action item";
+        private static final RequestProcessor RP = new RequestProcessor(DebugHistorySupport.class.getName());
+        
+        public DebugHistorySupport() {
+            besc = new BuildExecutionSupportChangeSupport();
+            besc.addChangeListener(WeakListeners.change(this, besc));
+        }
+        
+        void init(JPopupMenu menu) {
+            this.menu = menu;
+            computeItems();
+        }
+        
+        private void computeItems() {
+            boolean wasSeparator = items.length > 0;
+            for (int i = 0; i < items.length; i++) {
+                menu.remove(items[i]);
+            }
+            synchronized (debugItems) {
+                if (debugItems.isEmpty()) {
+                    items = new JMenuItem[0];
+                } else {
+                    int n = debugItems.size();
+                    items = new JMenuItem[n];
+                    int i = 0;
+                    for (BuildExecutionSupport.ActionItem ai : debugItems) {
+                        String dispName = ai.getDisplayName();
+                        items[i] = new JMenuItem(dispName);
+                        items[i].putClientProperty(DEBUG_ACTION_ITEM_PROP_NAME, ai);
+                        items[i].addActionListener(this);
+                        i++;
+                    }
+                }
+            }
+            if (items.length == 0) {
+                if (wasSeparator) {
+                    menu.remove(separator1);
+                    menu.remove(separator2);
+                }
+            } else {
+                if (!wasSeparator) {
+                    menu.insert(separator1, 1);
+                }
+                int i;
+                for (i = 0; i < items.length; i++) {
+                    menu.insert(items[i], i + 2);
+                }
+                menu.insert(separator2, i + 2);
+            }
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JMenuItem item = (JMenuItem)e.getSource();
+            final BuildExecutionSupport.ActionItem ai =
+                    (BuildExecutionSupport.ActionItem) item.getClientProperty(DEBUG_ACTION_ITEM_PROP_NAME);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    ai.repeatExecution();
+                }
+            });
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            BuildExecutionSupport.Item lastItem = BuildExecutionSupport.getLastFinishedItem();
+            if (lastItem instanceof BuildExecutionSupport.ActionItem) {
+                BuildExecutionSupport.ActionItem ai = (BuildExecutionSupport.ActionItem) lastItem;
+                String action = ai.getAction();
+                if (ActionProvider.COMMAND_DEBUG.equals(action)) { // Track debug items only
+                    boolean changed = false;
+                    synchronized (debugItems) {
+                        if (debugItems.isEmpty() || ai != debugItems.getFirst()) {
+                            debugItems.remove(ai); // Remove it if it's there
+                            debugItems.addFirst(ai);
+                            if (debugItems.size() > MAX_ITEMS_COUNT) {
+                                debugItems.removeLast();
+                            }
+                            changed = true;
+                        }
+                    }
+                    if (changed) {
+                        computeItems();
+                    }
+                }
+            }
+        }
+    }
+    
+    private static class BuildExecutionSupportChangeSupport {
+        
+        public void addChangeListener(ChangeListener listener) {
+            BuildExecutionSupport.addChangeListener(listener);
+        }
+        
+        public void removeChangeListener(ChangeListener listener) {
+            BuildExecutionSupport.removeChangeListener(listener);
+        }
     }
 
     // AttachHistorySupport .....................................................

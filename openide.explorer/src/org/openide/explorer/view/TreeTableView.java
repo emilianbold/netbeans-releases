@@ -1370,7 +1370,7 @@ public class TreeTableView extends BeanTreeView {
                     if (a.isEnabled()) {
                         a.actionPerformed(new ActionEvent(nodes[0], ActionEvent.ACTION_PERFORMED, "")); // NOI18N
                     } else {
-                        Toolkit.getDefaultToolkit().beep();
+                        Utilities.disabledActionBeep();
                     }
                 }
             }
