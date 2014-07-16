@@ -59,6 +59,7 @@ import org.netbeans.modules.hibernate.mapping.model.NaturalId;
 import org.netbeans.modules.hibernate.mapping.model.NestedCompositeElement;
 import org.netbeans.modules.hibernate.mapping.model.OneToOne;
 import org.netbeans.modules.hibernate.mapping.model.Properties;
+import org.netbeans.modules.hibernate.mapping.model.Property;
 import org.netbeans.modules.hibernate.mapping.model.Set;
 import org.netbeans.modules.hibernate.mapping.model.Subclass;
 import org.netbeans.modules.hibernate.mapping.model.UnionSubclass;
@@ -75,6 +76,8 @@ public class JavaRenameChanger {
     
     // String name used by the schema2bean model to retrive the class attribute vaules
     private final String classAttrib = "Class"; // NOI18N
+    
+    private final String typeAttribute = "Type";
     
     private boolean packageOnly;
     private String origName;
@@ -173,8 +176,9 @@ public class JavaRenameChanger {
             refactoringNaturalId(thisClazz.getNaturalId());
 
             // The class attribute of <many-to-one> in <properties>
-            refactoringPropertiez(thisClazz.getProperties());
-
+            refactoringPropertiez(thisClazz.getProperties());//TODO: is it proper to use getProperties()? or code should be move into refactoringPropertiez2
+            refactoringPropertiez2(thisClazz.getProperty2());//for #156381
+            
             // The class attribute of <many-to-one> in <idbag><composite-element>
             refactoringIdBags(thisClazz.getIdbag());
 
@@ -769,4 +773,21 @@ public class JavaRenameChanger {
             refactoringCompositeElement(hbModelArrays[ai].getCompositeElement());
         }
     }
+
+    private void refactoringPropertiez2(Property[] property2) {
+        if(property2!=null && property2.length>0) {
+            for(int i = 0;i<property2.length;i++) {
+                //refactor type atribute of properties
+                String clsName = property2[i].getAttributeValue(typeAttribute);
+                if (clsName != null) {
+                    if (packageOnly && foundPackageName(clsName)) {
+                        String newClsName = clsName.replaceFirst(origName, newName);
+                        property2[i].setAttributeValue(typeAttribute, newClsName);
+                    } else if (clsName.equals(origName)) {
+                        property2[i].setAttributeValue(typeAttribute, newName);
+                    }
+                }
+            }
+        }
+   }
 }
