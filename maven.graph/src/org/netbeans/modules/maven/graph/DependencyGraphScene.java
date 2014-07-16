@@ -721,8 +721,8 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                 // must create dependency if not found locally, so that
                 // there is a place where to add dep exclusion
                 dep = model.getFactory().createDependency();
-                dep.setArtifactId(eTarget.getArtifactId());
                 dep.setGroupId(eTarget.getGroupId());
+                dep.setArtifactId(eTarget.getArtifactId());
                 dep.setType(eTarget.getType());
                 dep.setVersion(eTarget.getVersion());
                 model.getProject().addDependency(dep);
@@ -731,8 +731,8 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                     nodeArtif.getGroupId(), nodeArtif.getArtifactId());
             if (ex == null) {
                 ex = model.getFactory().createExclusion();
-                ex.setArtifactId(nodeArtif.getArtifactId());
                 ex.setGroupId(nodeArtif.getGroupId());
+                ex.setArtifactId(nodeArtif.getArtifactId());
                 dep.addExclusion(ex);
             }
         }
