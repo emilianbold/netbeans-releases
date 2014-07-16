@@ -96,6 +96,8 @@ public abstract class BaseFileObj extends FileObject {
     private static final String PATH_SEPARATOR = File.separator;//NOI18N
     private static final char EXT_SEP = '.';//NOI18N
     static final Logger LOG = Logger.getLogger(BaseFileObj.class.getName());
+    private static final ThreadLocal<Boolean> MOVING //#244286: move in progress
+            = new ThreadLocal<Boolean>();
 
     //static fields 
     static final long serialVersionUID = -1244650210876356809L;
@@ -261,8 +263,26 @@ public abstract class BaseFileObj extends FileObject {
             extensions.copyFailure(this, to);
             throw ioe;
         }
+        if (Boolean.TRUE.equals(MOVING.get())) {
+            copyLastModifiedTime(to);
+        }
         extensions.copySuccess(this, to);
         return result;
+    }
+
+    private void copyLastModifiedTime(File target) {
+        if (target == null) {
+            return;
+        }
+        long sourceDateMillis = getFileName().getFile().lastModified();
+        if (sourceDateMillis > 0) {
+            try {
+                target.setLastModified(sourceDateMillis);
+            } catch (SecurityException ex) {
+                LOG.log(Level.INFO, "Cannot set last modified date on " //NOI18N
+                        + target.getAbsolutePath(), ex);
+            }
+        }
     }
 
     @Override
@@ -296,7 +316,12 @@ public abstract class BaseFileObj extends FileObject {
                 assert result != null : "Cannot find " + target + " with " + name + "." + ext;
             }
         } else {
-            result = super.move(lock, target, name, ext);
+            MOVING.set(true);
+            try {
+                result = super.move(lock, target, name, ext);
+            } finally {
+                MOVING.remove();
+            }
         }
 
         FileUtil.copyAttributes(this, result);
