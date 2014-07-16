@@ -42,10 +42,26 @@
  * made subject to such option by the copyright holder.
  */
 package org.barwing;
+
 import javax.swing.JPanel;
-public class Main extends JPanel implements Runnable {
+import javax.swing.SwingUtilities;
+
+public class Main implements Runnable {
+    private boolean ok;
+    
     public @Override void run() {
-        new Main().setOpaque(true);
+        if (SwingUtilities.isEventDispatchThread()) {
+            ok = true;
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(this);
+            } catch (Exception ex) {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+        if (!ok) {
+            throw new IllegalStateException("Should be in EDT");
+        }
     }
 }
 

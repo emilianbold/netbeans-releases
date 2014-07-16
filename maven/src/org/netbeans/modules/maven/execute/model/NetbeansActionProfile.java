@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -33,54 +33,88 @@
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
+ * made subject to such     public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+option by the copyright holder.
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.core.netigso;
+package org.netbeans.modules.maven.execute.model;
 
-import java.lang.reflect.Method;
-import junit.framework.Assert;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.launch.Framework;
-
-/** Some useful utilities to work with Netigso framework.
+/**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class NetigsoUtil {
-    private NetigsoUtil() {
-    }
-    
-    static void downgradeJDK() {
-        if ("1.9".equals(System.getProperty("java.specification.version"))) {
-            System.setProperty("java.specification.version", "1.8");
-        }
+public class NetbeansActionProfile {
+    /**
+     * Field actions.
+     */
+    private java.util.List<NetbeansActionMapping> actions;
+    private String id;
+
+
+      //-----------/
+     //- Methods -/
+    //-----------/
+
+    public String getId() {
+        return id;
     }
 
-    public static Framework framework(ModuleManager mgr) throws Exception {
-        final Method nm = mgr.getClass().getDeclaredMethod("netigso");
-        nm.setAccessible(true);
-        final Netigso netigso = (Netigso) nm.invoke(mgr);
-        Method m = Netigso.class.getDeclaredMethod("getFramework");
-        m.setAccessible(true);
-        Framework f = (Framework) m.invoke(netigso);
-        return f;
+    public void setId(String id) {
+        this.id = id;
     }
-    
-    static Bundle bundle(Module module) throws Exception {
-        Framework f = framework(module.getManager());
-        for (Bundle b : f.getBundleContext().getBundles()) {
-            if (b.getSymbolicName().equals(module.getCodeNameBase())) {
-                return b;
-            }
+
+    /**
+     * Method addAction.
+     * 
+     * @param netbeansActionMapping
+     */
+    public void addAction(NetbeansActionMapping netbeansActionMapping)
+    {
+        getActions().add( netbeansActionMapping );
+    } //-- void addAction(NetbeansActionMapping) 
+
+    /**
+     * Method getActions.
+     * 
+     * @return java.util.List
+     */
+    public java.util.List<NetbeansActionMapping> getActions()
+    {
+        if ( this.actions == null )
+        {
+            this.actions = new java.util.ArrayList<NetbeansActionMapping>();
         }
-        Assert.fail("no bundle found for " + module);
-        return null;
-    }
+        
+        return this.actions;
+    } //-- java.util.List getActions() 
+
+    /**
+     * Method removeAction.
+     * 
+     * @param netbeansActionMapping
+     */
+    public void removeAction(NetbeansActionMapping netbeansActionMapping)
+    {
+        getActions().remove( netbeansActionMapping );
+    } //-- void removeAction(NetbeansActionMapping) 
+
+    /**
+     * Set the actions field.
+     * 
+     * @param actions
+     */
+    public void setActions(java.util.List<NetbeansActionMapping> actions)
+    {
+        this.actions = actions;
+    } //-- void setActions(java.util.List) 
     
 }

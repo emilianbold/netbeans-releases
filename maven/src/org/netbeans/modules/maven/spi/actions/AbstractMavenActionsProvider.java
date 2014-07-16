@@ -63,10 +63,12 @@ import java.util.logging.Logger;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.ModelRunConfig;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.execute.model.NetbeansActionReader;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Writer;
 import org.netbeans.spi.project.SingleMethod;
@@ -231,32 +233,17 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
      */
     @Override
     public NetbeansActionMapping getMappingForAction(String actionName, Project project) {
-        NetbeansActionMapping action = null;
-        try {
-            // just a converter for the To-Object reader..
-            Reader read = performDynamicSubstitutions(Collections.<String, String>emptyMap(), getRawMappingsAsString());
-            // basically doing a copy here..
-            ActionToGoalMapping mapping = reader.read(read);
-            Iterator<NetbeansActionMapping> it = mapping.getActions().iterator();
-            NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
-            String prjPack = mp.getPackagingType();
-            while (it.hasNext()) {
-                NetbeansActionMapping elem = it.next();
-                if (actionName.equals(elem.getActionName()) &&
-                        (elem.getPackagings().isEmpty() ||
-                         elem.getPackagings().contains(prjPack.trim()) ||
-                         elem.getPackagings().contains("*"))) {//NOI18N
-                    action = elem;
-                    break;
-                }
+        return new NetbeansActionReader() {
+            @Override
+            protected String getRawMappingsAsString() {
+                return AbstractMavenActionsProvider.this.getRawMappingsAsString();
             }
-        } catch (XmlPullParserException ex) {
-            LOG.log(Level.INFO, "Parsing action mapping", ex);
-        } catch (IOException ex) {
-            LOG.log(Level.INFO, "Parsing action mapping", ex);
-        }
-        return action;
 
+            @Override
+            protected Reader performDynamicSubstitutions(Map<String, String> replaceMap, String in) throws IOException {
+                return AbstractMavenActionsProvider.this.performDynamicSubstitutions(replaceMap, in);
+            }
+        }.getMappingForAction(reader, LOG, actionName, project, null, Collections.<String, String>emptyMap());
     }
 
     /**
@@ -267,21 +254,11 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
 
     private RunConfig mapGoalsToAction(Project project, String actionName, Map<String, String> replaceMap, FileObject selectedFile, Lookup lookup) {
         try {
-            // TODO need some caching really badly here..
-            Reader read = performDynamicSubstitutions(replaceMap, getRawMappingsAsString());
-            ActionToGoalMapping mapping = reader.read(read);
-            Iterator<NetbeansActionMapping> it = mapping.getActions().iterator();
-            NetbeansActionMapping action = null;
-            NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
-            String prjPack = mp.getPackagingType();
-            while (it.hasNext()) {
-                NetbeansActionMapping elem = it.next();
-                if (actionName.equals(elem.getActionName()) &&
-                        (elem.getPackagings().contains(prjPack.trim()) ||
-                        elem.getPackagings().contains("*") || elem.getPackagings().isEmpty())) {//NOI18N
-                    action = elem;
-                    break;
-                }
+            NetbeansActionMapping action;
+            if (this instanceof M2Configuration) {
+                action = ((M2Configuration)this).findMappingFor(replaceMap, project, actionName);
+            } else {
+                action = findMapAction(replaceMap, project, actionName);
             }
             if (action != null) {
                 ModelRunConfig mrc = new ModelRunConfig(project, action, actionName, selectedFile, lookup);
@@ -297,6 +274,26 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
             LOG.log(Level.INFO, "Parsing action mapping", ex);
         }
         return null;
+    }
+
+    private NetbeansActionMapping findMapAction(Map<String, String> replaceMap, Project project, String actionName) throws XmlPullParserException, IOException {
+        // TODO need some caching really badly here..
+        Reader read = performDynamicSubstitutions(replaceMap, getRawMappingsAsString());
+        ActionToGoalMapping mapping = reader.read(read);
+        Iterator<NetbeansActionMapping> it = mapping.getActions().iterator();
+        NetbeansActionMapping action = null;
+        NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
+        String prjPack = mp.getPackagingType();
+        while (it.hasNext()) {
+            NetbeansActionMapping elem = it.next();
+            if (actionName.equals(elem.getActionName()) &&
+                    (elem.getPackagings().contains(prjPack.trim()) ||
+                    elem.getPackagings().contains("*") || elem.getPackagings().isEmpty())) {//NOI18N
+                action = elem;
+                break;
+            }
+        }
+        return action;
     }
 
     /**
