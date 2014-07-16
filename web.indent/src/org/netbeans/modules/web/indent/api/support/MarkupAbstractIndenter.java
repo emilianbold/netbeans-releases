@@ -338,7 +338,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             if (!item.empty || item.foreignLanguageTag) {
                 // eliminate opening and closing sequence on one line:
                 IndentCommand ic = new IndentCommand(item.openingTag ? IndentCommand.Type.INDENT : IndentCommand.Type.RETURN,
-                    lineStartOffset);
+                    lineStartOffset, getIndentationSize());
                 addToPrevItems = addIndentationCommand(iis, ic, item, prevItems);
             }
             if (updateState) {
@@ -350,7 +350,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
             }
         }
         if (inOpeningTagAttributes) {
-            IndentCommand ii = new IndentCommand(IndentCommand.Type.CONTINUE, lineStartOffset);
+            IndentCommand ii = new IndentCommand(IndentCommand.Type.CONTINUE, lineStartOffset, getIndentationSize());
             if (getAttributesIndent() != -1) {
                 ii.setFixedIndentSize(getAttributesIndent());
             }
@@ -484,23 +484,23 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                 if (firstPreservedLineIndent == -1) {
                     firstPreservedLineIndent = getPreservedLineInitialIndentation(ts);
                 }
-                IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
+                IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset(), getIndentationSize());
                 ic.setFixedIndentSize(firstPreservedLineIndent);
                 iis.add(ic);
             } else {
                 firstPreservedLineIndent = -1;
             }
             if (isForeignLanguageStartToken(token, ts)) {
-                iis.add(new IndentCommand(IndentCommand.Type.BLOCK_START, context.getLineStartOffset()));
+                iis.add(new IndentCommand(IndentCommand.Type.BLOCK_START, context.getLineStartOffset(), getIndentationSize()));
             } else if (isForeignLanguageEndToken(token, ts)) {
-                iis.add(new IndentCommand(IndentCommand.Type.BLOCK_END, context.getLineStartOffset()));
+                iis.add(new IndentCommand(IndentCommand.Type.BLOCK_END, context.getLineStartOffset(), getIndentationSize()));
             }
         }
 
         if (context.isBlankLine() && iis.isEmpty() && ts.moveNext()) {
             Token<T1> token = ts.token();
             if (token != null && ts.embedded() == null && isPreservedLine(token, context)) {
-                IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset());
+                IndentCommand ic = new IndentCommand(IndentCommand.Type.PRESERVE_INDENTATION, context.getLineStartOffset(), getIndentationSize());
                 if (firstPreservedLineIndent == -1) {
                     firstPreservedLineIndent = getPreservedLineInitialIndentation(ts);
                 }
@@ -512,7 +512,7 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         // are we within a content of a tag which is not formattable:
         if (unformattableTagContent) {
             // ignore this line
-            iis.add(new IndentCommand(IndentCommand.Type.DO_NOT_INDENT_THIS_LINE, context.getLineStartOffset()));
+            iis.add(new IndentCommand(IndentCommand.Type.DO_NOT_INDENT_THIS_LINE, context.getLineStartOffset(), getIndentationSize()));
         }
 
         int index = fileStack.size();
@@ -537,12 +537,12 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
                             if (item.virtual) {
                                 assert !item.openingTag : "only closing tag item is expected: "+item;
                                 iis.add(new IndentCommand(IndentCommand.Type.RETURN,
-                                    context.getLineStartOffset()));
+                                    context.getLineStartOffset(), getIndentationSize()));
                                 item.processed = true;
                             } else {
                                 if (closingTag && LexerUtils.equals(item.tagName, tokenName, true, false) && context.isIndentThisLine()) {
                                     iis.add(new IndentCommand(IndentCommand.Type.RETURN,
-                                        context.getLineStartOffset()));
+                                        context.getLineStartOffset(), getIndentationSize()));
                                     item.processed = true;
                                 }
                                 break;
@@ -557,13 +557,13 @@ abstract public class MarkupAbstractIndenter<T1 extends TokenId> extends Abstrac
         }
 
         if (iis.isEmpty()) {
-            iis.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getLineStartOffset()));
+            iis.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getLineStartOffset(), getIndentationSize()));
         }
 
         if (context.getNextLineStartOffset() != -1) {
             getIndentFromState(preliminaryNextLineIndent, false, context.getNextLineStartOffset());
             if (preliminaryNextLineIndent.isEmpty()) {
-                preliminaryNextLineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getNextLineStartOffset()));
+                preliminaryNextLineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getNextLineStartOffset(), getIndentationSize()));
             }
         }
         
