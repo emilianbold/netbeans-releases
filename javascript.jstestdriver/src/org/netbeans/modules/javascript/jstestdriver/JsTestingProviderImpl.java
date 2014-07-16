@@ -56,6 +56,7 @@ import org.netbeans.modules.javascript.jstestdriver.api.JsTestDriver;
 import org.netbeans.modules.javascript.jstestdriver.api.RunTests;
 import org.netbeans.modules.javascript.jstestdriver.preferences.JsTestDriverPreferences;
 import org.netbeans.modules.javascript.jstestdriver.preferences.JsTestDriverPreferencesValidator;
+import org.netbeans.modules.javascript.jstestdriver.ui.customizer.CustomizerPanel;
 import org.netbeans.modules.javascript.jstestdriver.util.ValidationResult;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
@@ -157,7 +158,7 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
 
     @Override
     public CustomizerPanelImplementation createCustomizerPanel(Project project) {
-        return null;
+        return new CustomizerPanel(project);
     }
 
     @Override

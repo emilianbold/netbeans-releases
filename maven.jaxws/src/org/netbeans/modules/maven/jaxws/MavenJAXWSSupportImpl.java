@@ -133,7 +133,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         
         if (ddFolder != null) {
             return WSUtils.addSunJaxWsEntry(ddFolder, service);
-        } else{
+        } else {
             String mes = NbBundle.getMessage(MavenJAXWSSupportImpl.class, "MSG_CannotFindWEB-INF"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
@@ -188,10 +188,6 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         FileObject ddFolder = getDeploymentDescriptorFolder();
         if (ddFolder != null) {
             WSUtils.removeSunJaxWsEntry(ddFolder, service);
-        } else{
-            String mes = NbBundle.getMessage(MavenJAXWSSupportImpl.class, "MSG_CannotFindWEB-INF"); // NOI18N
-            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(desc);
         }
     }
 

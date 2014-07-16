@@ -1050,7 +1050,7 @@ public class WSUtils {
                                         "Cannot modify web.xml file", ex); // NOI18N
                             }
                         }
-                        else {                            
+                        else {
                             String mes = NbBundle.getMessage(
                                     MavenJAXWSSupportImpl.class,
                                     "MSG_CannotFindWEB-INF"); // NOI18N
