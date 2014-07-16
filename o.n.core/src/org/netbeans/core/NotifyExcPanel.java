@@ -650,7 +650,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         private final Timer timer;
 
         public ExceptionFlasher() {
-            timer = new Timer(3600000, this);
+            timer = new Timer(300000, this);
             timer.setRepeats(false);
             timer.start();
         }
