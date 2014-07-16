@@ -330,6 +330,7 @@ public class ActionProviderImpl implements ActionProvider {
     @Messages({
         "# {0} - artifactId", "TXT_Run=Run ({0})",
         "# {0} - artifactId", "TXT_Debug=Debug ({0})",
+        "# {0} - artifactId", "TXT_ApplyCodeChanges=Apply Code Changes ({0})",
         "# {0} - artifactId", "TXT_Profile=Profile ({0})",
         "# {0} - artifactId", "TXT_Test=Test ({0})",
         "# {0} - artifactId", "TXT_Build=Build ({0})"
@@ -364,6 +365,8 @@ public class ActionProviderImpl implements ActionProvider {
             title = TXT_Profile(dobjName);
         } else if (ActionProvider.COMMAND_TEST_SINGLE.equals(action)) {
             title = TXT_Test(dobjName);
+        } else if ("debug.fix".equals(action)) {
+            title = TXT_ApplyCodeChanges(prjLabel);
         } else {
             title = TXT_Build(prjLabel);
         }
