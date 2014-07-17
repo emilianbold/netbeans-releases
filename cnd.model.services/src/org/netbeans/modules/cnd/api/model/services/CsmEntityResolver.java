@@ -75,7 +75,7 @@ public final class CsmEntityResolver {
      * @param declText
      * @return all functions which has the same signature
      */
-    public static Collection<CsmObject> resolveFunction(CsmProject project, CharSequence declText) {
+    public static Collection<CsmObject> resolveEntity(CsmProject project, CharSequence declText) {
         return DEFAULT.resolveEntity(project, declText);
     }        
         
