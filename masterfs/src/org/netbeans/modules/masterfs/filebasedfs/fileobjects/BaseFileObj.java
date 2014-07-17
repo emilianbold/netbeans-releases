@@ -62,7 +62,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Date;
@@ -96,8 +95,8 @@ public abstract class BaseFileObj extends FileObject {
     private static final String PATH_SEPARATOR = File.separator;//NOI18N
     private static final char EXT_SEP = '.';//NOI18N
     static final Logger LOG = Logger.getLogger(BaseFileObj.class.getName());
-    private static final ThreadLocal<Boolean> MOVING //#244286: move in progress
-            = new ThreadLocal<Boolean>();
+    static final ThreadLocal<Long> MOVED_FILE_TIMESTAMP //#244286: move in progress
+            = new ThreadLocal<Long>();
 
     //static fields 
     static final long serialVersionUID = -1244650210876356809L;
@@ -238,7 +237,11 @@ public abstract class BaseFileObj extends FileObject {
 
         extensions.beforeCopy(target, to);
         FileObject result = null;
+        Long last = MOVED_FILE_TIMESTAMP.get();
         try {
+            if (last != null) {
+                MOVED_FILE_TIMESTAMP.set(lastModified().getTime());
+            }
             final IOHandler copyHandler = extensions.getCopyHandler(getFileName().getFile(), to);
             if (copyHandler != null) {
                 if (target instanceof FolderObj) {
@@ -262,27 +265,13 @@ public abstract class BaseFileObj extends FileObject {
         } catch (IOException ioe) {
             extensions.copyFailure(this, to);
             throw ioe;
-        }
-        if (Boolean.TRUE.equals(MOVING.get())) {
-            copyLastModifiedTime(to);
+        } finally {
+            if (last != null) {
+                MOVED_FILE_TIMESTAMP.set(last);
+            }
         }
         extensions.copySuccess(this, to);
         return result;
-    }
-
-    private void copyLastModifiedTime(File target) {
-        if (target == null) {
-            return;
-        }
-        long sourceDateMillis = getFileName().getFile().lastModified();
-        if (sourceDateMillis > 0) {
-            try {
-                target.setLastModified(sourceDateMillis);
-            } catch (SecurityException ex) {
-                LOG.log(Level.INFO, "Cannot set last modified date on " //NOI18N
-                        + target.getAbsolutePath(), ex);
-            }
-        }
     }
 
     @Override
@@ -316,11 +305,11 @@ public abstract class BaseFileObj extends FileObject {
                 assert result != null : "Cannot find " + target + " with " + name + "." + ext;
             }
         } else {
-            MOVING.set(true);
+            MOVED_FILE_TIMESTAMP.set(lastModified().getTime());
             try {
                 result = super.move(lock, target, name, ext);
             } finally {
-                MOVING.remove();
+                MOVED_FILE_TIMESTAMP.remove();
             }
         }
 
