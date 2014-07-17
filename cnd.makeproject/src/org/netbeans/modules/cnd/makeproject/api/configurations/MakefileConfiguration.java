@@ -51,26 +51,32 @@ import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Sheet;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -382,61 +388,136 @@ public class MakefileConfiguration implements Cloneable {
         }
     }
 
-    private void setElfFilters(final ExecutionEnvironment execEnv, final JFileChooser chooser) {
-        final List<FileFilter> filters = new ArrayList<>();
+    private static class ElfChooserInitializer implements Callable<String> {
+
+        private final ExecutionEnvironment execEnv;
+        private final PathMap pathMap;
+        private final String seed;
+        private final List<FileFilter> filters;
+        private final CountDownLatch latch;
+
+        public ElfChooserInitializer(ExecutionEnvironment execEnv, PathMap pathMap, String seed, List<FileFilter> filters, CountDownLatch latch) {
+            this.execEnv = execEnv;
+            this.pathMap = pathMap;
+            this.seed = seed;
+            this.filters = filters;
+            this.latch = latch;
+        }
+
+
+        @Override
+        public String call() throws Exception {
+
+            String realSeed = this.seed;
+
+            try {
+
+                HostInfo hostInfo = null;
+                try {
+                    ConnectionManager.getInstance().connectTo(execEnv);
+                } catch (IOException e) {
+                    e.printStackTrace(System.err);
+                } catch (CancellationException e) {
+                    // never report CancellationException
+                }
+                // even if connectTo failed or was cancelled, host info may present
+                if (HostInfoUtils.isHostInfoAvailable(execEnv)) {
+                    hostInfo = HostInfoUtils.getHostInfo(execEnv);
+                }
+
+                if (pathMap != null && seed != null) {
+                    realSeed = pathMap.getRemotePath(seed, true);
+                }
+                // check file existence
+                FileObject seedFo = FileSystemProvider.getFileObject(execEnv, realSeed);
+                // if it does not exist, let's set the closest existing parent
+                while (seedFo == null && realSeed.length() > 1) {
+                    realSeed = PathUtilities.getDirName(realSeed);
+                    seedFo = FileSystemProvider.getFileObject(execEnv, realSeed);
+                }
+                filters.add(FileFilterFactory.getAllBinaryFileFilter());
+                if (hostInfo != null) {
+                    if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                        filters.add(FileFilterFactory.getPeExecutableFileFilter());
+                        filters.add(FileFilterFactory.getPeStaticLibraryFileFilter());
+                        filters.add(FileFilterFactory.getPeDynamicLibraryFileFilter());
+                    } else if (hostInfo.getOSFamily() == HostInfo.OSFamily.MACOSX) {
+                        filters.add(FileFilterFactory.getMacOSXExecutableFileFilter());
+                        filters.add(FileFilterFactory.getElfStaticLibraryFileFilter());
+                        filters.add(FileFilterFactory.getMacOSXDynamicLibraryFileFilter());
+                    } else {
+                        filters.add(FileFilterFactory.getElfExecutableFileFilter());
+                        filters.add(FileFilterFactory.getElfStaticLibraryFileFilter());
+                        filters.add(FileFilterFactory.getElfDynamicLibraryFileFilter());
+                    }
+                }
+            } finally {
+                latch.countDown();
+            }
+            return realSeed;
+        }
+    }
+
+    private void setElfFilters(final JFileChooser chooser, final List<FileFilter> filters, final CountDownLatch latch) {
         // to be run in EDT
-        Runnable setFiltersRunner = new Runnable() {
+        final Runnable setFiltersRunner = new Runnable() {
             @Override
             public void run() {
                 for (FileFilter f : filters) {
                     chooser.addChoosableFileFilter(f);
                 }
-                chooser.setFileFilter(chooser.getAcceptAllFileFilter());
-            }
-        };
-        Runnable determineFiltersRunner = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-                    chooser.addChoosableFileFilter(FileFilterFactory.getAllBinaryFileFilter());
-                    if (hostInfo.getOSFamily() ==  HostInfo.OSFamily.WINDOWS) {
-                        chooser.addChoosableFileFilter(FileFilterFactory.getPeExecutableFileFilter());
-                        chooser.addChoosableFileFilter(FileFilterFactory.getPeStaticLibraryFileFilter());
-                        chooser.addChoosableFileFilter(FileFilterFactory.getPeDynamicLibraryFileFilter());
-                    } else if (hostInfo.getOSFamily() ==  HostInfo.OSFamily.MACOSX) {
-                        chooser.addChoosableFileFilter(FileFilterFactory.getMacOSXExecutableFileFilter());
-                        chooser.addChoosableFileFilter(FileFilterFactory.getElfStaticLibraryFileFilter());
-                        chooser.addChoosableFileFilter(FileFilterFactory.getMacOSXDynamicLibraryFileFilter());
-                    } else {
-                        chooser.addChoosableFileFilter(FileFilterFactory.getElfExecutableFileFilter());
-                        chooser.addChoosableFileFilter(FileFilterFactory.getElfStaticLibraryFileFilter());
-                        chooser.addChoosableFileFilter(FileFilterFactory.getElfDynamicLibraryFileFilter());
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (CancellationException ex) {
-                    // don't report CancellationException
+                if (!filters.isEmpty()) {
+                    chooser.setFileFilter(filters.get(0));
+                    //chooser.setFileFilter(chooser.getAcceptAllFileFilter());
                 }
             }
         };
-        RP.post(determineFiltersRunner);
+        Runnable waiter = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    latch.await();
+                    SwingUtilities.invokeLater(setFiltersRunner);
+                } catch (InterruptedException ex) {
+                    // don't report interrupted exception
+                }
+            }
+        };
+        RP.post(waiter);
     }
 
     private JFileChooser createElfPanel(String seed, final PropertyEditorSupport editor, PropertyEnv propenv) {
-        ExecutionEnvironment execEnv = getSourceExecutionEnvironment();
+        MakeConfiguration mc = this.getMakeConfiguration();
+        final RemoteSyncFactory syncFactory = (mc == null) ? null : mc.getRemoteSyncFactory();
+        final ExecutionEnvironment execEnv =
+                // mc != null is redundant, only to prevent false "null pointer dereference" shown byNetBeans
+                (mc != null && syncFactory != null && syncFactory.isCopying()) ?
+                mc.getDevelopmentHost().getExecutionEnvironment() :
+                getSourceExecutionEnvironment();
+        final PathMap pathMap =
+                (syncFactory != null && syncFactory.isCopying()) ?
+                syncFactory.getPathMap(execEnv) : null;
+        final CountDownLatch latch = new CountDownLatch(1);
+        final List<FileFilter> filters = Collections.synchronizedList(new ArrayList<FileFilter>());
         final JFileChooser chooser = RemoteFileUtil.createFileChooser(execEnv,
-                "", "", JFileChooser.FILES_ONLY, null, seed, true); //NOI18N
+                "", "", JFileChooser.FILES_ONLY, null,  //NOI18N
+                new ElfChooserInitializer(execEnv, pathMap, seed, filters, latch),
+                true);
         chooser.setControlButtonsAreShown(false);
         chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
-        setElfFilters(execEnv, chooser);
+        setElfFilters(chooser, filters, latch);
         propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         propenv.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 File selectedFile = chooser.getSelectedFile();
                 if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID && selectedFile != null) {
-                    String path = CndPathUtilities.toRelativePath(makeConfiguration.getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
+                    String path = selectedFile.getPath();
+                    if (pathMap != null) {
+                        String newPath = pathMap.getTrueLocalPath(path);
+                        path = (newPath == null) ? ("//" + path) : newPath;
+                    }
+                    path = CndPathUtilities.toRelativePath(makeConfiguration.getBaseDir(), path); // FIXUP: not always relative path
                     path = CndPathUtilities.normalizeSlashes(path);
                     editor.setValue(path);
                 }
