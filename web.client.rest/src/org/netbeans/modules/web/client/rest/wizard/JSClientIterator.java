@@ -325,7 +325,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             builder.append("'></script>\n");    // NOI18N
         }
         if ( jQuery == null ){
-            builder.append("<script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js");// NOI18N
+            builder.append("<script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>\n");// NOI18N
         }
         else {
             String relativePath = getRelativePath(folder, jQuery);
