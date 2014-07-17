@@ -52,20 +52,37 @@ import java.util.List;
  * array($a, $b=>foo(), 1=>$myClass->getFirst())
  */
 public class ArrayCreation extends Expression {
+    public enum Type {
+        OLD {
+            @Override
+            String toString(String innerElements) {
+                return "array(" + innerElements + ")"; //NOI18N
+            }
+        },
+        NEW {
+            @Override
+            String toString(String innerElements) {
+                return "[" + innerElements + "]"; //NOI18N
+            }
+        };
 
+        abstract String toString(String innerElements);
+    }
+    private final Type type;
     private final ArrayList<ArrayElement> elements = new ArrayList<>();
 
-    private ArrayCreation(int start, int end, ArrayElement[] elements) {
+    private ArrayCreation(int start, int end, ArrayElement[] elements, Type type) {
         super(start, end);
 
         if (elements == null) {
             throw new IllegalArgumentException();
         }
         this.elements.addAll(Arrays.asList(elements));
+        this.type = type;
     }
 
-    public ArrayCreation(int start, int end, List<ArrayElement> elements) {
-        this(start, end, elements == null ? null : (ArrayElement[]) elements.toArray(new ArrayElement[elements.size()]));
+    public ArrayCreation(int start, int end, List<ArrayElement> elements, Type type) {
+        this(start, end, elements == null ? null : (ArrayElement[]) elements.toArray(new ArrayElement[elements.size()]), type);
     }
 
     /**
@@ -74,6 +91,10 @@ public class ArrayCreation extends Expression {
      */
     public List<ArrayElement> getElements() {
         return this.elements;
+    }
+
+    public Type getType() {
+        return type;
     }
 
     @Override
@@ -87,7 +108,7 @@ public class ArrayCreation extends Expression {
         for (ArrayElement arrayElement : getElements()) {
             sb.append(arrayElement).append(","); //NOI18N
         }
-        return "array(" + sb + ")"; //NOI18N
+        return type.toString(sb.toString());
     }
 
 }

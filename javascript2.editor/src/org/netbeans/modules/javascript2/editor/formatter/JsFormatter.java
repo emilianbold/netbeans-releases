@@ -157,7 +157,7 @@ public class JsFormatter implements Formatter {
 
                 startTime = System.nanoTime();
 
-                int indentLevelSize = IndentUtils.indentLevelSize(doc);
+                int indentLevelSize = codeStyle.indentSize;
 
                 int initialIndent = codeStyle.initialIndent;
                 int continuationIndent = codeStyle.continuationIndentSize;

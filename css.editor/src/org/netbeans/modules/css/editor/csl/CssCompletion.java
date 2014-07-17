@@ -204,8 +204,11 @@ public class CssCompletion implements CodeCompletionHandler {
 
         //if the caret points to a token node then determine its type
         Node tokenNode = NodeUtil.findNodeAtOffset(root, astCaretOffset);
-        CssTokenId tokenNodeTokenId = tokenNode.type() == NodeType.token ? NodeUtil.getTokenNodeTokenId(tokenNode) : null;
-
+        CssTokenId tokenNodeTokenId = null;
+        if (tokenNode != null && tokenNode.type() == NodeType.token) {
+            tokenNodeTokenId = NodeUtil.getTokenNodeTokenId(tokenNode);
+        }
+        
         Node node = NodeUtil.findNonTokenNodeAtOffset(root, astCaretOffset);
         if (node.type() == NodeType.ws) {
             node = node.parent();

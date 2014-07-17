@@ -63,6 +63,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
+import org.netbeans.api.progress.*;
+import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -88,11 +91,33 @@ public final class WebKitDebuggingSupport {
         return instance;
     }
     
+    @NbBundle.Messages({
+        "LBL_ConnectingIOSDevice=Connecting to iOS Device...",
+        "LBL_ConnectionIOSSimulator=Connecting to iOS Simulator...",
+        "LBL_ConnectionAndroidDevice=Connecting to Android Device...",
+        "LBL_ConnectionAndroidEmulator=Connecting to Android Emulator...",})
+    private static String getProgressLabel(Device dev) {
+        if (PlatformManager.IOS_TYPE.equals(dev.getPlatform().getType())) {
+            return dev.isEmulator() ? Bundle.LBL_ConnectionIOSSimulator() : Bundle.LBL_ConnectingIOSDevice();
+        } else {
+            return dev.isEmulator() ? Bundle.LBL_ConnectionAndroidEmulator() : Bundle.LBL_ConnectionAndroidDevice();
+        }
+
+    }
+
     public synchronized void startDebugging(Device device, Project p, Lookup context, boolean navigateToUrl) {
         if (transport != null || webKitDebugging != null) {
             //stop old session
             stopDebuggingNow(false);
         }
+        ProgressHandle handle = ProgressHandleFactory.createHandle(getProgressLabel(device), new Cancellable() {
+            @Override
+            public boolean cancel() {
+                stopDebugging(true);
+                return true;
+            }
+        });
+        handle.start();
         startDebuggingInProgress = true;
         try {
             transport = device.getDebugTransport();
@@ -116,6 +141,9 @@ public final class WebKitDebuggingSupport {
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            if (transport == null) {
+                return;
+            }
             webKitDebugging = Factory.createWebKitDebugging(transport);
             if (navigateToUrl) {
                 webKitDebugging.getPage().navigate(url);
@@ -129,6 +157,7 @@ public final class WebKitDebuggingSupport {
             PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(Image.class), dispatcher));
         } finally {
             startDebuggingInProgress = false;
+            handle.finish();
         }
     }
     
