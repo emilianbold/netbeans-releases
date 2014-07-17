@@ -108,22 +108,25 @@ is the proper place.
 
     <changes>
         
-        <!--change id="ProjectsRootNode-badging">
+        <change id="nbactions-profiles">
            <api name="general"/>
-           <summary>Project root nodes automatically badged</summary>
-           <version major="1" minor="31"/>
-           <date day="9" month="6" year="2008"/>
-           <author login="jglick"/>
+           <summary>nbactions.xml supports profiles section</summary>
+           <version major="2" minor="107"/>
+           <date day="15" month="7" year="2014"/>
+           <author login="jtulach"/>
            <compatibility modification="yes" semantic="compatible"/>
            <description>
                <p>
-                   Project root nodes will now automatically be badged
-                   according to VCS status of contained files.
+                   Format of <code>nbactions.xml</code> file has been
+                   extended to support <a href="@TOP@architecture-summary.html#java.io.File-nbactions.xml">
+                       profiles section</a>.
                </p>
            </description>
+           <!--
            <class package="org.netbeans.spi.project.ui" name="LogicalViewProvider"/>
-           <issue number="135399"/>
-        </change-->
+           -->
+           <issue number="229192"/>
+        </change>
 
     
         
