@@ -40,7 +40,7 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.model.services;
+package org.netbeans.modules.cnd.spi.model.services;
 
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -48,90 +48,42 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.spi.model.services.CsmEntityResolverImplementation;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public final class CsmEntityResolver {
+public interface CsmSymbolResolverImplementation {
     
     /**
-     * Resolves entity by qualified name or declaration text.
+     * Resolves symbol by qualified name or 
+     * signature for functions and methods.
      * 
      * Examples: 
      * 1) String "AAA<int>::BBB" will be resolved into symbol BBB 
      *    inside class AAA<int>
-     * 2) String "int aaa::foo(int)" will be resolved into function or method 
-     *    'foo' which takes one integer parameter inside namespace or class 'aaa'
-     * 3) String "aaa::foo(int)" is a signature of a function above and will be
-     *    resolved exactly like in the previous example
+     * 2) String "aaa::foo(int)" is a signature and will be resolved into 
+     *    function or method 'foo' which takes one integer parameter and 
+     *    declared inside namespace or class 'aaa'
+     * 3) String "int aaa::foo(int)" is a signature of a template 
+     *    function or method 'foo' which takes one integer parameter, 
+     *    declared inside namespace or class 'aaa' and returns integer
      * 
      * @param project
      * @param declText
      * 
      * @return all entities which have the same declaration text
-     */       
-    public static Collection<CsmObject> resolveEntity(NativeProject project, CharSequence declText) {
-        return DEFAULT.resolveEntity(project, declText);
-    }    
-    
-    /**
-     * Resolves entity by or qualified name declaration text
-     * 
-     * @param project
-     * @param declText
-     * 
-     * @return all entities which have the same declaration text
-     */
-    public static Collection<CsmObject> resolveEntity(CsmProject project, CharSequence declText) {
-        return DEFAULT.resolveEntity(project, declText);
-    }        
-        
-//<editor-fold defaultstate="collapsed" desc="impl">
-    
-    private static final CsmEntityResolverImplementation DEFAULT = new Default();
-    
-    private CsmEntityResolver() {
-        throw new AssertionError("Not instantiable"); // NOI18N
-    }        
-    
-    /**
-     * Default implementation (just a proxy to a real service)
-     */
-    private static final class Default implements CsmEntityResolverImplementation {
-        
-        private final Lookup.Result<CsmEntityResolverImplementation> res;
-        
-        private CsmEntityResolverImplementation delegate;
-        
-        
-        private Default() {
-            res = Lookup.getDefault().lookupResult(CsmEntityResolverImplementation.class);
-        }
-        
-        private CsmEntityResolverImplementation getDelegate(){
-            CsmEntityResolverImplementation service = delegate;
-            if (service == null) {
-                for (CsmEntityResolverImplementation resolver : res.allInstances()) {
-                    service = resolver;
-                    break;
-                }
-                delegate = service;
-            }
-            return service;
-        }
-        
-        @Override
-        public Collection<CsmObject> resolveEntity(NativeProject project, CharSequence declText) {
-            return getDelegate().resolveEntity(project, declText);
-        }    
+     */    
+    Collection<CsmObject> resolveSymbol(NativeProject project, CharSequence declText);    
 
-        @Override
-        public Collection<CsmObject> resolveEntity(CsmProject project, CharSequence declText) {
-            return getDelegate().resolveEntity(project, declText);
-        }            
-    }
-//</editor-fold>        
+    /**
+     * Resolves symbol by qualified name or 
+     * signature for functions and methods.
+     * 
+     * @param project
+     * @param declText
+     * 
+     * @return all entities which have the same declaration text
+     */    
+    Collection<CsmObject> resolveSymbol(CsmProject project, CharSequence declText);        
 }

@@ -52,9 +52,10 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
-import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmSymbolResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -65,9 +66,9 @@ import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public class CsmEntityResolverTestCase extends SelectTestBase {
+public class CsmSymbolResolverTestCase extends SelectTestBase {
     
-    public CsmEntityResolverTestCase(String name) {
+    public CsmSymbolResolverTestCase(String name) {
         super(name);
     }
 
@@ -87,25 +88,34 @@ public class CsmEntityResolverTestCase extends SelectTestBase {
 
     @Override
     protected Iterator<CsmFunction> _getFunctions(CsmProject project, CsmFunction func) {
-        String funText = func.getText().toString();
+        String funText = func.getSignature().toString();
         funText = funText.replace(func.getName(), func.getQualifiedName());
-        if (CsmKindUtilities.isFunctionDefinition(func)) {
-            funText = funText.substring(0, funText.indexOf('{'));
+        if (func instanceof CsmTemplate && ((CsmTemplate) func).isTemplate()) {
+            funText = func.getReturnType().getCanonicalText() + " " + funText;
         }
-        Collection<CsmObject> result = CsmEntityResolver.resolveEntity((NativeProject) project.getPlatformProject(), funText);
+        Collection<CsmObject> result = CsmSymbolResolver.resolveSymbol((NativeProject) project.getPlatformProject(), funText);
         return ((Collection<CsmFunction>)(Object) result).iterator();
     }
     
     @Override
     protected Iterator<CsmVariable> _getVariables(CsmProject project, CsmVariable var) {
         String varText = var.getQualifiedName().toString();
-        Collection<CsmObject> result = CsmEntityResolver.resolveEntity((NativeProject) project.getPlatformProject(), varText);
+        Collection<CsmObject> result = CsmSymbolResolver.resolveSymbol((NativeProject) project.getPlatformProject(), varText);
         return ((Collection<CsmVariable>)(Object) result).iterator();
     }
 
     @Override
     protected boolean _checkFound(CsmObject obj, Iterator<? extends CsmObject> answer) {
         return answer.hasNext() && answer.next() == obj;
+    }
+    
+    private void doTestSingle(String symbol, String fileName, int line, int column) {
+        Collection<CsmObject> result = CsmSymbolResolver.resolveSymbol(getProject(), symbol);
+        assertFalse("Symbol '" + symbol + "' not found at " + fileName + ":" + line + ":" + column, result.isEmpty());
+        CsmOffsetable obj = (CsmOffsetable) result.iterator().next();
+        assertEquals(fileName, obj.getContainingFile().getName().toString());
+        assertEquals(line, obj.getStartPosition().getLine());
+        assertEquals(column, obj.getStartPosition().getColumn());
     }
     
     public void testSelectModelGetFunctions() throws Exception {
@@ -123,4 +133,8 @@ public class CsmEntityResolverTestCase extends SelectTestBase {
     public void testSelectModelGetFields() throws Exception {
         doTestGetFields();
     }    
+    
+    public void testInstantiatedSignature() throws Exception {
+        doTestSingle("double entity_resolver_test::boo<double>(double)", "simple_symbol_resolver_test.cpp", 43, 3);
+    }
 }
