@@ -47,7 +47,7 @@ import java.util.Map;
 
 /**
  *
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyConnectionFactory {
     private final Map<String, String> configuration;

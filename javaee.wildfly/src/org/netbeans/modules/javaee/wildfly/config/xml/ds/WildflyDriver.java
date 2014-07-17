@@ -44,7 +44,7 @@ package org.netbeans.modules.javaee.wildfly.config.xml.ds;
 
 /**
  *
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyDriver {
     private final String name;
