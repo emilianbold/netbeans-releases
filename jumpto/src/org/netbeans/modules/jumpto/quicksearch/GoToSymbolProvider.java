@@ -78,6 +78,13 @@ public class GoToSymbolProvider implements SearchProvider {
         for (SymbolDescriptor td : local.getTypes()) {
             String displayHint = td.getFileDisplayPath();
             String htmlDisplayName = escapeLtGt(td.getSymbolName()) + " " + NbBundle.getMessage(GoToSymbolAction.class, "MSG_DeclaredIn",escapeLtGt(td.getOwnerName()));
+            final String projectName = td.getProjectName();
+            if (projectName != null && !projectName.isEmpty()) {
+                htmlDisplayName = String.format(
+                    "%s [%s]",  //NOI18N
+                    htmlDisplayName,
+                    projectName);
+            }
             if (!response.addResult(new GoToSymbolCommand(td),
                                     htmlDisplayName,
                                     displayHint,

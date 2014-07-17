@@ -368,6 +368,8 @@ public class ConvertToStringSwitch {
         private final List<CatchDescription<TreePathHandle>> literal2Statement;
         private final TreePathHandle defaultStatement;
         private boolean varNotNull;
+        
+        private Set<Tree> ifSeen = new HashSet<Tree>();
 
         public ConvertToSwitch(CompilationInfo info, TreePath create, TreePathHandle value, List<CatchDescription<TreePathHandle>> literal2Statement, TreePathHandle defaultStatement, 
                 boolean varNotNull) {
@@ -482,12 +484,20 @@ public class ConvertToStringSwitch {
 
             return label;
         }
+        
+        private Tree findExpressionParentIf(TreePath p) {
+            while (!StatementTree.class.isAssignableFrom(p.getLeaf().getKind().asInterface()) && p != null) {
+                p = p.getParentPath();
+            }
+            return p == null ? null : p.getLeaf();
+        }
 
         private boolean addCase(WorkingCopy copy, CatchDescription<TreePath> desc, List<CaseTree> cases, Map<TreePath, Set<Name>> catch2Declared, Map<TreePath, Set<Name>> catch2Used) {
             TreeMaker make = copy.getTreeMaker();
             List<StatementTree> statements = new LinkedList<StatementTree>();
             Tree then = desc.path.getLeaf();
 
+            Tree replacedByCase = null;
             if (then.getKind() == Kind.BLOCK) {
                 Set<Name> currentDeclared = catch2Declared.get(desc.path);
                 boolean keepBlock = false;
@@ -517,15 +527,17 @@ public class ConvertToStringSwitch {
                 }
 
                 BlockTree block = (BlockTree) then;
-
                 if (keepBlock) {
                     if (!exitsFromAllBranches) {
-                        statements.add(make.addBlockStatement(block, make.Break(null)));
+                        statements.add(
+                                make.asReplacementOf(
+                                    make.addBlockStatement(block, make.Break(null)), block, true));
                     } else {
                         statements.add(block);
                     }
                 } else {
                     statements.addAll(block.getStatements());
+                    replacedByCase = block;
                     if (!exitsFromAllBranches) {
                         statements.add(make.Break(null));
                     }
@@ -536,9 +548,9 @@ public class ConvertToStringSwitch {
                     statements.add(make.Break(null));
                 }
             }
-
+            
             if (desc.literals == null) {
-                cases.add(make.Case(null, statements));
+                cases.add(make.asReplacementOf(make.Case(null, statements), replacedByCase, true));
 
                 return false;
             }
@@ -551,12 +563,19 @@ public class ConvertToStringSwitch {
                     //XXX: log
                     return true;
                 }
+                Tree ifSt = findExpressionParentIf(lit);
+                if (ifSt != null && !ifSeen.add(ifSt)) {
+                    ifSt = null;
+                }
 
                 List<StatementTree> body = it.hasNext() ? Collections.<StatementTree>emptyList() : statements;
-
-                cases.add(make.Case((ExpressionTree) lit.getLeaf(), body));
+                CaseTree nc = make.Case((ExpressionTree) lit.getLeaf(), body);
+                if (ifSt != null) {
+                    nc = make.asReplacementOf(nc, ifSt, true);
+                }
+                cases.add(nc);
             }
-
+                
             return false;
         }
 

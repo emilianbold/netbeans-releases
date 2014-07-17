@@ -1666,6 +1666,58 @@ public abstract class PositionEstimator {
         return moveToDifferentThan(seq, dir, nonRelevant);
     }
     
+    /**
+     * 
+     * @param seq the token sequence
+     * @param dir direction
+     * @return 
+     */
+    public static int offsetToSrcWiteOnLine(TokenSequence<JavaTokenId> seq,
+                                                 Direction dir)
+    {
+        boolean notBound = false;
+        seq.moveNext();
+        int savePos = seq.offset();
+        switch (dir) {
+            case BACKWARD:
+                while ((notBound = seq.movePrevious())) {
+                    JavaTokenId tid = seq.token().id();
+                    if (tid == WHITESPACE) {
+                        int nl = seq.token().text().toString().indexOf('\n');
+                        if (nl > -1) {
+                            // return the position after newline:
+                            return seq.offset() + nl + 1;
+                        }
+                    } else if (!nonRelevant.contains(tid)) {
+                        break;
+                    } else {
+                        savePos = seq.offset();
+                    }
+                }
+                break;
+            case FORWARD:
+                while ((notBound = seq.moveNext())) {
+                    JavaTokenId tid = seq.token().id();
+                    if (tid == WHITESPACE) {
+                        int nl = seq.token().text().toString().indexOf('\n');
+                        if (nl > -1) {
+                            // return the position after newline:
+                            return seq.offset() + nl;
+                        }
+                    } else if (!nonRelevant.contains(tid)) {
+                        break;
+                    } else {
+                        savePos = seq.offset() + seq.token().length();
+                    }
+                }
+                break;
+        }
+        if (!notBound) {
+            return -1;
+        }
+        return savePos;
+    }
+
     @SuppressWarnings("empty-statement")
     public static JavaTokenId moveToDifferentThan(
         TokenSequence<JavaTokenId> seq,

@@ -662,16 +662,13 @@ public class AddPropertyPanel extends javax.swing.JPanel {
     private boolean generateVetoablePropertyChangeSupportCheckBoxWasSelectedAutomatically = false;
     
     private void vetoableCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vetoableCheckBoxActionPerformed
-        if (generateVetoablePropertyChangeSupportCheckBox.isEnabled ()) {
-            if (boundCheckBox.isSelected () && 
-                !generateVetoablePropertyChangeSupportCheckBox.isSelected ()
-            ) {
-                generateVetoablePropertyChangeSupportCheckBox.setSelected (true);
-                generateVetoablePropertyChangeSupportCheckBoxWasSelectedAutomatically = true;
-            } else
-            if (generateVetoablePropertyChangeSupportCheckBoxWasSelectedAutomatically) {
-                generateVetoablePropertyChangeSupportCheckBox.setSelected (false);
-                generateVetoablePropertyChangeSupportCheckBoxWasSelectedAutomatically = false;
+        if (generateVetoablePropertyChangeSupportCheckBox.isEnabled()) {
+            if (vetoableCheckBox.isSelected()) {
+                generateVetoablePropertyChangeSupportCheckBoxWasSelectedAutomatically =
+                        !generateVetoablePropertyChangeSupportCheckBox.isSelected();
+                generateVetoablePropertyChangeSupportCheckBox.setSelected(true);
+            } else if (generateVetoablePropertyChangeSupportCheckBoxWasSelectedAutomatically) {
+                generateVetoablePropertyChangeSupportCheckBox.setSelected(false);
             }
         }
         showPreview();
