@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.navigation;
+package org.netbeans.modules.php.latte.csl;
 
 import java.util.Collections;
 import java.util.List;
