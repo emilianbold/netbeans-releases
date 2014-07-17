@@ -54,6 +54,7 @@ import org.codehaus.plexus.util.xml.pull.MXSerializer;
 import org.codehaus.plexus.util.xml.pull.XmlSerializer;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.execute.model.NetbeansActionProfile;
 
 /**
  * Class NetbeansBuildActionXpp3Writer.
@@ -122,6 +123,13 @@ public class NetbeansBuildActionXpp3Writer {
                     NetbeansActionMapping o = (NetbeansActionMapping) iter.next();
                     writeNetbeansActionMapping( o, "action", serializer );
                 }
+            }
+            if (!actionToGoalMapping.getProfiles().isEmpty()) {
+                serializer.startTag(NAMESPACE, "profiles");
+                for (NetbeansActionProfile p : actionToGoalMapping.getProfiles()) {
+                    writeNetbeansActionProfile(p, "profile", serializer);
+                }
+                serializer.endTag(NAMESPACE, "profiles");
             }
             serializer.endTag( NAMESPACE, tagName );
         }
@@ -210,5 +218,16 @@ public class NetbeansBuildActionXpp3Writer {
         }
     } //-- void writeNetbeansActionMapping(NetbeansActionMapping, String, XmlSerializer) 
 
+    private void writeNetbeansActionProfile(NetbeansActionProfile p, String tagName, XmlSerializer serializer)
+    throws java.io.IOException {
+        serializer.startTag( NAMESPACE, tagName);
+        serializer.startTag( NAMESPACE, "id" ).text( p.getId()).endTag( NAMESPACE, "id");
+        serializer.startTag( NAMESPACE, "actions");
+        for (NetbeansActionMapping m : p.getActions()) {
+            writeNetbeansActionMapping(m, "action", serializer);
+        }
+        serializer.endTag( NAMESPACE, "actions");
+        serializer.endTag( NAMESPACE, tagName );
+    } 
 
 }

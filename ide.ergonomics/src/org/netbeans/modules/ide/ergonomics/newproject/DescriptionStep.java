@@ -86,6 +86,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.lookup.Lookups;
 
 public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>, Runnable {
@@ -94,7 +96,6 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
     private ProgressHandle handle = null;
     private Collection<UpdateElement> forEnable = null;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
-    private static FindComponentModules finder = null;
     private FeatureInfo info;
     private WizardDescriptor wd;
     private ConfigurationPanel configPanel;
@@ -153,61 +154,57 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         }
     }
     
-    private PresentModules findModules = new PresentModules();
+    private final PresentModules findModules = new PresentModules();
     private class PresentModules extends Object
-    implements Runnable, PropertyChangeListener {
+    implements PropertyChangeListener, TaskListener {
+        @Override
         public void propertyChange (PropertyChangeEvent evt) {
             if (ContentPanel.FINDING_MODULES.equals (evt.getPropertyName ())) {
-                FeatureManager.getInstance().create(this).schedule(0);
+                schedule();
             }
         }
-        public void run () {
-            assert !SwingUtilities.isEventDispatchThread ();
-            presentModulesForActivation ();
+        public void schedule() {
+            new FindComponentModules(info).onFinished(this);
+        }
+        @Override
+        public void taskFinished(Task task) {
+            presentModulesForActivation((FindComponentModules)task);
+        }
+        
+        final void presentModulesForActivation (FindComponentModules f) {
+            forEnable = f.getModulesForEnable ();
+            if (handle != null) {
+                handle.finish ();
+                panel.replaceComponents ();
+                handle = null;
+            }
+            final  Collection<UpdateElement> elems = f.getModulesForEnable ();
+            if (elems != null && !elems.isEmpty ()) {
+                Collection<UpdateElement> visible = f.getVisibleUpdateElements (elems);
+                final String name = ModulesInstaller.presentUpdateElements (visible);
+                configPanel.setInfo(info);
+                configPanel.setPanelName(name);
+                panel.replaceComponents(configPanel);
+                forEnable = elems;
+                fireChange ();
+            } else {
+                FoDLayersProvider.getInstance().refreshForce();
+                waitForDelegateWizard ();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        waitForDelegateWizard ();
+                        fireChange ();
+                    }
+                });
+            }
         }
     };
-
-    private void presentModulesForActivation () {
-        forEnable = getFinder ().getModulesForEnable ();
-        presentModulesForEnable ();
-    }
     
-    private void presentModulesForEnable () {
-        if (handle != null) {
-            handle.finish ();
-            panel.replaceComponents ();
-            handle = null;
-        }
-        final  Collection<UpdateElement> elems = getFinder ().getModulesForEnable ();
-        if (elems != null && !elems.isEmpty ()) {
-            Collection<UpdateElement> visible = getFinder().getVisibleUpdateElements (elems);
-            final String name = ModulesInstaller.presentUpdateElements (visible);
-            configPanel.setInfo(info);
-            configPanel.setPanelName(name);
-            panel.replaceComponents(configPanel);
-            forEnable = elems;
-            fireChange ();
-        } else {
-            FoDLayersProvider.getInstance().refreshForce();
-            waitForDelegateWizard ();
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    waitForDelegateWizard ();
-                    fireChange ();
-                }
-            });
-        }
-    }
-    
-    private FindComponentModules getFinder () {
-        assert finder != null : "Finder needs to be created first!";
-        return finder;
-    }
-
     private static String getBundle (String key, Object... params) {
         return NbBundle.getMessage (DescriptionStep.class, key, params);
     }
 
+    @Override
     public void readSettings (WizardDescriptor settings) {
         wd = settings;
         Object o = settings.getProperty (FeatureOnDemandWizardIterator.CHOSEN_TEMPLATE);
@@ -215,7 +212,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         FileObject fileObject = (FileObject) o;
         info = FoDLayersProvider.getInstance ().whichProvides(fileObject);
         assert info != null : "No info for " + fileObject;
-        finder = new FindComponentModules(info);
+        findModules.schedule();
     }
 
     public void storeSettings (WizardDescriptor settings) {
