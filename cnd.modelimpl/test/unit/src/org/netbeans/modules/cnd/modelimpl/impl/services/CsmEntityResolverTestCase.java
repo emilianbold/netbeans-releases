@@ -119,4 +119,8 @@ public class CsmEntityResolverTestCase extends SelectTestBase {
     public void testSelectModelGetVariables() throws Exception {
         doTestGetVariables();
     }
+    
+    public void testSelectModelGetFields() throws Exception {
+        doTestGetFields();
+    }    
 }

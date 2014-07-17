@@ -4,6 +4,8 @@ namespace entity_resolver_test {
     int foo() {
       return 0;
     }
+    
+    A var_1;
   };
 
   template <>
@@ -11,6 +13,8 @@ namespace entity_resolver_test {
     int foo() {
       return 1;
     }
+    
+    int var_2;
   };
 
   int x;
@@ -29,6 +33,11 @@ namespace entity_resolver_test {
 
   struct BBB {
     int foo(int param);
+    
+    template <class T>
+    struct CCC {
+      T var_3;
+    };
   };
 
   template <typename T>

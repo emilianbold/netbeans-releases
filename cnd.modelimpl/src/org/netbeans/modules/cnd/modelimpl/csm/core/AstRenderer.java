@@ -2070,7 +2070,7 @@ public class AstRenderer {
         return false;
     }
 
-    private boolean isClassSpecialization(AST ast) {
+    public static boolean isClassSpecialization(AST ast) {
         AST type = ast.getFirstChild(); // type
         if (type != null) {
             AST child = type;
@@ -2090,7 +2090,7 @@ public class AstRenderer {
         return true;
     }
 
-    private boolean isClassExplicitInstantiation(AST ast) {
+    public static boolean isClassExplicitInstantiation(AST ast) {
         AST type = ast.getFirstChild(); // type
         if (type != null) {
             AST child = type;
