@@ -54,6 +54,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 /** Tests the OutWriter class
  *
@@ -620,6 +622,52 @@ public class OutWriterTest extends NbTestCase {
     }
 
     /**
+     * Test for bug 245125 - NetBeans UI stops responding, ended with black
+     * window.
+     *
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public void testSynchronizationOfGetLineInfo()
+            throws IOException, InterruptedException {
+
+        final OutWriter ow = new OutWriter();
+        ((AbstractLines) ow.getLines()).setOutputLimits(
+                new OutputLimits(4, 1024, 2));
+
+        Thread writingThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                for (int i = 0; i < 1000; i++) {
+                    delay(1);
+                    ow.println("test" + i, new OutputListener() {
+
+                        @Override
+                        public void outputLineSelected(OutputEvent ev) {
+                        }
+
+                        @Override
+                        public void outputLineAction(OutputEvent ev) {
+                        }
+
+                        @Override
+                        public void outputLineCleared(OutputEvent ev) {
+                        }
+                    });
+                }
+            }
+        }, "writingThread");
+        writingThread.start();
+        for (int i = 0; i < 1000; i++) {
+            LineInfo lineInfo = ow.getLines().getLineInfo(
+                    ow.getLines().getLineCount() - 1);
+            assertNotNull(lineInfo);
+        }
+        writingThread.join();
+    }
+
+    /**
      * Test for bug 232547 - There are LineInfo object even for lines that has
      * no special properties.
      */
@@ -651,6 +699,14 @@ public class OutWriterTest extends NbTestCase {
         assertFalse(ow.isClosed());
         ow.dispose();
         assertTrue(ow.isClosed());
+    }
+
+    private void delay(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     /**
