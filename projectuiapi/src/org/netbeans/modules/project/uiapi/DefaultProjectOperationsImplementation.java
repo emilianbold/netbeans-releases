@@ -207,9 +207,29 @@ public final class DefaultProjectOperationsImplementation {
                 close(project);
                 
                 if (deletePanel.isDeleteSources()) {
-                    performDelete(project, allFiles, handle);
+                    try {
+                        performDelete(project, allFiles, handle);
+                    } catch (IOException x) {
+                        LOG.log(Level.WARNING, null, x);
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(nd);
+                    } catch (Exception x) {
+                        LOG.log(Level.WARNING, null, x);
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(nd);
+                    }
                 } else {
-                    performDelete(project, metadataFiles, handle);
+                    try {
+                        performDelete(project, metadataFiles, handle);
+                    } catch (IOException x) {
+                        LOG.log(Level.WARNING, null, x);
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(nd);
+                    } catch (Exception x) {
+                        LOG.log(Level.WARNING, null, x);
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(nd);
+                    }
                 }
                 deletePanel.removeProgressBar();
             }
@@ -253,9 +273,13 @@ public final class DefaultProjectOperationsImplementation {
                         try {
                             doCopyProject(handle, project, nueName, newTgtFO);
                         } catch (IOException x) {
-                            throw x;
+                            LOG.log(Level.WARNING, null, x);
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notifyLater(nd);
                         } catch (Exception x) {
-                            throw new IOException(x);
+                            LOG.log(Level.WARNING, null, x);
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notifyLater(nd);
                         }
                     }
                 });
@@ -342,7 +366,17 @@ public final class DefaultProjectOperationsImplementation {
                     newTargetFO = createFolder(newTarget.getParentFile(), newTarget.getName());
                 }
                 final FileObject newTgtFO = newTargetFO;
-                doMoveProject(handle, project, nueFolderName, nueProjectName, newTgtFO, "ERR_Cannot_Move");
+                try {
+                    doMoveProject(handle, project, nueFolderName, nueProjectName, newTgtFO, "ERR_Cannot_Move");
+                } catch (IOException x) {
+                    LOG.log(Level.WARNING, null, x);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                } catch (Exception x) {
+                    LOG.log(Level.WARNING, null, x);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                }
             }
         });
     }
@@ -364,16 +398,30 @@ public final class DefaultProjectOperationsImplementation {
                 panel.addProgressBar();
                 
                 if (panel.getRenameProjectFolder()) {
-                    doMoveProject(handle, project, nueName, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename");
+                    try {
+                        doMoveProject(handle, project, nueName, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename");
+                    } catch (IOException x) {
+                        LOG.log(Level.WARNING, null, x);
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(nd);
+                    } catch (Exception x) {
+                        LOG.log(Level.WARNING, null, x);
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(nd);
+                    }
                 } else {
                     project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                         public @Override void run() throws IOException {
                             try {
                                 doRenameProject(handle, project, nueName);
                             } catch (IOException x) {
-                                throw x;
+                                LOG.log(Level.WARNING, null, x);
+                                NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                                DialogDisplayer.getDefault().notifyLater(nd);
                             } catch (Exception x) {
-                                throw new IOException(x);
+                                LOG.log(Level.WARNING, null, x);
+                                NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                                DialogDisplayer.getDefault().notifyLater(nd);
                             }
                         }
                     });

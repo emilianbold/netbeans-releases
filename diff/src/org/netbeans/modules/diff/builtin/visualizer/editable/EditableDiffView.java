@@ -514,7 +514,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             if (updateRightPanel) {
                 JScrollBar rightScrollBar = jEditorPane2.getScrollPane().getVerticalScrollBar();
                 rightScrollBar.setValue(lineOffset);
-                updateCurrentDifference();
+                updateCurrentDifference(null);
             }
         } catch (IndexOutOfBoundsException ex) {
             Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
@@ -641,7 +641,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     public void stateChanged(ChangeEvent e) {
         if (jTabbedPane == e.getSource()) {
             if (jTabbedPane.getSelectedComponent() == jSplitPane1) {
-                updateCurrentDifference();
+                updateCurrentDifference(null);
             } else {
                 setDifferenceIndex(-1);
             }
@@ -807,18 +807,36 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         return retval;
     }
 
-    private int computeCurrentDifference() {
+    private int computeCurrentDifference (Boolean down) {
         // jViewport == null iff initialization failed
         if (manager == null || jViewport2 == null) return 0;
         Rectangle viewRect = jViewport2.getViewRect();
-        int bottom = viewRect.y + viewRect.height * 4 / 5;
+        int bottom = viewRect.y + viewRect.height * 2 / 3;
         DiffViewManager.DecoratedDifference [] ddiffs = manager.getDecorations();
-        for (int i = 0; i < ddiffs.length; i++) {
-            int startLine = ddiffs[i].getTopRight();
-            int endLine = ddiffs[i].getBottomRight();
-            if (endLine > bottom || endLine == -1 && startLine > bottom) return Math.max(0, i-1);
+        if (Boolean.FALSE.equals(down)) {
+            // moving up
+            if (viewRect.y != 0) { // the first diff should be marked if at the top
+                int up = viewRect.y + viewRect.height * 1 / 3;
+                for (int i = ddiffs.length - 1; i >= 0; i--) {
+                    int startLine = ddiffs[i].getTopRight();
+                    int endLine = ddiffs[i].getBottomRight();
+                    if (startLine < up && endLine < up) {
+                        return Math.min(ddiffs.length - 1, i + 1);
+                    }
+                }
+            }
+            return ddiffs.length == 0 ? -1 : 0;
+        } else {
+            // moving down
+            for (int i = 0; i < ddiffs.length; i++) {
+                int startLine = ddiffs[i].getTopRight();
+                int endLine = ddiffs[i].getBottomRight();
+                if (startLine > bottom && (endLine > bottom || endLine == -1)) {
+                    return Math.max(0, i-1);
+                }
+            }
+            return ddiffs.length - 1;
         }
-        return ddiffs.length - 1;
     }
 
     /**
@@ -828,12 +846,12 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
      * 1) If user only pushes Next/Previous buttons in Diff, he wants to review changes one by one
      * 2) If user touches the scrollbar, 'current difference' changes accordingly 
      */
-    void updateCurrentDifference() {
+    void updateCurrentDifference (Boolean down) {
         assert SwingUtilities.isEventDispatchThread();
         if (ignoredUpdateEvents) {
             return;
         }
-        int cd = computeCurrentDifference();
+        int cd = computeCurrentDifference(down);
         setDifferenceIndex(cd);
     }
     
@@ -890,18 +908,14 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             
             DiffViewManager.DecoratedDifference ddiff = manager.getDecorations()[index];
             int offset;
-            if (ddiff.getDiff().getType() == Difference.DELETE) {
-                offset = jEditorPane2.getScrollPane().getViewport().getViewRect().height / 2 + 1;
-            } else {
-                offset = jEditorPane2.getScrollPane().getViewport().getViewRect().height / 5;
-            }
+            offset = jEditorPane2.getScrollPane().getViewport().getViewRect().height / 2 + 1;
             jEditorPane2.getScrollPane().getVerticalScrollBar().setValue(ddiff.getTopRight() - offset);
         } catch (IndexOutOfBoundsException | IllegalArgumentException ex) {
             Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
         }
 
         // scroll the left pane accordingly
-        manager.scroll();
+        manager.scroll(index == diffs.length - 1 || index == 0);
     }
     
     /** This method is called from within the constructor to initialize the form.
@@ -1469,7 +1483,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         if (diffs != NO_DIFFERENCES) {
                             diffChanged();
                         }
-                        if (getDifferenceIndex() >= diffs.length) updateCurrentDifference();
+                        if (getDifferenceIndex() >= diffs.length) updateCurrentDifference(null);
                         support.firePropertyChange(DiffController.PROP_DIFFERENCES, null, null);
                         jEditorPane1.setCurrentDiff(diffs);
                         jEditorPane2.setCurrentDiff(diffs);

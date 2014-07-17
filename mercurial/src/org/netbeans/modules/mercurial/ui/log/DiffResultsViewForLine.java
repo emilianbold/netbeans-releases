@@ -136,7 +136,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
         @Override
         public void perform () {
             showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_LoadingDiff")); //NOI18N
-            final DiffStreamSource leftSource = new DiffStreamSource(header.getFile(), revision, revision.getRevisionNumber());
+            final DiffStreamSource leftSource = new DiffStreamSource(header.getFile(), header.getFile(), revision, revision.getRevisionNumber());
             final LocalFileDiffStreamSource rightSource = new LocalFileDiffStreamSource(header.getFile(), true);
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled

@@ -643,6 +643,17 @@ public class OutWriterTest extends NbTestCase {
     }
 
     /**
+     * Test for bug 244645 - Npm install tab looks to be still active although
+     * it's done.
+     */
+    public void testNotClosedAfterCreation() {
+        OutWriter ow = new OutWriter();
+        assertFalse(ow.isClosed());
+        ow.dispose();
+        assertTrue(ow.isClosed());
+    }
+
+    /**
      * Assert that no line in the OutWriter has assigned a LineInfo object. That
      * would be waste of memory if the lines have no special properties.
      */

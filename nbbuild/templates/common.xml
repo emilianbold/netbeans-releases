@@ -1203,7 +1203,14 @@ made subject to such option by the copyright holder.
 
     <target name="-javadoc-init" depends="init">
         <!-- #71884: default Javadoc title and header -->
-        <property file="${manifest.mf}" prefix="mf."/>
+        <loadproperties srcFile="${manifest.mf}" prefix="mf.">
+            <filterchain>
+                <replaceregex pattern="[\n\r]+ ([^ ][^\n\r]*)"
+                            replace="\1"
+                            flags="g"
+                            byline="false"/>
+            </filterchain>
+        </loadproperties>
         <property file="${src.dir}/${mf.OpenIDE-Module-Localizing-Bundle}" prefix="bundle."/>
         <condition property="javadoc.title" value="${bundle.OpenIDE-Module-Name}">
             <isset property="bundle.OpenIDE-Module-Name"/>

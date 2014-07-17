@@ -115,6 +115,12 @@ public class ServicesTab extends TopComponent implements ExplorerManager.Provide
         ExplorerUtils.activateActions(manager, false);
     }
 
+    @Override
+    protected void componentShowing () {
+        super.componentShowing();
+        setDisplayName(NbBundle.getMessage(ServicesTab.class, "LBL_Services")); //NOI18N
+    }
+
     public @Override boolean requestFocusInWindow() {
         super.requestFocusInWindow();
         return view.requestFocusInWindow();

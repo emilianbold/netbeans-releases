@@ -81,12 +81,15 @@ public class MergeRevisionPanel extends javax.swing.JPanel {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevisionPanel.ffModePanel.text"))); // NOI18N
 
+        rbFFOptions.add(rbFFOption);
         org.openide.awt.Mnemonics.setLocalizedText(rbFFOption, org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevision.ffoption.ff")); // NOI18N
         rbFFOption.setToolTipText(org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevision.ffoption.ff.tt")); // NOI18N
 
+        rbFFOptions.add(rbFFOptionNever);
         org.openide.awt.Mnemonics.setLocalizedText(rbFFOptionNever, org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevision.ffoption.noff")); // NOI18N
         rbFFOptionNever.setToolTipText(org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevision.ffoption.noff.tt")); // NOI18N
 
+        rbFFOptions.add(rbFFOptionOnly);
         org.openide.awt.Mnemonics.setLocalizedText(rbFFOptionOnly, org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevision.ffoption.ffonly")); // NOI18N
         rbFFOptionOnly.setToolTipText(org.openide.util.NbBundle.getMessage(MergeRevisionPanel.class, "MergeRevision.ffoption.ffonly.tt")); // NOI18N
 

@@ -1577,6 +1577,7 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
             for (int i = 1; i < end; i++) {
                 if (resultLineNumbers[i] <= resultLineNumbers[i - 1]) {
                     if (startSetLine > 0) {
+                    try {
                         //System.out.println("write("+startSetLine+", "+i+")");
                         int offsetStart = org.openide.text.NbDocument.findLineOffset(doc, startSetLine - 1);
                         int offsetEnd = org.openide.text.NbDocument.findLineOffset(doc, i - 1);
@@ -1589,6 +1590,10 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
                         }
                         //dumpResultLineNumbers();
                         startSetLine = -1;
+                    } catch (IndexOutOfBoundsException ex) {
+                        Logger.getLogger(MergePanel.class.getName()).log(Level.SEVERE, "Invalid position "
+                                + startSetLine + "[" + i + "]: " + Arrays.toString(resultLineNumbers), ex);
+                    }
                     }
                 } else {
                     if (startSetLine < 0) {

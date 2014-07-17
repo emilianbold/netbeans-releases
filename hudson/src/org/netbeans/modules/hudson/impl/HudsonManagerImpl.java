@@ -94,11 +94,15 @@ public class HudsonManagerImpl {
     }
     
     public HudsonInstanceImpl addInstance(final HudsonInstanceImpl instance) {
-        if (null == instance || null != getInstancesMap().get(instance.getUrl()))
-            return null;
-        
-        if (null != getInstancesMap().put(instance.getUrl(), instance))
-            return null;
+        synchronized (this) {
+            if (null == instance
+                    || null != getInstancesMap().get(instance.getUrl())) {
+                return null;
+            }
+            if (null != getInstancesMap().put(instance.getUrl(), instance)) {
+                return null;
+            }
+        }
         for (HudsonManagerAgent agent: agents) {
             agent.instanceAdded(instance);
         }
@@ -107,12 +111,15 @@ public class HudsonManagerImpl {
     }
     
     public HudsonInstanceImpl removeInstance(HudsonInstanceImpl instance) {
-        if (null == instance || null == getInstancesMap().get(instance.getUrl()))
-            return null;
-        
-        if (null == getInstancesMap().remove(instance.getUrl()))
-            return null;
-        
+        synchronized (this) {
+            if (null == instance || null == getInstancesMap().get(
+                    instance.getUrl())) {
+                return null;
+            }
+            if (null == getInstancesMap().remove(instance.getUrl())) {
+                return null;
+            }
+        }
         // Stop autosynchronization if it's running
         instance.terminate();
         
@@ -130,7 +137,7 @@ public class HudsonManagerImpl {
         return instance;
     }
     
-    public HudsonInstanceImpl getInstance(String url) {
+    public synchronized HudsonInstanceImpl getInstance(String url) {
         return getInstancesMap().get(url);
     }
     

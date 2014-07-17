@@ -386,7 +386,7 @@ class DiffFileTable implements FileViewComponent<DiffNode>, MouseListener, ListS
               new TableSorter.SortingSafeTableModelEvent(tableModel, index, 0));
     }
 
-    void focus() {
+    public void focus() {
         table.requestFocus();
     }
 

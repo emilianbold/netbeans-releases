@@ -128,7 +128,7 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
         if (!url.endsWith("/")) { //NOI18N
             url += "/"; //NOI18N
         }
-        url += activity.getCommit().getRepository() + "/" + activity.getCommit().getCommitId(); //NOI18N
+        url += activity.getCommit().getRepository() + "/commit/" + activity.getCommit().getCommitId(); //NOI18N
         return url;
     }
 

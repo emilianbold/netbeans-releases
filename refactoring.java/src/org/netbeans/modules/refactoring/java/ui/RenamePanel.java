@@ -57,6 +57,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -224,16 +225,17 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 	}
 
 	public boolean containsTestMethod(Element methodElement) {
-	    if (testClassMethods != null) {
-		String methodName = RefactoringUtils.getTestMethodName(methodElement.getSimpleName().toString());
-		for (ExecutableElement testClassMethod : testClassMethods) {
-		    if (testClassMethod.getSimpleName().contentEquals(methodName)) {
-			return true;
-		    }
-		}
-	    }
-	    return false;
-	}
+            if (testClassMethods != null) {
+                String methodName = RefactoringUtils.getTestMethodName(methodElement.getSimpleName().toString());
+                for (ExecutableElement testClassMethod : testClassMethods) {
+                    if (testClassMethod.getSimpleName().contentEquals(methodName) 
+                            && testClassMethod.getReturnType().getKind().equals(TypeKind.VOID)) { // test method should at least be void
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
     }
 
     private void addTestMethod(LocationResult location, TestLocator locator, final Element methodElement) {

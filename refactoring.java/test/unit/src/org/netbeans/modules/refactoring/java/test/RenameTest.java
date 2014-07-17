@@ -516,6 +516,58 @@ public class RenameTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
     }
+
+    public void test243970() throws Exception { // #62897 rename class method renames correct test method as well
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "    }\n"
+                + "}"));
+        writeFilesAndWaitForScan(test,
+                new File("t/ATest.java", "package t;\n"
+                + "import org.testng.annotations.DataProvider;\n"
+                + "import org.testng.annotations.Test;\n"
+                + "\n"
+                + "public class ATest {\n"
+                + "    @DataProvider\n"
+                + "    Object[][] testFoo() {\n"
+                + "        return new Object[][] {\n"
+                + "            { \"Value 1\" },\n"
+                + "            { \"Value 2\" }\n"
+                + "        };\n"
+                + "    }"
+                + "    @Test(dataProvider = \"testFoo\")"
+                + "    public void testFoo(final String value) {\n"
+                + "    }\n"
+                + "}"));
+        JavaRenameProperties props = new JavaRenameProperties();
+        props.setIsRenameTestClassMethod(true);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "fooBar", props, true);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n" // XXX: Why use old filename, is it not renamed?
+                + "public class A {\n"
+                + "    public void fooBar() {\n"
+                + "    }\n"
+                + "}"));
+        verifyContent(test,
+                new File("t/ATest.java", "package t;\n"
+                + "import org.testng.annotations.DataProvider;\n"
+                + "import org.testng.annotations.Test;\n"
+                + "\n"
+                + "public class ATest {\n"
+                + "    @DataProvider\n"
+                + "    Object[][] testFoo() {\n"
+                + "        return new Object[][] {\n"
+                + "            { \"Value 1\" },\n"
+                + "            { \"Value 2\" }\n"
+                + "        };\n"
+                + "    }"
+                + "    @Test(dataProvider = \"testFoo\")"
+                + "    public void testFooBar(final String value) {\n"
+                + "    }\n"
+                + "}"));
+    }
     
     public void test111953() throws Exception {
         writeFilesAndWaitForScan(src, new File("t/B.java", "class B { public void m(){};}"),

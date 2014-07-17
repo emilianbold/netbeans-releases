@@ -73,6 +73,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
@@ -185,7 +186,7 @@ implements PropertyChangeListener, ContextAwareAction {
         assert EventQueue.isDispatchThread();
         if (getDelegate() instanceof Action) {
             if (!((Action)getDelegate()).isEnabled()) {
-                Toolkit.getDefaultToolkit().beep();
+                Utilities.disabledActionBeep();
                 // Do not fire newValue == null (see #165838)
                 firePropertyChange("enabled", null, isEnabled()); // NOI18N
                 return;

@@ -349,9 +349,11 @@ public class FindPerformer extends javax.swing.AbstractAction
         // Set combo box list items.
         panel.getComboBox().setModel(new DefaultComboBoxModel(history.toArray()));
         // Set last found string as selected if exist.
-        if (findString != null)
+        if (findString != null) {
             panel.getComboBox().setSelectedItem(findString);
-        
+            panel.getComboBox().getEditor().selectAll();
+        }
+
         dialog.setVisible(true);
         panel.requestFocusInWindow();
     }
