@@ -75,6 +75,7 @@ public class ActionToGoalMapping implements java.io.Serializable {
      * Field actions.
      */
     private java.util.List<NetbeansActionMapping> actions;
+    private java.util.List<NetbeansActionProfile> profiles;
 
 
       //-----------/
@@ -180,4 +181,24 @@ public class ActionToGoalMapping implements java.io.Serializable {
     {
         return modelEncoding;
     }
+    
+    public void addProfile(NetbeansActionProfile p) {
+        getProfiles().add(p);
+    }
+
+    public java.util.List<NetbeansActionProfile> getProfiles() {
+        if (this.profiles == null) {
+            this.profiles = new java.util.ArrayList<NetbeansActionProfile>();
+        }
+        return this.profiles;
+    } 
+
+    public void removeProfile(NetbeansActionProfile p) {
+        getActions().remove( p );
+    }
+
+    public void setProfiles(java.util.List<NetbeansActionProfile> p) {
+        this.profiles  = p;
+    }
+    
 }
