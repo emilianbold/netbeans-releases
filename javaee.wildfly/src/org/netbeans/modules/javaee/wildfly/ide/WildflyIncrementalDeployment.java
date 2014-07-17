@@ -63,8 +63,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013
- * Red Hat, inc.
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyIncrementalDeployment extends IncrementalDeployment implements IncrementalDeployment2 {
 

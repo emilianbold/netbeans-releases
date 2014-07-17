@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 class WildflyMailSessionsChildren extends WildflyAsyncChildren implements Refreshable {
 
