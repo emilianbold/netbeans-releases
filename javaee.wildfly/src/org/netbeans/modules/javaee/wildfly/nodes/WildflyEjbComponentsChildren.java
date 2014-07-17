@@ -52,7 +52,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyEjbComponentsChildren extends WildflyAsyncChildren implements Refreshable {
 

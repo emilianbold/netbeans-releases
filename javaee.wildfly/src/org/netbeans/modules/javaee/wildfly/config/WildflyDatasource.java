@@ -53,7 +53,7 @@ import org.openide.util.Parameters;
 
 /**
  *
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public final class WildflyDatasource implements Datasource {
 

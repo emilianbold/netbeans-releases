@@ -57,7 +57,7 @@ import org.netbeans.modules.javaee.wildfly.WildflyDeploymentFactory;
 
 /**
  *
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyManagementAPI {
 

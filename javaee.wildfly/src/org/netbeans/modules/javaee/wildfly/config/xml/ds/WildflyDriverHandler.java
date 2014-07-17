@@ -49,7 +49,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyDriverHandler extends AbstractHierarchicalHandler {
 

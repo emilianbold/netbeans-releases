@@ -51,7 +51,7 @@ import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 
 /**
  *
- * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013 Red Hat, inc.
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyJdbcDriverDeployer implements JDBCDriverDeployer {
 

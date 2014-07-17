@@ -49,7 +49,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public abstract class AbstractStateNode extends AbstractNode {
 

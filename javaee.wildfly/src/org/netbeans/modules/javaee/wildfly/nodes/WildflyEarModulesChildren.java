@@ -61,7 +61,7 @@ import org.openide.util.RequestProcessor;
  * It describes children nodes of the enterprise application node.
  *
  * @author Michal Mocnak
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyEarModulesChildren extends WildflyAsyncChildren implements Refreshable  {
 
