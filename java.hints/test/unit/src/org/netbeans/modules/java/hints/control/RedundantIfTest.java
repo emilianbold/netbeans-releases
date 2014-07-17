@@ -100,6 +100,35 @@ public class RedundantIfTest {
                               "}\n");
     }
 
+    /**
+     * Checks that De Morgan rules will not apply when negating an if-expression.
+     * @throws Exception 
+     */
+    @Test
+    public void testRedundantNoDeMorgan() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private boolean t(int i) {\n" +
+                       "        if (i < 5 || i > 7) {\n" +
+                       "            return false;\n" +
+                       "        } else {\n" +
+                       "            return true;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(RedundantIf.class)
+                .findWarning("3:8-3:10:verifier:" + Bundle.ERR_redundantIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private boolean t(int i) {\n" +
+                              "        return !(i < 5 || i > 7);\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+
     @Test
     public void testSimpleRedundantIfVar() throws Exception {
         HintTest.create()

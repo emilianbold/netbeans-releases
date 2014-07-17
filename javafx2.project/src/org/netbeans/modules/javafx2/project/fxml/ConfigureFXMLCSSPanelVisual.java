@@ -69,6 +69,7 @@ import org.openide.util.RequestProcessor;
 /**
  *
  * @author Anton Chechel <anton.chechel@oracle.com>
+ * @author Roman Svitanic
  */
 public class ConfigureFXMLCSSPanelVisual extends JPanel implements ActionListener, DocumentListener {
     
@@ -78,6 +79,7 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements ActionListene
     private RequestProcessor.Task updatePackagesTask;
     private static final ComboBoxModel WAIT_MODEL = SourceGroupSupport.getWaitModel();
     SourceGroupSupport support;
+    private String previousCssName;
 
     ConfigureFXMLCSSPanelVisual(Panel observer, SourceGroupSupport support, boolean isMaven) {
         this.support = support;
@@ -473,6 +475,7 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements ActionListene
     // End of variables declaration//GEN-END:variables
 
 // ActionListener implementation -------------------------------------------
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (createdLocationComboBox == e.getSource()) {
             if (!ignoreRootCombo) {
@@ -495,7 +498,6 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements ActionListene
 // DocumentListener implementation -----------------------------------------
     @Override
     public void changedUpdate(DocumentEvent e) {
-        updateText();
         updateResult();
         fireChange();
     }
@@ -540,9 +542,10 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements ActionListene
     
     private void updateText() {
         String cssName = getNewCSSName();
-        if (cssName == null) {
+        if (cssName == null  || cssName.equals(previousCssName)) {
             cssName = support.getParent().getCurrentFileName().toLowerCase() + FXMLTemplateWizardIterator.CSS_FILE_EXTENSION;
             createdNameTextField.setText(cssName);
+            previousCssName = cssName;
         }
     }
 
@@ -601,10 +604,6 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements ActionListene
         
         return FXMLTemplateWizardIterator.fileExist(getPathForExistingCSS(getExistingCSSName()));
     }
-
-    boolean shouldUseCSS() {
-        return cssCheckBox.isSelected();
-    }
     
     boolean shouldCreateCSS() {
         return cssCheckBox.isSelected() && createNewRadioButton.isSelected();
@@ -655,7 +654,7 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements ActionListene
                 return;
             }
             if (isValid()) {
-                settings.putProperty(FXMLTemplateWizardIterator.PROP_CSS_ENABLED, component.shouldUseCSS());
+                settings.putProperty(FXMLTemplateWizardIterator.PROP_CSS_ENABLED, component.isCSSEnabled());
                 settings.putProperty(FXMLTemplateWizardIterator.PROP_CSS_NAME_PROPERTY, 
                     component.shouldCreateCSS() ? component.getNewCSSName() : null);
                 settings.putProperty(FXMLTemplateWizardIterator.PROP_CSS_EXISTING_PROPERTY,

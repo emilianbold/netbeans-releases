@@ -1,7 +1,7 @@
 Name: FindBugs
-Version: 2.0.0
+Version: 3.0.0
 Description: Static Java Code Analysis
-Origin: http://repo1.maven.org/maven2/com/google/code/findbugs/findbugs/2.0.0/findbugs-2.0.0.jar
+Origin: http://prdownloads.sourceforge.net/findbugs/findbugs-3.0.0.zip
 License: LGPL-2.1
 
             GNU LESSER GENERAL PUBLIC LICENSE
