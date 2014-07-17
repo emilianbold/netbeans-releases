@@ -65,6 +65,7 @@
             <friend-packages>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
+                <friend>com.oracle.tools.ide.binary.dependencies</friend>
                 <friend>com.oracle.tools.ide.binary.dependencies.cm</friend>
                 <friend>com.oracle.tools.ide.projectless.impl</friend>
                 <friend>com.sun.tools.analytics.codemodel.bridge</friend>

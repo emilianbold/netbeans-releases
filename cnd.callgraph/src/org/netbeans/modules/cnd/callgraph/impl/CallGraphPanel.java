@@ -116,7 +116,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     private AtomicBoolean isSetDividerLocation = new AtomicBoolean(false);
     private static final RequestProcessor RP = new RequestProcessor("CallGraphPanel", 2);//NOI18N
     private final CallGraphUI graphUI;
-    private final Catalog messagesCatalog;
+    private final Catalog messagesCatalog;    
 
     /** Creates new form CallGraphPanel */
     public CallGraphPanel(CallGraphUI graphUI) {
@@ -468,57 +468,70 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         if (showGraph) {
             scene.clean();
         }
-        final Function function = model.getRoot();
-        if (function != null){
-            final Children children = root.getChildren();
-            if (!Children.MUTEX.isReadAccess()){
-                Children.MUTEX.writeAccess(new Runnable(){
+        //model.getRoot() can be too expensive to invoke it in UI thread
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                final Function function = model.getRoot();
+                SwingUtilities.invokeLater(new Runnable() {
+
                     @Override
                     public void run() {
-                        children.remove(children.getNodes());
-                        Node selectedNode = null;
-                        //if root of the model is invisible
-                        if (!model.isRootVisible()) {
-                            List<Call> childrenList = isCalls ? model.getCallees(function) : model.getCallers(function);
-                            Node[] functions = new Node[childrenList.size()];
-                            for (int i = 0; i < childrenList.size(); i++) {
-                                Call call = childrenList.get(i);
-                                Function f = isCalls ? call.getCallee() : call.getCaller();
-                                functions[i] = new FunctionRootNode(f, state, isCalls);
+                        if (function != null) {
+                            final Children children = root.getChildren();
+                            if (!Children.MUTEX.isReadAccess()) {
+                                Children.MUTEX.writeAccess(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        children.remove(children.getNodes());
+                                        Node selectedNode = null;
+                                        //if root of the model is invisible
+                                        if (!model.isRootVisible()) {
+                                            List<Call> childrenList = isCalls ? model.getCallees(function) : model.getCallers(function);
+                                            Node[] functions = new Node[childrenList.size()];
+                                            for (int i = 0; i < childrenList.size(); i++) {
+                                                Call call = childrenList.get(i);
+                                                Function f = isCalls ? call.getCallee() : call.getCaller();
+                                                functions[i] = new FunctionRootNode(f, state, isCalls);
+                                            }
+                                            if (functions.length > 0) {
+                                                selectedNode = functions[0];
+                                            }
+                                            children.add(functions);
+                                        } else {
+                                            selectedNode = new FunctionRootNode(function, state, isCalls);
+                                            children.add(new Node[]{selectedNode});
+                                        }
+                                        final Node node = selectedNode;
+                                        try {
+                                            getExplorerManager().setSelectedNodes(new Node[]{node});
+                                        } catch (PropertyVetoException ex) {
+                                        }
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                getTreeView().expandNode(node);
+                                            }
+                                        });
+                                    }
+                                });
                             }
-                            if (functions.length  > 0){
-                                selectedNode = functions[0];
-                            }
-                            children.add(functions);
                         } else {
-                            selectedNode = new FunctionRootNode(function, state, isCalls);
-                            children.add(new Node[]{selectedNode});
-                        }
-                        final Node node = selectedNode;                        
-                        try {
-                            getExplorerManager().setSelectedNodes(new Node[]{node});
-                        } catch (PropertyVetoException ex) {
-                        }
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                getTreeView().expandNode(node);
+                            final Children children = root.getChildren();
+                            if (!Children.MUTEX.isReadAccess()) {
+                                Children.MUTEX.writeAccess(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        children.remove(children.getNodes());
+                                    }
+                                });
                             }
-                        });
+                        }
                     }
                 });
-            }
-        } else {
-            final Children children = root.getChildren();
-            if (!Children.MUTEX.isReadAccess()){
-                Children.MUTEX.writeAccess(new Runnable(){
-                    @Override
-                    public void run() {
-                        children.remove(children.getNodes());
-                    }
-                });
-            }
-        }
+            }            
+        });
     }
 
     @Override
