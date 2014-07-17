@@ -111,11 +111,13 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     void updateCounts() {
         if (panel != null) {
             int count = getChangedTaskCount();
-            btnTotal.setText(getTotalString());
-            btnChanged.setText(getChangedString(count));
-            boolean showChanged = count > 0;
-            lblSeparator.setVisible(showChanged);
-            btnChanged.setVisible(showChanged);
+            synchronized (LOCK) {
+                btnTotal.setText(getTotalString());
+                btnChanged.setText(getChangedString(count));
+                boolean showChanged = count > 0;
+                lblSeparator.setVisible(showChanged);
+                btnChanged.setVisible(showChanged);
+            }
         }
     }
 
