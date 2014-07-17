@@ -917,7 +917,7 @@ class OccurenceBuilder {
         final Exact methodName = NameKind.exact(elementInfo.getName());
         QualifiedName clzName = elementInfo.getTypeQualifiedName();
         final Set<TypeConstantElement> constants = new HashSet<>();
-        Scope scope = elementInfo.getScope() instanceof TypeScope ? elementInfo.getScope() : elementInfo.getScope().getInScope();
+        Scope scope = ModelUtils.getTypeScope(elementInfo.getScope());
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
             if (clzName.getName().equalsIgnoreCase("self") //NOI18N
                     || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
@@ -1416,7 +1416,7 @@ class OccurenceBuilder {
                 for (Entry<ASTNodeInfo<StaticConstantAccess>, Scope> entry : staticConstantInvocations.entrySet()) {
                     ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
-                    final Scope scope = entry.getValue() instanceof TypeScope ? entry.getValue() : entry.getValue().getInScope();
+                    final Scope scope = ModelUtils.getTypeScope(entry.getValue());
                     if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
                         if (clzName.getName().equalsIgnoreCase("self") //NOI18N
                                 || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
