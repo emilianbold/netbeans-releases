@@ -191,11 +191,14 @@ public class FieldForUnusedParam extends AbstractHint {
         if (cancel.get() || found) {
             return null;
         }
-        
-        List<Fix> fix = Collections.<Fix>singletonList(new FixImpl(info.getJavaSource(), TreePathHandle.create(treePath, info), isFinalFields(getPreferences(null)), existing));
-        String displayName = NbBundle.getMessage(FieldForUnusedParam.class, "ERR_UnusedParameter");
-        ErrorDescription err = ErrorDescriptionFactory.createErrorDescription(Severity.HINT, displayName,fix, info.getFileObject(), offset, offset);
-        
+
+        final VariableTree vt = (VariableTree) treePath.getLeaf();
+        final String name = vt.getName().toString();
+
+        List<Fix> fix = Collections.<Fix>singletonList(new FixImpl(info.getJavaSource(), TreePathHandle.create(treePath, info), isFinalFields(getPreferences(null)), existing, name));
+        String displayName = NbBundle.getMessage(FieldForUnusedParam.class, "ERR_UnusedParameter", name);
+        ErrorDescription err = ErrorDescriptionFactory.createErrorDescription(Severity.HINT, displayName, fix, info.getFileObject(), offset, offset);
+
         return Collections.singletonList(err);
     }
 
@@ -228,17 +231,19 @@ public class FieldForUnusedParam extends AbstractHint {
         private final JavaSource js;
         private final TreePathHandle tph;
         private final boolean finalFields;
-                final boolean existing;
+        private final String fieldName;
+        private final boolean existing;
 
-        public FixImpl(JavaSource js, TreePathHandle tph, boolean finalFields, boolean existing) {
+        public FixImpl(JavaSource js, TreePathHandle tph, boolean finalFields, boolean existing, String fieldName) {
             this.js = js;
             this.tph = tph;
             this.finalFields = finalFields;
             this.existing = existing;
+            this.fieldName = fieldName;
         }
-        
+
         public String getText() {
-            return existing ? NbBundle.getMessage(FieldForUnusedParam.class, "FIX_AssignToExisting") : NbBundle.getMessage(FieldForUnusedParam.class, "FIX_CreateField");
+            return existing ? NbBundle.getMessage(FieldForUnusedParam.class, "FIX_AssignToExisting", fieldName) : NbBundle.getMessage(FieldForUnusedParam.class, "FIX_CreateField", fieldName);
         }
 
         public ChangeInfo implement() throws Exception {
