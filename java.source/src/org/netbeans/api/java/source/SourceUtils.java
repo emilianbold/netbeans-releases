@@ -212,7 +212,7 @@ public class SourceUtils {
                     || info.getTypes().isAssignable(to, t.getUpperBound());
         }
         if (from.getKind() == TypeKind.WILDCARD) {
-            from = Types.instance(c).upperBound((Type)from);
+            from = Types.instance(c).wildUpperBound((Type)from);
         }
         return Check.instance(c).checkType(null, (Type)from, (Type)to).getKind() != TypeKind.ERROR;
     }

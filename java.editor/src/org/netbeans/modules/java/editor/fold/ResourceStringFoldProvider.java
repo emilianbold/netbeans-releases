@@ -319,7 +319,7 @@ public class ResourceStringFoldProvider extends ParsingFoldSupport{
                 return null;
             }
             Element dest = info.getTrees().getElement(getCurrentPath());
-            if (dest.getKind() == ElementKind.LOCAL_VARIABLE || dest.getKind() == ElementKind.FIELD) {
+            if (dest != null && (dest.getKind() == ElementKind.LOCAL_VARIABLE || dest.getKind() == ElementKind.FIELD)) {
                 variableBundles.put(dest, exprBundleName);
             }
             return null;
@@ -331,7 +331,7 @@ public class ResourceStringFoldProvider extends ParsingFoldSupport{
             Void d = super.visitAssignment(node, p);
             if (exprBundleName != null) {
                 Element dest = info.getTrees().getElement(getCurrentPath());
-                if (dest.getKind() == ElementKind.LOCAL_VARIABLE || dest.getKind() == ElementKind.FIELD) {
+                if (dest != null && (dest.getKind() == ElementKind.LOCAL_VARIABLE || dest.getKind() == ElementKind.FIELD)) {
                     variableBundles.put(dest, exprBundleName);
                 }
             }
