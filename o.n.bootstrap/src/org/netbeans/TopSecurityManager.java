@@ -309,6 +309,7 @@ public class TopSecurityManager extends SecurityManager {
         warnedClassesNH.add("org.netbeans.MainImpl$BootClassLoader");
         warnedClassesNH.add("org.netbeans.CLIHandler");
         warnedClassesNH.add("org.netbeans.Stamps"); // NOI18N
+        warnedClassesNH.add("org.netbeans.Clusters"); // NOI18N
         warnedClassesNH.add("org.netbeans.core.startup.InstalledFileLocatorImpl"); // NOI18N
         warnedClassesNH.add("org.netbeans.core.startup.CLIOptions");
         warnedClassesNH.add("org.netbeans.core.startup.preferences.RelPaths");
