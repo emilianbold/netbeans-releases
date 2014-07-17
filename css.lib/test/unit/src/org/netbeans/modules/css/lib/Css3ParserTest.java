@@ -350,6 +350,7 @@ public class Css3ParserTest extends CssTestBase {
 //        NodeUtil.dumpTree(res.getParseTree());
         AtomicBoolean recoveryNodeFound = new AtomicBoolean(false);
         NodeVisitor<AtomicBoolean> visitor = new NodeVisitor<AtomicBoolean>(recoveryNodeFound) {
+
             @Override
             public boolean visit(Node node) {
                 if (node.type() == NodeType.recovery) {
@@ -949,6 +950,7 @@ public class Css3ParserTest extends CssTestBase {
         CssParserResult result = TestUtil.parse("*  ");
         AtomicBoolean foundEmptyRuleNode = new AtomicBoolean(false);
         NodeVisitor<AtomicBoolean> visitor = new NodeVisitor<AtomicBoolean>(foundEmptyRuleNode) {
+
             @Override
             public boolean visit(Node node) {
                 if (node instanceof RuleNode) {
@@ -1322,6 +1324,12 @@ public class Css3ParserTest extends CssTestBase {
 
     public void testIssue240881_02() throws ParseException, BadLocationException {
         assertParses(".less {}");
+    }
+
+    public void testMathExpressionInFunction() {
+        assertParses("div {\n"
+                + "    padding: calc(1 * 1);\n"
+                + "}");
     }
 
 //    public void testTemplatingMarksInBody() throws ParseException, BadLocationException {
