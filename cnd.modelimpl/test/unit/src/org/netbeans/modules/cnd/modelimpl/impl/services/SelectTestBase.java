@@ -50,6 +50,7 @@ import java.util.Iterator;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -109,7 +110,7 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
             project.waitParse();
             _testGetMethods(project.getGlobalNamespace());
             for (CsmProject lib : project.getLibraries()) {
-                _testGetFunctions(lib.getGlobalNamespace());
+                _testGetMethods(lib.getGlobalNamespace());
             }
             assertNoExceptions();
         } finally {
@@ -125,6 +126,21 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
             _testGetFunctions(project.getGlobalNamespace());
             for (CsmProject lib : project.getLibraries()) {
                 _testGetFunctions(lib.getGlobalNamespace());
+            }
+            assertNoExceptions();
+        } finally {
+            CsmCacheManager.leave();
+        }
+    }    
+    
+    public void doTestGetFields() throws Exception {
+        CsmCacheManager.enter();
+        try {
+            CsmProject project = traceModel.getProject();
+            project.waitParse();
+            _testGetFields(project.getGlobalNamespace());
+            for (CsmProject lib : project.getLibraries()) {
+                _testGetFields(lib.getGlobalNamespace());
             }
             assertNoExceptions();
         } finally {
@@ -152,34 +168,41 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
         boolean dumpProjectContainer = true;
         for (CsmDeclaration decl : nsp.getDeclarations()) {
             if (CsmKindUtilities.isClass(decl)) {
-                for (CsmMember member : ((CsmClass) decl).getMembers()) {
-                    if (CsmKindUtilities.isMethod(member)) {
-                        CsmFunction func = (CsmFunction) member;
-                        Iterator<CsmFunction> iter = _getFunctions(project, func);
-                        final CsmFile containingFile = func.getContainingFile();
-                        boolean ok = _checkFound(func, iter);
-                        if (!ok) {
-                            System.err.println("ERROR FOR: " + decl + "\n\tUIN=" + decl.getUniqueName() + "\n\tFQN="+decl.getQualifiedName() + "\n\tNS="+nsp);
-                            // more trace
-                            if (dumpProjectContainer && project instanceof ProjectBase) {
-                                dumpProjectContainer = false;
-                                ModelImplTest.dumpProjectContainers(System.err, (ProjectBase) project, false);
-                            }
-                            if (containingFile instanceof FileImpl) {
-                                ((FileImpl)containingFile).dumpPPStates(new PrintWriter(System.err));
-                            }
-                        }
-                        assertTrue("Function " + decl.getQualifiedName().toString() + 
-                                " from " + containingFile.getAbsolutePath() + ":" + func.getStartPosition() + 
-                                " not found in project " + project.getName(), ok);
-                    }
-                }
+
             }
         }
         for (CsmNamespace nested : nsp.getNestedNamespaces()) {
-            _testGetFunctions(nested);
+            _testGetMethods(nested);
         }
     }    
+    
+    protected void _testGetMethods(CsmProject project, CsmClass cls) throws Exception {
+        boolean dumpProjectContainer = true;
+        for (CsmMember member : cls.getMembers()) {
+            if (CsmKindUtilities.isClass(member)) {
+                _testGetMethods(project, (CsmClass) member);
+            } else if (CsmKindUtilities.isMethod(member)) {
+                CsmFunction func = (CsmFunction) member;
+                Iterator<CsmFunction> iter = _getFunctions(project, func);
+                final CsmFile containingFile = func.getContainingFile();
+                boolean ok = _checkFound(func, iter);
+                if (!ok) {
+                    System.err.println("ERROR FOR: " + func + "\n\tUIN=" + func.getUniqueName() + "\n\tFQN="+func.getQualifiedName() + "\n\tCLS="+cls);
+                    // more trace
+                    if (dumpProjectContainer && project instanceof ProjectBase) {
+                        dumpProjectContainer = false;
+                        ModelImplTest.dumpProjectContainers(System.err, (ProjectBase) project, false);
+                    }
+                    if (containingFile instanceof FileImpl) {
+                        ((FileImpl)containingFile).dumpPPStates(new PrintWriter(System.err));
+                    }
+                }
+                assertTrue("Method " + func.getQualifiedName().toString() + 
+                        " from " + containingFile.getAbsolutePath() + ":" + func.getStartPosition() + 
+                        " not found in project " + project.getName(), ok);
+            }
+        }        
+    }
 
     protected void _testGetFunctions(CsmNamespace nsp) throws Exception {
         CsmProject project = nsp.getProject();
@@ -209,6 +232,45 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
         for (CsmNamespace nested : nsp.getNestedNamespaces()) {
             _testGetFunctions(nested);
         }
+    }
+    
+    protected void _testGetFields(CsmNamespace nsp) throws Exception {
+        for (CsmDeclaration decl : nsp.getDeclarations()) {
+            if (CsmKindUtilities.isClass(decl)) {
+                _testGetFields(nsp.getProject(), (CsmClass) decl);
+            }
+        }
+        for (CsmNamespace nested : nsp.getNestedNamespaces()) {
+            _testGetFields(nested);
+        }
+    }    
+    
+    protected void _testGetFields(CsmProject project, CsmClass cls) throws Exception {
+        boolean dumpProjectContainer = true;        
+        for (CsmMember member : cls.getMembers()) {
+            if (CsmKindUtilities.isClass(member)) {
+                _testGetFields(project, (CsmClass) member);
+            } else if (CsmKindUtilities.isField(member)) {
+                CsmField field = (CsmField) member;
+                Iterator<CsmVariable> iter = _getVariables(project, field);
+                final CsmFile containingFile = field.getContainingFile();
+                boolean ok = _checkFound(field, iter);
+                if (!ok) {
+                    System.err.println("ERROR FOR: " + field + "\n\tUIN=" + field.getUniqueName() + "\n\tFQN="+field.getQualifiedName() + "\n\tCLS="+cls);
+                    // more trace
+                    if (dumpProjectContainer && project instanceof ProjectBase) {
+                        dumpProjectContainer = false;
+                        ModelImplTest.dumpProjectContainers(System.err, (ProjectBase) project, false);
+                    }
+                    if (containingFile instanceof FileImpl) {
+                        ((FileImpl)containingFile).dumpPPStates(new PrintWriter(System.err));
+                    }
+                }
+                assertTrue("Field " + field.getQualifiedName().toString() + 
+                        " from " + containingFile.getAbsolutePath() + ":" + field.getStartPosition() + 
+                        " not found in project " + project.getName(), ok);
+            }
+        }        
     }
     
     protected void _testGetVariables(CsmNamespace nsp) throws Exception {
