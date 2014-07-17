@@ -62,7 +62,7 @@
                             </Variable>
                         </ParametrName>
                         <DefaultValue>
-                            <ArrayCreation start='28' end='40'>
+                            <ArrayCreation start='28' end='40' type='NEW'>
                                 <ArrayElement start='29' end='39'>
                                     <Key>
                                         <Scalar start='29' end='30' type='INT' value='2'/>

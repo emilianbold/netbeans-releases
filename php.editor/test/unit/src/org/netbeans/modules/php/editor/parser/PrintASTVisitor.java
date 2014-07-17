@@ -215,7 +215,7 @@ public class PrintASTVisitor implements Visitor {
 
     @Override
     public void visit(ArrayCreation node) {
-        XMLPrintNode printNode = new XMLPrintNode(node, "ArrayCreation");
+        XMLPrintNode printNode = new XMLPrintNode(node, "ArrayCreation", new String[]{"type", node.getType().name()});
         printNode.addChildren(node.getElements());
         printNode.print(this);
     }
