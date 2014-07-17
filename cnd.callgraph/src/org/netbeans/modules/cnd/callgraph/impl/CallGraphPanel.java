@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
@@ -117,11 +118,14 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     private static final RequestProcessor RP = new RequestProcessor("CallGraphPanel", 2);//NOI18N
     private final CallGraphUI graphUI;
     private final Catalog messagesCatalog;    
+    final ShowOverridingAction showOverridingAction;
+    private final Icon overridingIcon = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/show_overriding.gif"));
 
     /** Creates new form CallGraphPanel */
     public CallGraphPanel(CallGraphUI graphUI) {
         this.graphUI = graphUI;
         messagesCatalog = graphUI == null || graphUI.getCatalog() == null ? new DefaultCatalog() : graphUI.getCatalog();
+        showOverridingAction = new ShowOverridingAction();        
         initComponents();
         isCalls = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_CALLS, true);
         isShowOverriding = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_SHOW_OVERRIDING, false);
@@ -135,7 +139,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         actions.add(null);
         actions.add(new WhoIsCalledAction());
         actions.add(new WhoCallsAction());
-        actions.add(new ShowOverridingAction());
+        actions.add((showOverridingAction));
         actions.add(null);
         actions.add(new ShowFunctionParameters());
         if (showGraph) {
@@ -420,14 +424,13 @@ private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 }//GEN-LAST:event_focusOnActionPerformed
 
 private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_overridingActionPerformed
-    setShowOverriding(!isShowOverriding);
+    showOverridingAction.actionPerformed(evt);
+    
 }//GEN-LAST:event_overridingActionPerformed
 
     private void setShowOverriding(boolean showOverriding){
         isShowOverriding = showOverriding;
-        NbPreferences.forModule(CallGraphPanel.class).putBoolean(IS_SHOW_OVERRIDING, isShowOverriding);
-        updateButtons();
-        update();
+        NbPreferences.forModule(CallGraphPanel.class).putBoolean(IS_SHOW_OVERRIDING, isShowOverriding);        
     }
 
     private void setShowParameters(boolean showParameters){
@@ -641,19 +644,29 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
     }
 
-    private final class ShowOverridingAction extends AbstractAction implements Presenter.Popup {
+    private final class ShowOverridingAction extends org.netbeans.modules.cnd.callgraph.api.ui.CallGraphAction implements Presenter.Popup {
         private final JCheckBoxMenuItem menuItem;
         public ShowOverridingAction() {
+            super(new CallGraphActionEDTRunnable() {
+
+                @Override
+                public void run() {                    
+                    updateButtons();
+                    update();
+                }
+            });
             putValue(Action.NAME, getMessage( "ShowOverridingAction"));  // NOI18N
-            putValue(Action.SMALL_ICON, overriding.getIcon());
+            putValue(Action.SMALL_ICON, overridingIcon);
             menuItem = new JCheckBoxMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void doNonEDTAction() {
             setShowOverriding(!isShowOverriding);
+            model.update();
         }
+        
 
         @Override
         public final JMenuItem getPopupPresenter() {
