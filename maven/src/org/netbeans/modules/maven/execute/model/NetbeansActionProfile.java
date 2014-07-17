@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -33,41 +33,88 @@
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
+ * made subject to such     public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+option by the copyright holder.
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.navigation;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.StructureItem;
-import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.spi.ParserResult;
+package org.netbeans.modules.maven.execute.model;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class LatteStructureScanner implements StructureScanner {
+public class NetbeansActionProfile {
+    /**
+     * Field actions.
+     */
+    private java.util.List<NetbeansActionMapping> actions;
+    private String id;
 
-    @Override
-    public List<? extends StructureItem> scan(ParserResult info) {
-        return Collections.<StructureItem>emptyList();
+
+      //-----------/
+     //- Methods -/
+    //-----------/
+
+    public String getId() {
+        return id;
     }
 
-    @Override
-    public Map<String, List<OffsetRange>> folds(ParserResult info) {
-        return Collections.<String, List<OffsetRange>>emptyMap();
+    public void setId(String id) {
+        this.id = id;
     }
 
-    @Override
-    public Configuration getConfiguration() {
-        return null;
-    }
+    /**
+     * Method addAction.
+     * 
+     * @param netbeansActionMapping
+     */
+    public void addAction(NetbeansActionMapping netbeansActionMapping)
+    {
+        getActions().add( netbeansActionMapping );
+    } //-- void addAction(NetbeansActionMapping) 
 
+    /**
+     * Method getActions.
+     * 
+     * @return java.util.List
+     */
+    public java.util.List<NetbeansActionMapping> getActions()
+    {
+        if ( this.actions == null )
+        {
+            this.actions = new java.util.ArrayList<NetbeansActionMapping>();
+        }
+        
+        return this.actions;
+    } //-- java.util.List getActions() 
+
+    /**
+     * Method removeAction.
+     * 
+     * @param netbeansActionMapping
+     */
+    public void removeAction(NetbeansActionMapping netbeansActionMapping)
+    {
+        getActions().remove( netbeansActionMapping );
+    } //-- void removeAction(NetbeansActionMapping) 
+
+    /**
+     * Set the actions field.
+     * 
+     * @param actions
+     */
+    public void setActions(java.util.List<NetbeansActionMapping> actions)
+    {
+        this.actions = actions;
+    } //-- void setActions(java.util.List) 
+    
 }

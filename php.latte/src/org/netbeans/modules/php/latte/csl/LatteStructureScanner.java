@@ -39,67 +39,35 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.nodes;
+package org.netbeans.modules.php.latte.csl;
 
-import java.awt.Image;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import javax.swing.Action;
-import org.netbeans.modules.javaee.wildfly.config.WildflyResourceAdapter;
-import org.openide.actions.PropertiesAction;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
  *
- * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class WildflyResourceAdapterNode extends AbstractNode {
+public class LatteStructureScanner implements StructureScanner {
 
-
-    WildflyResourceAdapterNode(WildflyResourceAdapter resourceAdapter, Lookup lookup) {
-        super(Children.LEAF);
-        setDisplayName(resourceAdapter.getName());
-        setName(resourceAdapter.getName());
-        setShortDescription(resourceAdapter.getName());
-        initProperties(resourceAdapter.getConfiguration());
-    }
-
-    protected final void initProperties(Map<String, String> configuration) {
-        for(Map.Entry<String, String> property : configuration.entrySet()) {
-            addProperty(property.getKey(), property.getValue());
-        }
-    }
-
-    private void addProperty(String name, String value) {
-        PropertySupport ps = new SimplePropertySupport(name, value, name, name);
-        getSheet().get(Sheet.PROPERTIES).put(ps);
+    @Override
+    public List<? extends StructureItem> scan(ParserResult info) {
+        return Collections.<StructureItem>emptyList();
     }
 
     @Override
-    protected Sheet createSheet() {
-        Sheet sheet = Sheet.createDefault();
-        setSheet(sheet);
-        return sheet;
+    public Map<String, List<OffsetRange>> folds(ParserResult info) {
+        return Collections.<String, List<OffsetRange>>emptyMap();
     }
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new SystemAction[]{SystemAction.get(PropertiesAction.class)};
-    }
-
-    @Override
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage(Util.CONNECTOR_ICON);
-    }
-
-    @Override
-    public Image getOpenedIcon(int type) {
-        return ImageUtilities.loadImage(Util.CONNECTOR_ICON);
+    public Configuration getConfiguration() {
+        return null;
     }
 
 }

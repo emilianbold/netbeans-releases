@@ -49,7 +49,6 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
 public class TwigParserResult extends ParserResult {
-    private volatile boolean valid = true;
     private final List<Error> errorList = new ArrayList<>();
     private final List<Block> blockList = new ArrayList<>();
 
@@ -71,7 +70,6 @@ public class TwigParserResult extends ParserResult {
 
     @Override
     protected void invalidate() {
-        valid = false;
     }
 
     @Override

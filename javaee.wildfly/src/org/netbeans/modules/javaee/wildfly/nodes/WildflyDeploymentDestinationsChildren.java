@@ -57,7 +57,7 @@ import org.openide.util.Lookup;
  * interface and due to it can be refreshed via ResreshModulesAction.
  *
  * @author Michal Mocnak
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyDeploymentDestinationsChildren extends WildflyAsyncChildren implements Refreshable {
 

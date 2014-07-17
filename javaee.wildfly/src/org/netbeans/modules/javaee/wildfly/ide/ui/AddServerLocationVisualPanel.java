@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Ivan Sidorkin
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class AddServerLocationVisualPanel extends javax.swing.JPanel {
 
