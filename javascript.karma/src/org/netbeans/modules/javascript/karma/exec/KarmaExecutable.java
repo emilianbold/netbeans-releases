@@ -334,9 +334,9 @@ public class KarmaExecutable {
                 testRunner.process(line);
                 return Collections.emptyList();
             }
-            // some error?
-            if (line.contains(KARMA_ERROR)
-                    || line.contains(KARMA_WARN)) {
+            // some error before browser startup?
+            if (connectedBrowsers < browserCount
+                    && (line.contains(KARMA_ERROR) || line.contains(KARMA_WARN))) {
                 KarmaErrorsDialog.getInstance().show();
             }
             // process output
