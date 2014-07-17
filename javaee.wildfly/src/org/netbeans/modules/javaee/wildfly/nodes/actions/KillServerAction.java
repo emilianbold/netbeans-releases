@@ -50,7 +50,7 @@ import static org.openide.util.actions.CookieAction.MODE_EXACTLY_ONE;
 
 /**
  *
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class KillServerAction extends CookieAction {
 

@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Libor Kotouc
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public final class WildflyDatasourceManager implements DatasourceManager {
 
