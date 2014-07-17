@@ -58,22 +58,32 @@ import org.openide.util.Lookup;
 public final class CsmEntityResolver {
     
     /**
-     * Resolves entity by declaration text or qualified name within a project
+     * Resolves entity by qualified name or declaration text.
+     * 
+     * Examples: 
+     * 1) String "AAA<int>::BBB" will be resolved into symbol BBB 
+     *    inside class AAA<int>
+     * 2) String "int aaa::foo(int)" will be resolved into function or method 
+     *    'foo' which takes one integer parameter inside namespace or class 'aaa'
+     * 3) String "aaa::foo(int)" is a signature of a function above and will be
+     *    resolved exactly like in the previous example
      * 
      * @param project
      * @param declText
      * 
-     * @return all entities which has the same declaration text
-     */    
+     * @return all entities which have the same declaration text
+     */       
     public static Collection<CsmObject> resolveEntity(NativeProject project, CharSequence declText) {
         return DEFAULT.resolveEntity(project, declText);
     }    
     
     /**
-     * Resolves entity by declaration text or qualified name within a project
+     * Resolves entity by or qualified name declaration text
+     * 
      * @param project
      * @param declText
-     * @return all functions which has the same signature
+     * 
+     * @return all entities which have the same declaration text
      */
     public static Collection<CsmObject> resolveEntity(CsmProject project, CharSequence declText) {
         return DEFAULT.resolveEntity(project, declText);
