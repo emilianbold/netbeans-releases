@@ -220,7 +220,6 @@ class OccurenceBuilder {
         if (canBePrepared(statement, scope)) {
             ASTNodeInfo<GotoStatement> node = ASTNodeInfo.create(statement);
             gotoStatement.put(node, scope);
-
         }
     }
 
@@ -228,7 +227,6 @@ class OccurenceBuilder {
         if (canBePrepared(label, scope)) {
             ASTNodeInfo<GotoLabel> node = ASTNodeInfo.create(label);
             gotoLabel.put(node, scope);
-
         }
     }
 
@@ -236,7 +234,6 @@ class OccurenceBuilder {
         if (canBePrepared(fieldAccess, scope)) {
             ASTNodeInfo<FieldAccess> node = ASTNodeInfo.create(fieldAccess);
             fieldInvocations.put(node, scope);
-
         }
     }
 
@@ -244,7 +241,6 @@ class OccurenceBuilder {
         if (canBePrepared(incl, inclImpl)) {
             IncludeInfo node = IncludeInfo.create(incl);
             includes.put(node, inclImpl);
-
         }
     }
 
@@ -252,7 +248,6 @@ class OccurenceBuilder {
         if (canBePrepared(methodInvocation, scope)) {
             ASTNodeInfo<MethodInvocation> node = ASTNodeInfo.create(methodInvocation);
             methodInvocations.put(node, scope);
-
         }
     }
 
@@ -267,15 +262,13 @@ class OccurenceBuilder {
         if (canBePrepared(variable, scope)) {
             ASTNodeInfo<Variable> node = ASTNodeInfo.create(variable);
             variables.put(node, scope);
-
         }
     }
 
     void prepare(FunctionInvocation functionInvocation, Scope scope) {
         if (canBePrepared(functionInvocation, scope)) {
             ASTNodeInfo<FunctionInvocation> node = ASTNodeInfo.create(functionInvocation);
-            this.fncInvocations.put(node, scope);
-
+            fncInvocations.put(node, scope);
         }
     }
 
@@ -283,7 +276,6 @@ class OccurenceBuilder {
         if (canBePrepared(staticMethodInvocation, scope)) {
             ASTNodeInfo<StaticMethodInvocation> node = ASTNodeInfo.create(staticMethodInvocation);
             this.staticMethodInvocations.put(node, scope);
-
         }
     }
 
@@ -291,7 +283,6 @@ class OccurenceBuilder {
         if (canBePrepared(staticFieldAccess, scope)) {
             ASTNodeInfo<StaticFieldAccess> node = ASTNodeInfo.create(staticFieldAccess);
             staticFieldInvocations.put(node, scope);
-
         }
     }
 
@@ -299,7 +290,6 @@ class OccurenceBuilder {
         if (canBePrepared(staticConstantAccess, scope)) {
             ASTNodeInfo<StaticConstantAccess> node = ASTNodeInfo.create(staticConstantAccess);
             staticConstantInvocations.put(node, scope);
-
         }
     }
 
@@ -307,7 +297,6 @@ class OccurenceBuilder {
         if (canBePrepared(clsName, scope)) {
             ASTNodeInfo<ClassName> node = ASTNodeInfo.create(clsName);
             clasNames.put(node, scope);
-
         }
     }
 
@@ -443,7 +432,6 @@ class OccurenceBuilder {
                     prepare(Kind.IFACE, iface, scope);
                 }
             }
-
         }
     }
 
@@ -455,7 +443,6 @@ class OccurenceBuilder {
             for (Expression iface : interfaes) {
                 prepare(Kind.IFACE, iface, scope);
             }
-
         }
     }
 
@@ -470,7 +457,6 @@ class OccurenceBuilder {
         if (canBePrepared(functionDeclaration, scope)) {
             FunctionDeclarationInfo node = FunctionDeclarationInfo.create(functionDeclaration);
             fncDeclarations.put(node, scope);
-
         }
     }
 
@@ -532,10 +518,6 @@ class OccurenceBuilder {
         }
 
         for (Entry<ASTNodeInfo<GotoLabel>, Scope> entry : gotoLabel.entrySet()) {
-            setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
-        }
-
-        for (Entry<ASTNodeInfo<FieldAccess>, Scope> entry : fieldInvocations.entrySet()) {
             setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
         }
 
