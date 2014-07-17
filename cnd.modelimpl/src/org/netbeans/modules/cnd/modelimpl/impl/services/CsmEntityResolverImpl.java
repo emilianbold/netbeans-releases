@@ -88,6 +88,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.VariableProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.spi.model.services.CsmEntityResolverImplementation;
@@ -124,24 +125,30 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
                 // Simple case - declText is just a qualified id
                 return resolveQualifiedId(project, ast);
             } else {
-                // More complex case - declText is something like declaration.
-                ast = tryParseDeclaration(declText);
+                ast = tryParseFunctionSignature(declText);                
                 if (ast != null) {
-                    switch (ast.getType()) {
-                        case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
-                        case CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION:
-                        case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
-                        case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
-                            return resolveFunction(project, ast);
+                    // More complex case - declText is non-template function signature
+                    return resolveFunction(project, ast);
+                } else {
+                    ast = tryParseDeclaration(declText);
+                    if (ast != null) {
+                        // The most complex case - declText is something like declaration.
+                        switch (ast.getType()) {
+                            case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
+                            case CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION:
+                            case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
+                            case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
+                                return resolveFunction(project, ast);
 
-                        case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
-                            if (AstRenderer.isClassSpecialization(ast)) {
-                                return Collections.emptyList(); 
-                            } else if (AstRenderer.isClassExplicitInstantiation(ast)) {
-                                return Collections.emptyList();
-                            }
-                            return resolveFunction(project, ast);
-                    }               
+                            case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
+                                if (AstRenderer.isClassSpecialization(ast)) {
+                                    return Collections.emptyList(); 
+                                } else if (AstRenderer.isClassExplicitInstantiation(ast)) {
+                                    return Collections.emptyList();
+                                }
+                                return resolveFunction(project, ast);
+                        }               
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -418,6 +425,27 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
         return null;
     }
     
+    private static AST tryParseFunctionSignature(CharSequence sequence) {
+        String trimmedSequence = sequence.toString().trim();
+        CPPParserEx parser = createParser(trimmedSequence);
+        if (parser != null) {
+            parser.function_declarator(false, false, false);
+            if (!parser.matchError && parser.getAST() != null) {
+                AST signatureAst = new FakeAST();
+                signatureAst.setType(CPPTokenTypes.CSM_FUNCTION_DECLARATION);
+                signatureAst.addChild(parser.getAST());
+                AST lastChild = AstUtil.getLastNonEOFChildRecursively(signatureAst);
+                if (lastChild instanceof OffsetableAST) {
+                    OffsetableAST offsetableAst = (OffsetableAST) lastChild;
+                    if (offsetableAst.getEndOffset() == trimmedSequence.length()) {
+                        return signatureAst;
+                    }
+                }
+            }
+        }
+        return null;
+    }    
+    
     private static AST tryParseDeclaration(CharSequence sequence) {
         CPPParserEx parser = createParser(sequence);
         if (parser != null) {
@@ -487,10 +515,16 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
         );
     }    
     
+    private static void printAST(AST ast) {
+        StringBuilder sb = new StringBuilder();
+        printAST(sb, ast, 0);
+        System.out.println(sb.toString());
+    }
+    
     private static void printAST(StringBuilder sb, AST ast, int level) {
         if (ast != null) {
-            repeat(sb, ' ', level * 4);
-            sb.append(ast.getText()).append('\n');
+            repeat(sb, ' ', level * 2); // NOI18N
+            sb.append(ast.getText()).append('\n'); // NOI18N
             printAST(sb, ast.getFirstChild(), level + 1);
             printAST(sb, ast.getNextSibling(), level);
         }
