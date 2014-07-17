@@ -109,6 +109,15 @@ public class CsmSymbolResolverTestCase extends SelectTestBase {
         return answer.hasNext() && answer.next() == obj;
     }
     
+    private void doTestSingle(String symbol, String fileName, int line, int column) {
+        Collection<CsmObject> result = CsmSymbolResolver.resolveSymbol(getProject(), symbol);
+        assertFalse("Symbol '" + symbol + "' not found at " + fileName + ":" + line + ":" + column, result.isEmpty());
+        CsmOffsetable obj = (CsmOffsetable) result.iterator().next();
+        assertEquals(fileName, obj.getContainingFile().getName().toString());
+        assertEquals(line, obj.getStartPosition().getLine());
+        assertEquals(column, obj.getStartPosition().getColumn());
+    }
+    
     public void testSelectModelGetFunctions() throws Exception {
         doTestGetFunctions();
     }    
@@ -124,4 +133,8 @@ public class CsmSymbolResolverTestCase extends SelectTestBase {
     public void testSelectModelGetFields() throws Exception {
         doTestGetFields();
     }    
+    
+    public void testInstantiatedSignature() throws Exception {
+        doTestSingle("double entity_resolver_test::boo<double>(double)", "simple_symbol_resolver_test.cpp", 43, 3);
+    }
 }

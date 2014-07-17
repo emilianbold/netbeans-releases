@@ -318,4 +318,8 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
     protected boolean _checkFound(CsmObject obj, Iterator<? extends CsmObject> answer) {
         return answer.hasNext();
     }
+    
+    protected final CsmProject getProject() {
+        return traceModel.getProject();
+    }
 }
