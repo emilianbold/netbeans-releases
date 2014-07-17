@@ -52,7 +52,6 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.php.latte.completion.LatteCompletionHandler;
 import org.netbeans.modules.php.latte.hints.LatteHintsProvider;
 import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
-import org.netbeans.modules.php.latte.navigation.LatteStructureScanner;
 import org.netbeans.modules.php.latte.parser.LatteParser;
 import org.netbeans.modules.php.latte.parser.LatteParserResult;
 import org.netbeans.modules.php.latte.semantic.LatteSemanticAnalyzer;

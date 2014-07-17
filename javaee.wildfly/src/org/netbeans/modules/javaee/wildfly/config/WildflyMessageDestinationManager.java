@@ -76,7 +76,7 @@ import org.xml.sax.SAXException;
 /**
  *
  * @author Petr Hejl
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public final class WildflyMessageDestinationManager implements MessageDestinationDeployment {
 
