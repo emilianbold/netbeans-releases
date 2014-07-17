@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.services.CsmOverloadingResolver;
@@ -91,15 +92,15 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.spi.model.services.CsmEntityResolverImplementation;
+import org.netbeans.modules.cnd.spi.model.services.CsmSymbolResolverImplementation;
 import org.openide.util.CharSequences;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmEntityResolverImplementation.class)
-public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmSymbolResolverImplementation.class)
+public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
 
     private static final String LT = "<"; // NOI18N
     
@@ -108,17 +109,17 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
     private static final Logger LOG = Logger.getLogger(VariableProvider.class.getSimpleName());
 
     @Override
-    public Collection<CsmObject> resolveEntity(NativeProject project, CharSequence declText) {
+    public Collection<CsmObject> resolveSymbol(NativeProject project, CharSequence declText) {
         CsmProject cndProject = CsmModelAccessor.getModel().getProject(project);
         if (cndProject != null) {
             cndProject.waitParse();
-            return resolveEntity(cndProject, declText);
+            return resolveSymbol(cndProject, declText);
         } 
         return Collections.emptyList();
     }
 
     @Override
-    public Collection<CsmObject> resolveEntity(CsmProject project, CharSequence declText) {
+    public Collection<CsmObject> resolveSymbol(CsmProject project, CharSequence declText) {
         try {
             AST ast = tryParseQualifiedId(declText);
             if (ast != null) {
@@ -128,25 +129,27 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
                 ast = tryParseFunctionSignature(declText);                
                 if (ast != null) {
                     // More complex case - declText is non-template function signature
-                    return resolveFunction(project, ast);
+                    return resolveFunction(project, ast, false);
                 } else {
                     ast = tryParseDeclaration(declText);
                     if (ast != null) {
-                        // The most complex case - declText is something like declaration.
+                        // The most complex case - declText should be template function signature.
                         switch (ast.getType()) {
-                            case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
                             case CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION:
                             case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
                             case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
-                                return resolveFunction(project, ast);
+                                return resolveFunction(project, ast, true);
 
+                            case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
+                                // Not allowed in signature (declText contains template literal)
+                                return resolveFunction(project, ast, true);
+                                
                             case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
-                                if (AstRenderer.isClassSpecialization(ast)) {
-                                    return Collections.emptyList(); 
-                                } else if (AstRenderer.isClassExplicitInstantiation(ast)) {
-                                    return Collections.emptyList();
+                                // Not allowed in signature (declText contains template literal)
+                                if (!AstRenderer.isClassSpecialization(ast) && !AstRenderer.isClassExplicitInstantiation(ast)) {
+                                    return resolveFunction(project, ast, true);
                                 }
-                                return resolveFunction(project, ast);
+                                return Collections.emptyList();
                         }               
                     }
                 }
@@ -157,7 +160,7 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
         return Collections.emptyList();
     }
     
-    private Collection<CsmObject> resolveFunction(CsmProject project, AST ast) {
+    private Collection<CsmObject> resolveFunction(CsmProject project, AST ast, boolean template) {
         AST funNameAst = AstUtil.findMethodName(ast);
         if (funNameAst != null) {
 //            CharSequence qualifiedName = funNameAst.getText();
@@ -179,19 +182,21 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
                          true, 
                          false
                      )
-            );                                           
+            );               
+            
+            DeclarationAcceptor acceptor = template ? TemplateFunctionsAcceptor.INSTANCE : NonTemplateFunctionsAcceptor.INSTANCE;
             for (CsmObject context : resolvedContext) {
                 if (CsmKindUtilities.isNamespace(context)) {
                     CsmNamespace ns = (CsmNamespace) context;
                     Iterator<CsmOffsetableDeclaration> iter = CsmSelect.getDeclarations(ns, filter);
-                    fillFromDecls((List<CsmObject>) (Object) candidates, iter);
+                    fillFromDecls((List<CsmObject>) (Object) candidates, iter, acceptor);
                 } else if (CsmKindUtilities.isClass(context)) {
                     CsmClass cls = (CsmClass) context;
-                    fillFromDecls((List<CsmObject>) (Object) candidates, CsmSelect.getClassMembers(cls, filter));
+                    fillFromDecls((List<CsmObject>) (Object) candidates, CsmSelect.getClassMembers(cls, filter), acceptor);
                 }
             }
             //Iterator<CsmFunction> funIter = CsmSelect.getFunctions(project, concat(qualifiedName, APTUtils.SCOPE));
-            return fillFromDecls(filterFunctions(ast, funNameAst, candidates.iterator()));
+            return fillFromDecls(filterFunctions(ast, funNameAst, candidates.iterator()), null);
         }
         return Collections.emptyList();
     }
@@ -219,10 +224,10 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
         for (CsmObject context : resolvedContext) {
             if (CsmKindUtilities.isNamespace(context)) {
                 CsmNamespace ns = (CsmNamespace) context;
-                fillFromDecls(candidates, CsmSelect.getDeclarations(ns, filter));
+                fillFromDecls(candidates, CsmSelect.getDeclarations(ns, filter), null);
             } else if (CsmKindUtilities.isClass(context)) {
                 CsmClass cls = (CsmClass) context;
-                fillFromDecls(candidates, CsmSelect.getClassMembers(cls, filter));
+                fillFromDecls(candidates, CsmSelect.getClassMembers(cls, filter), null);
             }
         }
         return candidates;
@@ -385,25 +390,31 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
         }        
     }
     
-    private List<CsmObject> fillFromDecls(Iterable<? extends CsmObject> decls) {
-        return fillFromDecls(decls.iterator());
+    private List<CsmObject> fillFromDecls(Iterable<? extends CsmObject> decls, DeclarationAcceptor acceptor) {
+        return fillFromDecls(decls.iterator(), acceptor);
     }
     
-    private List<CsmObject> fillFromDecls(Iterator<? extends CsmObject> decls) {
+    private List<CsmObject> fillFromDecls(Iterator<? extends CsmObject> decls, DeclarationAcceptor acceptor) {
         List<CsmObject> result = new ArrayList<>();
         while (decls.hasNext()) {
-            result.add(decls.next());
+            CsmObject decl = decls.next();
+            if (acceptor == null || acceptor.accept(decl)) {
+                result.add(decl);
+            }
         }
         return result;
     }
     
-    private void fillFromDecls(List<CsmObject> list, Iterable<? extends CsmObject> decls) {
-        fillFromDecls(list, decls.iterator());
+    private void fillFromDecls(List<CsmObject> list, Iterable<? extends CsmObject> decls, DeclarationAcceptor acceptor) {
+        fillFromDecls(list, decls.iterator(), acceptor);
     }    
     
-    private void fillFromDecls(List<CsmObject> list, Iterator<? extends CsmObject> decls) {
+    private void fillFromDecls(List<CsmObject> list, Iterator<? extends CsmObject> decls, DeclarationAcceptor acceptor) {
         while (decls.hasNext()) {
-            list.add(decls.next());
+            CsmObject decl = decls.next();
+            if (acceptor == null || acceptor.accept(decl)) {
+                list.add(decl);
+            }
         }
     }
     
@@ -534,5 +545,33 @@ public class CsmEntityResolverImpl implements CsmEntityResolverImplementation {
         while (--times >= 0) {
             sb.append(character);
         }
+    }
+    
+    
+    private static interface DeclarationAcceptor {
+        
+        boolean accept(CsmObject decl);        
+    }
+    
+    private static class TemplateFunctionsAcceptor implements DeclarationAcceptor {
+        
+        public static final TemplateFunctionsAcceptor INSTANCE = new TemplateFunctionsAcceptor();
+
+        @Override
+        public boolean accept(CsmObject decl) {
+            return (decl instanceof CsmFunction) && 
+                   (decl instanceof CsmTemplate) &&
+                   ((CsmTemplate) decl).isTemplate();
+        }
+    }
+    
+    private static class NonTemplateFunctionsAcceptor implements DeclarationAcceptor {
+        
+        public static final NonTemplateFunctionsAcceptor INSTANCE = new NonTemplateFunctionsAcceptor();
+        
+        @Override
+        public boolean accept(CsmObject decl) {
+            return !TemplateFunctionsAcceptor.INSTANCE.accept(decl);
+        }        
     }
 }
