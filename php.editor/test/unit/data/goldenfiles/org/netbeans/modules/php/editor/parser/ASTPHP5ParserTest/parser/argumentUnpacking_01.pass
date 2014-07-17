@@ -161,7 +161,7 @@
                     <Variable start='61' end='71' isDollared='true'>
                         <Identifier start='62' end='71' name='operators'/>
                     </Variable>
-                    <ArrayCreation start='74' end='80'>
+                    <ArrayCreation start='74' end='80' type='NEW'>
                         <ArrayElement start='75' end='76'>
                             <Key>
                             </Key>

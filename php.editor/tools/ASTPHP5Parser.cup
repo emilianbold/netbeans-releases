@@ -3052,12 +3052,6 @@ common_scalar:scalar
 	RESULT = doc;
 :}
 
-| T_OPEN_RECT:start static_array_pair_list:list T_CLOSE_RECT:end
-{:
-	Expression array = new ArrayCreation(startleft, endright, list);
-	RESULT = array;
-:}
-
 | static_operation:operation
 {:
         RESULT = operation;
@@ -3074,7 +3068,13 @@ static_operation ::=
 
 T_ARRAY:start T_OPEN_PARENTHESE static_array_pair_list:list T_CLOSE_PARENTHESE:end
 {:
-	Expression array = new ArrayCreation(startleft, endright, list);
+	Expression array = new ArrayCreation(startleft, endright, list, ArrayCreation.Type.OLD);
+	RESULT = array;
+:}
+
+| T_OPEN_RECT:start static_array_pair_list:list T_CLOSE_RECT:end
+{:
+	Expression array = new ArrayCreation(startleft, endright, list, ArrayCreation.Type.NEW);
 	RESULT = array;
 :}
 
@@ -3641,13 +3641,13 @@ array_creation:arr T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 array_creation ::=
 T_ARRAY:start T_OPEN_PARENTHESE array_pair_list:list T_CLOSE_PARENTHESE:end
 {:
-	Expression expr = new ArrayCreation(startleft, endright, list);
+	Expression expr = new ArrayCreation(startleft, endright, list, ArrayCreation.Type.OLD);
 	RESULT = expr;
 :}
 
 | T_OPEN_RECT:start array_pair_list:list T_CLOSE_RECT:end
 {:
-    Expression expr = new ArrayCreation(startleft, endright, list);
+    Expression expr = new ArrayCreation(startleft, endright, list, ArrayCreation.Type.NEW);
 	RESULT = expr;
 :}
 ;
