@@ -276,7 +276,7 @@ public class ScssCompletionTest extends CssModuleTestBase {
                 + "\n"
                 + "}", Match.EXACT, "first-line");
     }
-    
+
     public void testPseudoForParentSelectorNoPrefix() throws ParseException {
         assertCompletion("#main {\n"
                 + "    &:|\n"
@@ -290,8 +290,8 @@ public class ScssCompletionTest extends CssModuleTestBase {
                 + "}", Match.CONTAINS, "first-line");
 
     }
-    
-     public void testPseudoForParentSelectorNoGarbage() throws ParseException {
+
+    public void testPseudoForParentSelectorNoGarbage() throws ParseException {
         //test if it doesn't contain a garbage - like properties
         assertCompletion("#main {\n"
                 + "    &:|\n"
@@ -302,18 +302,63 @@ public class ScssCompletionTest extends CssModuleTestBase {
                 + "    &:colo|\n"
                 + "\n"
                 + "}", Match.EMPTY);
-        
+
         //test if it doesn't contain a garbage - like properties
         assertCompletion("#main {\n"
                 + "    &::|\n"
                 + "\n"
                 + "}", Match.DOES_NOT_CONTAIN, "color");
 
-         //test if it doesn't contain a garbage - like properties
+        //test if it doesn't contain a garbage - like properties
         assertCompletion("#main {\n"
                 + "    &::colo|\n"
                 + "\n"
                 + "}", Match.EMPTY, "color");
-        
+
+    }
+
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=236137
+    /*
+     Tests how the code completion in rule body is affected by presence of CSS comments.
+     */
+    public void testIssue236137() throws ParseException {
+        //test html elements offered before the comment
+        assertCompletion("@for $i from 1 through 3 { \n"
+                + "    @media tv {  \n"
+                + "         |\n"
+                + "        /*cc;51; ;div,span;0*/\n"
+                + "        \n"
+                + "    }\n"
+                + "}", Match.CONTAINS, "div");
+
+        //test html elements offered after the comment
+        assertCompletion("@for $i from 1 through 3 { \n"
+                + "    @media tv {  \n"
+                + "        /*cc;51; ;div,span;0*/\n"
+                + "         |\n"
+                + "        \n"
+                + "    }\n"
+                + "}", Match.CONTAINS, "div");
+
+    }
+
+    public void testIssue236137_part2() throws ParseException {
+        //test html elements offered after the comment
+        assertCompletion("div {  \n"
+                + "     \n"
+                + "     /*cc;51; ;div,span;0*/\n"
+                + "     | \n"
+                + "     \n"
+                + "}", Match.DOES_NOT_CONTAIN, "div");
+
+        //test html elements offered before the comment
+        assertCompletion("div {  \n"
+                + "     \n"
+                + "     | \n"
+                + "     \n"
+                + "     /*cc;51; ;div,span;0*/\n"
+                + "     \n"
+                + "}", Match.DOES_NOT_CONTAIN, "div");
+
     }
 }

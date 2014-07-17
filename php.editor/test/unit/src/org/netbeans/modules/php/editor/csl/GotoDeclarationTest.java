@@ -940,6 +940,14 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "f^nc2();", "use function Name\\Space\\fnc as ^fnc2;");
     }
 
+    public void testIssue244317_01() throws Exception {
+        checkDeclaration(getTestPath(), "$variable = self::testCon^stant;", "const ^testConstant = \"test\";");
+    }
+
+    public void testIssue244317_02() throws Exception {
+        checkDeclaration(getTestPath(), "echo self::testCon^stant;", "const ^testConstant = \"test\";");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

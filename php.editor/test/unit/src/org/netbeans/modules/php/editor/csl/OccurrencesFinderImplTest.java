@@ -1212,6 +1212,18 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "f^nc2();", true);
     }
 
+    public void testIssue244317_01() throws Exception {
+        checkOccurrences(getTestPath(), "const test^Constant = \"test\";", true);
+    }
+
+    public void testIssue244317_02() throws Exception {
+        checkOccurrences(getTestPath(), "$variable = self::test^Constant;", true);
+    }
+
+    public void testIssue244317_03() throws Exception {
+        checkOccurrences(getTestPath(), "echo self::test^Constant;", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
