@@ -232,7 +232,8 @@ public class FieldForUnusedParam extends AbstractHint {
         private final TreePathHandle tph;
         private final boolean finalFields;
         private final String fieldName;
-        private final boolean existing;
+        // used from tests
+        final boolean existing;
 
         public FixImpl(JavaSource js, TreePathHandle tph, boolean finalFields, boolean existing, String fieldName) {
             this.js = js;
