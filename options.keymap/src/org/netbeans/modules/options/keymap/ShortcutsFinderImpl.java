@@ -48,7 +48,9 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Action;
 import javax.swing.KeyStroke;
+import javax.swing.text.TextAction;
 import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.api.ShortcutsFinder;
@@ -86,12 +88,26 @@ public class ShortcutsFinderImpl implements ShortcutsFinder {
                 int i, k = shortcuts.length;
                 for (i = 0; i < k; i++) {
                     if (shortcuts[i].equals(sc)) {
+                        if (isImpliedAction(action)) { // NOI18N
+                            continue;
+                        }
                         return action;
                     }
                 }
             }
         }
         return null;
+    }
+    
+    /**
+     * Determines if the action is "implied" by some other settings. Such action will not be
+     * returned as conflicts to the user when searching for a shortcut.
+     * @param action
+     * @return 
+     */
+    protected boolean isImpliedAction(ShortcutAction action) {
+        // special hack for macros; the RunMacro action gets all macro shortcuts assinged
+        return "run-macro".equals(action.getId());
     }
 
     @Override

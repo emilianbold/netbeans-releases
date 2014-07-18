@@ -86,6 +86,17 @@ public class CommentHandlerService implements CommentHandler {
     private CommentHandlerService(Context context) {
     }
     
+    Map<Tree, CommentSetImpl> getCommentMap() {
+        Map<Tree, CommentSetImpl> m = new HashMap<>(map);
+        for (Iterator<Map.Entry<Tree, CommentSetImpl>> it = m.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<Tree, CommentSetImpl> e = it.next();
+            if (!e.getValue().hasComments()) {
+                it.remove();
+            }
+        }
+        return m;
+    }
+    
     public boolean hasComments(Tree tree) {
         synchronized (map) {
             return map.containsKey(tree);
