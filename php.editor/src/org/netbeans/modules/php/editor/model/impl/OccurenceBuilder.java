@@ -918,7 +918,7 @@ class OccurenceBuilder {
         QualifiedName clzName = elementInfo.getTypeQualifiedName();
         final Set<TypeConstantElement> constants = new HashSet<>();
         Scope scope = ModelUtils.getTypeScope(elementInfo.getScope());
-        if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
+        if (clzName.getKind().isUnqualified() && scope != null) {
             if (clzName.getName().equalsIgnoreCase("self") //NOI18N
                     || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                 clzName = QualifiedName.create(((TypeScope) scope).getName());
@@ -1417,7 +1417,7 @@ class OccurenceBuilder {
                     ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = ModelUtils.getTypeScope(entry.getValue());
-                    if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
+                    if (clzName != null && clzName.getKind().isUnqualified() && scope != null) {
                         if (clzName.getName().equalsIgnoreCase("self") //NOI18N
                                 || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                             clzName = QualifiedName.create(((TypeScope) scope).getName());
