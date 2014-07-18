@@ -44,7 +44,6 @@ package org.netbeans.modules.web.clientproject.validation;
 import java.io.File;
 import org.netbeans.modules.web.clientproject.api.validation.FolderValidator;
 import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,37 +83,25 @@ public final class ProjectFoldersValidator {
         return this;
     }
 
-    @NbBundle.Messages({
-        "ProjectFoldersValidator.error.test.invalid=Unit Tests must be a valid directory.",
-        "ProjectFoldersValidator.error.test.notUnderProjectDir=Unit Tests must be underneath project directory."
-    })
+    @NbBundle.Messages("ProjectFoldersValidator.error.test.invalid=Unit Tests must be a valid directory.")
     ProjectFoldersValidator validateTestFolder(File projectDirectory, File testFolder) {
-        validateProjectFolder(projectDirectory, testFolder, TEST_FOLDER,
-                Bundle.ProjectFoldersValidator_error_test_invalid(), Bundle.ProjectFoldersValidator_error_test_notUnderProjectDir());
+        validateProjectFolder(projectDirectory, testFolder, TEST_FOLDER, Bundle.ProjectFoldersValidator_error_test_invalid());
         return this;
     }
 
-    @NbBundle.Messages({
-        "ProjectFoldersValidator.error.config.invalid=Config must be a valid directory.",
-        "ProjectFoldersValidator.error.config.notUnderProjectDir=Config must be underneath project directory."
-    })
+    @NbBundle.Messages("ProjectFoldersValidator.error.config.invalid=Config must be a valid directory.")
     ProjectFoldersValidator validateConfigFolder(File projectDirectory, File configFolder) {
-        validateProjectFolder(projectDirectory, configFolder, CONFIG_FOLDER,
-                Bundle.ProjectFoldersValidator_error_config_invalid(), Bundle.ProjectFoldersValidator_error_config_notUnderProjectDir());
+        validateProjectFolder(projectDirectory, configFolder, CONFIG_FOLDER, Bundle.ProjectFoldersValidator_error_config_invalid());
         return this;
     }
 
-    private void validateProjectFolder(File projectDirectory, File folder, String source, String invalidFolderMessage, String notInProjectMessage) {
+    private void validateProjectFolder(File projectDirectory, File folder, String source, String invalidFolderMessage) {
         if (folder == null) {
             // can be empty
             return;
         }
         if (!folder.isDirectory()) {
             result.addError(new ValidationResult.Message(source, invalidFolderMessage));
-            return;
-        }
-        if (!FileUtil.isParentOf(FileUtil.toFileObject(projectDirectory), FileUtil.toFileObject(folder))) {
-            result.addError(new ValidationResult.Message(source, notInProjectMessage));
         }
     }
 
