@@ -212,6 +212,11 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiProject> {
     }
 
     @Override
+    public boolean canBookmark() {
+        return true;
+    }
+    
+    @Override
     public void bookmark(final ProjectHandle<KenaiProject> project) {
         Kenai kenai = project.getTeamProject().getKenai();
         try {

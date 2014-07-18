@@ -174,7 +174,9 @@ public abstract class AttachType {
 
         @Override
         public String getTypeDisplayName() {
-            if (displayName != null) {
+            // We ask the delegate also when an empty displayName is declared.
+            // Studio is using this.
+            if (displayName != null && !displayName.isEmpty()) {
                 return displayName;
             }
             return getDelegate().getTypeDisplayName();

@@ -257,10 +257,10 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                     @Override
                     public void run () {
                         final Action[] actions;
+                        if (nodes == null) {
+                            return;
+                        }
                         if (owner == null) {
-                            if (nodes == null) {
-                                return;
-                            }
                             // default Versioning menu (Import into...)
                             List<VersioningSystem> vcs = new ArrayList<VersioningSystem>(Arrays.asList(VersioningManager.getInstance().getVersioningSystems()));
                             Collections.sort(vcs, new VersioningMainMenu.ByDisplayNameComparator());

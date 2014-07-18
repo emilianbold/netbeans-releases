@@ -98,10 +98,8 @@ import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectContainerProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDescriptor;
@@ -332,6 +330,7 @@ public class ActionProviderImpl implements ActionProvider {
     @Messages({
         "# {0} - artifactId", "TXT_Run=Run ({0})",
         "# {0} - artifactId", "TXT_Debug=Debug ({0})",
+        "# {0} - artifactId", "TXT_ApplyCodeChanges=Apply Code Changes ({0})",
         "# {0} - artifactId", "TXT_Profile=Profile ({0})",
         "# {0} - artifactId", "TXT_Test=Test ({0})",
         "# {0} - artifactId", "TXT_Build=Build ({0})"
@@ -366,6 +365,8 @@ public class ActionProviderImpl implements ActionProvider {
             title = TXT_Profile(dobjName);
         } else if (ActionProvider.COMMAND_TEST_SINGLE.equals(action)) {
             title = TXT_Test(dobjName);
+        } else if ("debug.fix".equals(action)) {
+            title = TXT_ApplyCodeChanges(prjLabel);
         } else {
             title = TXT_Build(prjLabel);
         }

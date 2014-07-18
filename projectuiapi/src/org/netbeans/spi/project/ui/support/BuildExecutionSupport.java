@@ -42,6 +42,8 @@
 
 package org.netbeans.spi.project.ui.support;
 
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.project.uiapi.BuildExecutionSupportImplementation;
 import org.netbeans.modules.project.uiapi.Utilities;
 import org.openide.filesystems.FileObject;
 
@@ -78,6 +80,38 @@ public final class BuildExecutionSupport {
         Utilities.getBuildExecutionSupportImplementation().registerFinishedItem(item);
     }
 
+    /**
+     * Returns the last registered finished item. 
+     * 
+     * @return item
+     * @since 1.78
+     */
+    public static BuildExecutionSupport.Item getLastFinishedItem() {
+        return Utilities.getBuildExecutionSupportImplementation().getLastItem();
+    }
+  
+    /**
+     * Registers a change listener on BuildExecutionSupport
+     * 
+     * @param listener 
+     * @since 1.78
+     */
+    public static void addChangeListener(ChangeListener listener) {
+        BuildExecutionSupportImplementation besi = Utilities.getBuildExecutionSupportImplementation();
+        besi.addChangeListener(listener);
+    }
+
+    /**
+     * Unregisters a change listener on BuildExecutionSupport
+     * 
+     * @param listener 
+     * @since 1.78
+     */
+    public static void removeChangeListener(ChangeListener listener) {
+        BuildExecutionSupportImplementation besi = Utilities.getBuildExecutionSupportImplementation();
+        besi.removeChangeListener(listener);
+    }
+        
     /**
      * Wrapper for the build job used by <code>BuildExecutionSupport</code>
      */

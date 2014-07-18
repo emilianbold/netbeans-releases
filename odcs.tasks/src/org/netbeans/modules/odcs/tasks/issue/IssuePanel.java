@@ -803,10 +803,10 @@ public class IssuePanel extends javax.swing.JPanel {
                 @Override
                 public void run() {
                     final SubtaskTableModel tableModel = new SubtaskTableModel(issue);
-                    subtasksSection.setLabel(NbBundle.getMessage(IssuePanel.class, "IssuePanel.subtasksLabel.text", tableModel.getRowCount())); //NOI18N
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
+                            subtasksSection.setLabel(NbBundle.getMessage(IssuePanel.class, "IssuePanel.subtasksLabel.text", tableModel.getRowCount())); //NOI18N
                             TableSorter sorter = new TableSorter(tableModel);
                             subTaskTable.setModel(sorter);
                             sorter.setTableHeader(subTaskTable.getTableHeader());

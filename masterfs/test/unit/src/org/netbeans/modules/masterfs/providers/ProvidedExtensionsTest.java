@@ -946,6 +946,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
                             if (inputStream != null) inputStream.close();
                             if (outputStream != null) outputStream.close();
                         }
+                        to.setLastModified(from.lastModified());
                         assertTrue(from.delete());
                     }
                     

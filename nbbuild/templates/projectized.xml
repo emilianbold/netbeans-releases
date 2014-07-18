@@ -608,7 +608,14 @@ If you are sure you want to build with JDK 8+ anyway, use: -Dpermit.jdk8.builds=
         <property name="sigtest.fail.on.error" value="true"/>
         <taskdef name="sigtest" classname="org.netbeans.nbbuild.Sigtest" classpath="${nbantext.jar}"/>
         <property name="sigtest.jar" location="${nb_all}/nbbuild/external/apitest.jar"/> 
-        <property file="${manifest.mf}" prefix="mf."/>
+        <loadproperties srcFile="${manifest.mf}" prefix="mf.">
+            <filterchain>
+                <replaceregex pattern="[\n\r]+ ([^ ][^\n\r]*)"
+                            replace="\1"
+                            flags="g"
+                            byline="false"/>
+            </filterchain>
+        </loadproperties>
         <condition property="mf.OpenIDE-Module-Specification-Version" value="${spec.version.base}"> <!-- fallback -->
             <isset property="spec.version.base"/>
         </condition>

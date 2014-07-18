@@ -457,6 +457,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     private class ShowDiffTask extends HgProgressSupport {
         
         private File file1;
+        private File baseFile1;
         private HgRevision revision1;
         private boolean showLastDifference;
         private final RepositoryRevision.Event event2;
@@ -466,6 +467,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             if (event1 != null) {
                 revision1 = event1.getLogInfoHeader().getLog().getHgRevision();
                 file1 = event1.getOriginalFile();
+                baseFile1 = event1.getFile();
             }
             this.showLastDifference = showLastDifference;
         }
@@ -476,12 +478,13 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             if (revision1 == null) {
                 revision1 = event2.getLogInfoHeader().getLog().getAncestor(event2.getOriginalFile());
                 file1 = event2.getOriginalFile();
+                baseFile1 = event2.getFile();
             }
             if (isCanceled()) {
                 return;
             }
-            final DiffStreamSource s1 = new DiffStreamSource(file1, revision1, file1.getName() + " (" + revision1.getRevisionNumber() + ")"); //NOI18N
-            final DiffStreamSource s2 = new DiffStreamSource(event2.getFile(), event2.getLogInfoHeader().getLog().getHgRevision(), 
+            final DiffStreamSource s1 = new DiffStreamSource(file1, baseFile1, revision1, file1.getName() + " (" + revision1.getRevisionNumber() + ")"); //NOI18N
+            final DiffStreamSource s2 = new DiffStreamSource(event2.getFile(), event2.getFile(), event2.getLogInfoHeader().getLog().getHgRevision(), 
                     event2.getFile().getName() + " (" + event2.getLogInfoHeader().getLog().getHgRevision().getRevisionNumber() + ")"); //NOI18N
 
             // it's enqueued at ClientRuntime queue and does not return until previous request handled
