@@ -22,10 +22,10 @@ function Car(color, maker){
     this.color = color;
     this.maker = maker;
 
-    this.getColor = function(){
+    this.getColor = function (){
         return this.color;
     }
-    this.getMaker = function(a){
+    this.getMaker = function (a){
         return this.maker;
     }
 }

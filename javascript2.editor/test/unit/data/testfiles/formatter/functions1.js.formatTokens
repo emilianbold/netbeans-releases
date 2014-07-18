@@ -77,7 +77,7 @@ FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=98, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=99, text=function, id=KEYWORD_FUNCTION}
 FormatToken{kind=WHITESPACE, offset=107, text= , id=WHITESPACE}
-FormatToken{kind=BEFORE_FUNCTION_DECLARATION, offset=-1, text=null, id=null}
+FormatToken{kind=BEFORE_ANONYMOUS_FUNCTION_DECLARATION, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=108, text=(, id=BRACKET_LEFT_PAREN}
 FormatToken{kind=TEXT, offset=109, text=), id=BRACKET_RIGHT_PAREN}
 FormatToken{kind=WHITESPACE, offset=110, text= , id=WHITESPACE}
@@ -122,7 +122,7 @@ FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=167, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=168, text=function, id=KEYWORD_FUNCTION}
 FormatToken{kind=WHITESPACE, offset=176, text= , id=WHITESPACE}
-FormatToken{kind=BEFORE_FUNCTION_DECLARATION, offset=-1, text=null, id=null}
+FormatToken{kind=BEFORE_ANONYMOUS_FUNCTION_DECLARATION, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=177, text=(, id=BRACKET_LEFT_PAREN}
 FormatToken{kind=TEXT, offset=178, text=), id=BRACKET_RIGHT_PAREN}
 FormatToken{kind=WHITESPACE, offset=179, text= , id=WHITESPACE}

@@ -1,5 +1,5 @@
 panels.elements.createSidebarPane("AngularJS Properties",
-        function(sidebar) {
+        function (sidebar) {
             panels.elements.onSelectionChanged.addListener(function test() {
                 sidebar.setExpression("(" + getPanelContents.toString() + ")()");
             });
