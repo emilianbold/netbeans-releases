@@ -209,9 +209,15 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
                 if(componentIter instanceof JRadioButtonMenuItem) {
                     Project p = (Project) ((JRadioButtonMenuItem)componentIter).getClientProperty(PROJECT_KEY);
                     if(p != null && !projectList.contains(p)) {
-                        ProjectInformation projectInformation = p.getLookup().lookup(ProjectInformation.class);
+                        final ProjectInformation projectInformation = p.getLookup().lookup(ProjectInformation.class);
                         if(projectInformation != null) {
-                            projectInformation.removePropertyChangeListener(WeakListeners.propertyChange(this, projectInformation));
+                            final SetMainProject self = this;
+                            RP.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    projectInformation.removePropertyChangeListener(WeakListeners.propertyChange(self, projectInformation));
+                                }
+                            });
                         }
                     }
                 }
@@ -229,9 +235,15 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
         
         // Fill menu with items
         for ( int i = 0; i < projects.length; i++ ) {
-            ProjectInformation projectInformation = projects[i].getLookup().lookup(ProjectInformation.class);
+            final ProjectInformation projectInformation = projects[i].getLookup().lookup(ProjectInformation.class);
             if(projectInformation != null) {
-                projectInformation.addPropertyChangeListener(WeakListeners.propertyChange(this, projectInformation));
+                final SetMainProject self = this;
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        projectInformation.addPropertyChangeListener(WeakListeners.propertyChange(self, projectInformation));
+                    }
+                });
             }
             ProjectInformation pi = ProjectUtils.getInformation(projects[i]);
             JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(pi.getDisplayName(), pi.getIcon(), false);
