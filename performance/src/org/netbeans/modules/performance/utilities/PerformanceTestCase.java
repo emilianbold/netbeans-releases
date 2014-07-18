@@ -219,7 +219,9 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
             rm.setEnabled(true);
         }
         System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "100000"); // disable slowness detector
-
+        // disable animation on Windows. It can produce false events - see issue 100961
+        System.setProperty("swing.disablevistaanimation", "true");
+        
         URL u = PerformanceTestCase.class.getProtectionDomain().getCodeSource().getLocation();
         try {
             // disable Mercurial if running from NetBeans source tree

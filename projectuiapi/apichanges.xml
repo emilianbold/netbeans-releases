@@ -108,6 +108,23 @@ is the proper place.
 
     <changes>
 
+        <change id="BuildExecutionSupport.lastItem">
+            <api name="general"/>
+            <summary>Provide last runing item from BuildExecutionSupport. Listen on changes of it.</summary>
+            <version major="1" minor="78"/>
+            <date day="15" month="7" year="2014"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    <code>BuildExecutionSupport</code> makes it so far posible to register a running build/run/debug task. 
+                    It would be also usefull to provide the last run item and to be notified about changes of it.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="BuildExecutionSupport"/>
+            <issue number="245350"/>
+        </change>
+                
          <change id="ProjectProblemsProvider.unresolvable">
             <api name="general"/>
             <summary>Allow creating ProjectProblemsProvider.ProjectProblem without a ProjectProblemResolver </summary>

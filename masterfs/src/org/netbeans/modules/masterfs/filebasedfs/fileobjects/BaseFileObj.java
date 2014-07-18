@@ -62,7 +62,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Date;
@@ -96,6 +95,8 @@ public abstract class BaseFileObj extends FileObject {
     private static final String PATH_SEPARATOR = File.separator;//NOI18N
     private static final char EXT_SEP = '.';//NOI18N
     static final Logger LOG = Logger.getLogger(BaseFileObj.class.getName());
+    static final ThreadLocal<Long> MOVED_FILE_TIMESTAMP //#244286: move in progress
+            = new ThreadLocal<Long>();
 
     //static fields 
     static final long serialVersionUID = -1244650210876356809L;
@@ -236,7 +237,11 @@ public abstract class BaseFileObj extends FileObject {
 
         extensions.beforeCopy(target, to);
         FileObject result = null;
+        Long last = MOVED_FILE_TIMESTAMP.get();
         try {
+            if (last != null) {
+                MOVED_FILE_TIMESTAMP.set(lastModified().getTime());
+            }
             final IOHandler copyHandler = extensions.getCopyHandler(getFileName().getFile(), to);
             if (copyHandler != null) {
                 if (target instanceof FolderObj) {
@@ -260,6 +265,10 @@ public abstract class BaseFileObj extends FileObject {
         } catch (IOException ioe) {
             extensions.copyFailure(this, to);
             throw ioe;
+        } finally {
+            if (last != null) {
+                MOVED_FILE_TIMESTAMP.set(last);
+            }
         }
         extensions.copySuccess(this, to);
         return result;
@@ -296,7 +305,12 @@ public abstract class BaseFileObj extends FileObject {
                 assert result != null : "Cannot find " + target + " with " + name + "." + ext;
             }
         } else {
-            result = super.move(lock, target, name, ext);
+            MOVED_FILE_TIMESTAMP.set(lastModified().getTime());
+            try {
+                result = super.move(lock, target, name, ext);
+            } finally {
+                MOVED_FILE_TIMESTAMP.remove();
+            }
         }
 
         FileUtil.copyAttributes(this, result);

@@ -3215,6 +3215,20 @@ widthcheck:  {
         }
     }
 
+    /**
+     * On some platform this method makes a short audible beep, use it when user 
+     * tries to invoke an action that's disabled.
+     * Some platforms, e.g. MS Windows do not emit any sound in such cases.
+     * @since 8.39
+     */
+    public static void disabledActionBeep() {
+        if( isWindows() ) {
+            //no sound on MS Windows
+            return;
+        }
+        Toolkit.getDefaultToolkit().beep();
+    }
+
     /** Interfaces for communication between Utilities.translate and regular
      * expression impl.
      *

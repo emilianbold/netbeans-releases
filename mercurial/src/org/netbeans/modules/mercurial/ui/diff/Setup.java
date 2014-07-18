@@ -203,8 +203,8 @@ public final class Setup extends AbstractDiffSetup {
                 throw new IllegalArgumentException("Unknow diff type: " + type); // NOI18N
         }
 
-        firstSource = new DiffStreamSource(baseFile, firstRevision, firstTitle);
-        secondSource = new DiffStreamSource(baseFile, secondRevision, secondTitle);
+        firstSource = new DiffStreamSource(baseFile, baseFile, firstRevision, firstTitle);
+        secondSource = new DiffStreamSource(baseFile, baseFile, secondRevision, secondTitle);
         title = "<html>" + Mercurial.getInstance().getMercurialAnnotator().annotateNameHtml(baseFile, info); // NOI18N
     }
 
@@ -223,10 +223,10 @@ public final class Setup extends AbstractDiffSetup {
         if (info != null && info.getStatus(null) != null && info.getStatus(null).getOriginalFile() != null) {
             firstSourceBaseFile = info.getStatus(null).getOriginalFile();
         }
-        firstSource = new DiffStreamSource(firstSourceBaseFile, firstRevision, 
+        firstSource = new DiffStreamSource(firstSourceBaseFile, firstSourceBaseFile, firstRevision, 
                 firstRevision.toString());
         // XXX delete when UndoAction works correctly
-        secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision.toString()) {
+        secondSource = new DiffStreamSource(baseFile, baseFile, secondRevision, secondRevision.toString()) {
             @Override
             public boolean isEditable() {
                 return !forceNonEditable && super.isEditable();

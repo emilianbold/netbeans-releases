@@ -144,14 +144,6 @@ class SQLExecutionHelper {
                     // Read multiple Resultsets
                     boolean isResultSet = executeSQLStatement(stmt, sql);
 
-                    // @todo: This needs clearing up => in light of request for
-                    // the ability to disable autocommit, this need to go
-                    if (!isResultSet || dataView.getUpdateCount() != -1) {
-                        if (!conn.getAutoCommit()) {
-                            conn.commit();
-                        }
-                        return;
-                    }
                     if (Thread.interrupted()) {
                         return;
                     }
@@ -310,7 +302,7 @@ class SQLExecutionHelper {
         dataView.setEditable(false);
 
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_insert");
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "", true) {
 
             @Override
             public void execute() throws SQLException, DBException {
@@ -401,7 +393,7 @@ class SQLExecutionHelper {
             rows.add(de);
         }
 
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "", true) {
             @Override
             public void execute() throws SQLException, DBException {
                 dataView.setEditable(false);
@@ -492,7 +484,7 @@ class SQLExecutionHelper {
             }
         }
 
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "") {
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, "", true) {
 
             private PreparedStatement pstmt;
             Set<Integer> keysToRemove = new HashSet<Integer>();
@@ -560,7 +552,7 @@ class SQLExecutionHelper {
     void executeTruncate(final DataViewPageContext pageContext, final DBTable dbTable) {
         String msg = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_truncate_table_progress");
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_truncate");
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, msg) {
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, msg, true) {
 
             private PreparedStatement stmt = null;
 
@@ -613,10 +605,9 @@ class SQLExecutionHelper {
         assert (! SwingUtilities.isEventDispatchThread());
 
         String title = NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_executequery");
-        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, dataView.getSQLString()) {
+        SQLStatementExecutor executor = new SQLStatementExecutor(dataView, title, dataView.getSQLString(), false) {
 
             private Statement stmt = null;
-            boolean lastEditState = dataView.isEditable();
 
             // Execute the Select statement
             @Override

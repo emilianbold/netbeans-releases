@@ -196,6 +196,22 @@ public class MultiDataObjectTest extends NbTestCase {
         assertSame("Cookie is in the lookup", openCookie, one.getLookup().lookup(OpenCookie.class));
     }
 
+    public void testRenameTemplate() throws IOException {
+        FileObject template = FileUtil.createData(fs.getRoot(), "template.prima");
+        FileUtil.createData(fs.getRoot(), "template.seconda");
+        template.setAttribute("template", Boolean.TRUE);
+        template.setAttribute("templateWizardURL", "testURL");
+        template.setAttribute("templateCategory", "testCategory");
+        template.setAttribute("instantiatingIterator", "testIterator");
+        DataObject templateData = DataObject.find(template);
+        templateData.rename("templateNewName.tpl");
+        assertEquals("testURL", templateData.getPrimaryFile().getAttribute(
+                "templateWizardURL"));
+        assertEquals("testCategory", templateData.getPrimaryFile().getAttribute(
+                "templateCategory"));
+        assertEquals("testIterator", templateData.getPrimaryFile().getAttribute(
+                "instantiatingIterator"));
+    }
     
     public static final class Pool extends DataLoaderPool {
         protected Enumeration loaders() {

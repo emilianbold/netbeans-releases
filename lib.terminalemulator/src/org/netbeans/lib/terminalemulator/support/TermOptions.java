@@ -71,6 +71,20 @@ public final class TermOptions {
     public static final int MAX_HISTORY_SIZE = 50000;
     public static final int MIN_TAB_SIZE = 1;
     public static final int MAX_TAB_SIZE = 16;
+    
+    private int fontSizeDefault;
+    private Font fontDefault;
+    private Color foregroundDefault;
+    private Color backgroundDefault;
+    private Color selectionBackgroundDefault;
+    private int historySizeDefault;
+    private int tabSizeDefault;
+    private String selectByWordDelimitersDefault;
+    private boolean clickToTypeDefault;
+    private boolean scrollOnInputDefault;
+    private boolean scrollOnOutputDefault;
+    private boolean lineWrapDefault;
+    private boolean ignoreKeymapDefault;
 
     // In case settings get shared uniqueify the key names with a prefix:
     private static final String PREFIX = "term.";	// NOI18N
@@ -91,20 +105,34 @@ public final class TermOptions {
     }
 
     public final void resetToDefault() {
-        final Font controlFont = UIManager.getFont("controlFont"); //NOI18N
-        fontSize = (controlFont == null) ? 12 : controlFont.getSize();
-        font = new Font("monospaced", Font.PLAIN, fontSize); //NOI18N
-        foreground = getDefaultColorStandard();
-        background = getDefaultColorBackground();
-        selectionBackground = getDefaultSelectionBackground();
-	historySize = 5000;
-	tabSize = 8;
-        selectByWordDelimiters = "!$^*();<>\\[]{}|";    //NOI18N
-	clickToType = true;
-	scrollOnInput = true;
-	scrollOnOutput = true;
-	lineWrap = true;
-        ignoreKeymap = false;
+        Font controlFont = UIManager.getFont("controlFont"); //NOI18N
+        fontSizeDefault = (controlFont == null) ? 12 : controlFont.getSize();
+        fontDefault = new Font("monospaced", Font.PLAIN, fontSizeDefault); //NOI18N
+        foregroundDefault = getDefaultColorStandard();
+        backgroundDefault = getDefaultColorBackground();
+        selectionBackgroundDefault = getDefaultSelectionBackground();
+        historySizeDefault = 5000;
+        tabSizeDefault = 8;
+        selectByWordDelimitersDefault = "!$^*();<>\\[]{}|";    //NOI18N
+        clickToTypeDefault = true;
+        scrollOnInputDefault = true;
+        scrollOnOutputDefault = true;
+        lineWrapDefault = true;
+        ignoreKeymapDefault = false;
+        
+        fontSize = fontSizeDefault;
+        font = fontDefault;
+        foreground = foregroundDefault;
+        background = backgroundDefault;
+        selectionBackground = selectionBackgroundDefault;
+	historySize = historySizeDefault;
+	tabSize = tabSizeDefault;
+        selectByWordDelimiters = selectByWordDelimitersDefault;
+	clickToType = clickToTypeDefault;
+	scrollOnInput = scrollOnInputDefault;
+	scrollOnOutput = scrollOnOutputDefault;
+	lineWrap = lineWrapDefault;
+        ignoreKeymap = ignoreKeymapDefault;
         markDirty();
     }
 
@@ -177,6 +205,20 @@ public final class TermOptions {
 	this.lineWrap = that.lineWrap;
         this.ignoreKeymap = that.ignoreKeymap;
 	this.dirty = false;
+        
+	this.fontDefault= that.fontDefault;
+	this.fontSizeDefault = that.fontSizeDefault;
+	this.tabSizeDefault = that.tabSizeDefault;
+	this.historySizeDefault = that.historySizeDefault;
+	this.foregroundDefault = that.foregroundDefault;
+	this.backgroundDefault = that.backgroundDefault;
+	this.selectionBackgroundDefault = that.selectionBackgroundDefault;
+        this.selectByWordDelimitersDefault = that.selectByWordDelimitersDefault;
+	this.clickToTypeDefault = that.clickToTypeDefault;
+	this.scrollOnInputDefault = that.scrollOnInputDefault;
+	this.scrollOnOutputDefault = that.scrollOnOutputDefault;
+	this.lineWrapDefault = that.lineWrapDefault;
+        this.ignoreKeymapDefault = that.ignoreKeymapDefault;
 	pcs.firePropertyChange(null, null, null);
     }
 
@@ -198,7 +240,7 @@ public final class TermOptions {
         preferences = prefs;
 	String fontFamily = prefs.get(PREFIX + PROP_FONT_FAMILY, font.getFamily());
 	int fontStyle = prefs.getInt(PREFIX + PROP_FONT_STYLE, font.getStyle());
-	fontSize = prefs.getInt(PREFIX + PROP_FONT_SIZE, fontSize);
+        fontSize = prefs.getInt(PREFIX + PROP_FONT_SIZE, fontSize);
 
 	tabSize = prefs.getInt(PREFIX + PROP_TAB_SIZE, tabSize);
 	historySize = prefs.getInt(PREFIX + PROP_HISTORY_SIZE, historySize);
@@ -472,24 +514,23 @@ public final class TermOptions {
 
     private void markDirty() {
         pcs.firePropertyChange(null, null, null);
-        if (preferences == null 
-                || !preferences.get(PREFIX + PROP_FONT_FAMILY, font.getFamily()).equals(font.getFamily())
-                || preferences.getInt(PREFIX + PROP_FONT_STYLE, font.getStyle()) != font.getStyle()
-                || preferences.getInt(PREFIX + PROP_FONT_SIZE, fontSize) != fontSize
-                || preferences.getInt(PREFIX + PROP_TAB_SIZE, tabSize) != tabSize
-                || preferences.getInt(PREFIX + PROP_HISTORY_SIZE, historySize) != historySize
-                || preferences.getInt(PREFIX + PROP_FOREGROUND, foreground.getRGB()) != foreground.getRGB()
-                || preferences.getInt(PREFIX + PROP_BACKGROUND, background.getRGB()) != background.getRGB()
-                || preferences.getInt(PREFIX + PROP_SELECTION_BACKGROUND, selectionBackground.getRGB()) != selectionBackground.getRGB()
-                || !preferences.get(PREFIX + PROP_SELECT_BY_WORD_DELIMITERS, selectByWordDelimiters).equals(selectByWordDelimiters)
-                || preferences.getBoolean(PREFIX + PROP_CLICK_TO_TYPE, clickToType) != clickToType
-                || preferences.getBoolean(PREFIX + PROP_SCROLL_ON_INPUT, scrollOnInput) != scrollOnInput
-                || preferences.getBoolean(PREFIX + PROP_SCROLL_ON_OUTPUT, scrollOnOutput) != scrollOnOutput
-                || preferences.getBoolean(PREFIX + PROP_LINE_WRAP, lineWrap) != lineWrap
-                || preferences.getBoolean(PREFIX + PROP_IGNORE_KEYMAP, ignoreKeymap) != ignoreKeymap) {
-            dirty = true;
+        if (preferences == null) {
+            dirty = false;
             return;
         }
-        dirty = false;
+        dirty = !preferences.get(PREFIX + PROP_FONT_FAMILY, fontDefault.getFamily()).equals(font.getFamily())
+                || preferences.getInt(PREFIX + PROP_FONT_STYLE, fontDefault.getStyle()) != font.getStyle()
+                || preferences.getInt(PREFIX + PROP_FONT_SIZE, fontSizeDefault) != fontSize
+                || preferences.getInt(PREFIX + PROP_TAB_SIZE, tabSizeDefault) != tabSize
+                || preferences.getInt(PREFIX + PROP_HISTORY_SIZE, historySizeDefault) != historySize
+                || preferences.getInt(PREFIX + PROP_FOREGROUND, foregroundDefault.getRGB()) != foreground.getRGB()
+                || preferences.getInt(PREFIX + PROP_BACKGROUND, backgroundDefault.getRGB()) != background.getRGB()
+                || preferences.getInt(PREFIX + PROP_SELECTION_BACKGROUND, selectionBackgroundDefault.getRGB()) != selectionBackground.getRGB()
+                || !preferences.get(PREFIX + PROP_SELECT_BY_WORD_DELIMITERS, selectByWordDelimitersDefault).equals(selectByWordDelimiters)
+                || preferences.getBoolean(PREFIX + PROP_CLICK_TO_TYPE, clickToTypeDefault) != clickToType
+                || preferences.getBoolean(PREFIX + PROP_SCROLL_ON_INPUT, scrollOnInputDefault) != scrollOnInput
+                || preferences.getBoolean(PREFIX + PROP_SCROLL_ON_OUTPUT, scrollOnOutputDefault) != scrollOnOutput
+                || preferences.getBoolean(PREFIX + PROP_LINE_WRAP, lineWrapDefault) != lineWrap
+                || preferences.getBoolean(PREFIX + PROP_IGNORE_KEYMAP, ignoreKeymapDefault) != ignoreKeymap;
     }
 }

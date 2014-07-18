@@ -47,12 +47,10 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -219,14 +217,34 @@ final class FileObjectKeeper implements FileChangeListener {
         assert Thread.holdsLock(FileObjectKeeper.this);
         assert kept == null : "Already listening to " + kept + " now requested for " + root;
         kept = new HashSet<FolderObj>();
-        Queue<File> it = new ArrayDeque<File>();
-        listenTo(root, true, it);
-        FileObjectFactory factory = null;
-        for (;;) {
-            File f = it.poll();
+        listenToAllRecursion(root, null, stop, filter);
+    }
+
+    /**
+     * Recursive part of {@link #listenToAll(Callable, FileFilter)}. Invoke
+     * {@link #listenTo(FileObject, boolean, Collection)} on a folder and its
+     * subfolders.
+     *
+     * @param obj The folder to invoke {@code listenTo} on.
+     * @param knownFactory {@link FileObjectFactory to use}, or null if it is
+     * not known yet.
+     * @param stop {@link Callable} to call to check whether the invocation
+     * should be stopped.
+     * @param filter Filter for ignored files.
+     * @return True if the computation should continue, false if it should be
+     * exited.
+     */
+    private boolean listenToAllRecursion(FolderObj obj,
+            FileObjectFactory knownFactory, Callable<?> stop,
+            FileFilter filter) {
+
+        List<File> it = new ArrayList<File>();
+        listenTo(obj, true, it);
+        FileObjectFactory factory = knownFactory;
+        for (File f : it) {
             LOG.log(Level.FINEST, "listenToAll, processing {0}", f);
             if (f == null || isCyclicSymlink(f)) {
-                break;
+                return false;
             }
             if (factory == null) {
                 factory = FileObjectFactory.getInstance(f);
@@ -234,8 +252,8 @@ final class FileObjectKeeper implements FileChangeListener {
             FileObject fo = factory.getValidFileObject(f, Caller.Others);
             LOG.log(Level.FINEST, "listenToAll, check {0} for stop {1}", new Object[] { fo, stop });
             if (fo instanceof FolderObj) {
-                FolderObj obj = (FolderObj) fo;
-                if (filter != null && !filter.accept(obj.getFileName().getFile())) {
+                FolderObj child = (FolderObj) fo;
+                if (filter != null && !filter.accept(child.getFileName().getFile())) {
                     continue;
                 }
                 Object shallStop = null;
@@ -247,12 +265,15 @@ final class FileObjectKeeper implements FileChangeListener {
                     }
                 }
                 if (Boolean.TRUE.equals(shallStop)) {
-                    LOG.log(Level.INFO, "addRecursiveListener to {0} interrupted", root); // NOI18N
-                    return;
+                    LOG.log(Level.INFO, "addRecursiveListener to {0} interrupted", child); // NOI18N
+                    return false;
                 }
-                listenTo(obj, true, it);
+                if (!listenToAllRecursion(child, factory, stop, filter)) {
+                    return false;
+                }
             }
         }
+        return true;
     }
 
     private void listenNoMore() {
@@ -275,22 +296,7 @@ final class FileObjectKeeper implements FileChangeListener {
         if (folder instanceof FolderObj) {
             FolderObj obj = (FolderObj)folder;
             synchronized (this) {
-                Queue<File> it = new ArrayDeque<File>();
-                listenTo(obj, true, it);
-                FileObjectFactory factory = null;
-                for (;;) {
-                    File f = it.poll();
-                    if (f == null) {
-                        break;
-                    }
-                    if (factory == null) {
-                        factory = FileObjectFactory.getInstance(f);
-                    }
-                    FileObject fo = factory.getValidFileObject(f, Caller.Others);
-                    if (fo instanceof FolderObj) {
-                        listenTo((FolderObj)fo, true, it);
-                    }
-                }
+                fileFolderCreatedRecursion(obj, null);
             }
         }
         synchronized (this) {
@@ -301,6 +307,31 @@ final class FileObjectKeeper implements FileChangeListener {
         }
         for (FileChangeListener l : arr) {
             l.fileFolderCreated(fe);
+        }
+    }
+
+    /**
+     * Recursive part of {@link #fileFolderCreated(FileEvent)}. Invoke
+     * {@link #listenTo(FileObject, boolean, Collection)} on a folder and its
+     * subfolders.
+     *
+     * @param obj Root folder object to call {@code listenTo} on.
+     * @param knownFactory {@link FileObjectFactory} for the folder object, or
+     * null if it is not known yet.
+     */
+    private void fileFolderCreatedRecursion(FolderObj obj,
+            FileObjectFactory knownFactory) {
+        List<File> it = new ArrayList<File>();
+        listenTo(obj, true, it);
+        FileObjectFactory factory = knownFactory;
+        for (File f : it) {
+            if (factory == null) {
+                factory = FileObjectFactory.getInstance(f);
+            }
+            FileObject fo = factory.getValidFileObject(f, Caller.Others);
+            if (fo instanceof FolderObj) {
+                fileFolderCreatedRecursion((FolderObj) fo, factory);
+            }
         }
     }
 

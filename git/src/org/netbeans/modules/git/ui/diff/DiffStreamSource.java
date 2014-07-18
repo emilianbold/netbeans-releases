@@ -48,10 +48,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.VersionsCache;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.Utils;
@@ -83,6 +84,7 @@ public class DiffStreamSource extends StreamSource {
      */
     private File remoteFile;
     private Boolean canWriteBaseFile;
+    private final File fileInRevision;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -91,8 +93,9 @@ public class DiffStreamSource extends StreamSource {
      * @param revision file revision, may be null if the revision does not exist (ie for new files)
      * @param title title to use in diff panel
      */
-    public DiffStreamSource(File baseFile, String revision, String title) {
+    public DiffStreamSource (File fileInRevision, File baseFile, String revision, String title) {
         this.baseFile = baseFile;
+        this.fileInRevision = fileInRevision;
         this.revision = revision;
         this.title = title;
         this.start = true;
@@ -100,8 +103,8 @@ public class DiffStreamSource extends StreamSource {
 
     @Override
     public String getName() {
-        if (baseFile != null) {
-            return baseFile.getName();
+        if (fileInRevision != null) {
+            return fileInRevision.getName();
         } else {
             return NbBundle.getMessage(DiffStreamSource.class, "LBL_Diff_Anonymous"); // NOI18N
         }
@@ -199,8 +202,19 @@ public class DiffStreamSource extends StreamSource {
                 // DataObject. One example is Form files: data loader removes //GEN:BEGIN comments from the java file but ONLY
                 // if it also finds associate .form file in the same directory
                 Set<File> allFiles = Utils.getAllDataObjectFiles(baseFile);
-                for (File file : allFiles) {
-                    boolean isBase = file.equals(baseFile);
+                Map<File, File> allFilePairs = new HashMap<>(allFiles.size());
+                boolean renamed = !baseFile.equals(fileInRevision);
+                for (File f : allFiles) {
+                    if (renamed) {
+                        allFilePairs.put(renameFile(f, baseFile, fileInRevision), f);
+                    } else {
+                        allFilePairs.put(f, f);
+                    }
+                }
+                for (Map.Entry<File, File> entry : allFilePairs.entrySet()) {
+                    File file = entry.getKey();
+                    File currentPair = entry.getValue();
+                    boolean isBase = file.equals(fileInRevision);
                     try {
                         File rf = VersionsCache.getInstance().getFileRevision(file, revision, GitUtils.NULL_PROGRESS_MONITOR);
                         if (rf == null) {
@@ -212,9 +226,22 @@ public class DiffStreamSource extends StreamSource {
                         newRemoteFile.deleteOnExit();
                         if (isBase) {
                             remoteFile = newRemoteFile;
-                            Utils.associateEncoding(file, newRemoteFile);
+                            File encodingHolder = currentPair;
+                            if (encodingHolder.exists()) {
+                                Utils.associateEncoding(encodingHolder, newRemoteFile);
+                            } else if (remoteFile != null) {
+                                boolean created = false;
+                                try {
+                                    created = encodingHolder.createNewFile();
+                                    Utils.associateEncoding(encodingHolder, newRemoteFile);
+                                } finally {
+                                    if (created) {
+                                        encodingHolder.delete();
+                                    }
+                                }
+                            }
                         }
-                    } catch (Exception e) {
+                    } catch (IOException e) {
                         if (isBase) throw e;
                         // we cannot check out peer file so the dataobject will not be constructed properly
                     }
@@ -268,5 +295,32 @@ public class DiffStreamSource extends StreamSource {
             }
         }
         return editorCookie;
+    }
+
+    private File renameFile (File toRename, File baseFile, File renamedBaseFile) {
+        File parent = renamedBaseFile.getParentFile();
+        String baseFileName = baseFile.getName();
+        String renamedFileName = renamedBaseFile.getName();
+        String toRenameFileName = toRename.getName();
+        String retval = toRenameFileName;
+        if (!renamedFileName.equals(baseFileName)) {
+            String baseNameNoExt = getFileNameNoExt(baseFileName);
+            String renamedNameNoExt = getFileNameNoExt(renamedFileName);
+            if (toRenameFileName.startsWith(baseNameNoExt)) {
+                retval = renamedNameNoExt;
+                if (toRenameFileName.length() > baseNameNoExt.length()) {
+                    retval += toRenameFileName.substring(baseNameNoExt.length());
+                }
+            }
+        }
+        return new File(parent, retval);
+    }
+
+    private String getFileNameNoExt (String fileName) {
+        int pos = fileName.lastIndexOf('.');
+        if (pos != -1) {
+            return fileName.substring(0, pos);
+        }
+        return fileName;
     }
 }
