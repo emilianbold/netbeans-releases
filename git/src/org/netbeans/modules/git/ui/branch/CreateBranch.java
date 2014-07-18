@@ -154,7 +154,8 @@ public class CreateBranch implements DocumentListener {
     public void changedUpdate (DocumentEvent e) { }
 
     @NbBundle.Messages({
-        "MSG_CreateBranch.errorBranchNameEmpty=Invalid branch name",
+        "MSG_CreateBranch.errorBranchNameEmpty=Branch name cannot be empty",
+        "MSG_CreateBranch.errorInvalidBranchName=Invalid branch name",
         "MSG_CreateBranch.errorBranchExists=A branch with the given name already exists.",
         "# {0} - branch name",
         "MSG_CreateBranch.errorParentExists=Cannot create branch under already existing \"{0}\""
@@ -167,6 +168,8 @@ public class CreateBranch implements DocumentListener {
         branchName = getBranchName();
         if (branchName.isEmpty()) {
             msgInvalidName = Bundle.MSG_CreateBranch_errorBranchNameEmpty();
+        } else if (!GitUtils.isValidBranchName(branchName)) {
+            msgInvalidName = Bundle.MSG_CreateBranch_errorInvalidBranchName();
         } else if (localBranchNames.contains(branchName)) {
             msgInvalidName = Bundle.MSG_CreateBranch_errorBranchExists();
         } else {
