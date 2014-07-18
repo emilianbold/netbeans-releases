@@ -141,7 +141,7 @@
     <file name="F5.shadow">
         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
     </file>
-    <file name="CS-S.shadow">
+    <file name="DS-S.shadow">
         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAllAction.instance"/>
     </file>
     <file name="F8.shadow">
@@ -222,7 +222,7 @@
     <file name="S-DELETE.shadow">
         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
     </file>
-    <file name="C-S.shadow">
+    <file name="D-S.shadow">
         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAction.instance"/>
     </file>
     <file name="C-N.shadow">

@@ -1135,8 +1135,12 @@ public final class CreatedModifiedFiles {
         public String[] getModifiedPaths() {
             FileObject layer = cmf.getLayerHandle().getLayerFile();
             NbModuleProvider provider = project.getLookup().lookup(NbModuleProvider.class);
-            return layer != null ? new String[]{FileUtil.getRelativePath(project.getProjectDirectory(), layer)}:
-                    new String[]{FileUtil.getRelativePath(project.getProjectDirectory(), provider.getManifestFile())};
+            if(layer != null) {
+                return new String[]{FileUtil.getRelativePath(project.getProjectDirectory(), layer)};
+            } else if (provider.getManifestFile() != null) {
+                return new String[]{FileUtil.getRelativePath(project.getProjectDirectory(), provider.getManifestFile())};
+            }
+            return new String[0];
         }
 
         @Override

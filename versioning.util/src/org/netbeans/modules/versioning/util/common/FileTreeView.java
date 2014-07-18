@@ -173,6 +173,11 @@ public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewC
     }
 
     @Override
+    public final void focus () {
+        view.requestFocusInWindow();
+    }
+
+    @Override
     public int getPreferredHeaderHeight () {
         return view.getOutline().getTableHeader().getPreferredSize().height;
     }

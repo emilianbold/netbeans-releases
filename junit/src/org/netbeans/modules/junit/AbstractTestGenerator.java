@@ -211,6 +211,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     
     private volatile boolean cancelled = false;
     private JUnitVersion junitVersion;
+    private static final Logger LOG = Logger.getLogger(AbstractTestGenerator.class.getName());
 
 
     /**
@@ -1911,9 +1912,14 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                       .contains(preferredName);
 
         List<? extends Tree> tstClassMembers = tstClass.getMembers();
+        int[] nestedClassIndexes = tstClassMap.getNestedClassIndexes();
+        if(tstClassMembers.size() != nestedClassIndexes.length) {
+            LOG.log(Level.INFO, "Cannot locate subclass of source class {0} in test class {1}", new Object[]{srcClass.getSimpleName(), tstClass.getSimpleName()});
+            return null;
+        }
         TypeMirror srcClassType = null;
         Name firstFound = null;
-        for (int index : tstClassMap.getNestedClassIndexes()) {
+        for (int index : nestedClassIndexes) {
             Tree member = tstClassMembers.get(index);
             assert TreeUtilities.CLASS_TREE_KINDS.contains(member.getKind());
             ClassTree nestedClass = (ClassTree) member;

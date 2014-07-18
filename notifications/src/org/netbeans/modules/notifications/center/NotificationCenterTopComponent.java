@@ -131,7 +131,8 @@ public final class NotificationCenterTopComponent extends TopComponent {
         lblEmptyDetails.setFont(italicFont);
         lblEmptyDetails.setEnabled(false);
 
-        splitPane.setRightComponent(detailsPanel);
+        JScrollPane scrollPane = new JScrollPane(detailsPanel);
+        splitPane.setRightComponent(scrollPane);
 
         toolBar.setFocusable(false);
         toolBar.setFloatable(false);

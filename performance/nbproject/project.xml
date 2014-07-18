@@ -258,10 +258,18 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.performance.ergonomics</friend>
+                <friend>org.netbeans.modules.performance.java</friend>
+                <friend>org.netbeans.modules.performance.javaee</friend>
+                <friend>org.netbeans.modules.performance.scripting</friend>
+                <friend>org.netbeans.modules.performance.web</friend>
+                <friend>org.netbeans.performance.cnd</friend>
+                <friend>org.netbeans.performance.enterprise</friend>
+                <friend>org.netbeans.performance.mobility</friend>
                 <package>org.netbeans.modules.performance.guitracker</package>
                 <package>org.netbeans.modules.performance.utilities</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

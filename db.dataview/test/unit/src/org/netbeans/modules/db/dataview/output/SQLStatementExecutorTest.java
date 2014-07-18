@@ -93,7 +93,7 @@ public class SQLStatementExecutorTest extends NbTestCase {
             int pageSize = 5;
             final String sqlStr = context.getSqlUpdate();
             DataView dv = DataView.create(dbconn, sqlStr, pageSize);
-            SQLStatementExecutor executor = new SQLStatementExecutor(dv, NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_insert"), "") {
+            SQLStatementExecutor executor = new SQLStatementExecutor(dv, NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_insert"), "", true) {
 
                 @Override
                 public void finished() {

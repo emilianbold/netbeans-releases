@@ -67,6 +67,8 @@ public interface FileViewComponent<T extends Node> {
 
     public boolean hasPreviousNode (T node);
 
+    public void focus ();
+
     int getPreferredHeaderHeight ();
 
     JComponent getComponent ();

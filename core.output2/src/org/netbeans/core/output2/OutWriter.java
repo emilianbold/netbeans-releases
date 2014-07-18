@@ -294,7 +294,7 @@ class OutWriter extends PrintWriter {
     }
 
     public synchronized boolean isClosed() {
-        if (checkError() || storage == null || storage.isClosed()) {
+        if (checkError() || disposed || (storage != null && storage.isClosed())) {
             return true;
         } else {
             return closed;

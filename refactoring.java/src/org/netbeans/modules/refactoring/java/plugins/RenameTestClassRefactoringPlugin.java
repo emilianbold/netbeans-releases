@@ -40,6 +40,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -52,6 +53,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -272,15 +274,19 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
 			Tree classTree = cut.getTypeDecls().get(0);
 			List<? extends Tree> methodTrees = ((ClassTree) classTree).getMembers();
 			for (int i = 0; i < methodTrees.size(); i++) {
-			    if(((MethodTree)methodTrees.get(i)).getName().contentEquals(testMethodName)) {
-				classTree = ((ClassTree) classTree).getMembers().get(i);
-				TreePath tp = TreePath.getPath(cut, classTree);				
-				RenameRefactoring renameRefactoring = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(tp, javac)));
-				renameRefactoring.setNewName(RefactoringUtils.getTestMethodName(refactoring.getNewName()));
-				renameRefactoring.setSearchInComments(true);
-				renameRefactoringsList.add(renameRefactoring);
-				break;
-			    }
+                            MethodTree methodTree = (MethodTree) methodTrees.get(i);
+			    if (methodTree.getName().contentEquals(testMethodName)
+                                    && methodTree.getReturnType().getKind() == Tree.Kind.PRIMITIVE_TYPE
+                                    && ((PrimitiveTypeTree) methodTree.getReturnType()).getPrimitiveTypeKind() == TypeKind.VOID) {
+                                 // test method should at least be void
+                                classTree = ((ClassTree) classTree).getMembers().get(i);
+                                TreePath tp = TreePath.getPath(cut, classTree);
+                                RenameRefactoring renameRefactoring = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(tp, javac)));
+                                renameRefactoring.setNewName(RefactoringUtils.getTestMethodName(refactoring.getNewName()));
+                                renameRefactoring.setSearchInComments(true);
+                                renameRefactoringsList.add(renameRefactoring);
+                                break;
+                            }
 			}
 		    }
 		}, true);

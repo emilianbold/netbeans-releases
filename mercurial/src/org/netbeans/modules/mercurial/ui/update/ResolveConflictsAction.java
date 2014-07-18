@@ -67,6 +67,17 @@ import org.openide.util.NbBundle;
 })
 public class ResolveConflictsAction extends ContextAction {
 
+    private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/conflict-resolve.png"; //NOI18N
+    
+    public ResolveConflictsAction () {
+        super(ICON_RESOURCE);
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
+    
     @Override
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
