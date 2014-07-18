@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -68,6 +69,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -95,7 +97,7 @@ import org.openide.filesystems.FileObject;
 })
 public class ResourceStringFoldProvider extends ParsingFoldSupport{
     private List<MessagePattern> messages = new ArrayList<>();
-
+    
     public ResourceStringFoldProvider() {
         messages.add(
             new MessagePattern(
@@ -171,8 +173,8 @@ public class ResourceStringFoldProvider extends ParsingFoldSupport{
     }
 
     @Override
-    protected ParserResultTask createParserTask(FileObject file) {
-        final ParserResultTask wrapped = super.createParserTask(file);
+    protected ParserResultTask createParserTask(FileObject file, FoldProcessor processor) {
+        final ParserResultTask wrapped = super.createParserTask(file, processor);
         return new JavaParserResultTask(JavaSource.Phase.RESOLVED, TaskIndexingMode.ALLOWED_DURING_SCAN) {
             
             @Override
