@@ -61,9 +61,11 @@ import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
+import org.netbeans.modules.profiler.attach.AttachWizard;
 import org.netbeans.modules.profiler.nbimpl.NetBeansProfiler;
 import org.netbeans.modules.profiler.nbimpl.providers.JavaPlatformManagerImpl;
 import org.netbeans.modules.profiler.spi.JavaPlatformProvider;
+import org.netbeans.modules.profiler.ui.panels.PIDSelectPanel;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.netbeans.modules.profiler.utils.IDEUtils;
 import org.netbeans.modules.profiler.v2.ProfilerSession;
@@ -102,7 +104,6 @@ public class ProfilerLauncher {
     final private static class ProfilerSessionImpl extends ProfilerSession {
         
         private final Lookup context;
-        private boolean attach;
         
         ProfilerSessionImpl(Lookup _context) {
             super(NetBeansProfiler.getDefaultNB(), _context);
@@ -111,13 +112,22 @@ public class ProfilerLauncher {
 
         public void start() {
             ProfilingSettings pSettings = getProfilingSettings();
-            AttachSettings aSettings = getAttachSettings();
             
-            if (aSettings != null) {
-                attach = true;
+            if (isAttach()) {
+                AttachSettings aSettings = getAttachSettings();
+                if (aSettings == null && AttachWizard.isAvailable())
+                    aSettings = AttachWizard.getDefault().configure(aSettings);
+                if (aSettings == null) {
+                    return; // cancelled by the user
+                } else {
+                    if (!aSettings.isRemote() && aSettings.isDynamic16()) {
+                        int pid = PIDSelectPanel.selectPID();
+                        if (pid == -1) return; // cancelled by the user
+                        aSettings.setPid(pid);
+                    }
+                }
                 getProfiler().attachToApp(pSettings, aSettings);
             } else {
-                attach = false;
                 Command command = context.lookup(Command.class);
                 Session s = newSession(command.get(), context);
                 if (s != null) {
@@ -138,8 +148,8 @@ public class ProfilerLauncher {
         public void terminate() {
             ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                 public void run() {
-                    if (!attach) getProfiler().stopApp();
-                    else getProfiler().detachFromApp();
+                    if (isAttach()) getProfiler().detachFromApp();
+                    else getProfiler().stopApp();
                 }
             });
         }
