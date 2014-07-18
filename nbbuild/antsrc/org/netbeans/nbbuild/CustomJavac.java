@@ -80,7 +80,7 @@ public class CustomJavac extends Javac {
 
     private String maybeFork;
     @Override public void setFork(boolean f) {
-        throw new UnsupportedOperationException();
+        super.setFork(f);
     }
     @Override public void setExecutable(String forkExec) {
         maybeFork = forkExec;
