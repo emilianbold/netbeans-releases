@@ -919,9 +919,8 @@ public class JavacParser extends Parser {
                     !hasResource("java/lang/AutoCloseable", bootClassPath, classPath, srcClassPath)) { //NOI18N
                     LOGGER.log(warnLevel,
                                "Even though the source level of {0} is set to: {1}, java.lang.AutoCloseable cannot be found on the bootclasspath: {2}\n" +   //NOI18N
-                               "Changing source level to 1.6",  //NOI18N
+                               "Try with resources is unsupported.",  //NOI18N
                                new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
-                    return com.sun.tools.javac.code.Source.JDK1_6;
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_8) >= 0 &&
                     !hasResource("java/util/stream/Streams", bootClassPath, classPath, srcClassPath)) { //NOI18N

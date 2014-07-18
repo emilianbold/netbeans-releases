@@ -468,7 +468,7 @@ public abstract class ParsingFoldSupport extends TaskFactory implements FoldMana
     private final class FM implements FoldManager {
         private final FileManagerRegistrar reg;
         private FoldOperation   operation;
-        private FileData        fileData;
+        private FileData  fileData;
         private FoldProcessor   processor;
 
         public FM(FileManagerRegistrar reg) {
@@ -486,7 +486,9 @@ public abstract class ParsingFoldSupport extends TaskFactory implements FoldMana
         }
         
         private void invalidate() {
-            fileData.invalidate();
+            if (fileData != null) {
+                fileData.invalidate();
+            }
         }
 
         @Override
