@@ -56,6 +56,7 @@ import org.json.simple.parser.ParseException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.clientproject.grunt.TargetLister;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
@@ -149,6 +150,7 @@ public final class NpmProblemProvider extends NodeProblemProvider {
 
         public FutureResult() {
             try {
+                ClientSideProjectUtilities.logUsage(NpmInstallAction.class, "USG_NPM_INSTALL", null);
                 done = new AtomicBoolean(false);
                 cancelled = new AtomicBoolean(false);
                 execute = 
