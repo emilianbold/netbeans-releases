@@ -41,21 +41,14 @@
  */
 package org.netbeans.libs.git.jgit.commands;
 
-import java.io.IOException;
 import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.TagCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.RefUpdate;
-import org.eclipse.jgit.lib.RefUpdate.Result;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevObject;
-import org.eclipse.jgit.revwalk.RevWalk;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.jgit.DelegatingGitProgressMonitor;
 import org.netbeans.libs.git.jgit.GitClassFactory;
@@ -90,26 +83,21 @@ public class CreateTagCommand extends GitCommand {
         Repository repository = getRepository();
         try {
             RevObject obj = Utils.findObject(repository, taggedObject);
-            if ((message == null || message.isEmpty()) && signed == false) {
-                tag = createLightWeight(obj, repository);
-            } else {
-                TagCommand cmd = new Git(repository).tag();
-                cmd.setName(tagName);
+            TagCommand cmd = new Git(repository).tag();
+            cmd.setName(tagName);
+            cmd.setForceUpdate(forceUpdate);
+            cmd.setObjectId(obj);
+            cmd.setAnnotated(message != null && !message.isEmpty() || signed);
+            if (cmd.isAnnotated()) {
                 cmd.setMessage(message);
-                cmd.setObjectId(obj);
-                cmd.setForceUpdate(forceUpdate);
                 cmd.setSigned(signed);
-                cmd.call();
-                ListTagCommand tagCmd = new ListTagCommand(repository, getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
-                tagCmd.run();
-                Map<String, GitTag> tags = tagCmd.getTags();
-                tag = tags.get(tagName);
             }
-        } catch (JGitInternalException ex) {
-            throw new GitException(ex);
-        } catch (GitAPIException ex) {
-            throw new GitException(ex);
-        } catch (IOException ex) {
+            cmd.call();
+            ListTagCommand tagCmd = new ListTagCommand(repository, getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
+            tagCmd.run();
+            Map<String, GitTag> tags = tagCmd.getTags();
+            tag = tags.get(tagName);
+        } catch (JGitInternalException | GitAPIException ex) {
             throw new GitException(ex);
         }
     }
@@ -135,31 +123,5 @@ public class CreateTagCommand extends GitCommand {
 
     public GitTag getTag () {
         return tag;
-    }
-
-    private GitTag createLightWeight (RevObject revObject, Repository repository) throws GitException, IOException {
-        RevWalk revWalk = new RevWalk(repository);
-        try {
-            String refName = Constants.R_TAGS + tagName;
-            RefUpdate tagRef = repository.updateRef(refName);
-            tagRef.setNewObjectId(revObject);
-            tagRef.setForceUpdate(forceUpdate);
-            tagRef.setRefLogMessage("tagged " + tagName, false);
-            Result updateResult = tagRef.update(revWalk);
-            switch (updateResult) {
-                case NEW:
-                case FORCED:
-                    return revObject instanceof RevCommit 
-                            ? getClassFactory().createTag(tagName, getClassFactory().createRevisionInfo((RevCommit) revObject, repository)) 
-                            : getClassFactory().createTag(tagName, revObject);
-                case LOCK_FAILURE:
-                    throw new GitException.RefUpdateException("Cannot lock ref " + refName, GitRefUpdateResult.valueOf(updateResult.name()));
-                default:
-                    throw new GitException.RefUpdateException("Updating ref " + refName + " failed", GitRefUpdateResult.valueOf(updateResult.name()));
-            }
-
-        } finally {
-            revWalk.release();
-        }
     }
 }
