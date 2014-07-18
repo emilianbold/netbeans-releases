@@ -74,6 +74,7 @@ import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
@@ -229,12 +230,15 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         private final ClientSideProject project;
         private final ProjectInformation projectInfo;
         private final PropertyEvaluator evaluator;
+        private final ProjectProblemsProvider problemsProvider;
+
 
         private ClientSideProjectNode(ClientSideProject project) {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-web-clientproject/Nodes"), createLookup(project));
             this.project = project;
             projectInfo = ProjectUtils.getInformation(project);
             evaluator = project.getEvaluator();
+            problemsProvider = project.getLookup().lookup(ProjectProblemsProvider.class);
         }
 
         public static ClientSideProjectNode createForProject(ClientSideProject project) {
@@ -246,6 +250,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         private void addListeners() {
             evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
             projectInfo.addPropertyChangeListener(WeakListeners.propertyChange(this, projectInfo));
+            problemsProvider.addPropertyChangeListener(WeakListeners.propertyChange(this, problemsProvider));
         }
 
         private static Lookup createLookup(ClientSideProject project) {
