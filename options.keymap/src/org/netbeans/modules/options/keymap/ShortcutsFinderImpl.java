@@ -107,7 +107,7 @@ public class ShortcutsFinderImpl implements ShortcutsFinder {
      */
     protected boolean isImpliedAction(ShortcutAction action) {
         // special hack for macros; the RunMacro action gets all macro shortcuts assinged
-        return "run-macro".equals(action.getId());
+        return action != null && "run-macro".equals(action.getId()); // NOI18N
     }
 
     @Override
