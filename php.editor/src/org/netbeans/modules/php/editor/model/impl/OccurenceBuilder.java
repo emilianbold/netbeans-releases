@@ -918,7 +918,7 @@ class OccurenceBuilder {
         QualifiedName clzName = elementInfo.getTypeQualifiedName();
         final Set<TypeConstantElement> constants = new HashSet<>();
         Scope scope = ModelUtils.getTypeScope(elementInfo.getScope());
-        if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
+        if (clzName.getKind().isUnqualified() && scope != null) {
             if (clzName.getName().equalsIgnoreCase("self") //NOI18N
                     || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                 clzName = QualifiedName.create(((TypeScope) scope).getName());
@@ -1417,7 +1417,7 @@ class OccurenceBuilder {
                     ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = ModelUtils.getTypeScope(entry.getValue());
-                    if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
+                    if (clzName != null && clzName.getKind().isUnqualified() && scope != null) {
                         if (clzName.getName().equalsIgnoreCase("self") //NOI18N
                                 || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                             clzName = QualifiedName.create(((TypeScope) scope).getName());
@@ -1966,7 +1966,7 @@ class OccurenceBuilder {
         if (setElementInfo(element)) {
             build(fileScope);
         }
-        return cachedOccurences;
+        return new ArrayList<>(cachedOccurences);
     }
 
     /**
@@ -2035,9 +2035,8 @@ class OccurenceBuilder {
     }
 
     private class OccurenceImpl implements Occurence {
-
         private final OffsetRange occurenceRange;
-        final PhpElement declaration;
+        private final PhpElement declaration;
         private Collection<? extends PhpElement> allDeclarations;
         private Accuracy accuracy = Accuracy.EXACT;
 
@@ -2078,7 +2077,7 @@ class OccurenceBuilder {
 
         @Override
         public Collection<? extends PhpElement> gotoDeclarations() {
-            return allDeclarations;
+            return new HashSet<>(allDeclarations);
         }
 
         public void setAccuracy(Accuracy accuracy) {
@@ -2087,7 +2086,7 @@ class OccurenceBuilder {
 
         @Override
         public Collection<? extends PhpElement> getAllDeclarations() {
-            return this.allDeclarations;
+            return new HashSet<>(allDeclarations);
         }
 
         @Override
@@ -2097,26 +2096,25 @@ class OccurenceBuilder {
     }
 
     private static class ElementInfo {
-
-        private Scope scope;
-        private Union2<ASTNodeInfo, ModelElement> element;
+        private final Scope scope;
+        private final Union2<ASTNodeInfo, ModelElement> element;
         public Set<? extends PhpElement> declarations = Collections.emptySet();
 
         public ElementInfo(ModelElement element) {
             this.element = Union2.createSecond(element);
             if (element instanceof Scope) {
-                this.scope = (Scope) element;
+                scope = (Scope) element;
             } else {
-                this.scope = element.getInScope();
+                scope = element.getInScope();
             }
         }
 
         public ElementInfo(ASTNodeInfo nodeInfo, ModelElement element) {
             this.element = Union2.createFirst(nodeInfo);
             if (element instanceof Scope) {
-                this.scope = (Scope) element;
+                scope = (Scope) element;
             } else {
-                this.scope = element.getInScope();
+                scope = element.getInScope();
             }
         }
 
@@ -2273,14 +2271,14 @@ class OccurenceBuilder {
          * @return the declarations
          */
         public Set<? extends PhpElement> getDeclarations() {
-            return declarations;
+            return new HashSet<>(declarations);
         }
 
         /**
          * @param declarations the declarations to set
          */
         public boolean setDeclarations(Set<? extends PhpElement> declarations) {
-            this.declarations = declarations;
+            this.declarations = new HashSet<>(declarations);
             return this.declarations != null && !this.declarations.isEmpty();
         }
     }
