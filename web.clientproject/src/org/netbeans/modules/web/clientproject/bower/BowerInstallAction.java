@@ -50,6 +50,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.clientproject.node.NodeExecutor;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -112,6 +113,7 @@ public class BowerInstallAction extends AbstractAction implements ContextAwareAc
         public @Override
         void actionPerformed(ActionEvent e) {
             try {
+                ClientSideProjectUtilities.logUsage(BowerInstallAction.class, "USG_BOWER_INSTALL", null);
                 Project p = FileOwnerQuery.getOwner(bower_json);
                 String display = p!=null?ProjectUtils.getInformation(p).getDisplayName():bower_json.getParent().getName();
                 new NodeExecutor(Bundle.TTL_bower_install(display),

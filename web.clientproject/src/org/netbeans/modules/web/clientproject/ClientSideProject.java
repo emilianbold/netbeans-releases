@@ -633,17 +633,25 @@ public class ClientSideProject implements Project {
             if (jsTestingProvider != null) {
                 jsTestingProvider.projectOpened(project);
             }
+            FileObject projectDirectory = project.getProjectDirectory();
             // usage logging
-            FileObject cordova = project.getProjectDirectory().getFileObject(".cordova"); // NOI18N
+            FileObject cordova = projectDirectory.getFileObject(".cordova"); // NOI18N
             if (cordova == null) {
-                cordova = project.getProjectDirectory().getFileObject("hooks"); // NOI18N
+                cordova = projectDirectory.getFileObject("hooks"); // NOI18N
             }
             FileObject testsFolder = project.getTestsFolder(false);
+            
+            boolean hasGrunt = projectDirectory.getFileObject("Gruntfile.js") != null;
+            boolean hasBower = projectDirectory.getFileObject("bower.json") !=null;
+            boolean hasPackage = projectDirectory.getFileObject("package.json") !=null;
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
                     new Object[] {
                         browserId,
                         testsFolder != null && testsFolder.getChildren().length > 0 ? "YES" : "NO", // NOI18N
                         cordova != null && cordova.isFolder() ? "YES" : "NO", // NOI18N
+                        hasGrunt ? "YES" : "NO", // NOI18N
+                        hasBower ? "YES" : "NO", // NOI18N
+                        hasPackage ? "YES" : "NO", // NOI18N
                     });
         }
 

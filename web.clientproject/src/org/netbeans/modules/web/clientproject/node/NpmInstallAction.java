@@ -50,6 +50,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.clientproject.grunt.TargetLister;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -116,6 +117,7 @@ public class NpmInstallAction extends AbstractAction implements ContextAwareActi
         public @Override
         void actionPerformed(ActionEvent e) {
             try {
+                ClientSideProjectUtilities.logUsage(NpmInstallAction.class, "USG_NPM_INSTALL", null);
                 Project p = FileOwnerQuery.getOwner(package_json);
                 String display = p!=null?ProjectUtils.getInformation(p).getDisplayName():package_json.getParent().getName();
                 new NodeExecutor(
