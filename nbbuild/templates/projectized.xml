@@ -266,6 +266,9 @@ If you are sure you want to build with JDK 8+ anyway, use: -Dpermit.jdk8.builds=
         <path id="test.unit.lib.cp"/>
         <!-- The IDE is so big that anything enabling all clusters will exceed the JVM's defaults! -->
         <!-- Any changes please propagate into nbbuild/testdist/release/one-module.xml test.run.args property -->
+        <condition property="test.run.args" value="-ea -Xmx480m">
+            <available classname="java.lang.FunctionalInterface"/>
+        </condition>
         <property name="test.run.args" value="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx480m"/>
         <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/>
         <macrodef name="test-init-nborg">
