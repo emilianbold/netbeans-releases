@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmOverloadingResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -121,6 +122,7 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
     @Override
     public Collection<CsmObject> resolveSymbol(CsmProject project, CharSequence declText) {
         try {
+            CsmCacheManager.enter();
             AST ast = tryParseQualifiedId(declText);
             if (ast != null) {
                 // Simple case - declText is just a qualified id
@@ -156,6 +158,8 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
             }
         } catch (Exception ex) {
             LOG.warning(ex.getMessage());
+        } finally {
+            CsmCacheManager.leave();
         }
         return Collections.emptyList();
     }
@@ -287,11 +291,20 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
         List<CsmType> params = new ArrayList<>();
         for (AST paramAst : targetFunParamsAsts) {
             if (paramAst != null) {
-                AST paramTypeAst = AstUtil.findTypeNode(paramAst);
-                if (paramTypeAst != null) {
-                    AST ptrOperator = AstUtil.findSiblingOfType(paramTypeAst, CPPTokenTypes.CSM_PTR_OPERATOR);
+                AST paramTypeStart = paramAst.getFirstChild();
+                while (paramTypeStart != null && !AstUtil.isTypeNode(paramTypeStart) && !AstRenderer.isQualifier(paramTypeStart.getType())) {
+                    paramTypeStart = paramTypeStart.getNextSibling();
+                }
+                if (paramTypeStart != null && AstRenderer.isQualifier(paramTypeStart.getType())) {
+                    AST typeAst = AstRenderer.getFirstSiblingSkipQualifiers(paramTypeStart);
+                    if (!AstUtil.isTypeNode(typeAst)) {
+                        paramTypeStart = null;
+                    }
+                }
+                if (paramTypeStart != null) {
+                    AST ptrOperator = AstUtil.findSiblingOfType(paramTypeStart, CPPTokenTypes.CSM_PTR_OPERATOR);
                     // TODO: AST has wrong offsets here!
-                    CsmType type = TypeFactory.createType(paramTypeAst, context.getContainingFile(), ptrOperator, 0, context.getScope());
+                    CsmType type = TypeFactory.createType(paramTypeStart, context.getContainingFile(), ptrOperator, 0, context.getScope());
                     params.add(type);
                 }
             }
@@ -419,7 +432,7 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
     }
     
     private static AST tryParseQualifiedId(CharSequence sequence) {
-        String trimmedSequence = sequence.toString().trim() /*+ APTUtils.SCOPE + "DUMMY_IDENTIFIER"*/;
+        String trimmedSequence = sequence.toString().trim();
         CPPParserEx parser = createParser(trimmedSequence);
         if (parser != null) {
             parser.qualified_id();
@@ -505,10 +518,10 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
         return CsmSelect.getFilterBuilder().createCompoundFilter(
                  CsmSelect.getFilterBuilder().createKindFilter(
                      CsmDeclaration.Kind.CLASS, 
-                     CsmDeclaration.Kind.STRUCT,
-                     CsmDeclaration.Kind.TYPEDEF,
-                     CsmDeclaration.Kind.TYPEALIAS,
-                     CsmDeclaration.Kind.NAMESPACE_ALIAS
+                     CsmDeclaration.Kind.STRUCT
+//                     CsmDeclaration.Kind.TYPEDEF,
+//                     CsmDeclaration.Kind.TYPEALIAS,
+//                     CsmDeclaration.Kind.NAMESPACE_ALIAS
                  ),
                  CsmSelect.getFilterBuilder().createNameFilter(qualNamePart, true, true, false)
         );
@@ -518,9 +531,9 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
         return CsmSelect.getFilterBuilder().createCompoundFilter(
                  CsmSelect.getFilterBuilder().createKindFilter(
                      CsmDeclaration.Kind.CLASS,
-                     CsmDeclaration.Kind.STRUCT,
-                     CsmDeclaration.Kind.TYPEDEF,
-                     CsmDeclaration.Kind.TYPEALIAS                    
+                     CsmDeclaration.Kind.STRUCT
+//                     CsmDeclaration.Kind.TYPEDEF,
+//                     CsmDeclaration.Kind.TYPEALIAS                    
                  ),
                  CsmSelect.getFilterBuilder().createNameFilter(qualNamePart, true, true, false)
         );

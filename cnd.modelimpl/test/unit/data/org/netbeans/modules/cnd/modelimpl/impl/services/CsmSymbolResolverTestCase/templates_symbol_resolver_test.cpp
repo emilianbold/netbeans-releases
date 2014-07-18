@@ -1,4 +1,4 @@
-namespace templates_symbol_resolver_test {
+namespace tpl_sr_test {
   template <typename A>
   struct AAA_sr_test {
       A x;
@@ -19,10 +19,13 @@ namespace templates_symbol_resolver_test {
   template int foo<int>(int param);
   template double foo<double>(double param);
 
+  AAA_sr_test<int> boo(AAA_sr_test<int> param) {
+    return AAA_sr_test<int>();
+  }  
 
   AAA_sr_test<int> boo(const AAA_sr_test<int> &param) {
       return AAA_sr_test<int>();
-  }
+  }  
 
   struct ZZZ_sr_test {
       static AAA_sr_test<int> var1;
