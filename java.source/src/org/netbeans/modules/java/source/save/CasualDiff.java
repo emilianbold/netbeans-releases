@@ -2019,7 +2019,7 @@ public class CasualDiff {
         }
         copyTo(localPointer, lhsBounds[0]);
         localPointer = diffTree(oldT.lhs, newT.lhs, lhsBounds);
-        int[] rhsBounds = getBounds(oldT.rhs);
+        int[] rhsBounds = getCommentCorrectedBounds(oldT.rhs);
 
         //#174552: '=' may be missing if this is a synthetic annotation attribute assignment (of attribute name "value"):
         if (   oldT.lhs.getKind() == Kind.IDENTIFIER
@@ -2978,20 +2978,47 @@ public class CasualDiff {
     private int printBreakContinueTree(int[] bounds, final Name oldTLabel, final Name newTlabel, JCStatement oldT) {
         int localPointer = bounds[0];
         String stmt = oldT.getKind() == Kind.BREAK ? "break" : "continue"; //NOI18N
+        // PENDING: inner comments should be handled - inner comment should be printed in between break and its label,
+        // or after the break with no label.
         if (nameChanged(oldTLabel, newTlabel)) {
+            int labelPos = -1;
             copyTo(localPointer, localPointer = getOldPos(oldT));
             printer.print(stmt);
             localPointer += stmt.length();
+            
+            int commentStart = -1;
+            int commentEnd = -1;
             if (oldTLabel != null && oldTLabel.length() > 0) {
-                // XXX could be arbitrary whitespace between break/continue and its label
-                localPointer += 1;
+                tokenSequence.move(localPointer);
+                while (tokenSequence.moveNext()) {
+                    Token<JavaTokenId> tukac = tokenSequence.token();
+                    if (isComment(tukac.id())) {
+                        if (commentStart == -1) {
+                            commentStart = tokenSequence.offset();
+                        }
+                        commentEnd = tokenSequence.offset() + tukac.length();
+                    } else if (tukac.id() != JavaTokenId.WHITESPACE) {
+                        break;
+                    }
+                }
+                if (commentStart != -1) {
+                    // replicate whitespace before the comment + all the comments up to the last one:
+                    localPointer = copyUpTo(localPointer, commentEnd);
+                }
+                // start of the old label
+                labelPos = tokenSequence.offset();
             }
             if (newTlabel != null && newTlabel.length() > 0) {
-                printer.print(" ");
+                if (oldTLabel != null) {
+                    // replicate the original whitespaces
+                    localPointer = copyUpTo(localPointer, labelPos);
+                } else {
+                    printer.print(" ");
+                }
                 printer.print(newTlabel);
             }
             if (oldTLabel != null) {
-                localPointer += oldTLabel.length();
+                localPointer = labelPos + oldTLabel.length();
             }
         }
         copyTo(localPointer, bounds[1]);
@@ -4719,6 +4746,21 @@ public class CasualDiff {
         assert pos >= 0;
         return Math.max(minPos, pos);
     }
+    
+    private int getPosAfterTreeComments(JCTree t, int end) {
+        class Scn extends TreeScanner<Void, Void> {
+            int max = -1;
+            
+            @Override
+            public Void scan(Tree node, Void p) {
+                max = Math.max(getPosAfterCommentEnd((JCTree)node, -1), max);
+                return super.scan(node, p);
+            }
+        };
+        Scn scn = new Scn();
+        scn.scan(t, null);
+        return Math.max(scn.max, end);
+    }
 
     protected int diffTreeImpl(JCTree oldT, JCTree newT, JCTree parent /*used only for modifiers*/, int[] elementBounds) {
         if (oldT == null && newT != null)
@@ -4765,7 +4807,7 @@ public class CasualDiff {
                 }
                 printer.print(newT);
                 // the printer will print attached traling comments, skip in the obsolete comments in the stream, so they don't duplicate.    
-                return getPosAfterCommentEnd(oldT, oldBounds[1]);
+                return getPosAfterTreeComments(oldT, oldBounds[1]);
             }
         }
         
