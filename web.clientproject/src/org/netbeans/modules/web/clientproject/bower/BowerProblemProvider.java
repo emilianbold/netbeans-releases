@@ -58,6 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.clientproject.node.NodeExecutor;
 import org.netbeans.modules.web.clientproject.node.NodeProblemProvider;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
@@ -167,6 +168,7 @@ public final class BowerProblemProvider extends NodeProblemProvider {
 
         public FutureResult() {
             try {
+                ClientSideProjectUtilities.logUsage(BowerInstallAction.class, "USG_BOWER_INSTALL", null);
                 done = new AtomicBoolean(false);
                 cancelled = new AtomicBoolean(false);
                 execute = new NodeExecutor(Bundle.TTL_bower_install(ProjectUtils.getInformation(project).getDisplayName()),

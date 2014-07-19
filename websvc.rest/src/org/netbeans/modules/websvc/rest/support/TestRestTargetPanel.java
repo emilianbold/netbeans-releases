@@ -277,7 +277,7 @@ public class TestRestTargetPanel extends javax.swing.JPanel {
         RestSupport support = myProject.getLookup().lookup(RestSupport.class);
         String clientProject = support.getProjectProperty(TEST_CLIENT_PROJECT);
         if ( clientProject == null ){
-            setTargetProject(myProject, false);
+            setTargetProject(myProject, true);
         }
         else {
             myLocal.setSelected(false);
