@@ -135,7 +135,7 @@ public class CommentHandlerService implements CommentHandler {
                 }
                 for (RelativePosition pos : RelativePosition.values()) {
                     for (Comment c : from.getComments(pos)) {
-                        if (copied != null && copied.contains(c)) {
+                        if (copied != null && !copied.add(c)) {
                             continue;
                         }
                         to.addComment(copyToPos == null ? pos : copyToPos, c, true);
