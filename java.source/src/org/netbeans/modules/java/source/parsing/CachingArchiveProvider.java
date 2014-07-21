@@ -232,12 +232,16 @@ public final class CachingArchiveProvider {
                 File f = Utilities.toFile(URI.create(inner.toExternalForm()));
                 if (f.isFile()) {
                     final Pair<File,String> resolved = mapJarToCtSym(f, root);
-                    return new CachingArchive(
+                    final Archive first = new CachingArchive(
                             resolved.first(),
                             resolved.second(),
                             cacheFile);
-                }
-                else {
+                    return resolved.second() == null ?
+                        first :
+                        ProxyArchive.createAdditionalPackages(
+                            first,
+                            new CachingArchive(f, cacheFile));
+                } else {
                     return null;
                 }
             }
