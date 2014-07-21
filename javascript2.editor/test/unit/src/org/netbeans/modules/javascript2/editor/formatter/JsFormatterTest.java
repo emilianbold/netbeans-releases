@@ -260,8 +260,14 @@ public class JsFormatterTest extends JsTestBase {
         reindentFileContents("testfiles/formatter/functionDeclaration3.js", null);
     }
 
-    public void testFunctionDeclaration4() throws Exception {
+    public void testFunctionDeclaration4Default() throws Exception {
         reformatFileContents("testfiles/formatter/functionDeclaration4.js",new IndentPrefs(4, 4));
+    }
+    
+    public void testFunctionDeclaration4Inverted() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceBeforeAnonMethodDeclParen, false);
+        reformatFileContents("testfiles/formatter/functionDeclaration4.js", options, ".inverted.formatted");
     }
 
     public void testFunctionDeclaration4Tokens() throws Exception {
@@ -1828,7 +1834,7 @@ public class JsFormatterTest extends JsTestBase {
         format(
                 "var test = function() { a = b; };",
 
-                "var test = function() {\n" +
+                "var test = function () {\n" +
                 "    a = b;\n" +
                 "};", null);
     }

@@ -1154,6 +1154,8 @@ public class JsFormatter implements Formatter {
                 return codeStyle.spaceAroundTernaryOps;
             case AFTER_TERNARY_OPERATOR:
                 return codeStyle.spaceAroundTernaryOps;
+            case BEFORE_ANONYMOUS_FUNCTION_DECLARATION:
+                return codeStyle.spaceBeforeAnonMethodDeclParen;
             case BEFORE_FUNCTION_DECLARATION:
                 return codeStyle.spaceBeforeMethodDeclParen;
             case BEFORE_FUNCTION_CALL:

@@ -276,6 +276,13 @@ public class AstUtil {
         }        
         return typeAst;
     }
+    
+    public static boolean isTypeNode(AST ast) {
+        return ast != null && 
+            (ast.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
+             ast.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
+             ast.getType() == CPPTokenTypes.CSM_TYPE_DECLTYPE);
+    }
 
     public static boolean hasChildOfType(AST ast, int type) {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {

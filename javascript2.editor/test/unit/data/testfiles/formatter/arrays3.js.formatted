@@ -1,7 +1,7 @@
 var dvtm = this.dvtm || {};
 
 // ------ jQuery Mobile Renderer ------ //
-(function() {
+(function () {
 
     dvtm.DEFAULT_AREA_DATA = {
         'groups': ["Group A", "Group B", "Group C", "Group D"],
