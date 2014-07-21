@@ -120,7 +120,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 
         // in case of preferred JSP remove other Facelet templates
         JsfPreferences jsfPreferences = JsfPreferences.forProject(project);
-        if (!jsfPreferences.isJsfPresent() && !jsfPreferences.getPreferredLanguage().equals(PreferredLanguage.Facelets)) {
+        if (!jsfPreferences.isJsfPresent() && jsfPreferences.getPreferredLanguage() != PreferredLanguage.Facelets) {
             for (int i = templatesComboBox.getItemCount() - 1; i >= 0; i--) {
                 JsfTemplateUtils.Template template = (JsfTemplateUtils.Template) templatesComboBox.getItemAt(i);
                 if (!JsfTemplateUtils.STANDARD_TPL.equals(template.getName())) {
