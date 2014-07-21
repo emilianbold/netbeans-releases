@@ -50,7 +50,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -112,7 +111,7 @@ public abstract class RemoteSyncFactory {
      *
      * @return new instance of the RemoteSyncWorker
      */
-    public abstract RemoteSyncWorker createNew(Project project,
+    public abstract RemoteSyncWorker createNew(Lookup.Provider project,
             PrintWriter out, PrintWriter err);
 
     /**
