@@ -472,7 +472,13 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
             if (project.getConfigFolder() != null) {
                 for (FileObject f : project.getConfigFolder().getChildren()) {
-                    files.put(f, FileUtil.getRelativePath(project.getProjectDirectory(), f));
+                    String name = FileUtil.getRelativePath(project.getProjectDirectory(), f);
+                    if (name==null) {
+                        //for files outside of project directory show only 
+                        //simple name
+                        name = f.getNameExt();
+                    }
+                    files.put(f, name);
                 }
             }
 
