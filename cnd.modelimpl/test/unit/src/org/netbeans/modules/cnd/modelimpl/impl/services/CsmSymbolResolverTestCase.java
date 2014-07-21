@@ -137,4 +137,16 @@ public class CsmSymbolResolverTestCase extends SelectTestBase {
     public void testInstantiatedSignature() throws Exception {
         doTestSingle("double entity_resolver_test::boo<double>(double)", "simple_symbol_resolver_test.cpp", 43, 3);
     }
+    
+    public void testTemplatesSymbolResolverSymbols() throws Exception {
+        doTestSingle("tpl_sr_test::AAA_sr_test<int>::T_var_1", "templates_symbol_resolver_test.cpp", 6, 7);
+        doTestSingle("tpl_sr_test::ZZZ_sr_test::roo(tpl_sr_test::AAA_sr_test<int>::BBB__sr_test<int>)", "templates_symbol_resolver_test.cpp", 34, 7);
+        doTestSingle("int tpl_sr_test::ZZZ_sr_test::zoo<int>(tpl_sr_test::AAA_sr_test<int>::BBB__sr_test<int>)", "templates_symbol_resolver_test.cpp", 36, 7);
+        doTestSingle("tpl_sr_test::ZZZ_sr_test::var1", "templates_symbol_resolver_test.cpp", 31, 7);
+        doTestSingle("tpl_sr_test::ZZZ_sr_test::var2", "templates_symbol_resolver_test.cpp", 32, 7);
+        doTestSingle("tpl_sr_test::boo(tpl_sr_test::AAA_sr_test<int>)", "templates_symbol_resolver_test.cpp", 22, 3);
+        doTestSingle("tpl_sr_test::boo(tpl_sr_test::AAA_sr_test<int> const&)", "templates_symbol_resolver_test.cpp", 26, 3);
+        doTestSingle("double tpl_sr_test::foo<double>(double)", "templates_symbol_resolver_test.cpp", 15, 3);
+        doTestSingle("int tpl_sr_test::foo<int>(int)", "templates_symbol_resolver_test.cpp", 15, 3);
+    }         
 }
