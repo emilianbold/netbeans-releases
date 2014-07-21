@@ -81,9 +81,9 @@ public class ImportDataCreatorTest extends PHPTestBase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.createConfiguration(ImportDataCreatorTest.class).suite();
+        return NbModuleSuite.createConfiguration(ImportDataCreatorTest.class).gui(false).suite();
     }
-    
+
     public void testImportData_01() throws Exception {
         performTest("Homepage^Presenter");
     }
