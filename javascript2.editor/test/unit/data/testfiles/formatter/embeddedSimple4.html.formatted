@@ -8,7 +8,7 @@
         <a href="http://jquery.com/">jQuery</a>
         <script src="../jquery-1.7.2.js"></script>
         <script type="text/javascript">
-            $("a").click(function(event) {
+            $("a").click(function (event) {
                 event.preventDefault();
                 $(this).hide("slow");
             });
