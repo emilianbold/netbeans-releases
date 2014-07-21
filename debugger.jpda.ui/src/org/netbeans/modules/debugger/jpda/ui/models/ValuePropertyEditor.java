@@ -179,6 +179,22 @@ class ValuePropertyEditor implements ExPropertyEditor {
         return pe;
     }
     
+    /**
+     * Test if the property editor can act on the provided value. We can never be sure. :-(
+     * @param propertyEditor
+     * @param valueMirror
+     * @return the property editor, or <code>null</code>
+     */
+    private static PropertyEditor testPropertyEditorOnValue(PropertyEditor propertyEditor, Object valueMirror) {
+        propertyEditor.setValue(valueMirror);
+        Object value = propertyEditor.getValue();
+        if (value != valueMirror && (value == null || !value.equals(valueMirror))) {
+            // Returns something that we did not set. Give up.
+            return null;
+        }
+        return propertyEditor;
+    }
+    
     @Override
     public void setValue(Object value) {
         logger.log(Level.FINE, "ValuePropertyEditor.setValue({0})", value);
@@ -220,6 +236,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
                 }
             }
             PropertyEditor propertyEditor = findPropertyEditor(clazz);
+            propertyEditor = testPropertyEditorOnValue(propertyEditor, valueMirror);
             if (propertyEditor == null) {
                 clazz = String.class;
                 propertyEditor = findPropertyEditor(clazz);
@@ -412,7 +429,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
         logger.log(Level.FINE, "ValuePropertyEditor.removePropertyChangeListener({0})", listener);
         delegatePropertyEditor.removePropertyChangeListener(listener);
     }
-    
+
     private class Validate implements VetoableChangeListener {
 
         @Override
