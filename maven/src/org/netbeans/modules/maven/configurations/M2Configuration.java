@@ -331,7 +331,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
             protected Reader performDynamicSubstitutions(Map<String, String> replaceMap, String in) throws IOException {
                 return M2Configuration.this.performDynamicSubstitutions(replaceMap, in);
             }
-        }.getMappingForAction(reader, null, action, project, id, replaceMap);
+        }.getMappingForAction(reader, LOG, action, project, id, replaceMap);
     }
 
     public NetbeansActionMapping findMappingFor(Map<String, String> replaceMap, Project project, String actionName) {
