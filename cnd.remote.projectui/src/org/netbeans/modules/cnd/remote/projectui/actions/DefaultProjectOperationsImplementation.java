@@ -73,6 +73,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -93,6 +94,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -750,12 +752,12 @@ public final class DefaultProjectOperationsImplementation {
         dialog[0].dispose();
         dialog[0] = null;
     }
-    
-    static @CheckForNull String computeError(@NullAllowed File location, String projectNameText, boolean pureRename) {
+
+    static @CheckForNull String computeError(@NullAllowed FileProxy location, String projectNameText, boolean pureRename) {
         return computeError(location, projectNameText, null, pureRename);
     }
     
-    static @CheckForNull String computeError(@NullAllowed File location, String projectNameText, String projectFolderText, boolean pureRename) {
+    static @CheckForNull String computeError(@NullAllowed FileProxy location, String projectNameText, String projectFolderText, boolean pureRename) {
         if (projectNameText.length() == 0) {
             return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Project_Name_Must_Entered");
         }
@@ -767,7 +769,7 @@ public final class DefaultProjectOperationsImplementation {
             return null; // #199241: skip other checks for remote projects
         }
 
-        File parent = location;
+        FileProxy parent = location;
         if (!location.exists()) {
             //if some dirs in teh chain are not created, consider it ok.
             parent = location.getParentFile();
@@ -778,22 +780,25 @@ public final class DefaultProjectOperationsImplementation {
                 return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Location_Does_Not_Exist");
             }
         }
-        
+
         if (!parent.canWrite()) {
             return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Location_Read_Only");
         }
-        
-        File projectFolderFile = null;
+
+        FileProxy projectFolderFile = null;
         if (projectFolderText == null) {
-            projectFolderFile = new File(location, projectNameText);
+            projectFolderFile = location.getChild(projectNameText);
         } else {
-            projectFolderFile = new File(projectFolderText);
+            projectFolderFile = FileProxy.createAbsolute(location, projectFolderText);
         }
-        
+
+        // It's ok to check exists just in EDT in the case of rename:
+        // parent directory content already in cache.
+        // Other usages can cause UI slowness here
         if (projectFolderFile.exists() && !pureRename) {
             return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Project_Folder_Exists");
         }
-        
+
         return null;
     }
     
@@ -808,7 +813,7 @@ public final class DefaultProjectOperationsImplementation {
             OpenProjects.getDefault().setMainProject(prj);
         }
     }
-    
+
     static interface Executor {
         public void execute() throws Exception;
     }

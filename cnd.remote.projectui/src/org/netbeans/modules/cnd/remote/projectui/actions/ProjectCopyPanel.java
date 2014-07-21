@@ -454,7 +454,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     }
     
     private String computeError() {
-        File location = new File(projectLocation.getText());
+        FileProxy location = FileProxy.createAbsolute(project, projectLocation.getText());
         return DefaultProjectOperationsImplementation.computeError(location, projectName.getText(), projectFolder.getText(), false);
     }
     

@@ -60,6 +60,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.remote.projectui.actions.DefaultProjectOperationsImplementation.InvalidablePanel;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 
@@ -305,14 +306,14 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
     }
     
     private void updateProjectFolder() {
-        File location = FileUtil.toFile(project.getProjectDirectory().getParent());
-        File projectFolderFile;
+        FileProxy location = FileProxy.create(project.getProjectDirectory().getParent());
+        FileProxy projectFolderFile;
         if (alsoRenameFolder.isSelected()) {
-            projectFolderFile = new File(location, projectName.getText());
+            projectFolderFile = location.getChild(projectName.getText());
         } else {
-            projectFolderFile = new File(location, project.getProjectDirectory().getNameExt());
+            projectFolderFile = location.getChild(project.getProjectDirectory().getNameExt());
         }
-        
+
         projectFolder.setText(projectFolderFile.getAbsolutePath());
     }
     
@@ -336,8 +337,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
     }
     
     private String computeError() {
-        File location = FileUtil.toFile(project.getProjectDirectory().getParent());
-        
+        FileProxy location = FileProxy.create(project.getProjectDirectory().getParent());
         return DefaultProjectOperationsImplementation.computeError(location, projectName.getText(), !getRenameProjectFolder());
     }
     
