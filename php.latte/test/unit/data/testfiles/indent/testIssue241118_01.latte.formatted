@@ -1,5 +1,5 @@
 <script type="text/javascript" n:syntax="double">
-    $(document).ready(function() {
+    $(document).ready(function () {
         $("a[rel^='prettyPhoto']").prettyPhoto({
             social_tools: false
         });
@@ -13,13 +13,13 @@
             fileTypeDesc: 'Obrázky',
             fileTypeExts: '*.gif; *.jpg; *.png',
             fileSizeLimit: '8MB',
-            onUploadSuccess: function(file, data, response) {
+            onUploadSuccess: function (file, data, response) {
                 if (!$('#nahrane-soubory').is(':visible')) {
                     $('#nahrane-soubory').css('display', 'block');
                 }
                 $('#nahrane-soubory').append(file.name + '<br>');
             },
-            onQueueComplete: function() {
+            onQueueComplete: function () {
                 alert('Všechny soubory byly nahrány. Pokud je chcete zobrazit, aktualizujte prosím stránku.');
             }
         });
