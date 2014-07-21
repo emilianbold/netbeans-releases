@@ -166,7 +166,12 @@ public final class CloverLogParser extends DefaultHandler {
         assert filePath == null : filePath;
         assert fileMetrics == null : fileMetrics;
         assert lines == null : lines;
-        filePath = new File(sourceDir, getPath(attributes)).getAbsolutePath();
+        String path = getPath(attributes);
+        if (path.startsWith("./")) { // NOI18N
+            filePath = new File(sourceDir, path.substring(2)).getAbsolutePath();
+        } else {
+            filePath = new File(path).getAbsolutePath();
+        }
         lines = new ArrayList<>();
     }
 
@@ -208,7 +213,7 @@ public final class CloverLogParser extends DefaultHandler {
     }
 
     private String getPath(Attributes attributes) {
-        return attributes.getValue("path").substring(2); // NOI18N
+        return attributes.getValue("path"); // NOI18N
     }
 
     private int getLineCount(String filePath) {

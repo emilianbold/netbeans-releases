@@ -50,6 +50,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.jstestdriver.api.JsTestDriver;
@@ -58,6 +59,7 @@ import org.netbeans.modules.javascript.jstestdriver.preferences.JsTestDriverPref
 import org.netbeans.modules.javascript.jstestdriver.preferences.JsTestDriverPreferencesValidator;
 import org.netbeans.modules.javascript.jstestdriver.ui.customizer.CustomizerPanel;
 import org.netbeans.modules.javascript.jstestdriver.util.ValidationResult;
+import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.netbeans.modules.web.clientproject.spi.jstesting.CustomizerPanelImplementation;
@@ -127,13 +129,28 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
             return null;
         }
         String projectRelativePath = serverU.substring(prefix.length());
+        if (projectRelativePath.isEmpty()) {
+            return null;
+        }
         try {
             projectRelativePath = URLDecoder.decode(projectRelativePath, "UTF-8"); // NOI18N
         } catch (UnsupportedEncodingException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
-        if (projectRelativePath.length() > 0) {
-            return project.getProjectDirectory().getFileObject(projectRelativePath);
+        // try relative project path
+        FileObject projectDirectory = project.getProjectDirectory();
+        FileObject fileObject = projectDirectory.getFileObject(projectRelativePath);
+        if (fileObject != null) {
+            return fileObject;
+        }
+        // try absolute url for tests outside project folder
+        FileObject testsFolder = getTestsFolder(project);
+        if (testsFolder != null
+                && !isUnderneath(projectDirectory, testsFolder)) {
+            File file = new File(projectRelativePath);
+            if (file.isFile()) {
+                return FileUtil.toFileObject(file);
+            }
         }
         return null;
     }
@@ -149,6 +166,20 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
         if (relativePath != null) {
             try {
                 return new URL(prefix + relativePath);
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+        }
+        // maybe a test file from outside tests folder
+        FileObject testsFolder = getTestsFolder(project);
+        if (testsFolder == null) {
+            return null;
+        }
+        if (isUnderneath(testsFolder, projectFile)) {
+            // it is project file
+            String absolutePath = FileUtil.toFile(projectFile).getAbsolutePath();
+            try {
+                return new URL(prefix + absolutePath);
             } catch (MalformedURLException ex) {
                 LOGGER.log(Level.WARNING, null, ex);
             }
@@ -224,6 +255,20 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
         // no file selected
         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.JsTestingProviderImpl_error_config()));
         return null;
+    }
+
+    @CheckForNull
+    private FileObject getTestsFolder(Project project) {
+        ProjectDirectoriesProvider directoriesProvider = project.getLookup().lookup(ProjectDirectoriesProvider.class);
+        if (directoriesProvider == null) {
+            return null;
+        }
+        return directoriesProvider.getTestDirectory(false);
+    }
+
+    private boolean isUnderneath(FileObject root, FileObject folder) {
+        return root.equals(folder)
+                || FileUtil.isParentOf(root, folder);
     }
 
 }
