@@ -58,9 +58,9 @@ public class JsFormatterEmbeddedTest extends PHPTestBase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.createConfiguration(JsFormatterEmbeddedTest.class).suite();
+        return NbModuleSuite.createConfiguration(JsFormatterEmbeddedTest.class).gui(false).suite();
     }
-       
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
