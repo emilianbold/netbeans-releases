@@ -72,7 +72,6 @@ import org.openide.util.NbBundle;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.*;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.formatter.Defaults;
-import org.netbeans.modules.javascript2.editor.formatter.Defaults;
 
 /**
  *
@@ -263,6 +262,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                 new Item(spaceBeforeFinally)),
 
             new Item("BeforeParentheses",                       // NOI18N
+                new Item(spaceBeforeAnonMethodDeclParen),
                 new Item(spaceBeforeMethodDeclParen),
                 new Item(spaceBeforeMethodCallParen),
                 new Item(spaceBeforeIfParen),

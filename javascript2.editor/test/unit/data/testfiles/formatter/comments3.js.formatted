@@ -7,7 +7,7 @@ function Shape(ahoj) {
      *
      * @returns {String}
      */
-    this.getClassName = function() {
+    this.getClassName = function () {
         return "Shape";
     }
 

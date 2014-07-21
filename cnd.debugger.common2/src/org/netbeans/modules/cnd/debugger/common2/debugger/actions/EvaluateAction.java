@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
+import org.netbeans.modules.cnd.debugger.common2.debugger.EvaluationWindow;
 
 /**
  * Action which "stepi" one assembly instruction
@@ -80,10 +80,8 @@ public class EvaluateAction extends CallableSystemAction implements StateListene
 	if (debugger != null) {
             // 6574620
             String selectedStr = EditorBridge.getCurrentSelection();
-            if (selectedStr == null)
-                debugger.exprEval(FormatOption.EMPTY, ""); // NOI18N
-            else
-                debugger.exprEval(FormatOption.EMPTY, selectedStr);
+            selectedStr = (selectedStr == null ? "" : selectedStr); // NOI18N
+            EvaluationWindow.getDefault().exprEval(selectedStr);
 	}
 
     }

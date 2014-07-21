@@ -113,7 +113,8 @@ public abstract class JsElementImpl implements JsElement {
         }
         MimePath mp = MimePath.get(mt);
         String inhType = mp.getInheritedType();
-        return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(inhType);
+        return JsTokenId.JAVASCRIPT_MIME_TYPE.equals(inhType) 
+                || JsTokenId.JSON_MIME_TYPE.equals(inhType);
     }
            
     @Override

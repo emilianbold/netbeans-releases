@@ -2833,14 +2833,15 @@ abstract public class CsmCompletionQuery {
                                         }
                                     }
                                 } else if (lastNamespace != null) {
+                                    final boolean exactMatch = (last ? openingSource : true);
                                     CsmNamespace curNs = lastNamespace;
                                     lastNamespace = null;
-                                    List<CsmNamespace> res = finder.findNestedNamespaces(curNs, mtdName, openingSource, false); // find matching nested namespaces
+                                    List<CsmNamespace> res = finder.findNestedNamespaces(curNs, mtdName, exactMatch, false); // find matching nested namespaces
                                     for (CsmNamespace csmNamespace : res) {
                                         lastNamespace = CsmCompletion.getProjectNamespace(getCsmProject(), csmNamespace);
                                         break;
                                     }
-                                    List<CsmObject> elems = finder.findNamespaceElements(curNs, mtdName, openingSource, true, false); // matching classes
+                                    List<CsmObject> elems = finder.findNamespaceElements(curNs, mtdName, exactMatch, true, false); // matching classes
 //                                    elems.addAll(finder.findStaticNamespaceElements(lastNamespace, mtdName, openingSource)); // matching static elements
                                     for (CsmObject obj: elems) {
                                         if (CsmKindUtilities.isFunction(obj)) {

@@ -107,8 +107,8 @@ public class FullRemoteBuildTestCase extends RemoteBuildTestBase {
             remoteTmpDirFO.refresh();
         }
         FileObject remoteProjectFO = FileSystemProvider.getFileObject(execEnv, remoteProjectPath);
-        assertTrue("Should be a directory: " + remoteProjectFO, remoteProjectFO.isFolder());
         assertNotNull("null remote project file object for " + execEnv + ':' + remoteProjectPath, remoteProjectFO);
+        assertTrue("Should be a directory: " + remoteProjectFO, remoteProjectFO.isFolder());
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(remoteProjectFO);
         assertNotNull("Error opening project " + remoteProjectFO, makeProject);
         return makeProject;
