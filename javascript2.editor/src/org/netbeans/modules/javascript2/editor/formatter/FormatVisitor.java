@@ -338,7 +338,10 @@ public class FormatVisitor extends NodeVisitor {
             if (leftParen != null) {
                 FormatToken previous = leftParen.previous();
                 if (previous != null) {
-                    appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION));
+                    appendToken(previous, FormatToken.forFormat(
+                            functionNode.isAnonymous()
+                                    ? FormatToken.Kind.BEFORE_ANONYMOUS_FUNCTION_DECLARATION
+                                    : FormatToken.Kind.BEFORE_FUNCTION_DECLARATION));
                 }
 
                 // mark the within parenthesis places

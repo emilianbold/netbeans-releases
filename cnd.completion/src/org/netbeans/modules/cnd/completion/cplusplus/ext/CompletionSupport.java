@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -651,7 +652,7 @@ public final class CompletionSupport implements DocumentListener {
             }
         }
         
-        Collections.sort(candidates);
+        Collections.sort(candidates, new OverloadingCandidatesComparator<T>());
         
         List<T> result = new ArrayList<T>();
         
@@ -817,8 +818,10 @@ public final class CompletionSupport implements DocumentListener {
         }        
         
         public static ConversionCategory getWorstConversion(CsmType from, CsmType to) {
-            if (equalTypes(from, to, true)) {
+            if (CsmUtilities.checkTypesEqual(from, from.getContainingFile(), to, to.getContainingFile(), new CsmUtilities.ExactMatchQualsEqualizer())) {
                 return ConversionCategory.Identity;
+            } else if (CsmUtilities.checkTypesEqual(from, from.getContainingFile(), to, to.getContainingFile(), new CsmUtilities.AssignableQualsEqualizer())) {
+                return ConversionCategory.Qualification;
             } else if (CsmKindUtilities.isTemplateParameterType(to)) {
                 return ConversionCategory.Template;
             }
@@ -932,6 +935,32 @@ public final class CompletionSupport implements DocumentListener {
                 score += conversion.templateScore;
             }
             return score - template.getTemplateParameters().size();
+        }
+    }
+    
+    /**
+     * Comparator takes into account number of qualification conversions to ensure that 
+     * candidates with less such conversions will be before in a list of candidates.
+     */
+    private static final class OverloadingCandidatesComparator<T extends CsmFunctional> implements Comparator<OverloadingCandidate<T>> {
+
+        @Override
+        public int compare(OverloadingCandidate<T> o1, OverloadingCandidate<T> o2) {
+            int comparison = o1.compareTo(o2);
+            if (comparison == 0) {
+                return howManyQualConversions(o1) - howManyQualConversions(o2);
+            }
+            return comparison;
+        }    
+        
+        private int howManyQualConversions(OverloadingCandidate<T> candidate) {
+            int qualConversions = 0;
+            for (Conversion conversion : candidate.conversions) {
+                if (ConversionCategory.Qualification.equals(conversion.category)) {
+                    qualConversions++;
+                }
+            }   
+            return qualConversions;
         }
     }
 

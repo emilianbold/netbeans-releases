@@ -517,4 +517,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 243262 - regression: template specializations parsed incorrectly 
         performTest("bug243262.cpp");
     }    
+    
+    public void testBug245802() throws Exception {
+        // Bug 245802 - inaccuracy tests(regression): operator< breaks parser
+        performTest("bug245802.cpp");
+    }
 }
