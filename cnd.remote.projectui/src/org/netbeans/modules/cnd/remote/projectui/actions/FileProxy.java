@@ -174,6 +174,12 @@ public abstract class FileProxy {
                 return (parent == null) ? null : new FileProxyFileObject(parent, ""); //NOI18N
             }
             String parentPath = PathUtilities.getBaseName(relPath);
+            if (relPath.equals(parentPath)) {
+                // For an unknown reason PathUtilities.getBaseName return the path itself
+                // in the case there is no parent. Fixing this needs a thoroughfull investigation,
+                // so using a simple and stupid workaround
+                return null;
+            }
             if (isEmptyPath(relPath)) {
                 return new FileProxyFileObject(base, ""); //NOI18N
             } else {
