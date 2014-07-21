@@ -42,17 +42,20 @@
 
 package org.netbeans.modules.javascript.karma;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.exec.KarmaServers;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizerPanel;
 import org.netbeans.modules.javascript.karma.ui.logicalview.KarmaChildrenList;
+import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.netbeans.modules.web.clientproject.spi.jstesting.CustomizerPanelImplementation;
@@ -63,6 +66,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = JsTestingProviderImplementation.class, path = JsTestingProviders.JS_TESTING_PATH, position = 100)
@@ -100,14 +104,32 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
     @Override
     public FileObject fromServer(Project project, URL serverUrl) {
         String serverUrlString = WebUtils.urlToString(serverUrl);
-        String prefix = KarmaServers.getInstance().getServerUrl(project, "base/"); // NOI18N
+        // try absolute first
+        String prefix = KarmaServers.getInstance().getServerUrl(project, "absolute/"); // NOI18N
         if (prefix == null) {
             return null;
         }
         assert prefix.endsWith("/") : prefix;
+        if (serverUrlString.startsWith(prefix)) {
+            String absolutePath = serverUrlString.substring(prefix.length());
+            if (Utilities.isUnix()) {
+                // add leading slash
+                absolutePath = "/" + absolutePath;
+            }
+            try {
+                absolutePath = URLDecoder.decode(absolutePath, "UTF-8"); // NOI18N
+            } catch (UnsupportedEncodingException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+            return FileUtil.toFileObject(new File(absolutePath));
+        }
+        // now relative
+        prefix = KarmaServers.getInstance().getServerUrl(project, "base/"); // NOI18N
+        assert prefix != null;
         if (!serverUrlString.startsWith(prefix)) {
             return null;
         }
+        assert prefix.endsWith("/") : prefix;
         String projectRelativePath = serverUrlString.substring(prefix.length());
         try {
             projectRelativePath = URLDecoder.decode(projectRelativePath, "UTF-8"); // NOI18N
@@ -122,12 +144,29 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
 
     @Override
     public URL toServer(Project project, FileObject projectFile) {
-        String prefix = KarmaServers.getInstance().getServerUrl(project, "base/"); // NOI18N
+        // #245833
+        FileObject testsFolder = getTestsFolder(project);
+        if (testsFolder == null) {
+            // no tests
+            return null;
+        }
+        FileObject projectDirectory = project.getProjectDirectory();
+        boolean testsUnderneath = isUnderneath(projectDirectory, testsFolder);
+        String prefix = KarmaServers.getInstance().getServerUrl(project, testsUnderneath ? "base/" : "absolute/"); // NOI18N
         if (prefix == null) {
             return null;
         }
         assert prefix.endsWith("/") : prefix;
-        String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), projectFile);
+        String relativePath;
+        if (testsUnderneath) {
+            relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), projectFile);
+        } else {
+            relativePath = FileUtil.toFile(projectFile).getAbsolutePath();
+            if (relativePath.startsWith("/")) { // NOI18N
+                // remove leading slash
+                relativePath = relativePath.substring(1);
+            }
+        }
         if (relativePath != null) {
             try {
                 return new URL(prefix + relativePath);
@@ -169,6 +208,20 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
     private void cleanup(Project project) {
         KarmaPreferences.removeFromCache(project);
         KarmaServers.getInstance().stopServer(project, true);
+    }
+
+    @CheckForNull
+    private FileObject getTestsFolder(Project project) {
+        ProjectDirectoriesProvider directoriesProvider = project.getLookup().lookup(ProjectDirectoriesProvider.class);
+        if (directoriesProvider == null) {
+            return null;
+        }
+        return directoriesProvider.getTestDirectory(false);
+    }
+
+    private boolean isUnderneath(FileObject root, FileObject folder) {
+        return root.equals(folder)
+                || FileUtil.isParentOf(root, folder);
     }
 
 }

@@ -93,14 +93,14 @@ public class CsmSymbolResolverTestCase extends SelectTestBase {
         if (func instanceof CsmTemplate && ((CsmTemplate) func).isTemplate()) {
             funText = func.getReturnType().getCanonicalText() + " " + funText;
         }
-        Collection<CsmObject> result = CsmSymbolResolver.resolveSymbol((NativeProject) project.getPlatformProject(), funText);
+        Collection<CsmOffsetable> result = CsmSymbolResolver.resolveSymbol((NativeProject) project.getPlatformProject(), funText);
         return ((Collection<CsmFunction>)(Object) result).iterator();
     }
     
     @Override
     protected Iterator<CsmVariable> _getVariables(CsmProject project, CsmVariable var) {
         String varText = var.getQualifiedName().toString();
-        Collection<CsmObject> result = CsmSymbolResolver.resolveSymbol((NativeProject) project.getPlatformProject(), varText);
+        Collection<CsmOffsetable> result = CsmSymbolResolver.resolveSymbol((NativeProject) project.getPlatformProject(), varText);
         return ((Collection<CsmVariable>)(Object) result).iterator();
     }
 
@@ -110,7 +110,7 @@ public class CsmSymbolResolverTestCase extends SelectTestBase {
     }
     
     private void doTestSingle(String symbol, String fileName, int line, int column) {
-        Collection<CsmObject> result = CsmSymbolResolver.resolveSymbol(getProject(), symbol);
+        Collection<CsmOffsetable> result = CsmSymbolResolver.resolveSymbol(getProject(), symbol);
         assertFalse("Symbol '" + symbol + "' not found at " + fileName + ":" + line + ":" + column, result.isEmpty());
         CsmOffsetable obj = (CsmOffsetable) result.iterator().next();
         assertEquals(fileName, obj.getContainingFile().getName().toString());
@@ -149,4 +149,9 @@ public class CsmSymbolResolverTestCase extends SelectTestBase {
         doTestSingle("double tpl_sr_test::foo<double>(double)", "templates_symbol_resolver_test.cpp", 15, 3);
         doTestSingle("int tpl_sr_test::foo<int>(int)", "templates_symbol_resolver_test.cpp", 15, 3);
     }         
+    
+    public void testSolarisSymbolResolverSymbols() throws Exception {
+        doTestSingle("char*hello_solaris1()", "solaris_test_case.cpp", 1, 1);
+        doTestSingle("char*solaris_test_case::hello_solaris2()", "solaris_test_case.cpp", 4, 3);
+    }
 }

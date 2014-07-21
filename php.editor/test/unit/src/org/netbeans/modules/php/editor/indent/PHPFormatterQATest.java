@@ -69,7 +69,7 @@ public class PHPFormatterQATest extends PHPFormatterTestBase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.createConfiguration(PHPFormatterQATest.class).suite();
+        return NbModuleSuite.createConfiguration(PHPFormatterQATest.class).gui(false).suite();
     }
 
     @Override

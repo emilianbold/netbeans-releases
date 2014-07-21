@@ -9,7 +9,7 @@
 
         $("#ae-result").text("");
         if (data != null) {
-            $.each(data, function(i, item) {
+            $.each(data, function (i, item) {
                 text = "<div><strong>" + item.Anime.name + "</strong><br/><em>Tên khác: </em><small>";
                 item = item.Synonym
             })
