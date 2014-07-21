@@ -405,7 +405,8 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private void checkIgnoreEnablement() {
-        if (ExecutionChecker.DEV_NULL.equals(getSelectedServerType())) {
+        String selectedServer = getSelectedServerType();
+        if (selectedServer == null || ExecutionChecker.DEV_NULL.equals(selectedServer)) {
             rbIgnore.setEnabled(true);
         } else {
             if (rbIgnore.isSelected()) {
