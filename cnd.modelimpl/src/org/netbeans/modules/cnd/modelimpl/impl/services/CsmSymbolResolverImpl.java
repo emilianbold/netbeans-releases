@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -188,7 +189,10 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
                      )
             );               
             
-            DeclarationAcceptor acceptor = template ? TemplateFunctionsAcceptor.INSTANCE : NonTemplateFunctionsAcceptor.INSTANCE;
+            // DeclarationAcceptor always set to null because on Solaris,
+            // nm returns signatures with return type for usual functions
+            DeclarationAcceptor acceptor = null;/*template ? TemplateFunctionsAcceptor.INSTANCE : NonTemplateFunctionsAcceptor.INSTANCE;*/
+            
             for (CsmObject context : resolvedContext) {
                 if (CsmKindUtilities.isNamespace(context)) {
                     CsmNamespace ns = (CsmNamespace) context;
@@ -537,7 +541,7 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
                  ),
                  CsmSelect.getFilterBuilder().createNameFilter(qualNamePart, true, true, false)
         );
-    }    
+    }            
     
     private static void printAST(AST ast) {
         StringBuilder sb = new StringBuilder();
