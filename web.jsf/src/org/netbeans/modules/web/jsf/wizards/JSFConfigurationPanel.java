@@ -143,7 +143,7 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
         validateXml = true;
         verifyObjects = false;
         facesMapping = "/faces/*"; //NOI18N
-        enableFacelets = preferences == null ? false : preferences.getPreferredLanguage().equals(PreferredLanguage.Facelets);
+        enableFacelets = preferences == null ? false : preferences.getPreferredLanguage() == PreferredLanguage.Facelets;
 
         getComponent();
     }

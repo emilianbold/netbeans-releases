@@ -213,8 +213,11 @@ made subject to such option by the copyright holder.
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="${build.dir}/depcache">
             <classpath refid="cp"/>
         </depend>
+        <property name="javac.fork" value="false"/>
         <nb-javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" encoding="UTF-8"
-                  deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false">
+                  deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false"
+                  fork="${javac.fork}"
+        >
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
             <processorpath refid="processor.cp"/>
