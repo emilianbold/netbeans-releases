@@ -71,6 +71,7 @@ import org.netbeans.api.debugger.Properties;
 
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.netbeans.spi.debugger.ui.PersistentController;
 import org.openide.awt.Mnemonics;
 
 import org.openide.util.Exceptions;
@@ -268,30 +269,15 @@ public class ConnectorPanel extends JPanel implements ActionListener, HelpCtx.Pr
                 }
             } // for
         }
-        Method saveMethod = null;
-        Method displayNameMethod = null;
-        try {
-            saveMethod = controller.getClass().getMethod("save", Properties.class);
-            displayNameMethod = controller.getClass().getMethod("getDisplayName");
-        } catch (NoSuchMethodException ex) {
-        } catch (SecurityException ex) {
-        }
         String dispName = null;
-        if (saveMethod != null && displayNameMethod != null) {
+        if (controller instanceof PersistentController) {
+            PersistentController pController = (PersistentController) controller;
             Properties slot = props.getProperties("slot_" + freeSlot);
-            try {
-                dispName = (String) displayNameMethod.invoke(controller);
-                if (dispName != null && dispName.trim().length() > 0) {
-                    slot.setString("display_name", dispName);
-                    saveMethod.invoke(controller, slot.getProperties("values"));
-                    slot.setString("attach_type", defaultAttachTypeName);
-                }
-            } catch (IllegalAccessException ex) {
-                Exceptions.printStackTrace(ex); // [TODO]
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex); // [TODO]
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex); // [TODO]
+            dispName = pController.getDisplayName();
+            if (dispName != null && dispName.trim().length() > 0) {
+                slot.setString("display_name", dispName);
+                pController.save(slot.getProperties("values"));
+                slot.setString("attach_type", defaultAttachTypeName);
             }
         }
 

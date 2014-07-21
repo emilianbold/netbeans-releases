@@ -46,9 +46,9 @@ package org.netbeans.modules.debugger.jpda.ui;
 
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.VirtualMachineManager;
-import com.sun.jdi.connect.Connector.Argument;
 import com.sun.jdi.connect.*;
 
+import com.sun.jdi.connect.Connector.Argument;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -82,17 +82,17 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.debugger.DebuggerEngine;
-
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerInfo;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Properties;
+import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.netbeans.spi.debugger.ui.PersistentController;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -647,7 +647,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
         }
     }
 
-    public class ConnectController implements Controller {
+    public class ConnectController implements PersistentController {
 
         PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         private boolean valid = true;
@@ -751,6 +751,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
             return true;
         }
 
+        @Override
         public boolean load(final Properties props) {
             assert !SwingUtilities.isEventDispatchThread();
             waitForConnectorsLoad();
@@ -784,6 +785,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
             return true;
         }
 
+        @Override
         public void save(Properties props) {
             assert connectorsLoaded.get();
             final Connector[] connectorPtr = new Connector[] { null };
@@ -832,6 +834,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
             props.setString ("attaching_connector", connector.name());
         }
 
+        @Override
         public String getDisplayName() {
             assert connectorsLoaded.get();
             final Connector connector = selectedConnector;

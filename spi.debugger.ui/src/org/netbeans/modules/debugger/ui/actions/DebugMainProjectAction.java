@@ -72,6 +72,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.netbeans.spi.debugger.ui.PersistentController;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
@@ -388,7 +389,7 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
             } // for
             if (att != null) {
                 final AttachType attachType = att;
-                final Controller[] controllerPtr = new Controller[] { null };
+                final PersistentController[] controllerPtr = new PersistentController[] { null };
                 try {
                     SwingUtilities.invokeAndWait(new Runnable() {
                         @Override
@@ -399,7 +400,9 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
                                 Exceptions.printStackTrace(new IllegalStateException("FIXME: JComponent "+customizer+" must not implement Controller interface!"));
                                 controller = (Controller) customizer;
                             }
-                            controllerPtr[0] = controller;
+                            if (controller instanceof PersistentController) {
+                                controllerPtr[0] = (PersistentController) controller;
+                            }
                         }
                     });
                 } catch (InterruptedException ex) {
@@ -409,22 +412,13 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
                     Exceptions.printStackTrace(ex);
                     return ;
                 }
-                final Controller controller = controllerPtr[0];
-                Method loadMethod = null;
-                try {
-                    loadMethod = controller.getClass().getMethod("load", Properties.class);
-                } catch (NoSuchMethodException ex) {
-                } catch (SecurityException ex) {
+                final PersistentController controller = controllerPtr[0];
+                if (controller == null) {
+                    return ;
                 }
-                if (loadMethod == null) { return; }
-                try {
-                    Boolean result = (Boolean)loadMethod.invoke(controller, props.getProperties("slot_" + usedSlots[index]).getProperties("values"));
-                    if (!result) {
-                        return; // [TODO] not loaded, cannot be used to attach
-                    }
-                } catch (IllegalAccessException ex) {
-                } catch (IllegalArgumentException ex) {
-                } catch (InvocationTargetException ex) {
+                boolean result = controller.load(props.getProperties("slot_" + usedSlots[index]).getProperties("values"));
+                if (!result) {
+                    return; // [TODO] not loaded, cannot be used to attach
                 }
                 final boolean[] passedPtr = new boolean[] { false };
                 try {
