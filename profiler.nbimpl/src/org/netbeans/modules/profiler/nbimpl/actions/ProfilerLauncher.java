@@ -110,48 +110,58 @@ public class ProfilerLauncher {
             context = _context;
         }
 
-        public void start() {
-            ProfilingSettings pSettings = getProfilingSettings();
+        public boolean start() {
+            final ProfilingSettings pSettings = getProfilingSettings();
             
             if (isAttach()) {
                 AttachSettings aSettings = getAttachSettings();
                 if (aSettings == null && AttachWizard.isAvailable())
                     aSettings = AttachWizard.getDefault().configure(aSettings);
                 if (aSettings == null) {
-                    return; // cancelled by the user
+                    return false; // cancelled by the user
                 } else {
                     if (!aSettings.isRemote() && aSettings.isDynamic16()) {
                         int pid = PIDSelectPanel.selectPID();
-                        if (pid == -1) return; // cancelled by the user
+                        if (pid == -1) return false; // cancelled by the user
                         aSettings.setPid(pid);
                     }
                 }
-                getProfiler().attachToApp(pSettings, aSettings);
+                final AttachSettings _aSettings = aSettings;
+                ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+                    public void run() {
+                        getProfiler().attachToApp(pSettings, _aSettings);
+                    }
+                });
             } else {
                 Command command = context.lookup(Command.class);
-                Session s = newSession(command.get(), context);
+                final Session s = newSession(command.get(), context);
                 if (s != null) {
                     s.setProfilingSettings(pSettings);
                     s.run();
+                } else {
+                    return false;
                 }
             }
+            return true;
         }
 
-        public void modify() {
+        public boolean modify() {
             ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                 public void run() {
                     getProfiler().modifyCurrentProfiling(getProfilingSettings());
                 }
             });
+            return true;
         }
 
-        public void terminate() {
+        public boolean terminate() {
             ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                 public void run() {
                     if (isAttach()) getProfiler().detachFromApp();
                     else getProfiler().stopApp();
                 }
             });
+            return true;
         }
         
         protected synchronized boolean isCompatibleContext(Lookup _context) {
