@@ -230,6 +230,9 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
         }
         
         private void computeItems() {
+            if (menu == null) {
+                return ;
+            }
             boolean wasSeparator = items.length > 0;
             for (int i = 0; i < items.length; i++) {
                 menu.remove(items[i]);
