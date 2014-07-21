@@ -225,7 +225,7 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
         }
         
         subMenu.removeAll();
-        ActionListener jmiActionListener = new MenuItemActionListener(); 
+        final ActionListener jmiActionListener = new MenuItemActionListener(); 
         
         JRadioButtonMenuItem jmiNone = new JRadioButtonMenuItem((javax.swing.Icon) null, false);
         Mnemonics.setLocalizedText(jmiNone, LBL_NoneMainProject_Name());
@@ -235,21 +235,22 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
         
         // Fill menu with items
         for ( int i = 0; i < projects.length; i++ ) {
-            final ProjectInformation projectInformation = projects[i].getLookup().lookup(ProjectInformation.class);
-            if(projectInformation != null) {
-                final SetMainProject self = this;
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
+            final Project projectIter = projects[i];
+            final SetMainProject self = this;
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    ProjectInformation projectInformation = projectIter.getLookup().lookup(ProjectInformation.class);
+                    if(projectInformation != null) {
                         projectInformation.addPropertyChangeListener(WeakListeners.propertyChange(self, projectInformation));
                     }
-                });
-            }
-            ProjectInformation pi = ProjectUtils.getInformation(projects[i]);
-            JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(pi.getDisplayName(), pi.getIcon(), false);
-            subMenu.add( jmi );
-            jmi.putClientProperty( PROJECT_KEY, projects[i] );
-            jmi.addActionListener( jmiActionListener );
+                    ProjectInformation pi = ProjectUtils.getInformation(projectIter);
+                    JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(pi.getDisplayName(), pi.getIcon(), false);
+                    subMenu.add( jmi );
+                    jmi.putClientProperty( PROJECT_KEY, projectIter );
+                    jmi.addActionListener( jmiActionListener );
+                }
+            });
         }
 
         // Set main project
