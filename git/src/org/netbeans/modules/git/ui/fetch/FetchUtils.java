@@ -226,6 +226,9 @@ public final class FetchUtils {
         for (String refSpec : fetchRefSpecs) {
             RefSpec spec = new RefSpec(refSpec);
             if (spec.matchDestination(GitUtils.PREFIX_R_REMOTES + branch.getName())) {
+                if (spec.isWildcard()) {
+                    spec = spec.expandFromDestination(GitUtils.PREFIX_R_REMOTES + branch.getName());
+                }
                 return spec.getSource().substring(GitUtils.PREFIX_R_HEADS.length());
             }
         }

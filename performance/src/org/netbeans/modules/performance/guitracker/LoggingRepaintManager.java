@@ -46,8 +46,6 @@ package org.netbeans.modules.performance.guitracker;
 import java.awt.Component;
 import java.awt.Container;
 import java.util.LinkedList;
-
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.RepaintManager;
@@ -155,7 +153,7 @@ public class LoggingRepaintManager extends RepaintManager {
         }
         super.addDirtyRegion(c, x, y, w, h);
     }
-
+    
     public static String logComponent(Component c) {
         return c.getClass().getName() + "/" + c.getName();
     }
@@ -226,10 +224,6 @@ public class LoggingRepaintManager extends RepaintManager {
     public void resetRegionFilters() {
         tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER: reset");
         regionFilters.clear();
-        // filter default button on Vista, Windows 7 and Windows 8 - see issue 100961
-        if ("Windows 8".equalsIgnoreCase(OS_NAME) || "Windows 7".equalsIgnoreCase(OS_NAME) || "Windows Vista".equalsIgnoreCase(OS_NAME)) {
-            addRegionFilter(LoggingRepaintManager.VISTA_FILTER);
-        }
     }
 
     /**
@@ -252,24 +246,6 @@ public class LoggingRepaintManager extends RepaintManager {
          */
         public String getFilterName();
     }
-
-    /**
-     * Accept paints from Windows Vista : - component is not default button
-     * (JButton) This button is repainted periodically on Window Vista with Aero
-     * L&F, so we need to ignore these paints
-     */
-    public static final RegionFilter VISTA_FILTER = new RegionFilter() {
-
-        @Override
-        public boolean accept(JComponent c) {
-            return !(c instanceof JButton && ((JButton) c).isDefaultButton());
-        }
-
-        @Override
-        public String getFilterName() {
-            return "Don't accept paints from Default JButton";
-        }
-    };
 
     /**
      * Ignores paints from Status Line

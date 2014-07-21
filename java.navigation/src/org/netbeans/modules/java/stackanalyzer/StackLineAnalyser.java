@@ -183,8 +183,11 @@ class StackLineAnalyser {
                                                                 return;
                                                             }
                                                         } catch (IndexOutOfBoundsException oob) {
-                                                            //line number is no more valid
-                                                            Exceptions.printStackTrace(oob);
+                                                            //line number is no more valid, do not report as an error
+                                                            StatusDisplayer.getDefault().setStatusText(
+                                                            NbBundle.getMessage(StackLineAnalyser.class,
+                                                            "AnalyzeStackTopComponent.lineNotFound",
+                                                            new Object[]{lineNumber}));
                                                         }
                                                     }
                                                 }

@@ -75,6 +75,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
@@ -1161,6 +1162,62 @@ public class CsmUtilities {
         }
         return dob;
     }
+    
+    public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2) {
+        return checkTypesEqual(type1, contextFile1, type2, contextFile2, true);
+    }
+    
+    public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2, boolean onlyClassifiers) {
+        if (type1 != null && type2 != null) {
+            if (!onlyClassifiers) {
+                TypeInfoCollector typeInfo1 = new TypeInfoCollector();
+                iterateTypeChain(type1, typeInfo1);
+
+                TypeInfoCollector typeInfo2 = new TypeInfoCollector();
+                iterateTypeChain(type2, typeInfo2);
+
+                Iterator<TypeInfoCollector.Qualificator> qualIter1 = typeInfo1.qualificators.iterator();
+                Iterator<TypeInfoCollector.Qualificator> qualIter2 = typeInfo2.qualificators.iterator();
+                if (typeInfo1.qualificators.size() == typeInfo2.qualificators.size()) {
+                    while (qualIter1.hasNext()) {
+                        if (!qualIter1.next().equals(qualIter2.next())) {
+                            return false;
+                        }
+                    }
+                } else {
+                    return false;
+                }
+            }
+            
+            boolean resolveTypeChain = false;
+            for (int i = 0; i < 2; i++) {
+                CsmClassifier tbsp1Cls = getClassifier(type1, contextFile1, resolveTypeChain);
+                if (tbsp1Cls != null) {
+                    CsmClassifier tbsp2Cls = getClassifier(type2, contextFile2, resolveTypeChain);
+                    if (tbsp2Cls != null) {
+                        if (tbsp1Cls.getQualifiedName().toString().equals(tbsp2Cls.getQualifiedName().toString())) {
+                            return true;
+                        }
+                    }
+                }
+                
+                resolveTypeChain = true;
+                
+                if (contextFile1 == null && contextFile2 == null) {
+                    break;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private static CsmClassifier getClassifier(CsmType type, CsmFile contextFile, boolean resolveTypeChain) {
+        CsmClassifier cls = type.getClassifier();
+        if (resolveTypeChain && contextFile != null && CsmBaseUtilities.isValid(cls)) {
+            cls = CsmBaseUtilities.getOriginalClassifier(cls, contextFile);
+        }
+        return cls;
+    }        
     
     /**
      * Iterates type chain until end is reached or stopFilter returned true

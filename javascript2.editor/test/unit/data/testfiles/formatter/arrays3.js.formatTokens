@@ -44,7 +44,7 @@ FormatToken{kind=EOL, offset=71, text=
 FormatToken{kind=TEXT, offset=72, text=(, id=BRACKET_LEFT_PAREN}
 FormatToken{kind=AFTER_LEFT_PARENTHESIS, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=73, text=function, id=KEYWORD_FUNCTION}
-FormatToken{kind=BEFORE_FUNCTION_DECLARATION, offset=-1, text=null, id=null}
+FormatToken{kind=BEFORE_ANONYMOUS_FUNCTION_DECLARATION, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=81, text=(, id=BRACKET_LEFT_PAREN}
 FormatToken{kind=TEXT, offset=82, text=), id=BRACKET_RIGHT_PAREN}
 FormatToken{kind=WHITESPACE, offset=83, text= , id=WHITESPACE}

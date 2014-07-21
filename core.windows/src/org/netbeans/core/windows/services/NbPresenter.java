@@ -1533,7 +1533,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     */
     private static void showHelp(HelpCtx helpCtx) {
         if (!helpCtx.display()) {
-            Toolkit.getDefaultToolkit().beep();
+            Utilities.disabledActionBeep();
         }
     }
 

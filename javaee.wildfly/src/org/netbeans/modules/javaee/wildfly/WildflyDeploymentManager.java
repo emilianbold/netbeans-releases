@@ -132,6 +132,7 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
         } else {
             this.client = new WildflyClient(instanceProperties, getHost(), controllerPort);
         }
+        ChangelogWildflyPlugin.showChangelog();
     }
 
     /**

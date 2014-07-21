@@ -67,10 +67,10 @@ import org.netbeans.modules.javascript.karma.exec.KarmaServers;
 import org.netbeans.modules.javascript.karma.exec.KarmaServersListener;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
-import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
 import org.netbeans.modules.javascript.karma.util.FileUtils;
 import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.DialogDisplayer;
@@ -347,7 +347,7 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
                     if (!originalDebug
                             && !KarmaPreferences.isDebugBrowserIdSet(project)) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.DebugKarmaServerAction_browser_none()));
-                        project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(KarmaCustomizer.IDENTIFIER, null);
+                        project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(JsTestingProviders.CUSTOMIZER_IDENT, null);
                         return;
                     }
                     KarmaPreferences.setDebug(project, !originalDebug);
@@ -422,7 +422,7 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
         public JComponent[] getMenuPresenters() {
             removeAll();
             // #238803
-            File configDir = KarmaUtils.getConfigDir(project);
+            File configDir = KarmaUtils.getKarmaConfigDir(project);
             List<File> configs = KarmaUtils.findKarmaConfigs(configDir);
             if (configs.isEmpty()) {
                 configs = KarmaUtils.findJsFiles(configDir);
@@ -464,7 +464,7 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
 
         @Override
         protected void performAction(Project project) {
-            project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(KarmaCustomizer.IDENTIFIER, null);
+            project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(JsTestingProviders.CUSTOMIZER_IDENT, null);
         }
 
         @Override

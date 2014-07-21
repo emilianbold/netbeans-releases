@@ -84,7 +84,7 @@
                             </Variable>
                         </VariableNames>
                         <InitialValues>
-                            <ArrayCreation start='43' end='55'>
+                            <ArrayCreation start='43' end='55' type='NEW'>
                                 <ArrayElement start='44' end='54'>
                                     <Key>
                                         <Scalar start='44' end='45' type='INT' value='1'/>

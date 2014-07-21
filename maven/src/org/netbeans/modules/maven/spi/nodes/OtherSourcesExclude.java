@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.maven.spi.nodes;
 
+import java.nio.file.Path;
+import java.util.Set;
+
 /**
  * Extension point to tell the Other sources project subnode to exclude the given folder name in
  * src/main and src/test. It is assumed that implementing this interface is associated 
@@ -55,9 +58,14 @@ package org.netbeans.modules.maven.spi.nodes;
  * @since 2.88
  */
 public interface OtherSourcesExclude {
+
     /**
-     * name of subfolder of src/main and src/test that should be excluded
-     * @return e.g. {@code "webapp"}
+     * Paths of sub-folders of src/main and src/test that should be excluded in Other
+     * Sources node.
+     *
+     * @since 2.106
+     *
+     * @return {@link Path}s of sub-folders which should be excluded
      */
-    String folderName();
+    Set<Path> excludedFolders();
 }

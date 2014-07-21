@@ -56,7 +56,7 @@ import org.openide.util.RequestProcessor.Task;
 
 /**
  * 
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class StartModuleCookieImpl implements StartModuleCookie {
 

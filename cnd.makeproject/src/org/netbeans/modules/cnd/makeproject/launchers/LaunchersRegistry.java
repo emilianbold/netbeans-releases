@@ -41,11 +41,16 @@
  */
 package org.netbeans.modules.cnd.makeproject.launchers;
 
+import org.netbeans.modules.cnd.makeproject.LaunchersRegistryAccessor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -63,7 +68,21 @@ public final class LaunchersRegistry {
     private static final String DIRECTORY_TAG = "runDir";   // NOI18N
     private static final String SYMFILES_TAG = "symbolFiles";// NOI18N    
     private static final String ENV_TAG = "env";// NOI18N
+    
+    private Object privateLaucnhersListener = null;  //for debugging purposes only
+    
+    static {  //for debugging purposes only
+        LaunchersRegistryAccessor.setDefault(new LaunchersRegistryAccessorImpl());
+    }
 
+    /*package*/ void setPrivateLaucnhersListener(Object privateLaucnhersListener) {  //for debugging purposes only
+        this.privateLaucnhersListener = privateLaucnhersListener;
+    }
+
+    private Object getPrivateLaucnhersListener() {
+        return privateLaucnhersListener;
+    }
+    
     LaunchersRegistry() {
         launchers = new ArrayList<>();
     }
@@ -139,5 +158,22 @@ public final class LaunchersRegistry {
         }
         
         return launcher;
+    }
+    
+
+    private static final class LaunchersRegistryAccessorImpl extends LaunchersRegistryAccessor {  //for debugging purposes only
+
+        @Override
+        public void assertPrivateListenerNotNull(FileObject dir) {
+            if (LaunchersRegistryFactory.getInstance(dir).getPrivateLaucnhersListener() == null) {
+                LaunchersProjectMetadataFactory factoryInstance = Lookups.forPath("Projects/org-netbeans-modules-cnd-makeproject/"//NOI18N
+                        + ProjectMetadataFactory.LAYER_PATH)
+                        .lookup(LaunchersProjectMetadataFactory.class);
+                factoryInstance.read(dir);
+                
+                CndUtils.assertNotNull(null, "Private launchers listener is null for " + dir);//NOI18N
+            }
+        }
+        
     }
 }

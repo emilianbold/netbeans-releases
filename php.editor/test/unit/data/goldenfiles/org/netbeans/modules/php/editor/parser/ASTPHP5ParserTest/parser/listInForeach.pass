@@ -133,12 +133,12 @@
                     <Variable start='6' end='12' isDollared='true'>
                         <Identifier start='7' end='12' name='array'/>
                     </Variable>
-                    <ArrayCreation start='15' end='42'>
+                    <ArrayCreation start='15' end='42' type='NEW'>
                         <ArrayElement start='21' end='27'>
                             <Key>
                             </Key>
                             <Value>
-                                <ArrayCreation start='21' end='27'>
+                                <ArrayCreation start='21' end='27' type='NEW'>
                                     <ArrayElement start='22' end='23'>
                                         <Key>
                                         </Key>
@@ -160,7 +160,7 @@
                             <Key>
                             </Key>
                             <Value>
-                                <ArrayCreation start='33' end='39'>
+                                <ArrayCreation start='33' end='39' type='NEW'>
                                     <ArrayElement start='34' end='35'>
                                         <Key>
                                         </Key>

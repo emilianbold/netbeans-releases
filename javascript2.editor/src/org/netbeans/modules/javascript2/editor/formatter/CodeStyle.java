@@ -287,6 +287,10 @@ public final class CodeStyle {
     public boolean spaceBeforeMethodDeclParen() {
         return preferences.getBoolean(spaceBeforeMethodDeclParen, provider.getDefaultAsBoolean(spaceBeforeMethodDeclParen));
     }
+    
+    public boolean spaceBeforeAnonMethodDeclParen() {
+        return preferences.getBoolean(spaceBeforeAnonMethodDeclParen, provider.getDefaultAsBoolean(spaceBeforeAnonMethodDeclParen));
+    }
 
     public boolean spaceBeforeMethodCallParen() {
         return preferences.getBoolean(spaceBeforeMethodCallParen, provider.getDefaultAsBoolean(spaceBeforeMethodCallParen));
@@ -714,6 +718,8 @@ public final class CodeStyle {
 
         final boolean spaceBeforeFinally;
 
+        final boolean spaceBeforeAnonMethodDeclParen;
+        
         final boolean spaceBeforeMethodDeclParen;
 
         final boolean spaceBeforeMethodCallParen;
@@ -877,6 +883,7 @@ public final class CodeStyle {
             spaceBeforeElse = style.spaceBeforeElse();
             spaceBeforeCatch = style.spaceBeforeCatch();
             spaceBeforeFinally = style.spaceBeforeFinally();
+            spaceBeforeAnonMethodDeclParen = style.spaceBeforeAnonMethodDeclParen();
             spaceBeforeMethodDeclParen = style.spaceBeforeMethodDeclParen();
             spaceBeforeMethodCallParen = style.spaceBeforeMethodCallParen();
             spaceBeforeIfParen = style.spaceBeforeIfParen();

@@ -50,6 +50,8 @@ import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.netbeans.modules.web.clientproject.grunt.GruntfileExecutor;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.spi.project.ActionProvider;
 
 import static org.netbeans.spi.project.ActionProvider.COMMAND_TEST;
@@ -68,6 +70,7 @@ import org.openide.util.RequestProcessor;
 public class ClientSideProjectActionProvider implements ActionProvider {
 
     private final ClientSideProject project;
+    private final UsageLogger jsTestRunUsageLogger = UsageLogger.jsTestRunUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
     private static final RequestProcessor RP = new RequestProcessor("ClientSideProjectActionProvider"); //NOI18N
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectActionProvider.class.getName());
 
@@ -272,6 +275,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
     void runTests() {
         JsTestingProvider testingProvider = project.getJsTestingProvider(true);
         if (testingProvider != null) {
+            jsTestRunUsageLogger.log(ClientSideProjectType.TYPE, testingProvider.getIdentifier());
             TestRunInfo testRunInfo = new TestRunInfo.Builder()
                     .build();
             testingProvider.runTests(project, testRunInfo);

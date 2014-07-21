@@ -473,7 +473,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
 
         @Override
         public char getRenameButtonMnemonics() {
-            return getString("MditButtonMn").charAt(0); // NOI18N
+            return getString("MEditButtonMn").charAt(0); // NOI18N
         }
 
         @Override

@@ -506,6 +506,15 @@ made subject to such option by the copyright holder.
                 </api>
             </li>
             <li>
+                <api type="export" group="systemproperty" name="netbeans.fallback.cache" category="friend">
+                    Alternative location of NetBeans fallback cache generated during
+                    installation (see <a href="#java.io.File-installation.cache">installation cache</a>
+                    for description of the files layout). 
+                    If the property is set to <code>none</code>,
+                    then the fallback cache check is completely disabled.
+                </api>
+            </li>
+            <li>
                 <api type="export" group="systemproperty" name="netbeans.classpath" category="friend">
                     Classpath to prepend to core loader (normally just
                     <samp>lib/*.jar</samp>). Possibly useful for testing
@@ -1061,7 +1070,10 @@ made subject to such option by the copyright holder.
                 Installer can speed NetBeans IDE start by generating caches when the
                 installation is over. Such caches are stored in the installation,
                 in first cluster listed by <a href="#systemproperty-netbeans.dirs">
-                netbeans.dirs</a> and have the same layout as user caches 
+                netbeans.dirs</a> 
+                (or in a location specified by <a href="#systemproperty-netbeans.fallback.cache">
+                netbeans.fallback.cache</a> property, if available)    
+                and have the same layout as user caches 
                 (including here in described caches like <a href="@TOP@/architecture-summary.html#java.io.File-all-resources.dat">all-resources.dat</a>, 
                 as well as caches provided by other subsystems like 
                 <a href="@org-netbeans-core-netigso@/architecture-summary.html#java.io.File-netigso-bundles">
@@ -1516,7 +1528,7 @@ public class Transformer implements ClassFileTransformer {
         i.addTransformer(new Transformer());
     }
              
-    @Override public byte[] transform(
+    public byte[] transform(
         ClassLoader loader, String className, Class classBeingRedefined, 
         ProtectionDomain protectionDomain, byte[] classfileBuffer
     ) {

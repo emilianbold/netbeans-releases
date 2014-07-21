@@ -95,9 +95,9 @@ public final class ClassMemberFilters extends Filters<Description> {
             if ( !inherited && description.isInherited ) {
                 continue;
             }
-            if ( !non_public && 
-                 !description.modifiers.contains(Modifier.PUBLIC)                 
-                 /* Fix for #89777 && !description.modifiers.contains(Modifier.PROTECTED) */ ) {
+            if ( !non_public &&
+                 !description.modifiers.contains(Modifier.PUBLIC) &&
+                 !description.isTopLevel) {
                 continue;
             }
             

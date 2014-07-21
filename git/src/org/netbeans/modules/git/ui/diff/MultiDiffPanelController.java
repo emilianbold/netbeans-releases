@@ -246,7 +246,6 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         initToolbarButtons();
         initNextPrevActions();
         changeFiles(files, mode);
-        attachListeners();
         refreshComponents();
     }
 

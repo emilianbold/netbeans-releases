@@ -44,7 +44,6 @@
 
 package org.netbeans.core.multiview;
 
-import java.awt.Toolkit;
 import java.util.HashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -56,6 +55,7 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
+import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
 
@@ -92,7 +92,7 @@ public class GetLeftEditorAction extends AbstractAction {
                 }
             }
         } else {
-            Toolkit.getDefaultToolkit().beep();
+            Utilities.disabledActionBeep();
         }
     }
     

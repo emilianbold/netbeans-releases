@@ -68,4 +68,9 @@ public interface CallModel {
     void setRoot(Function newRoot);
     
     String getName();
+    
+    boolean isRootVisible();
+    
+    //invoked from non UI thread to update model if some flags are changed
+    void update();
 }

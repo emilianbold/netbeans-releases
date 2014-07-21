@@ -75,6 +75,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
@@ -532,7 +533,7 @@ public final class ExplorerActionsImpl {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            Toolkit.getDefaultToolkit().beep();
+            Utilities.disabledActionBeep();
         }
 
         @Override

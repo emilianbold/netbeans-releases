@@ -49,12 +49,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -101,21 +103,24 @@ public class NewConfigFileWizardIterator implements WizardDescriptor.Asynchronou
         DataFolder dataFolder = DataFolder.findFolder(dir);
         DataObject dataTemplate = DataObject.find(template);
         Map<String, String> map = new HashMap<String, String>();
-        if (jasmineWizardPanel.installJasmine()) {
+        if (jasmineWizardPanel != null
+                && jasmineWizardPanel.installJasmine()) {
             map.put("jasmine", "true"); // NOI18N
         }
         DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, Templates.getTargetName(descriptor), map);
-        
+
         // create folder for unit tests and libraries if they do not exist yet:
         Project project = Templates.getProject(descriptor);
-        SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(SOURCES_TYPE_HTML5_TEST);
+        SourceGroup[] groups = getTestGroups(project);
         FileObject libs = null;
         if (groups != null && groups.length > 0) {
             FileUtil.createFolder(groups[0].getRootFolder(), "unit"); // NOI18N
             libs = FileUtil.createFolder(groups[0].getRootFolder(), "lib"); // NOI18N
         }
-        
-        if (jasmineWizardPanel.installJasmine() && libs != null) {
+
+        if (jasmineWizardPanel != null
+                && jasmineWizardPanel.installJasmine()
+                && libs != null) {
             jasmineWizardPanel.downloadJasmine(libs);
         }
         return Collections.singleton(createdFile.getPrimaryFile());
@@ -172,16 +177,15 @@ public class NewConfigFileWizardIterator implements WizardDescriptor.Asynchronou
         // noop
     }
 
-    private static final String SOURCES_TYPE_HTML5_CONFIG = "HTML5-Config"; // NOI18N
-    private static final String SOURCES_TYPE_HTML5_TEST = "HTML5-Tests"; // NOI18N
-    
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
         Project project = Templates.getProject(descriptor);
-        SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(SOURCES_TYPE_HTML5_CONFIG);
-        jasmineWizardPanel = new InstallJasmineWizardDescriptorPanel();
-        WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = 
-                Templates.buildSimpleTargetChooser(project, groups).
-                bottomPanel(jasmineWizardPanel).create();
+        Templates.SimpleTargetChooserBuilder targetChooser = Templates
+                .buildSimpleTargetChooser(project, ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC));
+        if (getTestGroups(project) != null) {
+            jasmineWizardPanel = new InstallJasmineWizardDescriptorPanel();
+            targetChooser.bottomPanel(jasmineWizardPanel);
+        }
+        WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = targetChooser.create();
 
         @SuppressWarnings("unchecked")
         WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {simpleTargetChooserPanel};
@@ -199,6 +203,15 @@ public class NewConfigFileWizardIterator implements WizardDescriptor.Asynchronou
             }
         }
         return res;
+    }
+
+    @CheckForNull
+    private SourceGroup[] getTestGroups(Project project) {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST);
+        if (sourceGroups.length == 0) {
+            return null;
+        }
+        return sourceGroups;
     }
 
 }

@@ -63,9 +63,11 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -113,6 +115,7 @@ import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
@@ -120,6 +123,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -304,14 +308,45 @@ public class ClientSideProject implements Project {
         return projectHelper.resolveFileObject(s);
     }
 
-    public FileObject getTestsFolder() {
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "ClientSideProject.chooser.tests.title=Select Unit Tests folder ({0})",
+        "ClientSideProject.props.saving=Saving project metadata...",
+    })
+    @CheckForNull
+    public FileObject getTestsFolder(boolean showFileChooser) {
         String tests = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
         if (tests == null || tests.trim().length() == 0) {
+            if (showFileChooser) {
+                final File folder = new FileChooserBuilder(ClientSideProject.class)
+                        .setTitle(Bundle.ClientSideProject_chooser_tests_title(ProjectUtils.getInformation(this).getDisplayName()))
+                        .setDirectoriesOnly(true)
+                        .setDefaultWorkingDirectory(FileUtil.toFile(getProjectDirectory()))
+                        .forceUseOfDefaultWorkingDirectory(true)
+                        .showOpenDialog();
+                if (folder != null) {
+                    ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(ClientSideProject.this);
+                            projectProperties.setTestFolder(folder.getAbsolutePath());
+                            projectProperties.save();
+                        }
+                    }, Bundle.ClientSideProject_props_saving(), new AtomicBoolean(), false);
+                    FileObject fo = FileUtil.toFileObject(folder);
+                    assert fo != null : "FileObject should be found for " + folder;
+                    return fo;
+                }
+            }
             return null;
         }
         return getProjectDirectory().getFileObject(tests);
     }
 
+    /**
+     * @deprecated will be replaced by project directory
+     */
+    @Deprecated
     public FileObject getConfigFolder() {
         String config = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
         if (config == null || config.trim().length() == 0) {
@@ -598,16 +633,25 @@ public class ClientSideProject implements Project {
             if (jsTestingProvider != null) {
                 jsTestingProvider.projectOpened(project);
             }
+            FileObject projectDirectory = project.getProjectDirectory();
             // usage logging
-            FileObject cordova = project.getProjectDirectory().getFileObject(".cordova"); // NOI18N
+            FileObject cordova = projectDirectory.getFileObject(".cordova"); // NOI18N
             if (cordova == null) {
-                cordova = project.getProjectDirectory().getFileObject("hooks"); // NOI18N 
+                cordova = projectDirectory.getFileObject("hooks"); // NOI18N
             }
+            FileObject testsFolder = project.getTestsFolder(false);
+            
+            boolean hasGrunt = projectDirectory.getFileObject("Gruntfile.js") != null;
+            boolean hasBower = projectDirectory.getFileObject("bower.json") !=null;
+            boolean hasPackage = projectDirectory.getFileObject("package.json") !=null;
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
                     new Object[] {
                         browserId,
-                        project.getTestsFolder() != null && project.getTestsFolder().getChildren().length > 0 ? "YES" : "NO", // NOI18N
+                        testsFolder != null && testsFolder.getChildren().length > 0 ? "YES" : "NO", // NOI18N
                         cordova != null && cordova.isFolder() ? "YES" : "NO", // NOI18N
+                        hasGrunt ? "YES" : "NO", // NOI18N
+                        hasBower ? "YES" : "NO", // NOI18N
+                        hasPackage ? "YES" : "NO", // NOI18N
                     });
         }
 
@@ -826,7 +870,7 @@ public class ClientSideProject implements Project {
 
         private FileObject[] getRoots() {
             List<FileObject> roots = new ArrayList<FileObject>();
-            addRoots(roots, project.getSiteRootFolder(), project.getConfigFolder(), project.getTestsFolder());
+            addRoots(roots, project.getSiteRootFolder(), project.getConfigFolder(), project.getTestsFolder(false));
             return roots.toArray(new FileObject[roots.size()]);
         }
 
@@ -894,13 +938,8 @@ public class ClientSideProject implements Project {
     private final class ProjectDirectoriesProviderImpl implements ProjectDirectoriesProvider {
 
         @Override
-        public FileObject getConfigDirectory() {
-            return ClientSideProject.this.getConfigFolder();
-        }
-
-        @Override
-        public FileObject getTestDirectory() {
-            return ClientSideProject.this.getTestsFolder();
+        public FileObject getTestDirectory(boolean showFileChooser) {
+            return ClientSideProject.this.getTestsFolder(showFileChooser);
         }
 
     }

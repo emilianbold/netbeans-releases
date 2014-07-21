@@ -73,7 +73,7 @@ import org.netbeans.modules.php.latte.completion.LatteElement.HelperParameter;
 import org.netbeans.modules.php.latte.completion.LatteElement.Parameter;
 import org.netbeans.modules.php.latte.lexer.LatteMarkupTokenId;
 import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
-import org.netbeans.modules.php.latte.parser.LatteParser.LatteParserResult;
+import org.netbeans.modules.php.latte.parser.LatteParserResult;
 import org.netbeans.modules.php.latte.utils.LatteLexerUtils;
 
 /**
@@ -162,6 +162,7 @@ public class LatteCompletionHandler implements CodeCompletionHandler2 {
         END_MACROS.add(LatteElement.MacroFactory.createEnd("form")); //NOI18N
         END_MACROS.add(LatteElement.MacroFactory.createEnd("label")); //NOI18N
         END_MACROS.add(LatteElement.MacroFactory.createEnd("snippet")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("define")); //NOI18N
     }
 
     static final Set<LatteElement> HELPERS = new HashSet<>();
@@ -399,7 +400,10 @@ public class LatteCompletionHandler implements CodeCompletionHandler2 {
         private void createResult(TokenSequence<LatteMarkupTokenId> ts) {
             if (upToOffset) {
                 String text = ts.token().text().toString();
-                result = text.substring(0, offset - ts.offset());
+                int endIndex = offset - ts.offset();
+                if (endIndex <= text.length()) {
+                    result = text.substring(0, endIndex);
+                }
             }
         }
 

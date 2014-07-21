@@ -49,13 +49,13 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.php.latte.parser.LatteParser;
+import org.netbeans.modules.php.latte.parser.LatteParserResult;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteSemanticAnalyzer extends SemanticAnalyzer<LatteParser.LatteParserResult> {
+public class LatteSemanticAnalyzer extends SemanticAnalyzer<LatteParserResult> {
 
     public LatteSemanticAnalyzer() {
     }
@@ -66,7 +66,7 @@ public class LatteSemanticAnalyzer extends SemanticAnalyzer<LatteParser.LattePar
     }
 
     @Override
-    public void run(LatteParser.LatteParserResult result, SchedulerEvent event) {
+    public void run(LatteParserResult result, SchedulerEvent event) {
     }
 
     @Override

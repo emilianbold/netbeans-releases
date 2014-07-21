@@ -236,10 +236,10 @@ public class ConvertToLambdaPreconditionChecker {
         public Tree visitMethodInvocation(MethodInvocationTree methodInvocationTree, Trees trees) {
 
             //check for recursion
-            if (lambdaMethodTree.getName().contentEquals(Utilities.getName(methodInvocationTree.getMethodSelect()))) {
+            if (lambdaMethodTree.getName().contentEquals(org.netbeans.modules.editor.java.Utilities.varNameSuggestion(methodInvocationTree.getMethodSelect()))) {
                 ExpressionTree selector = getSelector(methodInvocationTree);
-                if (selector == null || (Utilities.getName(selector) != null
-                        && Utilities.getName(selector).contentEquals("this"))) {
+                if (selector == null || (org.netbeans.modules.editor.java.Utilities.varNameSuggestion(selector) != null
+                        && org.netbeans.modules.editor.java.Utilities.varNameSuggestion(selector).contentEquals("this"))) {
                     foundRecursiveCall = true;
                 }
             }

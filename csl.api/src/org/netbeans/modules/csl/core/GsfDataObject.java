@@ -45,6 +45,7 @@
 package org.netbeans.modules.csl.core;
 
 import java.io.IOException;
+import java.util.Collection;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.actions.Editable;
@@ -271,7 +272,14 @@ public class GsfDataObject extends MultiDataObject {
 
         public GenericEditorSupport(GsfDataObject dataObject, Language language) {
             super(dataObject, null, new Environment(dataObject));
-            setMIMEType(language.getMimeType());
+            // support complex MIME types:
+            String mime = dataObject.getPrimaryFile().getMIMEType();
+            Collection<Language> lngs = LanguageRegistry.getInstance().getApplicableLanguages(mime);
+            if (lngs.contains(language)) {
+                setMIMEType(mime);
+            } else {
+                setMIMEType(language.getMimeType());
+            }
             this.language = language;
         }
         
@@ -308,6 +316,16 @@ public class GsfDataObject extends MultiDataObject {
         
         public @Override boolean close(boolean ask) {
             return super.close(ask);
+        }
+
+        @Override
+        protected EditorKit createEditorKit() {
+            EditorKit kit = super.createEditorKit(); 
+            if (kit instanceof CslEditorKit) {
+                CslEditorKit csKit = (CslEditorKit)kit;
+                csKit.applyContentType(getDataObject().getPrimaryFile().getMIMEType());
+            }
+            return kit;
         }
 
         @Override

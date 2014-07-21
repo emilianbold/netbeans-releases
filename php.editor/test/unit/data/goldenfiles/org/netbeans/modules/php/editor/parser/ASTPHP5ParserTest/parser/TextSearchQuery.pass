@@ -14726,7 +14726,7 @@
                                                     <Variable start='7397' end='7408' isDollared='true'>
                                                         <Identifier start='7398' end='7408' name='subclauses'/>
                                                     </Variable>
-                                                    <ArrayCreation start='7411' end='7418'>
+                                                    <ArrayCreation start='7411' end='7418' type='OLD'>
                                                     </ArrayCreation>
                                                 </Assignment>
                                             </ExpressionStatement>
@@ -14896,7 +14896,7 @@
                                                     <Variable start='8195' end='8206' isDollared='true'>
                                                         <Identifier start='8196' end='8206' name='subclauses'/>
                                                     </Variable>
-                                                    <ArrayCreation start='8209' end='8216'>
+                                                    <ArrayCreation start='8209' end='8216' type='OLD'>
                                                     </ArrayCreation>
                                                 </Assignment>
                                             </ExpressionStatement>
@@ -15047,7 +15047,7 @@
                                                     <Variable start='9049' end='9060' isDollared='true'>
                                                         <Identifier start='9050' end='9060' name='subclauses'/>
                                                     </Variable>
-                                                    <ArrayCreation start='9063' end='9070'>
+                                                    <ArrayCreation start='9063' end='9070' type='OLD'>
                                                     </ArrayCreation>
                                                 </Assignment>
                                             </ExpressionStatement>
@@ -15112,7 +15112,7 @@
                                                     <Variable start='9262' end='9273' isDollared='true'>
                                                         <Identifier start='9263' end='9273' name='subclauses'/>
                                                     </Variable>
-                                                    <ArrayCreation start='9276' end='9283'>
+                                                    <ArrayCreation start='9276' end='9283' type='OLD'>
                                                     </ArrayCreation>
                                                 </Assignment>
                                             </ExpressionStatement>
@@ -15255,7 +15255,7 @@
                                                     <Variable start='10220' end='10226' isDollared='true'>
                                                         <Identifier start='10221' end='10226' name='lines'/>
                                                     </Variable>
-                                                    <ArrayCreation start='10229' end='10261'>
+                                                    <ArrayCreation start='10229' end='10261' type='OLD'>
                                                         <ArrayElement start='10235' end='10260'>
                                                             <Key>
                                                             </Key>
@@ -15567,7 +15567,7 @@
                                                 <Identifier start='13281' end='13294' name='_parser_check'/>
                                             </Variable>
                                         </FieldAccess>
-                                        <ArrayCreation start='13297' end='13304'>
+                                        <ArrayCreation start='13297' end='13304' type='OLD'>
                                         </ArrayCreation>
                                     </Assignment>
                                 </ExpressionStatement>
@@ -16607,7 +16607,7 @@
                                                 </Name>
                                             </ArrayAccess>
                                         </FieldAccess>
-                                        <ArrayCreation start='17673' end='17731'>
+                                        <ArrayCreation start='17673' end='17731' type='OLD'>
                                             <ArrayElement start='17679' end='17696'>
                                                 <Key>
                                                     <Scalar start='17679' end='17689' type='STRING' value='&apos;linkname&apos;'/>
@@ -17907,7 +17907,7 @@
                                                 <Identifier start='24192' end='24198' name='leaves'/>
                                             </Variable>
                                         </FieldAccess>
-                                        <ArrayCreation start='24201' end='24213'>
+                                        <ArrayCreation start='24201' end='24213' type='OLD'>
                                             <ArrayElement start='24207' end='24212'>
                                                 <Key>
                                                 </Key>
@@ -18114,7 +18114,7 @@
                                         <Variable start='25024' end='25029' isDollared='true'>
                                             <Identifier start='25025' end='25029' name='flat'/>
                                         </Variable>
-                                        <ArrayCreation start='25032' end='25039'>
+                                        <ArrayCreation start='25032' end='25039' type='OLD'>
                                         </ArrayCreation>
                                     </Assignment>
                                 </ExpressionStatement>
@@ -18355,7 +18355,7 @@
                                         <Variable start='25590' end='25596' isDollared='true'>
                                             <Identifier start='25591' end='25596' name='words'/>
                                         </Variable>
-                                        <ArrayCreation start='25599' end='25606'>
+                                        <ArrayCreation start='25599' end='25606' type='OLD'>
                                         </ArrayCreation>
                                     </Assignment>
                                 </ExpressionStatement>
@@ -18467,7 +18467,7 @@
                                         <Variable start='26215' end='26220' isDollared='true'>
                                             <Identifier start='26216' end='26220' name='nots'/>
                                         </Variable>
-                                        <ArrayCreation start='26223' end='26230'>
+                                        <ArrayCreation start='26223' end='26230' type='OLD'>
                                         </ArrayCreation>
                                     </Assignment>
                                 </ExpressionStatement>
@@ -18807,7 +18807,7 @@
                                         <Variable start='27554' end='27562' isDollared='true'>
                                             <Identifier start='27555' end='27562' name='regexps'/>
                                         </Variable>
-                                        <ArrayCreation start='27565' end='27572'>
+                                        <ArrayCreation start='27565' end='27572' type='OLD'>
                                         </ArrayCreation>
                                     </Assignment>
                                 </ExpressionStatement>
@@ -18816,7 +18816,7 @@
                                         <Variable start='27582' end='27588' isDollared='true'>
                                             <Identifier start='27583' end='27588' name='words'/>
                                         </Variable>
-                                        <ArrayCreation start='27591' end='27598'>
+                                        <ArrayCreation start='27591' end='27598' type='OLD'>
                                         </ArrayCreation>
                                     </Assignment>
                                 </ExpressionStatement>
@@ -19436,7 +19436,7 @@
                                         <Variable start='30087' end='30092' isDollared='true'>
                                             <Identifier start='30088' end='30092' name='list'/>
                                         </Variable>
-                                        <ArrayCreation start='30095' end='30102'>
+                                        <ArrayCreation start='30095' end='30102' type='OLD'>
                                         </ArrayCreation>
                                     </Assignment>
                                 </ExpressionStatement>
@@ -19734,7 +19734,7 @@
                                                                 </NamespaceName>
                                                             </ClassName>
                                                             <Parameters>
-                                                                <ArrayCreation start='31132' end='31152'>
+                                                                <ArrayCreation start='31132' end='31152' type='OLD'>
                                                                     <ArrayElement start='31138' end='31143'>
                                                                         <Key>
                                                                         </Key>
@@ -19790,7 +19790,7 @@
                                                                     </NamespaceName>
                                                                 </ClassName>
                                                                 <Parameters>
-                                                                    <ArrayCreation start='31263' end='31283'>
+                                                                    <ArrayCreation start='31263' end='31283' type='OLD'>
                                                                         <ArrayElement start='31269' end='31274'>
                                                                             <Key>
                                                                             </Key>
@@ -20131,7 +20131,7 @@
                                     <Key>
                                     </Key>
                                     <Expression>
-                                        <ArrayCreation start='32054' end='32165'>
+                                        <ArrayCreation start='32054' end='32165' type='OLD'>
                                             <ArrayElement start='32060' end='32066'>
                                                 <Key>
                                                 </Key>
@@ -20502,7 +20502,7 @@
                                         <Variable start='33102' end='33109' isDollared='true'>
                                             <Identifier start='33103' end='33109' name='tokens'/>
                                         </Variable>
-                                        <ArrayCreation start='33112' end='33119'>
+                                        <ArrayCreation start='33112' end='33119' type='OLD'>
                                         </ArrayCreation>
                                     </Assignment>
                                 </ExpressionStatement>
@@ -21610,7 +21610,7 @@
                                                         </Variable>
                                                     </Name>
                                                 </ArrayAccess>
-                                                <ArrayCreation start='36907' end='36925'>
+                                                <ArrayCreation start='36907' end='36925' type='OLD'>
                                                     <ArrayElement start='36913' end='36918'>
                                                         <Key>
                                                         </Key>

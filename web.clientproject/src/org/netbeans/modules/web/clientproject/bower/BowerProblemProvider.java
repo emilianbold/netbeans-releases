@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.bower;
 
-import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -58,11 +58,16 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.clientproject.node.NodeExecutor;
 import org.netbeans.modules.web.clientproject.node.NodeProblemProvider;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -72,13 +77,29 @@ import org.openide.util.NbBundle;
 public final class BowerProblemProvider extends NodeProblemProvider {
 
 
+    private final FileChangeListener bowerrcListener = new FileChangeAdapter() {
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            addFileChangesListeners(getBowerRcDir(project.getProjectDirectory()));
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            addFileChangesListeners(getBowerRcDir(project.getProjectDirectory()));
+        }
+        
+    };
+    
     private BowerProblemProvider(Project project) {
         super(project);
     }
 
     public static BowerProblemProvider create(Project project) {
         BowerProblemProvider problemProvider = new BowerProblemProvider(project);
-        problemProvider.addFileChangesListeners("bower.json", getBowerRcDir(project.getProjectDirectory()));
+        problemProvider.addFileChangesListeners("bower.json", getBowerRcDir(project.getProjectDirectory()), ".bowerrc");
+        
+        FileUtil.addFileChangeListener(problemProvider.bowerrcListener, new File(project.getProjectDirectory().getPath() + "/.bowerrc"));
         return problemProvider;
     }
 
@@ -147,6 +168,7 @@ public final class BowerProblemProvider extends NodeProblemProvider {
 
         public FutureResult() {
             try {
+                ClientSideProjectUtilities.logUsage(BowerInstallAction.class, "USG_BOWER_INSTALL", null);
                 done = new AtomicBoolean(false);
                 cancelled = new AtomicBoolean(false);
                 execute = new NodeExecutor(Bundle.TTL_bower_install(ProjectUtils.getInformation(project).getDisplayName()),

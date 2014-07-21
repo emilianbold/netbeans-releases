@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult.Difference;
@@ -98,7 +99,6 @@ public class JavaFixImpl implements Fix {
                 if (wc.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                     return;
                 }
-
                 Map<FileObject, byte[]> resourceContentChanges = new HashMap<FileObject, byte[]>();
                 Accessor.INSTANCE.process(jf, wc, true, resourceContentChanges, /*Ignored in editor:*/new ArrayList<RefactoringElementImplementation>());
                 Map<FileObject, List<Difference>> resourceContentDiffs = new HashMap<FileObject, List<Difference>>();

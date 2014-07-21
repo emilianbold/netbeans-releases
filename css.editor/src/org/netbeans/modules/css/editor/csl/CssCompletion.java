@@ -204,8 +204,11 @@ public class CssCompletion implements CodeCompletionHandler {
 
         //if the caret points to a token node then determine its type
         Node tokenNode = NodeUtil.findNodeAtOffset(root, astCaretOffset);
-        CssTokenId tokenNodeTokenId = tokenNode.type() == NodeType.token ? NodeUtil.getTokenNodeTokenId(tokenNode) : null;
-
+        CssTokenId tokenNodeTokenId = null;
+        if (tokenNode != null && tokenNode.type() == NodeType.token) {
+            tokenNodeTokenId = NodeUtil.getTokenNodeTokenId(tokenNode);
+        }
+        
         Node node = NodeUtil.findNonTokenNodeAtOffset(root, astCaretOffset);
         if (node.type() == NodeType.ws) {
             node = node.parent();
@@ -727,10 +730,10 @@ public class CssCompletion implements CodeCompletionHandler {
                 case WS: //@import |
                 case NL:
                     if (addSemicolon) {
-                    Token semicolon = LexerUtils.followsToken(ts, CssTokenId.SEMI, false, true, CssTokenId.WS, CssTokenId.NL);
+                    Token semicolon = LexerUtils.followsToken(ts, CssTokenId.SEMI, false, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT);
                     addSemicolon = (semicolon == null);
                 }
-                    if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, false, CssTokenId.WS, CssTokenId.NL)) {
+                if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, false, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT)) {
                         List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file, caretOffset, "", true, addSemicolon);
                         int moveBack = (addSemicolon ? 1 : 0) + 1; //+1 means the added quotation mark length
                         return new CssFileCompletionResult(imports, moveBack);
@@ -739,7 +742,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 case STRING: //@import "|"; or @import "fil|";
                     Token<CssTokenId> originalToken = ts.token();
                     addSemicolon = false;
-                    if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                    if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT)) {
                         //strip off the leading quote and the rest of token after caret
                         String valuePrefix = originalToken.text().toString().substring(1, tokenDiff);
                         List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file,
@@ -1010,7 +1013,7 @@ public class CssCompletion implements CodeCompletionHandler {
         switch (node.type()) {
             case media:
                 //check if we are in the mediaQuery section and not in the media body
-                if (null == LexerUtils.followsToken(completionContext.getTokenSequence(), CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                if (null == LexerUtils.followsToken(completionContext.getTokenSequence(), CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT)) {
                 //@media | { div {} }
                 break;
             }
@@ -1022,7 +1025,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 //2. @media screen { @include x; | }
                 if (null != LexerUtils.followsToken(completionContext.getTokenSequence(),
                         EnumSet.of(CssTokenId.SEMI, CssTokenId.LBRACE, CssTokenId.RBRACE),
-                        true, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                        true, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT)) {
                 completionProposals.addAll(completeHtmlSelectors(completionContext, completionContext.getPrefix(), completionContext.getCaretOffset()));
             }
                 break;
@@ -1051,7 +1054,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     //in this case the caret position falls to the rule node as the declarations node
                     //doesn't contain the whitespace before first declaration
                     TokenSequence<CssTokenId> tokenSequence = completionContext.getTokenSequence();
-                    if (null == LexerUtils.followsToken(tokenSequence, CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                    if (null == LexerUtils.followsToken(tokenSequence, CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT)) {
                         completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                     }
                 }
@@ -1324,7 +1327,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 //we should go on and offer property values for "color" property
                 //div { color: red | }
                 if (context.getActiveTokenId() == CssTokenId.SEMI
-                        || LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.SEMI, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
+                        || LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.SEMI, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT) != null) {
                 //semicolon found when searching backward - we are not going to
                 //complete property values
                 break;
@@ -1385,7 +1388,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     //}
                     //
                     //the "font-size" becomes a propertyValue node and the following COLON causes error outside of the propertyValue node (correctly)
-                    if (LexerUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.COLON), true, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
+                    if (LexerUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.COLON), true, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT) != null) {
                         //we are just after the colon
                         expressionText = "";
                     } else {

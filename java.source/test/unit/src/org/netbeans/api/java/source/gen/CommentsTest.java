@@ -1218,7 +1218,7 @@ public class CommentsTest extends GeneratorTestBase {
                         "         * f\n" +
                         "         */\n" +
                         "        int f;\n" +
-                        "\n" +
+                        "        \n" +
                         "        /**\n" +
                         "         * run\n" +
                         "         */\n" +
@@ -1340,6 +1340,10 @@ public class CommentsTest extends GeneratorTestBase {
                         "import java.io.FileNotFoundException;\n" +
                         "public abstract class Test {\n" +
                         "    public void test() {\n" +
+                        "        //t1\n" +
+                        "        //t2\n" +
+                        "        //t3\n" +
+                        "        \n" +
                         "        name();\n" +
                         "    }\n" +
                         "}\n";
@@ -1391,6 +1395,11 @@ public class CommentsTest extends GeneratorTestBase {
                         "import java.io.FileNotFoundException;\n" +
                         "public abstract class Test {\n" +
                         "    public void test() {\n" +
+                        "        //t1\n" +
+                        "        //t2\n" +
+                        "        //t3\n" +
+                        "        //t4\n" +
+                        "        \n" +
                         "        name();\n" +
                         "    }\n" +
                         "}\n";
@@ -1442,6 +1451,12 @@ public class CommentsTest extends GeneratorTestBase {
                         "import java.io.FileNotFoundException;\n" +
                         "public abstract class Test {\n" +
                         "    public void test() {\n" +
+                        "        //t1\n" +
+                        "        //t2\n" +
+                        "        //test1\n" +
+                        "        //t3\n" +
+                        "        //t4\n" +
+                        "        \n" +
                         "        name();\n" +
                         "    }\n" +
                         "}\n";

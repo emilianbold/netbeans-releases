@@ -52,6 +52,10 @@ import org.netbeans.api.annotations.common.NonNull;
 public class Utils {
 
     private static Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
+    private static final int MAX_INPUT_LENGTH = 1<<10;
+    private static final char[] INVALID_CHARS = {
+        '\n'    //NOI18N
+    };
 
     private Utils() {
         throw new IllegalStateException();
@@ -104,6 +108,18 @@ public class Utils {
             }
         }
         return sb.toString();
+    }
+
+    public static boolean isValidInput(@NonNull final String input) {
+        if (input.length() > MAX_INPUT_LENGTH) {
+            return false;
+        }
+        for (char c : INVALID_CHARS) {
+            if (input.indexOf(c) >= 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

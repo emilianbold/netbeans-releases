@@ -61,6 +61,7 @@ import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 
 /** Action to invoke the custom editor.
@@ -119,7 +120,7 @@ class CustomEditorAction extends AbstractAction {
             }
 
             //Somebody invoked it from the keyboard on an expandable set
-            Toolkit.getDefaultToolkit().beep();
+            Utilities.disabledActionBeep();
 
             return;
         }
@@ -162,7 +163,7 @@ class CustomEditorAction extends AbstractAction {
             }
 
             //Somebody invoked it from the keyboard on an editor w/o custom editor
-            Toolkit.getDefaultToolkit().beep();
+            Utilities.disabledActionBeep();
 
             return;
         }

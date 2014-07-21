@@ -664,11 +664,6 @@ public final class JFXProjectUtils {
                 ep.setProperty(JFXProjectProperties.JAVAFX_SWING, TRUE); // NOI18N
                 ep.setComment(JFXProjectProperties.JAVAFX_SWING, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_use_swing")}, false); // NOI18N
             }
-            if (type == WizardType.FXML || type == WizardType.SWING) {
-                ep.setProperty(JFXProjectProperties.JAVAFX_SIGNING_ENABLED, TRUE); // NOI18N
-                ep.setProperty(JFXProjectProperties.JAVAFX_SIGNING_TYPE, JFXProjectProperties.SigningType.SELF.getString());
-                ep.setProperty(JFXProjectProperties.PERMISSIONS_ELEVATED, TRUE); // NOI18N
-            }
         }
         ep.setProperty(JFXProjectProperties.IMPLEMENTATION_VERSION, JFXProjectProperties.IMPLEMENTATION_VERSION_DEFAULT);
         ep.setProperty(JFXProjectProperties.FALLBACK_CLASS, "com.javafx.main.NoJavaFXFallback"); // NOI18N

@@ -147,23 +147,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         }
 
         private ExtensionManager.ExtensitionStatus isInstalledImpl() {
-            File defaultProfile = getDefaultProfile();
-            if ( defaultProfile == null ){
-                return ExtensionManager.ExtensitionStatus.MISSING;
-            }
-            // #244047
-            File[] prefs = defaultProfile.listFiles(new FileFinder("protected preferences"));
-            if (prefs == null || prefs.length == 0) {
-                // #245342
-                prefs = defaultProfile.listFiles(new FileFinder("secure preferences"));
-            }
-            if (prefs == null || prefs.length == 0){
-                prefs = defaultProfile.listFiles(new FileFinder("preferences"));
-            }
-            if ( prefs == null || prefs.length == 0){
-                return ExtensionManager.ExtensitionStatus.MISSING;
-            }
-            JSONObject preferences = Utils.readFile( prefs[0] );
+            JSONObject preferences = findPreferences();
             if (preferences == null) {
                 return ExtensionManager.ExtensitionStatus.MISSING;
             }
@@ -200,6 +184,27 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 }
             }
             return ExtensionManager.ExtensitionStatus.MISSING;
+        }
+
+        private JSONObject findPreferences() {
+            File defaultProfile = getDefaultProfile();
+            if (defaultProfile == null) {
+                return null;
+            }
+
+            String[] prefFiles = new String[]{"secure preferences", "protected preferences", "preferences"}; // NOI18N
+            for (String prefFile : prefFiles) {
+                File[] prefs = defaultProfile.listFiles(new FileFinder(prefFile));
+                if (prefs != null
+                        && prefs.length > 0) {
+                    JSONObject preferences = Utils.readFile(prefs[0]);
+                    if (preferences != null
+                            && preferences.get("extensions") != null) { // NOI18N
+                        return preferences;
+                    }
+                }
+            }
+            return null;
         }
 
         @Override

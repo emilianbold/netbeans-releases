@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.callgraph.impl;
 
 import org.netbeans.modules.cnd.callgraph.support.ExportAction;
@@ -49,6 +48,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
@@ -75,6 +76,7 @@ import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
 import org.netbeans.modules.cnd.callgraph.api.ui.Catalog;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphActionEDTRunnable;
 import org.netbeans.modules.cnd.callgraph.impl.CallGraphScene.LayoutKind;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
@@ -107,7 +109,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     public static final String IS_SHOW_OVERRIDING = "CallGraphIsShowOverriding"; // NOI18N
     public static final String IS_SHOW_PARAMETERS = "CallGraphIsShowParameters"; // NOI18N
     public static final String INITIAL_LAYOUT = "CallGraphLayout"; // NOI18N
-    
+
     private CallGraphScene scene;
     private final transient FocusTraversalPolicy newPolicy;
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
@@ -115,12 +117,15 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     private AtomicBoolean isSetDividerLocation = new AtomicBoolean(false);
     private static final RequestProcessor RP = new RequestProcessor("CallGraphPanel", 2);//NOI18N
     private final CallGraphUI graphUI;
-    private final Catalog messagesCatalog;
-    
+    private final Catalog messagesCatalog;    
+    final ShowOverridingAction showOverridingAction;
+    private final Icon overridingIcon = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/show_overriding.gif"));
+
     /** Creates new form CallGraphPanel */
     public CallGraphPanel(CallGraphUI graphUI) {
-        this.graphUI = graphUI;        
+        this.graphUI = graphUI;
         messagesCatalog = graphUI == null || graphUI.getCatalog() == null ? new DefaultCatalog() : graphUI.getCatalog();
+        showOverridingAction = new ShowOverridingAction();        
         initComponents();
         isCalls = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_CALLS, true);
         isShowOverriding = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_SHOW_OVERRIDING, false);
@@ -134,7 +139,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         actions.add(null);
         actions.add(new WhoIsCalledAction());
         actions.add(new WhoCallsAction());
-        actions.add(new ShowOverridingAction());
+        actions.add((showOverridingAction));
         actions.add(null);
         actions.add(new ShowFunctionParameters());
         if (showGraph) {
@@ -142,6 +147,17 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             ExportAction exportAction = new ExportAction(scene, this);
             actions.add(exportAction);
             scene.setExportAction(exportAction);
+        }
+        //add all actions from the provider
+        if (graphUI != null) {
+            actions.addAll(graphUI.getActions(new CallGraphActionEDTRunnable() {
+
+                @Override
+                public void run() {
+                    updateButtons();
+                    update();
+                }
+            }));
         }
         root = new AbstractNode(children){
             @Override
@@ -185,7 +201,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             jToolBar1.setBackground(macBackground);
         }
     }
-    
+
     private void initGraph() {
         JComponent view = scene.createView();
         graphView.setViewportView(view);
@@ -207,7 +223,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         }
         graphView.setFocusable(false);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -374,48 +390,47 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     }//GEN-LAST:event_callersActionPerformed
 
 private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_focusOnActionPerformed
-        Node[] nodes = getExplorerManager().getSelectedNodes();
+    Node[] nodes = getExplorerManager().getSelectedNodes();
         if (nodes == null || nodes.length != 1){
-            return;
-        }
-        Node node = nodes[0];
+        return;
+    }
+    Node node = nodes[0];
         if (node instanceof FunctionRootNode){
-            update();
+        update();
         } else if (node instanceof CallNode){
             Call call = ((CallNode)node).getCall();
-            if (isCalls) {
-                model.setRoot(call.getCallee());
-            } else {
-                model.setRoot(call.getCaller());
-            }
-            setName(model.getName());
-            setToolTipText(getName()+" - "+getMessage("CTL_CallGraphTopComponent")); // NOI18N
-            Container parent = getParent();
-            while (parent != null) {
-                if (parent instanceof JTabbedPane) {
-                    int i = ((JTabbedPane) parent).getSelectedIndex();
-                    if (i >=0) {
-                        ((JTabbedPane) parent).setTitleAt(i, getName() + "  "); // NOI18N
-                    }
-                    break;
-                } else if (parent instanceof TopComponent) {
-                    ((TopComponent) parent).setName(getToolTipText()); // NOI18N
-                    break;
-                }
-            }
-            update();
+        if (isCalls) {
+            model.setRoot(call.getCallee());
+        } else {
+            model.setRoot(call.getCaller());
         }
+        setName(model.getName());
+            setToolTipText(getName()+" - "+getMessage("CTL_CallGraphTopComponent")); // NOI18N
+        Container parent = getParent();
+        while (parent != null) {
+            if (parent instanceof JTabbedPane) {
+                int i = ((JTabbedPane) parent).getSelectedIndex();
+                    if (i >=0) {
+                    ((JTabbedPane) parent).setTitleAt(i, getName() + "  "); // NOI18N
+                }
+                break;
+            } else if (parent instanceof TopComponent) {
+                ((TopComponent) parent).setName(getToolTipText()); // NOI18N
+                break;
+            }
+        }
+        update();
+    }
 }//GEN-LAST:event_focusOnActionPerformed
 
 private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_overridingActionPerformed
-    setShowOverriding(!isShowOverriding);
+    showOverridingAction.actionPerformed(evt);
+    
 }//GEN-LAST:event_overridingActionPerformed
 
     private void setShowOverriding(boolean showOverriding){
         isShowOverriding = showOverriding;
-        NbPreferences.forModule(CallGraphPanel.class).putBoolean(IS_SHOW_OVERRIDING, isShowOverriding);
-        updateButtons();
-        update();
+        NbPreferences.forModule(CallGraphPanel.class).putBoolean(IS_SHOW_OVERRIDING, isShowOverriding);        
     }
 
     private void setShowParameters(boolean showParameters){
@@ -437,11 +452,11 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         callers.setSelected(!isCalls);
         overriding.setSelected(isShowOverriding);
     }
-    
+
     private String getMessage(String key) {
         return messagesCatalog.getMessage(key);
     }
-    
+
     public void setModel(CallModel model) {
         this.model = model;
         updateButtons();
@@ -456,40 +471,70 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         if (showGraph) {
             scene.clean();
         }
-        final Function function = model.getRoot();
-        if (function != null){
-            final Children children = root.getChildren();
-            if (!Children.MUTEX.isReadAccess()){
-                Children.MUTEX.writeAccess(new Runnable(){
+        //model.getRoot() can be too expensive to invoke it in UI thread
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                final Function function = model.getRoot();
+                SwingUtilities.invokeLater(new Runnable() {
+
                     @Override
                     public void run() {
-                        children.remove(children.getNodes());
-                        final Node node = new FunctionRootNode(function, state, isCalls);
-                        children.add(new Node[]{node});
-                        try {
-                            getExplorerManager().setSelectedNodes(new Node[]{node});
-                        } catch (PropertyVetoException ex) {
-                        }
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                getTreeView().expandNode(node);
+                        if (function != null) {
+                            final Children children = root.getChildren();
+                            if (!Children.MUTEX.isReadAccess()) {
+                                Children.MUTEX.writeAccess(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        children.remove(children.getNodes());
+                                        Node selectedNode = null;
+                                        //if root of the model is invisible
+                                        if (!model.isRootVisible()) {
+                                            List<Call> childrenList = isCalls ? model.getCallees(function) : model.getCallers(function);
+                                            Node[] functions = new Node[childrenList.size()];
+                                            for (int i = 0; i < childrenList.size(); i++) {
+                                                Call call = childrenList.get(i);
+                                                Function f = isCalls ? call.getCallee() : call.getCaller();
+                                                functions[i] = new FunctionRootNode(f, state, isCalls);
+                                            }
+                                            if (functions.length > 0) {
+                                                selectedNode = functions[0];
+                                            }
+                                            children.add(functions);
+                                        } else {
+                                            selectedNode = new FunctionRootNode(function, state, isCalls);
+                                            children.add(new Node[]{selectedNode});
+                                        }
+                                        final Node node = selectedNode;
+                                        try {
+                                            getExplorerManager().setSelectedNodes(new Node[]{node});
+                                        } catch (PropertyVetoException ex) {
+                                        }
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                getTreeView().expandNode(node);
+                                            }
+                                        });
+                                    }
+                                });
                             }
-                        });
+                        } else {
+                            final Children children = root.getChildren();
+                            if (!Children.MUTEX.isReadAccess()) {
+                                Children.MUTEX.writeAccess(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        children.remove(children.getNodes());
+                                    }
+                                });
+                            }
+                        }
                     }
                 });
-            }
-        } else {
-            final Children children = root.getChildren();
-            if (!Children.MUTEX.isReadAccess()){
-                Children.MUTEX.writeAccess(new Runnable(){
-                    @Override
-                    public void run() {
-                        children.remove(children.getNodes());
-                    }
-                });
-            }
-        }
+            }            
+        });
     }
 
     @Override
@@ -503,7 +548,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         super.requestFocusInWindow();
         return treeView.requestFocusInWindow();
     }
-    
+
     public final BeanTreeView getTreeView(){
         return (BeanTreeView)treeView;
     }
@@ -521,7 +566,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     public HelpCtx getHelpCtx() {
         return new HelpCtx("CallGraphView"); // NOI18N
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton callers;
     private javax.swing.JToggleButton calls;
@@ -536,13 +581,13 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JButton refresh;
     private javax.swing.JScrollPane treeView;
     // End of variables declaration//GEN-END:variables
-    
+
     private final class RefreshAction extends AbstractAction implements Presenter.Popup {
         private final JMenuItem menuItem;
         public RefreshAction() {
             putValue(Action.NAME, getMessage("RefreshAction"));  // NOI18N
             putValue(Action.SMALL_ICON, refresh.getIcon());
-            menuItem = new JMenuItem(this); 
+            menuItem = new JMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
@@ -562,10 +607,10 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         public WhoCallsAction() {
             putValue(Action.NAME, getMessage("CallersAction"));  // NOI18N
             putValue(Action.SMALL_ICON, callers.getIcon());
-            menuItem = new JRadioButtonMenuItem(this); 
+            menuItem = new JRadioButtonMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
- 
+
         @Override
         public void actionPerformed(ActionEvent e) {
             setDirection(false);
@@ -583,10 +628,10 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         public WhoIsCalledAction() {
             putValue(Action.NAME, getMessage( "CallsAction"));  // NOI18N
             putValue(Action.SMALL_ICON, calls.getIcon());
-            menuItem = new JRadioButtonMenuItem(this); 
+            menuItem = new JRadioButtonMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
- 
+
         @Override
         public void actionPerformed(ActionEvent e) {
             setDirection(true);
@@ -599,19 +644,29 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
     }
 
-    private final class ShowOverridingAction extends AbstractAction implements Presenter.Popup {
+    private final class ShowOverridingAction extends org.netbeans.modules.cnd.callgraph.api.ui.CallGraphAction implements Presenter.Popup {
         private final JCheckBoxMenuItem menuItem;
         public ShowOverridingAction() {
+            super(new CallGraphActionEDTRunnable() {
+
+                @Override
+                public void run() {                    
+                    updateButtons();
+                    update();
+                }
+            });
             putValue(Action.NAME, getMessage( "ShowOverridingAction"));  // NOI18N
-            putValue(Action.SMALL_ICON, overriding.getIcon());
+            putValue(Action.SMALL_ICON, overridingIcon);
             menuItem = new JCheckBoxMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void doNonEDTAction() {
             setShowOverriding(!isShowOverriding);
+            model.update();
         }
+        
 
         @Override
         public final JMenuItem getPopupPresenter() {
@@ -645,7 +700,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         public FocusOnAction() {
             putValue(Action.NAME, getMessage("FocusOnAction"));  // NOI18N
             putValue(Action.SMALL_ICON, focusOn.getIcon());
-            menuItem = new JMenuItem(this); 
+            menuItem = new JMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
@@ -664,12 +719,12 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         private final ExplorerManager managerCtx = new ExplorerManager();
         private final ListView listView = new ListView();
         private final CallGraphUI graphUI;
-        
+
         private ContextPanel(CallGraphUI graphUI){
             this.graphUI = graphUI;
             initDefaultView();
         }
-        
+
         private void initDefaultView() {
             removeAll();
             listView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AM")); // NOI18N
@@ -677,9 +732,9 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             setLayout(new java.awt.BorderLayout());
             add(listView, java.awt.BorderLayout.CENTER);
             listView.setFocusable(false);
-            listView.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);            
+            listView.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         }
-        
+
         @Override
         public ExplorerManager getExplorerManager() {
             return managerCtx;
@@ -690,10 +745,10 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             super.requestFocusInWindow();
             return listView.requestFocusInWindow();
         }
-        
+
         private void setRootContent(final CallNode node){
             //allow implementator to implement call as a node
-            initDefaultView();            
+            initDefaultView();
             Collection<Node> list = new ArrayList<Node>(1);
             list.add(new CallContext(new LoadingNode()));
             Node root  = new CallContextRoot(new ContextList(list));
@@ -706,10 +761,9 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     Collection<Node> list;
                     Node root;
                     if (node == null) {
-                        list = new ArrayList<Node>(1);
-                        list.add(new LoadingNode());
+                        list = Collections.<Node>emptyList();
                         root  = new CallContextRoot(new ContextList(list));
-                    } else {                
+                    } else {
                         list = new ArrayList<Node>(1);
                         Call call = node.getCall();
                         final JPanel contextPanel = graphUI == null ? null : graphUI.getContextPanel(call);
@@ -719,8 +773,8 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                                 @Override
                                 public void run() {
                                     removeAll();
-                                    setLayout(new java.awt.BorderLayout());                    
-                                    add(contextPanel, java.awt.BorderLayout.CENTER);                    
+                                    setLayout(new java.awt.BorderLayout());
+                                    add(contextPanel, java.awt.BorderLayout.CENTER);
                                     revalidate();
 
                                 }
@@ -742,11 +796,11 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                         @Override
                         public void run() {
                             initDefaultView();
-                            getExplorerManager().setRootContext(rootNode);                    
+                            getExplorerManager().setRootContext(rootNode);
                             revalidate();
                         }
                     });
-                    
+
                 }
             });
 
@@ -765,7 +819,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
         public static class CallContext extends AbstractNode {
             private final Call call;
-            public CallContext(Call element) {                
+            public CallContext(Call element) {
                 super( Children.LEAF);
                 call = element;
             }
@@ -790,14 +844,22 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 }
                 return super.getShortDescription();
             }
-    
+
             @Override
             public Action[] getActions(boolean context) {
                 return new Action[0];
             }
+
+            @Override
+            public Image getIcon(int type) {
+                if (call instanceof Node) {
+                    return ((Node)call).getIcon(type);
+                }
+                return super.getIcon(type);
+            }
         }
     }
-    
+
     public static class MyOwnFocusTraversalPolicy extends FocusTraversalPolicy {
         private final ArrayList<Component> order;
         private final Container panel;

@@ -153,7 +153,7 @@ public class IOPack {
         } else if (consoleType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
             // no support on windows, IZ 193740, switch to external
             if (Utilities.isWindows() && !remote) {
-                NativeDebuggerManager.warning(Catalog.get("MSG_Console_Type_Unsupported"));
+                notifyAboutConsoleTypeOnce();
                 res = new IOPack(console, exEnv, true);
             } else {
                 res = new OutputPack(console, io, exEnv);
@@ -161,7 +161,7 @@ public class IOPack {
         } else {
             // switch to external if no pty on windows
             if (Utilities.isWindows() && !remote && !PtySupport.isSupportedFor(exEnv)) {
-                NativeDebuggerManager.warning(Catalog.get("MSG_Console_Type_Unsupported"));
+                notifyAboutConsoleTypeOnce();
                 res = new IOPack(console, exEnv, true);
             } else {
                 res = new InternalTerminalPack(console, io, exEnv);
@@ -177,5 +177,13 @@ public class IOPack {
 	res.switchTo();
 
         return res;
+    }
+    
+    private static boolean notified = false;
+    private static void notifyAboutConsoleTypeOnce() {
+        if (!notified) {
+            NativeDebuggerManager.warning(Catalog.get("MSG_Console_Type_Unsupported"));
+            notified = true;
+        }
     }
 }

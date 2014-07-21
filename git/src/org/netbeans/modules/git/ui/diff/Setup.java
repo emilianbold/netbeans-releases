@@ -153,8 +153,8 @@ public final class Setup extends AbstractDiffSetup {
                 throw new IllegalArgumentException("Unknown diff type: " + mode); // NOI18N
         }// </editor-fold>
 
-        firstSource = new DiffStreamSource(originalFile == null || mode == Mode.INDEX_VS_WORKING_TREE ? baseFile : originalFile, firstRevision, firstTitle);
-        secondSource = new DiffStreamSource(baseFile, secondRevision, secondTitle);
+        firstSource = new DiffStreamSource(originalFile == null || mode == Mode.INDEX_VS_WORKING_TREE ? baseFile : originalFile, baseFile, firstRevision, firstTitle);
+        secondSource = new DiffStreamSource(baseFile, baseFile, secondRevision, secondTitle);
         title = "<html>" + info.annotateNameHtml(baseFile.getName()); // NOI18N
     }
 
@@ -176,9 +176,9 @@ public final class Setup extends AbstractDiffSetup {
             default:
                 throw new IllegalStateException();
         }
-        firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision);
+        firstSource = new DiffStreamSource(baseFile, baseFile, firstRevision, firstRevision);
         // XXX delete when UndoAction works correctly
-        secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision) {
+        secondSource = new DiffStreamSource(baseFile, baseFile, secondRevision, secondRevision) {
             @Override
             public boolean isEditable() {
                 return !forceNonEditable && super.isEditable();
@@ -194,8 +194,8 @@ public final class Setup extends AbstractDiffSetup {
         if (fileInfo != null && fileInfo.getOldPath() != null) {
             sb.append(" (").append(fileInfo.getOldPath()).append(")");
         }
-        firstSource = new DiffStreamSource(baseFile, firstRevision, sb.toString());
-        secondSource = new DiffStreamSource(baseFile, secondRevision, rev2.toString(true));
+        firstSource = new DiffStreamSource(fileInfo.getOldFile() == null ? baseFile : fileInfo.getOldFile(), baseFile, firstRevision, sb.toString());
+        secondSource = new DiffStreamSource(baseFile, baseFile, secondRevision, rev2.toString(true));
     }
 
     public File getBaseFile() {

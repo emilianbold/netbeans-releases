@@ -157,7 +157,7 @@ public class JsFormatter implements Formatter {
 
                 startTime = System.nanoTime();
 
-                int indentLevelSize = IndentUtils.indentLevelSize(doc);
+                int indentLevelSize = codeStyle.indentSize;
 
                 int initialIndent = codeStyle.initialIndent;
                 int continuationIndent = codeStyle.continuationIndentSize;
@@ -1154,6 +1154,8 @@ public class JsFormatter implements Formatter {
                 return codeStyle.spaceAroundTernaryOps;
             case AFTER_TERNARY_OPERATOR:
                 return codeStyle.spaceAroundTernaryOps;
+            case BEFORE_ANONYMOUS_FUNCTION_DECLARATION:
+                return codeStyle.spaceBeforeAnonMethodDeclParen;
             case BEFORE_FUNCTION_DECLARATION:
                 return codeStyle.spaceBeforeMethodDeclParen;
             case BEFORE_FUNCTION_CALL:

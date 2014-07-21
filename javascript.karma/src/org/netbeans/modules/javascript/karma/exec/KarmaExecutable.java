@@ -65,11 +65,12 @@ import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
 import org.netbeans.modules.javascript.karma.run.KarmaRunInfo;
 import org.netbeans.modules.javascript.karma.run.TestRunner;
-import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
+import org.netbeans.modules.javascript.karma.ui.KarmaErrorsDialog;
 import org.netbeans.modules.javascript.karma.util.ExternalExecutable;
 import org.netbeans.modules.javascript.karma.util.FileUtils;
 import org.netbeans.modules.javascript.karma.util.StringUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -115,7 +116,7 @@ public class KarmaExecutable {
                 .getResult();
         if (validateResult(result) != null) {
             if (showCustomizer) {
-                project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(KarmaCustomizer.IDENTIFIER, null);
+                project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(JsTestingProviders.CUSTOMIZER_IDENT, null);
             }
             return null;
         }
@@ -280,6 +281,8 @@ public class KarmaExecutable {
     private static final class ServerLineConvertor implements LineConvertor {
 
         private static final String NB_BROWSERS = "$NB$netbeans browsers "; // NOI18N
+        private static final String KARMA_ERROR = "[31mERROR ["; // NOI18N
+        private static final String KARMA_WARN = "[33mWARN ["; // NOI18N
 
         private final KarmaRunInfo karmaRunInfo;
         private final Runnable startFinishedTask;
@@ -331,6 +334,12 @@ public class KarmaExecutable {
                 testRunner.process(line);
                 return Collections.emptyList();
             }
+            // some error before browser startup?
+            if (connectedBrowsers < browserCount
+                    && (line.contains(KARMA_ERROR) || line.contains(KARMA_WARN))) {
+                KarmaErrorsDialog.getInstance().show();
+            }
+            // process output
             OutputListener outputListener = null;
             if (browsers == null) {
                 // some error?

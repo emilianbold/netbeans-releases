@@ -57,6 +57,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import javax.swing.text.TextAction;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
@@ -111,10 +112,30 @@ public final class CslEditorKit extends NbEditorKit {
     public CslEditorKit(String mimeType) {
         this.mimeType = mimeType;
     }
+    
+    private boolean cloned;
 
     // -----------------------------------------------------------------------
     // NbEditorKit implementation
     // -----------------------------------------------------------------------
+    @Override
+    public Object clone() {
+        Object o = super.clone();
+        ((CslEditorKit)o).cloned = true;
+        return o;
+    }
+    
+    public void applyContentType(String mimeType) {
+        if (!cloned) {
+            return;
+        }
+        EditorKit ek = MimeLookup.getLookup(mimeType).lookup(EditorKit.class);
+        if (ek == null || ek.getClass() != getClass()) {
+            return;
+        }
+        this.mimeType = mimeType;
+    }
+    
 
     @Override
     public String getContentType() {
@@ -195,7 +216,7 @@ public final class CslEditorKit extends NbEditorKit {
     // Private implementation
     // -----------------------------------------------------------------------
 
-    private final String mimeType;
+    private volatile String mimeType;
 
     private static String detectMimeType(FileObject f) {
         String mimeType = f.getParent().getPath().substring("Editors/".length()); //NOI18N

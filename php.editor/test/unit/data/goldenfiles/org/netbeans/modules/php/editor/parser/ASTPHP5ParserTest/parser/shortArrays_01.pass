@@ -64,7 +64,7 @@
                     <Variable start='6' end='17' isDollared='true'>
                         <Identifier start='7' end='17' name='shortArray'/>
                     </Variable>
-                    <ArrayCreation start='20' end='35'>
+                    <ArrayCreation start='20' end='35' type='NEW'>
                         <ArrayElement start='21' end='34'>
                             <Key>
                                 <Scalar start='21' end='22' type='INT' value='1'/>
@@ -81,7 +81,7 @@
                     <Variable start='37' end='49' isDollared='true'>
                         <Identifier start='38' end='49' name='shortArray2'/>
                     </Variable>
-                    <ArrayCreation start='52' end='63'>
+                    <ArrayCreation start='52' end='63' type='NEW'>
                         <ArrayElement start='53' end='58'>
                             <Key>
                             </Key>

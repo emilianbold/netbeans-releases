@@ -461,8 +461,9 @@ bodyItem
         | (cp_mixin_call ws? SEMI)=> {isLessSource()}? cp_mixin_call
         | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call
     	| rule
+        | (sass_map)=> sass_map
+        | (cp_variable ws? COLON)=> cp_variable_declaration
         | at_rule
-        | {isCssPreprocessorSource()}? cp_variable_declaration
         //not exactly acc. to the spec, since just CP stuff can preceede, but is IMO satisfactory
         | {isCssPreprocessorSource()}? importItem
         | {isScssSource()}? sass_debug
@@ -607,9 +608,36 @@ property
         consumeUntil(input, BitSet.of(COLON));
     }
 
+sass_map
+    :
+    sass_map_name COLON ws? LPAREN ws? syncToFollow
+        //what can be in the map? --- just properties? 
+        sass_map_pairs?
+    RPAREN
+    ;
+
+sass_map_name
+    :
+    cp_variable
+    ;
+
+sass_map_pairs
+    :
+    (
+         ( sass_map_pair ((ws? COMMA)=>ws? COMMA)? ws? )
+         |
+         ( COMMA ws? )
+    )+
+    ;
+
+sass_map_pair
+    :
+        property ws? COLON ws? cp_expression (ws? prio)?
+    ;
+
 rule
     :
-    selectorsGroup ws?
+    ((SASS_AT_ROOT (ws selectorsGroup)?) | selectorsGroup) ws?
     LBRACE ws? syncToFollow
         declarations?
     RBRACE
@@ -632,6 +660,7 @@ declarations
 declaration
     :
     (cp_variable_declaration)=>cp_variable_declaration
+    | (sass_map)=> sass_map
     | (sass_nested_properties)=>sass_nested_properties
     | (propertyDeclaration)=>propertyDeclaration
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
@@ -640,7 +669,7 @@ declaration
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
     | (cp_mixin_call (ws? IMPORTANT_SYM)? ws? SEMI)=> {isLessSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
     | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
-    | (selectorsGroup ws? LBRACE)=>rule
+    | (((SASS_AT_ROOT (ws selectorsGroup)?) | selectorsGroup) ws? LBRACE)=>rule
     | {isCssPreprocessorSource()}? at_rule
     | {isScssSource()}? sass_control
     | {isScssSource()}? sass_extend
@@ -935,7 +964,7 @@ fnAttributes
 fnAttribute
 	:
         (fnAttributeName ws? (OPEQ|COLON) )=>fnAttributeName ws? (OPEQ|COLON) ws? fnAttributeValue
-        | {isCssPreprocessorSource()}? cp_expression
+        | (cp_expression)=> cp_expression
         | expression
 	;
 
@@ -973,7 +1002,7 @@ cp_variable_declaration
 cp_variable
     :
         //every token which might possibly begin with the at sign
-        {isLessSource()}? ( AT_IDENT | IMPORT_SYM | PAGE_SYM | MEDIA_SYM | NAMESPACE_SYM | CHARSET_SYM | COUNTER_STYLE_SYM | FONT_FACE_SYM | TOPLEFTCORNER_SYM | TOPLEFT_SYM | TOPCENTER_SYM | TOPRIGHT_SYM | TOPRIGHTCORNER_SYM | BOTTOMLEFTCORNER_SYM | BOTTOMLEFT_SYM | BOTTOMCENTER_SYM | BOTTOMRIGHT_SYM | BOTTOMRIGHTCORNER_SYM | LEFTTOP_SYM | LEFTMIDDLE_SYM | LEFTBOTTOM_SYM | RIGHTTOP_SYM | RIGHTMIDDLE_SYM | RIGHTBOTTOM_SYM | MOZ_DOCUMENT_SYM | WEBKIT_KEYFRAMES_SYM | SASS_CONTENT | SASS_MIXIN | SASS_INCLUDE | SASS_EXTEND | SASS_DEBUG | SASS_WARN | SASS_IF | SASS_ELSE | SASS_FOR | SASS_FUNCTION | SASS_RETURN | SASS_EACH | SASS_WHILE  )
+        {isLessSource()}? ( AT_IDENT | IMPORT_SYM | PAGE_SYM | MEDIA_SYM | NAMESPACE_SYM | CHARSET_SYM | COUNTER_STYLE_SYM | FONT_FACE_SYM | TOPLEFTCORNER_SYM | TOPLEFT_SYM | TOPCENTER_SYM | TOPRIGHT_SYM | TOPRIGHTCORNER_SYM | BOTTOMLEFTCORNER_SYM | BOTTOMLEFT_SYM | BOTTOMCENTER_SYM | BOTTOMRIGHT_SYM | BOTTOMRIGHTCORNER_SYM | LEFTTOP_SYM | LEFTMIDDLE_SYM | LEFTBOTTOM_SYM | RIGHTTOP_SYM | RIGHTMIDDLE_SYM | RIGHTBOTTOM_SYM | MOZ_DOCUMENT_SYM | WEBKIT_KEYFRAMES_SYM | SASS_CONTENT | SASS_MIXIN | SASS_INCLUDE | SASS_EXTEND | SASS_DEBUG | SASS_WARN | SASS_IF | SASS_ELSE | SASS_FOR | SASS_FUNCTION | SASS_RETURN | SASS_EACH | SASS_WHILE | SASS_AT_ROOT )
         |
         {isScssSource()}? ( SASS_VAR )
     ;
@@ -1279,9 +1308,14 @@ sass_for
 
 sass_each
     :
-    SASS_EACH ws cp_variable ws {tokenNameEquals("in")}? IDENT /*in*/ ws cp_expression_list ws? sass_control_block
+    SASS_EACH ws sass_each_variables ws {tokenNameEquals("in")}? IDENT /*in*/ ws cp_expression_list ws? sass_control_block
     ;
 
+sass_each_variables
+    :
+    cp_variable ( (ws? COMMA)=> ws? COMMA ws? cp_variable )*
+    ;
+ 
 sass_while
     :
     SASS_WHILE ws sass_control_expression ws? sass_control_block
@@ -1740,6 +1774,8 @@ SASS_RETURN         : '@RETURN';
 
 SASS_EACH           : '@EACH';
 SASS_WHILE          : '@WHILE';
+
+SASS_AT_ROOT        : '@AT-ROOT';
 
 AT_SIGN             : '@';
 AT_IDENT	    : AT_SIGN NMCHAR+;
