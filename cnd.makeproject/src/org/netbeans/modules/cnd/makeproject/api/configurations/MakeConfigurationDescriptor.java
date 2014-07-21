@@ -116,6 +116,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -269,7 +270,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         externalFileItems = null;
     }
 
-    public static MakeConfigurationDescriptor getMakeConfigurationDescriptor(Project project) {
+    public static MakeConfigurationDescriptor getMakeConfigurationDescriptor(Lookup.Provider project) {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp != null) {
             MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();

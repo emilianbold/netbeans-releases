@@ -74,7 +74,7 @@ public interface CsmSymbolResolverImplementation {
      * 
      * @return all entities which have the same declaration text
      */    
-    Collection<CsmObject> resolveSymbol(NativeProject project, CharSequence declText);    
+    Collection<CsmOffsetable> resolveSymbol(NativeProject project, CharSequence declText);    
 
     /**
      * Resolves symbol by qualified name or 
@@ -85,5 +85,5 @@ public interface CsmSymbolResolverImplementation {
      * 
      * @return all entities which have the same declaration text
      */    
-    Collection<CsmObject> resolveSymbol(CsmProject project, CharSequence declText);        
+    Collection<CsmOffsetable> resolveSymbol(CsmProject project, CharSequence declText);        
 }
