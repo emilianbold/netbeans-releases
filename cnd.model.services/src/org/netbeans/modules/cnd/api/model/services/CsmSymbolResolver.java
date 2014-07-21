@@ -76,7 +76,7 @@ public final class CsmSymbolResolver {
      * 
      * @return all entities which have the same declaration text
      */      
-    public static Collection<CsmObject> resolveSymbol(NativeProject project, CharSequence declText) {
+    public static Collection<CsmOffsetable> resolveSymbol(NativeProject project, CharSequence declText) {
         return DEFAULT.resolveSymbol(project, declText);
     }    
     
@@ -89,7 +89,7 @@ public final class CsmSymbolResolver {
      * 
      * @return all entities which have the same declaration text
      */ 
-    public static Collection<CsmObject> resolveSymbol(CsmProject project, CharSequence declText) {
+    public static Collection<CsmOffsetable> resolveSymbol(CsmProject project, CharSequence declText) {
         return DEFAULT.resolveSymbol(project, declText);
     }        
         
@@ -128,12 +128,12 @@ public final class CsmSymbolResolver {
         }
         
         @Override
-        public Collection<CsmObject> resolveSymbol(NativeProject project, CharSequence declText) {
+        public Collection<CsmOffsetable> resolveSymbol(NativeProject project, CharSequence declText) {
             return getDelegate().resolveSymbol(project, declText);
         }
         
         @Override
-        public Collection<CsmObject> resolveSymbol(CsmProject project, CharSequence declText) {
+        public Collection<CsmOffsetable> resolveSymbol(CsmProject project, CharSequence declText) {
             return getDelegate().resolveSymbol(project, declText);
         }
     }
