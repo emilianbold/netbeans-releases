@@ -149,4 +149,9 @@ public class CsmSymbolResolverTestCase extends SelectTestBase {
         doTestSingle("double tpl_sr_test::foo<double>(double)", "templates_symbol_resolver_test.cpp", 15, 3);
         doTestSingle("int tpl_sr_test::foo<int>(int)", "templates_symbol_resolver_test.cpp", 15, 3);
     }         
+    
+    public void testSolarisSymbolResolverSymbols() throws Exception {
+        doTestSingle("char*hello_solaris1()", "solaris_test_case.cpp", 1, 1);
+        doTestSingle("char*solaris_test_case::hello_solaris2()", "solaris_test_case.cpp", 4, 3);
+    }
 }
