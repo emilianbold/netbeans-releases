@@ -513,13 +513,30 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             // #230378 - use weak listeners otherwise project is not garbage collected
             project.getEvaluator().addPropertyChangeListener(
                     WeakListeners.propertyChange(listener, project.getEvaluator()));
-            project.getProjectDirectory().addRecursiveListener(
-                    WeakListeners.create(FileChangeListener.class, listener, project.getProjectDirectory()));
+            addFsListeners();
         }
 
         @Override
         public void removeNotify() {
             // #230378 - weak listeners are used so no need to call "removeListener"
+        }
+
+        private void addFsListeners() {
+            FileObject projectDirectory = project.getProjectDirectory();
+            projectDirectory.addRecursiveListener(
+                    WeakListeners.create(FileChangeListener.class, listener, projectDirectory));
+            addTestsListeners();
+        }
+
+        private void addTestsListeners() {
+            FileObject projectDirectory = project.getProjectDirectory();
+            FileObject testsFolder = project.getTestsFolder(false);
+            if (testsFolder != null
+                    && !projectDirectory.equals(testsFolder)
+                    && !FileUtil.isParentOf(projectDirectory, testsFolder)) {
+                testsFolder.addRecursiveListener(
+                        WeakListeners.create(FileChangeListener.class, listener, testsFolder));
+            }
         }
 
         private class Listener extends FileChangeAdapter implements PropertyChangeListener {
@@ -558,6 +575,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 } else if (ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName())) {
                     testsNodeHidden = isNodeHidden(BasicNodes.Tests);
                     refreshKey(BasicNodes.Tests);
+                    addTestsListeners();
                 } else if (ClientSideProjectConstants.PROJECT_CONFIG_FOLDER.equals(evt.getPropertyName())) {
                     configNodeHidden = isNodeHidden(BasicNodes.Configuration);
                     refreshKey(BasicNodes.Configuration);
