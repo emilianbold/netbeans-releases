@@ -45,6 +45,9 @@ package org.netbeans.modules.javascript2.editor.navigation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
@@ -162,19 +165,20 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
                         String propertyName = ts.token().text().toString();
                         for (Type type : assignments) {
-                            String fqn = type.getType();
-                            if (fqn.startsWith(SemiTypeResolverVisitor.ST_EXP)) {
-                                fqn = fqn.substring(SemiTypeResolverVisitor.ST_EXP.length());
+                            String fqn = getFQNFromType(type);
+                            Collection<? extends IndexResult> items = findPropertyOfType(jsIndex, fqn, propertyName);
+                            if (items.isEmpty()) {
+                                Collection<? extends IndexResult> tmpItems = jsIndex.findByFqn(fqn, JsIndex.TERMS_BASIC_INFO);
+                                for (IndexResult indexResult : tmpItems) {
+                                    Collection<TypeUsage> tmpAssignments = IndexedElement.getAssignments(indexResult);
+                                    for (Type tmpType : tmpAssignments) {
+                                        items = findPropertyOfType(jsIndex, getFQNFromType(tmpType), propertyName);
+                                        indexResults.addAll(items);
+                                    }
+                                }
+                            } else {
+                                indexResults.addAll(items);
                             }
-                            if (fqn.contains(SemiTypeResolverVisitor.ST_PRO)) {
-                                fqn = fqn.replace(SemiTypeResolverVisitor.ST_PRO, ".");     //NOI18N
-                            }
-                            Collection<? extends IndexResult> items = jsIndex.findByFqn(
-                                    fqn + "." + propertyName, JsIndex.TERMS_BASIC_INFO); // NOI18N
-                            if(items.isEmpty()) {
-                                items = jsIndex.findByFqn(fqn + ".prototype." + propertyName, JsIndex.TERMS_BASIC_INFO); // NOI18N
-                            }
-                            indexResults.addAll(items);
                         }
                         DeclarationLocation location = processIndexResult(indexResults);
                         if (location != null) {
@@ -199,16 +203,41 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 : object.getOffset();
     }
     
+    private Collection<? extends IndexResult> findPropertyOfType(JsIndex jsIndex, String fqn, String propertyName) {
+        Collection<? extends IndexResult> items = jsIndex.findByFqn(
+                fqn + "." + propertyName, JsIndex.TERMS_BASIC_INFO); // NOI18N
+        if (items.isEmpty()) {
+            items = jsIndex.findByFqn(fqn + ".prototype." + propertyName, JsIndex.TERMS_BASIC_INFO); // NOI18N
+        }
+        return items;
+    }
+    
+    private String getFQNFromType(Type type) {
+        String fqn = type.getType();
+        if (fqn.startsWith(SemiTypeResolverVisitor.ST_EXP)) {
+            fqn = fqn.substring(SemiTypeResolverVisitor.ST_EXP.length());
+        }
+        if (fqn.contains(SemiTypeResolverVisitor.ST_PRO)) {
+            fqn = fqn.replace(SemiTypeResolverVisitor.ST_PRO, ".");     //NOI18N
+        }
+        return fqn;
+    }
+    
     private DeclarationLocation processIndexResult(List<IndexResult> indexResults) {
         if (!indexResults.isEmpty()) {
             IndexResult iResult = indexResults.get(0);
             String value = iResult.getValue(JsIndex.FIELD_OFFSET);
             int offset = Integer.parseInt(value);
+            HashSet<String> alreadyThere = new HashSet<String>();
             DeclarationLocation location = new DeclarationLocation(iResult.getFile(), offset, IndexedElement.create(iResult));
+            alreadyThere.add(iResult.getFile().getPath() + offset);
             if (indexResults.size() > 1) {
                 for (int i = 0; i < indexResults.size(); i++) {
                     iResult = indexResults.get(i);
-                    location.addAlternative(new AlternativeLocationImpl(iResult));
+                    if (!alreadyThere.contains(iResult.getFile().getPath() + offset)) {
+                        location.addAlternative(new AlternativeLocationImpl(iResult));
+                        alreadyThere.add(iResult.getFile().getPath() + offset);
+                    }
                 }
             }
             return location;
