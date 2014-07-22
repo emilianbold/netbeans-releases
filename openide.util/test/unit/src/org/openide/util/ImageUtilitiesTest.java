@@ -94,6 +94,48 @@ public class ImageUtilitiesTest extends TestCase {
         assertNull("No URL property specified", ret);
     }
     
+    public void testMergeImagesWithURL() throws Exception {
+        final URL u = new URL("http://netbeans.org");
+        // test if merged image preserves alpha (#90862)
+        BufferedImage img1 = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB) {
+
+            @Override
+            public Object getProperty(String name) {
+                if ("url".equals(name)) {
+                    return u;
+                }
+                return super.getProperty(name);
+            }
+        };
+//        System.out.println("img1 transparency "+img1.getTransparency());
+        java.awt.Graphics2D g = img1.createGraphics();
+        Color c = new Color(255, 255, 255, 128);
+        g.setColor(c);
+        g.fillRect(0, 0, 16, 16);
+        g.dispose();
+        
+        BufferedImage img2 = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+//        System.out.println("img2 transparency "+img2.getTransparency());
+        g = img2.createGraphics();
+        c = new Color(255, 255, 255);
+        g.setColor(c);
+        g.fillRect(0, 0, 2, 2);
+        g.dispose();
+        
+        Image mergedImg = ImageUtilities.mergeImages(img1, img2, 0, 0);
+        if (!(mergedImg instanceof BufferedImage)) {
+            fail("It is assumed that mergeImages returns BufferedImage. Need to update test");
+        }
+                
+        BufferedImage merged = (BufferedImage)mergedImg;
+//        System.out.println("pixels " + Integer.toHexString(merged.getRGB(10, 10)) +", "+ Integer.toHexString(merged.getRGB(0, 0)));
+        assertNotSame("transparency has to be kept for pixel <1,1>", merged.getRGB(10, 10), merged.getRGB(0, 0));
+        
+        Object ret = mergedImg.getProperty("url", null);
+        assertEquals("URL property remains from img1", u, ret);
+    }
+    
+    
     public void testMergeBitmaskImages() throws Exception {
         // test if two bitmask images are merged to bitmask again to avoid use of alpha channel
         BufferedImage img1 = new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB);
