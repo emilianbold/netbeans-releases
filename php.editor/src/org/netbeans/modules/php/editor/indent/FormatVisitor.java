@@ -132,6 +132,7 @@ public class FormatVisitor extends DefaultVisitor {
     private boolean isMethodInvocationShifted; // is continual indentation already included ?
     private boolean isFirstUseStatementPart;
     private boolean isFirstUseTraitStatementPart;
+    private boolean inArray;
 
     public FormatVisitor(BaseDocument document, DocumentOptions documentOptions, final int caretOffset, final int startOffset, final int endOffset) {
         this.document = document;
@@ -254,6 +255,7 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(ArrayCreation node) {
+        inArray = true;
         int delta = options.indentArrayItems - options.continualIndentSize;
         if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex <= ts.index() // it's possible that the expression starts with array
                 && !ts.token().text().toString().equals("[")) {  //NOI18N
@@ -302,6 +304,7 @@ public class FormatVisitor extends DefaultVisitor {
         formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * delta));
         addAllUntilOffset(node.getEndOffset());
         resetGroupAlignment();
+        inArray = false;
     }
 
     private int modifyDeltaForEnclosingFunctionInvocations(int delta) {
@@ -976,9 +979,13 @@ public class FormatVisitor extends DefaultVisitor {
         Block body = node.getBody();
         if (body != null) {
             addAllUntilOffset(body.getStartOffset());
-            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), -1 * options.continualIndentSize));
+            if (!inArray) {
+                formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), -1 * options.continualIndentSize));
+            }
             scan(body);
-            formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), options.continualIndentSize));
+            if (!inArray) {
+                formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), options.continualIndentSize));
+            }
         }
     }
 
