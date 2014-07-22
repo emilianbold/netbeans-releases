@@ -862,6 +862,14 @@ public class Action {
         } catch (Exception e) {
             throw new JemmyException("Sleeping interrupted", e);
         }
+        // if selection is wrong try to select again
+        int selectedNodes = nodes[0].tree().getSelectionCount();
+        if (selectedNodes != nodes.length) {
+            nodes[0].select();
+            for (int i = 1; i < nodes.length; i++) {
+                nodes[i].addSelectionPath();
+            }
+        }
         performAPI();
     }
 
