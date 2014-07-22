@@ -375,7 +375,7 @@ public final class DefaultProjectOperationsImplementation {
                 }
                 final FileObject newTgtFO = newTargetFO;
                 try {
-                    doMoveProject(handle, project, nueFolderName, nueProjectName, newTgtFO, "ERR_Cannot_Move");
+                    doMoveProject(handle, project, nueFolderName, nueProjectName, newTgtFO, "ERR_Cannot_Move"); // NOI18N
                 } catch (IOException x) {
                     LOG.log(Level.WARNING, null, x);
                     NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
@@ -407,7 +407,7 @@ public final class DefaultProjectOperationsImplementation {
                 
                 if (panel.getRenameProjectFolder()) {
                     try {
-                        doMoveProject(handle, project, nueName, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename");
+                        doMoveProject(handle, project, nueName, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename"); // NOI18N
                     } catch (IOException x) {
                         LOG.log(Level.WARNING, null, x);
                         NotifyDescriptor nd = new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
@@ -444,7 +444,7 @@ public final class DefaultProjectOperationsImplementation {
         for (MoveOperationImplementation o : operations) {
             if (!(o instanceof MoveOrRenameOperationImplementation)) {
                 Logger.getLogger(DefaultProjectOperationsImplementation.class.getName()).log(Level.WARNING,
-                        "{0} should implement MoveOrRenameOperationImplementation", o.getClass().getName());
+                        "{0} should implement MoveOrRenameOperationImplementation", o.getClass().getName()); // NOI18N
                 doRenameProjectOld(handle, project, nueName, operations);
                 return;
             }

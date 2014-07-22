@@ -99,7 +99,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         }
         
         if (Boolean.getBoolean("org.netbeans.modules.project.uiapi.DefaultProjectOperations.showProgress")) {
-            ((CardLayout) progress.getLayout()).show(progress, "progress");
+            ((CardLayout) progress.getLayout()).show(progress, "progress"); // NOI18N
         }
     }
     
@@ -219,7 +219,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         projectFolder.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "ACSN_Project_Folder", new Object[] {})); // NOI18N
         projectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "ACSD_Project_Folder", new Object[] {})); // NOI18N
 
-        extSourcesWarning.setForeground(UIManager.getColor("nb.errorForeground"));
+        extSourcesWarning.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -228,7 +228,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(extSourcesWarning, gridBagConstraints);
 
-        errorMessage.setForeground(UIManager.getColor("nb.errorForeground"));
+        errorMessage.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -238,7 +238,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         add(errorMessage, gridBagConstraints);
 
         progress.setLayout(new java.awt.CardLayout());
-        progress.add(jPanel4, "not-progress");
+        progress.add(jPanel4, "not-progress"); // NOI18N
 
         progressImpl.setLayout(new java.awt.GridBagLayout());
 
@@ -258,7 +258,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         gridBagConstraints.weightx = 1.0;
         progressImpl.add(jPanel3, gridBagConstraints);
 
-        progress.add(progressImpl, "progress");
+        progress.add(progressImpl, "progress"); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -273,7 +273,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
 
         warningTextArea.setColumns(20);
         warningTextArea.setEditable(false);
-        warningTextArea.setForeground(UIManager.getColor("nb.errorForeground"));
+        warningTextArea.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         warningTextArea.setLineWrap(true);
         warningTextArea.setRows(5);
         warningTextArea.setText(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "VCSWarningMessage")); // NOI18N
@@ -335,7 +335,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         int num = 1;
         String projectName = projectNamePrefix;
         if (new File(location, projectName).exists()) {
-            while (new File(location, projectName = projectNamePrefix + "_" + num).exists()) {
+            while (new File(location, projectName = projectNamePrefix + "_" + num).exists()) { // NOI18N
                 num++;
             }
         }
@@ -430,7 +430,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     }
     
     public boolean isPanelValid() {
-        return " ".equals(errorMessage.getText()) && !invalid;
+        return " ".equals(errorMessage.getText()) && !invalid; // NOI18N
     }
 
     private void validateDialog() {
@@ -443,7 +443,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         boolean changed = false;
         String currentError = errorMessage.getText();
         
-        newError = newError != null ? newError : " ";
+        newError = newError != null ? newError : " "; // NOI18N
         changed = !currentError.equals(newError);
         
         errorMessage.setText(newError);
@@ -464,6 +464,6 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         projectName.setEnabled(false);
         browse.setEnabled(false);
         
-        ((CardLayout) progress.getLayout()).show(progress, "progress");
+        ((CardLayout) progress.getLayout()).show(progress, "progress"); // NOI18N
     }
 }

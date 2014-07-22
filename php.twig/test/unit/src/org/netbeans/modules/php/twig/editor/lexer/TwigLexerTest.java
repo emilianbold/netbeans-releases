@@ -621,6 +621,14 @@ public class TwigLexerTest extends TwigLexerTestBase {
         performTest("issue243421_02");
     }
 
+    public void testIssue242400_01() throws Exception {
+        performTest("issue242400_01");
+    }
+
+    public void testIssue242400_02() throws Exception {
+        performTest("issue242400_02");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/twig/" + filename + ".twig"));
