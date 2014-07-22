@@ -169,7 +169,8 @@ public class DeclarativeHintsParser {
                 }
                 String text = token().text().toString();
                 int soffs = text.startsWith("<?") ? 2 : 0; // NOI18N
-                int eoffs = text.endsWith("?>") ? text.length() - 2 : text.length(); // NOI18N
+                // handle a case <?> -- see #244576
+                int eoffs = text.endsWith("?>") ? Math.max(soffs, text.length() - 2) : text.length(); // NOI18N
                 text = text.substring(soffs, eoffs);
                 int[] span = new int[] {token().offset(null) + soffs, token().offset(null) + eoffs};
                 if (importsBlockCode == null && !wasFirstRule) {
