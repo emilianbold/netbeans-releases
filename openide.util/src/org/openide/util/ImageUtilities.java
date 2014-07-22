@@ -667,10 +667,11 @@ public final class ImageUtilities {
             }
             str.append(toolTip);
         }
+        Object firstUrl = image1.getProperty("url", null);
         
         ColorModel model = colorModel(bitmask? Transparency.BITMASK: Transparency.TRANSLUCENT);
         ToolTipImage buffImage = new ToolTipImage(str.toString(), 
-                model, model.createCompatibleWritableRaster(w, h), model.isAlphaPremultiplied(), null, null
+                model, model.createCompatibleWritableRaster(w, h), model.isAlphaPremultiplied(), null, firstUrl instanceof URL ? (URL)firstUrl : null
             );
 
         java.awt.Graphics g = buffImage.createGraphics();
