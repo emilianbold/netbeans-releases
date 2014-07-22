@@ -70,13 +70,14 @@ import org.netbeans.jemmy.operators.Operator;
  * <p>
  * Usage:<br>
  * <pre>
-        TopComponentOperator tco = new TopComponentOperator("My scene");
-        LabelWidgetOperator lwo0 = new LabelWidgetOperator(tco, "Label 0");
-        lwo0.performPopupAction("An action");
-        LabelWidgetOperator lwo1 = new LabelWidgetOperator(tco, "Label 1");
-        // drag from one widget to another
-        lwo0.dragNDrop(lwo1);
+ * TopComponentOperator tco = new TopComponentOperator("My scene");
+ * LabelWidgetOperator lwo0 = new LabelWidgetOperator(tco, "Label 0");
+ * lwo0.performPopupAction("An action");
+ * LabelWidgetOperator lwo1 = new LabelWidgetOperator(tco, "Label 1");
+ * // drag from one widget to another
+ * lwo0.dragNDrop(lwo1);
  * </pre>
+ *
  * @author Jiri Skrivanek
  */
 public class WidgetOperator extends Operator {
@@ -87,15 +88,19 @@ public class WidgetOperator extends Operator {
         Timeouts.initDefault("WidgetOperator.WaitWidgetTimeout", 30000);
     }
 
-    /** Creates operator for given Widget.
+    /**
+     * Creates operator for given Widget.
+     *
      * @param widget Widget to create operator for
      */
     public WidgetOperator(Widget widget) {
         this.widget = widget;
     }
 
-    /** Waits for Widget specified by WidgetChooser implementation under given
-     * parent. 
+    /**
+     * Waits for Widget specified by WidgetChooser implementation under given
+     * parent.
+     *
      * @param parentWidgetOper parent WidgetOperator
      * @param widgetChooser implementation of WidgetChooser
      */
@@ -103,7 +108,9 @@ public class WidgetOperator extends Operator {
         this(parentWidgetOper, widgetChooser, 0);
     }
 
-    /** Waits for index-th Widget under given parent.
+    /**
+     * Waits for index-th Widget under given parent.
+     *
      * @param parentWidgetOper parent WidgetOperator
      * @param index index of widget to be found
      */
@@ -111,8 +118,10 @@ public class WidgetOperator extends Operator {
         this(parentWidgetOper, null, index);
     }
 
-    /** Waits for index-th Widget specified by WidgetChooser implementation under given
-     * parent.
+    /**
+     * Waits for index-th Widget specified by WidgetChooser implementation under
+     * given parent.
+     *
      * @param parentWidgetOper parent WidgetOperator
      * @param widgetChooser implementation of WidgetChooser
      * @param index index of widget to be found
@@ -122,8 +131,10 @@ public class WidgetOperator extends Operator {
         copyEnvironment(parentWidgetOper);
     }
 
-    /** Waits for Widget specified by WidgetChooser implementation in given
+    /**
+     * Waits for Widget specified by WidgetChooser implementation in given
      * TopComponent.
+     *
      * @param tco TopComponentOperator to find widgets in
      * @param widgetChooser implementation of WidgetChooser
      */
@@ -131,7 +142,9 @@ public class WidgetOperator extends Operator {
         this(tco, widgetChooser, 0);
     }
 
-    /** Waits for index-th Widget in given TopComponent.
+    /**
+     * Waits for index-th Widget in given TopComponent.
+     *
      * @param tco TopComponentOperator to find widgets in
      * @param index index of widget to be found
      */
@@ -139,8 +152,10 @@ public class WidgetOperator extends Operator {
         this(tco, null, index);
     }
 
-    /** Waits for index-th Widget specified by WidgetChooser implementation in given
-     * TopComponent.
+    /**
+     * Waits for index-th Widget specified by WidgetChooser implementation in
+     * given TopComponent.
+     *
      * @param tco TopComponentOperator to find widgets in
      * @param widgetChooser implementation of WidgetChooser
      * @param index index of widget to be found
@@ -150,18 +165,22 @@ public class WidgetOperator extends Operator {
         copyEnvironment(tco);
     }
 
-    /** Returns Scene widget which is parent of all other widgets. It throws
+    /**
+     * Returns Scene widget which is parent of all other widgets. It throws
      * JemmyException when Scene is not found.
+     *
      * @param tco TopComponentOperator where to find Scene
      * @return Scene instance
      */
     private static Scene waitScene(TopComponentOperator tco) {
         Component sceneComp = tco.waitSubComponent(new ComponentChooser() {
 
+            @Override
             public boolean checkComponent(Component comp) {
                 return comp.getClass().getName().endsWith("SceneComponent");
             }
 
+            @Override
             public String getDescription() {
                 return "SceneComponent";
             }
@@ -170,7 +189,7 @@ public class WidgetOperator extends Operator {
             Field[] fields = sceneComp.getClass().getDeclaredFields();
             for (int i = 0; i < fields.length; i++) {
                 Field field = fields[i];
-                Class type = field.getType();
+                Class<?> type = field.getType();
                 if (Scene.class.isAssignableFrom(type)) {
                     field.setAccessible(true);
                     return (Scene) field.get(sceneComp);
@@ -182,7 +201,10 @@ public class WidgetOperator extends Operator {
         throw new JemmyException("Scene field not found in " + sceneComp);
     }
 
-    /** Waits for index-th widget specified by WidgetChooser under given parent widget.
+    /**
+     * Waits for index-th widget specified by WidgetChooser under given parent
+     * widget.
+     *
      * @param parentWidget parent Widget
      * @param widgetChooser WidgetChooser implementation
      * @param index index to be found
@@ -192,14 +214,16 @@ public class WidgetOperator extends Operator {
         try {
             Waiter waiter = new Waiter(new Waitable() {
 
+                @Override
                 public Object actionProduced(Object obj) {
                     return findWidget(parentWidget, widgetChooser, index);
                 }
 
+                @Override
                 public String getDescription() {
-                    return (index > 0 ? index + "-th " : "") +
-                            (widgetChooser == null ? "Widget " : widgetChooser.getDescription()) +
-                            " displayed";
+                    return (index > 0 ? index + "-th " : "")
+                            + (widgetChooser == null ? "Widget " : widgetChooser.getDescription())
+                            + " displayed";
                 }
             });
             Timeouts timeouts = JemmyProperties.getCurrentTimeouts().cloneThis();
@@ -212,24 +236,31 @@ public class WidgetOperator extends Operator {
         }
     }
 
-    /** You can implement this interface if you want to find some specific
-     * widget and then you can use it in WidgetOperator constructor.
+    /**
+     * You can implement this interface if you want to find some specific widget
+     * and then you can use it in WidgetOperator constructor.
      */
     public interface WidgetChooser {
 
-        /** Returns true if given Widget matches criteria
+        /**
+         * Returns true if given Widget matches criteria
+         *
          * @param widget Widget to be checked
          * @return true if given Widget matches criteria, false otherwise
          */
         public boolean checkWidget(Widget widget);
 
-        /** Returns description of matching criteria used in output messages.
+        /**
+         * Returns description of matching criteria used in output messages.
+         *
          * @return description of matching criteria used in output messages
          */
         public String getDescription();
     }
 
-    /** Conter used in findWidget method to search index-th matching Widget. */
+    /**
+     * Conter used in findWidget method to search index-th matching Widget.
+     */
     private static final class Counter {
 
         int counter;
@@ -247,7 +278,10 @@ public class WidgetOperator extends Operator {
         }
     }
 
-    /** Finds index-th widget specified by WidgetChooser under given parent widget.
+    /**
+     * Finds index-th widget specified by WidgetChooser under given parent
+     * widget.
+     *
      * @param parentWidget parent Widget
      * @param widgetChooser WidgetChooser implementation
      * @param index index to be found
@@ -256,14 +290,17 @@ public class WidgetOperator extends Operator {
     public static Widget findWidget(final Widget parentWidget, final WidgetChooser widgetChooser, final int index) {
         return (Widget) new QueueTool().invokeSmoothly(new QueueTool.QueueAction("findWidget") {    // NOI18N
 
+            @Override
             public Object launch() {
                 return findWidget(parentWidget, widgetChooser, index, new Counter());
             }
         });
     }
 
-    /** Finds index-th widget specified by WidgetChooser under given parent widget.
-     * Firstly siblings are inspected, then their children.
+    /**
+     * Finds index-th widget specified by WidgetChooser under given parent
+     * widget. Firstly siblings are inspected, then their children.
+     *
      * @param parentWidget parent Widget
      * @param widgetChooser WidgetChooser implementation
      * @param index index to be found
@@ -294,32 +331,40 @@ public class WidgetOperator extends Operator {
         return null;
     }
 
-    /** Returns Scene widget which is parent of all other widgets.
+    /**
+     * Returns Scene widget which is parent of all other widgets.
+     *
      * @return Sceen instance
      */
     private Scene getScene() {
         return (Scene) runMapping(new MapAction("widget.getScene()") {
 
+            @Override
             public Object map() {
                 return widget.getScene();
             }
         });
     }
 
-    /** Returns operator for Scene widget which is parent of all other widgets.
+    /**
+     * Returns operator for Scene widget which is parent of all other widgets.
+     *
      * @return WidgetOperator instance representing Scene widget
      */
     public WidgetOperator getSceneOperator() {
         return new WidgetOperator(getScene());
     }
 
-    /** Returns List of WidgetOperators representing children of this Widget.
-     * @return List<WidgetOperator> with children of this Widget
+    /**
+     * Returns List of WidgetOperators representing children of this Widget.
+     *
+     * @return List&lt;WidgetOperator&gt; with children of this Widget
      */
     public List<WidgetOperator> getChildren() {
         @SuppressWarnings("unchecked")
         List<Widget> children = (List<Widget>) runMapping(new MapAction("widget.getChildren") {
 
+            @Override
             public Object map() {
                 return widget.getChildren();
             }
@@ -331,13 +376,17 @@ public class WidgetOperator extends Operator {
         return operators;
     }
 
-    /** Returns WidgetOperator for parent Widget of this operator or null if
+    /**
+     * Returns WidgetOperator for parent Widget of this operator or null if
      * parent doesn't exist.
-     * @return WidgetOperator instance of parent Widget or null if parent doesn't exist
+     *
+     * @return WidgetOperator instance of parent Widget or null if parent
+     * doesn't exist
      */
     public WidgetOperator getParent() {
         Widget parent = (Widget) runMapping(new MapAction("widget.getParentWidget") {
 
+            @Override
             public Object map() {
                 return widget.getParentWidget();
             }
@@ -349,7 +398,9 @@ public class WidgetOperator extends Operator {
         }
     }
 
-    /** Returns undelying component which hosts this widget.
+    /**
+     * Returns underlying component which hosts this widget.
+     *
      * @return underlying Component instance
      */
     @Override
@@ -357,7 +408,9 @@ public class WidgetOperator extends Operator {
         return getViewOperator().getSource();
     }
 
-    /** Returns operator of underlying component which hosts this widget.
+    /**
+     * Returns operator of underlying component which hosts this widget.
+     *
      * @return JComponentOperator instance of underlying component
      */
     public JComponentOperator getViewOperator() {
@@ -369,20 +422,25 @@ public class WidgetOperator extends Operator {
         }));
     }
 
-    /** Returns Widget represented by this operator.
+    /**
+     * Returns Widget represented by this operator.
+     *
      * @return Widget instance represented by this operator
      */
     public Widget getWidget() {
         return widget;
     }
 
-    /** Returns center of this widget in underlying view coordinates. It can 
-     * be used for mouse click.
+    /**
+     * Returns center of this widget in underlying view coordinates. It can be
+     * used for mouse click.
+     *
      * @return Point representing center of this widget
      */
     public Point getCenter() {
         return (Point) runMapping(new MapAction("getCenter") {
 
+            @Override
             public Object map() {
                 Rectangle inSceneLocation = widget.convertLocalToScene(widget.getBounds());
                 Rectangle inViewLocation = widget.getScene().convertSceneToView(inSceneLocation);
@@ -391,31 +449,39 @@ public class WidgetOperator extends Operator {
         });
     }
 
-    /** Returns relative location of this widget to its parent.
+    /**
+     * Returns relative location of this widget to its parent.
+     *
      * @return Point representing relative location to its parent
      */
     public Point getLocation() {
         return (Point) runMapping(new MapAction("widget.getLocation()") {
 
+            @Override
             public Object map() {
                 return widget.getLocation();
             }
         });
     }
 
-    /** Returns bounds occupied by widget.
+    /**
+     * Returns bounds occupied by widget.
+     *
      * @return bounds occupied by widget
      */
     public Rectangle getBounds() {
         return (Rectangle) runMapping(new MapAction("widget.getBounds()") {
 
+            @Override
             public Object map() {
                 return widget.getBounds();
             }
         });
     }
 
-    /** Returns class name of this widget, its location and bounds.
+    /**
+     * Returns class name of this widget, its location and bounds.
+     *
      * @return class name of this widget, its location and bounds
      */
     @Override
@@ -423,13 +489,17 @@ public class WidgetOperator extends Operator {
         return widget.getClass().getName() + "[" + getLocation() + "," + getBounds() + "]";
     }
 
-    /** Prints information about this widget and its children. */
+    /**
+     * Prints information about this widget and its children.
+     */
     @Override
     public void printDump() {
         printDump("");
     }
 
-    /** Prints information about this widget and its children. 
+    /**
+     * Prints information about this widget and its children.
+     *
      * @param indent indentation of output
      */
     private void printDump(String indent) {
@@ -445,20 +515,22 @@ public class WidgetOperator extends Operator {
         }
     }
 
-    /** Creates WidgetOperator for given widget.
+    /**
+     * Creates WidgetOperator for given widget.
+     *
      * @param widget Widget to create operator for
      * @return WidgetOperator instance for given Widget
      */
     public static WidgetOperator createOperator(Widget widget) {
-        Class widgetClass = widget.getClass();
+        Class<?> widgetClass = widget.getClass();
         while (Widget.class.isAssignableFrom(widgetClass)) {
             String fullClassName = widgetClass.getName();
             String className = fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
             try {
-                return (WidgetOperator) new ClassReference("org.netbeans.jellytools.widgets." + className + "Operator").newInstance(new Object[]{widget}, new Class[]{widgetClass});
+                return (WidgetOperator) new ClassReference("org.netbeans.jellytools.widgets." + className + "Operator").newInstance(new Object[]{widget}, new Class<?>[]{widgetClass});
             } catch (ClassNotFoundException cnfe) {
                 try {
-                    Class clazz = Class.forName("org.netbeans.jellytools.widgets." + className + "Operator", true, Thread.currentThread().getContextClassLoader());
+                    Class<?> clazz = Class.forName("org.netbeans.jellytools.widgets." + className + "Operator", true, Thread.currentThread().getContextClassLoader());
                     return (WidgetOperator) clazz.getConstructor(widgetClass).newInstance(widget);
                 } catch (Exception e) {
                     // operator for given widget not found => try superclass
@@ -472,7 +544,9 @@ public class WidgetOperator extends Operator {
         return new WidgetOperator(widget);
     }
 
-    /** Performs popup action on this widget.
+    /**
+     * Performs popup action on this widget.
+     *
      * @param popupPath path of popup menu item (e.g. 'Go|Next')
      */
     public void performPopupAction(String popupPath) {
@@ -483,7 +557,9 @@ public class WidgetOperator extends Operator {
         popupOper.pushMenu(popupPath, "|", getComparator());
     }
 
-    /** Performs popup action on this widget and no block further execution.
+    /**
+     * Performs popup action on this widget and no block further execution.
+     *
      * @param popupPath path of popup menu item (e.g. 'Go|Next')
      */
     public void performPopupActionNoBlock(String popupPath) {
@@ -494,7 +570,9 @@ public class WidgetOperator extends Operator {
         popupOper.pushMenuNoBlock(popupPath, "|", getComparator());
     }
 
-    /** Clicks mouse in the center of widget.
+    /**
+     * Clicks mouse in the center of widget.
+     *
      * @param clickCount number of clicks
      */
     public void clickMouse(int clickCount) {
@@ -502,7 +580,9 @@ public class WidgetOperator extends Operator {
         getViewOperator().clickMouse(center.x, center.y, clickCount);
     }
 
-    /** Drag from the center of this widget and drop at new position.
+    /**
+     * Drag from the center of this widget and drop at new position.
+     *
      * @param relativeX relative distance of movement along x axis
      * @param relativeY relative distance of movement along y axis
      */
@@ -511,7 +591,9 @@ public class WidgetOperator extends Operator {
         dragNDrop(center.x, center.y, center.x + relativeX, center.y + relativeY);
     }
 
-    /** Drag from the center widget and drop at the center of given widget.
+    /**
+     * Drag from the center widget and drop at the center of given widget.
+     *
      * @param widgetOperator target widget where to drop
      */
     public void dragNDrop(WidgetOperator widgetOperator) {
@@ -520,7 +602,9 @@ public class WidgetOperator extends Operator {
         dragNDrop(centerStart.x, centerStart.y, centerEnd.x, centerEnd.y);
     }
 
-    /** Drag from start coordinates and drop at end coordinates.
+    /**
+     * Drag from start coordinates and drop at end coordinates.
+     *
      * @param x1 start x position
      * @param y1 start y position
      * @param x2 end x position
