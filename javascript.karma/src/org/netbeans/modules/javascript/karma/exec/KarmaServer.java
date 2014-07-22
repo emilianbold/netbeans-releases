@@ -68,7 +68,6 @@ import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
 import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
@@ -85,7 +84,7 @@ public final class KarmaServer implements PropertyChangeListener {
     private final Project project;
     private final Coverage coverage;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final FileChangeListener configFileChangeListener;
+    private final ConfigFileChangeListener configFileChangeListener;
 
     volatile boolean started = false;
     volatile boolean starting = false;
@@ -283,11 +282,11 @@ public final class KarmaServer implements PropertyChangeListener {
     }
 
     private void addConfigFileListener() {
-        FileUtil.addFileChangeListener(configFileChangeListener, getProjectConfigFile());
+        configFileChangeListener.startListen(getProjectConfigFile());
     }
 
     private void removeConfigFileListener() {
-        FileUtil.removeFileChangeListener(configFileChangeListener, getProjectConfigFile());
+        configFileChangeListener.stopListen();
     }
 
     private URL getDebugUrl() {
@@ -458,10 +457,30 @@ public final class KarmaServer implements PropertyChangeListener {
 
         private final Project project;
 
+        // @GuardedBy("this")
+        private File projectConfigFile = null;
+
 
         public ConfigFileChangeListener(Project project) {
             assert project != null;
             this.project = project;
+        }
+
+        public synchronized void startListen(File projectConfigFile) {
+            assert Thread.holdsLock(this);
+            assert projectConfigFile != null;
+            stopListen();
+            assert this.projectConfigFile == null : this.projectConfigFile;
+            this.projectConfigFile = projectConfigFile;
+            FileUtil.addFileChangeListener(this, projectConfigFile);
+        }
+
+        public synchronized void stopListen() {
+            assert Thread.holdsLock(this);
+            if (projectConfigFile != null) {
+                FileUtil.removeFileChangeListener(this, projectConfigFile);
+            }
+            projectConfigFile = null;
         }
 
         @Override
