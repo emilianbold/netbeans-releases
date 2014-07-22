@@ -100,7 +100,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         validateDialog();
         
         if (Boolean.getBoolean("org.netbeans.modules.project.uiapi.DefaultProjectOperations.showProgress")) {
-            ((CardLayout) progress.getLayout()).show(progress, "progress");
+            ((CardLayout) progress.getLayout()).show(progress, "progress"); // NOI18N
         }
     }
     
@@ -220,7 +220,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel3, gridBagConstraints);
 
-        errorMessage.setForeground(UIManager.getColor("nb.errorForeground"));
+        errorMessage.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -232,7 +232,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         add(errorMessage, gridBagConstraints);
 
         progress.setLayout(new java.awt.CardLayout());
-        progress.add(jPanel4, "not-progress");
+        progress.add(jPanel4, "not-progress"); // NOI18N
 
         progressImpl.add(progressComponent = ProgressHandleFactory.createProgressComponent(handle));
         progressImpl.setMinimumSize(new java.awt.Dimension(121, 17));
@@ -247,7 +247,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.weightx = 1.0;
         progressImpl.add(jLabel5, gridBagConstraints);
 
-        progress.add(progressImpl, "progress");
+        progress.add(progressImpl, "progress"); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -318,7 +318,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
     }
     
     public boolean isPanelValid() {
-        return " ".equals(errorMessage.getText());
+        return " ".equals(errorMessage.getText()); // NOI18N
     }
 
     private void validateDialog() {
@@ -326,7 +326,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         boolean changed = false;
         String currentError = errorMessage.getText();
         
-        newError = newError != null ? newError : " ";
+        newError = newError != null ? newError : " "; // NOI18N
         changed = !currentError.equals(newError);
         
         errorMessage.setText(newError);
