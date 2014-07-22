@@ -72,7 +72,7 @@ public abstract class FileProxy {
         } else if (file instanceof FileProxyFileObject) {
             return createAbsolute(((FileProxyFileObject) file).getBase(), absPath);
         } else {
-            throw new IllegalArgumentException("Unexpected FileProxy class: " + file.getClass().getName());
+            throw new IllegalArgumentException("Unexpected FileProxy class: " + file.getClass().getName()); // NOI18N
         }
     }
 
