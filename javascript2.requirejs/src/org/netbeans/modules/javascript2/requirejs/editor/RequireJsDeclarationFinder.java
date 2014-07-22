@@ -81,6 +81,8 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
                     token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
                     if (token.id() == JsTokenId.OPERATOR_COMMA) {
                         commaNumber++;
+                    } else if (token.id() == JsTokenId.OPERATOR_DOT) {
+                        break;
                     }
                 } while (ts.movePrevious() && token.id() != JsTokenId.BRACKET_LEFT_BRACKET
                         && token.id() != JsTokenId.BRACKET_LEFT_PAREN);
