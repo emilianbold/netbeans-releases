@@ -79,6 +79,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     private TwigStateStack stack = new TwigStateStack();
     private LexerInput input;
     private Lexing lexing;
+    private boolean probablyInDString;
+    private boolean probablyInSString;
 
     public TwigTopColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
@@ -86,9 +88,13 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             //reset state
             setState((LexerState) info.state());
             this.lexing = ((LexerState) info.state()).lexing;
+            probablyInDString = ((LexerState) info.state()).probablyInDString;
+            probablyInSString = ((LexerState) info.state()).probablyInSString;
         } else {
             zzState = zzLexicalState = YYINITIAL;
             this.lexing = Lexing.NORMAL;
+            probablyInDString = false;
+            probablyInSString = false;
             stack.clear();
         }
 
@@ -107,21 +113,27 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         /** the current lexical state */
         final int zzLexicalState;
         private final Lexing lexing;
+        private final boolean probablyInDString;
+        private final boolean probablyInSString;
 
-        LexerState(TwigStateStack stack, int zzState, int zzLexicalState, Lexing lexing) {
+        LexerState(TwigStateStack stack, int zzState, int zzLexicalState, Lexing lexing, boolean probablyInDString, boolean probablyInSString) {
             this.stack = stack;
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
             this.lexing = lexing;
+            this.probablyInDString = probablyInDString;
+            this.probablyInSString = probablyInSString;
         }
 
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 47 * hash + Objects.hashCode(this.stack);
-            hash = 47 * hash + this.zzState;
-            hash = 47 * hash + this.zzLexicalState;
-            hash = 47 * hash + Objects.hashCode(this.lexing);
+            hash = 71 * hash + Objects.hashCode(this.stack);
+            hash = 71 * hash + this.zzState;
+            hash = 71 * hash + this.zzLexicalState;
+            hash = 71 * hash + Objects.hashCode(this.lexing);
+            hash = 71 * hash + (this.probablyInDString ? 1 : 0);
+            hash = 71 * hash + (this.probablyInSString ? 1 : 0);
             return hash;
         }
 
@@ -143,12 +155,21 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             if (this.zzLexicalState != other.zzLexicalState) {
                 return false;
             }
-            return this.lexing == other.lexing;
+            if (this.lexing != other.lexing) {
+                return false;
+            }
+            if (this.probablyInDString != other.probablyInDString) {
+                return false;
+            }
+            if (this.probablyInSString != other.probablyInSString) {
+                return false;
+            }
+            return true;
         }
     }
 
     public LexerState getState() {
-        return new LexerState(stack.createClone(), zzState, zzLexicalState, lexing);
+        return new LexerState(stack.createClone(), zzState, zzLexicalState, lexing, probablyInDString, probablyInSString);
     }
 
     public void setState(LexerState state) {
@@ -156,6 +177,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         this.zzState = state.zzState;
         this.zzLexicalState = state.zzLexicalState;
         this.lexing = state.lexing;
+        this.probablyInDString = state.probablyInDString;
+        this.probablyInSString = state.probablyInSString;
     }
 
     protected int getZZLexicalState() {
@@ -187,6 +210,8 @@ VAR_START="{{"
 VAR_END="}}"
 COMMENT_START="{#"
 COMMENT_END=([^#] | #[^}])*"#}"
+D_STRING_DELIM=\"
+S_STRING_DELIM='
 
 %state ST_RAW_START
 %state ST_RAW_END
@@ -329,13 +354,25 @@ COMMENT_END=([^#] | #[^}])*"#}"
 }
 
 <ST_VAR> {
-    {VAR_END} {
-        if (yylength() > 2) {
-            yypushback(2);
-            return TwigTopTokenId.T_TWIG_VAR;
+    {D_STRING_DELIM} {
+        if (!probablyInSString) {
+            probablyInDString = !probablyInDString;
         }
-        popState();
-        return TwigTopTokenId.T_TWIG_VAR_END;
+    }
+    {S_STRING_DELIM} {
+        if (!probablyInDString) {
+            probablyInSString = !probablyInSString;
+        }
+    }
+    {VAR_END} {
+        if (!probablyInDString && !probablyInSString) {
+            if (yylength() > 2) {
+                yypushback(2);
+                return TwigTopTokenId.T_TWIG_VAR;
+            }
+            popState();
+            return TwigTopTokenId.T_TWIG_VAR_END;
+        }
     }
     . {}
 }
