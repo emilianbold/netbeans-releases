@@ -46,6 +46,8 @@ package org.openide.util;
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
+import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.UIManager;
@@ -87,7 +89,52 @@ public class ImageUtilitiesTest extends TestCase {
         BufferedImage merged = (BufferedImage)mergedImg;
 //        System.out.println("pixels " + Integer.toHexString(merged.getRGB(10, 10)) +", "+ Integer.toHexString(merged.getRGB(0, 0)));
         assertNotSame("transparency has to be kept for pixel <1,1>", merged.getRGB(10, 10), merged.getRGB(0, 0));
+        
+        Object ret = mergedImg.getProperty("url", null);
+        assertNull("No URL property specified", ret);
     }
+    
+    public void testMergeImagesWithURL() throws Exception {
+        final URL u = new URL("http://netbeans.org");
+        // test if merged image preserves alpha (#90862)
+        BufferedImage img1 = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB) {
+
+            @Override
+            public Object getProperty(String name) {
+                if ("url".equals(name)) {
+                    return u;
+                }
+                return super.getProperty(name);
+            }
+        };
+//        System.out.println("img1 transparency "+img1.getTransparency());
+        java.awt.Graphics2D g = img1.createGraphics();
+        Color c = new Color(255, 255, 255, 128);
+        g.setColor(c);
+        g.fillRect(0, 0, 16, 16);
+        g.dispose();
+        
+        BufferedImage img2 = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+//        System.out.println("img2 transparency "+img2.getTransparency());
+        g = img2.createGraphics();
+        c = new Color(255, 255, 255);
+        g.setColor(c);
+        g.fillRect(0, 0, 2, 2);
+        g.dispose();
+        
+        Image mergedImg = ImageUtilities.mergeImages(img1, img2, 0, 0);
+        if (!(mergedImg instanceof BufferedImage)) {
+            fail("It is assumed that mergeImages returns BufferedImage. Need to update test");
+        }
+                
+        BufferedImage merged = (BufferedImage)mergedImg;
+//        System.out.println("pixels " + Integer.toHexString(merged.getRGB(10, 10)) +", "+ Integer.toHexString(merged.getRGB(0, 0)));
+        assertNotSame("transparency has to be kept for pixel <1,1>", merged.getRGB(10, 10), merged.getRGB(0, 0));
+        
+        Object ret = mergedImg.getProperty("url", null);
+        assertEquals("URL property remains from img1", u, ret);
+    }
+    
     
     public void testMergeBitmaskImages() throws Exception {
         // test if two bitmask images are merged to bitmask again to avoid use of alpha channel
@@ -118,7 +165,30 @@ public class ImageUtilitiesTest extends TestCase {
         assertEquals(Color.BLUE, new Color(merged.getRGB(10, 10)));
     }
 
-    public void testImageToolTip() {
+    public void testImageToolTipWithURL() throws Exception {
+        final URL u = new URL("http://netbeans.org");
+        BufferedImage img1 = new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB) {
+            @Override
+            public Object getProperty(String name) {
+                if ("url".equals(name)) {
+                    return u;
+                }
+                return super.getProperty(name);
+            }
+        };
+        java.awt.Graphics2D g = img1.createGraphics();
+        g.setColor(Color.BLUE);
+        g.fillRect(0, 0, 16, 16);
+        g.dispose();
+        
+        assertEquals("Tool tip text should be empty", "", ImageUtilities.getImageToolTip(img1));
+        
+        String text = "test";
+        Image imgTT1 = ImageUtilities.assignToolTipToImage(img1, text);
+        assertEquals("URL location is kept", imgTT1.getProperty("url", null), u);
+    }
+    
+    public void testImageToolTip() throws Exception {
         BufferedImage img1 = new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB);
         java.awt.Graphics2D g = img1.createGraphics();
         g.setColor(Color.BLUE);
@@ -132,6 +202,9 @@ public class ImageUtilitiesTest extends TestCase {
         assertEquals("Should remain empty", "", ImageUtilities.getImageToolTip(img1));
         String str = ImageUtilities.getImageToolTip(imgTT1);
         assertEquals("We should get what we set", text, str);
+        
+        Icon icon = ImageUtilities.image2Icon(imgTT1);
+        assertNull("URL location is null", imgTT1.getProperty("url", null));
 
         Image imgTT2 = ImageUtilities.assignToolTipToImage(img1, "test");
         assertSame("Instances should be same", imgTT1, imgTT2);
