@@ -289,6 +289,10 @@ S_STRING_DELIM='
 
 <ST_RAW_START> {
     {BLOCK_START} {
+        if (yylength() > 2) {
+            yypushback(2);
+            return TwigTopTokenId.T_HTML;
+        }
         lexing = Lexing.RAW;
         return TwigTopTokenId.T_TWIG_BLOCK_START;
     }
@@ -296,6 +300,10 @@ S_STRING_DELIM='
 
 <ST_VERBATIM_START> {
     {BLOCK_START} {
+        if (yylength() > 2) {
+            yypushback(2);
+            return TwigTopTokenId.T_HTML;
+        }
         lexing = Lexing.VERBATIM;
         return TwigTopTokenId.T_TWIG_BLOCK_START;
     }
