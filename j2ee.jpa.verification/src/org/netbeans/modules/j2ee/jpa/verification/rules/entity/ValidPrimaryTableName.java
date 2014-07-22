@@ -100,7 +100,7 @@ public class ValidPrimaryTableName {
         if(tableName == null){
             return null;
         }
-        String entityName = ((Entity) ctx.getModelElement()).getName();
+        String entityName = ((Entity) me).getName();
         TreePath par = hc.getPath();
         while(par!=null && par.getParentPath()!=null && par.getLeaf().getKind()!= Tree.Kind.CLASS){
             par = par.getParentPath();
