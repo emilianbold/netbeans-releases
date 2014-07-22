@@ -222,6 +222,14 @@ public final class KarmaServers {
         return String.format(url, karmaServer.getPort());
     }
 
+    public boolean isAbsoluteUrls(Project project) {
+        KarmaServer karmaServer = getKarmaServer(project);
+        if (karmaServer == null) {
+            return false;
+        }
+        return karmaServer.isAbsoluteUrls();
+    }
+
     public void closeDebugUrl(Project project) {
         KarmaServer karmaServer = getKarmaServer(project);
         if (karmaServer == null) {

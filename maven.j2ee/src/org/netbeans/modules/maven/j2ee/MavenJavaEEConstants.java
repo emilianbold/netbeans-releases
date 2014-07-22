@@ -93,6 +93,12 @@ public class MavenJavaEEConstants {
     public static final String ACTION_PROPERTY_DEPLOY_DEBUG_MODE = "netbeans.deploy.debugmode"; //NOI18N
 
     /**
+     * Denotes wheather the NetBeans application server deployment shall be performed in debug mode.
+     * Optional property, complementary to ACTION_PROPERTY_DEPLOY.
+     */
+    public static final String ACTION_PROPERTY_DEPLOY_PROFILE_MODE = "netbeans.deploy.profilemode"; //NOI18N
+
+    /**
      * Optional property, complementary to ACTION_PROPERTY_DEPLOY.
      */
     public static final String ACTION_PROPERTY_DEPLOY_REDEPLOY = "netbeans.deploy.forceRedeploy"; //NOI18N

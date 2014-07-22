@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,65 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.dbgp.models.nodes;
+package org.netbeans.modules.cnd.remote.projectui.actions;
 
-import java.util.Set;
-import org.netbeans.modules.php.dbgp.models.VariablesModelFilter.FilterType;
-import org.netbeans.modules.php.dbgp.packets.Property;
+import org.netbeans.api.project.Project;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
- * @author ads
  *
+ * @author vkvashin
  */
-class ScalarTypeVariableNode extends org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode {
-    private static final String TYPE_FLOAT = "TYPE_Float"; // NOI18N
-    private static final String TYPE_INT = "TYPE_Int"; // NOI18N
-    private static final String TYPE_BOOLEAN = "TYPE_Boolean"; // NOI18N
-    private static final String TYPE_STRING = "TYPE_String"; // NOI18N
-    private static final String TYPE_NULL = "TYPE_Null"; // NOI18N
-    public static final String BOOLEAN = "boolean"; // NOI18N
-    public static final String BOOL = "bool"; // NOI18N
-    public static final String INTEGER = "integer"; // NOI18N
-    public static final String INT = "int"; // NOI18N
-    public static final String FLOAT = "float"; // NOI18N
-    public static final String STRING = "string"; // NOI18N
-
-    ScalarTypeVariableNode(Property property, AbstractModelNode parent) {
-        super(property, parent);
-    }
+public abstract class ProjectBaseAction extends NodeAction {
 
     @Override
-    public String getType() {
-        String type = super.getType();
-        String bundleKey;
-        switch (type) {
-            case BOOLEAN:
-            case BOOL:
-                bundleKey = TYPE_BOOLEAN;
-                break;
-            case INTEGER:
-            case INT:
-                bundleKey = TYPE_INT;
-                break;
-            case FLOAT:
-                bundleKey = TYPE_FLOAT;
-                break;
-            case STRING:
-                bundleKey = TYPE_STRING;
-                break;
-            default:
-                bundleKey = TYPE_NULL;
-                break;
+    protected void performAction(Node[] activatedNodes) {
+        if (activatedNodes.length == 1) {
+            Project project = (Project) activatedNodes[0].getValue("Project"); // NOI18N
+            if (project != null) {
+                preformAction(project);
+            }
         }
-        return NbBundle.getMessage(ScalarTypeVariableNode.class, bundleKey);
+    }
+
+    protected abstract void preformAction(Project project);
+    @Override
+    public abstract String getName();
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length == 1) {
+            Project project = (Project) activatedNodes[0].getValue("Project"); // NOI18N
+            if (project != null) {
+                return isEnabled(project);
+            }
+        }
+        return false;
+    }
+
+    protected boolean isEnabled(Project project) {
+        return true;
     }
 
     @Override
-    protected boolean isTypeApplied(Set<FilterType> filters) {
-        return filters.contains(FilterType.SCALARS);
+    public HelpCtx getHelpCtx() {
+        return null;
     }
-
 }

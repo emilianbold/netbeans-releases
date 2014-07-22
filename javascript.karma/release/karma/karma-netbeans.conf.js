@@ -50,6 +50,7 @@ var COVERAGE_DIR = process.env.COVERAGE_DIR;
 var DEBUG = Boolean(process.env.DEBUG);
 
 var BROWSERS_MESSAGE = '$NB$netbeans browsers %s';
+var ABSOLUTE_URLS_MESSAGE = '$NB$netbeans absoluteUrls';
 
 var util = require('util');
 var projectConf = require(PROJECT_CONFIG);
@@ -81,12 +82,13 @@ module.exports = function(config) {
     if (config.basePath) {
         if (config.basePath.substr(0, 1) === '/' // unix
                 || config.basePath.substr(1, 2) === ':\\') { // windows
-            // absolute path, do nothing
+            printMessage(ABSOLUTE_URLS_MESSAGE);
         } else {
             config.basePath = BASE_DIR + FILE_SEPARATOR + config.basePath;
         }
     } else {
         config.basePath = BASE_DIR + FILE_SEPARATOR;
+        printMessage(ABSOLUTE_URLS_MESSAGE);
     }
 
     config.reporters = config.reporters || [];

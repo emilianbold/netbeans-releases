@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.j2ee.core.Profile;
@@ -124,8 +123,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
 
     public static boolean showServerSelectionDialog(Project project, J2eeModuleProvider provider, RunConfig config) {
         if (ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
-            boolean isDefaultGoal = config == null ? true : neitherJettyNorCargo(config.getGoals()); //TODO how to figure if really default or overridden by user?
-            SelectAppServerPanel panel = new SelectAppServerPanel(!isDefaultGoal, project);
+            SelectAppServerPanel panel = new SelectAppServerPanel(isGoalOverridden(config), project);
             DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(SelectAppServerPanel.class, "TIT_Select"));
             panel.setNLS(dd.createNotificationLineSupport());
             Object obj = DialogDisplayer.getDefault().notify(dd);
@@ -186,13 +184,24 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
         }
     }
 
-    private static boolean neitherJettyNorCargo(List<String> goals) {
-        for (String goal : goals) {
-            if (goal.contains("jetty") || goal.contains("cargo")) {
-                return false;
-            }
+    /**
+     * Finds out if the run configuration uses different goal than the default one.
+     *
+     * <p>
+     * The purpose of this method is to find out if there is some 'special' action
+     * defined by the user instead of default run process. That might be for example
+     * running jetty:run goal which starts temporary server which doesn't need to be
+     * defined inside of NetBeans.
+     * </p>
+     *
+     * @param config configuration of this project
+     * @return {@code true} in case user overrides the goal, {@code false} otherwise
+     */
+    private static boolean isGoalOverridden(RunConfig config) {
+        if (config == null) {
+            return false;
         }
-        return true;
+        return !config.getGoals().isEmpty();
     }
 
     private static void persistServer(Project project, final String iID, final String sID, final Project targetPrj) {
@@ -405,7 +414,8 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private void checkIgnoreEnablement() {
-        if (ExecutionChecker.DEV_NULL.equals(getSelectedServerType())) {
+        String selectedServer = getSelectedServerType();
+        if (selectedServer == null || ExecutionChecker.DEV_NULL.equals(selectedServer)) {
             rbIgnore.setEnabled(true);
         } else {
             if (rbIgnore.isSelected()) {
