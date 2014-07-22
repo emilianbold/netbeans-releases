@@ -68,7 +68,6 @@ import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
 import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
@@ -85,7 +84,7 @@ public final class KarmaServer implements PropertyChangeListener {
     private final Project project;
     private final Coverage coverage;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final FileChangeListener configFileChangeListener;
+    private final ConfigFileChangeListener configFileChangeListener;
 
     volatile boolean started = false;
     volatile boolean starting = false;
@@ -101,6 +100,7 @@ public final class KarmaServer implements PropertyChangeListener {
     private volatile File netBeansKarmaReporter = null;
     private volatile File netBeansKarmaConfig = null;
     private volatile URL debugUrl = null;
+    private volatile KarmaRunInfo karmaRunInfo = null;
 
 
     KarmaServer(int port, Project project) {
@@ -127,7 +127,7 @@ public final class KarmaServer implements PropertyChangeListener {
             fireChange();
             return false;
         }
-        KarmaRunInfo karmaRunInfo = getKarmaRunInfo();
+        karmaRunInfo = getKarmaRunInfo();
         if (karmaRunInfo == null) {
             // some error
             return false;
@@ -171,6 +171,7 @@ public final class KarmaServer implements PropertyChangeListener {
         stopCoverageWatcher();
         removeCoverageListener();
         removeConfigFileListener();
+        karmaRunInfo = null;
         if (server == null) {
             return;
         }
@@ -212,6 +213,13 @@ public final class KarmaServer implements PropertyChangeListener {
 
     public Project getProject() {
         return project;
+    }
+
+    public boolean isAbsoluteUrls() {
+        if (karmaRunInfo == null) {
+            return false;
+        }
+        return karmaRunInfo.isAbsoluteUrls();
     }
 
     private synchronized void openDebugUrl() {
@@ -274,11 +282,11 @@ public final class KarmaServer implements PropertyChangeListener {
     }
 
     private void addConfigFileListener() {
-        FileUtil.addFileChangeListener(configFileChangeListener, getProjectConfigFile());
+        configFileChangeListener.startListen(getProjectConfigFile());
     }
 
     private void removeConfigFileListener() {
-        FileUtil.removeFileChangeListener(configFileChangeListener, getProjectConfigFile());
+        configFileChangeListener.stopListen();
     }
 
     private URL getDebugUrl() {
@@ -449,10 +457,30 @@ public final class KarmaServer implements PropertyChangeListener {
 
         private final Project project;
 
+        // @GuardedBy("this")
+        private File projectConfigFile = null;
+
 
         public ConfigFileChangeListener(Project project) {
             assert project != null;
             this.project = project;
+        }
+
+        public synchronized void startListen(File projectConfigFile) {
+            assert Thread.holdsLock(this);
+            assert projectConfigFile != null;
+            stopListen();
+            assert this.projectConfigFile == null : this.projectConfigFile;
+            this.projectConfigFile = projectConfigFile;
+            FileUtil.addFileChangeListener(this, projectConfigFile);
+        }
+
+        public synchronized void stopListen() {
+            assert Thread.holdsLock(this);
+            if (projectConfigFile != null) {
+                FileUtil.removeFileChangeListener(this, projectConfigFile);
+            }
+            projectConfigFile = null;
         }
 
         @Override

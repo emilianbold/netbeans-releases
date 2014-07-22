@@ -116,8 +116,8 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     })
     private boolean isSupported(RunConfig config) {
         String serverInstanceID = getServerInstanceID();
-        if (serverInstanceID == null) {
-            return false;
+        if (serverInstanceID == null || serverInstanceID.equals(DEV_NULL)) {
+            return true;
         }
 
         boolean debugmode = DeploymentHelper.isDebugMode(config);
@@ -125,7 +125,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
 
         ServerInstance serverInstance = Deployment.getDefault().getServerInstance(serverInstanceID);
         try {
-            if (serverInstance != null && !DEV_NULL.equals(serverInstanceID)) {
+            if (serverInstance != null) {
                 if (debugmode && !serverInstance.isDebuggingSupported()) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_Server_No_Debugging(), NotifyDescriptor.WARNING_MESSAGE));
                     return false;
@@ -137,7 +137,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             }
         } catch (InstanceRemovedException ex) {
             // If the instance was removed in the meantime, server is not set correctly
-            return false;
+            return true;
         }
         return true;
     }
