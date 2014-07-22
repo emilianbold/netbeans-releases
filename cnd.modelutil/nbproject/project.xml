@@ -188,7 +188,6 @@
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.discovery</friend>
                 <friend>com.sun.tools.ide.analysis.analytics</friend>
-                <friend>org.netbeans.modules.cnd.analysis.api</friend>
                 <friend>com.sun.tools.ide.analysis.common</friend>
                 <friend>com.sun.tools.ide.analysis.discover</friend>
                 <friend>com.sun.tools.ide.analysis.parfait</friend>
@@ -199,6 +198,7 @@
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>com.sun.tools.tuxedo.source</friend>
                 <friend>com.sun.tools.tuxedo.testrunner</friend>
+                <friend>org.netbeans.modules.cnd.analysis.api</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
@@ -218,8 +218,8 @@
                 <friend>org.netbeans.modules.cnd.simpleunit</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
+                <friend>org.netbeans.modules.mixeddev</friend>
                 <package>org.netbeans.modules.cnd.modelutil</package>
-                <package>org.netbeans.modules.cnd.modelutil.spi</package>
                 <package>org.netbeans.modules.cnd.modelutil.ui</package>
             </friend-packages>
         </data>
