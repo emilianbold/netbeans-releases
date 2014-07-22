@@ -229,7 +229,7 @@ public class InjectionPointParameterAnalyzer
             String scope = model.getScope(parent);
             if (scope != null && !AnnotationUtil.DEPENDENT.equals(scope)) {
                 result.addError(var, method, model, 
-                        "ERR_WrongQualifierInjectionPointMeta"); // NOI18N
+                        NbBundle.getMessage(InjectionPointParameterAnalyzer.class,"ERR_WrongQualifierInjectionPointMeta")); // NOI18N
             }
         }
         catch (CdiException e) {
