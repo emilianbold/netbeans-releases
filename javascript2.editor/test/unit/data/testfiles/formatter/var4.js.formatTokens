@@ -60,7 +60,7 @@ FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ASSIGNMENT_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=45, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=46, text=function, id=KEYWORD_FUNCTION}
-FormatToken{kind=BEFORE_FUNCTION_DECLARATION, offset=-1, text=null, id=null}
+FormatToken{kind=BEFORE_ANONYMOUS_FUNCTION_DECLARATION, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=54, text=(, id=BRACKET_LEFT_PAREN}
 FormatToken{kind=TEXT, offset=55, text=), id=BRACKET_RIGHT_PAREN}
 FormatToken{kind=WHITESPACE, offset=56, text= , id=WHITESPACE}

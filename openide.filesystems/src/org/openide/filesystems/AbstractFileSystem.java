@@ -273,8 +273,10 @@ public abstract class AbstractFileSystem extends FileSystem {
     /* Action for this filesystem.
     *
     * @return refresh action
+    * @deprecated actions should be provided by higher level parts of the
+    *   system, not something as low level as filesystems
     */
-    public SystemAction[] getActions() {
+    @Deprecated public SystemAction[] getActions() {
         if (!isEnabledRefreshFolder()) {
             return NO_SYSTEM_ACTIONS;
         } else {

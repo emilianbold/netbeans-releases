@@ -377,7 +377,8 @@ public class JsErrorManager extends ErrorManager {
 
         public ParserError(String message, int line, int column, long token) {
             if (message.length() > MAX_MESSAGE_LENGTH) {
-                this.message = message.substring(0, MAX_MESSAGE_LENGTH);
+                int index = message.indexOf('\n', MAX_MESSAGE_LENGTH);
+                this.message = message.substring(0, index > 0 ? index : MAX_MESSAGE_LENGTH);
                 LOGGER.log(Level.FINE, "Too long error message {0}", message);
             } else {
                 this.message = message;

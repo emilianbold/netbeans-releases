@@ -1,4 +1,4 @@
-var ByRadJS = (function(param) {
+var ByRadJS = (function (param) {
     'use strict';
     var that = {},
             modules = {

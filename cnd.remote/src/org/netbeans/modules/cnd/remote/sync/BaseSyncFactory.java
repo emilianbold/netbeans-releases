@@ -45,13 +45,13 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
 *
@@ -60,7 +60,7 @@ import org.openide.filesystems.FileObject;
 public abstract class BaseSyncFactory extends RemoteSyncFactory {
 
    @Override
-   public RemoteSyncWorker createNew(Project project, PrintWriter out, PrintWriter err) {
+   public RemoteSyncWorker createNew(Lookup.Provider project, PrintWriter out, PrintWriter err) {
        ExecutionEnvironment execEnv = RemoteProjectSupport.getExecutionEnvironment(project);
        if (execEnv.isRemote()) {
                    FileObject privateStorageFile = RemoteProjectSupport.getPrivateStorage(project);

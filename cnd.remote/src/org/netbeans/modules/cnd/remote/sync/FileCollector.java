@@ -187,7 +187,7 @@ import org.openide.util.Utilities;
         }
         logger.log(Level.FINE, "gathered %d files in %d ms", filesToFeed.size(), System.currentTimeMillis() - time);
         time = System.currentTimeMillis();
-        checkLinks(filesToFeed);
+        checkLinks();
         logger.log(Level.FINE, "checking links took %d ms", System.currentTimeMillis() - time);
 
         time = System.currentTimeMillis();
@@ -250,7 +250,7 @@ import org.openide.util.Utilities;
         }
     }
 
-    private void checkLinks(final List<FileInfo> filesToFeed) {
+    private void checkLinks() {
         if (Utilities.isWindows()) {
             return; // this is for Unixes only
         }

@@ -306,7 +306,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
     }
 
     public NetbeansActionMapping getProfileMappingForAction(String action, Project project, Map<String,String> replaceMap) {
-        return new NetbeansActionReader() {
+        NetbeansActionReader parsed = new NetbeansActionReader() {
             @Override
             protected String getRawMappingsAsString() {
                 NetbeansBuildActionXpp3Writer writer = new NetbeansBuildActionXpp3Writer();
@@ -331,7 +331,12 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
             protected Reader performDynamicSubstitutions(Map<String, String> replaceMap, String in) throws IOException {
                 return M2Configuration.this.performDynamicSubstitutions(replaceMap, in);
             }
-        }.getMappingForAction(reader, null, action, project, id, replaceMap);
+        };
+        NetbeansActionMapping ret = parsed.getMappingForAction(reader, LOG, action, project, id, replaceMap);
+        if (ret == null) {
+            ret = parsed.getMappingForAction(reader, LOG, action, project, null, replaceMap);
+        }
+        return ret;
     }
 
     public NetbeansActionMapping findMappingFor(Map<String, String> replaceMap, Project project, String actionName) {

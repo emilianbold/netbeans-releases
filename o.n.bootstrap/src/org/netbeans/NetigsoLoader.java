@@ -103,6 +103,11 @@ final class NetigsoLoader extends ClassLoader {
     }
     private ClassLoader getDelegate(long timeout) {
         if (!mi.isEnabled()) {
+            Util.err.log(Level.INFO, 
+                "OSGi is requesting adhoc start of {0}. This is inefficient. "
+              + "It is suggested turn the module on by default", 
+                mi.getCodeNameBase()
+            );
             Mutex.Privileged p = mi.getManager().mutexPrivileged();
             if (!p.tryWriteAccess(timeout)) {
                 return null;

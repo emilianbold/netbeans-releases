@@ -69,6 +69,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -138,20 +139,31 @@ public class RemoteFileUtil {
         }
     }
 
-    public static FileSystem getProjectSourceFileSystem(Project project) {
+    public static FileSystem getProjectSourceFileSystem(Lookup.Provider project) {
         if (project != null) {
-            try {
-                return project.getProjectDirectory().getFileSystem();
-            } catch (FileStateInvalidException ex) {
-                throw new IllegalStateException(ex);
+            RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
+            if (rp == null) {
+                return null;
+            }
+            FileObject projectDir = rp.getSourceBaseDirFileObject();
+            if (projectDir != null) {
+                try {
+                return projectDir.getFileSystem();
+                } catch (FileStateInvalidException ex) {
+                    throw new IllegalStateException(ex);
+                }
             }
         }
         return CndFileUtils.getLocalFileSystem();
     }
     
-    public static FileObject getProjectSourceBaseFileObject(Project project) {
+    public static FileObject getProjectSourceBaseFileObject(Lookup.Provider project) {
         if (project != null) {
-            return project.getProjectDirectory();
+            RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
+            if (rp == null) {
+                return null;
+            }
+            return rp.getSourceBaseDirFileObject();
         }
         return null;
     }

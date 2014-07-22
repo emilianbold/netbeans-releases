@@ -67,7 +67,6 @@ import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.discovery.performance.AnalyzeStat.AgregatedStat;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.Tracer;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -75,6 +74,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
@@ -438,7 +438,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
     }
 
-    private void processParseFinished(Project makeProject) {
+    private void processParseFinished(Lookup.Provider makeProject) {
         lock.writeLock().lock();
         try {
             if (fullAnalyze.get() == 0) {
@@ -874,7 +874,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     public void projectParsingFinished(CsmProject project) {
         Object platformProject = project.getPlatformProject();
         if (platformProject instanceof NativeProject) {
-            Project makeProject = (Project)((NativeProject)platformProject).getProject();
+            Lookup.Provider makeProject = ((NativeProject)platformProject).getProject();
             processParseFinished(makeProject);
         }
     }

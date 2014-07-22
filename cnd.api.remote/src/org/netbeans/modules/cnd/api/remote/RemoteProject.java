@@ -70,6 +70,13 @@ public interface RemoteProject {
      * @return 
      */
     String getSourceBaseDir();
-    
+
+    /**
+     * NB: since 8.01 this is the same as Project.getProjectDirectory()
+     * and is used to create a storage for timestamps, etc. when synchronizing
+     * TODO: rename appropriately
+     * 
+     * @return 
+     */
     FileObject getSourceBaseDirFileObject();
 }
