@@ -142,23 +142,26 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	}
 
 	public void startProgress(final boolean shortNames, final String hostname) {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                public void run() {
-                    if (StartProgressManager.super.startProgress(cancelListener, shortNames)) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                if (StartProgressManager.super.startProgress(cancelListener, shortNames)) {
                         phasedProgress().setCancelMsg(Catalog.get("CancelNoted"));// NOI18N
                         String msg;
                         if (hostname != null) {
                             msg = MessageFormat.format(Catalog.get("StartingDbgOn"),
                                                        hostname);
                         } else {
-                            msg = Catalog.get("StartingDbg");
-                        }
-                        phasedProgress().setMessageFor(0, msg, 0);
-                        phasedProgress().setVisible(true);
+                        msg = Catalog.get("StartingDbg");
                     }
+                    phasedProgress().setMessageFor(0, msg, 0);
+                    phasedProgress().setVisible(true);
                 }
-            });
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        startProgress(shortNames, hostname);
+                    }
+                });
+            }
 	}
 
 	@Override
