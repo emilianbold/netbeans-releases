@@ -46,6 +46,8 @@ package org.netbeans.modules.project.ui.actions;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
@@ -65,6 +67,9 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
     private String command;
     private FileActionPerformer performer;
     private final String namePattern;
+    
+    
+    private static final Logger LOG = Logger.getLogger(FileAction.class.getName());
     
     public FileAction(String command, String namePattern, Icon icon, Lookup lookup) {
         this( command, null, namePattern, icon, lookup );
@@ -116,15 +121,29 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
                             Collection<? extends DataObject> files = context.lookupAll(DataObject.class);
                             presenterName[0] = ActionsUtil.formatName(namePattern, files.size(),
                                     files.isEmpty() ? "" : files.iterator().next().getPrimaryFile().getNameExt()); // NOI18N
+                            
+                            if(LOG.isLoggable(Level.FINER)) {
+                                LOG.log(Level.FINER, "Enabling [{0}, {1}] for {2}. (no projects in lookup)", new Object[]{presenterName[0], enable[0], files.isEmpty() ? "no files" : files.iterator().next().getPrimaryFile()}); // NOI18N
+                            }
                         } else {
                             enable[0] = false; // Zero or more than one projects found or command not supported
                             presenterName[0] = ActionsUtil.formatName(namePattern, 0, "");
+                            
+                            if(LOG.isLoggable(Level.FINER)) {
+                                Collection<? extends DataObject> files = context.lookupAll(DataObject.class);
+                                LOG.log(Level.FINER, "Enabling [{0}, {1}] for {2}. (projects > 1 in lookup)", new Object[]{presenterName[0], enable[0], files.isEmpty() ? "no files" : files.iterator().next().getPrimaryFile()}); // NOI18N
+                            }
+                            
                         }
                     }
                     else {
                         FileObject[] files = ActionsUtil.getFilesFromLookup( context, projects[0] );
                         enable[0] = true;
                         presenterName[0] = ActionsUtil.formatName( namePattern, files.length, files.length > 0 ? files[0].getNameExt() : "" ); // NOI18N
+                        
+                        if(LOG.isLoggable(Level.FINER)) {
+                            LOG.log(Level.FINER, "Enabling [{0}, {1}] for {2}. (one project in lookup)", new Object[]{presenterName[0], enable[0], files.length == 0 ? "no files" : files[0]}); // NOI18N
+                        }
                     }
                 }
             };
@@ -137,9 +156,18 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
 
                         enable[0] = performer.enable(f);
                         presenterName[0] = ActionsUtil.formatName(namePattern, 1, f.getNameExt());
+                        
+                        if(LOG.isLoggable(Level.FINER)) {
+                            LOG.log(Level.FINER, "Enabling [{0}, {1}] for {2}.", new Object[]{presenterName[0], enable[0], f}); // NOI18N
+                        }
+                        
                     } else {
                         enable[0] = false;
                         presenterName[0] = ActionsUtil.formatName(namePattern, 0, ""); // NOI18N
+                        
+                        if(LOG.isLoggable(Level.FINER)) {
+                            LOG.log(Level.FINER, "Enabling [{0}, {1}]. (no dataobjects)", new Object[]{presenterName[0], enable[0]}); // NOI18N
+                        }
                     }
                     
                 }

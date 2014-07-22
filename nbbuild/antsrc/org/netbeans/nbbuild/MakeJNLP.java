@@ -45,6 +45,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -409,27 +410,6 @@ public class MakeJNLP extends Task {
             File signed = new File(new File(targetFile, dashcnb), jar.getName());
             File jnlp = new File(targetFile, dashcnb + ".jnlp");
             
-            if (jar.exists() && isSigned(jar) == null) {
-                try {
-                    tmpFile = extendLibraryManifest(getProject(), jar, signed, manifestCodebase, manifestPermissions, appName);
-                } catch (IOException ex) {
-                    getProject().log(
-                    "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
-                    Project.MSG_WARN);
-                } catch (ManifestException ex) {
-                    getProject().log(
-                    "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
-                    Project.MSG_WARN);
-                }
-            } else {
-                getProject().log(
-                    String.format(
-                        "Not adding security attributes into library: %s the library is already signed.",
-                        safeRelativePath(getProject().getBaseDir(),signed)),
-                    Project.MSG_WARN);
-            }
-
-            
             StringWriter writeJNLP = new StringWriter();
             writeJNLP.write("<?xml version='1.0' encoding='UTF-8'?>\n");
             writeJNLP.write("<!DOCTYPE jnlp PUBLIC \"-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN\" \"http://java.sun.com/dtd/JNLP-6.0.dtd\">\n");
@@ -478,7 +458,7 @@ public class MakeJNLP extends Task {
                         File localeTmpFile = null;
                         if (n.exists() && isSigned(n) == null) {
                             try {
-                                localeTmpFile = extendLibraryManifest(getProject(), n, t, manifestCodebase, manifestPermissions, appName);
+                                localeTmpFile = extendLibraryManifest(getProject(), n, t, manifestCodebase, manifestPermissions, appName, jnlp);
                             } catch (IOException ex) {
                                 getProject().log(
                                 "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
@@ -518,11 +498,30 @@ public class MakeJNLP extends Task {
             w.write(writeJNLP.toString());
             w.close();
 
+            if (jar.exists() && isSigned(jar) == null) {
+                try {
+                    tmpFile = extendLibraryManifest(getProject(), jar, signed, manifestCodebase, manifestPermissions, appName, jnlp);
+                } catch (IOException ex) {
+                    getProject().log(
+                    "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
+                    Project.MSG_WARN);
+                } catch (ManifestException ex) {
+                    getProject().log(
+                    "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
+                    Project.MSG_WARN);
+                }
+            } else {
+                getProject().log(
+                    String.format(
+                        "Not adding security attributes into library: %s the library is already signed.",
+                        safeRelativePath(getProject().getBaseDir(),signed)),
+                    Project.MSG_WARN);
+            }
+
             if (tmpFile != null) {
                 signOrCopy(tmpFile, signed);
                 deleteTmpFile(tmpFile);
-            }
-            else {
+            } else {
                 signOrCopy(jar, signed);
             }
             theJar.close();
@@ -536,7 +535,8 @@ public class MakeJNLP extends Task {
         final File signedJar,
         final String codebase,
         final String permissions,
-        final String appName) throws IOException, ManifestException {
+        final String appName,
+        final File jnlp) throws IOException, ManifestException {
         org.apache.tools.ant.taskdefs.Manifest manifest = null;
         Copy cp = new Copy();
         File tmpFile = new File(String.format("%s.tmp", signedJar.getAbsolutePath()));
@@ -585,6 +585,16 @@ public class MakeJNLP extends Task {
                     final Enumeration<? extends org.apache.tools.zip.ZipEntry> zent = zf.getEntries();
                     final ZipOutputStream out = new ZipOutputStream(tmpFile);
                     try {
+                        if (jnlp != null) {
+                            org.apache.tools.zip.ZipEntry jnlpEntry = new org.apache.tools.zip.ZipEntry("JNLP-INF/" + jnlp.getName());
+                            out.putNextEntry(jnlpEntry);
+                            FileInputStream fis = new FileInputStream(jnlp.getAbsolutePath());
+                            try {
+                                copy(fis, out);
+                            } finally {
+                                fis.close();
+                            }
+                        }
                         while (zent.hasMoreElements()) {
                             final org.apache.tools.zip.ZipEntry entry = zent.nextElement();
                             final InputStream in = zf.getInputStream(entry);
@@ -843,7 +853,7 @@ public class MakeJNLP extends Task {
             } else {
                 File tmpFile = null;
                 try {
-                    tmpFile = extendLibraryManifest(getProject(), e, ext, manifestCodebase, manifestPermissions, appName);
+                    tmpFile = extendLibraryManifest(getProject(), e, ext, manifestCodebase, manifestPermissions, appName, null);
                 } catch (IOException ex) {
                     getProject().log(
                     "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
