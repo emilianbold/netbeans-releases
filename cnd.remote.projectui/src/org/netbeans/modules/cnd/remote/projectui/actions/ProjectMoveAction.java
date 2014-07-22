@@ -101,4 +101,13 @@ public class ProjectMoveAction extends ProjectBaseAction {
     protected void preformAction(Project project) {
         DefaultProjectOperationsImplementation.moveProject(project);
     }
+
+    @Override
+    public boolean isEnabled(Project project) {
+        if (project != null) {
+            File file = FileUtil.toFile(project.getProjectDirectory());
+            return file != null;
+        }
+        return false;
+    }
 }

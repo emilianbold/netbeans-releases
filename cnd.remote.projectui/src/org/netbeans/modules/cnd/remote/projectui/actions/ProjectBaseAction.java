@@ -64,7 +64,6 @@ public abstract class ProjectBaseAction extends NodeAction {
     }
 
     protected abstract void preformAction(Project project);
-
     @Override
     public abstract String getName();
 
@@ -72,9 +71,15 @@ public abstract class ProjectBaseAction extends NodeAction {
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length == 1) {
             Project project = (Project) activatedNodes[0].getValue("Project"); // NOI18N
-            return project != null;
+            if (project != null) {
+                return isEnabled(project);
+            }
         }
         return false;
+    }
+
+    protected boolean isEnabled(Project project) {
+        return true;
     }
 
     @Override
