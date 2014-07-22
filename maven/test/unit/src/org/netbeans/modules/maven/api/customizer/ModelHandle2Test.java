@@ -118,5 +118,34 @@ public class ModelHandle2Test extends NbTestCase {
         assertEquals("One goal", 1, run.getGoals().size());
         assertEquals("jetty:run", run.getGoals().get(0));
     }
+    
+    public void testConfigInOneFileFallbacksToBaseProfile() throws Exception { // #229192
+        TestFileUtils.writeFile(d, "pom.xml", "<project><modelVersion>4.0.0</modelVersion><groupId>g</groupId><artifactId>a</artifactId><version>0</version><profiles><profile><id>jetty</id></profile></profiles></project>");
+        TestFileUtils.writeFile(d, "nbactions.xml", "<actions><action><actionName>debug</actionName><displayName>DbgJtt</displayName><goals><goal>package</goal></goals></action>" +
+            "<profiles><profile><id>jetty</id><actions><action><displayName>Jetty</displayName>"
+                + "<actionName>run</actionName><goals><goal>jetty:run</goal></goals>"
+                + "<properties><someprop>v</someprop></properties></action>"
+                + "</actions></profile></profiles>"
+                + "</actions>");
+        Project project = ProjectManager.getDefault().findProject(d);
+        M2ConfigProvider cp = project.getLookup().lookup(M2ConfigProvider.class);
+        M2Configuration conf = null;
+        for (M2Configuration c : cp.getConfigurations()) {
+            if (c.getId().equals("jetty")) {
+                cp.setActiveConfiguration(c);
+                conf = c;
+                break;
+            }
+        }
+        assertNotNull("Configuration found", conf);
+        assertEquals("jetty", cp.getActiveConfiguration().getId());
+        NetbeansActionMapping mapp = ModelHandle2.getMapping("debug", project, cp.getActiveConfiguration());
+        assertNotNull(mapp);
+        assertEquals("DbgJtt", mapp.getDisplayName());
+        
+        RunConfig run = conf.createConfigForDefaultAction("debug", project, project.getLookup());
+        assertEquals("One goal", 1, run.getGoals().size());
+        assertEquals("package", run.getGoals().get(0));
+    }
 
 }
