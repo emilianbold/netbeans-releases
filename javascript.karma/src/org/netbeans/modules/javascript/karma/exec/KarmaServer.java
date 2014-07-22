@@ -101,6 +101,7 @@ public final class KarmaServer implements PropertyChangeListener {
     private volatile File netBeansKarmaReporter = null;
     private volatile File netBeansKarmaConfig = null;
     private volatile URL debugUrl = null;
+    private volatile KarmaRunInfo karmaRunInfo = null;
 
 
     KarmaServer(int port, Project project) {
@@ -127,7 +128,7 @@ public final class KarmaServer implements PropertyChangeListener {
             fireChange();
             return false;
         }
-        KarmaRunInfo karmaRunInfo = getKarmaRunInfo();
+        karmaRunInfo = getKarmaRunInfo();
         if (karmaRunInfo == null) {
             // some error
             return false;
@@ -171,6 +172,7 @@ public final class KarmaServer implements PropertyChangeListener {
         stopCoverageWatcher();
         removeCoverageListener();
         removeConfigFileListener();
+        karmaRunInfo = null;
         if (server == null) {
             return;
         }
@@ -212,6 +214,13 @@ public final class KarmaServer implements PropertyChangeListener {
 
     public Project getProject() {
         return project;
+    }
+
+    public boolean isAbsoluteUrls() {
+        if (karmaRunInfo == null) {
+            return false;
+        }
+        return karmaRunInfo.isAbsoluteUrls();
     }
 
     private synchronized void openDebugUrl() {

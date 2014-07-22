@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.exec.KarmaServers;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
@@ -113,13 +114,23 @@ public final class ServerMapping {
             return null;
         }
         assert serverUrl.endsWith("/") : serverUrl;
+        if (KarmaServers.getInstance().isAbsoluteUrls(project)) {
+            return createAbsoluteUrl(serverUrl, projectFile);
+        }
         FileObject projectDirectory = project.getProjectDirectory();
         // try relative first
         String filePath = FileUtil.getRelativePath(projectDirectory, projectFile);
         if (filePath != null) {
             return createUrl(serverUrl, BASE_PREFIX, filePath);
         }
-        // now absolute (tests outside project folder)
+        // now absolute (tests or web root outside project folder)
+        // web root first
+        for (FileObject webRoot : ProjectWebRootQuery.getWebRoots(project)) {
+            if (isUnderneath(webRoot, projectFile)) {
+                return createAbsoluteUrl(serverUrl, projectFile);
+            }
+        }
+        // now tests
         FileObject testsFolder = getTestsFolder(project);
         if (testsFolder == null) {
             // no tests
@@ -130,14 +141,20 @@ public final class ServerMapping {
             return null;
         }
         if (isUnderneath(testsFolder, projectFile)) {
-            filePath = FileUtil.toFile(projectFile).getAbsolutePath();
-            if (filePath.startsWith("/")) { // NOI18N
-                // remove leading slash
-                filePath = filePath.substring(1);
-            }
-            return createUrl(serverUrl, ABSOLUTE_PREFIX, filePath);
+            return createAbsoluteUrl(serverUrl, projectFile);
         }
         return null;
+    }
+
+    private URL createAbsoluteUrl(String server, FileObject file) {
+        assert server.endsWith("/") : server;
+        assert file != null;
+        String filePath = FileUtil.toFile(file).getAbsolutePath();
+        if (filePath.startsWith("/")) { // NOI18N
+            // remove leading slash
+            filePath = filePath.substring(1);
+        }
+        return createUrl(server, ABSOLUTE_PREFIX, filePath);
     }
 
     private URL createUrl(String server, String prefix, String filePath) {
