@@ -561,7 +561,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
 
     public static void moveOccurrence(JsObjectImpl original, JsObject created) {
-        original.addOccurrence(created.getDeclarationName().getOffsetRange());
+        original.addOccurrence(created.getDeclarationName() != null ? created.getDeclarationName().getOffsetRange(): OffsetRange.NONE);
         for (Occurrence occur : created.getOccurrences()) {
             original.addOccurrence(occur.getOffsetRange());
         }

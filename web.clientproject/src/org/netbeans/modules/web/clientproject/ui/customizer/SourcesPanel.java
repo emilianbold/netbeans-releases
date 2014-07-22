@@ -89,7 +89,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void init() {
         jProjectFolderTextField.setText(FileUtil.getFileDisplayName(project.getProjectDirectory()));
-        jSiteRootFolderTextField.setText(getSiteRootPath());
+        jSiteRootFolderTextField.setText(beautifyPath(getSiteRootPath()));
         jTestFolderTextField.setText(beautifyPath(uiProperties.getTestFolder()));
         configTextField.setText(beautifyPath(uiProperties.getConfigFolder()));
         jEncodingComboBox.setModel(ProjectCustomizer.encodingModel(uiProperties.getEncoding()));
