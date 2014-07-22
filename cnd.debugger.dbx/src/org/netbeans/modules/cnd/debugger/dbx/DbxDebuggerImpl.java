@@ -2069,17 +2069,18 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
             if (i.rhs_vdl != null && i.flags == 0) {
                 w.setRHS(i.rhs, i.rhs_vdl, true); // should give accurate Leaf setting
-		if (i.plain_lhs != null) {
-		    w.setVariableName(i.plain_lhs); // could be watch replace
-                    // also update the one in debuggercore
-                    NativeWatch nativeWatch = w.getNativeWatch(); 
-                    nativeWatch.setExpression(i.plain_lhs);
-                    nativeWatch.replacedWith(null);
-                }
             } else {
                 w.setChildren(null, null, true);
                 w.setLeaf(true);
                 w.setAsText(variableErrorCode(items[wx].flags));
+            }
+            
+            if (i.plain_lhs != null) {
+                w.setVariableName(i.plain_lhs); // could be watch replace
+                // also update the one in debuggercore
+                NativeWatch nativeWatch = w.getNativeWatch();
+                nativeWatch.setExpression(i.plain_lhs);
+                nativeWatch.replacedWith(null);
             }
         }
 
