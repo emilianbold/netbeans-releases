@@ -248,7 +248,6 @@ public final class Atoum {
         List<String> params = new ArrayList<>();
         addBootstrap(phpModule, params);
         addConfiguration(phpModule, params);
-        params.add(TAP_FORMAT_PARAM);
         if (coverageEnabled) {
             if (phar) {
                 params.add(USE_PARAM);
@@ -279,6 +278,7 @@ public final class Atoum {
             params.add(String.format(IDE_KEY_PARAM, Lookup.getDefault().lookup(PhpOptions.class).getDebuggerSessionId()));
         }
         addStartFile(runInfo, params);
+        params.add(TAP_FORMAT_PARAM);
         atoum.additionalParameters(params);
         // run
         if (coverageEnabled) {
