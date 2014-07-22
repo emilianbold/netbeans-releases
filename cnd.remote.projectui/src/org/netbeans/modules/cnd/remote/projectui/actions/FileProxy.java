@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.remote.projectui.actions;
 
 import java.io.File;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -173,18 +172,30 @@ public abstract class FileProxy {
                 FileObject parent = base.getParent();
                 return (parent == null) ? null : new FileProxyFileObject(parent, ""); //NOI18N
             }
-            String parentPath = PathUtilities.getBaseName(relPath);
-            if (relPath.equals(parentPath)) {
-                // For an unknown reason PathUtilities.getBaseName return the path itself
-                // in the case there is no parent. Fixing this needs a thoroughfull investigation,
-                // so using a simple and stupid workaround
-                return null;
-            }
+            String parentPath = getParentPath(relPath);
             if (isEmptyPath(relPath)) {
                 return new FileProxyFileObject(base, ""); //NOI18N
             } else {
                 return new FileProxyFileObject(base, parentPath);
             }
+        }
+
+        private String getParentPath(String path) {
+            if (path != null) {
+                if (path.endsWith("/")) { //NOI18N
+                    path = path.substring(0, path.length() - 1);
+                }
+                // ignore trailing slashes
+                int fromIndex = path.length() - 1;
+                while (fromIndex >= 0 && path.charAt(fromIndex) == '/') {
+                    fromIndex--;
+                }
+                int sep = path.lastIndexOf('/', fromIndex);
+                if (sep != -1) {
+                    return path.substring(0, sep);
+                }
+            }
+            return null;
         }
 
         @Override
