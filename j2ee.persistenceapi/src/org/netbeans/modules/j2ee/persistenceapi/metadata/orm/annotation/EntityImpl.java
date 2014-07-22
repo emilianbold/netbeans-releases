@@ -49,8 +49,12 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.JavaContextListener;
@@ -114,7 +118,19 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
         // when a client looking the entity mapped to a specific table iterates
         // over all entities calling getTable().
         // XXX locale?
-        table = new TableImpl(helper, annByType.get("javax.persistence.Table"), name.toUpperCase()); // NOI18N
+        AnnotationMirror tableAnn = annByType.get("javax.persistence.Table");//NOI18N
+        if(tableAnn == null) {
+            TypeMirror superclass = typeElement.getSuperclass();
+            while(superclass!=null && superclass.getKind() == TypeKind.DECLARED && tableAnn == null) {
+                Map<String, ? extends AnnotationMirror> annotationsByType = helper.getAnnotationsByType( ((DeclaredType)superclass).asElement().getAnnotationMirrors());
+                if(annotationsByType.containsKey("javax.persistence.Entity") || annotationsByType.containsKey("javax.persistence.MappedSuperclass")) {//NOI18N
+                    tableAnn = annotationsByType.get("javax.persistence.Table");//NOI18N
+                } else {
+                    break;
+                }
+            }
+        }
+        table = new TableImpl(helper, tableAnn, name.toUpperCase()); // NOI18N
         //fill named queries
         AnnotationMirror nqsAnn = annByType.get("javax.persistence.NamedQueries");// NOI18N
         ArrayList<AnnotationMirror> nqAnn = null;
