@@ -92,6 +92,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
@@ -378,7 +379,7 @@ public class FormatVisitor extends DefaultVisitor {
                     }
                 } else if (path.size() > 1 && !(parent instanceof ForStatement)) {
                     VariableBase leftHandSide = node.getLeftHandSide();
-                    if (leftHandSide instanceof Variable || leftHandSide instanceof FieldAccess) {
+                    if (leftHandSide instanceof Variable || leftHandSide instanceof FieldAccess || leftHandSide instanceof StaticFieldAccess) {
                         handleGroupAlignment(leftHandSide);
                     }
                 }
