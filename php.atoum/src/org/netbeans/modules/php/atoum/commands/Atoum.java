@@ -246,8 +246,6 @@ public final class Atoum {
         PhpExecutable atoum = getExecutable(command, phpModule, getOutputTitle(runInfo));
         // params
         List<String> params = new ArrayList<>();
-        addBootstrap(phpModule, params);
-        addConfiguration(phpModule, params);
         if (coverageEnabled) {
             if (phar) {
                 params.add(USE_PARAM);
@@ -279,6 +277,8 @@ public final class Atoum {
         }
         addStartFile(runInfo, params);
         params.add(TAP_FORMAT_PARAM);
+        addBootstrap(phpModule, params);
+        addConfiguration(phpModule, params);
         atoum.additionalParameters(params);
         // run
         if (coverageEnabled) {
