@@ -45,11 +45,14 @@ import java.util.Arrays;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.spi.DeclarationFinder;
+import org.netbeans.modules.javascript2.requirejs.RequireJsPreferences;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 
@@ -60,11 +63,25 @@ import org.openide.filesystems.FileObject;
 @DeclarationFinder.Registration(priority = 12)
 public class RequireJsDeclarationFinder implements DeclarationFinder {
 
+    private boolean isSupportEnabled(FileObject fo) {
+        if (fo == null) {
+            return false;
+        }
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return false;
+        }
+        return RequireJsPreferences.getBoolean(project, RequireJsPreferences.ENABLED);
+    }
+    
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(info.getSnapshot().getTokenHierarchy(), caretOffset);
         FileObject fo = info.getSnapshot().getSource().getFileObject();
-        if (ts != null && fo != null) {
+        if (!isSupportEnabled(fo)) {
+            return DeclarationLocation.NONE;
+        }
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(info.getSnapshot().getTokenHierarchy(), caretOffset);
+        if (ts != null) {
             ts.move(caretOffset);
             if (ts.moveNext() && ts.token().id() == JsTokenId.STRING && EditorUtils.isFileReference(info.getSnapshot(), ts.offset())) {
                 ts.move(caretOffset);
@@ -125,7 +142,7 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
         final OffsetRange[] value = new OffsetRange[1];
         value[0] = OffsetRange.NONE;
-
+        
         doc.render(new Runnable() {
 
             @Override
