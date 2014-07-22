@@ -62,6 +62,7 @@ public final class EarlyHandler extends Handler {
     final Queue<LogRecord> earlyRecords = new ArrayDeque<>();
     private final Runnable installerRestore = new InstallerRestore();
     private volatile boolean isOn = true;
+    private Installer installerHandle;
     
     public EarlyHandler() {
         setLevel(Level.ALL);
@@ -84,6 +85,11 @@ public final class EarlyHandler extends Handler {
             }
         }
     }
+    
+    static void forgetInstallerHandle() {
+        EarlyHandler eh = Lookup.getDefault().lookup(EarlyHandler.class);
+        eh.installerHandle = null;
+    }
 
     @Override
     public void flush() {
@@ -103,6 +109,11 @@ public final class EarlyHandler extends Handler {
         public void run() {
             Installer installer = Installer.findObject(Installer.class, true);
             installer.restored(earlyRecords);
+            // We have decided to restore the installer. We must hold it's instance,
+            // so that it's not GC'ed. If it is GC'ed, it'd be restored again,
+            // after the module loads,
+            // which would register the log handlers for the second time.
+            installerHandle = installer;
         }
     }
 }
