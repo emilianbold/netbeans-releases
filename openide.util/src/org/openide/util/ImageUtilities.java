@@ -667,10 +667,11 @@ public final class ImageUtilities {
             }
             str.append(toolTip);
         }
+        Object firstUrl = image1.getProperty("url", null);
         
         ColorModel model = colorModel(bitmask? Transparency.BITMASK: Transparency.TRANSLUCENT);
         ToolTipImage buffImage = new ToolTipImage(str.toString(), 
-                model, model.createCompatibleWritableRaster(w, h), model.isAlphaPremultiplied(), null, null
+                model, model.createCompatibleWritableRaster(w, h), model.isAlphaPremultiplied(), null, firstUrl instanceof URL ? (URL)firstUrl : null
             );
 
         java.awt.Graphics g = buffImage.createGraphics();
@@ -818,6 +819,10 @@ public final class ImageUtilities {
             ColorModel model = colorModel(bitmask ? Transparency.BITMASK : Transparency.TRANSLUCENT);
             int w = image.getWidth(null);
             int h = image.getHeight(null);
+            if (url == null) {
+                Object value = image.getProperty("url", null);
+                url = (value instanceof URL) ? (URL) value : null;
+            }            
             ToolTipImage newImage = new ToolTipImage(
                 toolTipText,
                 model,
@@ -871,6 +876,12 @@ public final class ImageUtilities {
                 if (url != null) {
                     return url;
                 } else {
+                    if (imageIcon == null) {
+                        return null;
+                    }
+                    if (imageIcon.getImage() == this) {
+                        return null;
+                    }
                     return imageIcon.getImage().getProperty("url", observer);
                 }
             }
