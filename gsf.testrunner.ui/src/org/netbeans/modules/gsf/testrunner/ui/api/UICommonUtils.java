@@ -44,9 +44,9 @@ package org.netbeans.modules.gsf.testrunner.ui.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -79,7 +79,7 @@ public class UICommonUtils {
             final Node node = nodes[i];
             final FileObject fo;
             if (!hasParentAmongNodes(nodes, i)
-                    && ((fo = getTestFileObject(node, true)) != null)) {
+                    && ((fo = getFileObject(node, true)) != null)) {
                 if (fileObjects != null) {
                     fileObjects[i] = fo;
                 } else {
@@ -136,7 +136,7 @@ public class UICommonUtils {
         "MSG_file_from_node_failed=File cannot be found for selected node: {0}.",
         "# {0} - source file",
         "MSG_no_project=Source file {0} does not belong to any project."})
-    private static FileObject getTestFileObject(final Node node, boolean justLogIt) {
+    private static FileObject getFileObject(final Node node, boolean justLogIt) {
         final FileObject fo = getFileObjectFromNode(node);
         if (fo == null) {
 //            if(justLogIt) {
@@ -146,8 +146,8 @@ public class UICommonUtils {
 //            }
             return null;
         }
-        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        if (cp == null) {
+        Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner == null) {
 //            if(justLogIt) {
 //                LOG.info(Bundle.MSG_no_project(fo));
 //            } else {
