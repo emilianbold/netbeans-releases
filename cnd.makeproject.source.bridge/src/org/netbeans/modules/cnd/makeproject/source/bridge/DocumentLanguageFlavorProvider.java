@@ -146,7 +146,8 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 break;
             case C_HEADER:
                 language = CppTokenId.languageHeader();
-                if (nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11) {
+                if (nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11 ||
+                    nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP14) {
                     filter = CndLexerUtilities.getHeaderCpp11Filter();
                 } else {
                     filter = CndLexerUtilities.getHeaderCppFilter();
@@ -154,7 +155,8 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 break;
             case CPP:
                 language = CppTokenId.languageCpp();
-                if (nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11) {
+                if (nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11 ||
+                    nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP14) {
                     filter = CndLexerUtilities.getGccCpp11Filter();
                 } else {
                     filter = CndLexerUtilities.getGccCppFilter();

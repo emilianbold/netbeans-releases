@@ -47,12 +47,10 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,7 +60,6 @@ import static org.netbeans.modules.cnd.api.model.CsmClassifier.SIZEOF_UNKNOWN;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.*;
-import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFile.FileType;
@@ -73,10 +70,8 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
-import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileLanguageProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -91,9 +86,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.utils.Antiloop;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.lookup.Lookups;
 
@@ -182,7 +175,8 @@ public class Utils {
     }
 
     public static String getLanguageFlavor(NativeFileItem.LanguageFlavor flavor) {
-        if (flavor == NativeFileItem.LanguageFlavor.CPP11) {
+        if (flavor == NativeFileItem.LanguageFlavor.CPP11 ||
+            flavor == NativeFileItem.LanguageFlavor.CPP14) {
             return APTLanguageSupport.FLAVOR_CPP11;
         } 
         return APTLanguageSupport.FLAVOR_UNKNOWN;

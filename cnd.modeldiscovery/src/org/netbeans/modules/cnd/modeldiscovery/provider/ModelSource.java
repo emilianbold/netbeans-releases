@@ -385,6 +385,7 @@ public class ModelSource implements SourceFileProperties {
             case C11: return LanguageStandard.C11;
             case CPP: return LanguageStandard.CPP;
             case CPP11: return LanguageStandard.CPP11;
+            case CPP14: return LanguageStandard.CPP14;
             case DEFAULT: return LanguageStandard.Default;
             case F77: return LanguageStandard.F77;
             case F90: return LanguageStandard.F90;

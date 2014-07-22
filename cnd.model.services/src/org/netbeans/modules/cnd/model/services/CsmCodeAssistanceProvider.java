@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.model.services;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
@@ -51,6 +52,8 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.project.CodeAssistance;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -58,6 +61,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Pair;
 
 /**
  *
@@ -93,6 +97,32 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
             }
         }
         return State.NotParsed;
+    }
+
+    @Override
+    public Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> getStartFileLanguageFlavour(NativeFileItem item) {
+        CsmFile csmFile = CsmUtilities.getCsmFile(item, false, false);
+        if (csmFile != null) {
+            Collection<CsmCompilationUnit> compilationUnits = CsmFileInfoQuery.getDefault().getCompilationUnits(csmFile, 0);
+            if (!compilationUnits.isEmpty()) {
+                CsmCompilationUnit firstCU = compilationUnits.iterator().next();
+                CsmFile startFile = firstCU.getStartFile();
+                Object platformProject = startFile.getProject().getPlatformProject();
+                if (platformProject instanceof NativeProject) {
+                    NativeProject np = (NativeProject) platformProject;
+                    NativeFileItem ni = np.findFileItem(startFile.getFileObject());
+                    if (ni != null && ni != item && startFile.isSourceFile()) {
+                        return Pair.of(ni.getLanguage(), ni.getLanguageFlavor());
+                    }
+                }
+            }
+            if (csmFile.isHeaderFile()) {
+                return Pair.of(NativeFileItem.Language.C_HEADER, NativeFileItem.LanguageFlavor.UNKNOWN);
+            } else if (csmFile.isSourceFile()) {
+                return Pair.of(NativeFileItem.Language.CPP, NativeFileItem.LanguageFlavor.UNKNOWN);
+            } 
+        }
+        return Pair.of(NativeFileItem.Language.OTHER, NativeFileItem.LanguageFlavor.UNKNOWN);
     }
     
     @Override

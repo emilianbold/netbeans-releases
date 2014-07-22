@@ -789,19 +789,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     res.userMacros = userMacros;
                     res.undefinedMacros = artifacts.undefinedMacros;
                     res.importantFlags = artifacts.getImportantFlags();
-                    for(String lang : artifacts.languageArtifacts) {
-                        if ("c89".equals(lang)) { //NOI18N
-                            res.standard = ItemProperties.LanguageStandard.C89;
-                        } else if ("c99".equals(lang)) { //NOI18N
-                            res.standard = ItemProperties.LanguageStandard.C99;
-                        } else if ("c11".equals(lang)) { //NOI18N
-                            res.standard = ItemProperties.LanguageStandard.C11;
-                        } else if ("c++98".equals(lang)) { //NOI18N
-                            res.standard = ItemProperties.LanguageStandard.CPP;
-                        } else if ("c++11".equals(lang)) { //NOI18N
-                            res.standard = ItemProperties.LanguageStandard.CPP11;
-                        } 
-                    }
+                    res.standard = artifacts.getLanguageStandard(res.standard);
                     if (storage != null) {
                         StringBuilder buf = new StringBuilder();
                         for (String s : args) {
