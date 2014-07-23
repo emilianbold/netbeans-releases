@@ -670,7 +670,11 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             setShowOverriding(!isShowOverriding);
             model.update();
         }
+
+        @Override
+        public void doEDTAction() {
         
+        }
 
         @Override
         public final JMenuItem getPopupPresenter() {
