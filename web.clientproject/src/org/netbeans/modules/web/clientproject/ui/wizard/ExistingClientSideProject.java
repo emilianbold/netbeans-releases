@@ -80,7 +80,6 @@ public class ExistingClientSideProject extends JPanel {
     String lastSiteRoot = ""; // NOI18N
     // @GuardedBy("EDT")
     String lastProjectName = ""; // NOI18N
-    volatile String configDir = null;
     volatile String testDir = null;
 
 
@@ -133,10 +132,6 @@ public class ExistingClientSideProject extends JPanel {
 
     public String getProjectDirectory() {
         return projectDirectoryTextField.getText().trim();
-    }
-
-    public String getConfigDir() {
-        return configDir;
     }
 
     public String getTestDir() {
@@ -271,7 +266,6 @@ public class ExistingClientSideProject extends JPanel {
         if (detector.detected()) {
             projectNameTextField.setText(detector.getName());
             projectDirectoryTextField.setText(detector.getProjectDirPath());
-            configDir = detector.getConfigDirPath();
             testDir = detector.getTestDirPath();
         } else {
             resetDetectedValues();
@@ -279,7 +273,6 @@ public class ExistingClientSideProject extends JPanel {
     }
 
     void resetDetectedValues() {
-        configDir = null;
         testDir = null;
     }
 

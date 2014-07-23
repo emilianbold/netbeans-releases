@@ -42,8 +42,6 @@
 package org.netbeans.modules.web.clientproject.node;
 
 import java.awt.Image;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collections;
 import java.util.Comparator;
@@ -55,9 +53,9 @@ import java.util.TreeMap;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
@@ -80,7 +78,6 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 @NodeFactory.Registration(projectType = "org-netbeans-modules-web-clientproject", position = 520)
@@ -91,7 +88,9 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     private static final String OPENED_ICON_KEY_UIMANAGER = "Tree.openIcon"; // NOI18N
     private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; // NOI18N
     private static final String OPENED_ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.openedIcon"; // NOI18N
+    @StaticResource
     private static final String ICON_PATH = "org/netbeans/modules/web/clientproject/resources/defaultFolder.gif"; // NOI18N
+    @StaticResource
     private static final String OPENED_ICON_PATH = "org/netbeans/modules/web/clientproject/resources/defaultFolderOpen.gif"; // NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(ImportantFilesNodeFactory.class.getName());
@@ -132,16 +131,9 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                     FileUtil.addFileChangeListener(listener, f);
                 }
             }
-            String config = project.getEvaluator().evaluate(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
-            if (config!=null) {
-                File f = FileUtil.normalizeFile(new File(project.getProjectDirectory().getPath() + "/" + config));                
-                FileUtil.addFileChangeListener(listener, f);
-        }
-            project.getEvaluator().addPropertyChangeListener(
-                    WeakListeners.propertyChange(listener, project.getEvaluator()));
         }
         
-        private class Listener extends FileChangeAdapter implements PropertyChangeListener {            
+        private class Listener extends FileChangeAdapter {            
 
             public Listener() {
             }
@@ -167,23 +159,6 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 changeSupport.fireChange();
             }
             
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (ClientSideProjectConstants.PROJECT_CONFIG_FOLDER.equals(evt.getPropertyName())) {
-                    File f = FileUtil.normalizeFile(new File(project.getProjectDirectory().getPath() + "/" + evt.getOldValue()));                
-                    try {
-                        FileUtil.removeFileChangeListener(listener, f);
-                    } catch (IllegalArgumentException iae) {
-                        //was not listening. Ignore
-        }        
-                    f = FileUtil.normalizeFile(new File(project.getProjectDirectory().getPath() + "/" + evt.getNewValue()));                
-                    FileUtil.addFileChangeListener(listener, f);
-                    changeSupport.fireChange();
-                    if (importantFilesNode !=null) {
-                        ((ImportantFilesChildren) importantFilesNode.getChildren()).refreshKeys();
-                    }
-                }
-            }
         }        
 
         public List<String> keys() {
@@ -230,9 +205,6 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                     return true;
                 }
             }
-            if (project.getConfigFolder() != null && project.getConfigFolder().getChildren().length > 0) {
-                return true;
-            }
             return false;
         }
     }
@@ -244,6 +216,8 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     static final class ImportantFilesNode extends AnnotatedNode {
 
         private static final String DISPLAY_NAME = NbBundle.getMessage(ImportantFilesNode.class, "LBL_important_files");
+        @StaticResource
+        private static final String NODE_ICON = "org/netbeans/modules/web/clientproject/resources/config-badge.gif"; // NOI18N
 
         public ImportantFilesNode(ClientSideProject project) {
             this(project, new ImportantFilesChildren(project));
@@ -260,7 +234,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
 
         private Image getIcon(boolean opened) {
-            Image badge = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/resources/config-badge.gif", true);
+            Image badge = ImageUtilities.loadImage(NODE_ICON, true);
             return ImageUtilities.mergeImages(getTreeFolderIcon(opened), badge, 8, 8);
         }
 
@@ -467,18 +441,6 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 FileObject file = project.getProjectDirectory().getFileObject(loc);
                 if (file != null && loc.equals(FileUtil.getRelativePath(project.getProjectDirectory(), file))) {
                     files.put(file, loc);
-                }
-            }
-
-            if (project.getConfigFolder() != null) {
-                for (FileObject f : project.getConfigFolder().getChildren()) {
-                    String name = FileUtil.getRelativePath(project.getProjectDirectory(), f);
-                    if (name==null) {
-                        //for files outside of project directory show only 
-                        //simple name
-                        name = f.getNameExt();
-                    }
-                    files.put(f, name);
                 }
             }
 

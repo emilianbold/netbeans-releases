@@ -93,7 +93,6 @@ public class AngularJSPhoneCat extends OnlineSampleWizardIterator {
         public void configure(CreateProjectProperties projectProperties) {
             projectProperties.setSiteRootFolder("app") // NOI18N
                     .setTestFolder("test") // NOI18N
-                    .setConfigFolder("config") // NOI18N
                     .setJsTestingProvider("Karma"); // NOI18N
         }
 
