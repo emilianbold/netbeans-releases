@@ -58,6 +58,7 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.project.CodeAssistance;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
@@ -146,8 +147,8 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 break;
             case C_HEADER:
                 language = CppTokenId.languageHeader();
-                if (nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11 ||
-                    nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP14) {
+                if (getLanguageFlavor(nfi) == NativeFileItem.LanguageFlavor.CPP11 ||
+                    getLanguageFlavor(nfi) == NativeFileItem.LanguageFlavor.CPP14) {
                     filter = CndLexerUtilities.getHeaderCpp11Filter();
                 } else {
                     filter = CndLexerUtilities.getHeaderCppFilter();
@@ -155,8 +156,8 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 break;
             case CPP:
                 language = CppTokenId.languageCpp();
-                if (nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11 ||
-                    nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP14) {
+                if (getLanguageFlavor(nfi) == NativeFileItem.LanguageFlavor.CPP11 ||
+                    getLanguageFlavor(nfi) == NativeFileItem.LanguageFlavor.CPP14) {
                     filter = CndLexerUtilities.getGccCpp11Filter();
                 } else {
                     filter = CndLexerUtilities.getGccCppFilter();
@@ -171,6 +172,18 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         doc.putProperty(Language.class, language);
         InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
         lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
+    }
+
+    private static LanguageFlavor getLanguageFlavor(NativeFileItem nfi) {
+        LanguageFlavor flavor = nfi.getLanguageFlavor();
+        if (flavor == LanguageFlavor.UNKNOWN) {
+            // Ask flavor of first start compilation unit.
+            CodeAssistance CAProvider = Lookup.getDefault().lookup(CodeAssistance.class);
+            if (CAProvider != null) {
+                flavor = CAProvider.getStartFileLanguageFlavour(nfi).second();
+            }
+        }    
+        return flavor;
     }
 
     private static void rebuildTH(final StyledDocument doc) {
@@ -212,7 +225,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
             this.path = nativeFileItem.getAbsolutePath();
             NativeProject nativeProject = nativeFileItem.getNativeProject();
             this.prjRef = new WeakReference<NativeProject>(nativeProject);
-            this.languageFlavor = nativeFileItem.getLanguageFlavor();
+            this.languageFlavor = getLanguageFlavor(nativeFileItem);
             if (nativeProject != null) {
                 nativeProject.addProjectItemsListener(ListenerImpl.this);
             } else {
@@ -269,7 +282,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                     return;
                 }
                 if (TRACE) System.err.println(path + " Item Listener " + System.identityHashCode(this));
-                LanguageFlavor newFlavor = fileItem.getLanguageFlavor();
+                LanguageFlavor newFlavor = getLanguageFlavor(fileItem);
                 if (!languageFlavor.equals(newFlavor)) {
                     setLanguage(fileItem, doc);
                     languageFlavor = newFlavor;
