@@ -62,7 +62,7 @@ import org.openide.util.actions.SystemAction;
  * icon.
  *
  * @author Michal Mocnak
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyItemNode extends AbstractNode {
 

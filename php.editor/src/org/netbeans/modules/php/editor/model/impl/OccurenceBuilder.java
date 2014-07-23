@@ -220,7 +220,6 @@ class OccurenceBuilder {
         if (canBePrepared(statement, scope)) {
             ASTNodeInfo<GotoStatement> node = ASTNodeInfo.create(statement);
             gotoStatement.put(node, scope);
-
         }
     }
 
@@ -228,7 +227,6 @@ class OccurenceBuilder {
         if (canBePrepared(label, scope)) {
             ASTNodeInfo<GotoLabel> node = ASTNodeInfo.create(label);
             gotoLabel.put(node, scope);
-
         }
     }
 
@@ -236,7 +234,6 @@ class OccurenceBuilder {
         if (canBePrepared(fieldAccess, scope)) {
             ASTNodeInfo<FieldAccess> node = ASTNodeInfo.create(fieldAccess);
             fieldInvocations.put(node, scope);
-
         }
     }
 
@@ -244,7 +241,6 @@ class OccurenceBuilder {
         if (canBePrepared(incl, inclImpl)) {
             IncludeInfo node = IncludeInfo.create(incl);
             includes.put(node, inclImpl);
-
         }
     }
 
@@ -252,7 +248,6 @@ class OccurenceBuilder {
         if (canBePrepared(methodInvocation, scope)) {
             ASTNodeInfo<MethodInvocation> node = ASTNodeInfo.create(methodInvocation);
             methodInvocations.put(node, scope);
-
         }
     }
 
@@ -267,15 +262,13 @@ class OccurenceBuilder {
         if (canBePrepared(variable, scope)) {
             ASTNodeInfo<Variable> node = ASTNodeInfo.create(variable);
             variables.put(node, scope);
-
         }
     }
 
     void prepare(FunctionInvocation functionInvocation, Scope scope) {
         if (canBePrepared(functionInvocation, scope)) {
             ASTNodeInfo<FunctionInvocation> node = ASTNodeInfo.create(functionInvocation);
-            this.fncInvocations.put(node, scope);
-
+            fncInvocations.put(node, scope);
         }
     }
 
@@ -283,7 +276,6 @@ class OccurenceBuilder {
         if (canBePrepared(staticMethodInvocation, scope)) {
             ASTNodeInfo<StaticMethodInvocation> node = ASTNodeInfo.create(staticMethodInvocation);
             this.staticMethodInvocations.put(node, scope);
-
         }
     }
 
@@ -291,7 +283,6 @@ class OccurenceBuilder {
         if (canBePrepared(staticFieldAccess, scope)) {
             ASTNodeInfo<StaticFieldAccess> node = ASTNodeInfo.create(staticFieldAccess);
             staticFieldInvocations.put(node, scope);
-
         }
     }
 
@@ -299,7 +290,6 @@ class OccurenceBuilder {
         if (canBePrepared(staticConstantAccess, scope)) {
             ASTNodeInfo<StaticConstantAccess> node = ASTNodeInfo.create(staticConstantAccess);
             staticConstantInvocations.put(node, scope);
-
         }
     }
 
@@ -307,7 +297,6 @@ class OccurenceBuilder {
         if (canBePrepared(clsName, scope)) {
             ASTNodeInfo<ClassName> node = ASTNodeInfo.create(clsName);
             clasNames.put(node, scope);
-
         }
     }
 
@@ -443,7 +432,6 @@ class OccurenceBuilder {
                     prepare(Kind.IFACE, iface, scope);
                 }
             }
-
         }
     }
 
@@ -455,7 +443,6 @@ class OccurenceBuilder {
             for (Expression iface : interfaes) {
                 prepare(Kind.IFACE, iface, scope);
             }
-
         }
     }
 
@@ -470,7 +457,6 @@ class OccurenceBuilder {
         if (canBePrepared(functionDeclaration, scope)) {
             FunctionDeclarationInfo node = FunctionDeclarationInfo.create(functionDeclaration);
             fncDeclarations.put(node, scope);
-
         }
     }
 
@@ -532,10 +518,6 @@ class OccurenceBuilder {
         }
 
         for (Entry<ASTNodeInfo<GotoLabel>, Scope> entry : gotoLabel.entrySet()) {
-            setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
-        }
-
-        for (Entry<ASTNodeInfo<FieldAccess>, Scope> entry : fieldInvocations.entrySet()) {
             setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
         }
 
@@ -935,8 +917,8 @@ class OccurenceBuilder {
         final Exact methodName = NameKind.exact(elementInfo.getName());
         QualifiedName clzName = elementInfo.getTypeQualifiedName();
         final Set<TypeConstantElement> constants = new HashSet<>();
-        Scope scope = elementInfo.getScope() instanceof TypeScope ? elementInfo.getScope() : elementInfo.getScope().getInScope();
-        if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
+        Scope scope = ModelUtils.getTypeScope(elementInfo.getScope());
+        if (clzName.getKind().isUnqualified() && scope != null) {
             if (clzName.getName().equalsIgnoreCase("self") //NOI18N
                     || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                 clzName = QualifiedName.create(((TypeScope) scope).getName());
@@ -1434,8 +1416,8 @@ class OccurenceBuilder {
                 for (Entry<ASTNodeInfo<StaticConstantAccess>, Scope> entry : staticConstantInvocations.entrySet()) {
                     ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
-                    final Scope scope = entry.getValue() instanceof TypeScope ? entry.getValue() : entry.getValue().getInScope();
-                    if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
+                    final Scope scope = ModelUtils.getTypeScope(entry.getValue());
+                    if (clzName != null && clzName.getKind().isUnqualified() && scope != null) {
                         if (clzName.getName().equalsIgnoreCase("self") //NOI18N
                                 || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                             clzName = QualifiedName.create(((TypeScope) scope).getName());
@@ -1984,7 +1966,7 @@ class OccurenceBuilder {
         if (setElementInfo(element)) {
             build(fileScope);
         }
-        return cachedOccurences;
+        return new ArrayList<>(cachedOccurences);
     }
 
     /**
@@ -2053,9 +2035,8 @@ class OccurenceBuilder {
     }
 
     private class OccurenceImpl implements Occurence {
-
         private final OffsetRange occurenceRange;
-        final PhpElement declaration;
+        private final PhpElement declaration;
         private Collection<? extends PhpElement> allDeclarations;
         private Accuracy accuracy = Accuracy.EXACT;
 
@@ -2096,7 +2077,7 @@ class OccurenceBuilder {
 
         @Override
         public Collection<? extends PhpElement> gotoDeclarations() {
-            return allDeclarations;
+            return new HashSet<>(allDeclarations);
         }
 
         public void setAccuracy(Accuracy accuracy) {
@@ -2105,7 +2086,7 @@ class OccurenceBuilder {
 
         @Override
         public Collection<? extends PhpElement> getAllDeclarations() {
-            return this.allDeclarations;
+            return new HashSet<>(allDeclarations);
         }
 
         @Override
@@ -2115,26 +2096,25 @@ class OccurenceBuilder {
     }
 
     private static class ElementInfo {
-
-        private Scope scope;
-        private Union2<ASTNodeInfo, ModelElement> element;
+        private final Scope scope;
+        private final Union2<ASTNodeInfo, ModelElement> element;
         public Set<? extends PhpElement> declarations = Collections.emptySet();
 
         public ElementInfo(ModelElement element) {
             this.element = Union2.createSecond(element);
             if (element instanceof Scope) {
-                this.scope = (Scope) element;
+                scope = (Scope) element;
             } else {
-                this.scope = element.getInScope();
+                scope = element.getInScope();
             }
         }
 
         public ElementInfo(ASTNodeInfo nodeInfo, ModelElement element) {
             this.element = Union2.createFirst(nodeInfo);
             if (element instanceof Scope) {
-                this.scope = (Scope) element;
+                scope = (Scope) element;
             } else {
-                this.scope = element.getInScope();
+                scope = element.getInScope();
             }
         }
 
@@ -2291,14 +2271,14 @@ class OccurenceBuilder {
          * @return the declarations
          */
         public Set<? extends PhpElement> getDeclarations() {
-            return declarations;
+            return new HashSet<>(declarations);
         }
 
         /**
          * @param declarations the declarations to set
          */
         public boolean setDeclarations(Set<? extends PhpElement> declarations) {
-            this.declarations = declarations;
+            this.declarations = new HashSet<>(declarations);
             return this.declarations != null && !this.declarations.isEmpty();
         }
     }

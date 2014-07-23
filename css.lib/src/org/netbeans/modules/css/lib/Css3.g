@@ -964,7 +964,7 @@ fnAttributes
 fnAttribute
 	:
         (fnAttributeName ws? (OPEQ|COLON) )=>fnAttributeName ws? (OPEQ|COLON) ws? fnAttributeValue
-        | {isCssPreprocessorSource()}? cp_expression
+        | (cp_expression)=> cp_expression
         | expression
 	;
 

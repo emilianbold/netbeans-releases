@@ -400,7 +400,10 @@ public class LatteCompletionHandler implements CodeCompletionHandler2 {
         private void createResult(TokenSequence<LatteMarkupTokenId> ts) {
             if (upToOffset) {
                 String text = ts.token().text().toString();
-                result = text.substring(0, offset - ts.offset());
+                int endIndex = offset - ts.offset();
+                if (endIndex <= text.length()) {
+                    result = text.substring(0, endIndex);
+                }
             }
         }
 

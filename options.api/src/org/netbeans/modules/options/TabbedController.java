@@ -82,11 +82,11 @@ import org.openide.util.lookup.ProxyLookup;
 public class TabbedController extends OptionsPanelController {
 
     private static final Logger LOGGER = Logger.getLogger(TabbedController.class.getName());
-    private String tabFolder;
+    private final String tabFolder;
     private Lookup.Result<AdvancedOption> options;
     private Map<String, String> id2tabTitle;
     private Map<String, OptionsPanelController> tabTitle2controller;
-    private Map<String, AdvancedOption> tabTitle2Option;
+    private final Map<String, AdvancedOption> tabTitle2Option;
     private Lookup masterLookup;
     private final LookupListener lookupListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
@@ -116,6 +116,7 @@ public class TabbedController extends OptionsPanelController {
      */
     public TabbedController(String tabFolder) {
         this.tabFolder = tabFolder;
+        tabTitle2Option = Collections.synchronizedMap(new LinkedHashMap<String, AdvancedOption>());
         readPanels();
         options.addLookupListener(WeakListeners.create(LookupListener.class, lookupListener, options));
     }
@@ -182,9 +183,8 @@ public class TabbedController extends OptionsPanelController {
         if (pane != null) {
             pane.removeChangeListener(tabbedPaneChangeListener);
             pane.removeAll();
-            Map<String, AdvancedOption> synchronizedMap = Collections.synchronizedMap(tabTitle2Option);
-            Set<String> keySet = synchronizedMap.keySet();
-            synchronized (synchronizedMap) {
+            Set<String> keySet = tabTitle2Option.keySet();
+            synchronized (tabTitle2Option) {
                 Iterator<String> i = keySet.iterator();
                 while (i.hasNext()) {
                     String tabTitle = i.next();
@@ -328,10 +328,8 @@ public class TabbedController extends OptionsPanelController {
         Lookup lookup = Lookups.forPath(tabFolder);
         options = lookup.lookup(new Lookup.Template<AdvancedOption>( AdvancedOption.class ));
         tabTitle2controller = new HashMap<String, OptionsPanelController>();
-        tabTitle2Option = new LinkedHashMap<String, AdvancedOption>();
         id2tabTitle = new HashMap<String, String>();
-        Map<String, AdvancedOption> synchronizedMap = Collections.synchronizedMap(tabTitle2Option);
-        synchronized (synchronizedMap) {
+        synchronized (tabTitle2Option) {
             for (Lookup.Item<AdvancedOption> item : options.allItems()) {
                 AdvancedOption option = item.getInstance();
                 String displayName = option.getDisplayName();

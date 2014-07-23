@@ -98,6 +98,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import org.netbeans.modules.cnd.debugger.common2.debugger.spi.UserAttachAction;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
+import org.netbeans.spi.debugger.ui.PersistentController;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -333,7 +334,7 @@ public final class AttachPanel extends TopComponent {
 
         hostLabel.setText(Catalog.get("AttachProcDiag_HostColon")); // NOI18N
         hostLabel.setDisplayedMnemonic(
-                Catalog.getMnemonic("MNEM_Host")); // NOI18N
+                Catalog.getMnemonic("MNEM_AttachProcDiag_Host")); // NOI18N
 
         hostLabel.setLabelFor(hostCombo);
         hostCombo.setToolTipText(Catalog.get("HostName")); //NOI18N
@@ -510,6 +511,7 @@ public final class AttachPanel extends TopComponent {
         jsp.setBorder(new javax.swing.border.EmptyBorder(new Insets(6, 0, 12, 0)));
 
         tableLabel.setText(Catalog.get("AttachProcDiag_Table"));// NOI18N
+        tableLabel.setDisplayedMnemonic(Catalog.getMnemonic("MNEM_AttachProcDiag_Table")); // NOI18N
 
         tableLabel.setLabelFor(procTable);
         JPanel tablePanel = new JPanel();
@@ -911,7 +913,7 @@ public final class AttachPanel extends TopComponent {
 
     // This class is made public, to support attach history
     // see org.netbeans.modules.debugger.ui.actions.ConnectorPanel.ok() method implementation
-    public class AttachController implements Controller {
+    public class AttachController implements PersistentController {
 
         private final PropertyChangeSupport pcs =
                 new PropertyChangeSupport(this);
@@ -1028,6 +1030,7 @@ public final class AttachPanel extends TopComponent {
         private static final String HOST_NAME_PROP = "host_name"; //NOI18N
         private static final String NO_EXISTING_PROCESS = "qwdq123svdfv"; //NOI18N
 
+        @Override
         public boolean load(Properties props) {
             Vector<Vector<String>> processes = psData.processes(Pattern.compile(props.getString(COMMAND_PROP, NO_EXISTING_PROCESS)));
             if (processes.isEmpty()) {
@@ -1053,6 +1056,7 @@ public final class AttachPanel extends TopComponent {
             return true;
         }
 
+        @Override
         public void save(Properties props) {
             String selectedCommand = getSelectedProcessCommand();
             if (selectedCommand != null) {
@@ -1064,6 +1068,7 @@ public final class AttachPanel extends TopComponent {
             }
         }
 
+        @Override
         public String getDisplayName() {
             String selectedCommand = getSelectedProcessCommand();
             if (selectedCommand != null) {

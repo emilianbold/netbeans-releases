@@ -74,6 +74,7 @@ import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
@@ -229,12 +230,15 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         private final ClientSideProject project;
         private final ProjectInformation projectInfo;
         private final PropertyEvaluator evaluator;
+        private final ProjectProblemsProvider problemsProvider;
+
 
         private ClientSideProjectNode(ClientSideProject project) {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-web-clientproject/Nodes"), createLookup(project));
             this.project = project;
             projectInfo = ProjectUtils.getInformation(project);
             evaluator = project.getEvaluator();
+            problemsProvider = project.getLookup().lookup(ProjectProblemsProvider.class);
         }
 
         public static ClientSideProjectNode createForProject(ClientSideProject project) {
@@ -246,6 +250,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         private void addListeners() {
             evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
             projectInfo.addPropertyChangeListener(WeakListeners.propertyChange(this, projectInfo));
+            problemsProvider.addPropertyChangeListener(WeakListeners.propertyChange(this, problemsProvider));
         }
 
         private static Lookup createLookup(ClientSideProject project) {
@@ -508,13 +513,30 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             // #230378 - use weak listeners otherwise project is not garbage collected
             project.getEvaluator().addPropertyChangeListener(
                     WeakListeners.propertyChange(listener, project.getEvaluator()));
-            project.getProjectDirectory().addRecursiveListener(
-                    WeakListeners.create(FileChangeListener.class, listener, project.getProjectDirectory()));
+            addFsListeners();
         }
 
         @Override
         public void removeNotify() {
             // #230378 - weak listeners are used so no need to call "removeListener"
+        }
+
+        private void addFsListeners() {
+            FileObject projectDirectory = project.getProjectDirectory();
+            projectDirectory.addRecursiveListener(
+                    WeakListeners.create(FileChangeListener.class, listener, projectDirectory));
+            addTestsListeners();
+        }
+
+        private void addTestsListeners() {
+            FileObject projectDirectory = project.getProjectDirectory();
+            FileObject testsFolder = project.getTestsFolder(false);
+            if (testsFolder != null
+                    && !projectDirectory.equals(testsFolder)
+                    && !FileUtil.isParentOf(projectDirectory, testsFolder)) {
+                testsFolder.addRecursiveListener(
+                        WeakListeners.create(FileChangeListener.class, listener, testsFolder));
+            }
         }
 
         private class Listener extends FileChangeAdapter implements PropertyChangeListener {
@@ -553,6 +575,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 } else if (ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName())) {
                     testsNodeHidden = isNodeHidden(BasicNodes.Tests);
                     refreshKey(BasicNodes.Tests);
+                    addTestsListeners();
                 } else if (ClientSideProjectConstants.PROJECT_CONFIG_FOLDER.equals(evt.getPropertyName())) {
                     configNodeHidden = isNodeHidden(BasicNodes.Configuration);
                     refreshKey(BasicNodes.Configuration);

@@ -175,7 +175,7 @@ public class AttachWindowAction extends Action {
 
             @Override
             public void run() {
-                Mode mode = (Mode) WindowManager.getDefault().findMode(targetTc);
+                Mode mode = WindowManager.getDefault().findMode(targetTc);
                 if (sideConstant.equals(AS_LAST_TAB)) {
                     mode.dockInto(sourceTc);
                     sourceTc.open();
@@ -209,7 +209,7 @@ public class AttachWindowAction extends Action {
         return callWindowManager(WindowManager.getDefault().getClass(), method, args);
     }
 
-    private static Object callWindowManager(Class clazz, String method, Object... args) {
+    private static Object callWindowManager(Class<?> clazz, String method, Object... args) {
         for (Method m : clazz.getDeclaredMethods()) {
             if (!method.equals(m.getName())) {
                 continue;
@@ -227,7 +227,7 @@ public class AttachWindowAction extends Action {
         return callWindowManager(clazz.getSuperclass(), method, args);
     }
 
-    private static Class classForName(String className) throws ClassNotFoundException {
+    private static Class<?> classForName(String className) throws ClassNotFoundException {
         try {
             return Class.forName(className);
         } catch (ClassNotFoundException e) {
@@ -244,14 +244,14 @@ public class AttachWindowAction extends Action {
      */
     private static void attachTopComponent(TopComponent sourceTc, Mode mode, String sideConstant) {
         try {
-            Class centralClass = classForName("org.netbeans.core.windows.Central");
-            Class tcdClass = classForName("org.netbeans.core.windows.view.dnd.TopComponentDraggable");
-            Class modeImplClass = classForName("org.netbeans.core.windows.ModeImpl");
+            Class<?> centralClass = classForName("org.netbeans.core.windows.Central");
+            Class<?> tcdClass = classForName("org.netbeans.core.windows.view.dnd.TopComponentDraggable");
+            Class<?> modeImplClass = classForName("org.netbeans.core.windows.ModeImpl");
             Method attachMethod = centralClass.getMethod("userDroppedTopComponents", modeImplClass, tcdClass, String.class);
             Method getCentralMethod = WindowManager.getDefault().getClass().getDeclaredMethod("getCentral", (Class<?>[]) null);
             getCentralMethod.setAccessible(true);
             Object centralInstance = getCentralMethod.invoke(WindowManager.getDefault(), (Object[]) null);
-            Constructor tcdConstructor = tcdClass.getDeclaredConstructor(TopComponent.class);
+            Constructor<?> tcdConstructor = tcdClass.getDeclaredConstructor(TopComponent.class);
             tcdConstructor.setAccessible(true);
             Object tcdInstance = tcdConstructor.newInstance(sourceTc);
             attachMethod.setAccessible(true);

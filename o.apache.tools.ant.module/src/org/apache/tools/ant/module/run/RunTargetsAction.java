@@ -190,7 +190,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
         
         @Override
         public JPopupMenu getPopupMenu() {
-            if (!initialized) {
+            if (!initialized || project == null) {
                 initialized = true;
                 Set<TargetLister.Target> allTargets;
                 try {

@@ -44,8 +44,10 @@ package org.netbeans.modules.php.editor.indent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import junit.framework.Test;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
@@ -64,6 +66,10 @@ public class PHPFormatterQATest extends PHPFormatterTestBase {
 
     public PHPFormatterQATest(String testName) {
         super(testName);
+    }
+
+    public static Test suite() {
+        return NbModuleSuite.createConfiguration(PHPFormatterQATest.class).gui(false).suite();
     }
 
     @Override

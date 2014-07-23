@@ -81,7 +81,15 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 })
 public class ResolveConflictsAction extends ContextAction {
 
-    public ResolveConflictsAction() {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/conflict-resolve.png"; //NOI18N
+    
+    public ResolveConflictsAction () {
+        super(ICON_RESOURCE);
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
     }
 
     @Override

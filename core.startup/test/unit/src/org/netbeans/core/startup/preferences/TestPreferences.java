@@ -54,6 +54,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -223,6 +224,35 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
         assertEquals("value1",pref.get("key1", null));
     }
 
+    public void testPut_245383()  {
+        NbPreferences pref = (NbPreferences)getPreferencesNode();
+        assertNotNull(pref);
+        
+        assertNull(pref.get("key1", null));
+        pref.put("key1", "true");
+        assertEquals("true", pref.get("key1", null));
+        
+        pref.put("key1", "false");
+        assertEquals("false", pref.get("key1", null));
+        
+        // no need to call flush() or sync()
+        pref.put("key1", "true");
+        assertEquals("true", pref.get("key1", null));
+        
+        // need to call flush() or sync() in order to clear NbPreferences.cachedKeyValues list
+        try {
+            pref.flush();
+            pref.sync();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        assertEquals("true", pref.get("key1", null));
+        
+        // mimic state change event call, e.g. when importing options
+        pref.put("key1", "false", true);
+        assertEquals("false", pref.get("key1", null));
+    }
+
     /*
     @RandomlyFails // timeout in NB-Core-Build #1651; three of the waits actually time out; test is probably broken
     public void testPut2()  throws Exception {
@@ -292,7 +322,7 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
         return null;
     }
      */
-    
+     
     public void testRemove() {
         testPut();
         Preferences pref = getPreferencesNode();

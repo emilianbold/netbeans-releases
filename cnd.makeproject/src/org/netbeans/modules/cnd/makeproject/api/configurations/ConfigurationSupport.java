@@ -44,7 +44,7 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.StringTokenizer;
-import org.netbeans.api.project.Project;
+import org.openide.util.Lookup;
 
 public final class ConfigurationSupport {
 
@@ -203,7 +203,7 @@ public final class ConfigurationSupport {
         return conf.getDisplayName();
     }
 
-    public static MakeConfiguration getProjectActiveConfiguration(Project project) {
+    public static MakeConfiguration getProjectActiveConfiguration(Lookup.Provider project) {
         if (project != null) {
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             if (pdp != null) {

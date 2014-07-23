@@ -281,6 +281,7 @@ public class KarmaExecutable {
     private static final class ServerLineConvertor implements LineConvertor {
 
         private static final String NB_BROWSERS = "$NB$netbeans browsers "; // NOI18N
+        private static final String NB_ABSOLUTE_URLS = "$NB$netbeans absoluteUrls"; // NOI18N
         private static final String KARMA_ERROR = "[31mERROR ["; // NOI18N
         private static final String KARMA_WARN = "[33mWARN ["; // NOI18N
 
@@ -312,13 +313,20 @@ public class KarmaExecutable {
                 return Collections.singletonList(ConvertedLine.forText(
                         line.replace(karmaRunInfo.getNbConfigFile(), karmaRunInfo.getProjectConfigFile()), null));
             }
-            // server start
-            if (browsers == null
-                    && line.startsWith(NB_BROWSERS)) {
-                List<String> allBrowsers = StringUtils.explode(line.substring(NB_BROWSERS.length()), ","); // NOI18N
-                browserCount = allBrowsers.size();
-                browsers = Browsers.getBrowsers(allBrowsers);
-                return Collections.emptyList();
+            // startup
+            if (browsers == null) {
+                // absolute urls?
+                if (line.equals(NB_ABSOLUTE_URLS)) {
+                    karmaRunInfo.setAbsoluteUrls(true);
+                    return Collections.emptyList();
+                }
+                // server start
+                if (line.startsWith(NB_BROWSERS)) {
+                    List<String> allBrowsers = StringUtils.explode(line.substring(NB_BROWSERS.length()), ","); // NOI18N
+                    browserCount = allBrowsers.size();
+                    browsers = Browsers.getBrowsers(allBrowsers);
+                    return Collections.emptyList();
+                }
             }
             if (startFinishedTask != null
                     && !startFinishedTaskRun
@@ -334,9 +342,9 @@ public class KarmaExecutable {
                 testRunner.process(line);
                 return Collections.emptyList();
             }
-            // some error?
-            if (line.contains(KARMA_ERROR)
-                    || line.contains(KARMA_WARN)) {
+            // some error before browser startup?
+            if (connectedBrowsers < browserCount
+                    && (line.contains(KARMA_ERROR) || line.contains(KARMA_WARN))) {
                 KarmaErrorsDialog.getInstance().show();
             }
             // process output

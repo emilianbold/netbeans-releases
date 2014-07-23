@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.callgraph.support.ExportAction;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.FocusTraversalPolicy;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -56,10 +57,12 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
@@ -70,6 +73,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.plaf.TreeUI;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
@@ -116,12 +122,15 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     private AtomicBoolean isSetDividerLocation = new AtomicBoolean(false);
     private static final RequestProcessor RP = new RequestProcessor("CallGraphPanel", 2);//NOI18N
     private final CallGraphUI graphUI;
-    private final Catalog messagesCatalog;
+    private final Catalog messagesCatalog;    
+    final ShowOverridingAction showOverridingAction;
+    private final Icon overridingIcon = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/show_overriding.gif"));
 
     /** Creates new form CallGraphPanel */
     public CallGraphPanel(CallGraphUI graphUI) {
         this.graphUI = graphUI;
         messagesCatalog = graphUI == null || graphUI.getCatalog() == null ? new DefaultCatalog() : graphUI.getCatalog();
+        showOverridingAction = new ShowOverridingAction();        
         initComponents();
         isCalls = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_CALLS, true);
         isShowOverriding = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_SHOW_OVERRIDING, false);
@@ -131,13 +140,13 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         this.showGraph = graphUI == null ? false : graphUI.showGraph();
         actions = new ArrayList<Action>();
         actions.add(new RefreshAction());
-        actions.add(new FocusOnAction());
+        actions.add(new FocusOnAction());        
         actions.add(null);
         actions.add(new WhoIsCalledAction());
         actions.add(new WhoCallsAction());
-        actions.add(new ShowOverridingAction());
+        actions.add((showOverridingAction));
         actions.add(null);
-        actions.add(new ShowFunctionParameters());
+        actions.add(new ShowFunctionParameters());        
         if (showGraph) {
             scene = new CallGraphScene();
             ExportAction exportAction = new ExportAction(scene, this);
@@ -155,6 +164,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
                 }
             }));
         }
+//        actions.add(new ExpandAllAction());
         root = new AbstractNode(children){
             @Override
             public Action[] getActions(boolean context) {
@@ -420,14 +430,13 @@ private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 }//GEN-LAST:event_focusOnActionPerformed
 
 private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_overridingActionPerformed
-    setShowOverriding(!isShowOverriding);
+    showOverridingAction.actionPerformed(evt);
+    
 }//GEN-LAST:event_overridingActionPerformed
 
     private void setShowOverriding(boolean showOverriding){
         isShowOverriding = showOverriding;
-        NbPreferences.forModule(CallGraphPanel.class).putBoolean(IS_SHOW_OVERRIDING, isShowOverriding);
-        updateButtons();
-        update();
+        NbPreferences.forModule(CallGraphPanel.class).putBoolean(IS_SHOW_OVERRIDING, isShowOverriding);        
     }
 
     private void setShowParameters(boolean showParameters){
@@ -459,7 +468,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         updateButtons();
         update();
     }
-
+           
     private synchronized void update() {
         final CallGraphState state = new CallGraphState(model, scene, actions);
         if (showGraph) {
@@ -468,57 +477,70 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         if (showGraph) {
             scene.clean();
         }
-        final Function function = model.getRoot();
-        if (function != null){
-            final Children children = root.getChildren();
-            if (!Children.MUTEX.isReadAccess()){
-                Children.MUTEX.writeAccess(new Runnable(){
+        //model.getRoot() can be too expensive to invoke it in UI thread
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                final Function function = model.getRoot();
+                SwingUtilities.invokeLater(new Runnable() {
+
                     @Override
                     public void run() {
-                        children.remove(children.getNodes());
-                        Node selectedNode = null;
-                        //if root of the model is invisible
-                        if (!model.isRootVisible()) {
-                            List<Call> childrenList = isCalls ? model.getCallees(function) : model.getCallers(function);
-                            Node[] functions = new Node[childrenList.size()];
-                            for (int i = 0; i < childrenList.size(); i++) {
-                                Call call = childrenList.get(i);
-                                Function f = isCalls ? call.getCallee() : call.getCaller();
-                                functions[i] = new FunctionRootNode(f, state, isCalls);
+                        if (function != null) {
+                            final Children children = root.getChildren();
+                            if (!Children.MUTEX.isReadAccess()) {
+                                Children.MUTEX.writeAccess(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        children.remove(children.getNodes());
+                                        Node selectedNode = null;
+                                        //if root of the model is invisible
+                                        if (!model.isRootVisible()) {
+                                            List<Call> childrenList = isCalls ? model.getCallees(function) : model.getCallers(function);
+                                            Node[] functions = new Node[childrenList.size()];
+                                            for (int i = 0; i < childrenList.size(); i++) {
+                                                Call call = childrenList.get(i);
+                                                Function f = isCalls ? call.getCallee() : call.getCaller();
+                                                functions[i] = new FunctionRootNode(f, state, isCalls);
+                                            }
+                                            if (functions.length > 0) {
+                                                selectedNode = functions[0];
+                                            }
+                                            children.add(functions);
+                                        } else {
+                                            selectedNode = new FunctionRootNode(function, state, isCalls);
+                                            children.add(new Node[]{selectedNode});
+                                        }
+                                        final Node node = selectedNode;
+                                        try {
+                                            getExplorerManager().setSelectedNodes(new Node[]{node});
+                                        } catch (PropertyVetoException ex) {
+                                        }
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                getTreeView().expandNode(node);
+                                            }
+                                        });
+                                    }
+                                });
                             }
-                            if (functions.length  > 0){
-                                selectedNode = functions[0];
-                            }
-                            children.add(functions);
                         } else {
-                            selectedNode = new FunctionRootNode(function, state, isCalls);
-                            children.add(new Node[]{selectedNode});
-                        }
-                        final Node node = selectedNode;                        
-                        try {
-                            getExplorerManager().setSelectedNodes(new Node[]{node});
-                        } catch (PropertyVetoException ex) {
-                        }
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                getTreeView().expandNode(node);
+                            final Children children = root.getChildren();
+                            if (!Children.MUTEX.isReadAccess()) {
+                                Children.MUTEX.writeAccess(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        children.remove(children.getNodes());
+                                    }
+                                });
                             }
-                        });
+                        }
                     }
                 });
-            }
-        } else {
-            final Children children = root.getChildren();
-            if (!Children.MUTEX.isReadAccess()){
-                Children.MUTEX.writeAccess(new Runnable(){
-                    @Override
-                    public void run() {
-                        children.remove(children.getNodes());
-                    }
-                });
-            }
-        }
+            }            
+        });
     }
 
     @Override
@@ -628,19 +650,29 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
     }
 
-    private final class ShowOverridingAction extends AbstractAction implements Presenter.Popup {
+    private final class ShowOverridingAction extends org.netbeans.modules.cnd.callgraph.api.ui.CallGraphAction implements Presenter.Popup {
         private final JCheckBoxMenuItem menuItem;
         public ShowOverridingAction() {
+            super(new CallGraphActionEDTRunnable() {
+
+                @Override
+                public void run() {                    
+                    updateButtons();
+                    update();
+                }
+            });
             putValue(Action.NAME, getMessage( "ShowOverridingAction"));  // NOI18N
-            putValue(Action.SMALL_ICON, overriding.getIcon());
+            putValue(Action.SMALL_ICON, overridingIcon);
             menuItem = new JCheckBoxMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void doNonEDTAction() {
             setShowOverriding(!isShowOverriding);
+            model.update();
         }
+        
 
         @Override
         public final JMenuItem getPopupPresenter() {
@@ -688,6 +720,60 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             return menuItem;
         }
     }
+    
+   
+    
+    private void expandAllImpl(Node n) {
+
+        
+        Children children = n.getChildren();
+        
+        if (children != null) {
+            if (children instanceof CallChildren) {
+                ((CallChildren)children).init();
+            }
+            getTreeView().expandNode(n);    
+            for (final Node node : children.getNodes()) {
+                Children children1 = node.getChildren();
+                if (children1 instanceof CallChildren) {
+                    ((CallChildren)children1).init();
+                }                
+                getTreeView().expandNode(node);    
+                expandAllImpl(node);
+            }            
+        } 
+    }
+    
+//    private final class ExpandAllAction extends AbstractAction implements Presenter.Popup {
+//        private final JMenuItem menuItem;
+//        public ExpandAllAction() {
+//            putValue(Action.NAME, getMessage("ExpandAll"));  // NOI18N
+//            menuItem = new JMenuItem(this);
+//            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+//        }     
+//
+//        @Override
+//        public void actionPerformed(ActionEvent e) {            
+//            //as we have lzy initialization we need to build  the whole  model at once and
+//            //expand all trees
+//            //getTreeView().expandAll();
+////            RP.post(new Runnable() {
+////
+////                @Override
+////                public void run() {
+//            expandAllImpl(root);
+////                }
+////                
+////            });
+//            
+//        }
+//
+//        @Override
+//        public final JMenuItem getPopupPresenter() {
+//            return menuItem;
+//        }
+//    }
+//    
 
     private static final class ContextPanel extends JPanel implements ExplorerManager.Provider {
         private final ExplorerManager managerCtx = new ExplorerManager();

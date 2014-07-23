@@ -44,10 +44,9 @@
 
 package org.netbeans.modules.git.ui.blame;
 
-import org.netbeans.editor.SideBarFactory;
-
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
+import org.netbeans.spi.editor.SideBarFactory;
 
 
 /**

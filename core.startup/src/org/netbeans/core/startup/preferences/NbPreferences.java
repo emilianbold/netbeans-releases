@@ -307,6 +307,7 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
             throw new BackingStoreException("Unsupported operation: read-only storage");//NOI18N
         } else {
             super.flush();
+            cachedKeyValues.clear();
         }
     }
     
@@ -319,6 +320,7 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
             }
             flushTask.waitFinished();
             super.sync();
+            cachedKeyValues.clear();
         }
     }
 

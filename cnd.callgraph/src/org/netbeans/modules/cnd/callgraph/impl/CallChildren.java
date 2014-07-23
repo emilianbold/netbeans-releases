@@ -156,6 +156,18 @@ public class CallChildren extends Children.Keys<Call> {
         }
         return false;
     }
+    
+    /*package*/ void init() {
+        //invoke in sync
+        if (!isInited)  {
+            isInited = true;
+            if (isRecusion()) {
+                setKeys(new Call[0]);
+            } else {
+                resetKeys();
+            }            
+        }
+    }
 
     @Override
     protected void addNotify() {

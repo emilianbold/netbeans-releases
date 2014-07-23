@@ -42,12 +42,16 @@
 package org.netbeans.modules.maven.debug;
 
 import com.sun.jdi.VMOutOfMemoryException;
+import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -55,6 +59,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -66,15 +71,17 @@ import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
+import org.netbeans.modules.maven.execute.OutputTabMaintainer;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.awt.StatusDisplayer;
+import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbCollections;
-import org.openide.util.io.NullOutputStream;
-import org.openide.windows.OutputListener;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -86,6 +93,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
     private static final String ARGLINE = "argLine"; //NOI18N
     private static final String MAVENSUREFIREDEBUG = "maven.surefire.debug"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(DebuggerChecker.class.getName());
+    private DebuggerTabMaintainer tabMaintainer;
 
     public @Override boolean checkRunConfig(final RunConfig config) {
         if (config.getProject() == null) {
@@ -97,59 +105,66 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             final String cname = config.getProperties().get("jpda.stopclass"); //NOI18N
 
             if (cname != null) {
+
+                // tstupka: workarounding problems mentioned in issue #242559  
+                //   for some reason files do not get saved before "debug.fix" => reload doesn't always catch the changes
                 
-                //this is commented out because one day the apply changed icon was always enabled (even for the case of a non saved modified file). The code is handling that case.
+                // also that:
+                // mkleint: this is (was) commented out because one day the apply changed icon was always enabled (even for the case of a non saved modified file). The code is handling that case.
                 // however today I cannot reproduce and the apply changes button is only enabled when the changed file is saved.
+                // 
                 
-//                Set<DataObject> mods = DataObject.getRegistry().getModifiedSet();
-//                if (!mods.isEmpty()) {
-//                    //TODO compute is any of the files belong to the source roots of this project.
-//                    //if so, attach the listener and wait for the notification that the files were compiled
-//                    ClassPath[] cps = config.getProject().getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.SOURCE);
-//                    final Set<URL> urls = new HashSet<URL>();
-//                    for (DataObject mod : mods) {
-//                        for (ClassPath cp : cps) {
-//                            if (cp.contains(mod.getPrimaryFile())) {
-//                                FileObject root = cp.findOwnerRoot(mod.getPrimaryFile());
-//                                if (root != null) {
-//                                    urls.add(root.toURL());
-//                                }
-//                            }
-//                        }
-//                    }
-//                    LifecycleManager.getDefault().saveAll();
-//                    
-//                    if (!urls.isEmpty()) {
-//                        final int count = urls.size();
-//                        BuildArtifactMapper.ArtifactsUpdated listener = new BuildArtifactMapper.ArtifactsUpdated() {
-//                            private int countdown = count;
-//                            @Override
-//                            public void artifactsUpdated(Iterable<File> artifacts) {
-//                                //if there are multiple urls we are listening on, wait for the last one.
-//                                if (countdown > 0) {
-//                                    countdown = countdown - 1;
-//                                } else {
-//                                    //remove the listeners and then reload
-//                                    for (URL url : urls) {
-//                                        BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
-//                                    }
-//                                    doReload(config, cname);
-//                                }
-//                            }
-//                         };
-//                        for (URL url : urls) {
-//                            BuildArtifactMapper.addArtifactsUpdatedListener(url, listener);
-//                        }
-//                    } else {
-//                        doReload(config, cname);
-//                    }
-//                   
-//                    //TODO spawn a thread that will interrupt the listening after a timeout just to be sure?
-//                    //RequestProcessor.getDefault().post(null).cancel();
-//                    
-//                } else {
+                Set<DataObject> mods = DataObject.getRegistry().getModifiedSet();
+                if (!mods.isEmpty()) {
+                    //TODO compute is any of the files belong to the source roots of this project.
+                    //if so, attach the listener and wait for the notification that the files were compiled
+                    ClassPath[] cps = config.getProject().getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.SOURCE);
+                    final Set<URL> urls = new HashSet<URL>();
+                    for (DataObject mod : mods) {
+                        for (ClassPath cp : cps) {
+                            if (cp.contains(mod.getPrimaryFile())) {
+                                FileObject root = cp.findOwnerRoot(mod.getPrimaryFile());
+                                if (root != null) {
+                                    urls.add(root.toURL());
+                                }
+                            }
+                        }
+                    }
+                    LifecycleManager.getDefault().saveAll();
+                    
+                    if (!urls.isEmpty()) {
+                        final int count = urls.size();
+                        BuildArtifactMapper.ArtifactsUpdated listener = new BuildArtifactMapper.ArtifactsUpdated() {
+                            private int countdown = count;
+                            @Override
+                            public void artifactsUpdated(Iterable<File> artifacts) {
+                                //if there are multiple urls we are listening on, wait for the last one.
+                                if (countdown > 0) {
+                                    countdown = countdown - 1;
+                                } else {
+                                    //remove the listeners and then reload
+                                    for (URL url : urls) {
+                                        BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
+                                    }
+                                    doReload(config, cname);
+                                }
+                            }
+                         };
+                        for (URL url : urls) {
+                            BuildArtifactMapper.addArtifactsUpdatedListener(url, listener);
+                        }
+                    } else {
+                        doReload(config, cname);
+                    }
+                   
+                    //TODO spawn a thread that will interrupt the listening after a timeout just to be sure?
+                    //RequestProcessor.getDefault().post(null).cancel();
+                    
+                } else {
+
                     doReload(config, cname);
-//                }
+                    
+                }
                 return false;
             }
         }
@@ -184,17 +199,22 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
         return true;
     }
 
-    private void doReload(RunConfig config, String cname) {
-        reload(config.getProject(), new OutputWriter(new OutputStreamWriter(new NullOutputStream())) {
-            @Override
-            public void println(String s, OutputListener l) throws IOException {
-                StatusDisplayer.getDefault().setStatusText(s);
-            }
-            
-            @Override
-            public void reset() throws IOException {
-            }
-        }, cname);
+    protected void doReload(final RunConfig config, final String cname) {
+        DebuggerTabMaintainer otm = getOutputTabMaintainer(config.getExecutionName());
+        
+        InputOutput io = otm.getInputOutput();
+        io.select();
+        OutputWriter ow = io.getOut();
+        try {
+            ow.reset();
+        } catch (IOException ex) { }
+        
+        try {
+            reload(config.getProject(), ow, cname);
+        } finally {
+            io.getOut().close();
+            otm.markTab();
+        }
     }
 
     public @Override boolean checkRunConfig(RunConfig config, ExecutionContext context) {
@@ -330,7 +350,14 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             logger.println("NetBeans: No class to reload");
             return;
         } else {
-            logger.println("NetBeans: classes to reload: " + map.keySet());
+            StringBuilder sb = new StringBuilder();
+            sb.append("NetBeans: classes to reload:\n");
+            for (String c : map.keySet()) {
+                sb.append(" ");
+                sb.append(c);
+                sb.append("\n");
+            }
+            logger.println(sb);
         }
         String error = null;
         try {
@@ -353,6 +380,8 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
         }
         if (error != null) {
             logger.println("NetBeans:" + error);
+        } else {
+            logger.println("Code updated");
         }
     }
     
@@ -381,5 +410,47 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             return rfo.toURL ().toExternalForm ();
     }
 
+    private synchronized DebuggerTabMaintainer getOutputTabMaintainer(String name) {
+        if(tabMaintainer == null) {
+            tabMaintainer = new DebuggerTabMaintainer(name);
+        }
+        return tabMaintainer;
+    }
+
+    private static class TabCtx {
+        AbstractMavenExecutor.OptionsAction options;
+        @Override
+        protected TabCtx clone() {
+            TabCtx c = new TabCtx();
+            c.options = options;
+            return c;
+        }
+    }
+    
+    private static class DebuggerTabMaintainer extends OutputTabMaintainer<TabCtx> {
+        private TabCtx tabContext = new TabCtx();
+        public DebuggerTabMaintainer(String name) {
+            super(name);
+        }
+        @Override
+        protected Class<TabCtx> tabContextType() {
+            return TabCtx.class;
+        }
+        @Override
+        protected TabCtx createContext() {
+            return tabContext.clone();
+        }
+        @Override protected void reassignAdditionalContext(TabCtx tabContext) { 
+            this.tabContext = tabContext;
+        }
+        @Override
+        protected Action[] createNewTabActions() {
+            tabContext.options = new AbstractMavenExecutor.OptionsAction();
+            return new Action[] { tabContext.options };
+        }
+        void markTab() {
+            markFreeTab();
+        }
+    }
     
 }

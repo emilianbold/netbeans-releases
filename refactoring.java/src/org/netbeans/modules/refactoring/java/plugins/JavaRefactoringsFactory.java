@@ -159,7 +159,9 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
         Collection<? extends TreePathHandle> tphs = refactoringSource.lookupAll(TreePathHandle.class);
         if(tphs.size() == 1) {
             ElementHandle elementHandle = tphs.iterator().next().getElementHandle();
-            if(elementHandle != null && elementHandle.getKind() == ElementKind.CLASS){
+            if(elementHandle != null &&
+                    (elementHandle.getKind().isClass() ||
+                     elementHandle.getKind().isInterface())) {
                 return true;
             }
         }

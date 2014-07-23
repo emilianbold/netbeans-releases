@@ -54,6 +54,9 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
@@ -119,18 +122,37 @@ public class MeasureEntityBeanActionTest extends PerformanceTestCase {
     public void initialize() {
         // open a java file in the editor
         beanNode = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"), "Enterprise Beans|TestEntityEB");
+        final ActionNoBlock action = new ActionNoBlock(null, popup_menu);
+        try {
+            new Waiter(new Waitable() {
+
+                @Override
+                public Object actionProduced(Object param) {
+                    return action.isEnabled(beanNode) ? Boolean.TRUE : null;
+                }
+
+                @Override
+                public String getDescription() {
+                    return "wait menu is enabled";
+                }
+            }).waitAction(null);
+        } catch (InterruptedException e) {
+            throw new JemmyException("Interrupted.", e);
+        }
         new OpenAction().performAPI(beanNode);
         editor = new EditorOperator("TestEntityBean.java");
     }
 
+    @Override
     public void prepare() {
         new ActionNoBlock(null, popup_menu).perform(beanNode);
         dialog = new NbDialogOperator(title);
         JLabelOperator lblOper = new JLabelOperator(dialog, "Name");
-        name = name + CommonUtilities.getTimeIndex();
+        name += CommonUtilities.getTimeIndex();
         new JTextFieldOperator((JTextField) lblOper.getLabelFor()).setText(name);
     }
 
+    @Override
     public ComponentOperator open() {
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         dialog.ok();

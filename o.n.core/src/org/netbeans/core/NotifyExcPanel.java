@@ -626,31 +626,36 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
     }
     
     static class ExceptionFlasher implements ActionListener {
-        static ExceptionFlasher flash;
-        private static synchronized ExceptionFlasher notify(String summary, ImageIcon icon) {
-            if (flash != null) {
-                flash.timer.restart();
-            } else {
-                flash = new ExceptionFlasher();
-                JComponent detailsPanel = getDetailsPanel(summary);
-                JComponent bubblePanel = getDetailsPanel(summary);
 
-                flash.note = NotificationDisplayer.getDefault().notify(
+        static ExceptionFlasher flash;
+
+        private static synchronized ExceptionFlasher notify(String summary, ImageIcon icon) {
+            if (flash == null) {
+                flash = new ExceptionFlasher();
+            } else {
+                flash.timer.restart();
+                flash.note.clear();
+            }
+            JComponent detailsPanel = getDetailsPanel(summary);
+            JComponent bubblePanel = getDetailsPanel(summary);
+
+            flash.note = NotificationDisplayer.getDefault().notify(
                     NbBundle.getMessage(NotifyExcPanel.class, "NTF_ExceptionalExceptionTitle"),
                     icon, bubblePanel, detailsPanel,
                     NotificationDisplayer.Priority.SILENT, NotificationDisplayer.Category.ERROR);
-            }
             return flash;
         }
+        
         Notification note;
         private final Timer timer;
 
         public ExceptionFlasher() {
-            timer = new Timer(30000, this);
+            timer = new Timer(300000, this);
             timer.setRepeats(false);
             timer.start();
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == timer) {
                 timeout();
@@ -682,8 +687,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                 exceptions = null;
                 flash = null;
                 timer.stop();
-                if( null != note )
+                if( null != note ) {
                     note.clear();
+                }
             }
         }
 

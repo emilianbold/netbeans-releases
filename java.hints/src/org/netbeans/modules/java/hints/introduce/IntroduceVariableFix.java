@@ -196,18 +196,19 @@ final class IntroduceVariableFix extends IntroduceFixBase implements Fix {
                     index = out[0];
                 }
                 List<StatementTree> nueStatements = new LinkedList<StatementTree>(IntroduceHint.getStatements(statement));
+                GeneratorUtilities.get(parameter).importComments(IntroduceHint.getStatementOrBlock(statement).getLeaf(), parameter.getCompilationUnit());
                 mods = make.Modifiers(declareFinal ? EnumSet.of(Modifier.FINAL) : EnumSet.noneOf(Modifier.class));
                 VariableTree newVariable = make.Variable(mods, name, make.Type(tm), expression);
-                nueStatements.add(index, newVariable);
-                GeneratorUtilities.get(parameter).copyComments(resolved.getParentPath().getLeaf(), newVariable, true);
-                GeneratorUtilities.get(parameter).copyComments(resolved.getParentPath().getLeaf(), newVariable, false);
+                nueStatements.add(index, make.asReplacementOf(newVariable, resolved.getLeaf(), true));
                 if (expressionStatement) {
+                    make.asReplacementOf(newVariable, resolved.getParentPath().getLeaf());
                     nueStatements.remove(resolved.getParentPath().getLeaf());
                 }
                 IntroduceHint.doReplaceInBlockCatchSingleStatement(parameter, new HashMap<Tree, Tree>(), statement, nueStatements);
                 if (!expressionStatement) {
                     Tree origParent = resolved.getParentPath().getLeaf();
-                    Tree newParent = parameter.getTreeUtilities().translate(origParent, Collections.singletonMap(resolved.getLeaf(), make.Identifier(name)));
+                    Tree newParent = parameter.getTreeUtilities().translate(origParent, Collections.singletonMap(resolved.getLeaf(), 
+                            make.asNew(make.Identifier(name))));
                     parameter.rewrite(origParent, newParent);
                 }
             }

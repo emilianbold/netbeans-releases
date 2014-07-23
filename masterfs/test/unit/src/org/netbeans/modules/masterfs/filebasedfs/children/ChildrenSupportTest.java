@@ -87,7 +87,7 @@ public class ChildrenSupportTest extends NbTestCase {
         folderItem = new ChildrenSupport ();
 
         if (getName().startsWith("testRefresh")) {
-            fbase = new File (testFile, "testrefresh");
+            fbase = new File (testFile, "testrefreshDir");
             removed1 = new File (fbase, "removed1/");
             removed2 = new File (fbase, "removed2/");
             added1 = new File (fbase, "added1/");

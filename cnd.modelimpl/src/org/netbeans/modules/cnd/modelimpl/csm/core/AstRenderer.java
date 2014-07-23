@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MutableObject;
+import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
@@ -2069,7 +2070,7 @@ public class AstRenderer {
         return false;
     }
 
-    private boolean isClassSpecialization(AST ast) {
+    public static boolean isClassSpecialization(AST ast) {
         AST type = ast.getFirstChild(); // type
         if (type != null) {
             AST child = type;
@@ -2089,7 +2090,7 @@ public class AstRenderer {
         return true;
     }
 
-    private boolean isClassExplicitInstantiation(AST ast) {
+    public static boolean isClassExplicitInstantiation(AST ast) {
         AST type = ast.getFirstChild(); // type
         if (type != null) {
             AST child = type;
@@ -2409,6 +2410,49 @@ public class AstRenderer {
         }
         
         return false;
+    }
+    
+    public static CharSequence[] renderQualifiedId(AST qid, List<CsmTemplateParameter> parameters) {
+        return renderQualifiedId(qid, parameters, false);
+    }
+    
+    public static CharSequence[] renderQualifiedId(AST qid, List<CsmTemplateParameter> parameters, boolean includeLastIdent) {
+        int cnt = qid.getNumberOfChildren();
+        if( cnt >= 1 ) {
+            List<CharSequence> l = new ArrayList<>();
+            APTStringManager manager = NameCache.getManager();
+            StringBuilder id = new StringBuilder(""); // NOI18N
+            int level = 0;
+            for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
+                int type2 = token.getType();
+                switch (type2) {
+                    case CPPTokenTypes.IDENT:
+                        id = new StringBuilder(AstUtil.getText(token));
+                        break;
+                    case CPPTokenTypes.GREATERTHAN:
+                        level--;
+                        break;
+                    case CPPTokenTypes.LESSTHAN:
+                        if (id != null) {
+                            TemplateUtils.addSpecializationSuffix(token, id, parameters, true);
+                        }
+                        level++;
+                        break;
+                    case CPPTokenTypes.SCOPE:
+                        if (id != null && level == 0 && id.length()>0) {
+                            l.add(manager.getString(id));
+                            id = null;
+                        }
+                        break;
+                    default:
+                }
+            }
+            if (includeLastIdent && id != null && level == 0 && id.length() > 0) {
+                l.add(manager.getString(id));
+            }
+            return l.toArray(new CharSequence[l.size()]);
+        }      
+        return null;
     }
     
     private static NamespaceImpl findClosestNamespace(CsmScope scope) {

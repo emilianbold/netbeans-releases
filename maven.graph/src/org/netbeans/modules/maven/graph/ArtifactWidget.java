@@ -50,6 +50,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import javax.swing.Icon;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import org.apache.maven.artifact.Artifact;
@@ -109,7 +110,8 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
     private Timer hoverTimer;
     private Color hoverBorderC;
 
-    private LabelWidget artifactW, versionW;
+    private Widget artifactW;
+    private LabelWidget versionW;
     private Widget contentW;
     private ImageWidget lockW, fixHintW;
 
@@ -120,7 +122,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
 
     private String tooltipText;
 
-    ArtifactWidget(DependencyGraphScene scene, ArtifactGraphNode node) {
+    ArtifactWidget(DependencyGraphScene scene, ArtifactGraphNode node, Icon icon) {
         super(scene);
         this.node = node;
 
@@ -128,7 +130,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         setLayout(LayoutFactory.createVerticalFlowLayout());
 
         updateTooltip();
-        initContent(scene, artifact);
+        initContent(scene, artifact, icon);
 
         hoverTimer = new Timer(500, this);
         hoverTimer.setRepeats(false);
@@ -274,12 +276,21 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
     }
 
     @Messages("ACT_FixVersionConflict=Fix Version Conflict...")
-    private void initContent (DependencyGraphScene scene, Artifact artifact) {
+    private void initContent (DependencyGraphScene scene, Artifact artifact, Icon icon) {
         contentW = new LevelOfDetailsWidget(scene, 0.05, 0.1, Double.MAX_VALUE, Double.MAX_VALUE);
         contentW.setBorder(BorderFactory.createLineBorder(10));
         contentW.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
-        artifactW = new LabelWidget(scene);
-        artifactW.setLabel(artifact.getArtifactId() + "  ");
+
+        //Artifact name (with optional project icon on the left)
+        artifactW = new Widget(scene);
+        artifactW.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 4));
+        if (null != icon) {
+            artifactW.addChild(new ImageWidget(scene, ImageUtilities.icon2Image(icon)));
+        }
+        final LabelWidget labelWidget = new LabelWidget(scene, artifact.getArtifactId() + "  ");
+        labelWidget.setUseGlyphVector(true);
+        artifactW.addChild(labelWidget);
+      
         if (node.isRoot()) {
             Font defF = scene.getDefaultFont();
             artifactW.setFont(defF.deriveFont(Font.BOLD, defF.getSize() + 3f));

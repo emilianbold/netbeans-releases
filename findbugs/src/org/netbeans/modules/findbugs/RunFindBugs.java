@@ -83,9 +83,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Filter;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
@@ -288,23 +286,7 @@ public class RunFindBugs {
             engine.setDetectorFactoryCollection(DetectorFactoryCollection.instance());
 
             LOG.log(Level.FINE, "Running FindBugs");
-            Logger findbugsLogger = Logger.getLogger("edu.umd.cs.findbugs.TextUIBugReporter");//NOI18N
-            // workaround until the findbugs is able to work with jdk8 classfiles (expected in version 3.0.0)
-            // this workaround is prefferable to disabling the findbugs for 1.8 classfiles, because when new findbugs 
-            // is available, only the library wrapper can be changed to download newer libs.
-            findbugsLogger.setFilter(new Filter() {
-
-                @Override
-                public boolean isLoggable(LogRecord record) {
-                    String msg=record.getMessage();
-                    return msg == null || !msg.contains("ArrayIndexOutOfBoundsException");
-                }
-            });
-            try {
-                engine.execute();
-            }catch (ArrayIndexOutOfBoundsException aIooBE) {
-                System.out.println("Caught exception from the findbugs library, results may not be complete :"+aIooBE.getMessage());
-            }
+            engine.execute();
             Map<FileObject, List<BugInstance>> file2Bugs = new HashMap<FileObject, List<BugInstance>>();
             
             for (BugInstance b : r.getBugCollection().getCollection()) {

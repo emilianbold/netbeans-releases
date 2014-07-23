@@ -98,14 +98,16 @@ public class StringFilter {
      */
     public String filter(String str) {
         for (int i = 0; i < filter.size(); i++) {
-            Pattern p = (Pattern) filter.get(i);
-            if (p != null)  str = replaceString(str, p.begin, p.end, p.replace);
+            Pattern p = filter.get(i);
+            if (p != null) {
+                str = replaceString(str, p.begin, p.end, p.replace);
+            }
         }
         return str;
     }
     
     /** Finds substring which starts with first occurrence of 'begin' and ends
-     * with nearest next occurrence of 'end' and replces it with 'replace '.<p>
+     * with nearest next occurrence of 'end' and replaces it with 'replace '.<p>
      *
      * Usage:
      * <br><pre>

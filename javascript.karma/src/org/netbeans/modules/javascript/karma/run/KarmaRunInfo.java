@@ -59,6 +59,8 @@ public final class KarmaRunInfo {
     private final String testFile;
     private final Map<String, String> envVars = new ConcurrentHashMap<>();
 
+    private volatile boolean absoluteUrls = false;
+
 
     private KarmaRunInfo(Builder builder) {
         assert builder != null;
@@ -99,11 +101,20 @@ public final class KarmaRunInfo {
         return new HashMap<>(envVars);
     }
 
+    public boolean isAbsoluteUrls() {
+        return absoluteUrls;
+    }
+
+    public void setAbsoluteUrls(boolean absoluteUrls) {
+        this.absoluteUrls = absoluteUrls;
+    }
+
     @Override
     public String toString() {
-        return "RunInfo{" + "project=" + project + ", nbConfigFile=" + nbConfigFile // NOI18N
-                + ", projectConfigFile=" + projectConfigFile + ", testFile=" + testFile + '}'; // NOI18N
+        return "KarmaRunInfo{" + "project=" + project + ", rerunHandler=" + rerunHandler + ", nbConfigFile=" + nbConfigFile // NOI18N
+                + ", projectConfigFile=" + projectConfigFile + ", testFile=" + testFile + ", envVars=" + envVars + ", absoluteUrls=" + absoluteUrls + '}'; // NOI18N
     }
+
 
     //~ Inner classes
 

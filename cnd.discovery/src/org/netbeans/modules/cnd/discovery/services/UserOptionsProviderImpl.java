@@ -56,6 +56,8 @@ import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.QtInfoProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
@@ -165,26 +167,21 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             String options = compilerOptions.getAllOptions(compiler);
             if (compiler.getKind() == PredefinedToolKind.CCompiler) {
-                if (options.contains("-xc99")) { // NOI18N
-                    return LanguageFlavor.C99;
-                } else if (options.contains("-std=c89")) { // NOI18N
-                    return LanguageFlavor.C89;
-                } else if (options.contains("-std=c99")) { // NOI18N
-                    return LanguageFlavor.C99;
-                } else if (options.contains("-std=c11")) { // NOI18N
-                    return LanguageFlavor.C11;
+                DiscoveryUtils.Artifacts artifacts = new DiscoveryUtils.Artifacts();
+                DiscoveryUtils.gatherCompilerLine("gcc "+options, DiscoveryUtils.LogOrigin.BuildLog, artifacts, null, false); //NOI18N
+                ItemProperties.LanguageStandard languageStandard = artifacts.getLanguageStandard(ItemProperties.LanguageStandard.Unknown);
+                switch (languageStandard) {
+                    case C89: return LanguageFlavor.C89;
+                    case C99: return LanguageFlavor.C99;
+                    case C11: return LanguageFlavor.C11;
                 }
             } else if (compiler.getKind() == PredefinedToolKind.CCCompiler) {
-                if (options.contains("-std=c++0x") || // NOI18N
-                                                // NOI18N
-                        options.contains("-std=c++11") || // NOI18N
-                                                // NOI18N
-                        options.contains("-std=gnu++0x") || // NOI18N
-                                                // NOI18N
-                        options.contains("-std=gnu++11")) { // NOI18N
-                    return LanguageFlavor.CPP11;
-                //} else {
-                //    return LanguageFlavor.CPP;
+                DiscoveryUtils.Artifacts artifacts = new DiscoveryUtils.Artifacts();
+                DiscoveryUtils.gatherCompilerLine("g++ "+options, DiscoveryUtils.LogOrigin.BuildLog, artifacts, null, true); //NOI18N
+                ItemProperties.LanguageStandard languageStandard = artifacts.getLanguageStandard(ItemProperties.LanguageStandard.Unknown);
+                switch (languageStandard) {
+                    case CPP11: return LanguageFlavor.CPP11;
+                    case CPP14: return LanguageFlavor.CPP14;
                 }
             } else if (compiler.getKind() == PredefinedToolKind.FortranCompiler) {
                 // TODO

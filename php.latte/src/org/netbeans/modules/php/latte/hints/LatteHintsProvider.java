@@ -80,6 +80,7 @@ public class LatteHintsProvider implements HintsProvider {
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
         resume();
+        unhandled.addAll(context.parserResult.getDiagnostics());
     }
 
     @Override

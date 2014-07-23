@@ -138,6 +138,11 @@ public class CallModelImpl implements CallModel {
         }
     }
 
+    @Override
+    public void update() {
+        //do nothing 
+    }
+
     /**
      * declaration()<-f()
      * @param declaration

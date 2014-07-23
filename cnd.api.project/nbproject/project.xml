@@ -65,6 +65,7 @@
             <friend-packages>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
+                <friend>com.oracle.tools.ide.binary.dependencies</friend>
                 <friend>com.oracle.tools.ide.binary.dependencies.cm</friend>
                 <friend>com.oracle.tools.ide.projectless.impl</friend>
                 <friend>com.sun.tools.analytics.codemodel.bridge</friend>
@@ -120,6 +121,7 @@
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
+                <friend>org.netbeans.modules.mixeddev</friend>
                 <package>org.netbeans.modules.cnd.api.project</package>
                 <package>org.netbeans.modules.cnd.spi.project</package>
             </friend-packages>

@@ -42,6 +42,7 @@
 package org.netbeans.modules.options.export;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -49,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.SyncFailedException;
 import java.nio.charset.StandardCharsets;
@@ -133,7 +135,7 @@ public final class OptionsExportModel {
                     if(zipEntry.getName().equals(OptionsExportModel.ENABLED_ITEMS_INFO)) {
                         enabledItems = new ArrayList<String>();
                         InputStream stream = zipFile.getInputStream(zipEntry);
-                        BufferedReader br = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+                        BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
                         String strLine;
                         while ((strLine = br.readLine()) != null) {
                             enabledItems.add(strLine);
@@ -180,7 +182,7 @@ public final class OptionsExportModel {
                     ZipEntry zipEntry = (ZipEntry) entries.nextElement();
                     if(zipEntry.getName().equals(OptionsExportModel.BUILD_INFO)) {
                         InputStream stream = zipFile.getInputStream(zipEntry);
-                        BufferedReader br = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+                        BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
                         String strLine;
                         while ((strLine = br.readLine()) != null) {
                             if(strLine.startsWith("ProductVersion=")) {  // NOI18N
@@ -324,9 +326,9 @@ public final class OptionsExportModel {
     private void createEnabledItemsInfo(ZipOutputStream out, ArrayList<String> enabledItems) throws IOException {
         out.putNextEntry(new ZipEntry(ENABLED_ITEMS_INFO));
         if (!enabledItems.isEmpty()) {
-            PrintWriter writer = new PrintWriter(out);
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
             for (String item : enabledItems) {
-                writer.println(item);
+                writer.append(item).append('\n');
             }
             writer.flush();
         }
@@ -657,6 +659,9 @@ public final class OptionsExportModel {
         }
 
         public boolean isApplicable() {
+            if(items == null) {
+                return false;
+            }
             synchronized (items) {
                 Iterator<Item> iterator = items.iterator();
                 while (iterator.hasNext()) {

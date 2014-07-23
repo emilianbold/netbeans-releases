@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import org.eclipse.jgit.api.errors.InvalidTagNameException;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -54,7 +55,6 @@ import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.jgit.Utils;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -186,6 +186,22 @@ public class TagTest extends AbstractGitTestCase {
         assertEquals(0, tags.size());
     }
 
+    public void testTagInvalidName () throws Exception {
+        File f = new File(workDir, "f");
+        File[] files = new File[] { f };
+        GitClient client = getClient(workDir);
+        write(f, "init");
+        GitRevisionInfo commit = client.commit(files, "init commit", null, null, NULL_PROGRESS_MONITOR);
+        String name = "tag with spaces";
+        try {
+            client.createTag(name, commit.getRevision(), null, false, false, NULL_PROGRESS_MONITOR);
+            fail("Should fail");
+        } catch (GitException ex) {
+            assertTrue(ex.getCause() != null);
+            assertTrue(ex.getCause().toString(), ex.getCause() instanceof InvalidTagNameException);
+        }
+    }
+    
     private void assertTag (GitTag tag, String taggedObjectId, String name, String message, GitUser user, GitObjectType taggedObjectType, boolean isLightWeight) {
         assertEquals(isLightWeight, tag.isLightWeight());
         assertEquals(taggedObjectId, tag.getTaggedObjectId());

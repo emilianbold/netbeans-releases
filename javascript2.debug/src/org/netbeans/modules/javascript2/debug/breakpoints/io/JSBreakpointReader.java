@@ -111,8 +111,13 @@ public class JSBreakpointReader implements Properties.Reader {
                     if (lineCookie == null) {
                         return null;
                     }
-                    Line line = lineCookie.getLineSet().getCurrent(lineNumber - 1);
-                    b = new JSLineBreakpoint(line);
+                    try {
+                        Line line = lineCookie.getLineSet().getCurrent(lineNumber - 1);
+                        b = new JSLineBreakpoint(line);
+                    } catch (IndexOutOfBoundsException ioobex) {
+                        // The line is gone.
+                        return null;
+                    }
                 } catch (DataObjectNotFoundException ex) {
                     return null;
                 }

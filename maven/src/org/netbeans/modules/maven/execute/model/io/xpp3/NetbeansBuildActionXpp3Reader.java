@@ -57,6 +57,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParser;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.execute.model.NetbeansActionProfile;
 
 /**
  * Class NetbeansBuildActionXpp3Reader.
@@ -264,6 +265,12 @@ public class NetbeansBuildActionXpp3Reader {
                         actionToGoalMapping.setActions( actions );
                     }
                     actions.add( parseNetbeansActionMapping( "action", parser, strict ) );
+                } else if ( parser.getName().equals( "profiles" ) ) {
+                    while ( parser.nextTag() == XmlPullParser.START_TAG ) {
+                        if (parser.getName().equals("profile")) {
+                            actionToGoalMapping.getProfiles().add(parseProfile(parser, strict));
+                        }
+                    }
                 }
                 else if ( !foundRoot && strict )
                 {
@@ -274,6 +281,21 @@ public class NetbeansBuildActionXpp3Reader {
         }
         return actionToGoalMapping;
     } //-- ActionToGoalMapping parseActionToGoalMapping(String, XmlPullParser, boolean) 
+    
+    private NetbeansActionProfile parseProfile(XmlPullParser parser, boolean strict) throws IOException, XmlPullParserException {
+        NetbeansActionProfile p = new NetbeansActionProfile();
+        while ( parser.nextTag() == XmlPullParser.START_TAG ) {
+            if (parser.getName().equals("id")) {
+                p.setId(parser.nextText());
+            } else if (parser.getName().equals("actions")) {
+                while (parser.nextTag() == XmlPullParser.START_TAG && parser.getName().equals("action")) {
+                    NetbeansActionMapping r = parseNetbeansActionMapping("actions", parser, strict);
+                    p.addAction(r);
+                }
+            }
+        }
+        return p;
+    }
 
     /**
      * Method parseNetbeansActionMapping.

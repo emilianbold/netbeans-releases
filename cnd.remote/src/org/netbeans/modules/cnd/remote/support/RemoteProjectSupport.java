@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
@@ -62,10 +63,9 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Misc project related utility functions
@@ -76,7 +76,7 @@ public class RemoteProjectSupport {
     private RemoteProjectSupport() {
     }
 
-    public static ExecutionEnvironment getExecutionEnvironment(Project project) {
+    public static ExecutionEnvironment getExecutionEnvironment(Lookup.Provider project) {
         MakeConfiguration mk = ConfigurationSupport.getProjectActiveConfiguration(project);
         if (mk != null) {
             return mk.getDevelopmentHost().getExecutionEnvironment();
@@ -84,8 +84,12 @@ public class RemoteProjectSupport {
         return null;
     }
 
-    public static boolean projectExists(Project project) {
-        final FileObject projDirFO = project.getProjectDirectory();
+    public static boolean projectExists(Lookup.Provider project) {
+        RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
+        if (rp == null) {
+            return false;
+        }
+        final FileObject projDirFO = rp.getSourceBaseDirFileObject();
         if(projDirFO != null && projDirFO.isValid()) {
             FileObject nbprojectFO = projDirFO.getFileObject("nbproject"); //NOI18N
             if (nbprojectFO != null && nbprojectFO.isValid()) {
@@ -95,11 +99,15 @@ public class RemoteProjectSupport {
         return false;
     }
 
-    public static FileObject getPrivateStorage(Project project) {
+    public static FileObject getPrivateStorage(Lookup.Provider project) {
         if (project == null) {
             return null;
         }
-        FileObject baseDir = project.getProjectDirectory();
+        RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
+        if (rp == null) {
+            return null;
+        }
+        FileObject baseDir = rp.getSourceBaseDirFileObject();
         if (baseDir == null) {
             return null;
         }
@@ -111,7 +119,7 @@ public class RemoteProjectSupport {
         }
     }
 
-    public static List<FSPath> getBuildResults(Project project) {
+    public static List<FSPath> getBuildResults(Lookup.Provider project) {
         MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
         if (mcd != null) {
             MakeConfiguration conf = mcd.getActiveConfiguration();
@@ -129,24 +137,29 @@ public class RemoteProjectSupport {
         }
     }
     
-    public static List<FSPath> getProjectSourceDirs(Project project, AtomicReference<String> runDir) {
+    public static List<FSPath> getProjectSourceDirs(Lookup.Provider project, AtomicReference<String> runDir) {
         MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
-        FileSystem fs;
-        try {
-            fs = project.getProjectDirectory().getFileSystem();
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
+        RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
+        if (rp == null) {
+            return Collections.<FSPath>emptyList();
+        }
+        FileObject baseDir = rp.getSourceBaseDirFileObject();
+        if (baseDir == null){
             return Collections.<FSPath>emptyList();
         }
         if (conf == null) {
-            return Collections.singletonList(FSPath.toFSPath(project.getProjectDirectory()));
+            return Collections.singletonList(FSPath.toFSPath(baseDir));
         } else {
             return getProjectSourceDirs(project, conf, runDir);
         }
     }
 
-    public static List<FSPath> getProjectSourceDirs(Project project, MakeConfiguration conf, AtomicReference<String> runDir) {
-        FileObject baseDir = project.getProjectDirectory();
+    public static List<FSPath> getProjectSourceDirs(Lookup.Provider project, MakeConfiguration conf, AtomicReference<String> runDir) {
+        RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
+        if (rp == null) {
+            return Collections.<FSPath>emptyList();
+        }
+        FileObject baseDir = rp.getSourceBaseDirFileObject();
         if (baseDir == null) {
             return Collections.<FSPath>emptyList();
         }

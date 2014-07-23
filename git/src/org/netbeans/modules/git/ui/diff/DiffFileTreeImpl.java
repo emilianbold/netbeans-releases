@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.GitStatusNode;
 import org.netbeans.modules.versioning.util.common.FileTreeView;
 import org.netbeans.modules.versioning.util.status.VCSStatusNode;
@@ -82,7 +81,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
         return new AbstractRenderDataProvider() {
             @Override
             protected String annotateName (DiffNode node, String originalLabel) {
-                if (GitModuleConfig.getDefault().isExcludedFromCommit(node.getSetup().getBaseFile().getAbsolutePath())) {
+                if (node.isExcluded()) {
                     originalLabel = "<s>" + (originalLabel == null ? node.getName() : originalLabel) + "</s>"; //NOI18N
                 }
                 return originalLabel;

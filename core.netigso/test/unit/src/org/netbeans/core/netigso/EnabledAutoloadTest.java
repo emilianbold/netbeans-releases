@@ -45,7 +45,6 @@
 package org.netbeans.core.netigso;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.Module;
@@ -55,10 +54,7 @@ import org.netbeans.core.startup.Main;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Lookup;
 import org.openide.util.test.TestFileUtils;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.launch.Framework;
 
 /**
  *
@@ -72,6 +68,7 @@ public class EnabledAutoloadTest extends NbTestCase {
     }
 
     public static Test suite() {
+        NetigsoUtil.downgradeJDK();
         return
             NbModuleSuite.emptyConfiguration().addTest(
                 EnabledAutoloadTest.class

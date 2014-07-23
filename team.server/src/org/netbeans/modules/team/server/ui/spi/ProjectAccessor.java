@@ -62,5 +62,7 @@ public abstract class ProjectAccessor<P> {
 
     public abstract Action getOpenDownloadsAction( ProjectHandle<P> project );
 
+    public abstract boolean canBookmark();
+    
     public abstract void bookmark(ProjectHandle<P> project);
 }

@@ -55,6 +55,7 @@ class ScalarTypeVariableNode extends org.netbeans.modules.php.dbgp.models.Variab
     private static final String TYPE_INT = "TYPE_Int"; // NOI18N
     private static final String TYPE_BOOLEAN = "TYPE_Boolean"; // NOI18N
     private static final String TYPE_STRING = "TYPE_String"; // NOI18N
+    private static final String TYPE_NULL = "TYPE_Null"; // NOI18N
     public static final String BOOLEAN = "boolean"; // NOI18N
     public static final String BOOL = "bool"; // NOI18N
     public static final String INTEGER = "integer"; // NOI18N
@@ -86,8 +87,7 @@ class ScalarTypeVariableNode extends org.netbeans.modules.php.dbgp.models.Variab
                 bundleKey = TYPE_STRING;
                 break;
             default:
-                assert false : type;
-                bundleKey = null;
+                bundleKey = TYPE_NULL;
                 break;
         }
         return NbBundle.getMessage(ScalarTypeVariableNode.class, bundleKey);

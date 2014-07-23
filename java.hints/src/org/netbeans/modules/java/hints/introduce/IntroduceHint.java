@@ -263,7 +263,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         Scope scope = info.getTrees().getScope(resolved);
         boolean statik = scope != null ? info.getTreeUtilities().isStaticContext(scope) : false;
-        String guessedName = Utilities.getName(resolved.getLeaf());
+        String guessedName = org.netbeans.modules.editor.java.Utilities.varNameSuggestion(resolved.getLeaf());
         if (guessedName == null) guessedName = "name"; // NOI18N
         Scope s = info.getTrees().getScope(resolved);
         CodeStyle cs = CodeStyle.getDefault(info.getFileObject());
@@ -679,6 +679,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         parameter.rewrite(parentTree, newParent);
+    }
+    
+    public static TreePath getStatementOrBlock(TreePath firstLeaf) {
+        switch (firstLeaf.getParentPath().getLeaf().getKind()) {
+            case BLOCK:
+            case CASE:
+                return firstLeaf.getParentPath();
+            default:
+                return firstLeaf;
+        }
     }
     
     //XXX: duplicate from CopyFinder:
