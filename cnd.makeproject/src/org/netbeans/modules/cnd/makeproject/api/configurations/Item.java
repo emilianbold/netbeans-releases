@@ -987,7 +987,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         }
         
         if (flavor == LanguageFlavor.UNKNOWN) {
-            if (!itemConfiguration.isCompilerToolConfiguration()) {
+            if (itemConfiguration != null && !itemConfiguration.isCompilerToolConfiguration()) {
                 // Ask flavor of first start compilation unit.
                 CodeAssistance CAProvider = Lookup.getDefault().lookup(CodeAssistance.class);
                 if (CAProvider != null) {
