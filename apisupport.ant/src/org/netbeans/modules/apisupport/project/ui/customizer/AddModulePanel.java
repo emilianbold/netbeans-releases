@@ -68,7 +68,6 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -80,7 +79,6 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.api.Util;
-import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -187,16 +185,13 @@ public final class AddModulePanel extends JPanel {
                     RP.post(new Runnable() {
                         @Override
                         public void run() {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    currectJavadoc = deps[0].getModuleEntry().getJavadoc(platform);
-                                }
-                            });
+                            currectJavadoc = deps[0].getModuleEntry().getJavadoc(platform);
+                            showJavadocButton.setEnabled(currectJavadoc != null);
                         }
                     });
+                } else {
+                    showJavadocButton.setEnabled(false);
                 }
-                showJavadocButton.setEnabled(currectJavadoc != null);
             }
         });
         filterValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
