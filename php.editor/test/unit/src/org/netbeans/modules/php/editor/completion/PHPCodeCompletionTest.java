@@ -47,9 +47,7 @@ package org.netbeans.modules.php.editor.completion;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import junit.framework.Test;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -59,10 +57,6 @@ public class PHPCodeCompletionTest extends PHPCodeCompletionTestBase {
 
     public PHPCodeCompletionTest(String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        return NbModuleSuite.createConfiguration(PHPCodeCompletionTest.class).suite();
     }
 
     public void test186936() throws Exception {
