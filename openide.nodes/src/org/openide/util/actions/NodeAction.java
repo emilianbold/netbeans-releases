@@ -611,9 +611,15 @@ OUTER:
         }
 
         public void resultChanged(LookupEvent ev) {
-            boolean old = enabled;
+            final boolean old = enabled;
             enabled = delegate.enable(nodes());
-            support.firePropertyChange(PROP_ENABLED, old, enabled);
+            Mutex.EVENT.readAccess(new Runnable() {
+
+                @Override
+                public void run () {
+                    support.firePropertyChange(PROP_ENABLED, old, enabled);
+                }
+            });
         }
 
         public JMenuItem getMenuPresenter() {
