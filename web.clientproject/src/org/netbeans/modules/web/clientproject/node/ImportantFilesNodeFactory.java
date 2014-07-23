@@ -465,7 +465,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             final TreeMap<FileObject, String> files = new TreeMap<>(new FileObjectComparator());
             for (String loc : FILES.keySet()) {
                 FileObject file = project.getProjectDirectory().getFileObject(loc);
-                if (file != null && FileUtil.getRelativePath(project.getProjectDirectory(), file).equals(loc)) {
+                if (file != null && loc.equals(FileUtil.getRelativePath(project.getProjectDirectory(), file))) {
                     files.put(file, loc);
                 }
             }
