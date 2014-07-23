@@ -595,9 +595,10 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
                 String textInField = fileNameTextField.getText();
                 if ( textInField == null || textInField.trim().length() == 0 ) {
                     fileNameTextField.setText(text);
-                    fileNameTextField.setCaretPosition(text.length());
+                    final int len = fileNameTextField.getText().length();   //The text may be changed by DocumentFilter
+                    fileNameTextField.setCaretPosition(len);
                     fileNameTextField.setSelectionStart(0);
-                    fileNameTextField.setSelectionEnd(text.length());
+                    fileNameTextField.setSelectionEnd(len);
                 }
             }
         });
