@@ -122,8 +122,6 @@ public class MeasureEntityBeanActionTest extends PerformanceTestCase {
     public void initialize() {
         // open a java file in the editor
         beanNode = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"), "Enterprise Beans|TestEntityEB");
-        new OpenAction().performAPI(beanNode);
-        editor = new EditorOperator("TestEntityBean.java");
         final ActionNoBlock action = new ActionNoBlock(null, popup_menu);
         try {
             new Waiter(new Waitable() {
@@ -141,6 +139,8 @@ public class MeasureEntityBeanActionTest extends PerformanceTestCase {
         } catch (InterruptedException e) {
             throw new JemmyException("Interrupted.", e);
         }
+        new OpenAction().performAPI(beanNode);
+        editor = new EditorOperator("TestEntityBean.java");
     }
 
     @Override

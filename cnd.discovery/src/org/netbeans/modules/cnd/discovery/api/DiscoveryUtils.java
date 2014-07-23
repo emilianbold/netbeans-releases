@@ -52,6 +52,8 @@ import java.nio.file.Paths;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -74,6 +76,13 @@ import org.openide.util.Utilities;
  */
 public class DiscoveryUtils {
 
+    public static final List<String> C89 = Collections.unmodifiableList(Arrays.asList("-std=c89","-std=iso9899:1990","-std=iso9899:1990","-std=c90")); // NOI18N
+    public static final List<String> C99 = Collections.unmodifiableList(Arrays.asList("-xc99","-std=c9x","-std=iso9899:199409","-std=iso9899:199x","-std=iso9899:1999","-std=gnu99","-std=gnu9x","-std=c99")); // NOI18N
+    public static final List<String> C11 = Collections.unmodifiableList(Arrays.asList("-std=c11","-std=gnu1x","-std=gnu11","-std=iso9899:2011","-std=c1x","-std=c11")); // NOI18N
+    public static final List<String> CPP98 = Collections.unmodifiableList(Arrays.asList("-std=c++98","-std=c++03")); // NOI18N
+    public static final List<String> CPP11 = Collections.unmodifiableList(Arrays.asList("-std=c++0x","-std=c++11","-std=gnu++0x","-std=gnu++11")); // NOI18N
+    public static final List<String> CPP14 = Collections.unmodifiableList(Arrays.asList("-std=c++14","-std=gnu++1y","-std=c++1y","-std=gnu++1z","-std=c++1z")); // NOI18N
+    
     private DiscoveryUtils() {
     }
     
@@ -568,44 +577,27 @@ public class DiscoveryUtils {
                 artifacts.languageArtifacts.add("c++"); // NOI18N
                 isCpp = true;
                 importantCandidates.add(option);
-            } else if (option.equals("-std=c89") || // NOI18N
-                       option.equals("-std=iso9899:1990") || // NOI18N
-                       option.equals("-std=iso9899:1990") || // NOI18N
-                       option.equals("-std=c90")){ // NOI18N
+            } else if (C89.contains(option)){
                 artifacts.languageArtifacts.add("c89"); // NOI18N
                 isCpp = false;
                 importantCandidates.add(option);
-            } else if (option.equals("-xc99") || // NOI18N
-                       option.equals("-std=c9x") || // NOI18N
-                       option.equals("-std=iso9899:199409") || // NOI18N
-                       option.equals("-std=iso9899:199x") || // NOI18N
-                       option.equals("-std=iso9899:1999") || // NOI18N
-                       option.equals("-std=gnu99") || // NOI18N
-                       option.equals("-std=gnu9x") || // NOI18N
-                       option.equals("-std=c99")){ // NOI18N
+            } else if (C99.contains(option)){
                 artifacts.languageArtifacts.add("c99"); // NOI18N
                 isCpp = false;
                 importantCandidates.add(option);
-            } else if (option.equals("-std=c11") || // NOI18N
-                       option.equals("-std=gnu1x") || // NOI18N
-                       option.equals("-std=gnu11") || // NOI18N
-                       option.equals("-std=iso9899:2011") || // NOI18N
-                       option.equals("-std=c1x") || // NOI18N
-                       option.equals("-std=c11")){ // NOI18N
+            } else if (C11.contains(option)){
                 artifacts.languageArtifacts.add("c11"); // NOI18N
                 isCpp = false;
                 importantCandidates.add(option);
-            } else if (option.equals("-std=c++0x") || // NOI18N
-                       option.equals("-std=c++11") || // NOI18N
-                       option.equals("-std=gnu++0x") || // NOI18N
-                       option.equals("-std=gnu++11") || // NOI18N
-                       option.equals("-std=gnu++1y") || // NOI18N
-                       option.equals("-std=c++1y")){ // NOI18N
+            } else if (CPP11.contains(option)){
                 artifacts.languageArtifacts.add("c++11"); // NOI18N
                 isCpp = true;
                 importantCandidates.add(option);
-            } else if (option.equals("-std=c++98") ||  // NOI18N
-                       option.equals("-std=c++03")){ // NOI18N
+            } else if (CPP14.contains(option)){
+                artifacts.languageArtifacts.add("c++14"); // NOI18N
+                isCpp = true;
+                importantCandidates.add(option);
+            } else if (CPP98.contains(option)){
                 artifacts.languageArtifacts.add("c++98"); // NOI18N
                 isCpp = true;
                 importantCandidates.add(option);
@@ -731,6 +723,24 @@ public class DiscoveryUtils {
                 buf.append(flag);
             }
             return buf.toString();
+        }
+        public ItemProperties.LanguageStandard getLanguageStandard(ItemProperties.LanguageStandard standard) {
+            for(String lang : languageArtifacts) {
+                if ("c89".equals(lang)) { //NOI18N
+                    standard = ItemProperties.LanguageStandard.C89;
+                } else if ("c99".equals(lang)) { //NOI18N
+                    standard = ItemProperties.LanguageStandard.C99;
+                } else if ("c11".equals(lang)) { //NOI18N
+                    standard = ItemProperties.LanguageStandard.C11;
+                } else if ("c++98".equals(lang)) { //NOI18N
+                    standard = ItemProperties.LanguageStandard.CPP;
+                } else if ("c++11".equals(lang)) { //NOI18N
+                    standard = ItemProperties.LanguageStandard.CPP11;
+                } else if ("c++14".equals(lang)) { //NOI18N
+                    standard = ItemProperties.LanguageStandard.CPP14;
+                } 
+            }
+            return standard;
         }
     }
 }

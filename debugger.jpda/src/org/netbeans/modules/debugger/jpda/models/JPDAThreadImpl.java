@@ -1794,7 +1794,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                     if (monitorInfos != null && monitorInfos.size() > 0) {
                         List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
                         for (com.sun.jdi.MonitorInfo monitorInfo : monitorInfos) {
-                            mis.add(createMonitorInfo(monitorInfo));
+                            MonitorInfo mi = createMonitorInfo(monitorInfo);
+                            if (mi != null) {
+                                mis.add(mi);
+                            }
                         }
                         return Collections.unmodifiableList(mis);
                     }

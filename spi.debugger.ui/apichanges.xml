@@ -192,6 +192,25 @@ made subject to such option by the copyright holder.
         <issue number="217953"/>
     </change>
 
+    <change id="PersistentController">
+        <api name="DebuggerCoreSPI"/>
+        <summary><code>PersistentController</code> interface added.</summary>
+        <version major="2" minor="46"/>
+        <date day="21" month="7" year="2014"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes" semantic="compatible"/>
+        <description>
+            <p>
+                <code>PersistentController</code> interface introduced
+                to provide persistence mechanism to attach controllers.
+                Debug action provides access to history of customized attach
+                controllers.
+            </p>
+        </description>
+        <class package="org.netbeans.spi.debugger.ui" name="PersistentController"/>
+        <issue number="193872"/>
+    </change>
+
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->

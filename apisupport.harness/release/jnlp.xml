@@ -255,6 +255,13 @@ made subject to such option by the copyright holder.
                 <replacestring from="$$$$codebase" to="${build.jnlp.local.url}"/>
             </filterchain>
         </copy>
+        <jnlpupdatemanifeststartup appname="${app.name}"
+                                   alias="${jnlp.signjar.alias}" 
+                                   keystore="${jnlp.signjar.keystore}" 
+                                   storepass="${jnlp.signjar.password}"
+                                   jar="${harness.dir}/jnlp/jnlp-launcher.jar"
+                                   masterJnlp="${build.jnlp.local.dir}/master.jnlp"
+                                   destjar="${build.jnlp.local.dir}/startup.jar"/>
         <mkdir dir="${suite.build.dir}/jnlp/netbeans"/> <!-- else fileset will croak -->
         <copy todir="${build.jnlp.local.dir}/netbeans/">
             <fileset dir="${suite.build.dir}/jnlp/netbeans">
@@ -297,13 +304,6 @@ made subject to such option by the copyright holder.
         </subant>
 
         <antcall target="copy-branding"/>
-        
-        <jnlpupdatemanifeststartup appname="${app.name}"
-                                   alias="${jnlp.signjar.alias}" 
-                                   keystore="${jnlp.signjar.keystore}" 
-                                   storepass="${jnlp.signjar.password}"
-                                   jar="${harness.dir}/jnlp/jnlp-launcher.jar"
-                                   destjar="${jnlp.dest.dir}/startup.jar"/>
         
         <pathconvert pathsep="${line.separator}" property="jnlp.branding.jars">
             <path>
@@ -349,12 +349,20 @@ made subject to such option by the copyright holder.
                 <replacestring from="&lt;!--$${jnlp.resources}--&gt;" to="${jnlp.resources}"/>
                 <replacestring from="$${jnlp.resources}" to="${jnlp.resources}"/>
                 <replacestring from="$${app.name}" to="${app.name}"/>
+                <replacestring from="$${user.home}" to="${user.home}"/>
                 <replacestring from="$${app.title}" to="${app.title}"/>
                 <replacestring from="$${app.icon}" to="master.${app.icon.ext}"/>
                 <replacestring from="$${branding.token}" to="${branding.token}"/>
                 <replacestring from="$${netbeans.jnlp.fixPolicy}" to="${netbeans.jnlp.fixPolicy}"/>
             </filterchain>
         </copy>
+        <jnlpupdatemanifeststartup appname="${app.name}"
+                                   alias="${jnlp.signjar.alias}" 
+                                   keystore="${jnlp.signjar.keystore}" 
+                                   storepass="${jnlp.signjar.password}"
+                                   jar="${harness.dir}/jnlp/jnlp-launcher.jar"
+                                   masterJnlp="${jnlp.dest.dir}/master.jnlp"
+                                   destjar="${jnlp.dest.dir}/startup.jar"/>
         <echo>Your JNLP file is generated at ${jnlp.dest.dir}/master.jnlp</echo>
         <!-- The following line will not fail if the branding.jnlp
         is not present, e.g. when the main file was generated using
