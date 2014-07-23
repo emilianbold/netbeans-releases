@@ -150,7 +150,7 @@ public abstract class CsmReferenceRepository {
         DataObject dataObject = DataObject.find(fileObject);
         EditorCookie cookie = dataObject.getLookup().lookup(EditorCookie.class);
         if (cookie == null) {
-            throw new IllegalStateException("Given file (\"" + dataObject.getName() + // NOI18N
+            throw new IllegalStateException("Given file (\"" + fileObject.getPath() + // NOI18N
                                             "\", data object is instance of class " + dataObject.getClass().getName() + // NOI18N
                                             ") does not have EditorCookie."); // NOI18N
         }
