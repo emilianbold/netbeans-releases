@@ -187,7 +187,8 @@ public class JiraConfiguration {
     }
 
     public Component[] getComponents(String projectId) {
-        Component[] components = getProjectById(projectId).getComponents();
+        Project project = getProjectById(projectId);
+        Component[] components = project != null ? project.getComponents() : null;
         return components != null ? components : new Component[0];
     }
 
