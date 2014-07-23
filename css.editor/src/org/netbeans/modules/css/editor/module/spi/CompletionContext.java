@@ -67,6 +67,7 @@ public class CompletionContext extends EditorFeatureContext {
     private final TokenSequence<CssTokenId> tokenSequence;
     private final Node activeTokenNode;
     private final int tsIndex;
+    private final String sourceFileMimetype;
 
     /**
      * @doto use class accessor so clients cannot instantiate this.
@@ -74,7 +75,7 @@ public class CompletionContext extends EditorFeatureContext {
     public CompletionContext(Node activeNode, Node activeTokeNode, CssParserResult result, 
             TokenSequence<CssTokenId> tokenSequence, int tsIndex, int activeTokenDiff, 
             QueryType queryType, int caretOffset, int anchorOffset, int embeddedCaretOffset, 
-            int embeddedAnchorOffset, String prefix) {
+            int embeddedAnchorOffset, String prefix, String sourceFileMimetype) {
         super(result, caretOffset);
         this.tokenSequence = tokenSequence;
         this.tsIndex = tsIndex;
@@ -86,8 +87,28 @@ public class CompletionContext extends EditorFeatureContext {
         this.embeddedAnchorOffset = embeddedAnchorOffset;
         this.prefix = prefix;
         this.activeTokenDiff = activeTokenDiff;
+        this.sourceFileMimetype = sourceFileMimetype;
     }
 
+    /**
+     * Gets mimetype of the fileobject if there's any, otherwise returns null.
+     * 
+     * @return the source file mimetype.
+     */
+    public String getSourceFileMimetype() {
+        return sourceFileMimetype;
+    }
+
+    /**
+     * Decides whether the CompletionContext belongs to a css preprocessor (SASS or LESS) source. 
+     * 
+     * Bit hacky - would be nice to have a SPI for that.
+     * @return 
+     */
+    public boolean isCssPreprocessorSource() {
+        return "text/scss".equals(sourceFileMimetype) || "text/less".equals(sourceFileMimetype);
+    }
+    
     /**
      * 
      * @return a TokenSequence of Css tokens created on top of the *virtual* css source.
