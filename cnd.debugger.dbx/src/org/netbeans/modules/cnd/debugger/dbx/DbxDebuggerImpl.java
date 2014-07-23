@@ -734,6 +734,13 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         if (getNDI().loadSucceed()) {
             manager().addRecentDebugTarget(getNDI().getTarget(), true);
         }
+        
+        if (MemoryWindow.getDefault().isShowing()) {
+            MemoryWindow.getDefault().setDebugger(null);
+            // CR 6660966
+            //currentMemoryWindow = null;
+            //MemoryWindow.getDefault().setControlPanelData("main", "80", null); // NOI18N
+        }
     }
 
     void noteProcNewFromPid(int pid) {
@@ -813,12 +820,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         setVisitedLocation(null);
         resetCurrentLine();
-        if (MemoryWindow.getDefault().isShowing()) {
-            MemoryWindow.getDefault().setDebugger(null);
-            // CR 6660966
-            //currentMemoryWindow = null;
-            //MemoryWindow.getDefault().setControlPanelData("main", "80", null); // NOI18N
-        }
     }
     private RtcController rtcController;
 
