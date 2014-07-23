@@ -481,6 +481,7 @@ public class Installer extends ModuleInstall implements Runnable {
         synchronized (restored) {
             restored.set(false);
         }
+        EarlyHandler.forgetInstallerHandle();
     }
     
     static boolean isImmediateWriteOut(LogRecord r) {

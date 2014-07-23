@@ -403,6 +403,11 @@ public class Commit extends GeneralPHP {
         jtTree.clickOnPath(jtTree.findPath("a"));
         jtTree.clickOnPath(jtTree.findPath("d"));
         jtTree.clickOnPath(jtTree.findPath("e"));
+        JCheckBoxOperator publicCheckBox = new JCheckBoxOperator(jdGenerator, "Use Public Modifier");
+        // unselect public check box
+        if (publicCheckBox.isSelected()) {
+            publicCheckBox.push();
+        }
 
         JButtonOperator jbOk = new JButtonOperator(jdGenerator, "OK");
         jbOk.pushNoBlock();
@@ -436,7 +441,11 @@ public class Commit extends GeneralPHP {
         jtTree.clickOnPath(jtTree.findPath("b"));
         jtTree.clickOnPath(jtTree.findPath("c"));
         jtTree.clickOnPath(jtTree.findPath("f"));
-        new JCheckBoxOperator(jdGenerator, "Use Public Modifier").push();
+        publicCheckBox = new JCheckBoxOperator(jdGenerator, "Use Public Modifier");
+        // select public check box
+        if (!publicCheckBox.isSelected()) {
+            publicCheckBox.push();
+        }
 
         jbOk = new JButtonOperator(jdGenerator, "OK");
         jbOk.pushNoBlock();

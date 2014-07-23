@@ -134,7 +134,18 @@ public class EditorOnlyDisplayer {
             return true;
         JPanel panel = new JPanel( new BorderLayout() );
         panel.add( tc, BorderLayout.CENTER  );
-        mainWnd.setContentPane( panel );
+        try {
+            mainWnd.setContentPane( panel );
+        } catch( IndexOutOfBoundsException e ) {
+            Logger.getLogger(EditorOnlyDisplayer.class.getName()).log(Level.INFO, "Error while switching current editor.", e);
+            //#245541 - something is broken in the component hierarchy, let's try restoring to the default mode
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    cancel(false);
+                }
+            });
+        }
         mainWnd.invalidate();
         mainWnd.revalidate();
         mainWnd.repaint();

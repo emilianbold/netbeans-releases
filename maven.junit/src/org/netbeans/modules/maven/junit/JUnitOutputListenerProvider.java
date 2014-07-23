@@ -426,9 +426,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             return;
         }
         if (runningTestClass != null && outputDir != null) {
-            if(!surefireRunningInParallel) {
-                generateTest();
-            }
+            generateTest();
         }
         Manager.getInstance().sessionFinished(session);
         runningTestClass = null;

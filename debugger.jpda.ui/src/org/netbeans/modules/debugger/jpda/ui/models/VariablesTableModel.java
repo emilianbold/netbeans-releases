@@ -220,12 +220,12 @@ public class VariablesTableModel implements TableModel, Constants {
                 if (mirror == null) {
                     mirrors.remove(var);
                     origValues.remove(var);
-                    values.put(var, var.getValue());
                 } else {
                     mirrors.put(var, mirror);
-                    values.remove(var);
                     //origValues.put(var, ((JDIVariable) var).getJDIValue());
                 }
+                // Put in any case, the mirror might not be applicable to the property editor.
+                values.put(var, var.getValue());
             }
         } else {
             return var.getValue();
