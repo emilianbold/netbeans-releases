@@ -745,6 +745,9 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             List<Node> list = new ArrayList<Node>();
             expandAllImpl(canceled, n, list);
             for(Node node : list) {
+                if (canceled.get()) {
+                    return;
+                }
                 getTreeView().expandNode(node);            
             }
         } finally {
