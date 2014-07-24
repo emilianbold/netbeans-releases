@@ -88,6 +88,20 @@ made subject to such option by the copyright holder.
     the entire Node hierarchy, which generally are fixed. 
 </answer>
 
+<answer id="arch-usecases">
+    
+  <p>
+     <a onclick="target='_blank'" href="https://leanpub.com/nbp4beginners">
+     <img src="http://wiki.apidesign.org/images/0/03/NetBeansPlatformForBeginners.jpg"
+        style="float: right"
+          width="60" height="70" alt="Cover of NetBeans Platform for Beginners book"/>
+     </a>
+    For general overview of the concepts related to <a href="@org-openide-nodes@/overview-summary.html">nodes</a> and explorers, 
+    together with code samples, see chapter 7, 
+    of <a onclick="target='_blank'" href="https://leanpub.com/nbp4beginners">NetBeans Platform for Beginners</a> 
+    by Jason Wexbridge and Walter Nyland.
+  </p>
+</answer>
 
 
 <!--
@@ -750,7 +764,13 @@ No.
 -->
  <answer id="arch-overall">
   <p>
-   XXX no answer for arch-overall
+   Provides Swing UI components that render 
+   provided <a href="@org-openide-nodes@/overview-summary.html">node hierarchy</a>
+   in different ways (as a <a href="@TOP@org/openide/explorer/view/BeanTreeView.html">tree</a>,
+   <a href="@TOP@org/openide/explorer/view/ListView.html">list</a>,
+   <a href="@TOP@org/openide/explorer/view/IconView.html">icons</a>,
+   <a href="@TOP@org/openide/explorer/propertysheet/PropertySheetView.html">set of properties</a>
+   and many other).
   </p>
  </answer>
 
@@ -795,28 +815,6 @@ No.
  </answer>
 
 
-
-<!--
-        <question id="arch-usecases" when="init">
-            <hint>
-                Content of this answer will be displayed as part of page at
-                http://www.netbeans.org/download/dev/javadoc/usecases.html 
-                You can use tags &lt;usecase name="name&gt; regular html description &lt;/usecase&gt;
-                and if you want to use an URL you can prefix if with @TOP@ to begin
-                at the root of your javadoc
-            </hint>
-        
-            Describe the main <a href="http://openide.netbeans.org/tutorial/api-design.html#usecase" shape="rect">
-            use cases</a> of the new API. Who will use it under
-            what circumstances? What kind of code would typically need to be written
-            to use the module?
-        </question>
--->
- <answer id="arch-usecases">
-  <p>
-   XXX no answer for arch-usecases
-  </p>
- </answer>
 
 
 
