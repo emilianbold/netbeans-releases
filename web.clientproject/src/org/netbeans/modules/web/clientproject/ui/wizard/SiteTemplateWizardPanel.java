@@ -47,6 +47,7 @@ import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 
 public class SiteTemplateWizardPanel implements WizardDescriptor.ExtendedAsynchronousValidatingPanel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor> {
@@ -61,7 +62,13 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.ExtendedAsynchr
     @Override
     public SiteTemplateWizard getComponent() {
         if (siteTemplateWizard == null) {
-            siteTemplateWizard = new SiteTemplateWizard();
+            // #245956
+            siteTemplateWizard = Mutex.EVENT.readAccess(new Mutex.Action<SiteTemplateWizard>() {
+                @Override
+                public SiteTemplateWizard run() {
+                    return new SiteTemplateWizard();
+                }
+            });
         }
         return siteTemplateWizard;
     }

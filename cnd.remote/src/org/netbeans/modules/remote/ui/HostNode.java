@@ -78,7 +78,7 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
     public HostNode(ExecutionEnvironment execEnv) {
         super(createChildren(execEnv), Lookups.singleton(execEnv));
         this.env = execEnv;
-        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, null));
+        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, ConnectionManager.getInstance()));
         ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, null));
         addRecordListener();
     }
