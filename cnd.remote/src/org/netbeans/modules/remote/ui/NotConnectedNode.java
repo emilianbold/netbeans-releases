@@ -67,7 +67,7 @@ public class NotConnectedNode extends AbstractNode implements ConnectionListener
     public NotConnectedNode(ExecutionEnvironment env) {
         super(Children.LEAF, Lookups.singleton(env));
         this.env = env;
-        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, null));
+        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, ConnectionManager.getInstance()));
     }
 
     @Override

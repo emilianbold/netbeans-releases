@@ -136,7 +136,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
         }
 
         refresh();
-        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, null));
+        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, ConnectionManager.getInstance()));
     }
 
     @Override
