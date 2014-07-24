@@ -69,7 +69,7 @@ EXEC=$(DIST_DIR)/$(PNAME)
 
 
 #CF_COMMON         = --std=c99 -s -O2
-CF_COMMON         = --std=c99 -g -Wall -Werror
+CF_COMMON         = --std=c99 -g -Wall -Werror -D_REENTRANT
 CF_Linux-arm      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700
 CF_Linux-x86      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m32
 CF_Linux-x86_64   = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m64
