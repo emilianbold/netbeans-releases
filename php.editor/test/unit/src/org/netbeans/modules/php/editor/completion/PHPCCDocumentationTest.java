@@ -117,6 +117,14 @@ public class PHPCCDocumentationTest extends PHPCodeCompletionTestBase {
         checkCompletionDocumentation("testfiles/completion/documentation/issue215408.php", "ClassName::F^OO;", false, "");
     }
 
+    public void testIssue245158_01() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue245158.php", "$this->a_wi^th;", false, "");
+    }
+
+    public void testIssue245158_02() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue245158.php", "$this->b_with^out;", false, "");
+    }
+
     @Override
     protected String alterDocumentationForTest(String documentation) {
         int start = documentation.indexOf("file:");

@@ -1,5 +1,5 @@
 function parseLinks() {
-    $("a").click(function(evt) {
+    $("a").click(function (evt) {
         var href = $(this).attr("href");
         if (href.indexOf("http://netbeans.org/bugzilla/buglist.cgi") === 0 || href.indexOf("https://netbeans.org/bugzilla/buglist.cgi") === 0) {
 

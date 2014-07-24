@@ -45,12 +45,16 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -77,6 +81,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -108,6 +113,9 @@ public final class ConnectionManager {
     private static final ConnectionManager instance = new ConnectionManager();
     private final ConnectionContinuation DEFAULT_CC;
     private final AbstractList<ExecutionEnvironment> recentConnections = new ArrayList<ExecutionEnvironment>();
+
+    private final ConnectionWatcher connectionWatcher;
+    final int connectionWatcherInterval;
 
     static {
         ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
@@ -157,6 +165,12 @@ public final class ConnectionManager {
         };
 
         restoreRecentConnectionsList();
+        connectionWatcherInterval = Integer.getInteger("nativeexecution.connection.watch.interval", 4000);
+        if (connectionWatcherInterval > 0) {
+            connectionWatcher = new ConnectionWatcher();
+        } else {
+            connectionWatcher = null;
+        }
     }
 
     public void addConnectionListener(ConnectionListener listener) {
@@ -222,6 +236,9 @@ public final class ConnectionManager {
     }
 
     private void fireConnected(ExecutionEnvironment execEnv) {
+        if (connectionWatcher != null) {
+            connectionWatcher.connected(execEnv);
+        }
         // No need to lock - use thread-safe collection
         for (ConnectionListener connectionListener : connectionListeners) {
             connectionListener.connected(execEnv);
@@ -230,6 +247,9 @@ public final class ConnectionManager {
     }
 
     private void fireDisconnected(ExecutionEnvironment execEnv) {
+        if (connectionWatcher != null) {
+            connectionWatcher.disconnected(execEnv);
+        }
         // No need to lock - use thread-safe collection
         for (ConnectionListener connectionListener : connectionListeners) {
             connectionListener.disconnected(execEnv);
@@ -249,7 +269,23 @@ public final class ConnectionManager {
             return true;
         }
         JSchChannelsSupport support = channelsSupport.get(execEnv); // it's a ConcurrentHashMap => no lock is needed
-        return (support != null) && support.isConnected();
+        // return (support != null) && support.isConnected();
+        // The code below does the same as commented line above,
+        // except for it schedulles connection check for a broken connection.
+        // Without this, if a connection breaks while remote FS is working with remote content,
+        // balloon "Need to connect to..." appears several seconds before host is going "red" :)
+        if (support != null) {
+            if (support.isConnected()) {
+                return true;
+            } else {
+                if (connectionWatcher != null) {
+                    connectionWatcher.scheduleNow();
+                }
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
     private static final int RETRY_MAX = 10;
 
@@ -457,6 +493,9 @@ public final class ConnectionManager {
             if (channelsSupport.containsKey(env)) {
                 try {
                     channelsSupport.get(env).reconnect(env);
+                    if (connectionWatcher != null) {
+                        connectionWatcher.connected(env);
+                    }
                 } catch (JSchException ex) {
                     throw new IOException(ex);
                 }
@@ -710,5 +749,87 @@ public final class ConnectionManager {
         void connectionCancelled(ExecutionEnvironment env);
 
         void connectionFailed(ExecutionEnvironment env, IOException ex);
+    }
+
+    private class ConnectionWatcher implements Runnable {
+
+        /**
+         * Guarded by channelsSupportLock.
+         * Contains list of connections that were already recognized as broken
+         */
+        private final Set<ExecutionEnvironment> brokenConnections = new HashSet<ExecutionEnvironment>();
+
+        private final RequestProcessor.Task myTask;
+
+        public ConnectionWatcher() {
+            myTask = new RequestProcessor("Connection Watcher", 1).create(this); //NOI18N
+        }
+
+        @Override
+        public void run() {
+            try {
+                // fast check without locking
+                List<ExecutionEnvironment> candidates = new ArrayList<ExecutionEnvironment>();
+                for (JSchChannelsSupport cs : channelsSupport.values()) {
+                    if (!cs.isConnected()) {
+                        candidates.add(cs.getExecutionEnvironment());
+                    }
+                }
+                if (!candidates.isEmpty()) {
+                    // slow and reliable check
+                    synchronized (channelsSupportLock) {
+                        for (ExecutionEnvironment env : candidates) {
+                            JSchChannelsSupport cs = channelsSupport.get(env);
+                            if (cs != null) {
+                                if (!cs.isConnected()) {
+                                    if (!brokenConnections.contains(env)) {
+                                        brokenConnections.add(env);
+                                        fireDisconnected(env);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } finally {
+                scheduleIfNeed();
+            }
+        }
+
+        public void scheduleNow() {
+            myTask.schedule(0);
+        }
+
+        public void scheduleIfNeed() {
+            synchronized (channelsSupportLock) {
+                if (!channelsSupport.isEmpty()) {
+                    myTask.schedule(connectionWatcherInterval);
+                }
+            }
+        }
+
+        /**
+         * To be called from ConnectionManager.disconnect()
+         * to notify that the host was "officially" disconnected,
+         * so it is not broken any more
+         */
+        public void disconnected(ExecutionEnvironment env) {
+            synchronized (channelsSupportLock) {
+                brokenConnections.remove(env);
+            }
+        }
+
+        /**
+         * To be called from ConnectionManager.connect()
+         * and ConnectionManager.reconect(). The purpose is two-fold:
+         * 1) remove it from broken list, so next time it breaks, we react
+         * 2) if the task wasn't yet scheduled, schedule it.
+         */
+        public void connected(ExecutionEnvironment env) {
+            synchronized (channelsSupportLock) {
+                brokenConnections.remove(env);
+            }
+            scheduleNow();
+        }
     }
 }

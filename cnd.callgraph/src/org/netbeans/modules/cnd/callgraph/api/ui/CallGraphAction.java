@@ -61,9 +61,11 @@ abstract public class CallGraphAction extends AbstractAction{
     }
     
     abstract public void doNonEDTAction();
+    abstract public void doEDTAction();
 
     @Override
     public final void actionPerformed(ActionEvent e) {
+        doEDTAction();
         RP.post(new Runnable() {
 
             @Override

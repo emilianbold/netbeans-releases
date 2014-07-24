@@ -95,7 +95,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
         connectionLayer = new LayerWidget (this);
         addChild(connectionLayer);
         router = new RelativePathRouter(connectionLayer);
-        orthogonalRouter = RouterFactory.createOrthogonalSearchRouter(mainLayer, connectionLayer);
+        orthogonalRouter = RouterFactory.createOrthogonalSearchRouter(/*mainLayer, connectionLayer*/);
 
         defaultItalicFont = new Font(getDefaultFont().getName(),
                               Font.ITALIC, getDefaultFont().getSize());

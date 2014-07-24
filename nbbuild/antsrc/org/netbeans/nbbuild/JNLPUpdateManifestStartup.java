@@ -42,6 +42,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -101,6 +102,12 @@ public class JNLPUpdateManifestStartup extends Task {
         this.appName = appName;
     }
 
+    private File masterJnlp;
+
+    public void setMasterJnlp(File masterJnlp) {
+        this.masterJnlp = masterJnlp;
+    }
+    
     private final String permissions = "all-permissions";
 
     private final String codebase = "*";
@@ -209,6 +216,14 @@ public class JNLPUpdateManifestStartup extends Task {
                     final Enumeration<? extends org.apache.tools.zip.ZipEntry> zent = zf.getEntries();
                     final ZipOutputStream out = new ZipOutputStream(tmpFile);
                     try {
+                        org.apache.tools.zip.ZipEntry masterJnlpEntry = new org.apache.tools.zip.ZipEntry("JNLP-INF/APPLICATION.JNLP");
+                        out.putNextEntry(masterJnlpEntry);
+                        FileInputStream masterFis = new FileInputStream(masterJnlp.getAbsolutePath());
+                        try {
+                            copy(masterFis, out);
+                        } finally {
+                            masterFis.close();
+                        }
                         while (zent.hasMoreElements()) {
                             final org.apache.tools.zip.ZipEntry entry = zent.nextElement();
                             final InputStream in = zf.getInputStream(entry);

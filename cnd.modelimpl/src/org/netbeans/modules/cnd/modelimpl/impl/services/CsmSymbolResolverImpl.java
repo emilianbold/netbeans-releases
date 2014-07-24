@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -72,6 +73,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmOverloadingResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -109,7 +111,7 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
     private static final Logger LOG = Logger.getLogger(VariableProvider.class.getSimpleName());
 
     @Override
-    public Collection<CsmObject> resolveSymbol(NativeProject project, CharSequence declText) {
+    public Collection<CsmOffsetable> resolveSymbol(NativeProject project, CharSequence declText) {
         CsmProject cndProject = CsmModelAccessor.getModel().getProject(project);
         if (cndProject != null) {
             cndProject.waitParse();
@@ -119,8 +121,9 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
     }
 
     @Override
-    public Collection<CsmObject> resolveSymbol(CsmProject project, CharSequence declText) {
+    public Collection<CsmOffsetable> resolveSymbol(CsmProject project, CharSequence declText) {
         try {
+            CsmCacheManager.enter();
             AST ast = tryParseQualifiedId(declText);
             if (ast != null) {
                 // Simple case - declText is just a qualified id
@@ -156,11 +159,13 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
             }
         } catch (Exception ex) {
             LOG.warning(ex.getMessage());
+        } finally {
+            CsmCacheManager.leave();
         }
         return Collections.emptyList();
     }
     
-    private Collection<CsmObject> resolveFunction(CsmProject project, AST ast, boolean template) {
+    private Collection<CsmOffsetable> resolveFunction(CsmProject project, AST ast, boolean template) {
         AST funNameAst = AstUtil.findMethodName(ast);
         if (funNameAst != null) {
 //            CharSequence qualifiedName = funNameAst.getText();
@@ -184,15 +189,18 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
                      )
             );               
             
-            DeclarationAcceptor acceptor = template ? TemplateFunctionsAcceptor.INSTANCE : NonTemplateFunctionsAcceptor.INSTANCE;
+            // DeclarationAcceptor always set to all functions acceptor because on Solaris,
+            // nm returns signatures with return type for usual functions
+            DeclarationAcceptor acceptor = FunctionsAcceptor.INSTANCE;/*template ? TemplateFunctionsAcceptor.INSTANCE : NonTemplateFunctionsAcceptor.INSTANCE;*/
+            
             for (CsmObject context : resolvedContext) {
                 if (CsmKindUtilities.isNamespace(context)) {
                     CsmNamespace ns = (CsmNamespace) context;
                     Iterator<CsmOffsetableDeclaration> iter = CsmSelect.getDeclarations(ns, filter);
-                    fillFromDecls((List<CsmObject>) (Object) candidates, iter, acceptor);
+                    fillFromDecls(candidates, iter, acceptor);
                 } else if (CsmKindUtilities.isClass(context)) {
                     CsmClass cls = (CsmClass) context;
-                    fillFromDecls((List<CsmObject>) (Object) candidates, CsmSelect.getClassMembers(cls, filter), acceptor);
+                    fillFromDecls(candidates, CsmSelect.getClassMembers(cls, filter), acceptor);
                 }
             }
             //Iterator<CsmFunction> funIter = CsmSelect.getFunctions(project, concat(qualifiedName, APTUtils.SCOPE));
@@ -201,13 +209,13 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
         return Collections.emptyList();
     }
     
-    private Collection<CsmObject> resolveQualifiedId(CsmProject project, AST qualNameNode) {        
+    private Collection<CsmOffsetable> resolveQualifiedId(CsmProject project, AST qualNameNode) {        
         CharSequence qualifiedId[] = AstRenderer.renderQualifiedId(qualNameNode, null, true);
         
         List<CsmObject> resolvedContext = new ArrayList<>();
         resolveContext(project, qualifiedId, resolvedContext);
         
-        List<CsmObject> candidates = new ArrayList<>();
+        List<CsmOffsetable> candidates = new ArrayList<>();
         CsmSelect.CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
                  CsmSelect.getFilterBuilder().createKindFilter(
                      CsmDeclaration.Kind.VARIABLE,
@@ -287,11 +295,20 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
         List<CsmType> params = new ArrayList<>();
         for (AST paramAst : targetFunParamsAsts) {
             if (paramAst != null) {
-                AST paramTypeAst = AstUtil.findTypeNode(paramAst);
-                if (paramTypeAst != null) {
-                    AST ptrOperator = AstUtil.findSiblingOfType(paramTypeAst, CPPTokenTypes.CSM_PTR_OPERATOR);
+                AST paramTypeStart = paramAst.getFirstChild();
+                while (paramTypeStart != null && !AstUtil.isTypeNode(paramTypeStart) && !AstRenderer.isQualifier(paramTypeStart.getType())) {
+                    paramTypeStart = paramTypeStart.getNextSibling();
+                }
+                if (paramTypeStart != null && AstRenderer.isQualifier(paramTypeStart.getType())) {
+                    AST typeAst = AstRenderer.getFirstSiblingSkipQualifiers(paramTypeStart);
+                    if (!AstUtil.isTypeNode(typeAst)) {
+                        paramTypeStart = null;
+                    }
+                }
+                if (paramTypeStart != null) {
+                    AST ptrOperator = AstUtil.findSiblingOfType(paramTypeStart, CPPTokenTypes.CSM_PTR_OPERATOR);
                     // TODO: AST has wrong offsets here!
-                    CsmType type = TypeFactory.createType(paramTypeAst, context.getContainingFile(), ptrOperator, 0, context.getScope());
+                    CsmType type = TypeFactory.createType(paramTypeStart, context.getContainingFile(), ptrOperator, 0, context.getScope());
                     params.add(type);
                 }
             }
@@ -390,36 +407,36 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
         }        
     }
     
-    private List<CsmObject> fillFromDecls(Iterable<? extends CsmObject> decls, DeclarationAcceptor acceptor) {
+    private static <T extends CsmOffsetable> List<T> fillFromDecls(Iterable<? extends CsmObject> decls, DeclarationAcceptor acceptor) {
         return fillFromDecls(decls.iterator(), acceptor);
     }
     
-    private List<CsmObject> fillFromDecls(Iterator<? extends CsmObject> decls, DeclarationAcceptor acceptor) {
-        List<CsmObject> result = new ArrayList<>();
+    private static <T extends CsmOffsetable> List<T> fillFromDecls(Iterator<? extends CsmObject> decls, DeclarationAcceptor acceptor) {
+        List<T> result = new ArrayList<>();
         while (decls.hasNext()) {
             CsmObject decl = decls.next();
             if (acceptor == null || acceptor.accept(decl)) {
-                result.add(decl);
+                result.add((T) decl);
             }
         }
         return result;
     }
     
-    private void fillFromDecls(List<CsmObject> list, Iterable<? extends CsmObject> decls, DeclarationAcceptor acceptor) {
+    private static <T extends CsmOffsetable> void fillFromDecls(List<T> list, Iterable<? extends CsmObject> decls, DeclarationAcceptor acceptor) {
         fillFromDecls(list, decls.iterator(), acceptor);
     }    
     
-    private void fillFromDecls(List<CsmObject> list, Iterator<? extends CsmObject> decls, DeclarationAcceptor acceptor) {
+    private static <T extends CsmOffsetable> void fillFromDecls(List<T> list, Iterator<? extends CsmObject> decls, DeclarationAcceptor acceptor) {
         while (decls.hasNext()) {
             CsmObject decl = decls.next();
             if (acceptor == null || acceptor.accept(decl)) {
-                list.add(decl);
+                list.add((T) decl);
             }
         }
     }
     
     private static AST tryParseQualifiedId(CharSequence sequence) {
-        String trimmedSequence = sequence.toString().trim() /*+ APTUtils.SCOPE + "DUMMY_IDENTIFIER"*/;
+        String trimmedSequence = sequence.toString().trim();
         CPPParserEx parser = createParser(trimmedSequence);
         if (parser != null) {
             parser.qualified_id();
@@ -505,10 +522,10 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
         return CsmSelect.getFilterBuilder().createCompoundFilter(
                  CsmSelect.getFilterBuilder().createKindFilter(
                      CsmDeclaration.Kind.CLASS, 
-                     CsmDeclaration.Kind.STRUCT,
-                     CsmDeclaration.Kind.TYPEDEF,
-                     CsmDeclaration.Kind.TYPEALIAS,
-                     CsmDeclaration.Kind.NAMESPACE_ALIAS
+                     CsmDeclaration.Kind.STRUCT
+//                     CsmDeclaration.Kind.TYPEDEF,
+//                     CsmDeclaration.Kind.TYPEALIAS,
+//                     CsmDeclaration.Kind.NAMESPACE_ALIAS
                  ),
                  CsmSelect.getFilterBuilder().createNameFilter(qualNamePart, true, true, false)
         );
@@ -518,13 +535,13 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
         return CsmSelect.getFilterBuilder().createCompoundFilter(
                  CsmSelect.getFilterBuilder().createKindFilter(
                      CsmDeclaration.Kind.CLASS,
-                     CsmDeclaration.Kind.STRUCT,
-                     CsmDeclaration.Kind.TYPEDEF,
-                     CsmDeclaration.Kind.TYPEALIAS                    
+                     CsmDeclaration.Kind.STRUCT
+//                     CsmDeclaration.Kind.TYPEDEF,
+//                     CsmDeclaration.Kind.TYPEALIAS                    
                  ),
                  CsmSelect.getFilterBuilder().createNameFilter(qualNamePart, true, true, false)
         );
-    }    
+    }            
     
     private static void printAST(AST ast) {
         StringBuilder sb = new StringBuilder();
@@ -552,26 +569,37 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
         
         boolean accept(CsmObject decl);        
     }
+     
+    private static class FunctionsAcceptor implements DeclarationAcceptor {
+        
+        public static final FunctionsAcceptor INSTANCE = new FunctionsAcceptor();
+
+        @Override
+        public boolean accept(CsmObject decl) {
+            return (decl instanceof CsmFunction);
+        }               
+    }
     
-    private static class TemplateFunctionsAcceptor implements DeclarationAcceptor {
+    private static class TemplateFunctionsAcceptor extends FunctionsAcceptor {
         
         public static final TemplateFunctionsAcceptor INSTANCE = new TemplateFunctionsAcceptor();
 
         @Override
         public boolean accept(CsmObject decl) {
-            return (decl instanceof CsmFunction) && 
+            return super.accept(decl) && 
                    (decl instanceof CsmTemplate) &&
                    ((CsmTemplate) decl).isTemplate();
         }
     }
     
-    private static class NonTemplateFunctionsAcceptor implements DeclarationAcceptor {
+    private static class NonTemplateFunctionsAcceptor extends FunctionsAcceptor {
         
         public static final NonTemplateFunctionsAcceptor INSTANCE = new NonTemplateFunctionsAcceptor();
         
         @Override
         public boolean accept(CsmObject decl) {
-            return !TemplateFunctionsAcceptor.INSTANCE.accept(decl);
+            return super.accept(decl) &&
+                   !TemplateFunctionsAcceptor.INSTANCE.accept(decl);
         }        
     }
 }

@@ -464,7 +464,7 @@ public class DebuggerOption extends Option {
 
     public static final DebuggerOption RUN_AUTOSTART  =
 	new DebuggerOption( // NOI18N
-			    "run_autostart",  // NOI18N //name
+			    "autostart",  // NOI18N //name
 			    new String[] {"on", "off"},  // NOI18N //values
 			    "on",    // NOI18N //default value
 			    false, // is engine option

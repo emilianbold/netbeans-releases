@@ -15,7 +15,7 @@ function countBugs() {
 
 function countHistoryBugsDashboardMain() {
 
-    $("td[data-id='sum']").each(function() {
+    $("td[data-id='sum']").each(function () {
         var name = $(this).data('category');
         if (name === "   ") {
             $(this).attr("id", "dummy");
@@ -23,7 +23,7 @@ function countHistoryBugsDashboardMain() {
         var sum = 0;
         var limit = 0;
         var color = "";
-        $("td[data-id='" + name + "']").each(function() {
+        $("td[data-id='" + name + "']").each(function () {
 
             limit = limit + ($(this).attr('data-limit')) * 1;
             sum = sum + $(this).text() * 1;
@@ -53,7 +53,7 @@ function countBugsDashboardMainE() {
     var iterator = 0;
     $("td[data-id='sum']")
             .each(
-                    function() {
+                    function () {
                         iterator++;
                         var name = $(this).data('category');
 
@@ -66,7 +66,7 @@ function countBugsDashboardMainE() {
                         var it = 0;
                         var color = "";
                         var sumLink = "http://netbeans.org/bugzilla/buglist.cgi?bug_id=";
-                        $("td[data-id='" + name + "']").each(function() {
+                        $("td[data-id='" + name + "']").each(function () {
                             var a = $(this).parent().children()[1];
 
                             if ($(a).text() !== "Plugin Portal UC" && $(a).text() !== "Certified UC") {
@@ -122,7 +122,7 @@ function countBugsDashboardMain() {
     var iterator = 0;
     $("td[data-id='sum']")
             .each(
-                    function() {
+                    function () {
                         iterator++;
                         var name = $(this).data('category');
 
@@ -134,7 +134,7 @@ function countBugsDashboardMain() {
                         var limit = 0;
                         var color = "";
                         var sumLink = "http://netbeans.org/bugzilla/buglist.cgi?bug_id=";
-                        $("td[data-id='" + name + "']").each(function() {
+                        $("td[data-id='" + name + "']").each(function () {
                             var a = $(this).parent().children()[1];
 
                             if ($(a).text() !== "Plugin Portal UC" && $(a).text() !== "Certified UC") {
@@ -191,7 +191,7 @@ function countBugsDashBoardArea() {
 
     var limit = [];
     var iterator = 0;
-    $("thead tr th").each(function() {
+    $("thead tr th").each(function () {
         limit[iterator] = 1 * $(this).attr('data-limit');
         iterator++;
     });
@@ -200,7 +200,7 @@ function countBugsDashBoardArea() {
     iterator = 2;
     $("td[data-id='sum']")
             .each(
-                    function() {
+                    function () {
                         var name = $(this).data('category');
                         var sum = 0;
                         if (name === "   ") {
@@ -211,7 +211,7 @@ function countBugsDashBoardArea() {
                         var color = "";
                         var sumLink = "http://netbeans.org/bugzilla/buglist.cgi?bug_id=";
                         $("td[data-id='" + name + "']").each(
-                                function() {
+                                function () {
                                     var link = ($(this).find('>:first-child').attr('href'));
                                     if (typeof link != "undefined") {
                                         link = link.substring(link.indexOf("=") + 1);
@@ -295,13 +295,13 @@ function PlotContainer(div, data, showPoints) {
         }
     };
 
-    this.plotGraph = function() {
+    this.plotGraph = function () {
         this.placeholder = $("" + this.div);
         var p = this.placeholder;
         var o = this.options;
         var d = this.data;
 
-        this.placeholder.bind("plotselected", function(event, ranges) {
+        this.placeholder.bind("plotselected", function (event, ranges) {
             plot = $.plot(p, d, $.extend(true, {}, o, {
                 xaxis: {
                     min: ranges.xaxis.from,
@@ -310,12 +310,12 @@ function PlotContainer(div, data, showPoints) {
             }));
         });
 
-        this.placeholder.bind("dblclick", function(event, ranges) {
+        this.placeholder.bind("dblclick", function (event, ranges) {
             plot = $.plot(p, d, o);
         });
 
         var previousPoint = null;
-        this.placeholder.bind("plothover", function(event, pos, item) {
+        this.placeholder.bind("plothover", function (event, pos, item) {
             $("#x").text(pos.x.toFixed(2));
             $("#y").text(pos.y.toFixed(2));
             if (item) {
@@ -346,25 +346,25 @@ function PlotContainer(div, data, showPoints) {
 }
 
 function toggleControls() {
-    $('.showControl').each(function() {
+    $('.showControl').each(function () {
         var t = $(this).text();
         if (t.indexOf("Show") > -1) {
             $('.hideArea').css('visibility', 'visible');
-            $('.total_column').find('img').each(function() {
+            $('.total_column').find('img').each(function () {
                 $(this).css('visibility', 'visible');
             });
 
-            $('th').find('img').each(function() {
+            $('th').find('img').each(function () {
                 $(this).css('visibility', 'visible');
             });
 
             $(this).text('Hide controls')
         } else {
             $('.hideArea').css('visibility', 'hidden');
-            $('.total_column').find('img').each(function() {
+            $('.total_column').find('img').each(function () {
                 $(this).css('visibility', 'hidden');
             });
-            $('th').find('img').each(function() {
+            $('th').find('img').each(function () {
                 $(this).css('visibility', 'hidden');
             });
             $(this).text('Show controls')
@@ -374,7 +374,7 @@ function toggleControls() {
 
 }
 
-$(document).keyup(function(e) {
+$(document).keyup(function (e) {
 
     if (e.keyCode == 27) {
         areas = [];
@@ -409,7 +409,7 @@ function hide() {
     }
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
 
     top_height = $($(".tableContainer")[0]).css("height");
     $("#visualization").css("height", top_height);
@@ -418,9 +418,9 @@ $(document).ready(function() {
     $("#logo2").css("top", ((-(children - 1)) * 40) + "px");
 //    $("#visualization").css("top", (480+(-(children - 1)) * 40) + "px");
 
-    $(".tabs").each(function() {
+    $(".tabs").each(function () {
         //        var children = ($(".tabs > ul").children().length) * 1;
-        $(this).mouseenter(function(e) {
+        $(this).mouseenter(function (e) {
             if (e.target == $("span[data-trigger='true']")[0]) {
                 $("#logo").animate({
                     top: "0"
@@ -436,7 +436,7 @@ $(document).ready(function() {
             //         document.getElementById("logo").style.left = "-1px";
         });
 
-        $(this).mouseleave(function(e) {
+        $(this).mouseleave(function (e) {
             $("#logo").animate({
                 top: ((-(children - 1)) * 40) + "px"
             });

@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.CodeAssistance;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
@@ -975,6 +976,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     switch (itemConfiguration.getCCCompilerConfiguration().getInheritedCppStandard()) {
                         case CCCompilerConfiguration.STANDARD_CPP11:
                             return LanguageFlavor.CPP11;
+                        //case CCCompilerConfiguration.STANDARD_CPP14:
+                        //    return LanguageFlavor.CPP14;
                         case CCCompilerConfiguration.STANDARD_CPP98:
                         case CCCompilerConfiguration.STANDARD_DEFAULT:
                             return LanguageFlavor.CPP;
@@ -986,11 +989,13 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         if (flavor == LanguageFlavor.UNKNOWN) {
             if (makeConfiguration != null) {
                 CCCompilerConfiguration ccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
-                    if(ccCompilerConfiguration != null) {
-                        switch (ccCompilerConfiguration.getInheritedCppStandard()) {
-                            case CCCompilerConfiguration.STANDARD_CPP11:
-                                return LanguageFlavor.CPP11;
-                    }
+                if(ccCompilerConfiguration != null) {
+                    switch (ccCompilerConfiguration.getInheritedCppStandard()) {
+                        case CCCompilerConfiguration.STANDARD_CPP11:
+                            return LanguageFlavor.CPP11;
+                        //case CCCompilerConfiguration.STANDARD_CPP14:
+                        //    return LanguageFlavor.CPP14;
+                }
                 }
             }
         }

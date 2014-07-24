@@ -71,6 +71,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
@@ -85,6 +87,7 @@ import org.openide.explorer.view.ListView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -98,7 +101,7 @@ import org.openide.windows.TopComponent;
 public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider  {
 
     private ExplorerManager explorerManager = new ExplorerManager();
-    private AbstractNode root;
+    private final AbstractNode root;
     private List<Action> actions;
     private CallModel model;
     private boolean showGraph;
@@ -135,13 +138,13 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         this.showGraph = graphUI == null ? false : graphUI.showGraph();
         actions = new ArrayList<Action>();
         actions.add(new RefreshAction());
-        actions.add(new FocusOnAction());
+        actions.add(new FocusOnAction());        
         actions.add(null);
         actions.add(new WhoIsCalledAction());
         actions.add(new WhoCallsAction());
         actions.add((showOverridingAction));
         actions.add(null);
-        actions.add(new ShowFunctionParameters());
+        actions.add(new ShowFunctionParameters());        
         if (showGraph) {
             scene = new CallGraphScene();
             ExportAction exportAction = new ExportAction(scene, this);
@@ -159,6 +162,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
                 }
             }));
         }
+        actions.add(new ExpandAllAction());
         root = new AbstractNode(children){
             @Override
             public Action[] getActions(boolean context) {
@@ -462,7 +466,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         updateButtons();
         update();
     }
-
+           
     private synchronized void update() {
         final CallGraphState state = new CallGraphState(model, scene, actions);
         if (showGraph) {
@@ -666,7 +670,11 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             setShowOverriding(!isShowOverriding);
             model.update();
         }
+
+        @Override
+        public void doEDTAction() {
         
+        }
 
         @Override
         public final JMenuItem getPopupPresenter() {
@@ -707,6 +715,92 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         @Override
         public void actionPerformed(ActionEvent e) {
             focusOnActionPerformed(e);
+        }
+
+        @Override
+        public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }
+    
+    private void expandAllImpl(final Node n) {
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                expandAllWorker(n);
+            }
+
+        });
+    }
+    
+    private void expandAllWorker(Node n) {
+        final AtomicBoolean canceled = new AtomicBoolean(false);
+        ProgressHandle progress = ProgressHandleFactory.createHandle(getMessage("ExpandAll"), new Cancellable() {
+            
+            @Override
+            public boolean cancel() {
+                canceled.set(true);
+                return true;
+            }
+        });
+        progress.start();
+        try {
+            List<Node> list = new ArrayList<Node>();
+            expandAllImpl(canceled, n, list);
+            for(Node node : list) {
+                if (canceled.get()) {
+                    return;
+                }
+                getTreeView().expandNode(node);            
+            }
+        } finally {
+            progress.finish();
+        }
+    }
+    
+    private void expandAllImpl(AtomicBoolean canceled, Node node, List<Node> list) {
+        list.add(node);
+        Children children = node.getChildren();
+        if (canceled.get()) {
+            return;
+        }
+        if (children != null) {
+            if (children instanceof CallChildren) {
+                ((CallChildren) children).init();
+            }
+            if (canceled.get()) {
+                return;
+            }
+            for (Node subNode : children.getNodes()) {
+                Children subChildren = subNode.getChildren();
+                if (subChildren instanceof CallChildren) {
+                    ((CallChildren) subChildren).init();
+                }
+                if (canceled.get()) {
+                    return;
+                }
+                expandAllImpl(canceled, subNode, list);
+            }
+        }
+    }
+
+    private final class ExpandAllAction extends AbstractAction implements Presenter.Popup {
+        private final JMenuItem menuItem;
+        public ExpandAllAction() {
+            putValue(Action.NAME, getMessage("ExpandAll"));  // NOI18N
+            menuItem = new JMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }     
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Node[] nodes = getExplorerManager().getSelectedNodes();
+            if (nodes == null || nodes.length == 0){
+                expandAllImpl(root);
+            } else {
+                expandAllImpl(nodes[0]);
+            }
         }
 
         @Override

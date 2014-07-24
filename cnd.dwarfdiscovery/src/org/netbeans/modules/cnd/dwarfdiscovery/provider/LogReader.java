@@ -903,8 +903,7 @@ public class LogReader {
                 if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                     DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
                 }
-                result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, convertSymbolicLink(what), userIncludesCached, userFilesCached, userMacrosCached,
-                        artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
+                result.add(new CommandLineSource(li, artifacts, workingDir, convertSymbolicLink(what), userIncludesCached, userFilesCached, userMacrosCached, storage));
                 continue;
             }
             if (!isRelative) {
@@ -916,8 +915,7 @@ public class LogReader {
                         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                             DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
                         }
-                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, convertSymbolicLink(what), userIncludesCached, userFilesCached, userMacrosCached,
-                                artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
+                        result.add(new CommandLineSource(li, artifacts, workingDir, convertSymbolicLink(what), userIncludesCached, userFilesCached, userMacrosCached, storage));
                         continue;
                     }
                 }
@@ -929,8 +927,7 @@ public class LogReader {
                     if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                         DwarfSource.LOG.log(Level.FINE, "**** Gotcha guess: {0}", file);
                     }
-                    result.add(new CommandLineSource(li, artifacts.languageArtifacts, guessWorkingDir, convertSymbolicLink(what), userIncludesCached, userFilesCached, userMacrosCached,
-                            artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
+                    result.add(new CommandLineSource(li, artifacts, guessWorkingDir, convertSymbolicLink(what), userIncludesCached, userFilesCached, userMacrosCached, storage));
                     continue;
                 }
             }
@@ -945,8 +942,7 @@ public class LogReader {
                     }
                 } else {
                     if (res.size() == 1) {
-                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, res.get(0), convertSymbolicLink(what), userIncludesCached, userFilesCached, userMacrosCached,
-                                artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
+                        result.add(new CommandLineSource(li, artifacts, res.get(0), convertSymbolicLink(what), userIncludesCached, userFilesCached, userMacrosCached, storage));
                         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                             DwarfSource.LOG.log(Level.FINE, "** Gotcha: {0}{1}{2}", new Object[]{res.get(0), File.separator, what});
                         }
@@ -1043,12 +1039,12 @@ public class LogReader {
         private int handler = -1;
         private final String importantFlags;
 
-        CommandLineSource(LineInfo li, List<String> languageArtifacts, String compilePath, String sourcePath,
-                List<String> userIncludes, List<String> userFiles, Map<String, String> userMacros, List<String>undefs, CompileLineStorage storage, String importantFlags) {
+        CommandLineSource(LineInfo li, Artifacts artifacts, String compilePath, String sourcePath,
+                List<String> userIncludes, List<String> userFiles, Map<String, String> userMacros, CompileLineStorage storage) {
             language = li.getLanguage();
-            if (languageArtifacts.contains("c")) { // NOI18N
+            if (artifacts.languageArtifacts.contains("c")) { // NOI18N
                 language = ItemProperties.LanguageKind.C;
-            } else if (languageArtifacts.contains("c++")) { // NOI18N
+            } else if (artifacts.languageArtifacts.contains("c++")) { // NOI18N
                 language = ItemProperties.LanguageKind.CPP;
             } else {
                 if (language == LanguageKind.Unknown || "cl".equals(li.compiler)) { // NOI18N
@@ -1069,19 +1065,7 @@ public class LogReader {
                     }
                 }
             }
-            for(String lang : languageArtifacts) {
-                if ("c89".equals(lang)) { //NOI18N
-                    standard = ItemProperties.LanguageStandard.C89;
-                } else if ("c99".equals(lang)) { //NOI18N
-                    standard = ItemProperties.LanguageStandard.C99;
-                } else if ("c11".equals(lang)) { //NOI18N
-                    standard = ItemProperties.LanguageStandard.C11;
-                } else if ("c++98".equals(lang)) { //NOI18N
-                    standard = ItemProperties.LanguageStandard.CPP;
-                } else if ("c++11".equals(lang)) { //NOI18N
-                    standard = ItemProperties.LanguageStandard.CPP11;
-                } 
-            }
+            standard = artifacts.getLanguageStandard(standard);
             this.compiler = li.compiler;
             this.compilePath =compilePath;
             sourceName = sourcePath;
@@ -1097,12 +1081,12 @@ public class LogReader {
             this.userIncludes = userIncludes;
             this.userFiles = userFiles;
             this.userMacros = userMacros;
-            this.undefinedMacros = undefs;
+            this.undefinedMacros = artifacts.undefinedMacros;
             this.storage = storage;
             if (storage != null) {
                 handler = storage.putCompileLine(li.compileLine);
             }
-            this.importantFlags = importantFlags;
+            this.importantFlags = artifacts.getImportantFlags();
         }
 
         @Override

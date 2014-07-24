@@ -252,6 +252,13 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("deepNestedTemplateEntities.cpp", 27, 36, "deepNestedTemplateEntities.cpp", 26, 57);        
     }
     
+    public void testBug243083() throws Exception {
+        // Bug 243083 - unresolved method after dereferencing template based interator
+        performTest("bug243083.cpp", 36, 13, "bug243083.cpp", 27, 9);
+        performTest("bug243083.cpp", 37, 16, "bug243083.cpp", 27, 9);
+        performTest("bug243083.cpp", 38, 18, "bug243083.cpp", 27, 9);
+    }
+    
     public void testBug232530() throws Exception {
         // Bug 232530 - "Empty class specialization name" in messages log
         performTest("bug232530.cpp", 9, 19, "bug232530.cpp", 4, 9);

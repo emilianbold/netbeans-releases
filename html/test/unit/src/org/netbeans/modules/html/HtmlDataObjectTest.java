@@ -259,6 +259,25 @@ public class HtmlDataObjectTest extends CslTestBase {
 
     }
     
+    public void testFindEncodingInXHTML() {
+        //<?xml version="1.0" encoding="windows-1252"?>
+        assertEquals("windows-1252",
+                HtmlDataObject.findEncoding(
+                "<?xml version=\"1.0\" encoding=\"windows-1252\"?>\n"
+                        + "<html>\n"
+                        + "<head></head>\n"
+                        + "<body></body>\n"
+                        + "</html>"));
+        
+        assertEquals(null,
+                HtmlDataObject.findEncoding(
+                "<?xml version=\"1.0\" encooooding=\"UTF-8\"?>\n"
+                        + "<html>\n"
+                        + "<head></head>\n"
+                        + "<body></body>\n"
+                        + "</html>"));        
+    }
+    
     //https://netbeans.org/bugzilla/show_bug.cgi?id=243643
      public void testIssue243643() {
         //test whether we get the value of the charset attribute just from the meta tag but not from the others.

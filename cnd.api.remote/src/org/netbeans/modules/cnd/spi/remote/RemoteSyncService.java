@@ -43,13 +43,13 @@
 package org.netbeans.modules.cnd.spi.remote;
 
 import java.io.IOException;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Lookup;
 
 /**
  * @author Vladimir Kvashin
  */
 public interface RemoteSyncService {
-    RemoteSyncSupport.Worker getUploader(Project project, ExecutionEnvironment execEnv) throws IOException;
+    RemoteSyncSupport.Worker getUploader(Lookup.Provider project, ExecutionEnvironment execEnv) throws IOException;
 }

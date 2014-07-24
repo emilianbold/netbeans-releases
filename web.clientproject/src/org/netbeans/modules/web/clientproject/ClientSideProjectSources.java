@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.web.clientproject;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -53,7 +51,6 @@ import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
-import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -102,9 +99,6 @@ public class ClientSideProjectSources implements Sources, ChangeListener {
                 .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "UNIT_TESTS"))
                 .add() // adding as principal root, continuing configuration
                 .type(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST).add(); // adding as typed root
-        sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_CONFIG_FOLDER + "}") //NOI18N
-                .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "CONFIGURATION_FILES"))
-                .type(WebClientProjectConstants.SOURCES_TYPE_HTML5_CONFIG).add(); // adding as principal root
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return sourcesHelper.createSources();
     }

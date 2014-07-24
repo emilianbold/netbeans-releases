@@ -343,18 +343,6 @@ public class ClientSideProject implements Project {
         return getProjectDirectory().getFileObject(tests);
     }
 
-    /**
-     * @deprecated will be replaced by project directory
-     */
-    @Deprecated
-    public FileObject getConfigFolder() {
-        String config = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
-        if (config == null || config.trim().length() == 0) {
-            return null;
-        }
-        return getProjectDirectory().getFileObject(config);
-    }
-
     public String getStartFile() {
         String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_START_FILE);
         if (s == null) {
@@ -481,7 +469,7 @@ public class ClientSideProject implements Project {
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                new TemplateAttributesProviderImpl(projectHelper, fileEncodingQuery),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
-                    ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
+                    ClientSideProjectConstants.PROJECT_TEST_FOLDER),
                projectBrowserProvider,
                new ProjectDirectoriesProviderImpl(),
                new CoverageProviderImpl(this),
@@ -811,8 +799,7 @@ public class ClientSideProject implements Project {
 
         private static final Set<String> WATCHED_PROPERTIES = new HashSet<String>(Arrays.asList(
                 ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
-                ClientSideProjectConstants.PROJECT_TEST_FOLDER,
-                ClientSideProjectConstants.PROJECT_CONFIG_FOLDER));
+                ClientSideProjectConstants.PROJECT_TEST_FOLDER));
 
         private final ClientSideProject project;
         // @GuardedBy("this")
@@ -870,7 +857,7 @@ public class ClientSideProject implements Project {
 
         private FileObject[] getRoots() {
             List<FileObject> roots = new ArrayList<FileObject>();
-            addRoots(roots, project.getSiteRootFolder(), project.getConfigFolder(), project.getTestsFolder(false));
+            addRoots(roots, project.getSiteRootFolder(), project.getTestsFolder(false));
             return roots.toArray(new FileObject[roots.size()]);
         }
 

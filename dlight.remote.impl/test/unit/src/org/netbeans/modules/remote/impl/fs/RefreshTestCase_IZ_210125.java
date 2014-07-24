@@ -65,8 +65,9 @@ import org.openide.filesystems.FileUtil;
 public class RefreshTestCase_IZ_210125 extends RemoteFileTestBase {
 
 //    static {
-//        System.setProperty("remote.fs_server.verbose", "0");
+//        System.setProperty("remote.fs_server.verbose", "4");
 //        System.setProperty("remote.fs_server.suppress.stderr", "false");
+//        System.setProperty("remote.fs_server.verbose.response", "true");
 //    }
 
     public RefreshTestCase_IZ_210125(String testName) {

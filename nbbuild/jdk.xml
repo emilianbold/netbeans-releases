@@ -231,6 +231,7 @@ made subject to such option by the copyright holder.
         <available property="have-jdk-1.5" classname="java.lang.StringBuilder"/>
         <available property="have-jdk-1.6" classname="java.util.ServiceLoader"/>
         <available property="have-jdk-1.7" classname="java.lang.ReflectiveOperationException"/>
+        <available property="have-jdk-1.8" classname="java.lang.FunctionalInterface"/>
         <property name="nbjdk.home.defaulted" value="true"/>
     </target>
 

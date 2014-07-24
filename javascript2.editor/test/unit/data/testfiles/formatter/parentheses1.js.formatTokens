@@ -53,7 +53,7 @@ FormatToken{kind=AFTER_PROPERTY_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=71, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=72, text=function, id=KEYWORD_FUNCTION}
 FormatToken{kind=WHITESPACE, offset=80, text= , id=WHITESPACE}
-FormatToken{kind=BEFORE_FUNCTION_DECLARATION, offset=-1, text=null, id=null}
+FormatToken{kind=BEFORE_ANONYMOUS_FUNCTION_DECLARATION, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=81, text=(, id=BRACKET_LEFT_PAREN}
 FormatToken{kind=TEXT, offset=82, text=), id=BRACKET_RIGHT_PAREN}
 FormatToken{kind=WHITESPACE, offset=83, text= , id=WHITESPACE}

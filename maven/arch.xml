@@ -271,6 +271,12 @@ made subject to such option by the copyright holder.
     &lt;/profiles&gt;
 &lt;/actions&gt;
              </pre>
+             <p>
+             If an action is not found in currently selected &lt;profile&gt;
+             section, the system fallbacks to the main list of actions. In
+             the previous example, the debug action would be taken from main
+             list for all the profiles.    
+             </p>
          </api>
      </p>
  </answer>
