@@ -47,6 +47,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -84,6 +86,7 @@ final class RequireJsPanel extends JPanel implements HelpCtx.Provider {
     private final ProjectCustomizer.Category category;
     private final PathMappingTableModel pathMappingTableModel;
 
+    private boolean isSupportEnabled;
     /**
      * Creates new form RequireJsPanel
      */
@@ -112,10 +115,16 @@ final class RequireJsPanel extends JPanel implements HelpCtx.Provider {
 
     public void setSupportEnabled(boolean enabled) {
         enabledCheckBox.setSelected(enabled);
+        pathMappingLabel.setEnabled(enabled);
+        pathMappingInfoLabel.setEnabled(enabled);
+        pathMappingScrollPane.setEnabled(enabled);
+        pathMappingTable.setEnabled(enabled);
+        handleButtonStates();
     }
 
     private void init() {
-        setSupportEnabled(RequireJsPreferences.getBoolean(project, RequireJsPreferences.ENABLED));
+        isSupportEnabled = RequireJsPreferences.getBoolean(project, RequireJsPreferences.ENABLED); 
+        setSupportEnabled(isSupportEnabled);
 
         pathMappingTable.setModel(pathMappingTableModel);
         pathMappingTable.setDefaultRenderer(LocalPathCell.class, new LocalPathCellRenderer());
@@ -133,6 +142,14 @@ final class RequireJsPanel extends JPanel implements HelpCtx.Provider {
                 handleButtonStates();
             }
         });
+        
+        enabledCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                isSupportEnabled = e.getStateChange() == ItemEvent.SELECTED;
+                setSupportEnabled(isSupportEnabled);
+            }
+        });
     }
 
     private void saveData() {
@@ -141,8 +158,13 @@ final class RequireJsPanel extends JPanel implements HelpCtx.Provider {
     }
 
     void handleButtonStates() {
-        removePathMappingButton.setEnabled(isTableRowSelected());
-        newPathMappingButton.setEnabled(pathMappingTableModel.isLastServerPathFilled());
+        if (isSupportEnabled) {
+            removePathMappingButton.setEnabled(isTableRowSelected());
+            newPathMappingButton.setEnabled(pathMappingTableModel.isLastServerPathFilled());
+        } else {
+            removePathMappingButton.setEnabled(false);
+            newPathMappingButton.setEnabled(false);
+        }
     }
     
     private boolean isTableRowSelected() {
@@ -168,6 +190,11 @@ final class RequireJsPanel extends JPanel implements HelpCtx.Provider {
         pathMappingInfoLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(enabledCheckBox, org.openide.util.NbBundle.getMessage(RequireJsPanel.class, "RequireJsPanel.enabledCheckBox.text")); // NOI18N
+        enabledCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                enabledCheckBoxActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(enabledInfoLabel, org.openide.util.NbBundle.getMessage(RequireJsPanel.class, "RequireJsPanel.enabledInfoLabel.text")); // NOI18N
 
@@ -256,6 +283,10 @@ final class RequireJsPanel extends JPanel implements HelpCtx.Provider {
             newPathMappingButtonActionPerformed(null);
         }
     }//GEN-LAST:event_removePathMappingButtonActionPerformed
+
+    private void enabledCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enabledCheckBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_enabledCheckBoxActionPerformed
 
     private int getTableSelectedRow() {
         return pathMappingTable.getSelectedRow();
