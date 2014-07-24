@@ -150,7 +150,7 @@ public class CssClassesVisitor implements ElementVisitor {
                         Bundle.MissingCssClass(token),
                         context,
                         getAttributeValueOffsetRange(attribute, context),
-                        new HintContext(new StringBuilder().append('.').append(token).toString(), referredFiles, allStylesheets, classes, classes2files)));
+                        new HintContext(token, new StringBuilder().append('.').append(token).toString(), referredFiles, allStylesheets, classes, classes2files)));
             }
         }
 

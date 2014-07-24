@@ -82,10 +82,10 @@ public class MissingCssElement extends Hint {
         List<HintFix> fixes = new ArrayList<>();
         FileObject sourceFile = getFile();
 
-        if (hintContext.getElement2files().get(hintContext.getElementName()) != null) {
+        if (hintContext.getElement2files().get(hintContext.getPureElementName()) != null) {
             //1) if the class is found in one of the stylesheets in the project:
             //      * add "Import stylesheet" hintfix
-            for (FileObject file : hintContext.getElement2files().get(hintContext.getElementName())) {
+            for (FileObject file : hintContext.getElement2files().get(hintContext.getPureElementName())) {
                 fixes.add(new AddStylesheetLinkHintFix(sourceFile, file));
             }
         } else {

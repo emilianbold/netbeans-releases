@@ -137,7 +137,7 @@ public class CssIdsVisitor implements ElementVisitor {
                     NbBundle.getMessage(CssClassesVisitor.class, "MSG_MissingCssId"),
                     context,
                     getAttributeValueOffsetRange(attribute, context),
-                    new HintContext(new StringBuilder().append('#').append(id).toString(), referredFiles, allStylesheets, ids, ids2files)));
+                    new HintContext(id, new StringBuilder().append('#').append(id).toString(), referredFiles, allStylesheets, ids, ids2files)));
         }
     }
 
