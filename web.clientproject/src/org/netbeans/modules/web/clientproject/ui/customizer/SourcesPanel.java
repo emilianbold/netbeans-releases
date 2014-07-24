@@ -51,6 +51,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 import org.netbeans.modules.web.clientproject.validation.ProjectFoldersValidator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
@@ -88,9 +89,9 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void init() {
         jProjectFolderTextField.setText(FileUtil.getFileDisplayName(project.getProjectDirectory()));
-        jSiteRootFolderTextField.setText(getSiteRootPath());
-        jTestFolderTextField.setText(uiProperties.getTestFolder());
-        configTextField.setText(uiProperties.getConfigFolder());
+        jSiteRootFolderTextField.setText(beautifyPath(getSiteRootPath()));
+        jTestFolderTextField.setText(beautifyPath(uiProperties.getTestFolder()));
+        configTextField.setText(beautifyPath(uiProperties.getConfigFolder()));
         jEncodingComboBox.setModel(ProjectCustomizer.encodingModel(uiProperties.getEncoding()));
         jEncodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
     }
@@ -205,12 +206,24 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         if (folder == null) {
             return null;
         }
-        String filePath = FileUtil.getRelativePath(project.getProjectDirectory(), FileUtil.toFileObject(folder));
+        String filePath = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), folder);
         if (filePath == null) {
             // path cannot be relativized
             filePath = folder.getAbsolutePath();
+        } else if (".".equals(filePath)) { // NOI18N
+            // project directory
+            return null;
         }
-        return filePath;
+        return beautifyPath(filePath);
+    }
+
+    private String beautifyPath(String path) {
+        if (path.startsWith("../../")) { // NOI18N
+            File resolved = resolveFile(path);
+            assert resolved != null : path;
+            return resolved.getAbsolutePath();
+        }
+        return path;
     }
 
     /**

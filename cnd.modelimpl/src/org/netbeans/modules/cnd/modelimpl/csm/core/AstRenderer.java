@@ -2433,7 +2433,9 @@ public class AstRenderer {
                         level--;
                         break;
                     case CPPTokenTypes.LESSTHAN:
-                        TemplateUtils.addSpecializationSuffix(token, id, parameters, true);
+                        if (id != null) {
+                            TemplateUtils.addSpecializationSuffix(token, id, parameters, true);
+                        }
                         level++;
                         break;
                     case CPPTokenTypes.SCOPE:

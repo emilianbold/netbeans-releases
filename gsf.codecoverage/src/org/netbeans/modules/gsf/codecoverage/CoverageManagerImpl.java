@@ -73,18 +73,20 @@ import org.openide.util.NbPreferences;
  * @author Tor Norbye
  */
 public class CoverageManagerImpl implements CoverageManager {
+
     public static final String COVERAGE_INSTANCE_FILE = "coverage.instance"; // NOI18N
     private static final String MIME_TYPE = "mimeType"; // NOI18N
     private static final String COVERAGE_DOC_PROPERTY = "coverage"; // NOI18N
     private final static String PREF_EDITOR_BAR = "editorBar"; // NOI18N
-    private Set<String> enabledMimeTypes = new HashSet<String>();
-    private Map<Project, CoverageReportTopComponent> showingReports = new HashMap<Project, CoverageReportTopComponent>();
+    private final Set<String> enabledMimeTypes = new HashSet<>();
+    private final Map<Project, CoverageReportTopComponent> showingReports = new HashMap<>();
     private Boolean showEditorBar;
 
     static CoverageManagerImpl getInstance() {
         return (CoverageManagerImpl) CoverageManager.INSTANCE;
     }
 
+    @Override
     public void setEnabled(final Project project, final boolean enabled) {
         final CoverageProvider provider = getProvider(project);
         if (provider == null) {
@@ -96,16 +98,10 @@ public class CoverageManagerImpl implements CoverageManager {
             enabledMimeTypes.addAll(mimeTypes);
         } else {
             enabledMimeTypes.removeAll(mimeTypes);
-        }
-
-        provider.setEnabled(enabled);
-
         SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
             public void run() {
-                resultsUpdated(project, provider);
-
-                if (!enabled) {
                     for (JTextComponent target : EditorRegistry.componentList()) {
                         Document document = target.getDocument();
                         CoverageSideBar sb = CoverageSideBar.getSideBar(document);
@@ -114,10 +110,12 @@ public class CoverageManagerImpl implements CoverageManager {
                         }
                     }
                 }
-            }
         });
     }
+        provider.setEnabled(enabled);
+    }
 
+    @Override
     public boolean isAggregating(Project project) {
         CoverageProvider provider = getProvider(project);
         if (provider != null) {
@@ -186,6 +184,7 @@ public class CoverageManagerImpl implements CoverageManager {
         }
     }
 
+    @Override
     public boolean isEnabled(Project project) {
         CoverageProvider provider = getProvider(project);
         if (provider != null) {
@@ -226,6 +225,7 @@ public class CoverageManagerImpl implements CoverageManager {
         return null;
     }
 
+    @Override
     public void resultsUpdated(Project project, CoverageProvider provider) {
         Set<String> mimeTypes = provider.getMimeTypes();
         for (JTextComponent target : EditorRegistry.componentList()) {
@@ -254,7 +254,8 @@ public class CoverageManagerImpl implements CoverageManager {
         if (report != null) {
             final List<FileCoverageSummary> coverage = provider.getResults();
             Mutex.EVENT.readAccess(new Runnable() {
-                public @Override void run() {
+                public @Override
+                void run() {
                     report.updateData(coverage);
                 }
             });
@@ -293,14 +294,14 @@ public class CoverageManagerImpl implements CoverageManager {
 
     public boolean getShowEditorBar() {
         if (showEditorBar == null) {
-            showEditorBar = Boolean.valueOf(NbPreferences.forModule(CoverageManager.class).getBoolean(PREF_EDITOR_BAR, true));
+            showEditorBar = NbPreferences.forModule(CoverageManager.class).getBoolean(PREF_EDITOR_BAR, true);
         }
 
         return showEditorBar == Boolean.TRUE;
     }
 
     public void setShowEditorBar(boolean on) {
-        this.showEditorBar = Boolean.valueOf(on);
+        this.showEditorBar = on;
         NbPreferences.forModule(CoverageManager.class).putBoolean(PREF_EDITOR_BAR, on);
 
         // Update existing editors

@@ -344,8 +344,8 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
 
 			public @Override
 			boolean enabled(RerunType type) {
-			    //TODO debug doesn't property update debug port in runconfig..
-			    if (fType.equals(TestSession.SessionType.TEST)) {
+			    //debug should now properly update debug port in runconfig...
+			    if (fType.equals(TestSession.SessionType.TEST) || fType.equals(TestSession.SessionType.DEBUG)) {
 				if (RerunType.ALL.equals(type)) {
 				    return true;
 				}
@@ -426,9 +426,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             return;
         }
         if (runningTestClass != null && outputDir != null) {
-            if(!surefireRunningInParallel) {
-                generateTest();
-            }
+            generateTest();
         }
         Manager.getInstance().sessionFinished(session);
         runningTestClass = null;

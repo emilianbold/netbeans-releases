@@ -196,8 +196,12 @@ public final class EvaluationWindow extends TopComponent {
         return (view_name);
     }
     
-    private void exprEval() {
-        expr = exprList.getEditor().getItem().toString();
+    private void evaluateTypedExpression() {
+        exprEval(exprList.getEditor().getItem().toString());
+    }
+    
+    public void exprEval(String expr) {
+        this.expr = expr;
         format = (FormatOption)format_jcb.getSelectedItem();
 	if (expr != null && !expr.equals("") && format != null) {
             debugger.exprEval(format, expr);
@@ -367,14 +371,14 @@ public final class EvaluationWindow extends TopComponent {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if ("comboBoxChanged".equals(e.getActionCommand()) && exprList.isPopupVisible()) { //NOI18N
-                        exprEval();
+                        evaluateTypedExpression();
                     }
                 }
             });
             exprList.getEditor().addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    exprEval();
+                    evaluateTypedExpression();
                 }
             });
 
@@ -476,7 +480,7 @@ public final class EvaluationWindow extends TopComponent {
 
             String ac = ev.getActionCommand();
             if (ac.equals("comboBoxChanged")) { // NOI18N
-                exprEval();
+                evaluateTypedExpression();
             }
         }
     }
@@ -603,7 +607,7 @@ public final class EvaluationWindow extends TopComponent {
         if (s.length() > 0) {
             expr = s;
         }
-        exprEval();
+        evaluateTypedExpression();
     }
 
     @Override

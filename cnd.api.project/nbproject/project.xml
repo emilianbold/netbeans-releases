@@ -121,6 +121,7 @@
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
+                <friend>org.netbeans.modules.mixeddev</friend>
                 <package>org.netbeans.modules.cnd.api.project</package>
                 <package>org.netbeans.modules.cnd.spi.project</package>
             </friend-packages>

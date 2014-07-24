@@ -76,7 +76,7 @@ public final class CsmSymbolResolver {
      * 
      * @return all entities which have the same declaration text
      */      
-    public static Collection<CsmObject> resolveSymbol(NativeProject project, CharSequence declText) {
+    public static Collection<CsmOffsetable> resolveSymbol(NativeProject project, CharSequence declText) {
         return DEFAULT.resolveSymbol(project, declText);
     }    
     
@@ -89,17 +89,17 @@ public final class CsmSymbolResolver {
      * 
      * @return all entities which have the same declaration text
      */ 
-    public static Collection<CsmObject> resolveSymbol(CsmProject project, CharSequence declText) {
+    public static Collection<CsmOffsetable> resolveSymbol(CsmProject project, CharSequence declText) {
         return DEFAULT.resolveSymbol(project, declText);
     }        
         
-//<editor-fold defaultstate="collapsed" desc="impl">
-    
+    //<editor-fold defaultstate="collapsed" desc="Implementation">
+
     private static final CsmSymbolResolverImplementation DEFAULT = new Default();
     
     private CsmSymbolResolver() {
         throw new AssertionError("Not instantiable"); // NOI18N
-    }        
+    }
     
     /**
      * Default implementation (just a proxy to a real service)
@@ -128,13 +128,14 @@ public final class CsmSymbolResolver {
         }
         
         @Override
-        public Collection<CsmObject> resolveSymbol(NativeProject project, CharSequence declText) {
+        public Collection<CsmOffsetable> resolveSymbol(NativeProject project, CharSequence declText) {
             return getDelegate().resolveSymbol(project, declText);
-        }    
-
+        }
+        
         @Override
-        public Collection<CsmObject> resolveSymbol(CsmProject project, CharSequence declText) {
+        public Collection<CsmOffsetable> resolveSymbol(CsmProject project, CharSequence declText) {
             return getDelegate().resolveSymbol(project, declText);
-        }            
+        }
     }
+//</editor-fold>
 }

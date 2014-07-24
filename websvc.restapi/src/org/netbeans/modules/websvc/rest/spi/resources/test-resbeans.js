@@ -240,6 +240,9 @@ TestSupport.prototype = {
         for(var j=0;j<methods.length;j++) {
             var m = methods[j];                            
             var mName = m.attributes.getNamedItem("name").nodeValue;
+            if ('OPTIONS' === mName) {
+                continue;
+            }
             var mediaType = this.wdr.getMediaType(m);
             if(mediaType == null)
                 mediaType = this.wdr.getDefaultMime();
@@ -275,7 +278,7 @@ TestSupport.prototype = {
         var r = cat.r;
         var uri = cat.uri;
         this.currentResource = r;
-        if(r != null && !ts.wdr.isTemplateResource(r)) {
+        if(r != null) {
             var app1 = this.wadlDoc.documentElement;     
             this.doShowStaticResource(uri, r);
         } else {
@@ -1357,7 +1360,7 @@ WADLParser.prototype = {
        if(node.childNodes != null && node.childNodes.length > 0) {
           for (var i = 0; i < node.childNodes.length; ++i) {
             var n = node.childNodes[i];
-            if(ts.wdr.isResource(n) /*&& !isTemplateResource(ch)*/) {
+            if(ts.wdr.isResource(n)) {
                 var pathVal = unescape(ts.wdr.getNormailizedPath(n));
                 n.attributes.getNamedItem('path').nodeValue = pathVal;
                 ts.topUrls.push(pathVal);
@@ -1371,7 +1374,7 @@ WADLParser.prototype = {
              if(node.childNodes != null && node.childNodes.length > 0) {
                  for (var i = 0; i < node.childNodes.length; ++i) {
                     var ch = node.childNodes[i];
-                    if(ts.wdr.isResource(ch) /*&& !isTemplateResource(ch)*/) {
+                    if(ts.wdr.isResource(ch)) {
                         var n = createNode(ch, parentCat);
                         if(n != null) {
                           parentCat.add(n);
@@ -1438,20 +1441,12 @@ WADLParser.prototype = {
         return false;
    },
 
-   isTemplateResource : function (/*Node*/ n) {
-        if (this.getNormailizedPath(n).indexOf('{') > -1) {
-            return true;
-        }
-        return false;
-   },
-
    hasResource : function (/*Node*/ node) {
      if(node.nodeValue == null){
          if(node.childNodes != null && node.childNodes.length > 0) {
              for (var i = 0; i < node.childNodes.length; ++i) {
                 var ch = node.childNodes[i];
-                if(this.isResource(ch) /*&& !isTemplateResource(ch)*/ && 
-                      this.hasMethod(ch)) {
+                if(this.isResource(ch) && this.hasMethod(ch)) {
                     return true;
                 }
              } 
@@ -1678,11 +1673,16 @@ WADLParser.prototype = {
     },
     
     getMethodNameForDisplay : function (mName, mediaType) {
+        if ('DELETE' === mName) {
+            return mName;
+        }
         var m = mName;
-        if(mediaType == null && (mName == 'PUT' || mName == 'POST'))
+        if(!mediaType && (mName === 'PUT' || mName === 'POST')) {
             mediaType = getDefaultMime();
-        if(mediaType != null)
-            m += '(' + mediaType + ')';    
+        }
+        if(mediaType) {
+            m += '(' + mediaType + ')';
+        }
         return m;
     },
     

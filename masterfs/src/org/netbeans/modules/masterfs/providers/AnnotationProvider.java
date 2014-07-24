@@ -51,6 +51,9 @@ import java.util.TooManyListenersException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /** Can provide status and actions for FileObjects. Register it using {@link org.openide.util.lookup.ServiceProvider}.
  *
@@ -110,8 +113,25 @@ public abstract class AnnotationProvider extends Object {
     /** Provides actions that should be added to given set of files.
      * @param files an immutable set of {@link FileObject}s belonging to this filesystem
      * @return null or array of actions for these files.
+     * @deprecated Will be deleted in the future. Overwrite {@link #findExtrasFor(java.util.Set)}.
      */
-    public abstract javax.swing.Action[] actions(Set<? extends FileObject> files);
+    public javax.swing.Action[] actions(Set<? extends FileObject> files) {
+        return findExtrasFor(files).lookupAll(javax.swing.Action.class).toArray(new javax.swing.Action[0]);
+    }
+    
+    /** Provides various (usually UI related) information about 
+     * the given set of files.
+     * 
+     * @param files the files to 
+     * @return lookup to be exposed as {@link FileSystem#findExtrasFor}
+     *   - may return <code>null</code>
+     * @since 2.48
+     */
+    @SuppressWarnings("deprecated")
+    public Lookup findExtrasFor(Set<? extends FileObject> files) {
+        Object[] arr = actions(files);
+        return arr == null ? null : Lookups.fixed((Object[]) arr);
+    }
     
     //
     // Listener support

@@ -57,6 +57,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
@@ -1164,29 +1165,13 @@ public class CsmUtilities {
     }
     
     public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2) {
-        return checkTypesEqual(type1, contextFile1, type2, contextFile2, true);
+        return checkTypesEqual(type1, contextFile1, type2, contextFile2, new AlwaysEqualQualsEqualizer());
     }
     
-    public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2, boolean onlyClassifiers) {
+    public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2, QualifiersEqualizer qualsEqualizer) {
         if (type1 != null && type2 != null) {
-            if (!onlyClassifiers) {
-                TypeInfoCollector typeInfo1 = new TypeInfoCollector();
-                iterateTypeChain(type1, typeInfo1);
-
-                TypeInfoCollector typeInfo2 = new TypeInfoCollector();
-                iterateTypeChain(type2, typeInfo2);
-
-                Iterator<TypeInfoCollector.Qualificator> qualIter1 = typeInfo1.qualificators.iterator();
-                Iterator<TypeInfoCollector.Qualificator> qualIter2 = typeInfo2.qualificators.iterator();
-                if (typeInfo1.qualificators.size() == typeInfo2.qualificators.size()) {
-                    while (qualIter1.hasNext()) {
-                        if (!qualIter1.next().equals(qualIter2.next())) {
-                            return false;
-                        }
-                    }
-                } else {
-                    return false;
-                }
+            if (!qualsEqualizer.areQualsEqual(type1, type2)) {
+                return false;
             }
             
             boolean resolveTypeChain = false;
@@ -1389,6 +1374,93 @@ public class CsmUtilities {
             return false;
         }
     }
+    
+    public static interface QualifiersEqualizer {
+        
+        boolean areQualsEqual(CsmType from, CsmType to);
+    }
+    
+    public static class AlwaysEqualQualsEqualizer implements QualifiersEqualizer {
+
+        @Override
+        public boolean areQualsEqual(CsmType from, CsmType to) {
+            return true;
+        }
+        
+    }
+    
+    public static class ExactMatchQualsEqualizer implements QualifiersEqualizer {
+
+        @Override
+        public boolean areQualsEqual(CsmType from, CsmType to) {
+            TypeInfoCollector typeInfo1 = new TypeInfoCollector();
+            iterateTypeChain(from, typeInfo1);
+
+            TypeInfoCollector typeInfo2 = new TypeInfoCollector();
+            iterateTypeChain(to, typeInfo2);
+
+            Iterator<TypeInfoCollector.Qualificator> qualIter1 = typeInfo1.qualificators.iterator();
+            Iterator<TypeInfoCollector.Qualificator> qualIter2 = typeInfo2.qualificators.iterator();
+            if (typeInfo1.qualificators.size() == typeInfo2.qualificators.size()) {
+                while (qualIter1.hasNext()) {
+                    if (!qualIter1.next().equals(qualIter2.next())) {
+                        return false;
+                    }
+                }
+            } else {
+                return false;
+            }
+            
+            return true;
+        }
+    }
+    
+    public static class AssignableQualsEqualizer implements QualifiersEqualizer {
+
+        @Override
+        public boolean areQualsEqual(CsmType from, CsmType to) {
+            TypeInfoCollector typeInfo1 = new TypeInfoCollector();
+            iterateTypeChain(from, typeInfo1);
+
+            TypeInfoCollector typeInfo2 = new TypeInfoCollector();
+            iterateTypeChain(to, typeInfo2);
+
+            ListIterator<TypeInfoCollector.Qualificator> qualIter1 = typeInfo1.qualificators.listIterator();
+            ListIterator<TypeInfoCollector.Qualificator> qualIter2 = typeInfo2.qualificators.listIterator();
+            while (qualIter1.hasNext()) {
+                if (!qualIter2.hasNext()) {
+                    TypeInfoCollector.Qualificator qual = qualIter1.next();
+                    if (TypeInfoCollector.Qualificator.REFERENCE.equals(qual)) {
+                        continue;
+                    } else if (TypeInfoCollector.Qualificator.RVALUE_REFERENCE.equals(qual)) { // ?
+                        continue;
+                    }
+                    return false;
+                } else {
+                    TypeInfoCollector.Qualificator qual1 = qualIter1.next();
+                    TypeInfoCollector.Qualificator qual2 = qualIter2.next();
+                    if (!qual1.equals(qual2)) {
+                        if (TypeInfoCollector.Qualificator.CONST.equals(qual2)) {
+                            qualIter1.previous();
+                            continue;
+                        }
+                        return false;
+                    }
+                }
+            }
+            while (qualIter2.hasNext()) {
+                TypeInfoCollector.Qualificator qual = qualIter2.next();
+                if (TypeInfoCollector.Qualificator.REFERENCE.equals(qual)) {
+                    continue;
+                } else if (TypeInfoCollector.Qualificator.RVALUE_REFERENCE.equals(qual)) { // ?
+                    continue;
+                }
+                return false;
+            }
+            
+            return true;
+        }
+    }    
 
     private CsmUtilities() {
     }

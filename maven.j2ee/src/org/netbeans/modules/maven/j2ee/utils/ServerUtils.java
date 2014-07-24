@@ -82,7 +82,13 @@ public final class ServerUtils {
      */
     public static Server findServer(Project project) {
         final Type moduleType = getModuleType(project);
-        final String instanceID = JavaEEProjectSettings.getServerInstanceID(project);
+        String instanceID;
+        try {
+            // Should not happen but obviously it happens from time to time --> #242399
+            instanceID = JavaEEProjectSettings.getServerInstanceID(project);
+        } catch (UnsupportedOperationException exception) {
+            instanceID = null;
+        }
         if (instanceID != null) {
             Server server = findServerByInstance(moduleType, instanceID);
             if (server != null) {
