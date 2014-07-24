@@ -756,26 +756,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         if (removed != null && removed.getPath().equals(path)) {
             // for an object that is just detected as externally removed
             // it doesn't make sense to ask remote host whether it is directory
-            switch (removed.getType()) {
-                case Directory:
-                    return true;
-                case NamedPipe:
-                case CharacterSpecial:
-                case MultiplexedCharacterSpecial:
-                case SpecialNamed:
-                case BlockSpecial:
-                case MultiplexedBlockSpecial:
-                case Regular:
-                case NetworkSpecial:
-                case SymbolicLink:
-                case Shadow:
-                case Socket:
-                case Door:
-                case EventPort:
-                case Undefined:
-                default:
-                    return false;
-            }
+            return isDirectoryByFileObjectType(removed);
         }
         RemoteFileObjectBase fo = vcsSafeGetFileObject(path);
         if (fo == null) {
@@ -785,8 +766,37 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }            
     }
 
+    private boolean isDirectoryByFileObjectType(RemoteFileObjectBase removed) {
+        switch (removed.getType()) {
+            case Directory:
+                return true;
+            case NamedPipe:
+            case CharacterSpecial:
+            case MultiplexedCharacterSpecial:
+            case SpecialNamed:
+            case BlockSpecial:
+            case MultiplexedBlockSpecial:
+            case Regular:
+            case NetworkSpecial:
+            case SymbolicLink:
+            case Shadow:
+            case Socket:
+            case Door:
+            case EventPort:
+            case Undefined:
+            default:
+                return false;
+        }
+    }
+
     public Boolean vcsSafeIsFile(String path) {
         path = PathUtilities.normalizeUnixPath(path);
+        RemoteFileObjectBase removed = externallyRemoved.get();
+        if (removed != null && removed.getPath().equals(path)) {
+            // for an object that is just detected as externally removed
+            // it doesn't make sense to ask remote host whether it is directory
+            return !isDirectoryByFileObjectType(removed);
+        }
         RemoteFileObjectBase fo = vcsSafeGetFileObject(path);
         if (fo == null) {
             return null;

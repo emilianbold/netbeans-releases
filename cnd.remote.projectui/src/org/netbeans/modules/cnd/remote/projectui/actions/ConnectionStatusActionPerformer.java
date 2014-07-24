@@ -75,7 +75,7 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
 
     private void init() {
         ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, this));
-        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, this));
+        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, ConnectionManager.getInstance()));
         // initial status        
         updateStatus();
     }

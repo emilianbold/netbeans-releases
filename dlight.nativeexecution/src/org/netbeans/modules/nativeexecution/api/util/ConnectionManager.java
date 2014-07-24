@@ -165,7 +165,7 @@ public final class ConnectionManager {
         };
 
         restoreRecentConnectionsList();
-        connectionWatcherInterval = Integer.getInteger("nativeexecution.connection.watch.interval", 4000);
+        connectionWatcherInterval = Integer.getInteger("nativeexecution.connection.watch.interval", 4000); // NOI18N
         if (connectionWatcherInterval > 0) {
             connectionWatcher = new ConnectionWatcher();
         } else {
