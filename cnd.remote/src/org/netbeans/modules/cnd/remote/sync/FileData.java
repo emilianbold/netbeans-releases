@@ -69,6 +69,7 @@ public final class FileData {
     private final Properties data;
     private final FileObject privProjectStorageDir;
     private final String dataFileName;
+    private long dataFileTimeStamp;
 
     // upgrade to 1.3 is caused not by this file itself, but by change in remote host mirror
     private static final String VERSION = "1.3"; // NOI18N
@@ -114,6 +115,9 @@ public final class FileData {
         FileData instance = null;
         if (ref != null) {
             instance = ref.get();
+            if (instance != null && ! instance.isValid()) {
+                instance = null;
+            }
         }
         if (instance == null) {
             instance = new FileData(privProjectStorageDir, executionEnvironment);
@@ -125,6 +129,7 @@ public final class FileData {
     private FileData(FileObject privProjectStorageDir, ExecutionEnvironment executionEnvironment) throws IOException {
         data = new Properties();
         this.privProjectStorageDir = privProjectStorageDir;
+        this.dataFileTimeStamp = -1;
         this.dataFileName = "timestamps-" + executionEnvironment.getHost() + //NOI18N
                 '-' + executionEnvironment.getUser()+ //NOI18N
                 '-' + executionEnvironment.getSSHPort(); //NOI18N        
@@ -196,6 +201,7 @@ public final class FileData {
             data.setProperty(VERSION_KEY, VERSION);
             data.store(os, null);
             os.close();
+            dataFileTimeStamp = dataFile.lastModified().getTime();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             try {
@@ -208,6 +214,14 @@ public final class FileData {
         }
     }
 
+    private boolean isValid() {
+        try {
+            return dataFileTimeStamp == getDataFile().lastModified().getTime(); // getDataFile() is never null
+        } catch (IOException ex) {
+            return false;
+        }
+    }
+
     public void clear() {
         data.clear();
     }
@@ -216,7 +230,7 @@ public final class FileData {
     //  Private stuff
     //
 
-    private void load() throws IOException {
+    private long load() throws IOException {
         FileObject dataFile = getDataFile();
         if (dataFile.isValid()) {
             long time = System.currentTimeMillis();
@@ -224,6 +238,7 @@ public final class FileData {
             BufferedInputStream bs = new BufferedInputStream(is);
             try {
                 data.load(bs);
+                dataFileTimeStamp = dataFile.lastModified().getTime();
             } finally {
                 bs.close();
             }
@@ -232,6 +247,7 @@ public final class FileData {
                 System.out.printf("reading %d timestamps from %s took %d ms\n", data.size(), dataFile.getPath(), time); // NOI18N
             }
         }
+        return dataFile.lastModified().getTime();
     }
 
     private FileInfo getFileInfo(String fileKey) {
