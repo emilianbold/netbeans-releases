@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.core.syntax;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
@@ -207,9 +208,8 @@ public abstract class JSPProcessor {
         }
     }
 
-    protected void processIncludes() {
+    protected void processIncludes(boolean onlyPrelude, final String path) {
         PageInfo pageInfo = getPageInfo();
-
         if (pageInfo == null) {
             //if we do not get pageinfo it is unlikely we will get something reasonable from
             //jspSyntax.getParseResult()...
@@ -225,23 +225,27 @@ public abstract class JSPProcessor {
             }
         }
 
-        Visitor visitor = new Visitor() {
+        if (!onlyPrelude) {
+            Visitor visitor = new Visitor() {
 
-            @Override
-            public void visit(IncludeDirective includeDirective) throws JspException {
-                String fileName = includeDirective.getAttributeValue("file");
-                processIncludedFile(fileName, processedFiles);
+                @Override
+                public void visit(IncludeDirective includeDirective) throws JspException {
+                    String fileName = includeDirective.getAttributeValue("file");
+                    if (path == null || path.equals(fileName)) {
+                        processIncludedFile(fileName, processedFiles);
+                    }
+                }
+            };
+
+            try {
+                JspParserAPI.ParseResult parseResult = getParserData().getParserResult();
+
+                if (parseResult != null && parseResult.getNodes() != null) {
+                    parseResult.getNodes().visit(visitor);
+                }
+            } catch (JspException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        };
-
-        try {
-            JspParserAPI.ParseResult parseResult = getParserData().getParserResult();
-
-            if (parseResult != null && parseResult.getNodes() != null) {
-                parseResult.getNodes().visit(visitor);
-            }
-        } catch (JspException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -258,7 +262,7 @@ public abstract class JSPProcessor {
                 String mimeType = includedFile.getMIMEType();
 
                 if ("text/x-jsp".equals(mimeType) || "text/x-tag".equals(mimeType)) { //NOI18N
-                    EditorCookie editor = includedFileDO.getCookie(EditorCookie.class);
+                    EditorCookie editor = includedFileDO.getLookup().lookup(EditorCookie.class);
 
                     if (editor != null) {
                         IncludedJSPFileProcessor includedJSPFileProcessor = new IncludedJSPFileProcessor((BaseDocument) editor.openDocument(), processedFiles);
@@ -266,7 +270,9 @@ public abstract class JSPProcessor {
                         processIncludedFile(includedJSPFileProcessor);
                     }
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
+                logger.log(Level.WARNING, e.getMessage(), e);
+            } catch (BadLocationException e) {
                 logger.log(Level.WARNING, e.getMessage(), e);
             }
         }

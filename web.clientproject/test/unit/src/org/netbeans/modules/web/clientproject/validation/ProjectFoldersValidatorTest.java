@@ -50,7 +50,6 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
     private File projectDir;
     private File siteRootDir;
     private File testDir;
-    private File configDir;
 
 
     public ProjectFoldersValidatorTest(String name) {
@@ -66,13 +65,11 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
         assertTrue(siteRootDir.mkdir());
         testDir = new File(projectDir, "tests");
         assertTrue(testDir.mkdir());
-        configDir = new File(projectDir, "config");
-        assertTrue(configDir.mkdir());
     }
 
     public void testValidate() {
         ValidationResult result = new ProjectFoldersValidator()
-                .validate(projectDir, siteRootDir, testDir, configDir)
+                .validate(projectDir, siteRootDir, testDir)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -134,38 +131,7 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
         ValidationResult result = new ProjectFoldersValidator()
                 .validateTestFolder(projectDir, testDir)
                 .getResult();
-        assertFalse(result.getErrors().isEmpty());
-        assertEquals(ProjectFoldersValidator.TEST_FOLDER, result.getErrors().get(0).getSource());
-        assertTrue(result.getWarnings().isEmpty());
-    }
-
-    public void testNoConfigFolder() {
-        ValidationResult result = new ProjectFoldersValidator()
-                .validateTestFolder(projectDir, null)
-                .getResult();
         assertTrue(result.getErrors().isEmpty());
-        assertTrue(result.getWarnings().isEmpty());
-    }
-
-    public void testFileConfigFolder() throws Exception {
-        File readme = new File(projectDir, "readme.txt");
-        assertTrue(readme.createNewFile());
-        ValidationResult result = new ProjectFoldersValidator()
-                .validateConfigFolder(projectDir, readme)
-                .getResult();
-        assertFalse(result.getErrors().isEmpty());
-        assertEquals(ProjectFoldersValidator.CONFIG_FOLDER, result.getErrors().get(0).getSource());
-        assertTrue(result.getWarnings().isEmpty());
-    }
-
-    public void testNotProjectConfigFolder() throws Exception {
-        configDir = new File(getWorkDir(), "topLevelDir");
-        assertTrue(configDir.mkdir());
-        ValidationResult result = new ProjectFoldersValidator()
-                .validateConfigFolder(projectDir, configDir)
-                .getResult();
-        assertFalse(result.getErrors().isEmpty());
-        assertEquals(ProjectFoldersValidator.CONFIG_FOLDER, result.getErrors().get(0).getSource());
         assertTrue(result.getWarnings().isEmpty());
     }
 

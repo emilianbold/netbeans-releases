@@ -252,6 +252,14 @@ public class ELLexer implements Lexer<ELTokenId> {
                         case '.':
                             lexerState = ISA_DOT;
                             break;
+                        case '\\':
+                            // issue #242361 - coloring in case of EL inside quoted JSP attr_value
+                            int nextChar = input.read();
+                            input.backup(1);
+                            if (nextChar == '"') {
+                                return token(ELTokenId.STRING_LITERAL);
+                            }
+                            break;
                         default:
                             // Check for whitespace
                             if (Character.isWhitespace(actChar)) {

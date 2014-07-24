@@ -22,7 +22,6 @@
                   <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="configLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -32,15 +31,11 @@
                           <Component id="jEncodingComboBox" alignment="0" max="32767" attributes="0"/>
                           <Component id="jTestFolderTextField" alignment="1" max="32767" attributes="0"/>
                           <Component id="jSiteRootFolderTextField" alignment="1" max="32767" attributes="0"/>
-                          <Component id="configTextField" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="configBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jBrowseSiteRootButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
-                              <Component id="jBrowseTestButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="jBrowseSiteRootButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="jBrowseTestButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -65,12 +60,6 @@
                   <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jTestFolderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jBrowseTestButton" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="configLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="configTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="configBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -143,25 +132,6 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBrowseTestButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="configLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="SourcesPanel.configLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="configTextField">
-    </Component>
-    <Component class="javax.swing.JButton" name="configBrowseButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="SourcesPanel.configBrowseButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="configBrowseButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel4">

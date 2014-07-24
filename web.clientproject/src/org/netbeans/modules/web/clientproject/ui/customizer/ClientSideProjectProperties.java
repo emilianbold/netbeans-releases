@@ -78,7 +78,6 @@ public final class ClientSideProjectProperties {
 
     private volatile String siteRootFolder = null;
     private volatile String testFolder = null;
-    private volatile String configFolder = null;
     private volatile String jsLibFolder = null;
     private volatile String encoding = null;
     private volatile String startFile = null;
@@ -92,7 +91,6 @@ public final class ClientSideProjectProperties {
     private LicensePanelSupport licenseSupport;
     private volatile boolean isSiteRootModified;
     private volatile boolean isTestFolderModified;
-    private volatile boolean isConfigFolderModified;
 
     public ClientSideProjectProperties(ClientSideProject project) {
         this.project = project;
@@ -165,11 +163,6 @@ public final class ClientSideProjectProperties {
                 && !testFolder.trim().isEmpty()) {
             testFolderReference = createForeignFileReference(testFolder);
         }
-        String configFolderReference = null;
-        if (isConfigFolderModified
-                && !configFolder.trim().isEmpty()) {
-            configFolderReference = createForeignFileReference(configFolder);
-        }
         // save properties
         EditableProperties privateProperties = project.getProjectHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties projectProperties = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -183,12 +176,6 @@ public final class ClientSideProjectProperties {
         } else if (isTestFolderModified) {
             // tests dir removed
             projectProperties.remove(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
-        }
-        if (configFolderReference != null) {
-            putProperty(projectProperties, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, configFolderReference);
-        } else if (isConfigFolderModified) {
-            // config dir removed
-            projectProperties.remove(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
         }
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_ENCODING, encoding);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_START_FILE, startFile);
@@ -252,22 +239,6 @@ public final class ClientSideProjectProperties {
             testFolder = ""; // NOI18N
         }
         this.testFolder = testFolder;
-    }
-
-    public String getConfigFolder() {
-        if (configFolder == null) {
-            configFolder = getProjectProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, ""); // NOI18N
-        }
-        return configFolder;
-    }
-
-    public void setConfigFolder(String configFolder) {
-        isConfigFolderModified = true;
-        if (configFolder == null) {
-            // we need to find out that some value was set ("no value" in this case)
-            configFolder = ""; // NOI18N
-        }
-        this.configFolder = configFolder;
     }
 
     public String getEncoding() {

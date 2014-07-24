@@ -72,8 +72,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     // set would be better but it is fine to use a list for small number of items
     static final List<String> WATCHED_PROPERTIES = new CopyOnWriteArrayList<String>(Arrays.asList(
             ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
-            ClientSideProjectConstants.PROJECT_TEST_FOLDER,
-            ClientSideProjectConstants.PROJECT_CONFIG_FOLDER));
+            ClientSideProjectConstants.PROJECT_TEST_FOLDER));
 
     final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
     private final ClientSideProject project;
@@ -111,7 +110,6 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
                 Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<ProjectProblem>(3);
                 checkSiteRootDir(currentProblems);
                 checkTestDir(currentProblems);
-                checkConfigDir(currentProblems);
                 return currentProblems;
             }
         });
@@ -145,24 +143,6 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
                     Bundle.ProjectPropertiesProblemProvider_invalidTestDir_title(),
                     Bundle.ProjectPropertiesProblemProvider_invalidTestDir_description(invalidDirectory.getAbsolutePath()),
                     new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES, ClientSideProjectConstants.PROJECT_TEST_FOLDER));
-            currentProblems.add(problem);
-        }
-    }
-
-    @NbBundle.Messages({
-        "ProjectPropertiesProblemProvider.invalidConfigDir.title=Invalid Configuration Files",
-        "# {0} - src dir path",
-        "ProjectPropertiesProblemProvider.invalidConfigDir.description=The directory \"{0}\" does not exist and cannot be used for Configuration Files.",
-        "# {0} - project name",
-        "ProjectPropertiesProblemProvider.invalidConfigDir.dialog.title=Select Configuration Files for {0}"
-    })
-    private void checkConfigDir(Collection<ProjectProblem> currentProblems) {
-        File invalidDirectory = getInvalidDirectory(project.getConfigFolder(), ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
-        if (invalidDirectory != null) {
-            ProjectProblem problem = ProjectProblem.createError(
-                    Bundle.ProjectPropertiesProblemProvider_invalidConfigDir_title(),
-                    Bundle.ProjectPropertiesProblemProvider_invalidConfigDir_description(invalidDirectory.getAbsolutePath()),
-                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER));
             currentProblems.add(problem);
         }
     }
@@ -201,7 +181,6 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     private void addFileChangesListeners() {
         addFileChangeListener(resolveFile(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER));
         addFileChangeListener(resolveFile(ClientSideProjectConstants.PROJECT_TEST_FOLDER));
-        addFileChangeListener(resolveFile(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER));
     }
 
     private void addFileChangeListener(File file) {
