@@ -291,7 +291,11 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         final Problem[] problem = new Problem[1];
         Collection<? extends TreePathHandle> handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
         for (final TreePathHandle tph : handles) {
-            JavaSource js = JavaSource.forFileObject(tph.getFileObject());
+            final FileObject fileObject = tph.getFileObject();
+            if (fileObject == null || !fileObject.isValid()) {
+                return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
+            }
+            JavaSource js = JavaSource.forFileObject(fileObject);
             if (js==null) {
                 return null;
             }
