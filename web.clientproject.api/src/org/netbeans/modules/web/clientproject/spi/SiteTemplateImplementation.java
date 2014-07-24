@@ -138,7 +138,6 @@ public interface SiteTemplateImplementation {
      * <ul>
      * <li>Site Root folder</li>
      * <li>Unit Tests folder</li>
-     * <li>Config folder</li>
      * </ul>
      * <p>
      * This class is not thread-safe.
@@ -147,7 +146,6 @@ public interface SiteTemplateImplementation {
 
         private String siteRootFolder;
         private String testFolder;
-        private String configFolder;
         private String jsTestingProvider;
 
 
@@ -187,25 +185,6 @@ public interface SiteTemplateImplementation {
          */
         public ProjectProperties setTestFolder(String testFolder) {
             this.testFolder = testFolder;
-            return this;
-        }
-
-        /**
-         * Get Config folder, usually relative path.
-         * @return Config folder, usually relative path; can be {@code null} if no Config folder is present
-         */
-        @CheckForNull
-        public String getConfigFolder() {
-            return configFolder;
-        }
-
-        /**
-         * Set Config folder, can be {@code null} if there is no config available.
-         * @param configFolder Config folder, can be {@code null} if there is no config available
-         * @return itself
-         */
-        public ProjectProperties setConfigFolder(String configFolder) {
-            this.configFolder = configFolder;
             return this;
         }
 

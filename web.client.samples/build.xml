@@ -51,7 +51,6 @@ made subject to such option by the copyright holder.
 
     <target name="zip-examples" depends="compile">
         <property name="examples" value="${build.classes.dir}/org/netbeans/modules/web/client/samples"/>
-	<mkdir dir="EaselDemo/config"/>
 	<mkdir dir="EaselDemo/test"/>
         <zip basedir="EaselDemo" destfile="${examples}/Easel.zip"/>
     </target>

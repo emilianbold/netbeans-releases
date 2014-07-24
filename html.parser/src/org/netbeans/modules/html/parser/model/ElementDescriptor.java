@@ -875,6 +875,20 @@ LINK(
         new Link("HTMLLinkElement", "semantics.html#htmllinkelement")
 ),
 
+MAIN(
+        HtmlTagType.HTML,
+        new Link("main", "sections.html#the-body-element-0"),
+        "The main content of  the <body> of a document or application. ",
+        EnumSet.of(ContentType.FLOW),
+        EnumSet.noneOf(FormAssociatedElementsCategory.class),
+        EnumSet.of(ContentType.FLOW),
+        new String[]{},
+        EnumSet.of(ContentType.FLOW),
+        new String[]{},
+        EnumSet.of(Attribute.ROLE),
+        null
+),
+
 MAP(
         HtmlTagType.HTML,
         new Link("map", "the-map-element.html#the-map-element"),
