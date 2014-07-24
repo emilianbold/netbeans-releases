@@ -78,6 +78,12 @@ TMPBASE=${TMPBASE:-/var/tmp}
 
 SUFFIX=0
 TMPDIRBASE=${TMPBASE}/dlight_${USER}
+
+if [ ! -w ${TMPBASE} -a ! -w ${TMPDIRBASE} ]; then
+    TMPBASE=/tmp
+    TMPDIRBASE=${TMPBASE}/dlight_${USER}
+fi
+
 mkdir -p ${TMPDIRBASE}
 while [ ! -w ${TMPDIRBASE} -a ${SUFFIX} -lt 5 ]; do
     echo "Warning: ${TMPDIRBASE} is not writable">&2
