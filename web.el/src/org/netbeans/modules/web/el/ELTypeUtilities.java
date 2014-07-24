@@ -917,6 +917,14 @@ public final class ELTypeUtilities {
                                 if (ELTypeUtilities.isIterableElement(info, enclosing)) {
                                     propertyType = enclosing = info.info().getElements().getTypeElement(STREAM_CLASS);
                                 }
+                            } else {
+                                // issue #244065 - in case of JDK8 and Collection, return the EL's Stream class
+                                if (propertyType instanceof ExecutableElement) {
+                                    String returnType = ((ExecutableElement) propertyType).getReturnType().toString();
+                                    if ("java.util.stream.Stream<E>".equals(returnType)) {  //NOI18N
+                                        propertyType = info.info().getElements().getTypeElement(STREAM_CLASS);
+                                    }
+                                }
                             }
                             if (propertyType == null) {
                                 return;

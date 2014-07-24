@@ -88,7 +88,8 @@ public class InsertProfilingPointAction extends NodeAction {
     }
 
     public void performAction(Lookup.Provider project) {
-        if (ProfilingPointsManager.getDefault().isProfilingSessionInProgress()) {
+        ProfilingPointsManager manager = ProfilingPointsManager.getDefault();
+        if (manager.isProfilingSessionInProgress()) {
             ProfilerDialogs.displayWarning(
                     Bundle.InsertProfilingPointAction_ProfilingInProgressMsg());
 
@@ -114,14 +115,15 @@ public class InsertProfilingPointAction extends NodeAction {
             ProfilingPoint profilingPoint = ppWizard.finish(!createPPoint); // Wizard must be finished even in cancelled to release its resources
 
             if (createPPoint) {
-                ProfilingPointsManager.getDefault().addProfilingPoint(profilingPoint);
+                manager.addProfilingPoint(profilingPoint);
 
                 if (profilingPoint instanceof GlobalProfilingPoint) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            if (!ProfilingPointsWindow.getDefault().isOpened()) {
-                                ProfilingPointsWindow.getDefault().open();
-                                ProfilingPointsWindow.getDefault().requestVisible();
+                            ProfilingPointsWindow ppWin = ProfilingPointsWindow.getDefault();
+                            if (!ppWin.isOpened()) {
+                                ppWin.open();
+                                ppWin.requestVisible();
                             }
                         }
                     });
