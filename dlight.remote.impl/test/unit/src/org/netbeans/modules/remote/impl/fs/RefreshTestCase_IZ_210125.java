@@ -68,6 +68,7 @@ public class RefreshTestCase_IZ_210125 extends RemoteFileTestBase {
 //        System.setProperty("remote.fs_server.verbose", "4");
 //        System.setProperty("remote.fs_server.suppress.stderr", "false");
 //        System.setProperty("remote.fs_server.verbose.response", "true");
+//        System.setProperty("rfs.vcs.cache", "false");
 //    }
 
     public RefreshTestCase_IZ_210125(String testName) {
