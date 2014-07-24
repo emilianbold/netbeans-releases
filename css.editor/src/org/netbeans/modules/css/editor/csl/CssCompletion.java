@@ -127,6 +127,7 @@ public class CssCompletion implements CodeCompletionHandler {
     static String[] TEST_USED_COLORS;
     static String[] TEST_CLASSES;
     static String[] TEST_IDS;
+    public static String testFileObjectMimetype;
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
@@ -238,7 +239,8 @@ public class CssCompletion implements CodeCompletionHandler {
                 offset,
                 astCaretOffset,
                 astOffset,
-                prefix);
+                prefix,
+                file != null ? file.getMIMEType() : testFileObjectMimetype);
 
         List<CompletionProposal> cssModulesCompletionProposals = CssModuleSupport.getCompletionProposals(completionContext);
         completionProposals.addAll(cssModulesCompletionProposals);
@@ -1053,13 +1055,20 @@ public class CssCompletion implements CodeCompletionHandler {
                     // div { | color: red;} or div { | }
                     //in this case the caret position falls to the rule node as the declarations node
                     //doesn't contain the whitespace before first declaration
+                    //
+                    //note: in css preprocessor source we want the selectors to be offered even in this filtered out situation
+                    //
                     TokenSequence<CssTokenId> tokenSequence = completionContext.getTokenSequence();
-                    if (null == LexerUtils.followsToken(tokenSequence, CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT)) {
+                    if (completionContext.isCssPreprocessorSource() || null == LexerUtils.followsToken(tokenSequence, CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT)) {
                         completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                     }
                 }
                 break;
             case declarations:
+                if(completionContext.isCssPreprocessorSource()) {
+                    completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
+                    break;
+                }
                 //@mixin mymixin() { div {} | }
                 if (NodeUtil.getAncestorByType(node, NodeType.cp_mixin_block) == null) {
                 break; //do not complete

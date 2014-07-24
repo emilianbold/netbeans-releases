@@ -439,7 +439,9 @@ public class JspLexer implements Lexer<JspTokenId> {
                 case ISI_EL_DOUBLE_QUOTE:
                     switch (actChar) {
                         case '\\':
-                            lexerState = ISA_EL_DOUBLE_QUOTE_ESCAPE;
+                            if (lexerStateBeforeEL != 14) {
+                                lexerState = ISA_EL_DOUBLE_QUOTE_ESCAPE;
+                            }
                             break;
                         case '"':
                             lexerState = ISI_EL;

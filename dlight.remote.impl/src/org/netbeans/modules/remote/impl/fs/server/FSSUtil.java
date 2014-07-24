@@ -44,13 +44,14 @@ package org.netbeans.modules.remote.impl.fs.server;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 
 /**
  *
  * @author vkvashin
  */
-/*зфслфпу*/ class FSSUtil  {
+/*package*/ class FSSUtil  {
 
     private FSSUtil() {
     }
@@ -105,13 +106,13 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
         }
     }
     
-    public static IOException createIOException(int errno, String emsg) {
+    public static IOException createIOException(int errno, String emsg, ExecutionEnvironment execEnv) {
         switch (errno) {
             case Errno.EACCES:
             case Errno.ENOENT:
                 return new FSSFileNotFoundException(errno, emsg);
             case 0:
-                RemoteLogger.info("fs_server reports zero errno; treating as 'file not found': {0}", emsg);
+                RemoteLogger.info("fs_server [{0}] reports zero errno; treating as 'file not found': {1}", execEnv, emsg);
                 return new FSSFileNotFoundException(errno, emsg);
             default:
                 return new FSSIOException(errno, emsg);

@@ -696,7 +696,6 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         }
         ep.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
         ep.setProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, projectProperties.getTestFolder());
-        ep.setProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, projectProperties.getConfigFolder());
         ep.store(str);
     }
 

@@ -149,8 +149,11 @@ public class CompletionContextFinder {
         
         //find the begining of the object literal
         Token<? extends JsTokenId> token = null;
-        JsTokenId tokenId;
+        JsTokenId tokenId = ts.token().id();
         
+        if (tokenId == JsTokenId.OPERATOR_COMMA) {
+            ts.movePrevious();
+        }
         List<JsTokenId> listIds = Arrays.asList(JsTokenId.OPERATOR_COMMA, JsTokenId.OPERATOR_COLON, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.OPERATOR_SEMICOLON);
         // find previous , or : or { or ;
         token = LexUtilities.findPreviousToken(ts, listIds);

@@ -74,11 +74,6 @@ public final class ClientSideProjectDetector {
     }
 
     @CheckForNull
-    public String getConfigDirPath() {
-        return detector.getConfigDirPath();
-    }
-
-    @CheckForNull
     public String getTestDirPath() {
         return detector.getTestDirPath();
     }
@@ -114,7 +109,6 @@ public final class ClientSideProjectDetector {
         boolean detected(File siteRoot);
         String getName();
         String getProjectDirPath();
-        String getConfigDirPath();
         String getTestDirPath();
 
         Detector NULL_DETECTOR = new Detector() {
@@ -128,11 +122,6 @@ public final class ClientSideProjectDetector {
             }
             @Override
             public String getProjectDirPath() {
-                return null;
-            }
-
-            @Override
-            public String getConfigDirPath() {
                 return null;
             }
             @Override
@@ -175,11 +164,6 @@ public final class ClientSideProjectDetector {
         }
 
         @Override
-        public String getConfigDirPath() {
-            return null;
-        }
-
-        @Override
         public String getTestDirPath() {
             return null;
         }
@@ -190,7 +174,6 @@ public final class ClientSideProjectDetector {
 
         private static final String NAME = "AngularJsApplication"; // NOI18N
         private static final String SITE_ROOT = "app"; // NOI18N
-        private static final String CONFIG_ROOT = "config"; // NOI18N
         private static final String TEST_ROOT = "test"; // NOI18N
 
         private final File siteRoot;
@@ -211,9 +194,6 @@ public final class ClientSideProjectDetector {
             if (!getTestDir().isDirectory()) {
                 return false;
             }
-            if (!getConfigDir().isDirectory()) {
-                return false;
-            }
             return true;
         }
 
@@ -228,21 +208,12 @@ public final class ClientSideProjectDetector {
         }
 
         @Override
-        public String getConfigDirPath() {
-            return getConfigDir().getAbsolutePath();
-        }
-
-        @Override
         public String getTestDirPath() {
             return getTestDir().getAbsolutePath();
         }
 
         private File getProjectDir() {
             return siteRoot.getParentFile();
-        }
-
-        private File getConfigDir() {
-            return new File(getProjectDir(), CONFIG_ROOT);
         }
 
         private File getTestDir() {

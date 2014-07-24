@@ -73,14 +73,12 @@ public final class CreateProjectProperties {
     private String projectName;
     private String siteRootFolder;
     private String testFolder;
-    private String configFolder;
     private String jsTestingProvider;
 
 
     public CreateProjectProperties() {
         setSiteRootFolder(ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER);
         setTestFolder(ClientSideProjectConstants.DEFAULT_TEST_FOLDER);
-        setConfigFolder(ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
     }
 
     /**
@@ -180,30 +178,6 @@ public final class CreateProjectProperties {
     public CreateProjectProperties setTestFolder(@NullAllowed String testFolder) {
         Parameters.notEmpty("testFolder", testFolder); // NOI18N
         this.testFolder = testFolder;
-        return this;
-    }
-
-    /**
-     * Get Config folder, usually relative path.
-     *
-     * @return Config folder, usually relative path; can be {@code null} if no Config folder is present
-     * @since 1.37
-     */
-    @CheckForNull
-    public String getConfigFolder() {
-        return configFolder;
-    }
-
-    /**
-     * Set Config folder, can be {@code null} if there is no config available.
-     *
-     * @param configFolder Config folder, can be {@code null} if there is no config available
-     * @return itself
-     * @since 1.37
-     */
-    @NonNull
-    public CreateProjectProperties setConfigFolder(@NullAllowed String configFolder) {
-        this.configFolder = configFolder;
         return this;
     }
 

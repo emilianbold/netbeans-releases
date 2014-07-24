@@ -296,7 +296,7 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
                         indent.reindent(from, to);
 
                     } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+                        //can't drop, just ignore
                     }
                 }
 

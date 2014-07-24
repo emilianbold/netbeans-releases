@@ -51,18 +51,27 @@ import org.openide.filesystems.FileObject;
  */
 public class HintContext {
 
+    private final String pureElementName;
     private final String elementName;
     private final Collection<FileObject> referredFiles;
     private final Collection<FileObject> allStylesheets;
     private final Map<FileObject, Collection<String>> elements;
     private final Map<String, Collection<FileObject>> element2files;
 
-    public HintContext(String elementName, Collection<FileObject> referredFiles, Collection<FileObject> allStylesheets, Map<FileObject, Collection<String>> elements, Map<String, Collection<FileObject>> element2files) {
+    public HintContext(String pureElementName, String elementName, Collection<FileObject> referredFiles, Collection<FileObject> allStylesheets, Map<FileObject, Collection<String>> elements, Map<String, Collection<FileObject>> element2files) {
+        this.pureElementName = pureElementName;
         this.elementName = elementName;
         this.referredFiles = referredFiles;
         this.allStylesheets = allStylesheets;
         this.elements = elements;
         this.element2files = element2files;
+    }
+    
+    /**
+     * Gets the name of the element without the type prefix (dot or hash).
+     */
+    public String getPureElementName() {
+        return pureElementName;
     }
 
     public String getElementName() {
