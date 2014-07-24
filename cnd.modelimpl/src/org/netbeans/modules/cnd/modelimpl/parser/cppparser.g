@@ -2466,23 +2466,30 @@ initializer
     |   
         array_initializer
     | 
-        (options {greedy=true;} : s=literal_ident COLON)? // GCC designated initializer
-        lazy_expression[false, false, 0] 
-	(options {greedy=true;}:	
-            ( ASSIGNEQUAL
-            | TIMESEQUAL
-            | DIVIDEEQUAL
-            | MINUSEQUAL
-            | PLUSEQUAL
-            | MODEQUAL
-            | SHIFTLEFTEQUAL
-            | SHIFTRIGHTEQUAL
-            | BITWISEANDEQUAL
-            | BITWISEXOREQUAL
-            | BITWISEOREQUAL
-            )            
-            initializer
-        )?
+        (
+            // GCC designated initializer
+            (literal_ident COLON)=>
+                s=literal_ident 
+                COLON 
+                (options {greedy=true;} : initializer)? 
+        |
+            lazy_expression[false, false, 0] 
+            (options {greedy=true;}:	
+                ( ASSIGNEQUAL
+                | TIMESEQUAL
+                | DIVIDEEQUAL
+                | MINUSEQUAL
+                | PLUSEQUAL
+                | MODEQUAL
+                | SHIFTLEFTEQUAL
+                | SHIFTRIGHTEQUAL
+                | BITWISEANDEQUAL
+                | BITWISEXOREQUAL
+                | BITWISEOREQUAL
+                )            
+                initializer
+            )?
+        )
     ;
 
 cast_array_initializer:
