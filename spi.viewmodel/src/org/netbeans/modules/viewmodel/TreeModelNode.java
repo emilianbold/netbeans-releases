@@ -1860,6 +1860,11 @@ public class TreeModelNode extends AbstractNode {
             //System.err.println("new MyProperty("+TreeModelNode.this+", "+id+") = "+this);
         }
         
+        // A hack - see org/netbeans/modules/debugger/jpda/ui/models/ValuePropertyEditor.java
+        boolean forcedReadOnly;
+        void forceNotEditable() {
+            forcedReadOnly = true;
+        }
 
         /* Can write the value of the property.
         * Returns the value passed into constructor.
@@ -1867,6 +1872,9 @@ public class TreeModelNode extends AbstractNode {
         */
         @Override
         public boolean canWrite () {
+            if (forcedReadOnly) {
+                return false;
+            }
             synchronized (properties) {
                 Boolean canWrite = (Boolean) properties.get(id + "#canWrite");
                 if (canWrite != null) {
