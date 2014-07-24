@@ -403,4 +403,8 @@ public final class JSchChannelsSupport {
         }
         return null;
     }
+
+    public ExecutionEnvironment getExecutionEnvironment() {
+        return env;
+    }
 }

@@ -144,8 +144,7 @@ public final class ClientSideProjectUtilities {
         return projectHelper;
     }
 
-    public static void initializeProject(@NonNull ClientSideProject project, @NonNull String siteRoot, @NullAllowed String test,
-            @NullAllowed String config) throws IOException {
+    public static void initializeProject(@NonNull ClientSideProject project, @NonNull String siteRoot, @NullAllowed String test) throws IOException {
         File projectDirectory = FileUtil.toFile(project.getProjectDirectory());
         assert projectDirectory != null;
         assert projectDirectory.isDirectory();
@@ -154,14 +153,10 @@ public final class ClientSideProjectUtilities {
         if (test != null) {
             ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, test));
         }
-        if (config != null) {
-            ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, config));
-        }
         // save project
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
         projectProperties.setSiteRootFolder(siteRoot);
         projectProperties.setTestFolder(test);
-        projectProperties.setConfigFolder(config);
         projectProperties.setSelectedBrowser(project.getProjectWebBrowser().getId());
         projectProperties.save();
     }
@@ -216,7 +211,6 @@ public final class ClientSideProjectUtilities {
         List<SourceGroup> res = new ArrayList<SourceGroup>();
         res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5)));
         res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST)));
-        res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_CONFIG)));
         return res.toArray(new SourceGroup[res.size()]);
     }
 

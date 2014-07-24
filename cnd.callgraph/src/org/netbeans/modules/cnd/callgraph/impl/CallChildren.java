@@ -57,10 +57,10 @@ import org.openide.util.RequestProcessor;
 public class CallChildren extends Children.Keys<Call> {
     private Call call;
     private Function function;
-    private CallGraphState model;
+    private final CallGraphState model;
     private Node parent;
-    private boolean isInited = false;
-    private boolean isCalls;
+    private volatile boolean isInited = false;
+    private final boolean isCalls;
     private static final RequestProcessor RP = new RequestProcessor(CallChildren.class.getName(), 1);
 
     public CallChildren(Call call, CallGraphState model, boolean isCalls) {
@@ -171,17 +171,19 @@ public class CallChildren extends Children.Keys<Call> {
 
     @Override
     protected void addNotify() {
-        isInited = true;
-        if (isRecusion()) {
-            setKeys(new Call[0]);
-        } else {
-            setKeys(new Call[]{new LoadingNode()});
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    resetKeys();
-                }
-            });
+        if (!isInited) {
+            isInited = true;
+            if (isRecusion()) {
+                setKeys(new Call[0]);
+            } else {
+                setKeys(new Call[]{new LoadingNode()});
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        resetKeys();
+                    }
+                });
+            }
         }
         super.addNotify();
     }

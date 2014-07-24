@@ -118,6 +118,10 @@ public class CompletionContextFinderTest extends JsTestBase {
         checkCompletionContext("testfiles/completion/extDefine.js", "    extend2: 'Ext.panel.^',", CompletionContext.STRING);
     }
 
+    public void testIssue244803() throws Exception {
+        checkCompletionContext("testfiles/completion/issue244803.js", "foo: encode^,", CompletionContext.EXPRESSION);
+    }
+    
     private void checkCompletionContext(final String file, final String caretLine, final CompletionContext expected) throws Exception {
         
         Source testSource = getTestSource(getTestFile(file));

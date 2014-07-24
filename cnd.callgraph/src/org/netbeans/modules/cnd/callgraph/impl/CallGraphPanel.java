@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.callgraph.support.ExportAction;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Cursor;
 import java.awt.FocusTraversalPolicy;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -57,7 +56,6 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
@@ -73,9 +71,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.plaf.TreeUI;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
@@ -90,6 +87,7 @@ import org.openide.explorer.view.ListView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -103,7 +101,7 @@ import org.openide.windows.TopComponent;
 public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider  {
 
     private ExplorerManager explorerManager = new ExplorerManager();
-    private AbstractNode root;
+    private final AbstractNode root;
     private List<Action> actions;
     private CallModel model;
     private boolean showGraph;
@@ -164,7 +162,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
                 }
             }));
         }
-//        actions.add(new ExpandAllAction());
+        actions.add(new ExpandAllAction());
         root = new AbstractNode(children){
             @Override
             public Action[] getActions(boolean context) {
@@ -672,7 +670,11 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             setShowOverriding(!isShowOverriding);
             model.update();
         }
+
+        @Override
+        public void doEDTAction() {
         
+        }
 
         @Override
         public final JMenuItem getPopupPresenter() {
@@ -721,59 +723,91 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
     }
     
-   
-    
-    private void expandAllImpl(Node n) {
+    private void expandAllImpl(final Node n) {
+        RP.post(new Runnable() {
 
-        
-        Children children = n.getChildren();
-        
-        if (children != null) {
-            if (children instanceof CallChildren) {
-                ((CallChildren)children).init();
+            @Override
+            public void run() {
+                expandAllWorker(n);
             }
-            getTreeView().expandNode(n);    
-            for (final Node node : children.getNodes()) {
-                Children children1 = node.getChildren();
-                if (children1 instanceof CallChildren) {
-                    ((CallChildren)children1).init();
-                }                
-                getTreeView().expandNode(node);    
-                expandAllImpl(node);
-            }            
-        } 
+
+        });
     }
     
-//    private final class ExpandAllAction extends AbstractAction implements Presenter.Popup {
-//        private final JMenuItem menuItem;
-//        public ExpandAllAction() {
-//            putValue(Action.NAME, getMessage("ExpandAll"));  // NOI18N
-//            menuItem = new JMenuItem(this);
-//            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
-//        }     
-//
-//        @Override
-//        public void actionPerformed(ActionEvent e) {            
-//            //as we have lzy initialization we need to build  the whole  model at once and
-//            //expand all trees
-//            //getTreeView().expandAll();
-////            RP.post(new Runnable() {
-////
-////                @Override
-////                public void run() {
-//            expandAllImpl(root);
-////                }
-////                
-////            });
-//            
-//        }
-//
-//        @Override
-//        public final JMenuItem getPopupPresenter() {
-//            return menuItem;
-//        }
-//    }
-//    
+    private void expandAllWorker(Node n) {
+        final AtomicBoolean canceled = new AtomicBoolean(false);
+        ProgressHandle progress = ProgressHandleFactory.createHandle(getMessage("ExpandAll"), new Cancellable() {
+            
+            @Override
+            public boolean cancel() {
+                canceled.set(true);
+                return true;
+            }
+        });
+        progress.start();
+        try {
+            List<Node> list = new ArrayList<Node>();
+            expandAllImpl(canceled, n, list);
+            for(Node node : list) {
+                if (canceled.get()) {
+                    return;
+                }
+                getTreeView().expandNode(node);            
+            }
+        } finally {
+            progress.finish();
+        }
+    }
+    
+    private void expandAllImpl(AtomicBoolean canceled, Node node, List<Node> list) {
+        list.add(node);
+        Children children = node.getChildren();
+        if (canceled.get()) {
+            return;
+        }
+        if (children != null) {
+            if (children instanceof CallChildren) {
+                ((CallChildren) children).init();
+            }
+            if (canceled.get()) {
+                return;
+            }
+            for (Node subNode : children.getNodes()) {
+                Children subChildren = subNode.getChildren();
+                if (subChildren instanceof CallChildren) {
+                    ((CallChildren) subChildren).init();
+                }
+                if (canceled.get()) {
+                    return;
+                }
+                expandAllImpl(canceled, subNode, list);
+            }
+        }
+    }
+
+    private final class ExpandAllAction extends AbstractAction implements Presenter.Popup {
+        private final JMenuItem menuItem;
+        public ExpandAllAction() {
+            putValue(Action.NAME, getMessage("ExpandAll"));  // NOI18N
+            menuItem = new JMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }     
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Node[] nodes = getExplorerManager().getSelectedNodes();
+            if (nodes == null || nodes.length == 0){
+                expandAllImpl(root);
+            } else {
+                expandAllImpl(nodes[0]);
+            }
+        }
+
+        @Override
+        public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }
 
     private static final class ContextPanel extends JPanel implements ExplorerManager.Provider {
         private final ExplorerManager managerCtx = new ExplorerManager();

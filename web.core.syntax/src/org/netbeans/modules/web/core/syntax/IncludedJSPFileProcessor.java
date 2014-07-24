@@ -69,7 +69,7 @@ class IncludedJSPFileProcessor extends JSPProcessor {
 
     @Override
     protected void renderProcess() throws BadLocationException {
-        processIncludes();
+        processIncludes(false, null);
 
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence(); //get top level token sequence

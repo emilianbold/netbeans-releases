@@ -86,8 +86,7 @@ public final class ClientSideProjectGenerator {
 
         ClientSideProjectUtilities.initializeProject(clientSideProject,
                     properties.getSiteRootFolder(),
-                    properties.getTestFolder(),
-                    properties.getConfigFolder());
+                    properties.getTestFolder());
         // js testing provider
         String jsTestingProvider = properties.getJsTestingProvider();
         if (jsTestingProvider != null) {
