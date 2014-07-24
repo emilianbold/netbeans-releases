@@ -63,6 +63,7 @@ import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.xhtml.XhtmlElTokenId;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.indent.api.LexUtilities;
 import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 import org.openide.util.Exceptions;
@@ -207,7 +208,7 @@ public class HtmlTypedTextInterceptor implements TypedTextInterceptor {
     }
 
     private static void addTagClosingSymbol(MutableContext context) throws BadLocationException {
-        TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) context.getDocument(), context.getOffset(), HTMLTokenId.language());
+        TokenSequence<HTMLTokenId> ts = LexerUtils.getTokenSequence((BaseDocument) context.getDocument(), context.getOffset(), HTMLTokenId.language(), true);
         if (ts == null) {
             return; //no html ts at the caret position
         }
