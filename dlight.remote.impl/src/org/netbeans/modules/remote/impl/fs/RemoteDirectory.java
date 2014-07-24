@@ -1313,7 +1313,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 Enumeration<FileChangeListener> listeners = c.getListeners();
                 RemoteFileObject childFO = c.getOwnerFileObject();
                 if (interceptor != null) {
-                    interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(childFO));
+                    getFileSystem().setExternallyRemoved(childFO.getImplementor());
+                    try {
+                        interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(childFO));
+                    } finally {
+                        getFileSystem().setExternallyRemoved(null);
+                    }
                 }
                 c.fireFileDeletedEvent(listeners, new FileEvent(childFO, childFO, expected));
                 RemoteFileObjectBase p = c.getParent();
@@ -1321,7 +1326,12 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
         }
         if (interceptor != null) {
-            interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(fo));
+            getFileSystem().setExternallyRemoved(fo.getImplementor());
+            try {
+                interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(fo));
+            } finally {
+                getFileSystem().setExternallyRemoved(null);
+            }
         }
         fo.fireFileDeletedEvent(fo.getImplementor().getListeners(), new FileEvent(fo, fo, expected));
         parent.fireFileDeletedEvent(parent.getImplementor().getListeners(), new FileEvent(parent, fo, expected));

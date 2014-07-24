@@ -192,7 +192,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         buf.getInt(); // unused
         int errno = buf.getInt();
         String emsg = buf.getRest();
-        IOException ioe = FSSUtil.createIOException(errno, emsg);
+        IOException ioe = FSSUtil.createIOException(errno, emsg, env);
         return ioe;
     }
     

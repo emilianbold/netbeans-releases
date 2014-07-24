@@ -128,6 +128,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     transient private final StatusImpl status = new StatusImpl();
     private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<String>();
     private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<RemoteFileObjectBase>();
+    private final ThreadLocal<RemoteFileObjectBase> externallyRemoved = new ThreadLocal<RemoteFileObjectBase>();
     private final RemoteFileZipper remoteFileZipper;
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
@@ -734,6 +735,10 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         beingRemoved.set(fo);
     }
 
+    /*package*/ void setExternallyRemoved(RemoteFileObjectBase fo) {
+        externallyRemoved.set(fo);
+    }
+
     private RemoteFileObjectBase vcsSafeGetFileObject(String path) {
         RemoteFileObjectBase fo = factory.getCachedFileObject(path);
         if (fo == null) {
@@ -747,6 +752,31 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     
     public Boolean vcsSafeIsDirectory(String path) {
         path = PathUtilities.normalizeUnixPath(path);
+        RemoteFileObjectBase removed = externallyRemoved.get();
+        if (removed != null && removed.getPath().equals(path)) {
+            // for an object that is just detected as externally removed
+            // it doesn't make sense to ask remote host whether it is directory
+            switch (removed.getType()) {
+                case Directory:
+                    return true;
+                case NamedPipe:
+                case CharacterSpecial:
+                case MultiplexedCharacterSpecial:
+                case SpecialNamed:
+                case BlockSpecial:
+                case MultiplexedBlockSpecial:
+                case Regular:
+                case NetworkSpecial:
+                case SymbolicLink:
+                case Shadow:
+                case Socket:
+                case Door:
+                case EventPort:
+                case Undefined:
+                default:
+                    return false;
+            }
+        }
         RemoteFileObjectBase fo = vcsSafeGetFileObject(path);
         if (fo == null) {
             return null;
