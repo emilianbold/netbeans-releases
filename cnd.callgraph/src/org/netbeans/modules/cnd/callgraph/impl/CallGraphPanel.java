@@ -753,9 +753,6 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             int count = 0;
             for(int i = 0; i < list.size(); i++) {
                 for(Node node : list.get(i)) {
-                    if (canceled.get()) {
-                        return;
-                    }
                     getTreeView().expandNode(node);
                     count++;
                     if (count >= MAX_EXPANDED_TREE_NODES) {
