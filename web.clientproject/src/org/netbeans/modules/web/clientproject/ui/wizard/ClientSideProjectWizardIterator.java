@@ -81,6 +81,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 public final class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
@@ -191,9 +192,20 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public void initialize(WizardDescriptor wiz) {
         this.wizardDescriptor = wiz;
+        // #245975
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                initializeInternal();
+            }
+        });
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void initializeInternal() {
+        assert EventQueue.isDispatchThread();
         index = 0;
         if (withExtenders) {
             extenders = Lookup.getDefault().lookupAll(ClientProjectExtender.class);
