@@ -278,8 +278,9 @@ public final class ResourceStringLoader {
                     ResourceStringLoader cl = ref.get();
                     if (cl == null) {
                         it.remove();
+                    } else {
+                        clients.add(cl);
                     }
-                    clients.add(cl);
                 }
             }
             return clients;

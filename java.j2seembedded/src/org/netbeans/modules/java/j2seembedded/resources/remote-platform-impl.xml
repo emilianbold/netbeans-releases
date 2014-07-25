@@ -45,7 +45,7 @@
       </scriptdef>
       <condition property="remote.platform.exec.prefix" value="'${remote.platform.exec.decorator}' " else="">
         <not>
-            <equals arg1="${remote.platform.exec.decorator}" arg2="$${platforms.Pi.platform.exec.decorator}"/>
+            <equals arg1="${remote.platform.exec.decorator}" arg2="$${platforms.${platform.runtime}.platform.exec.decorator}"/>
         </not>
       </condition>
     </target>

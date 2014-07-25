@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
     "DN_containsForIndexOf=String.indexOf can be replaced with String.contains",
     "DESC_containsForIndexOf=Finds usages of String.indexOf that can be replaced with String.contains",
     "ERR_containsForIndexOf=String.indexOf can be replaced with String.contains",
-    "FIX_containsForIndexOf=String.indexOf can be replaced with String.contains",
+    "FIX_containsForIndexOf=String.indexOf can be replaced with String.contains"
 })
 @Hint(displayName="#DN_containsForIndexOf", description="#DESC_containsForIndexOf", category="rules15", suppressWarnings="IndexOfReplaceableByContains")
 public class IndexOfToContains {
