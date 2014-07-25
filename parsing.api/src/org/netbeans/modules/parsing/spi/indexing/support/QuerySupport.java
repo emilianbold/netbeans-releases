@@ -132,7 +132,7 @@ public final class QuerySupport {
             Collection<String> binaryLibraryPathIds)
     {
         final Set<FileObject> roots = collectClasspathRoots(
-            null,
+            f,
             sourcePathIds,
             libraryPathIds,
             binaryLibraryPathIds);
