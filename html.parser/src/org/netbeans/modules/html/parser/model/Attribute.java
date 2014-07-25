@@ -69,6 +69,7 @@ public enum Attribute {
     ITEMSCOPE(new Link("itemscope", "links.html#attr-itemscope")),
     ITEMTYPE(new Link("itemtype", "links.html#attr-itemtype")),
     LANG(new Link("lang", "elements.html#attr-lang")),
+    ROLE(new Link("role", "elements.html")),
     SPELLCHECK(new Link("spellcheck", "editing.html#attr-spellcheck")),
     STYLE(new Link("style", "elements.html#the-style-attribute")),
     TABINDEX(new Link("tabindex", "editing.html#attr-tabindex")),

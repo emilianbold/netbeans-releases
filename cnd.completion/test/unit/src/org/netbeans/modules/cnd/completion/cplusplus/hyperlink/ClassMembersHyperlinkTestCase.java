@@ -1149,6 +1149,23 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug242417.cpp", 65, 44, "bug242417.cpp", 61, 13);
     }
     
+    public void testBug244524() throws Exception  {
+        // Bug 244524 - Unexpected token {
+        performTest("bug244524.cpp", 15, 28, "bug244524.cpp", 15, 5);
+        performTest("bug244524.cpp", 17, 15, "bug244524.cpp", 11, 9);
+        performTest("bug244524.cpp", 18, 18, "bug244524.cpp", 3, 9);
+        performTest("bug244524.cpp", 20, 14, "bug244524.cpp", 12, 9);
+        performTest("bug244524.cpp", 21, 18, "bug244524.cpp", 7, 9);
+        performTest("bug244524.cpp", 25, 14, "bug244524.cpp", 11, 9);
+        performTest("bug244524.cpp", 26, 18, "bug244524.cpp", 3, 9);
+        performTest("bug244524.cpp", 28, 15, "bug244524.cpp", 12, 9);
+        performTest("bug244524.cpp", 29, 18, "bug244524.cpp", 7, 9);
+        performTest("bug244524.cpp", 33, 14, "bug244524.cpp", 11, 9);
+        performTest("bug244524.cpp", 34, 18, "bug244524.cpp", 3, 9);
+        performTest("bug244524.cpp", 36, 14, "bug244524.cpp", 12, 9);
+        performTest("bug244524.cpp", 37, 18, "bug244524.cpp", 7, 9);        
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

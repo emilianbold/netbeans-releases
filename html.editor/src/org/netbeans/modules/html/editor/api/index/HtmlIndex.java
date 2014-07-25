@@ -173,25 +173,27 @@ public class HtmlIndex {
         Map<FileObject, Collection<FileReference>> dest2sources = new HashMap<>();
         for (IndexResult result : results) {
             String importsValue = result.getValue(HtmlIndexer.REFERS_KEY);
-            FileObject file = result.getFile();
-            Collection<String> imports = decodeListValue(importsValue);
-            Collection<FileReference> imported = new HashSet<>();
-            for (String importedFileName : imports) {
-                //resolve the file
-                FileReference resolvedReference = WebUtils.resolveToReference(file, importedFileName);
+            if (importsValue != null) {
+                FileObject file = result.getFile();
+                Collection<String> imports = decodeListValue(importsValue);
+                Collection<FileReference> imported = new HashSet<>();
+                for (String importedFileName : imports) {
+                    //resolve the file
+                    FileReference resolvedReference = WebUtils.resolveToReference(file, importedFileName);
 //                FileObject resolvedFileObject = ref.target();
-                if (resolvedReference != null) {
-                    imported.add(resolvedReference);
-                    //add reverse dependency
-                    Collection<FileReference> sources = dest2sources.get(resolvedReference.target());
-                    if (sources == null) {
-                        sources = new HashSet<>();
-                        dest2sources.put(resolvedReference.target(), sources);
+                    if (resolvedReference != null) {
+                        imported.add(resolvedReference);
+                        //add reverse dependency
+                        Collection<FileReference> sources = dest2sources.get(resolvedReference.target());
+                        if (sources == null) {
+                            sources = new HashSet<>();
+                            dest2sources.put(resolvedReference.target(), sources);
+                        }
+                        sources.add(resolvedReference);
                     }
-                    sources.add(resolvedReference);
                 }
+                source2dests.put(file, imported);
             }
-            source2dests.put(file, imported);
         }
 
         return new AllDependenciesMaps(source2dests, dest2sources);
@@ -206,7 +208,9 @@ public class HtmlIndex {
         Set<String> paths = new HashSet<>();
         for (IndexResult result : results) {
             String importsValue = result.getValue(HtmlIndexer.REFERS_KEY);
-            paths.addAll(decodeListValue(importsValue));
+            if(importsValue != null) {
+                paths.addAll(decodeListValue(importsValue));
+            }
         }
         List<URL> urls = new ArrayList<>();
         for (String p : paths) {

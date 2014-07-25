@@ -177,7 +177,7 @@ public class WildflyPluginProperties {
     }
 
     public int getAdminPort() {
-        if(WildflyPluginUtils.WILDFLY_8_0_0.compareTo(WildflyPluginUtils.getServerVersion(new File(getInstallLocation()))) > 0){
+        if(this.installLocation == null || WildflyPluginUtils.WILDFLY_8_0_0.compareTo(WildflyPluginUtils.getServerVersion(new File(this.installLocation))) > 0){
             return 9999;
         }
         return 9990;
@@ -186,10 +186,10 @@ public class WildflyPluginProperties {
 
     public void setInstallLocation(String installLocation) {
         if (installLocation.endsWith(File.separator)) {
-            installLocation = installLocation.substring(0, installLocation.length() - 1);
+            this.installLocation = installLocation.substring(0, installLocation.length() - 1);
+        } else {
+            this.installLocation = installLocation;
         }
-
-        this.installLocation = installLocation;
     }
 
     public String getInstallLocation() {

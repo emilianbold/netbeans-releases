@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.prep.editor.scss;
 
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.css.editor.csl.CssCompletion;
 import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
 import org.netbeans.modules.css.prep.editor.model.CPModel;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -60,12 +61,14 @@ public class ScssCompletionTest extends CssModuleTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         CPModel.topLevelSnapshotMimetype = getTopLevelSnapshotMimetype();
+        CssCompletion.testFileObjectMimetype = "text/scss";
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         CPModel.topLevelSnapshotMimetype = null;
+        CssCompletion.testFileObjectMimetype = null;
     }
 
     @Override
@@ -349,7 +352,7 @@ public class ScssCompletionTest extends CssModuleTestBase {
                 + "     /*cc;51; ;div,span;0*/\n"
                 + "     | \n"
                 + "     \n"
-                + "}", Match.DOES_NOT_CONTAIN, "div");
+                + "}", Match.CONTAINS, "div");
 
         //test html elements offered before the comment
         assertCompletion("div {  \n"
@@ -358,7 +361,13 @@ public class ScssCompletionTest extends CssModuleTestBase {
                 + "     \n"
                 + "     /*cc;51; ;div,span;0*/\n"
                 + "     \n"
-                + "}", Match.DOES_NOT_CONTAIN, "div");
+                + "}", Match.CONTAINS, "div");
+        
+        assertCompletion("div {  \n"
+                + "     \n"
+                + "     | \n"
+                + "     \n"
+                + "}", Match.CONTAINS, "div");        
 
     }
 }

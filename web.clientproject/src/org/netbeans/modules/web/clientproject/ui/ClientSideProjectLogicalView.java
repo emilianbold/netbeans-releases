@@ -456,7 +456,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
     private static enum BasicNodes {
         Sources,
         Tests,
-        Configuration;
     }
 
     // TODO: all three nodes are registered at the same time - could be refactored and
@@ -543,12 +542,10 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
             private volatile boolean sourcesNodeHidden;
             private volatile boolean testsNodeHidden;
-            private volatile boolean configNodeHidden;
 
             public Listener() {
                 sourcesNodeHidden = isNodeHidden(BasicNodes.Sources);
                 testsNodeHidden = isNodeHidden(BasicNodes.Tests);
-                configNodeHidden = isNodeHidden(BasicNodes.Configuration);
             }
 
             @Override
@@ -576,9 +573,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     testsNodeHidden = isNodeHidden(BasicNodes.Tests);
                     refreshKey(BasicNodes.Tests);
                     addTestsListeners();
-                } else if (ClientSideProjectConstants.PROJECT_CONFIG_FOLDER.equals(evt.getPropertyName())) {
-                    configNodeHidden = isNodeHidden(BasicNodes.Configuration);
-                    refreshKey(BasicNodes.Configuration);
                 }
             }
 
@@ -592,11 +586,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 if (nodeHidden != testsNodeHidden) {
                     testsNodeHidden = nodeHidden;
                     refreshKey(BasicNodes.Tests);
-                }
-                nodeHidden = isNodeHidden(BasicNodes.Configuration);
-                if (nodeHidden != configNodeHidden) {
-                    configNodeHidden = nodeHidden;
-                    refreshKey(BasicNodes.Configuration);
                 }
             }
 
@@ -622,7 +611,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             switch (k.getNode()) {
                 case Sources:
                 case Tests:
-                case Configuration:
                     return createNodeForFolder(k.getNode());
                 default:
                     return null;
@@ -636,7 +624,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             switch (basicNodes) {
                 case Sources:
                 case Tests:
-                case Configuration:
                     addIgnoredFile(ignoredFiles, nbprojectFolder);
                     addIgnoredFile(ignoredFiles, buildFolder);
                     break;
@@ -660,10 +647,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             if (type == BasicNodes.Sources) {
                 return false;
             }
-            if (type == BasicNodes.Configuration) {
-                //#245555
-                return true;
-            }
             FileObject root = getRootForNode(type);
             return root == null
                     || !root.isValid()
@@ -672,10 +655,11 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         private FileObject getRootForNode(BasicNodes node) {
             switch (node) {
-                case Configuration: return project.getConfigFolder();
                 case Tests: return project.getTestsFolder(false);
                 case Sources: return project.getSiteRootFolder();
-                default: assert false; return null;
+                default:
+                    assert false : "Unknown node: " + node;
+                    return null;
             }
         }
 
@@ -714,9 +698,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
             if (canCreateNodeFor(BasicNodes.Tests)) {
                 keys.add(getKey(BasicNodes.Tests));
-            }
-            if (canCreateNodeFor(BasicNodes.Configuration)) {
-                keys.add(getKey(BasicNodes.Configuration));
             }
             return keys;
         }
@@ -793,7 +774,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         private Node delegate;
         private static final Image SOURCES_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/sources-badge.gif", true); // NOI18N
         private static final Image TESTS_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/tests-badge.gif", true); // NOI18N
-        private static final Image CONFIGS_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/config-badge.gif", true); // NOI18N
 
         public FolderFilterNode(BasicNodes nodeType, Node folderNode, List<File> ignoreList) {
             super(folderNode, folderNode.isLeaf() ? Children.LEAF :
@@ -845,9 +825,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 case Tests:
                     badge = TESTS_FILES_BADGE;
                     break;
-                case Configuration:
-                    badge = CONFIGS_FILES_BADGE;
-                    break;
                 default:
                     assert false;
             }
@@ -867,8 +844,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("SITE_ROOT");
                 case Tests:
                     return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("UNIT_TESTS");
-                case Configuration:
-                    return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("CONFIGURATION_FILES");
                 default:
                     throw new AssertionError(nodeType.name());
             }

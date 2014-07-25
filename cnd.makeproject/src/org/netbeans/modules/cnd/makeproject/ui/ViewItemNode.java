@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -110,6 +111,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
     private final ProjectNodesRefreshSupport.ProjectNodeRefreshListener refreshListener;
     private final boolean simpleRunDebug;
     private Action runAction;
+    private final VisualUpdater visualUpdater = new VisualUpdater();
 
     public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject, MakeProject project, boolean simpleRunDebug) {
         super(dataObject.getNodeDelegate());//, null, Lookups.fixed(item));
@@ -125,7 +127,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
                     return;
                 }
                 if (project == ViewItemNode.this.project) {
-                    EventQueue.invokeLater(new VisualUpdater());
+                    visualUpdater.postIfNeed();
                 }
             }
         };
@@ -416,13 +418,21 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
     }
     
     private class VisualUpdater implements Runnable {
+        private final AtomicBoolean finished = new AtomicBoolean(true);
 
-        public VisualUpdater() {
-            ViewItemNode.this.itemIsExcludedCache = ViewItemNode.this.isExcluded();
+        private VisualUpdater() {
         }                
 
+        private void postIfNeed() {
+            ViewItemNode.this.itemIsExcludedCache = ViewItemNode.this.isExcluded();
+            if (finished.getAndSet(false)) {
+                EventQueue.invokeLater(this);
+            }
+        }
+        
         @Override
         public void run() {
+            finished.set(true);
             fireIconChange();
             fireOpenedIconChange();
             String displayName = getDisplayName();
@@ -437,15 +447,15 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         if (source instanceof FileObject) {
             // See CsmCodeAssistanceProvider.fireChanges(CsmFile file)
             if (source.equals(item.getFileObject())) {
-                EventQueue.invokeLater(new VisualUpdater());
+                visualUpdater.postIfNeed();
             }
         } else if (source instanceof NativeProject) {
             // See CsmCodeAssistanceProvider.fireChanges(CsmProject project)
             if (source.equals(item.getNativeProject())) {
-                EventQueue.invokeLater(new VisualUpdater());
+                visualUpdater.postIfNeed();
             }
         } else {
-            EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
+            visualUpdater.postIfNeed();
         }
     }
 

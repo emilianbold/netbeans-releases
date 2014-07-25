@@ -139,13 +139,14 @@ public class ElementUtils {
             if (!ElementUtils.isVirtualNode(node)) {
                 String tName = ((OpenTag)node).unqualifiedName().toString();
                 tag = model.getTag(tName);
-                
-                if (!tag.isEmpty()) {
-                    possible.put(tag, (OpenTag) node);
-                }
-                if (!tag.hasOptionalEndTag()) {
-                    //since the end tag is required, the parent elements cannot be closed here
-                    break;
+                if (tag != null) {
+                    if (!tag.isEmpty()) {
+                        possible.put(tag, (OpenTag) node);
+                    }
+                    if (!tag.hasOptionalEndTag()) {
+                        //since the end tag is required, the parent elements cannot be closed here
+                        break;
+                    }
                 }
             }
         } while ((node = node.parent()) != null && node.type() == ElementType.OPEN_TAG);

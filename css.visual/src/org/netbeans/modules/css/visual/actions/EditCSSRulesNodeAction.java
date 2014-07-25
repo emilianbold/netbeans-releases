@@ -85,6 +85,9 @@ public class EditCSSRulesNodeAction extends NodeAction {
         
         final FileObject file = sourceElementHandle.getFileObject();
         Source source = Source.create(file);
+        if(source == null) {
+            return ; //invalid file
+        }
         try {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                     @Override

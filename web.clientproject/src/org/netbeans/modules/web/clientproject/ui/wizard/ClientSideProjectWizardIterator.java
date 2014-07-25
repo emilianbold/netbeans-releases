@@ -432,8 +432,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(SITE_TEMPLATE);
             ProjectProperties projectProperties = new ProjectProperties()
                     .setSiteRootFolder(customSiteRoot!=null?customSiteRoot:ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER)
-                    .setTestFolder(ClientSideProjectConstants.DEFAULT_TEST_FOLDER)
-                    .setConfigFolder(ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
+                    .setTestFolder(ClientSideProjectConstants.DEFAULT_TEST_FOLDER);
             if (siteTemplate != null) {
                 // configure
                 siteTemplate.configure(projectProperties);
@@ -500,8 +499,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         private void initProject(ClientSideProject project, ProjectProperties properties, WizardDescriptor wizardDescriptor) throws IOException {
             ClientSideProjectUtilities.initializeProject(project,
                     properties.getSiteRootFolder(),
-                    properties.getTestFolder(),
-                    properties.getConfigFolder());
+                    properties.getTestFolder());
             // #231326
             String librariesPath = (String) wizardDescriptor.getProperty(LIBRARIES_PATH);
             if (librariesPath != null) {
@@ -541,7 +539,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public static final class ExistingProjectWizard implements Wizard {
 
         public static final String SITE_ROOT = "SITE_ROOT"; // NOI18N
-        public static final String CONFIG_ROOT = "CONFIG_ROOT"; // NOI18N
         public static final String TEST_ROOT = "TEST_ROOT"; // NOI18N
 
         @Override
@@ -567,22 +564,18 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             File siteRoot = (File) wizardDescriptor.getProperty(SITE_ROOT);
             // #218736
             String testFolder;
-            String configFolder;
             if (projectDir.equals(siteRoot)) {
                 testFolder = null;
-                configFolder = null;
             } else {
                 testFolder = getExistingDir(wizardDescriptor, TEST_ROOT);
-                configFolder = getExistingDir(wizardDescriptor, CONFIG_ROOT);
             }
-            ClientSideProjectUtilities.initializeProject(project, siteRoot.getAbsolutePath(), testFolder, configFolder);
+            ClientSideProjectUtilities.initializeProject(project, siteRoot.getAbsolutePath(), testFolder);
             return FileUtil.toFileObject(siteRoot);
         }
 
         @Override
         public void uninitialize(WizardDescriptor wizardDescriptor) {
             wizardDescriptor.putProperty(SITE_ROOT, null);
-            wizardDescriptor.putProperty(CONFIG_ROOT, null);
             wizardDescriptor.putProperty(TEST_ROOT, null);
         }
 

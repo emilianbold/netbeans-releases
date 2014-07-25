@@ -62,6 +62,8 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
@@ -121,6 +123,8 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     private static final String META_TAG = "meta"; //NOI18N
     
     private HtmlEditorSupport htmlEditorSupport;
+    
+    private static final Pattern XML_PI_ENCODING_PATTERN = Pattern.compile(".*encoding=\"(.*)\".*");
     
     @MultiViewElement.Registration(
             displayName="#LBL_HTMLEditorTab",
@@ -280,6 +284,11 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         while (ts.moveNext()) {
             Token<HTMLTokenId> token = ts.token();
             switch (token.id()) {
+                case XML_PI:
+                    Matcher matcher = XML_PI_ENCODING_PATTERN.matcher(token.text());
+                    if(matcher.matches()) {
+                        return matcher.group(1);
+                    }
                 case TAG_OPEN:
                     in_meta_tag = LexerUtils.equals(META_TAG, token.text(), true, true);
                     break;

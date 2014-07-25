@@ -121,7 +121,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
         WildflyPluginProperties.getInstance().setDomainLocation(component.getConfigurationLocation());
         WildflyPluginProperties.getInstance().saveProperties();
         instantiatingIterator.setInstallLocation(locationStr);
-        instantiatingIterator.setAdminPort(""+ WildflyPluginProperties.getInstance().getAdminPort());
+        instantiatingIterator.setAdminPort("" + WildflyPluginProperties.getInstance().getAdminPort());
         return true;
     }
 
@@ -148,8 +148,11 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
 
     @Override
     public void storeSettings(Object settings) {
-        instantiatingIterator.setInstallLocation(
-                ((AddServerLocationVisualPanel) getComponent()).getInstallLocation());
+        String installLocation = ((AddServerLocationVisualPanel) getComponent()).getInstallLocation();
+        if (installLocation == null) {
+            return;
+        }
+        instantiatingIterator.setInstallLocation(installLocation);
         instantiatingIterator.setConfigFile(
                 ((AddServerLocationVisualPanel) getComponent()).getConfigurationLocation());
         instantiatingIterator.setServer("standalone");
