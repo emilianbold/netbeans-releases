@@ -191,7 +191,6 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(UnaryNode unaryNode) {
-        System.out.println(jdk.nashorn.internal.parser.Token.descType(unaryNode.getToken()));
         switch (jdk.nashorn.internal.parser.Token.descType(unaryNode.getToken())) {
             case NEW:
                 exp.add(ST_NEW);

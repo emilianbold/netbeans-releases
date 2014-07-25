@@ -81,10 +81,11 @@ public class RequireJsDeclarationFinder implements DeclarationFinder {
             return DeclarationLocation.NONE;
         }
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(info.getSnapshot().getTokenHierarchy(), caretOffset);
+        int jsOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
         if (ts != null) {
-            ts.move(caretOffset);
+            ts.move(jsOffset);
             if (ts.moveNext() && ts.token().id() == JsTokenId.STRING && EditorUtils.isFileReference(info.getSnapshot(), ts.offset())) {
-                ts.move(caretOffset);
+                ts.move(jsOffset);
                 ts.moveNext();
                 String path = FSCompletionUtils.removePlugin(ts.token().text().toString());
                 FileObject targetFO = FSCompletionUtils.findMappedFileObject(path, fo);

@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -188,10 +189,11 @@ public class CompositeComponentModel extends JsfPageModel {
         Iterator<Map<String, String>> itr = attributes.iterator();
         while (itr.hasNext()) {
             Map<String, String> attrs = itr.next();
-            Iterator<String> attrsKeysItr = attrs.keySet().iterator();
+            Iterator<Entry<String, String>> attrsKeysItr = attrs.entrySet().iterator();
             while (attrsKeysItr.hasNext()) {
-                String key = attrsKeysItr.next();
-                String value = attrs.get(key);
+                Entry<String, String> entry = attrsKeysItr.next();
+                String key = entry.getKey();
+                String value = entry.getValue();
                 buf.append(key);
                 buf.append(KEY_VALUE_SEPARATOR);
                 buf.append(encode(value));
@@ -404,6 +406,8 @@ public class CompositeComponentModel extends JsfPageModel {
                             if(LexerUtils.equals(INTERFACE_TAG_NAME, ct.unqualifiedName(), true, true)) {
                                 inInterface = false;
                             }
+                            break;
+                        default:
                             break;
                     }
                     

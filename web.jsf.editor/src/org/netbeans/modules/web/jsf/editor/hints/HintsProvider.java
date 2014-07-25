@@ -85,10 +85,9 @@ public abstract class HintsProvider {
     
     public abstract List<Hint> compute(RuleContext context);
 
-    protected static ErrorRule DEFAULT_ERROR_RULE = new Rule(HintSeverity.ERROR, true);
-    protected static ErrorRule DEFAULT_WARNING_RULE = new Rule(HintSeverity.WARNING, true);
-    
-    protected static ErrorRule ERROR_RULE_BADGING = new BadgingRule(HintSeverity.ERROR, true);
+    protected static final ErrorRule DEFAULT_ERROR_RULE = new Rule(HintSeverity.ERROR, true);
+    protected static final ErrorRule DEFAULT_WARNING_RULE = new Rule(HintSeverity.WARNING, true);
+    protected static final ErrorRule ERROR_RULE_BADGING = new BadgingRule(HintSeverity.ERROR, true);
 
     protected static final int DEFAULT_ERROR_HINT_PRIORITY = 50;
 
