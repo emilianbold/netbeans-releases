@@ -78,8 +78,8 @@ public class RequireJSCodeCompletion implements CompletionProvider {
 
     @Override
     public List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContext jsCompletionContext, final String prefix) {
-        int offset = ccContext.getCaretOffset();
         Snapshot snapshot = ccContext.getParserResult().getSnapshot();
+        int offset = snapshot.getEmbeddedOffset(ccContext.getCaretOffset());
         EditorUtils.CodeCompletionContext context = EditorUtils.findContext(snapshot, offset);
 
         if (context == EditorUtils.CodeCompletionContext.CONFIG_PROPERTY_NAME) {

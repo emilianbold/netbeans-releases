@@ -122,12 +122,18 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
         if(tableAnn == null) {
             TypeMirror superclass = typeElement.getSuperclass();
             while(superclass!=null && superclass.getKind() == TypeKind.DECLARED && tableAnn == null) {
-                Map<String, ? extends AnnotationMirror> annotationsByType = helper.getAnnotationsByType( ((DeclaredType)superclass).asElement().getAnnotationMirrors());
+                Element el = ((DeclaredType)superclass).asElement();
+                Map<String, ? extends AnnotationMirror> annotationsByType = helper.getAnnotationsByType( el.getAnnotationMirrors());
                 if(annotationsByType.containsKey("javax.persistence.Entity") || annotationsByType.containsKey("javax.persistence.MappedSuperclass")) {//NOI18N
                     tableAnn = annotationsByType.get("javax.persistence.Table");//NOI18N
                 } else {
                     break;
                 }
+               if(el instanceof TypeElement) {
+                   superclass = ((TypeElement) el).getSuperclass();
+               } else {
+                   break;
+               }
             }
         }
         table = new TableImpl(helper, tableAnn, name.toUpperCase()); // NOI18N
