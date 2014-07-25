@@ -749,7 +749,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             }
         });
         progress.start();
-        try {x
+        try {
             List<List<Node>> list = new ArrayList<List<Node>>();
             expandAllImpl(progress, canceled, n, list, 0);
             int count = 0;
