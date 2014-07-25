@@ -317,7 +317,7 @@ public class RemoteOpenHelper {
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err); // it doesn't make sense to disturb user
                 } catch (CancellationException ex) {
-                    ex.printStackTrace(System.err); // it doesn't make sense to disturb user
+                    // don't report CancellationException
                 }
                 return null;
             }
@@ -331,7 +331,7 @@ public class RemoteOpenHelper {
         } catch (IOException ex) {
             ex.printStackTrace(System.err); // it doesn't make sense to disturb user
         } catch (CancellationException ex) {
-            ex.printStackTrace(System.err); // it doesn't make sense to disturb user
+            // don't report CancellationException
         }
         return null;
     }
@@ -342,7 +342,7 @@ public class RemoteOpenHelper {
         } catch (IOException ex) {
             ex.printStackTrace(System.err); // it doesn't make sense to disturb user
         } catch (CancellationException ex) {
-            ex.printStackTrace(System.err); // it doesn't make sense to disturb user
+            // don't report CancellationException
         }
         return null;
     }
