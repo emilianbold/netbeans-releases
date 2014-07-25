@@ -69,6 +69,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
@@ -81,10 +82,13 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOProvider;
@@ -156,8 +160,8 @@ public class CompileAction extends AbstractExecutorRunAction {
                 }
             };
             Frame mainWindow = WindowManager.getDefault().getMainWindow();
-            String title = getString("DLG_TITLE_Prepare",node.getName()); // NOI18N
-            String msg = getString("MSG_TITLE_Prepare",node.getName()); // NOI18N
+            String title = getString("DLG_TITLE_PrepareToCompile",node.getDisplayName()); // NOI18N
+            String msg = getString("MSG_TITLE_PrepareToCompile",node.getDisplayName()); // NOI18N
             ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
         } else {
             NativeExecutionService es = prepare(node, project);
@@ -192,6 +196,16 @@ public class CompileAction extends AbstractExecutorRunAction {
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         if (FileSystemProvider.getExecutionEnvironment(compileDirObject).isLocal()) {
             compileDir = convertToRemoteIfNeeded(execEnv, compileDir, project);
+        } else {
+            try {
+                ConnectionManager.getInstance().connectTo(execEnv);
+            } catch (IOException ex) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CompileAction.class, "Status.Error", execEnv.getDisplayName(), ex.getLocalizedMessage()));
+                return null;
+            } catch (CancellationException ex) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(CompileAction.class, "Status.Connection.Canceled", execEnv.getDisplayName()));
+                return null;
+            }
         }
         if (compileDir == null) {
             trace("Compile folder folder is null"); //NOI18N
@@ -223,7 +237,7 @@ public class CompileAction extends AbstractExecutorRunAction {
         argsFlat.append("-o ").append(getDevNull(execEnv, compilerSet));// NOI18N
         Map<String, String> envMap = getEnv(execEnv, node, project, null);
         // Tab Name
-        String tabName = execEnv.isLocal() ? getString("COMPILE_LABEL", node.getName()) : getString("COMPILE_REMOTE_LABEL", node.getName(), execEnv.getDisplayName()); // NOI18N
+        String tabName = execEnv.isLocal() ? getString("COMPILE_LABEL", node.getDisplayName()) : getString("COMPILE_REMOTE_LABEL", node.getDisplayName(), execEnv.getDisplayName()); // NOI18N
         InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
         _tab.closeInputOutput(); // Close it...
         final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
