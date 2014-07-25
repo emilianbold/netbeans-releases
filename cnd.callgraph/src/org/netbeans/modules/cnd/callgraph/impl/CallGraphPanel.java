@@ -153,6 +153,9 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             actions.add(exportAction);
             scene.setExportAction(exportAction);
         }
+        actions.add(null);
+        actions.add(new ExpandAction());
+        actions.add(new ExpandAllAction());        
         //add all actions from the provider
         if (graphUI != null) {
             actions.addAll(graphUI.getActions(new CallGraphActionEDTRunnable() {
@@ -164,7 +167,6 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
                 }
             }));
         }
-        actions.add(new ExpandAllAction());
         root = new AbstractNode(children){
             @Override
             public Action[] getActions(boolean context) {
@@ -747,7 +749,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             }
         });
         progress.start();
-        try {
+        try {x
             List<List<Node>> list = new ArrayList<List<Node>>();
             expandAllImpl(progress, canceled, n, list, 0);
             int count = 0;
@@ -805,6 +807,30 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             }
         }
     }
+    
+    private final class ExpandAction extends AbstractAction implements Presenter.Popup {
+        private final JMenuItem menuItem;
+        public ExpandAction() {
+            putValue(Action.NAME, getMessage("Expand"));  // NOI18N
+            menuItem = new JMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }     
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Node[] nodes = getExplorerManager().getSelectedNodes();
+            if (nodes == null || nodes.length == 0){
+                getTreeView().expandAll();                
+            } else {
+                getTreeView().expandNode(nodes[0]);
+            }
+        }
+
+        @Override
+        public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }    
 
     private final class ExpandAllAction extends AbstractAction implements Presenter.Popup {
         private final JMenuItem menuItem;
