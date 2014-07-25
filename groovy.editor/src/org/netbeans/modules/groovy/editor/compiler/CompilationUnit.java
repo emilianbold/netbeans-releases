@@ -205,8 +205,15 @@ public final class CompilationUnit extends org.codehaus.groovy.control.Compilati
 
                 for (TypeParameterElement typeParameter : typeElement.getTypeParameters()) {
                     List<? extends TypeMirror> bounds = typeParameter.getBounds();
-                    for (TypeMirror bound : bounds) {
+                    
+                    BOUNDS_LOOP: for (TypeMirror bound : bounds) {
                         ClassNode typeParam = getClass(bound.toString());
+
+                        for (GenericsType generic : generics) {
+                            if (generic.getType().equals(typeParam)) {
+                                continue BOUNDS_LOOP;
+                            }
+                        }
                         generics.add(new GenericsType(typeParam));
                     }
                 }
