@@ -52,8 +52,7 @@ import org.openide.util.NbBundle;
 public class DefaultCatalog implements Catalog{
 
     @Override
-    public String getMessage(String key) {
-        return NbBundle.getMessage(CallGraphPanel.class, key);
+    public String getMessage(String key, Object... parameters) {
+        return NbBundle.getMessage(CallGraphPanel.class, key, parameters);
     }
-    
 }

@@ -361,7 +361,7 @@ public class CssFileModel {
 //            return null;
 //        }
 
-        return new LazyEntry(name, range, bodyRange, isVirtual);
+        return new LazyEntry(getSnapshot(), getTopLevelSnapshot(), name, range, bodyRange, isVirtual);
     }
 
     private static int[] getTextWSPreAndPostLens(CharSequence text) {
@@ -389,7 +389,7 @@ public class CssFileModel {
         return new int[]{preWSlen, postWSlen};
     }
 
-    public class LazyEntry implements Entry {
+    private static class LazyEntry implements Entry {
 
         private final String name;
         private final OffsetRange range, bodyRange;
@@ -399,8 +399,12 @@ public class CssFileModel {
         private OffsetRange documentRange, documentBodyRange;
         private CharSequence elementText, elementLineText;
         private int lineOffset = -1;
+        private final Snapshot snapshot;
+        private final Snapshot topLevelSnapshot;
 
-        public LazyEntry(String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
+        public LazyEntry(Snapshot snapshot, Snapshot topLevelSnapshot, String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
+            this.snapshot = snapshot;
+            this.topLevelSnapshot = topLevelSnapshot;
             this.name = name;
             this.range = range;
             this.bodyRange = bodyRange;
@@ -435,7 +439,7 @@ public class CssFileModel {
         public synchronized CharSequence getText() {
             if (elementText == null) {
                 //delegate to the underlying source charsequence, do not duplicate any chars!
-                elementText = new CharSubSequence(getSnapshot().getText(), range.getStart(), range.getEnd());
+                elementText = new CharSubSequence(snapshot.getText(), range.getStart(), range.getEnd());
             }
             return elementText;
         }
@@ -444,11 +448,11 @@ public class CssFileModel {
         public synchronized CharSequence getLineText() {
             if (elementLineText == null) {
                 try {
-                    int astLineStart = GsfUtilities.getRowStart(getSnapshot().getText(), range.getStart());
-                    int astLineEnd = GsfUtilities.getRowEnd(getSnapshot().getText(), range.getStart());
+                    int astLineStart = GsfUtilities.getRowStart(snapshot.getText(), range.getStart());
+                    int astLineEnd = GsfUtilities.getRowEnd(snapshot.getText(), range.getStart());
 
                     elementLineText = astLineStart != -1 && astLineEnd != -1
-                            ? getSnapshot().getText().subSequence(astLineStart, astLineEnd)
+                            ? snapshot.getText().subSequence(astLineStart, astLineEnd)
                             : null;
 
                 } catch (BadLocationException ex) {
@@ -468,8 +472,8 @@ public class CssFileModel {
         @Override
         public synchronized OffsetRange getDocumentRange() {
             if (documentRange == null) {
-                int documentFrom = getSnapshot().getOriginalOffset(range.getStart());
-                int documentTo = getSnapshot().getOriginalOffset(range.getEnd());
+                int documentFrom = snapshot.getOriginalOffset(range.getStart());
+                int documentTo = snapshot.getOriginalOffset(range.getEnd());
 
                 documentRange = documentFrom != -1 && documentTo != -1 ? new OffsetRange(documentFrom, documentTo) : OffsetRange.NONE;
             }
@@ -490,8 +494,8 @@ public class CssFileModel {
         public synchronized OffsetRange getDocumentBodyRange() {
             if (documentBodyRange == null) {
                 if (bodyRange != null) {
-                    int bodyDocFrom = getSnapshot().getOriginalOffset(bodyRange.getStart());
-                    int bodyDocTo = getSnapshot().getOriginalOffset(bodyRange.getEnd());
+                    int bodyDocFrom = snapshot.getOriginalOffset(bodyRange.getStart());
+                    int bodyDocTo = snapshot.getOriginalOffset(bodyRange.getEnd());
 
                     documentBodyRange = bodyDocFrom != -1 && bodyDocTo != -1
                             ? new OffsetRange(bodyDocFrom, bodyDocTo)
