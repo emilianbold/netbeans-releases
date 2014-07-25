@@ -321,11 +321,12 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                     if (descr.size() > 1) {
                         sb.append("<td>"); //NOI18N
                         sb.append("<table border=\"0\" padding=\"0\" margin=\"0\" spacing=\"2\">"); //NOI18N
-                        for (String key : descr.keySet()) {
-                            if (key.equals("name")) {//NOI18N
+                        for (Map.Entry<String, String> entry : descr.entrySet()) {
+                            String key = entry.getKey();
+                            if ("name".equals(key)) {//NOI18N
                                 continue; //skip name
                             }
-                            String val = descr.get(key);
+                            String val = entry.getValue();
                             sb.append("<tr><td><b>");//NOI18N
                             sb.append(key);
                             sb.append("</b></td><td>");//NOI18N
