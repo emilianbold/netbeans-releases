@@ -118,9 +118,23 @@ November 15 2003.
         </question>
 -->
 <answer id="arch-usecases">
+    
+  <p>
+     <a onclick="target='_blank'" href="https://leanpub.com/nbp4beginners">
+     <img src="http://wiki.apidesign.org/images/0/03/NetBeansPlatformForBeginners.jpg"
+        style="float: right"
+          width="60" height="70" alt="Cover of NetBeans Platform for Beginners book"/>
+     </a>
+    For general overview of the concepts, 
+    together with code samples, see chapter 6, 
+    of <a onclick="target='_blank'" href="https://leanpub.com/nbp4beginners">NetBeans Platform for Beginners</a> 
+    by Jason Wexbridge and Walter Nyland.
+  </p>
+    
 <usecase id="windowsystem-general" name="General Usecases">
 General usecases
-can be read on the <a href="http://core.netbeans.org/windowsystem/changes.html#4">external page</a>. 
+can be read in the <a href="http://core.netbeans.org/windowsystem/changes.html#4">design document</a>
+created before work on new window system design started. 
 </usecase>
 
 <usecase id="windowsystem-settings-for-topcomponent" name="How to create a '.settings' file for a TopComponent?" >
