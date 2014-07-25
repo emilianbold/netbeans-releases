@@ -72,6 +72,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
      */
     private final String compositeLibraryResourceFolderName;
     private final String defaultPrefix;
+    private Map<String, CompositeComponent> compositeComponentsMap;
 
     //for cc libraries with facelets library descriptor, the constructor is called by Mojarra
     public CompositeComponentLibrary(FaceletsLibrarySupport support, String compositeLibraryName, String namespace, URL libraryDescriptorURL) {
@@ -83,6 +84,15 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
         //since even if there's a descriptor for the library, it doesn't contain
         //such information
         this.defaultPrefix = generateVirtualLibraryPrefix();
+
+        index().addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                synchronized(CompositeComponentLibrary.this) {
+                    compositeComponentsMap = null;
+                }
+            }
+        });
     }
 
     @Override
@@ -118,14 +128,16 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
         return all;
     }
 
-    private Map<String, CompositeComponent> getCompositeComponentsMap() {
-        Map<String, CompositeComponent> ccomponents = new HashMap<>();
-        Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
-        for (String compName : componentNames) {
-            CompositeComponent comp = new CompositeComponent(compName);
-            ccomponents.put(compName, comp);
+    private synchronized Map<String, CompositeComponent> getCompositeComponentsMap() {
+        if (compositeComponentsMap == null) {
+            compositeComponentsMap = new HashMap<>();
+            Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
+            for (String compName : componentNames) {
+                CompositeComponent comp = new CompositeComponent(compName);
+                compositeComponentsMap.put(compName, comp);
+            }
         }
-        return ccomponents;
+        return compositeComponentsMap;
     }
 
     private JsfIndex index() {

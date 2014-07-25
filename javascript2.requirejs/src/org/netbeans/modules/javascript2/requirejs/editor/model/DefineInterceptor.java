@@ -60,6 +60,7 @@ import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsArray;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
@@ -249,9 +250,16 @@ public class DefineInterceptor implements FunctionInterceptor {
                                         declarationScope = declarationScope.getParentScope();
                                     }
                                     if (object != null) {
-                                        for (TypeUsage typeUsage : exposedTypes) {
-                                            object.addAssignment(typeUsage, modules.getOffset());
+                                        // wee need to find the occurrence of the name, where it's assigned
+                                        int nearOccurrenceEnd = -1;
+                                        for (Occurrence occurrence : object.getOccurrences()) {
+                                            int occurrenceOffsetEnd  = occurrence.getOffsetRange().getEnd();
+                                            if (occurrenceOffsetEnd < modules.getOffset() && occurrenceOffsetEnd > nearOccurrenceEnd) {
+                                                nearOccurrenceEnd = occurrenceOffsetEnd;
+                                            }
                                         }
+                                        for (TypeUsage typeUsage : exposedTypes) {
+                                            object.addAssignment(typeUsage, nearOccurrenceEnd > -1 ? nearOccurrenceEnd : modules.getOffset());                                        }
                                     }
                                 }
                             }

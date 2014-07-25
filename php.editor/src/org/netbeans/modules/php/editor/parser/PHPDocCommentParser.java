@@ -158,7 +158,10 @@ public class PHPDocCommentParser {
                 lastTag = tagType;  // remember the recognized tag
                 lastStartIndex = index;
                 description = "";
-                line = line.substring(tagType.getName().length() + 1); // and the first line of description of the tag
+                int from = tagType.getName().length() + 1;
+                if (from >= 0 && from <= line.length()) {
+                    line = line.substring(from); // and the first line of description of the tag
+                }
             }
             index = matcher.end();
             lastEndIndex = matcher.start();
