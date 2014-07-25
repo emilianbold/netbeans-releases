@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.callgraph.api.ui.Catalog;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphActionEDTRunnable;
 import org.netbeans.modules.cnd.callgraph.impl.CallGraphScene.LayoutKind;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.ListView;
@@ -117,6 +118,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     private final transient FocusTraversalPolicy newPolicy;
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
+    private static final int MAX_EXPANDED_TREE_NODES = 1000;
     private AtomicBoolean isSetDividerLocation = new AtomicBoolean(false);
     private static final RequestProcessor RP = new RequestProcessor("CallGraphPanel", 2);//NOI18N
     private final CallGraphUI graphUI;
@@ -457,8 +459,8 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         overriding.setSelected(isShowOverriding);
     }
 
-    private String getMessage(String key) {
-        return messagesCatalog.getMessage(key);
+    private String getMessage(String key, Object ... parameters) {
+        return messagesCatalog.getMessage(key, parameters);
     }
 
     public void setModel(CallModel model) {
@@ -736,7 +738,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     
     private void expandAllWorker(Node n) {
         final AtomicBoolean canceled = new AtomicBoolean(false);
-        ProgressHandle progress = ProgressHandleFactory.createHandle(getMessage("ExpandAll"), new Cancellable() {
+        ProgressHandle progress = ProgressHandleFactory.createHandle(getMessage("ExpandAll"), new Cancellable() {  // NOI18N
             
             @Override
             public boolean cancel() {
@@ -746,21 +748,43 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         });
         progress.start();
         try {
-            List<Node> list = new ArrayList<Node>();
-            expandAllImpl(canceled, n, list);
-            for(Node node : list) {
-                if (canceled.get()) {
-                    return;
+            List<List<Node>> list = new ArrayList<List<Node>>();
+            expandAllImpl(progress, canceled, n, list, 0);
+            int count = 0;
+            for(int i = 0; i < list.size(); i++) {
+                for(Node node : list.get(i)) {
+                    if (canceled.get()) {
+                        return;
+                    }
+                    getTreeView().expandNode(node);
+                    count++;
+                    if (count >= MAX_EXPANDED_TREE_NODES) {
+                        int allCount = 0;
+                        for(int j = 0; j < list.size(); j++) {
+                            allCount += list.get(j).size();
+                        }
+                        StatusDisplayer.getDefault().setStatusText(getMessage("ExpandedLimitWarning", count, allCount, i, list.size(), allCount));
+                        return;
+                    }
                 }
-                getTreeView().expandNode(node);            
             }
         } finally {
             progress.finish();
         }
     }
     
-    private void expandAllImpl(AtomicBoolean canceled, Node node, List<Node> list) {
-        list.add(node);
+    private void expandAllImpl(ProgressHandle progress, AtomicBoolean canceled, Node node, List<List<Node>> list, int level) {
+        if (list.size() < level+1) {
+            list.add(new ArrayList<Node>());
+        }
+        list.get(level).add(node);
+        int count = 0;
+        for(int i = 0; i < list.size(); i++) {
+            count += list.get(i).size();
+        }
+        if (count%100 == 0) {
+            progress.progress(getMessage("ExpandedProgress", count, list.size()));  // NOI18N
+        }
         Children children = node.getChildren();
         if (canceled.get()) {
             return;
@@ -780,7 +804,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 if (canceled.get()) {
                     return;
                 }
-                expandAllImpl(canceled, subNode, list);
+                expandAllImpl(progress, canceled, subNode, list, level+1);
             }
         }
     }

@@ -47,7 +47,5 @@ package org.netbeans.modules.cnd.callgraph.api.ui;
  * @author mtishkov
  */
 public interface Catalog {
-    String getMessage(String key);
-    
-
+    String getMessage(String key, Object ... parameters);
 }
