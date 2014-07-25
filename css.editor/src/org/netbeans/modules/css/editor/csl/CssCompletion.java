@@ -211,6 +211,10 @@ public class CssCompletion implements CodeCompletionHandler {
         }
         
         Node node = NodeUtil.findNonTokenNodeAtOffset(root, astCaretOffset);
+        if(node == null) {
+            return CodeCompletionResult.NONE; //can happen if the parsed source is too big to parse -> see the CssParser parsing limit
+        }
+        
         if (node.type() == NodeType.ws) {
             node = node.parent();
         }
@@ -512,6 +516,9 @@ public class CssCompletion implements CodeCompletionHandler {
             return null;
         }
         Node leaf = NodeUtil.findNonTokenNodeAtOffset(result.getParseTree(), embeddedCaretOffset);
+        if(leaf == null) {
+            return null;
+        }
         boolean inPropertyDeclaration = NodeUtil.getAncestorByType(leaf, NodeType.propertyDeclaration) != null;
 
         //really ugly handling of class or id selector prefix:

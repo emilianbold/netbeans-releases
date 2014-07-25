@@ -66,11 +66,15 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.web.common.api.Constants;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
+@NbBundle.Messages({
+    "too.large.snapshot=The source code is too large for CSS parsing.",
+})
 public class CssParser extends Parser {
 
     private static final Logger LOG = Logger.getLogger(CssParser.class.getSimpleName());
@@ -78,6 +82,8 @@ public class CssParser extends Parser {
     private final AtomicBoolean cancelled = new AtomicBoolean();
     private final String topLevelSnapshotMimetype;
 
+    private static final int MAX_SNAPSHOT_SIZE = 2 * 1024 * 1014; //2MB
+    
     //cache
     private Snapshot snapshot;
     private AbstractParseTreeNode tree;
@@ -97,7 +103,7 @@ public class CssParser extends Parser {
         if (snapshot == null) {
             return;
         }
-
+        
         this.snapshot = snapshot;
         FileObject fo = snapshot.getSource().getFileObject();
         String fileName = fo == null ? "no file" : fo.getPath(); //NOI18N
@@ -105,7 +111,11 @@ public class CssParser extends Parser {
         LOG.log(Level.FINE, "Parsing {0} ", fileName); //NOI18N
         long start = System.currentTimeMillis();
         try {
-            CharSequence source = snapshot.getText();
+            boolean tooLargeSnapshot = snapshot.getText().length() > MAX_SNAPSHOT_SIZE;
+            
+            //parse just an empty string in case of an oversize snapshot
+            CharSequence source = tooLargeSnapshot ? "" : snapshot.getText();
+            
             ExtCss3Lexer lexer = new ExtCss3Lexer(source);
             TokenStream tokenstream = new CommonTokenStream(lexer);
             NbParseTreeBuilder builder = new NbParseTreeBuilder(source);
@@ -130,6 +140,12 @@ public class CssParser extends Parser {
             filterProblemsInVirtualCode(snapshot, problems_local);
             filterTemplatingProblems(snapshot, problems_local);
 
+            if(tooLargeSnapshot) {
+                //add a problem description informing the user there's something 'wrong' with the file
+                problems_local.add(new ProblemDescription(0, 0, 
+                        Bundle.too_large_snapshot(), ProblemDescription.Keys.PARSING.name(), ProblemDescription.Type.WARNING ));
+            }
+            
             if (cancelled.get()) {
                 return;
             }
