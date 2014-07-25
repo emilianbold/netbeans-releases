@@ -99,6 +99,7 @@ final class CoverageReportTopComponent extends TopComponent {
     private CoverageTableModel model;
     private Project project;
     private static final String PREFERRED_ID = "CoverageReportTopComponent"; // NOI18N
+    private final int[] minColumnWidths = {300, 100, 50, 110};
 
     CoverageReportTopComponent(Project project, List<FileCoverageSummary> results) {
         model = new CoverageTableModel(results);
@@ -118,11 +119,7 @@ final class CoverageReportTopComponent extends TopComponent {
         //table.setGridColor(color.darker());
 
         //table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        TableColumnModel columnModel = table.getColumnModel();
-        columnModel.getColumn(0).setMaxWidth(1000);
-        columnModel.getColumn(1).setMaxWidth(300);
-        columnModel.getColumn(2).setMaxWidth(150);
-        columnModel.getColumn(3).setMaxWidth(150);
+        resizeColumnWidth(table);
 
         String projectName = ProjectUtils.getInformation(project).getDisplayName();
         setName(NbBundle.getMessage(CoverageReportTopComponent.class, "CTL_CoverageReportTopComponent", projectName));
@@ -194,6 +191,20 @@ final class CoverageReportTopComponent extends TopComponent {
         //    }
 
         totalCoverage.setCoveragePercentage(model.getTotalCoverage());
+    }
+
+    public void resizeColumnWidth(JTable table) {
+        final TableColumnModel columnModel = table.getColumnModel();
+        for (int column = 0; column < table.getColumnCount(); column++) {
+            int width = 50; // Min width
+            for (int row = 0; row < table.getRowCount(); row++) {
+                TableCellRenderer renderer = table.getCellRenderer(row, column);
+                Component comp = table.prepareRenderer(renderer, row, column);
+                width = Math.max(comp.getPreferredSize().width, width);
+            }
+            columnModel.getColumn(column).setPreferredWidth(width);
+            columnModel.getColumn(column).setMinWidth(minColumnWidths[column]);
+        }
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -373,6 +384,7 @@ final class CoverageReportTopComponent extends TopComponent {
         model = new CoverageTableModel(results);
         table.setModel(model);
         totalCoverage.setCoveragePercentage(model.getTotalCoverage());
+        resizeColumnWidth(table);
     }
 
     private static class CoverageTableModel implements TableModel {

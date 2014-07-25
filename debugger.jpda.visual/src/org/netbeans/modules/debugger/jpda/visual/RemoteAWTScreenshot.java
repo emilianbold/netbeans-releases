@@ -282,7 +282,7 @@ public class RemoteAWTScreenshot {
                                 String allNames = StringReferenceWrapper.value(allNamesString);
                                 String componentsAddAt = StringReferenceWrapper.value(componentsAddAtString);
                                 int ititle = allNames.indexOf(STRING_DELIMITER);
-                                String title = allNames.substring(0, ititle);
+                                String title = new String(allNames.substring(0, ititle)).intern(); // Create a new String - do not hold the whole allNames.
                                 if (title.length() == 1 && title.charAt(0) == 0) {
                                     title = null;
                                 }
@@ -723,9 +723,11 @@ public class RemoteAWTScreenshot {
             visible = (allDataArray[dpos++] == 0) ? false : true;
             setWindowBounds(new Rectangle(shiftX, shiftY, bounds.width, bounds.height));
             int iname = allNames.indexOf(STRING_DELIMITER, inamePtr[0]);
-            String name = allNames.substring(0, iname);
+            String name = allNames.substring(inamePtr[0], iname);
             if (name.length() == 1 && name.charAt(0) == 0) {
                 name = null;
+            } else {
+                name = new String(name).intern(); // Do not hold the whole original String
             }
             setName(name);
             inamePtr[0] = iname + 1;
