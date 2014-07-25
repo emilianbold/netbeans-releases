@@ -80,9 +80,17 @@ import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
  * @author Vladimir Voskresensky
  */
 public class CsmBaseUtilities {
-
+    
     /** Creates a new instance of CsmBaseUtilities */
     private CsmBaseUtilities() {
+    }
+    
+    public static String getFileLanguage(CsmFile file) {
+        return CsmBaseUtilitiesProvider.getDefault().getFileLanguage(file);
+    }
+    
+    public static String getFileLanguageFlavor(CsmFile file) {
+        return CsmBaseUtilitiesProvider.getDefault().getFileLanguageFlavor(file);
     }
 
     public static boolean isValid(CsmObject obj) {

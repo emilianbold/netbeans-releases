@@ -91,6 +91,7 @@
                 <friend>com.microchip.mplab.nbide.csmbridge</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.dwarf.lwmodel</friend>
+                <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.folding</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.indexing</friend>

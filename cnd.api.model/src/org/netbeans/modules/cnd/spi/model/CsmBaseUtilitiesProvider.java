@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.spi.model;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -60,6 +61,10 @@ public abstract class CsmBaseUtilitiesProvider {
     public static CsmBaseUtilitiesProvider getDefault() {
         return DEFAULT;
     }
+    
+    public abstract String getFileLanguage(CsmFile file);
+    
+    public abstract String getFileLanguageFlavor(CsmFile file);
     
     public abstract boolean isGlobalVariable(CsmVariable var);
 
@@ -78,6 +83,22 @@ public abstract class CsmBaseUtilitiesProvider {
         private final Collection<? extends CsmBaseUtilitiesProvider> svcs;;
         Default() {
             svcs = Lookup.getDefault().lookupAll(CsmBaseUtilitiesProvider.class);
+        }
+
+        @Override
+        public String getFileLanguage(CsmFile file) {
+            for (CsmBaseUtilitiesProvider provider : svcs) {
+                return provider.getFileLanguage(file);
+            }
+            return null;
+        }
+
+        @Override
+        public String getFileLanguageFlavor(CsmFile file) {
+            for (CsmBaseUtilitiesProvider provider : svcs) {
+                return provider.getFileLanguageFlavor(file);
+            }
+            return null;
         }
 
         @Override
