@@ -123,8 +123,11 @@ import org.openide.util.RequestProcessor;
         return sb;
     }
 
-    private boolean needsCopying(File file) {
-
+    private boolean needsCopying(FileCollector.FileCollectorInfo collectorInfo) {
+        final File file = collectorInfo.file;
+        if (!file.exists()) {
+            return false;
+        }
         if (HARD_CODED_FILTER) {
             // Filter out configurations.xml, timestamps, etc
             // Auto-copy would never request these; but FTP will copy, unless filtered out
@@ -146,12 +149,12 @@ import org.openide.util.RequestProcessor;
             }
         }
 
-        FileData.FileStateInfo info = fileData.getFileInfo(file);
-        FileState state = (info == null) ? FileState.INITIAL : info.state;
+        FileData.FileStateInfo stateInfo = fileData.getFileInfo(file);
+        FileState state = (stateInfo == null) ? FileState.INITIAL : stateInfo.state;
         switch (state) {
             case INITIAL:       return true;
             case TOUCHED:       return true;
-            case COPIED:        return info.timestamp != file.lastModified();
+            case COPIED:        return stateInfo.timestamp != file.lastModified();
             case ERROR:         return true;
             case UNCONTROLLED:  return false;
             default:
@@ -232,11 +235,11 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-    private interface XArgsFeeder {
+    private interface Feeder {
         public void feed(BufferedWriter requestWriter) throws IOException;
     }
     
-    private void xargs(final XArgsFeeder feeder, String command, String... args) throws IOException {
+    private void launchAndFeed(final Feeder feeder, String command, String... args) throws IOException {
         if (cancelled) {
             return;
         }
@@ -319,7 +322,7 @@ import org.openide.util.RequestProcessor;
             return;
         }
         if (!dirsToCreate.isEmpty()) {
-            XArgsFeeder feeder = new XArgsFeeder() {
+            Feeder feeder = new Feeder() {
                 @Override
                 public void feed(BufferedWriter requestWriter) throws IOException {
                     for (String dir : dirsToCreate) {
@@ -331,7 +334,7 @@ import org.openide.util.RequestProcessor;
                 }
             };
             try {
-                xargs(feeder, "xargs", "mkdir", "-p"); // NOI18N
+                launchAndFeed(feeder, "xargs", "mkdir", "-p"); // NOI18N
             } catch (InterruptedIOException ex) {
                 throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_Canceled"));
             } catch (IOException ex) {
@@ -347,7 +350,7 @@ import org.openide.util.RequestProcessor;
         if (cancelled) {
             return;
         }
-        XArgsFeeder feeder = new XArgsFeeder() {
+        Feeder feeder = new Feeder() {
             @Override
             public void feed(BufferedWriter requestWriter) throws IOException {
                 for (FileCollector.FileCollectorInfo fileInfo : fileCollector.getFiles()) {
@@ -372,7 +375,7 @@ import org.openide.util.RequestProcessor;
             }
         };
         try {
-            xargs(feeder, "sh", "-s"); // NOI18N
+            launchAndFeed(feeder, "sh", "-s"); // NOI18N
         } catch (InterruptedIOException ex) {
             throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_Canceled"));
         } catch (IOException ex) {
@@ -390,8 +393,7 @@ import org.openide.util.RequestProcessor;
                 throw new InterruptedException();
             }
             if (!fileInfo.isLink() && !fileInfo.file.isDirectory()) {
-                File srcFile = fileInfo.file;
-                if (srcFile.exists() && needsCopying(srcFile)) {
+                if (needsCopying(fileInfo)) {
                     toCopy.add(fileInfo);
                 }
             }
@@ -407,9 +409,9 @@ import org.openide.util.RequestProcessor;
             if (cancelled) {
                 return;
             }
-            if (!fileInfo.isLink() && !fileInfo.file.isDirectory()) {
-                File srcFile = fileInfo.file;
-                if (srcFile.exists() && needsCopying(srcFile)) {
+            if (!fileInfo.isLink() && !fileInfo.file.isDirectory()) {                
+                if (needsCopying(fileInfo)) {
+                    File srcFile = fileInfo.file;
                     progressHandle.progress(srcFile.getAbsolutePath());
                     String remotePath = mapper.getRemotePath(srcFile.getAbsolutePath(), false);
                     Future<UploadStatus> fileTask = CommonTasksSupport.uploadFile(srcFile.getAbsolutePath(),
@@ -450,8 +452,7 @@ import org.openide.util.RequestProcessor;
                 throw new InterruptedException();
             }
             if (!fileInfo.isLink() && !fileInfo.file.isDirectory()) {
-                File srcFile = fileInfo.file;
-                if (srcFile.exists() && needsCopying(srcFile)) {
+                if (needsCopying(fileInfo)) {
                     toCopy.add(fileInfo);
                 }
             }
