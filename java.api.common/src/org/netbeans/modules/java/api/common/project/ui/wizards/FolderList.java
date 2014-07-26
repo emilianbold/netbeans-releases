@@ -62,6 +62,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListCellRenderer;
@@ -97,7 +99,7 @@ public final class FolderList extends javax.swing.JPanel {
 
     public static final String PROP_FILES = "files";    //NOI18N
     public static final String PROP_LAST_USED_DIR = "lastUsedDir";  //NOI18N
-
+    private static final Logger LOG = Logger.getLogger(FolderList.class.getName());
     private static final Pattern TESTS_RE = Pattern.compile(".*test.*",Pattern.CASE_INSENSITIVE);   //NOI18N
 
     private String fcMessage;
@@ -296,13 +298,24 @@ public final class FolderList extends javax.swing.JPanel {
                         if (cancel.get()) {
                             return null;
                         }
-                        final Collection<? extends FileObject> detectedRoots = JavadocAndSourceRootDetection.findSourceRoots(FileUtil.toFileObject(file),cancel);
-                        if (detectedRoots.isEmpty()) {
-                            toAdd.add(file);
-                        }
-                        else {
-                            for (FileObject detectedRoot : detectedRoots) {
-                                toAdd.add (FileUtil.toFile(detectedRoot));
+                        final FileObject fo = FileUtil.toFileObject(file);
+                        if (fo != null) {
+                            final Collection<? extends FileObject> detectedRoots = JavadocAndSourceRootDetection.findSourceRoots(fo,cancel);
+                            if (detectedRoots.isEmpty()) {
+                                toAdd.add(file);
+                            } else {
+                                for (FileObject detectedRoot : detectedRoots) {
+                                    toAdd.add (FileUtil.toFile(detectedRoot));
+                                }
+                            }
+                        } else {
+                            if (file.exists()) {
+                                toAdd.add(file);
+                            } else {
+                                LOG.log(
+                                    Level.WARNING,
+                                    "Ignoring non existent folder: {0}",    //NOI18N
+                                    file);
                             }
                         }
                     }

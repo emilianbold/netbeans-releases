@@ -46,6 +46,7 @@ package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -60,7 +61,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -130,6 +135,32 @@ public final class AddCast implements ErrorRule<Void> {
                 if (!Utilities.fuzzyResolveMethodInvocation(info, path, proposed, index).isEmpty()) {
                     expected = proposed;
                     found = scope.getKind() == Kind.METHOD_INVOCATION ? ((MethodInvocationTree) scope).getArguments().get(index[0]) : ((NewClassTree) scope).getArguments().get(index[0]);
+                    resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
+                }
+            }
+            
+            if (scope.getKind() == Kind.LAMBDA_EXPRESSION) {
+                LambdaExpressionTree let = (LambdaExpressionTree)scope;
+                if (let.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
+                    TypeMirror expIfaceType = info.getTrees().getTypeMirror(path);
+                    
+                    // rule out weird errors
+                    if (expIfaceType.getKind() == TypeKind.DECLARED) {
+                        Element el = info.getTypes().asElement(expIfaceType);
+                        if (el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
+                            for (Element m : el.getEnclosedElements()) {
+                                if (m.getKind() == ElementKind.METHOD) {
+                                    TypeMirror t = info.getTypes().asMemberOf((DeclaredType)expIfaceType, m);
+                                    if (t.getKind() == TypeKind.EXECUTABLE) {
+                                        expected = Collections.singletonList(
+                                                ((ExecutableType)t).getReturnType());
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    found = (ExpressionTree)let.getBody();
                     resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
                 }
             }

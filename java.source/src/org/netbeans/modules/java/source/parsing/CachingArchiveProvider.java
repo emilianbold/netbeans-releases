@@ -232,12 +232,17 @@ public final class CachingArchiveProvider {
                 File f = Utilities.toFile(URI.create(inner.toExternalForm()));
                 if (f.isFile()) {
                     final Pair<File,String> resolved = mapJarToCtSym(f, root);
-                    return new CachingArchive(
+                    return resolved.second() == null ?
+                        new CachingArchive(
                             resolved.first(),
                             resolved.second(),
-                            cacheFile);
-                }
-                else {
+                            cacheFile) :
+                        new CTSymArchive(
+                            f,
+                            null,
+                            resolved.first(),
+                            resolved.second());
+                } else {
                     return null;
                 }
             }
