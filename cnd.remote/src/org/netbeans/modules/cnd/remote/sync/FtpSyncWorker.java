@@ -181,14 +181,16 @@ import org.openide.util.RequestProcessor;
 
         time2 = System.currentTimeMillis();
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckDirs"));
+        progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckDirs"));
         createDirs();
         RemoteLogger.fine("Creating directories at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
         
         time2 = System.currentTimeMillis();
+        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckLinks"));
         progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckLinks"));
         createLinks();
         RemoteLogger.fine("Creating links at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
-        
+
         if (!fileCollector.initNewFilesDiscovery()) {
             throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_NewFilesDiscovery"));
         }
@@ -294,7 +296,6 @@ import org.openide.util.RequestProcessor;
     }
     
     private void createDirs() throws IOException {
-        progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckDirs"));
         final List<String> dirsToCreate = new LinkedList<>();
         for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
             if (fileInfo.file.isDirectory() && ! fileInfo.isLink()) {
@@ -337,7 +338,6 @@ import org.openide.util.RequestProcessor;
         if (cancelled) {
             return;
         }
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckLinks"));
         XArgsFeeder feeder = new XArgsFeeder() {
             @Override
             public void feed(BufferedWriter requestWriter) throws IOException {
