@@ -261,7 +261,7 @@ abstract class TabLayoutManager {
             List<ProjectProxy> projects = Arrays.asList( projectSupport.getOpenProjects() );
 
             final int tabCount = tabModel.size();
-            final int rowCount = rows.size();
+            final int rowCount = Math.max(rows.size(), 1);
             ArrayList<Integer>[] rowIndexes = new ArrayList[rowCount];
             for( int i=0; i<rowCount; i++ ) {
                 rowIndexes[i] = new ArrayList<Integer>( tabCount );

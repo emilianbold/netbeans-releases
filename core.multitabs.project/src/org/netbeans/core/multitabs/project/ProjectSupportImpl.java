@@ -69,7 +69,7 @@ import org.openide.windows.TopComponent;
 @ServiceProvider(service = ProjectSupport.class)
 public class ProjectSupportImpl extends ProjectSupport {
 
-    private static final Map<TabData, Project> tab2project = new WeakHashMap<TabData, Project>(50);
+    private static final Map<FileObject, Project> file2project = new WeakHashMap<FileObject, Project>(50);
     private static final RequestProcessor RP = new RequestProcessor("TabProjectBridge"); //NOI18N
     private static final Set<FileObject> currentQueries = new HashSet<FileObject>(20);
     private static final ChangeSupport changeSupport = new ChangeSupport(RP);
@@ -124,15 +124,16 @@ public class ProjectSupportImpl extends ProjectSupport {
 
     @Override
     public ProjectProxy getProjectForTab( final TabData tab ) {
-        synchronized( tab2project ) {
-            Project p = tab2project.get( tab );
-            if( null == p ) {
-                if( tab.getComponent() instanceof TopComponent ) {
-                    TopComponent tc = ( TopComponent ) tab.getComponent();
-                    DataObject dob = tc.getLookup().lookup( DataObject.class );
-                    if( null != dob ) {
-                        final FileObject fo = dob.getPrimaryFile();
-                        if( null != fo ) {
+        Project p = null;
+        synchronized( file2project ) {
+            if( null != tab && tab.getComponent() instanceof TopComponent ) {
+                TopComponent tc = ( TopComponent ) tab.getComponent();
+                DataObject dob = tc.getLookup().lookup( DataObject.class );
+                if( null != dob ) {
+                    final FileObject fo = dob.getPrimaryFile();
+                    if( null != fo ) {
+                        p = file2project.get(fo);
+                        if( null == p ) {
                             if( currentQueries.contains(fo) ) {
                                 //there already is a file owner query for this file
                                 return null;
@@ -143,8 +144,8 @@ public class ProjectSupportImpl extends ProjectSupport {
                                     public void run() {
                                         Project p = FileOwnerQuery.getOwner( fo );
                                         if( null != p ) {
-                                            synchronized( tab2project ) {
-                                                tab2project.put( tab, p );
+                                            synchronized( file2project ) {
+                                                file2project.put( fo, p );
                                                 currentQueries.remove(fo);
                                                 changeSupport.fireChange();
                                             }

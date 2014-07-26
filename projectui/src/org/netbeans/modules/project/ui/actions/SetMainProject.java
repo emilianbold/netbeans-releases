@@ -195,6 +195,7 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
             setEnabled( true );
         }
         
+        List<Project> newlyAdded = new ArrayList<Project>(Arrays.asList(projects));
         if ( subMenu == null ) {
             subMenu = new JMenu(LBL_SetMainProjectAction_Name());
             subMenu.getPopupMenu().setLayout(new VerticalGridLayout());
@@ -205,20 +206,23 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
             //The action instance has to exists as long as the subMenu:
             subMenu.putClientProperty(SetMainProject.class, this);
         } else {
-            List<Project> projectList = Arrays.asList(projects);
+            List<Project> projectList = new ArrayList<Project>(newlyAdded);
             for(Component componentIter : subMenu.getMenuComponents()) {
                 if(componentIter instanceof JRadioButtonMenuItem) {
                     Project p = (Project) ((JRadioButtonMenuItem)componentIter).getClientProperty(PROJECT_KEY);
-                    if(p != null && !projectList.contains(p)) {
-                        final ProjectInformation projectInformation = p.getLookup().lookup(ProjectInformation.class);
-                        if(projectInformation != null) {
-                            final SetMainProject self = this;
-                            RP.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    projectInformation.removePropertyChangeListener(WeakListeners.propertyChange(self, projectInformation));
-                                }
-                            });
+                    if(p != null) {
+                        newlyAdded.remove(p);
+                        if(!projectList.contains(p)) {
+                            final ProjectInformation projectInformation = p.getLookup().lookup(ProjectInformation.class);
+                            if(projectInformation != null) {
+                                final SetMainProject self = this;
+                                RP.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        projectInformation.removePropertyChangeListener(self);
+                                    }
+                                });
+                            }
                         }
                     }
                 }
@@ -237,12 +241,12 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
         // Fill menu with items
         for ( int i = 0; i < projects.length; i++ ) {
             final ProjectInformation projectInformation = projects[i].getLookup().lookup(ProjectInformation.class);
-            if(projectInformation != null) {
+            if(projectInformation != null && newlyAdded.contains(projects[i])) {
                 final SetMainProject self = this;
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        projectInformation.addPropertyChangeListener(WeakListeners.propertyChange(self, projectInformation));
+                        projectInformation.addPropertyChangeListener(self);
                     }
                 });
             }
