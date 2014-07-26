@@ -305,7 +305,7 @@ public class JavacParserTest extends NbTestCase {
 
     public void testIfMissingObjectOnBootCPUseCPToGuessSourceLevelWithStringBuilder() throws Exception {
         Source ret = guessSourceLevel(false, true, false);
-        assertEquals("Downgraded to 1.6, as Object on bootCP, but no AutoCloseable", Source.JDK1_6, ret);
+        assertEquals("Keeps 1.7, as Object and StringBuilder on bootCP, but no AutoCloseable", Source.JDK1_7, ret);
     }
 
     public void testIfMissingObjectOnBootCPUseCPToGuessSourceLevelWithStringBuilderAndAutoCloseable() throws Exception {

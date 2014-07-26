@@ -134,6 +134,7 @@ public class TreeLoader extends LazyTreeLoader {
     private static final Pattern field_detail_name = Pattern.compile("field[_.]detail"); //NOI18N
     private static final Pattern ctor_detail_name = Pattern.compile("constructor[_.]detail"); //NOI18N
     private static final Pattern method_detail_name = Pattern.compile("method[_.]detail"); //NOI18N
+    private static final ThreadLocal<Boolean> isTreeLoading = new ThreadLocal<Boolean>();
 
     public static void preRegister(final Context context, final ClasspathInfo cpInfo, final boolean detached) {
         context.put(lazyTreeLoaderKey, new TreeLoader(context, cpInfo, detached));
@@ -143,7 +144,11 @@ public class TreeLoader extends LazyTreeLoader {
         final LazyTreeLoader tl = LazyTreeLoader.instance(ctx);
         return (tl instanceof TreeLoader) ? (TreeLoader)tl : null;
     }
-    
+
+    public static boolean isTreeLoading() {
+        return isTreeLoading.get() == Boolean.TRUE;
+    }
+
     private static final Logger LOGGER = Logger.getLogger(TreeLoader.class.getName());
     private static final boolean ALWAYS_ALLOW_JDOC_ARG_NAMES = Boolean.getBoolean("java.source.args.from.http.jdoc");  //NOI18N
     public  static boolean DISABLE_CONFINEMENT_TEST = false; //Only for tests!
@@ -344,33 +349,38 @@ public class TreeLoader extends LazyTreeLoader {
         JavacTaskImpl jti,
         ClassSymbol clazz,
         HashMap<ClassSymbol, JCClassDecl> syms2trees) throws IOException {
-        String binaryName = null;
-        String surl = null;
-        if (clazz.classfile != null) {
-            binaryName = jfm.inferBinaryName(StandardLocation.PLATFORM_CLASS_PATH, clazz.classfile);
-            if (binaryName == null)
-                binaryName = jfm.inferBinaryName(StandardLocation.CLASS_PATH, clazz.classfile);
-            surl = clazz.classfile.toUri().toURL().toExternalForm();
-        } else if (clazz.sourcefile != null) {
-            binaryName = jfm.inferBinaryName(StandardLocation.SOURCE_PATH, clazz.sourcefile);
-            surl = clazz.sourcefile.toUri().toURL().toExternalForm();
-        }
-        if (binaryName == null || surl == null) {
-            return;
-        }
-        int index = surl.lastIndexOf(FileObjects.convertPackage2Folder(binaryName));
-        if (index > 0) {
-            final File classes = JavaIndex.getClassFolder(new URL(surl.substring(0, index)));
-            dumpSymFile(jfm, jti, clazz, classes, syms2trees);
-        } else {
-            LOGGER.log(
-               Level.INFO,
-               "Invalid binary name when writing sym file for class: {0}, source: {1}, binary name {2}",    // NOI18N
-               new Object[] {
-                   clazz.flatname,
-                   surl,
-                   binaryName
-               });
+        isTreeLoading.set(Boolean.TRUE);
+        try {
+            String binaryName = null;
+            String surl = null;
+            if (clazz.classfile != null) {
+                binaryName = jfm.inferBinaryName(StandardLocation.PLATFORM_CLASS_PATH, clazz.classfile);
+                if (binaryName == null)
+                    binaryName = jfm.inferBinaryName(StandardLocation.CLASS_PATH, clazz.classfile);
+                surl = clazz.classfile.toUri().toURL().toExternalForm();
+            } else if (clazz.sourcefile != null) {
+                binaryName = jfm.inferBinaryName(StandardLocation.SOURCE_PATH, clazz.sourcefile);
+                surl = clazz.sourcefile.toUri().toURL().toExternalForm();
+            }
+            if (binaryName == null || surl == null) {
+                return;
+            }
+            int index = surl.lastIndexOf(FileObjects.convertPackage2Folder(binaryName));
+            if (index > 0) {
+                final File classes = JavaIndex.getClassFolder(new URL(surl.substring(0, index)));
+                dumpSymFile(jfm, jti, clazz, classes, syms2trees);
+            } else {
+                LOGGER.log(
+                   Level.INFO,
+                   "Invalid binary name when writing sym file for class: {0}, source: {1}, binary name {2}",    // NOI18N
+                   new Object[] {
+                       clazz.flatname,
+                       surl,
+                       binaryName
+                   });
+            }
+        } finally {
+            isTreeLoading.remove();
         }
     }
     
