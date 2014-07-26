@@ -96,7 +96,7 @@ import org.openide.util.RequestProcessor;
     private int uploadCount;
     private long uploadSize;
     private volatile Thread thread;
-    private boolean cancelled;
+    private volatile boolean cancelled;
     private ProgressHandle progressHandle;
 
     private final RequestProcessor RP = new RequestProcessor("FtpSyncWorker", 2); // NOI18N
@@ -174,6 +174,9 @@ import org.openide.util.RequestProcessor;
 
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_GatherFiles"));
         fileCollector.gatherFiles();
+        if (cancelled) {
+            return;
+        }
 
         progressHandle.switchToDeterminate(fileCollector.getFiles().size());
 
@@ -184,12 +187,18 @@ import org.openide.util.RequestProcessor;
         progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckDirs"));
         createDirs();
         RemoteLogger.fine("Creating directories at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
+        if (cancelled) {
+            return;
+        }
         
         time2 = System.currentTimeMillis();
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckLinks"));
         progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckLinks"));
         createLinks();
         RemoteLogger.fine("Creating links at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
+        if (cancelled) {
+            return;
+        }
 
         if (!fileCollector.initNewFilesDiscovery()) {
             throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_NewFilesDiscovery"));
