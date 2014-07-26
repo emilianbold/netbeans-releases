@@ -146,7 +146,7 @@ import org.openide.util.RequestProcessor;
             }
         }
 
-        FileData.FileInfo info = fileData.getFileInfo(file);
+        FileData.FileStateInfo info = fileData.getFileInfo(file);
         FileState state = (info == null) ? FileState.INITIAL : info.state;
         switch (state) {
             case INITIAL:       return true;
@@ -306,7 +306,7 @@ import org.openide.util.RequestProcessor;
     
     private void createDirs() throws IOException {
         final List<String> dirsToCreate = new LinkedList<>();
-        for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
+        for (FileCollector.FileCollectorInfo fileInfo : fileCollector.getFiles()) {
             if (fileInfo.file.isDirectory() && ! fileInfo.isLink()) {
                 String remoteDir = mapper.getRemotePath(fileInfo.file.getAbsolutePath(), true);
                 CndUtils.assertNotNull(remoteDir, "null remote file for " + fileInfo.file.getAbsolutePath()); //NOI18N
@@ -350,7 +350,7 @@ import org.openide.util.RequestProcessor;
         XArgsFeeder feeder = new XArgsFeeder() {
             @Override
             public void feed(BufferedWriter requestWriter) throws IOException {
-                for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
+                for (FileCollector.FileCollectorInfo fileInfo : fileCollector.getFiles()) {
                     if (cancelled) {
                         throw new InterruptedIOException();
                     }
@@ -383,9 +383,9 @@ import org.openide.util.RequestProcessor;
 
     private void uploadPlainFiles() throws InterruptedException, ExecutionException, IOException {
 
-        List<FileCollector.FileInfo> toCopy = new ArrayList<>();
+        List<FileCollector.FileCollectorInfo> toCopy = new ArrayList<>();
 
-        for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
+        for (FileCollector.FileCollectorInfo fileInfo : fileCollector.getFiles()) {
             if (cancelled) {
                 throw new InterruptedException();
             }
@@ -403,7 +403,7 @@ import org.openide.util.RequestProcessor;
         }
 
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesPlain", toCopy.size()));
-        for (FileCollector.FileInfo fileInfo : toCopy) {
+        for (FileCollector.FileCollectorInfo fileInfo : toCopy) {
             if (cancelled) {
                 return;
             }
@@ -443,9 +443,9 @@ import org.openide.util.RequestProcessor;
     
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesInZip"));
         
-        List<FileCollector.FileInfo> toCopy = new ArrayList<>();
+        List<FileCollector.FileCollectorInfo> toCopy = new ArrayList<>();
         
-        for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
+        for (FileCollector.FileCollectorInfo fileInfo : fileCollector.getFiles()) {
             if (cancelled) {
                 throw new InterruptedException();
             }
@@ -476,7 +476,7 @@ import org.openide.util.RequestProcessor;
                 RemoteLogger.fine("SFTP/ZIP: Zipping {0} to {1}...", getLocalFilesString(), zipFile);
                 long zipTime = System.currentTimeMillis();
                 int progress = 0;
-                for (FileCollector.FileInfo fileInfo : toCopy) {
+                for (FileCollector.FileCollectorInfo fileInfo : toCopy) {
                     if (cancelled) {
                         throw new InterruptedException();
                     }
@@ -567,7 +567,7 @@ import org.openide.util.RequestProcessor;
                     throw new ZipIOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Err_Unzip",
                             remoteFile, executionEnvironment, rc)); // NOI18N
                 }
-                for (FileCollector.FileInfo fileInfo : toCopy) {
+                for (FileCollector.FileCollectorInfo fileInfo : toCopy) {
                     fileData.setState(fileInfo.file, FileState.COPIED);
                 }
             }

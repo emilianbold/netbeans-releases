@@ -367,10 +367,10 @@ import org.openide.util.RequestProcessor;
 
         long timeTotal = System.currentTimeMillis();
         fileCollector.gatherFiles();
-        List<FileCollector.FileInfo> filesToFeed = fileCollector.getFiles();
+        List<FileCollector.FileCollectorInfo> filesToFeed = fileCollector.getFiles();
 
         long time = System.currentTimeMillis();
-        for (FileCollector.FileInfo info : filesToFeed) {
+        for (FileCollector.FileCollectorInfo info : filesToFeed) {
             try {
                 sendFileInitRequest(info, clockSkew);
             } catch (IOException ex) {
@@ -457,7 +457,7 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-    private void sendFileInitRequest(FileCollector.FileInfo fgi, long timeSkew) throws IOException {
+    private void sendFileInitRequest(FileCollector.FileCollectorInfo fgi, long timeSkew) throws IOException {
         if (CHECK_ALIVE && !remoteController.isAlive()) { // fixup for remote tests unstable failure (caused by jsch issue)
             throw new IOException("process already exited"); //NOI18N
         }
@@ -469,7 +469,7 @@ import org.openide.util.RequestProcessor;
         } else {
             File file = fgi.file;
             String remotePath = fgi.remotePath;
-            FileData.FileInfo info = fileData.getFileInfo(file);
+            FileData.FileStateInfo info = fileData.getFileInfo(file);
             FileState newState;
             if (file.exists()) {
                 switch(info  == null ? FileState.INITIAL : info.state) {
