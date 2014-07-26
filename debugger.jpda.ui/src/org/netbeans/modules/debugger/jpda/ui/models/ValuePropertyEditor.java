@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
@@ -52,6 +53,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.InvalidObjectException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -75,6 +77,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -370,22 +373,10 @@ class ValuePropertyEditor implements ExPropertyEditor {
             ShortenedStrings.StringInfo shortenedInfo = ShortenedStrings.getShortenedInfo((String) delegateValue);
             //System.err.println("  shortenedInfo = "+shortenedInfo);
             if (shortenedInfo != null) {
-                int n = shortenedInfo.getLength();
-                long fm = Runtime.getRuntime().freeMemory();
-                //System.err.println("  "+fm+" > 4*"+n+" + 10000000 : "+(fm > 4*n + 10000000));
-                if (fm > 8*n + 10000000) {
-                    // We have hopefully enough memory
-                    String str = shortenedInfo.getFullString();
-                    //System.err.println("  providing full string: "+(str != null));
-                    if (str != null) {
-                        delegateValue = str;
-                        delegatePropertyEditor.setValue(str);
-                    }
-                } else {
-                    // There is a risk that the String and it's UI does not fit into the memory.
-                    Component delegateCustomEditor = delegatePropertyEditor.getCustomEditor();
-                    return new BigStringCustomEditor(delegateCustomEditor, shortenedInfo);
-                }
+                // There is a risk that the String and it's UI does not fit into the memory,
+                // or that it'd be too sluggish.
+                Component delegateCustomEditor = delegatePropertyEditor.getCustomEditor();
+                return new BigStringCustomEditor(delegateCustomEditor, shortenedInfo);
             }
         }
         return delegatePropertyEditor.getCustomEditor();
@@ -405,6 +396,23 @@ class ValuePropertyEditor implements ExPropertyEditor {
         env.addVetoableChangeListener(validate);
         if (delegatePropertyEditor instanceof ExPropertyEditor) {
             //System.out.println("  attaches to "+delegatePropertyEditor);
+            if (delegateValue instanceof String) {
+                ShortenedStrings.StringInfo shortenedInfo = ShortenedStrings.getShortenedInfo((String) delegateValue);
+                if (shortenedInfo != null) {
+                    // The value is too large, do not allow editing!
+                    FeatureDescriptor desc = env.getFeatureDescriptor();
+                    if (desc instanceof Node.Property){
+                        Node.Property prop = (Node.Property)desc;
+                        // Need to make it uneditable
+                        try {
+                            Method forceNotEditableMethod = prop.getClass().getDeclaredMethod("forceNotEditable");
+                            forceNotEditableMethod.setAccessible(true);
+                            forceNotEditableMethod.invoke(prop);
+                        } catch (Exception ex){}
+                        //editable = prop.canWrite();
+                    }
+                }
+            }
             ((ExPropertyEditor) delegatePropertyEditor).attachEnv(env);
             this.env = env;
         }

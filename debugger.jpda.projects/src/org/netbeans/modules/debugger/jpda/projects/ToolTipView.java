@@ -169,7 +169,9 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (JPDADebugger.STATE_DISCONNECTED == ((Integer) evt.getNewValue()).intValue()) {
+            int state = ((Integer) evt.getNewValue()).intValue();
+            if (JPDADebugger.STATE_DISCONNECTED == state ||
+                JPDADebugger.STATE_RUNNING == state) {
                 SwingUtilities.invokeLater(this);
             }
         }

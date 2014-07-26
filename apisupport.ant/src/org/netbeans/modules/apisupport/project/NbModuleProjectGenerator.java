@@ -439,6 +439,7 @@ public class NbModuleProjectGenerator {
             em.setAttribute(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION, specVer, null);
             em.setAttribute(ManifestManager.OPENIDE_MODULE_LOCALIZING_BUNDLE, bundlePath, null);
         }
+        em.setAttribute(ManifestManager.AUTO_UPDATE_SHOW_IN_CLIENT, Boolean.TRUE.toString(), null);
         if (layerPath != null) {
             em.setAttribute(ManifestManager.OPENIDE_MODULE_LAYER, layerPath, null);
         }

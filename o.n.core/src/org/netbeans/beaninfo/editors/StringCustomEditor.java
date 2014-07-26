@@ -62,6 +62,8 @@ public class StringCustomEditor extends javax.swing.JPanel implements PropertyCh
     
     static final long serialVersionUID =7348579663907322425L;
     
+    private static final int TOO_LARGE = 100*1024;
+    
     boolean oneline=false;
     String instructions = null;
 
@@ -118,7 +120,7 @@ public class StringCustomEditor extends javax.swing.JPanel implements PropertyCh
         }
 
         textArea.setText (s);
-        if (textArea instanceof JTextArea && s.length () < 1E4) {
+        if (textArea instanceof JTextArea && s.length () < TOO_LARGE) {
             ((JTextArea) textArea).setWrapStyleWord( true );
             ((JTextArea)textArea).setLineWrap( true );
             setPreferredSize (new java.awt.Dimension(500, 300));
@@ -156,7 +158,7 @@ public class StringCustomEditor extends javax.swing.JPanel implements PropertyCh
         
         //IZ 44152, Debugger can produce 512K+ length strings, avoid excessive
         //iterations (which textArea.getPreferredSize() will definitely do)
-        if (s.length () < 1024) {
+        if (s.length () < TOO_LARGE) {
             prefHeight = textArea.getPreferredSize().height + 8;
         } else {
             prefHeight = ctn * 8;

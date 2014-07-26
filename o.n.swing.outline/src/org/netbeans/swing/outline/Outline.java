@@ -216,6 +216,9 @@ public class Outline extends ETable {
     //XXX plenty of methods missing here - add/remove tree expansion listeners,
     //better path info/queries, etc.
     
+    // Tooltips larger than this are screwed up.
+    private static final int MAX_TOOLTIP_LENGTH = 1000;
+    
     private boolean initialized = false;
     private Boolean cachedRootVisible = null;
     private RenderDataProvider renderDataProvider = null;
@@ -443,6 +446,12 @@ public class Outline extends ETable {
             if (tipText == null)
                 tipText = getToolTipText();
 
+            if (tipText != null) {
+                tipText = tipText.trim();
+                if (tipText.length() > MAX_TOOLTIP_LENGTH) {
+                    tipText = tipText.substring(0, MAX_TOOLTIP_LENGTH) + "...";
+                }
+            }
             return tipText;
         } finally {
             putClientProperty("ComputingTooltip", Boolean.FALSE);
