@@ -367,6 +367,19 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             } else {
                 lang = NativeProjectProvider.getLanguage(file, dao);
                 flavor = LanguageFlavor.UNKNOWN;
+                String key = "cnd.standalone.default.flavor." + lang.name(); //NOI18N
+                String defFlavorTxt = System.getProperty(key);
+                if (defFlavorTxt != null) {
+                    try {
+                        flavor = LanguageFlavor.valueOf(defFlavorTxt);
+                    } catch (IllegalArgumentException e) {
+                        StringBuilder all = new StringBuilder();
+                        for (LanguageFlavor lf : LanguageFlavor.values()) {
+                            all.append(all.length() > 0 ? ',' : ' ').append(lf.name());
+                        }
+                        System.err.printf("Wrong parameter -J-D%s=%s. Should be one of %s\n", key, defFlavorTxt, all);
+                    }
+                }
             }
             NativeProject prototype = null;            
             for (CsmProject csmProject : model.projects()) {
