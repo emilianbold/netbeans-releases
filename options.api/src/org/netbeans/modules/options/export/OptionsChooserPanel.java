@@ -432,7 +432,14 @@ public final class OptionsChooserPanel extends JPanel {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(allLabel);
         ArrayList<String> enabledItems = new ArrayList<String>();
         double buildNumberDuringExport = 0;
-        double currentBuildNumber = Double.parseDouble(getOptionsExportModel().getBuildNumber(System.getProperty("netbeans.buildnumber")));  // NOI18N
+        double currentBuildNumber;
+        String nbBuildNumber = System.getProperty("netbeans.buildnumber"); // NOI18N
+        try {
+            currentBuildNumber = Double.parseDouble(getOptionsExportModel().getBuildNumber(nbBuildNumber));
+        } catch (NumberFormatException nfe) {
+            LOGGER.log(Level.INFO, "Could not parse netbeans.buildnumber: {0}", nbBuildNumber);  //NOI18N
+            currentBuildNumber = 201403101706.0;  // default to build date of 8.0 version
+        }
         if (panelType == PanelType.IMPORT) {
             // If the returned value is null, it means that there is no enabledItems.info in the importing zip file
             // indicating it was created from a version prior to 7.4
