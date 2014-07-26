@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -73,6 +74,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
@@ -520,6 +522,7 @@ import org.openide.util.RequestProcessor;
             {
                 long unzipTime = System.currentTimeMillis();
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+                pb.getEnvironment().put("TZ", TimeZone.getDefault().getID()); //NOI18N
                 pb.setExecutable("unzip"); // NOI18N
                 pb.setArguments("-oqq", remoteFile); // NOI18N
                 pb.setWorkingDirectory(remoteRoot);
