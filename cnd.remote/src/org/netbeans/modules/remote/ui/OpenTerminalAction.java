@@ -231,7 +231,7 @@ public class OpenTerminalAction extends SingleHostAction {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
+            // don't report CancellationException
         }
         return null;
     }

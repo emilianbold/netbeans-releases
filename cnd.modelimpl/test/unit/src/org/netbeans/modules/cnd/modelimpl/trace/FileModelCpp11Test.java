@@ -192,4 +192,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 243940 - inaccuracy tests (cpp11): forward declaration of enumerations 
         performTest("bug243940.cpp");
     }    
+    
+    public void testBug244199() throws Exception {
+        // Bug 244199 - C++11 attributes are not supported
+        performTest("bug244199.cpp");
+    }
 }

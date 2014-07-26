@@ -126,7 +126,7 @@ public class PathsCompletionProviderFactory implements AutocompletionProviderFac
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     } catch (CancellationException ex) {
-                        Exceptions.printStackTrace(ex);
+                        // don't report cancellatoin exception
                     }
                 }
 

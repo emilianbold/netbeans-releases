@@ -558,7 +558,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
+            // don't report cancellation exception
         }
         if (oSFamily != null) {
             switch (oSFamily) {
@@ -1059,7 +1059,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (CancellationException ex) {
-                Exceptions.printStackTrace(ex);
+                // don't report cancellation exception
             }
             if (java != null) {
                 execute = ProcessUtils.execute(executionEnvironment, projectCreator.getPath()

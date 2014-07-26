@@ -151,12 +151,14 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             }
             return null;
         }
-        File file = CndFileUtils.toFile(fo);
-        // the file can be null, for example, when we edit templates
-        // TODO: check with full remote
-        if (file == null) {
-            return null;
-        }        
+// The check CsmUtilities.isCsmSuitable() above filters out templates
+// The check below disallows code assistance for full remote standalone files
+//        File file = CndFileUtils.toFile(fo);
+//        // the file can be null, for example, when we edit templates
+//        // TODO: check with full remote
+//        if (file == null) {
+//            return null;
+//        }
         String absPath = CndFileUtils.normalizePath(fo);
         ProjectBase project = null;
         //synchronized (this) {

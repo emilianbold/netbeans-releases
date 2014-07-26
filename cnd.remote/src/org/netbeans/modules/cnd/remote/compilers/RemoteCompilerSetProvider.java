@@ -160,7 +160,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
                 return lines.toArray(new String[lines.size()]);
             }
         } catch (CancellationException ex) {
-            RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: IOException [{0}]", ex.getMessage()); // NOI18N
+            // don't report CancellationException
         } catch (IOException ex) {
             RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: IOException [{0}]", ex.getMessage()); // NOI18N
         }
