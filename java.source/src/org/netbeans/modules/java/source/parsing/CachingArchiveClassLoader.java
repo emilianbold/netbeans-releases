@@ -52,6 +52,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.Callable;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.FileObject;
@@ -59,6 +61,7 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -68,8 +71,9 @@ import org.openide.util.Parameters;
 public final class CachingArchiveClassLoader extends ClassLoader {
 
     private static final int INI_SIZE = 16384;
-    
     private static final Logger LOG = Logger.getLogger(CachingArchiveClassLoader.class.getName());
+    //Todo: Performance Trie<File,ReentrantReadWriteLock>
+    private static final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock();
 
     private final Archive[] archives;
     private byte[] buffer;
@@ -84,30 +88,53 @@ public final class CachingArchiveClassLoader extends ClassLoader {
     protected Class<?> findClass(final String name) throws ClassNotFoundException {
         final StringBuilder sb = new StringBuilder(FileObjects.convertPackage2Folder(name, '/'));
         sb.append(JavaFileObject.Kind.CLASS.extension);
-        final FileObject file = findFileObject(sb.toString());
-        if (file != null) {
-            try {
-                final int len = readJavaFileObject(file);
-                int lastDot = name.lastIndexOf('.');
-                if (lastDot != (-1)) {
-                    String pack = name.substring(0, lastDot);
-                    if (getPackage(pack) == null) {
-                        definePackage(pack, null, null, null, null, null, null, null);
+        Class<?> c = null;
+        try {
+            c = readAction(new Callable<Class<?>>() {
+                @Override
+                public Class<?> call() throws Exception {
+                    final FileObject file = findFileObject(sb.toString());
+                    if (file != null) {
+                        try {
+                            final int len = readJavaFileObject(file);
+                            int lastDot = name.lastIndexOf('.');
+                            if (lastDot != (-1)) {
+                                String pack = name.substring(0, lastDot);
+                                if (getPackage(pack) == null) {
+                                    definePackage(pack, null, null, null, null, null, null, null);
+                                }
+                            }
+                            return defineClass(name, buffer, 0, len);
+                        } catch (FileNotFoundException fnf) {
+                            LOG.log(Level.FINE, "Resource: {0} does not exist.", file.toUri()); //NOI18N
+                        } catch (IOException ioe) {
+                            LOG.log(Level.INFO, "Resource: {0} cannot be read.", file.toUri()); //NOI18N
+                        }
                     }
+                    return null;
                 }
-                return defineClass(name, buffer, 0, len);
-            } catch (FileNotFoundException fnf) {
-                LOG.log(Level.FINE, "Resource: {0} does not exist.", file.toUri()); //NOI18N
-            } catch (IOException ioe) {
-                LOG.log(Level.INFO, "Resource: {0} cannot be read.", file.toUri()); //NOI18N
-            }
+            });
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
         }
-        return super.findClass(name);
+        return c != null ?
+            c :
+            super.findClass(name);
     }
 
     @Override
-    protected URL findResource(String name) {
-        final FileObject file = findFileObject(name);
+    protected URL findResource(final String name) {
+        FileObject file = null;
+        try {
+            file = readAction(new Callable<FileObject>() {
+                @Override
+                public FileObject call() throws Exception {
+                    return findFileObject(name);
+                }
+            });
+        } catch (Exception e) {
+            Exceptions.printStackTrace(e);
+        }
         if (file != null) {
             try {
                 return file.toUri().toURL();
@@ -119,19 +146,29 @@ public final class CachingArchiveClassLoader extends ClassLoader {
     }
 
     @Override
-    protected Enumeration<URL> findResources(String name) throws IOException {
-        @SuppressWarnings("UseOfObsoleteCollectionType")
-        final Vector<URL> v = new Vector<URL>();
-        for (Archive archive : archives) {
-            final FileObject file = archive.getFile(name);
-            if (file != null) {
-                v.add(file.toUri().toURL());
-            }
+    protected Enumeration<URL> findResources(final String name) throws IOException {
+        try {
+            return readAction(new Callable<Enumeration<URL>>(){
+                @Override
+                public Enumeration<URL> call() throws Exception {
+                    @SuppressWarnings("UseOfObsoleteCollectionType")
+                    final Vector<URL> v = new Vector<URL>();
+                    for (Archive archive : archives) {
+                        final FileObject file = archive.getFile(name);
+                        if (file != null) {
+                            v.add(file.toUri().toURL());
+                        }
+                    }
+                    return v.elements();
+                }
+            });
+        } catch (Exception ex) {
+            throw new IOException(ex);
         }
-        return v.elements();
     }
 
     private int readJavaFileObject(final FileObject jfo) throws IOException {
+        assert LOCK.getReadLockCount() > 0;
         if (buffer == null) {
             buffer = new byte[INI_SIZE];
         }
@@ -158,6 +195,7 @@ public final class CachingArchiveClassLoader extends ClassLoader {
     }
 
     private FileObject findFileObject(final String resName) {
+        assert LOCK.getReadLockCount() > 0;
         for (Archive archive : archives) {
             try {
                 final FileObject file = archive.getFile(resName);
@@ -173,7 +211,6 @@ public final class CachingArchiveClassLoader extends ClassLoader {
         }
         return null;
     }
-
 
     public static ClassLoader forClassPath(final @NonNull ClassPath classPath,
             final @NullAllowed ClassLoader parent) {
@@ -198,6 +235,28 @@ public final class CachingArchiveClassLoader extends ClassLoader {
             }
         }
         return new CachingArchiveClassLoader(archives.toArray(new Archive[archives.size()]), parent);
+    }
+
+    public static <T> T readAction(@NonNull final Callable<T> action) throws Exception {
+        Parameters.notNull("action", action);   //NOI18N
+        LOCK.readLock().lock();
+        try {
+            LOG.log(Level.FINE, "Read locked by {0}", Thread.currentThread());  //NOI18N
+            return action.call();
+        } finally {
+            LOCK.readLock().unlock();
+        }
+    }
+
+    public static <T> T writeAction(@NonNull final Callable<T> action) throws Exception {
+        Parameters.notNull("action", action);   //NOI18N
+        LOCK.writeLock().lock();
+        try {
+            LOG.log(Level.FINE, "Write locked by {0}", Thread.currentThread());  //NOI18N
+            return action.call();
+        } finally {
+            LOCK.writeLock().unlock();
+        }
     }
 
 }
