@@ -2522,6 +2522,9 @@ public class ETable extends JTable {
          * @since 1.19
          */
         public Object getTransformedValue(int column) {
+            if (column >= model.getColumnCount()) { // #239045
+                return null;
+            }
             if (table == null) {
                 throw new IllegalStateException("The table was not set.");
             }
