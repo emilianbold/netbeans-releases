@@ -90,7 +90,7 @@ public abstract class DiffNode<T extends GitFileNode> extends GitStatusNode<T> i
 
         @Override
         public Action getPreferredAction () {
-            return null;
+            return getNodeAction();
         }
 
         @Override

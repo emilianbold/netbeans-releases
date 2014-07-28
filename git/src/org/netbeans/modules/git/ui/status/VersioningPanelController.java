@@ -663,6 +663,11 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
         }
 
         @Override
+        public Action getPreferredAction () {
+            return getNodeAction();
+        }
+
+        @Override
         public Action getNodeAction () {
             if (node.getInformation().containsStatus(FileInformation.Status.IN_CONFLICT)) {
                 return SystemAction.get(ResolveConflictsAction.class);
