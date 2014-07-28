@@ -60,6 +60,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -122,7 +123,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
     private static final String NEEDS_COMPILE_BADGE_URL = "org/netbeans/modules/java/resources/needs-compile.png";  //NOI18N
 
     private static final Map<String,Image> IMAGE_CACHE = new ConcurrentHashMap<>();
-
+    private static final boolean ALWAYS_PREFFER_COMPUTED_ICON = Boolean.getBoolean("JavaNode.prefferComputedIcon"); //NOI18N
     private static final Logger LOG = Logger.getLogger(JavaNode.class.getName());
     
     private Status status;
@@ -324,21 +325,45 @@ public final class JavaNode extends DataNode implements ChangeListener {
     public void stateChanged(ChangeEvent e) {
         WORKER.post(new BuildStatusTask(this));
     }
-    
+
     public Image getIcon(int type) {
-        Image i = computedIcon.get();
-        if (i == null) {
-            i = super.getIcon(type);
-        }
+        Image i = prefferImage(
+            computedIcon.get(),
+            super.getIcon(type),
+            type);
         return enhanceIcon(i);
     }
-    
+
     public Image getOpenedIcon(int type) {
         Image i = super.getOpenedIcon(type);
-        
         return enhanceIcon(i);
     }
-    
+
+    private Image prefferImage(Image computed, Image parent, int type) {
+        if (computed == null) {
+            return parent;
+        }
+        if (!ALWAYS_PREFFER_COMPUTED_ICON) {
+            final Object attrValue = parent.getProperty("url", null);   //NOI18N
+            if (attrValue instanceof URL) {
+                final String url = attrValue.toString();
+                if (!(isJavaSource ? url.endsWith(JAVA_ICON_BASE) : url.endsWith(CLASS_ICON_BASE))) {
+                    return parent;
+                }
+            }
+        }
+        try {
+            final FileObject fo = getDataObject().getPrimaryFile ();
+            computed = fo.getFileSystem ().getStatus ().annotateIcon (
+                computed,
+                type,
+                Collections.singleton(fo));
+        } catch (FileStateInvalidException e) {
+            // no fs, do nothing
+        }
+        return computed;
+    }
+
     private Image enhanceIcon(Image i) {
         Image needsCompile = isCompiled.get();
         

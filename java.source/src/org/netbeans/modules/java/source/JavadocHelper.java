@@ -662,8 +662,9 @@ binRoots:   for (URL binary : binaries) {
                         } catch (MalformedURLException x) {
                             LOG.log(Level.INFO, null, x);
                         }
+                    } else {
+                        resList.add(new TextStream(Collections.<URL>singleton(url), is));
                     }
-                    resList.add(new TextStream(Collections.<URL>singleton(url), is));
                     if (!speculative) {
                         break binRoots;
                     }
