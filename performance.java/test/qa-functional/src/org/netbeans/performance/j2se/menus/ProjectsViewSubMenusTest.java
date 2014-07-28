@@ -44,6 +44,7 @@
 package org.netbeans.performance.j2se.menus;
 
 import junit.framework.Test;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -64,6 +65,7 @@ public class ProjectsViewSubMenusTest extends PerformanceTestCase {
     private String testedSubmenu;
     protected static Node dataObjectNode;
     private JMenuItemOperator mio;
+    private int dispatchingModel;
 
     /**
      * Creates a new instance
@@ -127,10 +129,15 @@ public class ProjectsViewSubMenusTest extends PerformanceTestCase {
 
         return projectsTab.getProjectRootNode(projectName);
     }
+    
+    @Override
+    public void initialize() {
+        dispatchingModel = JemmyProperties.getCurrentDispatchingModel();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
+    }
 
     @Override
     public void prepare() {
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         JPopupMenuOperator popupMenu = dataObjectNode.callPopup();
         mio = new JMenuItemOperator(popupMenu, testedSubmenu);
     }
@@ -143,7 +150,11 @@ public class ProjectsViewSubMenusTest extends PerformanceTestCase {
 
     @Override
     public void close() {
-        mio.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+        MainWindowOperator.getDefault().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+    }
+    
+    @Override
+    public void shutdown() {
+        JemmyProperties.setCurrentDispatchingModel(dispatchingModel);
     }
 }
