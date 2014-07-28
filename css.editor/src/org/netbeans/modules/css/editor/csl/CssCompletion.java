@@ -636,20 +636,22 @@ public class CssCompletion implements CodeCompletionHandler {
                         String value = m.group(groupIndex);
                         int valueStart = m.start(groupIndex);
                     
-                        //cut off everyhing after caret: fold|er/file.css
-                        int cutIndex = diff - valueStart;
-                        value = value.substring(0, cutIndex); 
+                        if(diff >= valueStart) {
+                            //cut off everyhing after caret: fold|er/file.css
+                            int cutIndex = diff - valueStart;
+                            value = value.substring(0, cutIndex); 
 
-                        int lastSeparatorIndex = value.lastIndexOf(Css3Utils.FILE_SEPARATOR); 
-                        if(lastSeparatorIndex != -1) {
-                            //url(folder/xxx|)
-                            skipPrefixChars = valueStart + lastSeparatorIndex + 1;
-                        } else {
-                            //url(xx|)
-                            skipPrefixChars = valueStart;
-                             //is the value quoted?
-                            if(!value.isEmpty() && (value.charAt(0) == '"' || value.charAt(0) == '\'')) {
-                                skipPrefixChars++;
+                            int lastSeparatorIndex = value.lastIndexOf(Css3Utils.FILE_SEPARATOR); 
+                            if(lastSeparatorIndex != -1) {
+                                //url(folder/xxx|)
+                                skipPrefixChars = valueStart + lastSeparatorIndex + 1;
+                            } else {
+                                //url(xx|)
+                                skipPrefixChars = valueStart;
+                                 //is the value quoted?
+                                if(!value.isEmpty() && (value.charAt(0) == '"' || value.charAt(0) == '\'')) {
+                                    skipPrefixChars++;
+                                }
                             }
                         }
                     }
@@ -772,7 +774,7 @@ public class CssCompletion implements CodeCompletionHandler {
                         String value = m.group(groupIndex);
                         int valueStart = m.start(groupIndex);
                     
-                        if(tokenDiff > 0) {
+                        if(tokenDiff >= valueStart) {
                             int cutIndex = tokenDiff - valueStart;
                             value = value.substring(0, cutIndex); //cut off everyhing after caret: fold|er/file.css
                         }

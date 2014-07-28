@@ -259,7 +259,8 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                     String attrname = attrsMap.get("name"); //NOI18N
                     boolean required = Boolean.parseBoolean(attrsMap.get("required")); //NOI18N
                     String attributeDescription = getAttributesDescription(model, true);
-                    attrs.put(attrname, new Attribute.DefaultAttribute(attrname, attributeDescription, required));
+                    String defaultValue = attrsMap.get("default"); //NOI18N
+                    attrs.put(attrname, new Attribute.DefaultAttribute(attrname, attributeDescription, null, required, null, defaultValue));
                 }
 
                 StringBuilder sb = new StringBuilder();

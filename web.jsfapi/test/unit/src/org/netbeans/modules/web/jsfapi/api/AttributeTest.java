@@ -65,6 +65,22 @@ public class AttributeTest {
         Assert.assertNotNull(a.getType());
         Assert.assertTrue(a.isRequired());
         Assert.assertEquals(ms, a.getMethodSignature());
-        
+        Assert.assertNull(a.getDefaultValue());
+    }
+
+    @Test
+    public void testAttributeDefaultValue() {
+        String ms = "void validate(javax.faces.context.FacesContext)";
+        String value = "myValue";
+        Attribute a = new Attribute.DefaultAttribute(
+                "attrname", "descr", "java.lang.Object", true,
+                ms, value);
+
+        Assert.assertNotNull(a.getName());
+        Assert.assertNotNull(a.getDescription());
+        Assert.assertNotNull(a.getType());
+        Assert.assertTrue(a.isRequired());
+        Assert.assertEquals(ms, a.getMethodSignature());
+        Assert.assertEquals(value, a.getDefaultValue());
     }
 }
