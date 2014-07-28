@@ -95,6 +95,7 @@ public class RequireJsDataProvider {
     private static final int URL_READ_TIMEOUT = URL_CONNECTION_TIMEOUT * 3; //ms
 
     private static final String SEARCH_TEXT = "<p id=\"config-"; //NOI18N
+    
 
     /**
      * Translating names from documentation to the real option names
@@ -122,6 +123,23 @@ public class RequireJsDataProvider {
         return options;
     }
 
+    public String getDocForHtmlTagAttribute(final String attributeName) {
+        String api = getContentApiFile();
+        if (api != null) {
+            String searchText = "href=\"#" + attributeName + "\" name=\"" + attributeName + "\""; //NOI18N
+            int start = api.indexOf(searchText);
+            if (start > 0) {
+                String tmpText = api.substring(0, start);
+                start = tmpText.lastIndexOf("<h3>"); // NOI18N
+                int end = api.indexOf("<h3>", start + 10); //NOI18N
+                if (start < end) {
+                    return api.substring(start, end);
+                }
+            }
+        }
+        return "";
+    }
+    
     public String getDocFocOption(String name) {
         String api = getContentApiFile();
         if (api != null) {
