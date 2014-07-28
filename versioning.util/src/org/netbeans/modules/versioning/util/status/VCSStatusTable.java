@@ -46,6 +46,7 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -123,6 +124,20 @@ public abstract class VCSStatusTable<T extends VCSStatusNode> implements FileVie
                 showPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(table));
             }
         });
+        table.registerKeyboardAction(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int row = table.getSelectedRow();
+                if (row != -1) {
+                    VCSStatusNode node = VCSStatusTable.this.tableModel.getNode(table.convertRowIndexToModel(row));
+                    Action action = node.getNodeAction();
+                    if (action != null && action.isEnabled()) {
+                        action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, node.getFile().getAbsolutePath()));
+                    }
+                }
+            }
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false), JComponent.WHEN_FOCUSED);
         initColumns();
     }
 
