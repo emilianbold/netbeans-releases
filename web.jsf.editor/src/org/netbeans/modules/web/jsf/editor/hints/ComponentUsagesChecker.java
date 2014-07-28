@@ -176,7 +176,7 @@ public class ComponentUsagesChecker extends HintsProvider {
                     //1. check required attributes
                     Collection<Attribute> attrs = tag.getAttributes();
                     for (Attribute attr : attrs) {
-                        if (attr.isRequired()) {
+                        if (attr.isRequired() && attr.getDefaultValue() == null) {
                             if (openTag.getAttribute(attr.getName()) == null) {
                                 //missing required attribute
                                 Hint hint = new Hint(ERROR_RULE_BADGING,

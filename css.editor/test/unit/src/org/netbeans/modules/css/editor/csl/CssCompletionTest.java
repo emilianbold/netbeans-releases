@@ -516,5 +516,17 @@ public class CssCompletionTest extends CssModuleTestBase {
         assertCompletion(document, Match.EXACT, "style2.css");
         
     }
+   
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=242799
+    public void testCompletionInURL() throws ParseException {
+        FileObject cssFile = getTestFile("testfiles/testHtmlApplication/public_html/style.css");
+        Document document = getDocumentForFileObject(cssFile);
+        
+        setDocumentContent(document, "div {\n"
+                + "    content: u|rl(\"image.png\");\n"
+                + "}");
+        assertCompletion(document, Match.EMPTY);
+    }
+
     
 }
