@@ -54,7 +54,8 @@ package org.netbeans.modules.web.jsfapi.api;
  * <li>required           whether the attribute is required or optional,
  * <li>type               the type of the attribute,
  * <li>method-signature   method signature of the method expression.
- * 
+ * <li>default            default value of the attribute if exists, {@code null} otherwise
+ *
  * @author marekfukala
  */
 public interface Attribute {
@@ -98,6 +99,14 @@ public interface Attribute {
      */
     public String getMethodSignature();
 
+    /**
+     * Returns a default value of the attribute if exists.
+     *
+     * @since 1.34
+     * @return default value or {@code null} if not exist.
+     */
+    public String getDefaultValue();
+
     
     public static class DefaultAttribute implements Attribute {
 
@@ -106,17 +115,23 @@ public interface Attribute {
         private String type;
         private boolean required;
         private String methodSignature;
+        private String defaultValue;
 
         public DefaultAttribute(String name, String description, boolean required) {
             this(name, description, null, required, null);
         }
-        
+
         public DefaultAttribute(String name, String description, String type, boolean required, String methodSignature) {
+            this(name, description, type, required, methodSignature, null);
+        }
+
+        public DefaultAttribute(String name, String description, String type, boolean required, String methodSignature, String defaultValue) {
             this.name = name;
             this.description = description;
             this.type = type;
             this.required = required;
             this.methodSignature = methodSignature;
+            this.defaultValue = defaultValue;
         }
 
         @Override
@@ -145,8 +160,13 @@ public interface Attribute {
         }
 
         @Override
+        public String getDefaultValue() {
+            return defaultValue;
+        }
+
+        @Override
         public String toString() {
-            return "Attribute[name=" + getName() + ", required=" + isRequired() + "]"; //NOI18N
+            return "Attribute[name=" + getName() + ", required=" + isRequired() + ", defaultValue=" + getDefaultValue() + "]"; //NOI18N
         }
 
         @Override
@@ -174,6 +194,6 @@ public interface Attribute {
             hash = 13 * hash + (this.required ? 1 : 0);
             return hash;
         }
-        
+
     }
 }
