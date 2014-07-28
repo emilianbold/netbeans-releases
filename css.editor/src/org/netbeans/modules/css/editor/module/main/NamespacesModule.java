@@ -214,14 +214,14 @@ public class NamespacesModule extends CssEditorModule {
     }
 
     @Override
-    public <T extends Map<OffsetRange, Set<ColoringAttributes>>> NodeVisitor<T> getSemanticHighlightingNodeVisitor(FeatureContext context, T result) {
+    public <T extends Map<OffsetRange, Set<ColoringAttributes>>> NodeVisitor<T> getSemanticHighlightingNodeVisitor(final FeatureContext context, T result) {
         return new NodeVisitor<T>(result) {
 
             @Override
             public boolean visit(Node node) {
                 switch (node.type()) {
                     case namespacePrefix:
-                        getResult().put(Css3Utils.getOffsetRange(node), ColoringAttributes.CONSTRUCTOR_SET);
+                        getResult().put(Css3Utils.getDocumentOffsetRange(node, context.getSnapshot()), ColoringAttributes.CONSTRUCTOR_SET);
                         break;
                 }
                 return false;
