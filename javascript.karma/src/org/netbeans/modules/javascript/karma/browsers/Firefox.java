@@ -48,8 +48,8 @@ import java.util.regex.Pattern;
 
 final class Firefox extends Browser {
 
-    // e.g.: @/home/gapon/NetBeansProjects/AngularSeeed/test/unit/directivesSpec.js:16
-    static final Pattern OUTPUT_FILE_LINE_PATTERN = Pattern.compile("@(?<FILE>.+?):(?<LINE>\\d+)$"); // NOI18N
+    // e.g.: @/home/gapon/NetBeansProjects/AngularSeeed/test/unit/directivesSpec.js:16:32
+    static final Pattern OUTPUT_FILE_LINE_PATTERN = Pattern.compile("@(?<FILE>.+?):(?<LINE>\\d+)(:\\d+)?$"); // NOI18N
 
     @Override
     protected List<String> getIdentifiers() {

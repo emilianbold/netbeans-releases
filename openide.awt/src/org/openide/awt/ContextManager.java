@@ -67,6 +67,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -133,11 +134,12 @@ class ContextManager extends Object {
 
     public <T> void unregisterListener(Class<T> type, ContextAction<T> a) {
         synchronized (CACHE) {
-            Set<ContextAction> existing = findLSet(type);
+            LSet<T> existing = findLSet(type);
             if (existing != null) {
                 existing.remove(a);
                 if (existing.isEmpty()) {
                     listeners.remove(type);
+                    existing.cleanup();
                 }
             }
             if (a.selectMode == ContextSelection.ALL && selectionAll != null) {
@@ -216,8 +218,9 @@ class ContextManager extends Object {
         return false;
     }
 
+    // package private for tests only
     @SuppressWarnings("unchecked")
-    private <T> LSet<T> findLSet(Class<T> type) {
+    <T> LSet<T> findLSet(Class<T> type) {
         synchronized (CACHE) {
             return listeners.get(type);
         }
@@ -333,8 +336,9 @@ class ContextManager extends Object {
             this.delegate = delegate;
             this.nodes = nodes;
             this.listeners = new CopyOnWriteArrayList<LookupListener>();
-            this.delegate.addLookupListener(this);
-            this.nodes.addLookupListener(this);
+            // add weak listeners so this can be GCed when listeners are empty
+            this.delegate.addLookupListener(WeakListeners.create(LookupListener.class, this, this.delegate));
+            this.nodes.addLookupListener(WeakListeners.create(LookupListener.class, this, this.nodes));
             initValues();
         }
 
@@ -408,7 +412,7 @@ class ContextManager extends Object {
     /** Special set, that is weakly holding its actions, but also
      * listens on changes in lookup.
      */
-    private static final class LSet<T> extends WeakSet<ContextAction> 
+    static final class LSet<T> extends WeakSet<ContextAction> 
     implements LookupListener, Runnable {
         final Lookup.Result<T> result;
         
@@ -451,6 +455,10 @@ class ContextManager extends Object {
                     LOG.log(Level.INFO, "  {0}", a);
                 }
             }
+        }
+
+        private void cleanup() {
+            this.result.removeLookupListener(this);
         }
     }
 

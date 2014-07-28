@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.versioning.util.common;
 
+import java.awt.Color;
 import java.util.Comparator;
 
 /**
@@ -53,6 +54,10 @@ public abstract class VCSFileInformation {
     public abstract String getStatusText();
     public abstract int getComparableStatus();
     public abstract String annotateNameHtml(String name);    
+
+    public Color getAnnotatedColor () {
+        return null;
+    }
 
     /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
