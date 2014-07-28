@@ -220,3 +220,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-maven-util" value="${javadoc.web.root}/org-netbeans-modules-maven-util"/>
 <property name="javadoc.docs.org-netbeans-modules-bugtracking" value="${javadoc.web.root}/org-netbeans-modules-bugtracking"/>
 <property name="javadoc.docs.org-netbeans-core-multitabs" value="${javadoc.web.root}/org-netbeans-core-multitabs"/>
+<property name="javadoc.docs.org-netbeans-api-maven" value="${javadoc.web.root}/org-netbeans-api-maven"/>

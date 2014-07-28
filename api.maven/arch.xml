@@ -75,8 +75,9 @@ made subject to such option by the copyright holder.
    <li>
     <api group="java" name="MavenArchetypeAPI" type="export" category="stable">
      <p> 
-      The Maven Archetype API provides some miscellaneous APIs related to 
-      maven-archetype-plugin.
+      provides miscellaneous APIs related to operations
+      provided by maven-archetype-plugin. See <a href="@TOP@org/netbeans/api/maven/archetype/package-summary.html">package description</a>
+      for more details.
      </p>
     </api>
    </li>
@@ -93,7 +94,8 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-usecases">
   <p>
-    creating of New Project wizards based on the maven-archetype-plugin.
+    Start exploring use-cases related to Maven archetypes
+    at the <a href="@TOP@org/netbeans/api/maven/archetype/ArchetypeWizards.html">ArchetypeWizards</a> class.
   </p>
  </answer>
 
