@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.versioning.util.status;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.beans.PropertyEditor;
@@ -90,6 +91,10 @@ public abstract class VCSStatusNode<T extends VCSFileNode> extends AbstractNode 
     @Override
     public String getHtmlDisplayName () {
         return node.getInformation().annotateNameHtml(nameProperty.getValue());
+    }
+    
+    public Color getAnnotatedFontColor () {
+        return node.getInformation().getAnnotatedColor();
     }
 
     @Override

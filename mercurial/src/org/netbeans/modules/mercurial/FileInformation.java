@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.mercurial;
 
+import java.awt.Color;
 import org.openide.util.NbBundle;
 
 import java.io.Serializable;
@@ -418,5 +419,10 @@ public class FileInformation extends VCSFileInformation implements Serializable 
     @Override
     public String annotateNameHtml (String name) {
         return Mercurial.getInstance().getMercurialAnnotator().annotateNameHtml(name, this, null);
+    }
+
+    @Override
+    public Color getAnnotatedColor () {
+        return Mercurial.getInstance().getMercurialAnnotator().getAnnotatedColor(this);
     }
 }

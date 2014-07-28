@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git;
 
+import java.awt.Color;
 import java.io.File;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.modules.git.FileInformation.Status;
@@ -218,6 +219,25 @@ public abstract class GitFileNode<T extends FileNodeInformation> extends VCSFile
                     break;
             }
             return format.getFormat().format(new Object[] { name, "" });
+        }
+
+        @Override
+        public Color getAnnotatedColor () {
+            switch (info.getStatus()) {
+                case ADDED:
+                    return AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor();
+                case COPIED:
+                    return AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor();
+                case MODIFIED:
+                    return AnnotationColorProvider.getInstance().MODIFIED_FILE.getActualColor();
+                case REMOVED:
+                    return AnnotationColorProvider.getInstance().REMOVED_FILE.getActualColor();
+                case RENAMED:
+                    return AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor();
+                case UNKNOWN:
+                default:
+                    return AnnotationColorProvider.getInstance().EXCLUDED_FILE.getActualColor();
+            }
         }
         
     }
