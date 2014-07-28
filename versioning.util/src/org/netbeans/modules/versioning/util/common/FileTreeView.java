@@ -662,7 +662,9 @@ public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewC
             String value = n.getDisplayName();
             T leafNode = convertNode(n);
             if (leafNode != null) {
-                String htmlDisplayName = DiffUtils.getHtmlDisplayName(leafNode, isModified(leafNode), Arrays.asList(em.getSelectedNodes()).contains(n));
+                // do not set selected flag, outline view handles color in its own way
+                // instead return fg color in getForeground
+                String htmlDisplayName = DiffUtils.getHtmlDisplayName(leafNode, isModified(leafNode), false);
                 htmlDisplayName = annotateName(leafNode, htmlDisplayName);
                 if (htmlDisplayName != null) {
                     value = "<html>" + htmlDisplayName; //NOI18N
@@ -683,7 +685,13 @@ public abstract class FileTreeView<T extends VCSStatusNode> implements FileViewC
 
         @Override
         public Color getForeground (Object o) {
-            return null;
+            Color c = null;
+            Node n = Visualizer.findNode(o);
+            T leafNode = convertNode(n);
+            if (leafNode != null) {
+                c = leafNode.getAnnotatedFontColor();
+            }
+            return c;
         }
 
         @Override

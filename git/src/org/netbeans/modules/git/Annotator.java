@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git;
 
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.git.options.AnnotationColorProvider;
 import java.awt.Image;
@@ -544,6 +545,42 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             return name;
         } else {
             throw new IllegalStateException("Unknown status: " + mostImportantInfo.getStatus()); //NOI18N
+        }
+    }
+
+    public Color getAnnotatedColor (FileInformation info) {
+        if (info.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
+            // IGNORED
+            return getAnnotationProvider().EXCLUDED_FILE.getActualColor();
+        } else if (info.getStatus().equals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.REMOVED_INDEX_WORKING_TREE))) {
+            // ADDED to index but REMOVED in WT
+            return getAnnotationProvider().UP_TO_DATE_FILE.getActualColor();
+        } else if (info.getStatus().equals(EnumSet.of(Status.MODIFIED_HEAD_INDEX, Status.MODIFIED_INDEX_WORKING_TREE))) {
+            // MODIFIED in index, MODIFIED in WT, but in WT same as HEAD
+            return getAnnotationProvider().UP_TO_DATE_FILE.getActualColor();
+        } else if (info.containsStatus(Status.REMOVED_HEAD_WORKING_TREE)) {
+            // DELETED in WT
+            return getAnnotationProvider().REMOVED_FILE.getActualColor();
+        } else if (info.getStatus().equals(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.REMOVED_HEAD_INDEX))) {
+            // recreated in WT
+            return getAnnotationProvider().UP_TO_DATE_FILE.getActualColor();
+        } else if (info.getStatus().equals(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.REMOVED_HEAD_INDEX, Status.MODIFIED_HEAD_WORKING_TREE))) {
+            // recreated in WT and modified
+            return getAnnotationProvider().MODIFIED_FILE.getActualColor();
+        } else if (info.containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
+            // NEW in WT and unversioned
+            return getAnnotationProvider().NEW_FILE.getActualColor();
+        } else if (info.containsStatus(Status.NEW_HEAD_INDEX)) {
+            // ADDED to index
+            return getAnnotationProvider().ADDED_FILE.getActualColor();
+        } else if (info.containsStatus(Status.MODIFIED_HEAD_WORKING_TREE)) {
+            return getAnnotationProvider().MODIFIED_FILE.getActualColor();
+        } else if (info.containsStatus(Status.UPTODATE)) {
+            return getAnnotationProvider().UP_TO_DATE_FILE.getActualColor();
+        } else if (info.containsStatus(Status.IN_CONFLICT)) {
+            return getAnnotationProvider().CONFLICT_FILE.getActualColor();
+        } else {
+            return null;
         }
     }
 

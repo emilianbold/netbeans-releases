@@ -237,10 +237,13 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                           boolean isSelected, boolean hasFocus, int row, 
                           int column) {
 
+        setForeground(null);
+        setBackground(null);
         super.getTableCellRendererComponent(
                   table, value, isSelected, hasFocus, row, column);
         JLabel label = null;
         if (!swingRendering) {
+            htmlRenderer.setColors(getForeground(), getBackground());
             label = (JLabel) htmlRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
         Outline tbl = (Outline) table;
@@ -573,6 +576,12 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                     Logger.getLogger(DefaultOutlineCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
                     throw new IllegalStateException(ex);
                 }
+            }
+            
+            private void setColors(Color foreground, Color background) {
+                Component c = (Component) renderer;
+                c.setForeground(foreground);
+                c.setBackground(background);
             }
         }
         

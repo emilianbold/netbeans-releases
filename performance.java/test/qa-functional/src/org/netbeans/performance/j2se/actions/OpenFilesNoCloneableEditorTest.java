@@ -128,6 +128,7 @@ public class OpenFilesNoCloneableEditorTest extends PerformanceTestCase {
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "JFrame20kB.java";
+        expectedTime = 4000;
         doMeasurement();
     }
 
