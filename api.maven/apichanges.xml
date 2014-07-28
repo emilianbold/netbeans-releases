@@ -120,9 +120,9 @@ is the proper place.
                    Public API for creating New Project wizards based on the maven-archetype-plugin.
                </p>
            </description>
-           <class package="org.netbeans.maven.archetype.api" name="Archetype"/>
-           <class package="org.netbeans.maven.archetype.api" name="ArchetypeWizards"/>
-           <class package="org.netbeans.maven.archetype.api" name="ProjectInfo"/>
+           <class package="org.netbeans.api.maven.archetype" name="Archetype"/>
+           <class package="org.netbeans.api.maven.archetype" name="ArchetypeWizards"/>
+           <class package="org.netbeans.api.maven.archetype" name="ProjectInfo"/>
            <issue number="245153"/>
         </change>
         
@@ -152,7 +152,8 @@ is the proper place.
 
 <h1>Introduction</h1>
 
-<p>This document lists changes made to the <a href="@org-netbeans-modules-maven-archetype@/index.html">Maven Project API</a>.</p>
+<p>This document lists changes made to the <a href="@org-netbeans-api-maven@/index.html">Maven Project API</a>.
+</p>
 
 <!-- The actual lists of changes, as summaries and details: -->
       <hr/>
