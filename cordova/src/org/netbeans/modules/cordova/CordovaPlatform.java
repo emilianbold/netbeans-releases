@@ -42,6 +42,7 @@
 package org.netbeans.modules.cordova;
 
 import java.io.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
@@ -92,7 +93,7 @@ public class CordovaPlatform {
                     version = new Version(v.trim());
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                Version.LOG.log(Level.INFO, ex.getMessage(), ex);
             }
         }
         return version;
@@ -143,6 +144,7 @@ public class CordovaPlatform {
                     isGitReady = true;
                 }
             } catch (IOException ex) {
+                Version.LOG.log(Level.INFO, ex.getMessage(), ex);
             }
         } 
         return isGitReady;
