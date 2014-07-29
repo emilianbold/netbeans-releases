@@ -566,6 +566,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 addObjectPropertiesFromIndex(typeUsage.getType(), jsIndex, request, addedProperties);
             }
         }
+        boolean isPublic = lastResolvedObjects.isEmpty();
         for (JsObject resolved : lastResolvedObjects) {
             if(!isFunction && resolved.getJSKind().isFunction()) {
                 isFunction = true;
@@ -574,6 +575,11 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             if (!resolved.isDeclared()) {
                 // if the object is not defined here, look to the index as well
                 addObjectPropertiesFromIndex(resolved.getFullyQualifiedName(), jsIndex, request, addedProperties);
+                isPublic = true;
+            } else {
+                if (!resolved.getModifiers().contains(Modifier.PRIVATE)) {
+                    isPublic = true;
+                }
             }
         }
 
@@ -583,18 +589,20 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
 
         addObjectPropertiesFromIndex("Object", jsIndex, request, addedProperties); //NOI18N
 
-        // now look to the index again for declared item outside
-        StringBuilder fqn = new StringBuilder();
-        for (int i = expChain.size() - 1; i > -1; i--) {
-            fqn.append(expChain.get(--i));
-            fqn.append('.');
-        }
-        if (fqn.length() > 0) {
-            Collection<IndexedElement> indexResults = jsIndex.getPropertiesWithPrefix(fqn.toString().substring(0, fqn.length() - 1), request.prefix);
-            for (IndexedElement indexedElement : indexResults) {
-                if (!indexedElement.isAnonymous()
-                        && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
-                    addPropertyToMap(request, addedProperties, indexedElement);
+        if (isPublic) {
+            // now look to the index again for declared item outside
+            StringBuilder fqn = new StringBuilder();
+            for (int i = expChain.size() - 1; i > -1; i--) {
+                fqn.append(expChain.get(--i));
+                fqn.append('.');
+            }
+            if (fqn.length() > 0) {
+                Collection<IndexedElement> indexResults = jsIndex.getPropertiesWithPrefix(fqn.toString().substring(0, fqn.length() - 1), request.prefix);
+                for (IndexedElement indexedElement : indexResults) {
+                    if (!indexedElement.isAnonymous()
+                            && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
+                        addPropertyToMap(request, addedProperties, indexedElement);
+                    }
                 }
             }
         }

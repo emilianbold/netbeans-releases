@@ -118,8 +118,8 @@ public final class BowerProblemProvider extends NodeProblemProvider {
                 root.refresh();
                 final Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<>();
                 FileObject package_json = root.getFileObject("bower.json");//NOI18N
-                FileObject bower_modules = root.getFileObject(getBowerRcDir(root));//NOI18N
-                if (package_json != null && bower_modules == null) {
+                File bower_modules = new File(root.getPath() + "/" + getBowerRcDir(root));
+                if (package_json != null && !bower_modules.exists()) {
                     ProjectProblem npmWarning = ProjectProblemsProvider.ProjectProblem.createWarning(Bundle.ERR_BowerInstall(), Bundle.TXT_BowerInstallDescription(), new ProjectProblemResolver() {
                         @Override
                         public Future<Result> resolve() {
@@ -210,8 +210,8 @@ public final class BowerProblemProvider extends NodeProblemProvider {
             FileObject root = project.getProjectDirectory();
             root.refresh();
             FileObject package_json = root.getFileObject("bower.json");
-            FileObject bower_modules = root.getFileObject(getBowerRcDir(root));
-            if (package_json != null && bower_modules == null) {
+            File bower_modules = new File(root.getPath() + "/" + getBowerRcDir(root));
+            if (package_json != null && !bower_modules.exists()) {
                 done.set(true);
                 return ProjectProblemsProvider.Result.create(Status.UNRESOLVED, Bundle.ERR_BowerInstallUnresolved());
             } else {
