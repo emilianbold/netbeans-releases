@@ -47,7 +47,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.31.9</specification-version>
+                        <specification-version>1.31.11</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -156,7 +156,7 @@
                         <specification-version>8.0</specification-version>
                     </run-dependency>
                 </dependency>
-                </module-dependencies>
+            </module-dependencies>
             <friend-packages>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>com.oracle.tools.ide.binary.dependencies</friend>

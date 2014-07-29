@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -745,6 +746,22 @@ public class CsmUtilities {
         }
     }
 
+    public static StyledDocument openDocument(DataObject dataObject) {
+        if (dataObject == null) {
+            return null;
+        }
+        EditorCookie cookie = dataObject.getLookup().lookup(EditorCookie.class);
+        if (cookie == null) {
+            FileObject fileObject = dataObject.getPrimaryFile();
+            String name = fileObject == null ? dataObject.getName() : fileObject.getPath();
+            CndUtils.getLogger().log(Level.WARNING, "Given file (\"{0}\", data object is instance of class {1}) does not have EditorCookie. Register file extension as C/C++/Header extension.",
+                    new Object[]{name, dataObject.getClass().getName()}); // NOI18N
+            return null;
+        }
+        StyledDocument doc = CsmUtilities.openDocument(cookie);
+        return doc;
+    }
+    
     /**
      * opens document even if it is very big by silently confirming open
      * @param cookie
