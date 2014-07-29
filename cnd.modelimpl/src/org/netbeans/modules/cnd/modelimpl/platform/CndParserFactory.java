@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.platform;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -90,7 +91,35 @@ public final class CndParserFactory extends ParserFactory {
 
     @Override
     public Parser createParser(Collection<Snapshot> snapshots) {
-        ParserImpl cndParser = new ParserImpl(snapshots);
+        // filter out snapshots that are not suitable (templates, files from zip, etc)
+        boolean filter = false;
+        int size = 0;
+        // perform fast check: don't copy a collection
+        // if all snapshots are suitable (which is most likely the case)
+        for (Snapshot s : snapshots) {
+            FileObject fo = s.getSource().getFileObject();
+            if (CsmUtilities.isCsmSuitable(fo)) {
+                size++;
+            } else {
+                filter = true;
+            }
+        }
+        ParserImpl cndParser;
+        if (filter) {
+            if (size == 0) {
+                return null;
+            }
+            Collection<Snapshot> filtered = new ArrayList<>(size);
+            for (Snapshot s : snapshots) {
+                FileObject fo = s.getSource().getFileObject();
+                if (CsmUtilities.isCsmSuitable(fo)) {
+                    filtered.add(s);
+                }
+            }
+            cndParser = new ParserImpl(filtered);
+        } else {
+            cndParser = new ParserImpl(snapshots);
+        }
         CsmListeners.getDefault().addProgressListener(cndParser);
         return cndParser;
     }

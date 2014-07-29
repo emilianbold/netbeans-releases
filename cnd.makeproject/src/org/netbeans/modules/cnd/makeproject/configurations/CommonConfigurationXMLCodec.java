@@ -1605,8 +1605,10 @@ public abstract class CommonConfigurationXMLCodec
                 if (BrokenReferencesSupport.hasTemporaryEnv(env)) {
                     BrokenReferencesSupport.addTemporaryEnv(env, environment);
                 }
-            } catch (    IOException | ConnectionManager.CancellationException ex) {
+            } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            } catch (ConnectionManager.CancellationException ex) {
+                // don't report CancellationException
             }
             if (!environment.isEmpty()) {
                 for (String envVariableName : caConf.getEnvironmentVariables().getValue()) {

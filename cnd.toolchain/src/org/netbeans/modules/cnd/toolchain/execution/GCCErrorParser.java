@@ -263,13 +263,15 @@ public final class GCCErrorParser extends ErrorParser {
         if (GCC_STACK_NEXT.contains(m.pattern()) || GCC_STACK_HEADER.contains(m.pattern())) {
             try {
                 String file = m.group(1);
-                Integer lineNumber = Integer.valueOf(m.group(2));
-                FileObject relativeDir = relativesTo.peek();
-                if (relativeDir != null) {
-                    FileObject fo = resolveRelativePath(relativeDir, file);
-                    if (fo != null && fo.isValid()) {
-                        errorInludes.add(new StackIncludeItem(fo, line, lineNumber - 1));
-                        return new Results();
+                if (m.groupCount() >= 2){
+                    Integer lineNumber = Integer.valueOf(m.group(2));
+                    FileObject relativeDir = relativesTo.peek();
+                    if (relativeDir != null) {
+                        FileObject fo = resolveRelativePath(relativeDir, file);
+                        if (fo != null && fo.isValid()) {
+                            errorInludes.add(new StackIncludeItem(fo, line, lineNumber - 1));
+                            return new Results();
+                        }
                     }
                 }
             } catch (NumberFormatException e) {
@@ -289,7 +291,7 @@ public final class GCCErrorParser extends ErrorParser {
                 if(file == null || !file.matches(".*\\.pc")) { // NOI18N 
                     file = m.group(1);
                     lineNumber = Integer.valueOf(m.group(2));
-                    if (m.groupCount()<= 4) {
+                    if (m.groupCount()>= 4) {
                         description = m.group(4);
                     }
                 } else {

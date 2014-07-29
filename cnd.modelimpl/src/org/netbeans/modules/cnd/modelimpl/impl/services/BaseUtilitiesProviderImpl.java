@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -55,9 +56,11 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.getFunctionDeclaration;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -84,6 +87,22 @@ public class BaseUtilitiesProviderImpl extends CsmBaseUtilitiesProvider {
     @Override
     public CsmNamespace getClassNamespace(CsmClassifier cls) {
         return IMPL._getClassNamespace(cls);
+    }
+
+    @Override
+    public String getFileLanguage(CsmFile file) {
+        if (file instanceof FileImpl) {
+            return ((FileImpl) file).getFileLanguage();
+        }
+        return APTLanguageSupport.UNKNOWN;
+    }
+
+    @Override
+    public String getFileLanguageFlavor(CsmFile file) {
+        if (file instanceof FileImpl) {
+            return ((FileImpl) file).getFileLanguageFlavor();
+        }        
+        return APTLanguageSupport.FLAVOR_UNKNOWN;
     }
     
     @Override
