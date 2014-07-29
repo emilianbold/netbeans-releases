@@ -366,13 +366,19 @@ public abstract class ParsingFoldSupport extends TaskFactory implements FoldMana
     @Override
     public final Collection<? extends SchedulerTask> create(Snapshot snapshot) {
         FileObject f = snapshot.getSource().getFileObject();
-        FileData fdata = getRegistrar(this).getFileData(f);
-        return f == null ? Collections.<SchedulerTask>emptyList() : Collections.singleton(
-                new ParserTask(f, fdata, fdata.createProcessor(this, f))
+        FileData fdata = null;
+        FoldProcessor processor = null;
+        if (f != null) {
+            fdata = getRegistrar(this).getFileData(f);
+            processor = fdata.createProcessor(this, f);
+        }
+        return f == null || processor == null ? 
+                Collections.<SchedulerTask>emptyList() : 
+                Collections.singleton(createParserTask(f, processor)
         );
     }
     
-    protected ParserResultTask createParserTask(FileObject file) {
+    protected ParserResultTask createParserTask(FileObject file, FoldProcessor processor) {
         FileData fd = getRegistrar(this).getFileData(file);
         return new ParserTask(file, fd, fd.createProcessor(this, file));
     }
@@ -468,7 +474,7 @@ public abstract class ParsingFoldSupport extends TaskFactory implements FoldMana
     private final class FM implements FoldManager {
         private final FileManagerRegistrar reg;
         private FoldOperation   operation;
-        private FileData        fileData;
+        private FileData  fileData;
         private FoldProcessor   processor;
 
         public FM(FileManagerRegistrar reg) {
@@ -486,7 +492,9 @@ public abstract class ParsingFoldSupport extends TaskFactory implements FoldMana
         }
         
         private void invalidate() {
-            fileData.invalidate();
+            if (fileData != null) {
+                fileData.invalidate();
+            }
         }
 
         @Override
@@ -568,6 +576,9 @@ public abstract class ParsingFoldSupport extends TaskFactory implements FoldMana
             }
             if (p == null) {
                 p = factory.createTask(f);
+                if (p == null) {
+                    return null;
+                }
                 p.fileData = this;
                 processor = new WeakReference(p);
             }
