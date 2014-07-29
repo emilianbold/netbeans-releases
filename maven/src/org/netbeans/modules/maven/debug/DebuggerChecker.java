@@ -263,6 +263,14 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
                         buf.replace(index, index + replaceItem.length(), newItem);
                         index = buf.indexOf(replaceItem);
                     }
+                    // debug must properly update debug port in runconfig...
+                    if(entry.getKey().equals(MAVENSUREFIREDEBUG)) {
+                        String address = "address="; //NOI18N
+                        index = buf.indexOf(address);
+                        if(index > -1) {
+                            buf.replace(index + 8, buf.length(), val);
+                        }
+                    }
                     //                System.out.println("setting property=" + key + "=" + buf.toString());
                     config.setProperty(entry.getKey(), buf.toString());
                 }

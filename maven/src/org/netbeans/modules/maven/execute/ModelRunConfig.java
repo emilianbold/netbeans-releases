@@ -57,9 +57,11 @@ import org.openide.util.Lookup;
 public final class ModelRunConfig extends BeanRunConfig {
     
     private final NetbeansActionMapping model;
+    private final boolean fallback;
     
-    public ModelRunConfig(Project proj, NetbeansActionMapping mod, String actionName, FileObject selectedFile, Lookup lookup) {
+    public ModelRunConfig(Project proj, NetbeansActionMapping mod, String actionName, FileObject selectedFile, Lookup lookup, boolean fallback) {
         model = mod;
+        this.fallback = fallback;
         NbMavenProjectImpl nbprj = proj.getLookup().lookup(NbMavenProjectImpl.class);
         setProject(nbprj);
         String label = ProjectUtils.getInformation(proj).getDisplayName();
@@ -87,4 +89,7 @@ public final class ModelRunConfig extends BeanRunConfig {
         }
     }
 
+    public boolean isFallback() {
+        return fallback;
+    }
 }
