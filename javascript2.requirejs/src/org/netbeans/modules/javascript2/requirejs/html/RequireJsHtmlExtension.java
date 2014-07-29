@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javascript2.requirejs.html;
 
 import java.awt.Color;
@@ -55,7 +54,6 @@ import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
-import org.netbeans.modules.web.common.api.FileReferenceCompletion;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.ValueCompletion;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -73,9 +71,11 @@ import org.openide.filesystems.FileObject;
     @MimeRegistration(mimeType = "text/x-php5", service = HtmlExtension.class)
 })
 public class RequireJsHtmlExtension extends HtmlExtension {
-    private static String SCRIPT = "script"; //NOI18N
-//    private static final ValueCompletion<HtmlCompletionItem> FILE_NAME_SUPPORT = new FilenameSupport();
-    
+
+    private static final String DATAMAIN = "data-main"; //NOI18N
+    private static final String SCRIPT = "script"; //NOI18N
+    private static final ValueCompletion<HtmlCompletionItem> FILE_NAME_SUPPORT = new FilenameSupport();
+
     @Override
     public List<CompletionItem> completeAttributes(HtmlExtension.CompletionContext context) {
         Element element = context.getCurrentNode();
@@ -87,7 +87,7 @@ public class RequireJsHtmlExtension extends HtmlExtension {
                     String name = ot.unqualifiedName().toString();
                     if (SCRIPT.equals(name.toLowerCase())) {
                         Collection<CustomAttribute> customAttributes = RequireJsCustomAttribute.getCustomAttributes();
-                        for(CustomAttribute ca : customAttributes) {
+                        for (CustomAttribute ca : customAttributes) {
                             if (LexerUtils.startsWith(ca.getName(), context.getPrefix(), true, false)) {
                                 items.add(new RequireJsAttributeCompletionItem(ca, context.getCCItemStartOffset()));
                             }
@@ -100,33 +100,32 @@ public class RequireJsHtmlExtension extends HtmlExtension {
         return items;
     }
 
-//    @Override
-//    public List<CompletionItem> completeAttributeValue(CompletionContext context) {
-//        Element element = context.getCurrentNode();
-//        String attributeName = context.getAttributeName();
-//        if (attributeName.equals("data-main")) {
-//            FileObject fileObject = context.getResult().getSnapshot().getSource().getFileObject();
-//            if (fileObject != null) {
-//                List<CompletionItem> items = new ArrayList<>();
-//                items.addAll(FILE_NAME_SUPPORT.getItems(fileObject, context.getOriginalOffset(), context.getPrefix()));
-//                return items;
-//            }
-//        }
-//        
-//        return Collections.emptyList();
-//    }
- 
-//    private static class FilenameSupport extends FileReferenceCompletion<HtmlCompletionItem> {
-//
-//        @Override
-//        public HtmlCompletionItem createFileItem(FileObject file, int anchor) {
-//            return HtmlCompletionItem.createFileCompletionItem(file, anchor);
-//        }
-//
-//        @Override
-//        public HtmlCompletionItem createGoUpItem(int anchor, Color color, ImageIcon icon) {
-//            return HtmlCompletionItem.createGoUpFileCompletionItem(anchor, color, icon); // NOI18N
-//        }
-//    }
-    
+    @Override
+    public List<CompletionItem> completeAttributeValue(CompletionContext context) {
+        Element element = context.getCurrentNode();
+        String attributeName = context.getAttributeName();
+        if (attributeName.equals(DATAMAIN)) {
+            FileObject fileObject = context.getResult().getSnapshot().getSource().getFileObject();
+            if (fileObject != null) {
+                List<CompletionItem> items = new ArrayList<>();
+                items.addAll(FILE_NAME_SUPPORT.getItems(fileObject, context.getCCItemStartOffset(), context.getPrefix()));
+                return items;
+            }
+        }
+
+        return Collections.emptyList();
+    }
+
+    private static class FilenameSupport extends RequireJsFileReferenceCompletion<HtmlCompletionItem> {
+
+        @Override
+        public HtmlCompletionItem createFileItem(FileObject file, int anchor) {
+            return RequireJsHtmlCompletionItem.createFileCompletionItem(file, anchor);
+        }
+
+        @Override
+        public HtmlCompletionItem createGoUpItem(int anchor, Color color, ImageIcon icon) {
+            return HtmlCompletionItem.createGoUpFileCompletionItem(anchor, color, icon); // NOI18N
+        }
+    }
 }
