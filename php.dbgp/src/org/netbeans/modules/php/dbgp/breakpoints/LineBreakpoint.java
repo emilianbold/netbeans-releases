@@ -43,18 +43,31 @@
  */
 package org.netbeans.modules.php.dbgp.breakpoints;
 
+import java.util.Collections;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.SessionId;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -63,7 +76,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
-import org.openide.text.NbDocument;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -72,10 +85,12 @@ import org.openide.util.WeakListeners;
  */
 public class LineBreakpoint extends AbstractBreakpoint {
     private static final Logger LOGGER = Logger.getLogger(LineBreakpoint.class.getName());
-    private Line myLine;
-    private FileRemoveListener myListener;
+    private static final RequestProcessor RP = new RequestProcessor(LineBreakpoint.class);
+    private final Line myLine;
+    private final FileRemoveListener myListener;
     private FileChangeListener myWeakListener;
-    private String myFileUrl;
+    private final String myFileUrl;
+    private final Future<Boolean> isValidFuture;
 
     public LineBreakpoint(Line line) {
         myLine = line;
@@ -88,6 +103,42 @@ public class LineBreakpoint extends AbstractBreakpoint {
         } else {
             myFileUrl = ""; //NOI18N
         }
+        isValidFuture = RP.submit(new Callable<Boolean>() {
+
+            @Override
+            public Boolean call() {
+                final Boolean[] result = new Boolean[1];
+                DataObject dataObject = DataEditorSupport.findDataObject(myLine);
+                EditorCookie editorCookie = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
+                final StyledDocument styledDocument = editorCookie.getDocument();
+                if (styledDocument != null && styledDocument instanceof BaseDocument) {
+                    try {
+                        final BaseDocument baseDocument = (BaseDocument) styledDocument;
+                        Source source = Source.create(baseDocument);
+                        ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                Parser.Result parserResult = resultIterator.getParserResult();
+                                if (parserResult != null && parserResult instanceof PHPParseResult) {
+                                    PHPParseResult phpParserResult = (PHPParseResult) parserResult;
+                                    int rowStart = Utilities.getRowStartFromLineOffset(baseDocument, myLine.getLineNumber());
+                                    int contentStart = Utilities.getRowFirstNonWhite(baseDocument, rowStart);
+                                    int contentEnd = Utilities.getRowLastNonWhite(baseDocument, rowStart) + 1;
+                                    StatementVisitor statementVisitor = new StatementVisitor(contentStart, contentEnd);
+                                    statementVisitor.scan(phpParserResult.getProgram().getStatements());
+                                    int properStatementOffset = statementVisitor.getProperStatementOffset();
+                                    result[0] = properStatementOffset == contentStart;
+                                }
+                            }
+                        });
+                    } catch (ParseException ex) {
+                        LOGGER.log(Level.FINE, null, ex);
+                    }
+                }
+                return result[0];
+            }
+        });
     }
 
     public final void refreshValidity() {
@@ -95,52 +146,17 @@ public class LineBreakpoint extends AbstractBreakpoint {
     }
 
     private boolean isValid() {
-        final boolean[] result = new boolean[1];
-        result[0] = false;
-        Line line = getLine();
-        DataObject dataObject = DataEditorSupport.findDataObject(line);
-        EditorCookie editorCookie = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
-        final StyledDocument document = editorCookie.getDocument();
-        if (document != null) {
-            try {
-                int l = line.getLineNumber();
-                Element lineElem = NbDocument.findLineRootElement(document).getElement(l);
-                final int startOffset = lineElem.getStartOffset();
-                final int endOffset = lineElem.getEndOffset();
-                document.render(new Runnable() {
-                    @Override
-                    public void run() {
-                        TokenHierarchy th = TokenHierarchy.get(document);
-                        TokenSequence<TokenId> ts = th.tokenSequence();
-                        if (ts != null) {
-                            ts.move(startOffset);
-                            boolean moveNext = ts.moveNext();
-                            for (; moveNext && !result[0] && ts.offset() < endOffset;) {
-                                TokenId id = ts.token().id();
-                                if (id == PHPTokenId.PHPDOC_COMMENT
-                                        || id == PHPTokenId.PHPDOC_COMMENT_END
-                                        || id == PHPTokenId.PHPDOC_COMMENT_START
-                                        || id == PHPTokenId.PHP_LINE_COMMENT
-                                        || id == PHPTokenId.PHP_COMMENT_START
-                                        || id == PHPTokenId.PHP_COMMENT_END
-                                        || id == PHPTokenId.PHP_COMMENT) {
-                                    break;
-                                }
-
-                                result[0] = id != PHPTokenId.T_INLINE_HTML && id != PHPTokenId.WHITESPACE;
-                                if (!ts.moveNext()) {
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                });
-            } catch (IndexOutOfBoundsException ex) {
-                LOGGER.fine("Line number is no more valid.");
-                result[0] = false;
-            }
+        boolean result = false;
+        try {
+            result = isValidFuture.get(2, TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            Thread.interrupted();
+        } catch (ExecutionException | TimeoutException ex) {
+            result = true;
+            isValidFuture.cancel(true);
+            LOGGER.log(Level.FINE, null, ex);
         }
-        return result[0];
+        return result;
     }
 
     public Line getLine() {
@@ -162,11 +178,7 @@ public class LineBreakpoint extends AbstractBreakpoint {
         if (id == null) {
             return false;
         }
-        Project project = id.getProject();
-        if (project == null) {
-            return false;
-        }
-        return true;
+        return id.getProject() != null;
     }
 
     @Override
@@ -177,24 +189,39 @@ public class LineBreakpoint extends AbstractBreakpoint {
         }
     }
 
-    private Project getProject() {
-        Line line = getLine();
-        if (line == null) {
-            return null;
-        }
-        FileObject fileObject = line.getLookup().lookup(FileObject.class);
-        if (fileObject == null) {
-            return null;
-        }
-        return FileOwnerQuery.getOwner(fileObject);
-    }
-
     private class FileRemoveListener extends FileChangeAdapter {
 
         @Override
         public void fileDeleted(FileEvent arg0) {
             DebuggerManager.getDebuggerManager().removeBreakpoint(
                     LineBreakpoint.this);
+        }
+
+    }
+
+    private static final class StatementVisitor extends DefaultVisitor {
+        private int properStatementOffset;
+        private final int contentStart;
+        private final int contentEnd;
+
+        private StatementVisitor(int contentStart, int contentEnd) {
+            this.contentStart = contentStart;
+            this.contentEnd = contentEnd;
+        }
+
+        @Override
+        public void scan(ASTNode node) {
+            if (node != null) {
+                OffsetRange nodeRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+                if (node instanceof Statement && nodeRange.containsInclusive(contentStart) && nodeRange.containsInclusive(contentEnd)) {
+                    properStatementOffset = node.getStartOffset();
+                }
+                super.scan(node);
+            }
+        }
+
+        public int getProperStatementOffset() {
+            return properStatementOffset;
         }
 
     }
