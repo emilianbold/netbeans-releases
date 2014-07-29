@@ -372,7 +372,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
                                 ph2.progress(80);
                                 ph2.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryParsingProcessResults"));
 
-                            } catch (Exception e) {
+                            } catch (Exception|NoClassDefFoundError e) {
                                 logger.log(Level.INFO, "Problem in executing JPQL", e);
                                 jpqlResult.getExceptions().add(e);
                             }
