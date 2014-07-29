@@ -838,7 +838,7 @@ public class WorkingCopy extends CompilationController {
             //tagging debug
             //System.err.println("brandNew=" + brandNew);
             new CommentReplicator(presentInResult.keySet()).scan(diffContext.origUnit, null);
-            
+            addCommentsToContext(diffContext);
             for (ClassTree ct : classes) {
                 ia.classLeft();
             }
@@ -873,6 +873,14 @@ public class WorkingCopy extends CompilationController {
         }
     }
     
+    private void addCommentsToContext(DiffContext context) {
+        Map<Integer, Comment> m = new HashMap<>(usedComments.size());
+        for (Comment c : usedComments) {
+            m.put(c.pos(), c);
+        }
+        context.usedComments = m;
+    }
+    
     private void addPresentInResult(Map<Tree, Boolean> present, Tree t, boolean mark) {
         present.put(t, Boolean.valueOf(mark));
         CommentSetImpl csi = CommentHandlerService.instance(impl.getJavacTask().getContext()).getComments(t);
@@ -903,6 +911,7 @@ public class WorkingCopy extends CompilationController {
         private Map<Tree, Tree> copyTo = new IdentityHashMap<Tree, Tree>();
         private final CommentHandlerService commentHandler;
         private Tree parentToCopy;
+        private Set<Comment>    retained = new HashSet<Comment>();
         
         CommentReplicator(Set<Tree> presentNodes) {
             this.stillPresent = presentNodes;

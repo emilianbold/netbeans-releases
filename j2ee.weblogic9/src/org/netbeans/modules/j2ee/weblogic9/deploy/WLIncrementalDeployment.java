@@ -479,7 +479,7 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
         try {
             fo = module.getContentDirectory();
             if (null != fo) {
-                moduleID = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fo)).getName();
+                moduleID = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fo)).getDisplayName();
             }
         } catch (IOException ex) {
             LOGGER.log(Level.FINER, null, ex);

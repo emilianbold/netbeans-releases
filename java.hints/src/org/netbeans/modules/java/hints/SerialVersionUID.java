@@ -26,8 +26,8 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -38,9 +38,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Modifier;
-import static javax.lang.model.element.Modifier.FINAL;
-import static javax.lang.model.element.Modifier.PRIVATE;
-import static javax.lang.model.element.Modifier.STATIC;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.NonNull;
@@ -49,11 +46,17 @@ import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.modules.java.hints.errors.OverrideErrorMessage;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.openide.util.NbBundle;
+
+import static javax.lang.model.element.Modifier.FINAL;
+import static javax.lang.model.element.Modifier.PRIVATE;
+import static javax.lang.model.element.Modifier.STATIC;
 
 /**
  * @author Michal Hlavac
@@ -62,7 +65,7 @@ import org.openide.util.NbBundle;
  * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=70746">RFE 70746</a>
  * @see <a href="http://kenai.com/projects/nb-svuid-generator/sources/mercurial/show/src/eu/easyedu/netbeans/svuid">Original Implementation Source Code</a>
  */
-public class SerialVersionUID implements ErrorRule<Void> {
+public class SerialVersionUID implements ErrorRule<Void>, OverrideErrorMessage<Void> {
     public static final Set<String> CODES = Collections.singleton("compiler.warn.missing.SVUID");
 
     private static final String SERIAL = "serial"; //NOI18N
@@ -82,11 +85,25 @@ public class SerialVersionUID implements ErrorRule<Void> {
     }
 
     @Override
+    public String createMessage(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data data) {
+        if (treePath == null || !TreeUtilities.CLASS_TREE_KINDS.contains(treePath.getLeaf().getKind())) {
+            return null;
+        }
+        if (treePath.getLeaf().getKind() == Tree.Kind.INTERFACE) {
+            return "";
+        }
+        return null;
+    }
+
+    @Override
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         if (treePath == null || !TreeUtilities.CLASS_TREE_KINDS.contains(treePath.getLeaf().getKind())) {
             return null;
         }
-
+        if (treePath.getLeaf().getKind() == Tree.Kind.INTERFACE) {
+            return null;
+        }
+        
         TypeElement type = (TypeElement) info.getTrees().getElement(treePath);
         List<Fix> fixes = new ArrayList<Fix>();
 

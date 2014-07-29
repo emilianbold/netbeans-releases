@@ -187,7 +187,7 @@ public final class ClasspathInfo {
             pgTx = txCtx.get(ProcessorGenerated.class);
         } else {
             //No real transaction, read-only mode.
-            fmTx = FileManagerTransaction.nullWrite();
+            fmTx = FileManagerTransaction.treeLoaderOnly();
             pgTx = ProcessorGenerated.nullWrite();
         }
         assert fmTx != null : "No file manager transaction.";   //NOI18N

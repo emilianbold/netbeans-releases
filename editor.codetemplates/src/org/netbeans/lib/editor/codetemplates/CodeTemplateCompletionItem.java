@@ -90,6 +90,8 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         String description = codeTemplate.getDescription();
         if (description == null) {
             description = CodeTemplateApiPackageAccessor.get().getSingleLineText(codeTemplate);
+        } else {
+            description = ParametrizedTextParser.toHtmlText(description);
         }
         return description.trim();
     }
