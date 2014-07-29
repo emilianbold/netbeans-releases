@@ -241,6 +241,8 @@ public class Installer extends ModuleInstall implements Runnable {
         synchronized (restored) {
             if (!restored.getAndSet(true)) {
                 restoredOnce(earlyRecords);
+            } else {
+                logEarlyRecords(earlyRecords);
             }
         }
     }
@@ -297,6 +299,17 @@ public class Installer extends ModuleInstall implements Runnable {
         CPUInfo.logCPUInfo();
         ScreenSize.logScreenSize();
         logIdeStartup();
+        logEarlyRecords(earlyRecords);
+        for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
+            a.activated(log);
+        }
+
+        if (logsSize >= UIHandler.MAX_LOGS) {
+            WindowManager.getDefault().invokeWhenUIReady(this);
+        }
+    }
+    
+    private void logEarlyRecords(java.util.Queue<LogRecord> earlyRecords) {
         if (earlyRecords != null) {
             List<LogRecord> allRecords;
             synchronized (earlyRecords) {
@@ -310,13 +323,6 @@ public class Installer extends ModuleInstall implements Runnable {
                 List<LogRecord> metricsRecords = extractRecords(allRecords, METRICS_LOGGER_NAME);
                 metrics.publishEarlyRecords(metricsRecords);
             }
-        }
-        for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
-            a.activated(log);
-        }
-
-        if (logsSize >= UIHandler.MAX_LOGS) {
-            WindowManager.getDefault().invokeWhenUIReady(this);
         }
     }
     
@@ -481,7 +487,6 @@ public class Installer extends ModuleInstall implements Runnable {
         synchronized (restored) {
             restored.set(false);
         }
-        EarlyHandler.forgetInstallerHandle();
     }
     
     static boolean isImmediateWriteOut(LogRecord r) {
