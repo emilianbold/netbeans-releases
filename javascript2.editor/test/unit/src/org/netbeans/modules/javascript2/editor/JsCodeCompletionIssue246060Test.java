@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,43 +34,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javascript2.editor;
 
-import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * @author Petr Hejl
+ *
+ * @author Petr Pisl
  */
-public abstract class JsonTestBase extends CslTestBase {
+public class JsCodeCompletionIssue246060Test extends JsCodeCompletionBase {
     
-    public JsonTestBase(String testName) {
+    public JsCodeCompletionIssue246060Test(String testName) {
         super(testName);
     }
+    
+    public void testIssue246060_01() throws Exception {
+        checkCompletion("testfiles/completion/issue246060/app.js", "e.^  //here", false);
+    }
+    
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "testfiles/completion/issue246060")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
+    }
 
     @Override
-    protected boolean runInEQ() {
-        // Must run in AWT thread (BaseKit.install() checks for that)
+    protected boolean classPathContainsBinaries() {
         return true;
-    }
-
-    @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new JsonLanguage();
-    }
-    
-    @Override
-    protected String getPreferredMimeType() {
-        return JsTokenId.JSON_MIME_TYPE;
-    }
-    
-    @Override
-    protected void setUp() throws Exception {        
-        TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
-        super.setUp();
     }
 }

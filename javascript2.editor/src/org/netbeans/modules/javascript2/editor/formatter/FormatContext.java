@@ -113,7 +113,7 @@ public final class FormatContext {
         regions = new ArrayList<Region>(context.indentRegions().size());
         for (Context.Region region : context.indentRegions()) {
             regions.add(new Region(region));
-            }
+        }
 
         dumpRegions();
 
@@ -359,11 +359,16 @@ public final class FormatContext {
                         start.setInitialIndentation(0);
                     }
                 } else {
-                    // for case like <script>\nfoo();\n</script>
-                    // we get the inital indentation from already indented
-                    // <script> line
-                    start.setInitialIndentation(context.lineIndent(context.lineStartOffset(start.getContextRegion().getStartOffset()))
-                            + IndentUtils.indentLevelSize(getDocument()));
+                    if (start.getOriginalStart() <= 0) {
+                        // see #246093
+                        start.setInitialIndentation(0);
+                    } else {
+                        // for case like <script>\nfoo();\n</script>
+                        // we get the inital indentation from already indented
+                        // <script> line
+                        start.setInitialIndentation(context.lineIndent(context.lineStartOffset(start.getContextRegion().getStartOffset()))
+                                + IndentUtils.indentLevelSize(getDocument()));
+                    }
                 }
             } catch (BadLocationException ex) {
                 LOGGER.log(Level.INFO, null, ex);
