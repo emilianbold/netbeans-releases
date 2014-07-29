@@ -45,13 +45,17 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -62,6 +66,36 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
 
     @Override
     public boolean beforeCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+        if ('}' != ch) {
+            return false;
+        }
+
+        TokenSequence<JspTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, caretOffset, JspTokenId.language());
+        if (ts == null) {
+            return false;
+        }
+        ts.move(caretOffset);
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return false;
+        }
+        do {
+            Token<JspTokenId> token = ts.token();
+            if (token.id() == JspTokenId.EOL) {
+                break;
+            }
+
+            if (token.id() == JspTokenId.EL) {
+                String elText = CharSequenceUtilities.toString(token.text());
+                TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get((Document) doc);
+                int offset = token.offset(tokenHierarchy) + token.length();
+                if (elText.matches("(\\$\\{|\\#\\{).*") && offset > caretOffset) {  //NOI18N
+                    Caret caret = target.getCaret();
+                    caret.setDot(caretOffset + 1);
+                    return true;
+                }
+            }
+        } while (ts.movePrevious());
+
         return false;
     }
 
