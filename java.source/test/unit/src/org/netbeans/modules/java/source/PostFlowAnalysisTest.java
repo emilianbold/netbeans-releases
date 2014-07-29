@@ -82,9 +82,7 @@ public class PostFlowAnalysisTest extends NbTestCase {
     public void test225887sl17() throws Exception {
         performErrorsCorrectTest("package test; public class Test implements I { public void test() { I.super.test(); } } interface I { public default void test() { } }",
                                  "1.7",
-                                 //both there errors originate in the javac:
-                                 "109:compiler.err.default.methods.not.supported.in.source",
-                                 "69:compiler.err.not.encl.class");
+                                 "109:compiler.err.default.methods.not.supported.in.source");
     }
     
     private void performErrorsCorrectTest(String code, String sourceLevel, String... errors) throws Exception {

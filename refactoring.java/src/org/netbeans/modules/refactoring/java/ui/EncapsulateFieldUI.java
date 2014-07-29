@@ -44,12 +44,14 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.NestingKind;
@@ -62,6 +64,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -231,8 +234,15 @@ public final class EncapsulateFieldUI implements RefactoringUI, JavaRefactoringU
         }
 
         //editor selection
-
-        Element el = handles[0].resolveElement(info);
+        TreePath path = info.getTreeUtilities().pathFor(startOffset);
+        if(path == null) {
+            return null;
+        }
+        TreePath enclosingClass = JavaRefactoringUtils.findEnclosingClass(info, path, true, true, true, true, true);
+        if(enclosingClass == null) {
+            return null;
+        }
+        Element el = info.getTrees().getElement(enclosingClass);
         if (el == null) {
             return null;
         }
@@ -241,10 +251,11 @@ public final class EncapsulateFieldUI implements RefactoringUI, JavaRefactoringU
         }
         Collection<TreePathHandle> h = new ArrayList<TreePathHandle>();
         for (Element e : ElementFilter.fieldsIn(el.getEnclosedElements())) {
-            SourcePositions sourcePositions = info.getTrees().getSourcePositions();
+//            SourcePositions sourcePositions = info.getTrees().getSourcePositions();
             Tree leaf = info.getTrees().getPath(e).getLeaf();
-            long start = sourcePositions.getStartPosition(info.getCompilationUnit(), leaf);
-            long end = sourcePositions.getEndPosition(info.getCompilationUnit(), leaf);
+            int[] namespan = info.getTreeUtilities().findNameSpan((VariableTree) leaf);
+            long start = namespan[0]; //sourcePositions.getStartPosition(info.getCompilationUnit(), leaf);
+            long end = namespan[1]; //sourcePositions.getEndPosition(info.getCompilationUnit(), leaf);
             if ((start <= endOffset && start >= startOffset) ||
                     (end <= endOffset && end >= startOffset)){
                 h.add(TreePathHandle.create(e, info));

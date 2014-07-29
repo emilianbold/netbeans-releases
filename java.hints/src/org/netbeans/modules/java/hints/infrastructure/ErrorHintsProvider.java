@@ -157,7 +157,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
 
         Map<Class, Data> data = new HashMap<Class, Data>();
 
-        for (Diagnostic d : errors) {
+        OUTER: for (Diagnostic d : errors) {
             if (ConvertToDiamondBulkHint.CODES.contains(d.getCode())) {
                 if (isJava) continue; //handled separatelly in the hint
                 if (!ConvertToDiamondBulkHint.isHintEnabled()) continue; //disabled
@@ -196,12 +196,16 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                     OverrideErrorMessage rcm = (OverrideErrorMessage)r;
                     String msg = rcm.createMessage(info, d.getCode(), pos, path, ruleData);
                     if (msg != null) {
+                        if (msg.isEmpty()) {
+                            // ignore the error
+                            continue OUTER;
+                        }
                         desc = msg;
                         if (ruleData.getData() != null) {
                             data.put(rcm.getClass(), ruleData);
                         }
                         break;
-                    }
+                    } 
                 }
                 ehm = new CreatorBasedLazyFixList(info.getFileObject(), d.getCode(), pos, rules, data);
             } else {

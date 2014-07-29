@@ -1051,39 +1051,39 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     if (insideNew && (toAdd == null || toAdd.length() == 0)) {
                                         Completion.get().showCompletion();
                                     }
-                                    return;
-                                }
-                                StringBuilder sb = new StringBuilder();
-                                if (addSimpleName || enclName == null) {
-                                    sb.append(elem.getSimpleName());
-                                } else if (!"text/x-java".equals(controller.getSnapshot().getMimePath().getPath())) { //NOI18N
-                                    TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
-                                    sb.append(AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)));
                                 } else {
-                                    sb.append("${PAR#0"); //NOI18N
-                                    if ((type == null || type.getKind() != TypeKind.ERROR) &&
-                                            EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
-                                        sb.append(" type=\""); //NOI18N
-                                        sb.append(elem.getQualifiedName());
-                                        sb.append("\" default=\""); //NOI18N
+                                    StringBuilder sb = new StringBuilder();
+                                    if (addSimpleName || enclName == null) {
                                         sb.append(elem.getSimpleName());
+                                    } else if (!"text/x-java".equals(controller.getSnapshot().getMimePath().getPath())) { //NOI18N
+                                        TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
+                                        sb.append(AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)));
                                     } else {
-                                        sb.append(" default=\""); //NOI18N
-                                        sb.append(elem.getQualifiedName());
+                                        sb.append("${PAR#0"); //NOI18N
+                                        if ((type == null || type.getKind() != TypeKind.ERROR) &&
+                                                EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
+                                            sb.append(" type=\""); //NOI18N
+                                            sb.append(elem.getQualifiedName());
+                                            sb.append("\" default=\""); //NOI18N
+                                            sb.append(elem.getSimpleName());
+                                        } else {
+                                            sb.append(" default=\""); //NOI18N
+                                            sb.append(elem.getQualifiedName());
+                                        }
+                                        sb.append("\" editable=false}"); //NOI18N
                                     }
-                                    sb.append("\" editable=false}"); //NOI18N
+                                    template.insert(0, sb);
+                                    if (insideNew && dim == 0 && !partialMatch) {
+                                        template.append("${cursor completionInvoke}"); //NOI18N
+                                    }
+                                    if (tail != null) {
+                                        template.append(tail);
+                                    }
+                                    if (partialMatch) {
+                                        template.append(toAdd);
+                                    }
+                                    ClassItem.super.substituteText(c, offset, length, null, null);
                                 }
-                                template.insert(0, sb);
-                                if (insideNew && dim == 0 && !partialMatch) {
-                                    template.append("${cursor completionInvoke}"); //NOI18N
-                                }
-                                if (tail != null) {
-                                    template.append(tail);
-                                }
-                                if (partialMatch) {
-                                    template.append(toAdd);
-                                }
-                                ClassItem.super.substituteText(c, offset, length, null, null);
                                 if (autoImportEnclosingType && elem != null) {
                                     TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
                                     AutoImport.resolveImport(controller, tp, elem.getEnclosingElement().asType());

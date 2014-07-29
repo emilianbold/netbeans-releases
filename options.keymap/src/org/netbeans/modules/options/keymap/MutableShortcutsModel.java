@@ -55,21 +55,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.TextAction;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.api.ShortcutsFinder;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
-import static org.netbeans.modules.options.keymap.KeymapModel.getKeymapManagerInstances;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.Utilities;
+
+import static org.netbeans.modules.options.keymap.KeymapModel.getKeymapManagerInstances;
 
 /**
  * Wrapper around the {@link KeymapModel}. This wrapper uses human-readable keystroke names,
@@ -307,13 +310,18 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         }
         return set;
     }
-
+    
     private ShortcutAction findActionForShortcut (String shortcut, String category, boolean prefixSearch, Set<ShortcutAction> set, String completeMultikeySC) {
         //search in modified profiles first
         Map<ShortcutAction, Set<String>> map = modifiedProfiles.get(getCurrentProfile());
         if (map != null) {
             for (Map.Entry<ShortcutAction, Set<String>> entry : map.entrySet()) {
                 for (String sc : entry.getValue()) {
+                    ShortcutAction action = entry.getKey();
+                    // special hack for macros; the RunMacro action gets all macro shortcuts assinged
+                    if (isImpliedAction(action)) {
+                        continue;
+                    }
                     if (prefixSearch) {
                         if (sc.equals(shortcut) || (sc.startsWith(completeMultikeySC) && shortcut.equals(completeMultikeySC) && sc.contains(" "))) {
                             set.add(entry.getKey());
@@ -329,6 +337,10 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         while (it.hasNext ()) {
             Object o = it.next ();
             ShortcutAction action = (ShortcutAction) o;
+            // special hack for macros; the RunMacro action gets all macro shortcuts assinged
+            if (isImpliedAction(action)) {
+                continue;
+            }
             String[] shortcuts = getShortcuts (action);
             int i, k = shortcuts.length;
             for (i = 0; i < k; i++) {
