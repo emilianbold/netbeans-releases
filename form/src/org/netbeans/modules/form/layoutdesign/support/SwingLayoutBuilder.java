@@ -406,9 +406,17 @@ public class SwingLayoutBuilder {
         switch (size) {
             case LayoutConstants.NOT_EXPLICITLY_DEFINED: convertedSize = GroupLayout.DEFAULT_SIZE; break;
             case LayoutConstants.USE_PREFERRED_SIZE:
-                convertedSize = interval.isEmptySpace() ?
-                                convertSize(interval.getPreferredSize(), interval) :
-                                GroupLayout.PREFERRED_SIZE;
+                if (interval.isEmptySpace()) {
+                    int pref = interval.getPreferredSize();
+                    assert pref != LayoutConstants.USE_PREFERRED_SIZE;
+                    if (pref == LayoutConstants.USE_PREFERRED_SIZE) {
+                        convertedSize = GroupLayout.DEFAULT_SIZE; // bug 244115 - prevent StackOverflowError
+                    } else {
+                        convertedSize = convertSize(pref, interval);
+                    }
+                } else {
+                    convertedSize = GroupLayout.PREFERRED_SIZE;
+                }
                 break;
             default: convertedSize = (size >= 0) ? size : GroupLayout.DEFAULT_SIZE;
                      break;

@@ -922,20 +922,29 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
      * @param numMatches if numOfMatches < 0, calculate numOfMatches and position, else show numOfMatches.
      * @return 
      */
+    
+    public int lastCurrentPosStart = -1;
+    public int lastCurrentPosEnd = -1;
     public int showNumberOfMatches(EditorFindSupport findSupport, int numMatches) {
         if (findSupport == null) {
             findSupport = EditorFindSupport.getInstance();
         }
         int pos = 0;
-        if (numMatches < 0) {
-            int currentpos = getActualTextComponent().getSelectionStart();
+        int currentposStart = getActualTextComponent().getSelectionStart();
+        int currentposEnd = getActualTextComponent().getSelectionEnd();
+        if (numMatches < 0 || (lastCurrentPosStart == currentposStart && lastCurrentPosEnd == currentposEnd)) {
+            numMatches = -1;
+            boolean notFound = true;
             try {
                 int[] blocks = findSupport.getBlocks(new int[]{-1, -1}, getActualTextComponent().getDocument(), 0, getActualTextComponent().getDocument().getLength());
                 for (int i = 0; i < blocks.length; i++) {
                     if (blocks[i] > 0) {
                         numMatches++;
-                        if (blocks[i] < currentpos) {
+                        if (blocks[i] < currentposStart) {
                             pos++;
+                        }
+                        if (blocks[i] == currentposStart && i+1 < blocks.length && blocks[i+1] == currentposEnd) {
+                            notFound = false;
                         }
                     } else if (blocks[i] == 0 && i + 1 < blocks.length && blocks[i+1] > 0) {
                         numMatches++;
@@ -950,8 +959,12 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             if (pos > numMatches) {
                 pos = 0;
             }
-            
+            if (notFound) {
+                pos = 0;
+            }
         }
+        lastCurrentPosStart = currentposStart;
+        lastCurrentPosEnd = currentposEnd;
         if (incSearchTextField.getText().isEmpty()) {
             Mnemonics.setLocalizedText(matches, ""); //NOI18N
         } else if (numMatches == 0) {
