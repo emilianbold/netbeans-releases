@@ -58,6 +58,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -235,8 +236,9 @@ public class RestServicesImpl implements RestServices {
             
             helper.getAnnotationScanner().findAnnotations(annotationType, kinds,
                     new AnnotationHandler() {
+                @Override
                 public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
-                    if (type== null ) {
+                    if (type == null || type.getModifiers().contains(Modifier.ABSTRACT)) {
                         return;
                     }
                     Utils.checkForJsr311Bootstrap(type, project, helper);

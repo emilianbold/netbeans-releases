@@ -51,6 +51,8 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.CompilationController;
 
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
@@ -92,6 +94,18 @@ public class RestServiceDescriptionImpl extends PersistentObject implements Rest
                 addMethod(element);
             }
         }
+        
+        TypeMirror superclass = typeElement.getSuperclass();
+        if (superclass != null && !"java.lan.Object".equals(superclass.toString())) {
+            CompilationController controller = getHelper().getCompilationController();
+            TypeElement superClassEl = (TypeElement)controller.getTypes().asElement( superclass );
+            for (Element element : superClassEl.getEnclosedElements()) {
+                if (element!= null && element.getKind() == ElementKind.METHOD) {
+                    addMethod(element);
+                }
+            }
+        }
+
     }
     
     public String getName() {
@@ -159,37 +173,20 @@ public class RestServiceDescriptionImpl extends PersistentObject implements Rest
         methods = new HashMap<String, RestMethodDescriptionImpl>();
         
         // Refresh all the methods.
-        for (Element element : typeElement.getEnclosedElements()) {
-            if (element!= null && element.getKind() == ElementKind.METHOD) {
-                String methodName = element.getSimpleName().toString();
-                
-                RestMethodDescriptionImpl method = prevMethods.get(methodName);
-                
-                if (method != null) {
-                    Status status = method.refresh(element);
-                    
-                    switch (status) {
-                    case REMOVED:
-                        if (addMethod(element)) {
-                            isRest = true;
-                        }
-                        isModified = true;
-                        break;
-                    case MODIFIED:
-                        isRest = true;
-                        isModified = true;
-                        methods.put(methodName, method);
-                        break;
-                    case UNMODIFIED:
-                        isRest = true;
-                        methods.put(methodName, method);
-                        break;
-                    }
-                } else {
-                    if (addMethod(element)) {
-                        isRest = true;
-                        isModified = true;
-                    }
+        boolean modified = checkForHTTPMethods(prevMethods, typeElement);
+        if (modified) {
+            isModified = true;
+        }
+        
+        // check Superclass
+        TypeMirror superclass = typeElement.getSuperclass();
+        if (superclass != null && !"java.lang.Object".equals(superclass.toString())) {
+            CompilationController controller = getHelper().getCompilationController();
+            TypeElement superClassEl = (TypeElement)controller.getTypes().asElement( superclass );
+            if (superClassEl != null) {
+                modified = checkForHTTPMethods(prevMethods, superClassEl);
+                if (modified) {
+                    isModified = true;
                 }
             }
         }
@@ -208,6 +205,45 @@ public class RestServiceDescriptionImpl extends PersistentObject implements Rest
         }
         
         return Status.UNMODIFIED;
+    }
+    
+    private boolean checkForHTTPMethods(Map<String, RestMethodDescriptionImpl> prevMethods, TypeElement typeElement) {
+        boolean modified = false;
+        for (Element element : typeElement.getEnclosedElements()) {
+            if (element!= null && element.getKind() == ElementKind.METHOD) {
+                String methodName = element.getSimpleName().toString();
+                
+                RestMethodDescriptionImpl method = prevMethods.get(methodName);
+                
+                if (method != null) {
+                    Status status = method.refresh(element);
+                    
+                    switch (status) {
+                    case REMOVED:
+                        if (addMethod(element)) {
+                            isRest = true;
+                        }
+                        modified = true;
+                        break;
+                    case MODIFIED:
+                        isRest = true;
+                        modified = true;
+                        methods.put(methodName, method);
+                        break;
+                    case UNMODIFIED:
+                        isRest = true;
+                        methods.put(methodName, method);
+                        break;
+                    }
+                } else {
+                    if (addMethod(element)) {
+                        isRest = true;
+                        modified = true;
+                    }
+                }
+            }
+        }
+        return modified;
     }
     
     @Override
