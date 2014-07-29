@@ -49,6 +49,7 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -129,6 +130,29 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     
     private static final int PLEASE_WAIT_TIMEOUT = 750;
     private static final int PRESCAN = 25;
+    
+    static final CompletionDocumentation PLEASE_WAIT_DOC = new CompletionDocumentation() {
+
+        @Override
+        public String getText() {
+            return PLEASE_WAIT;
+        }
+
+        @Override
+        public URL getURL() {
+            return null;
+        }
+
+        @Override
+        public CompletionDocumentation resolveLink(String link) {
+            return null;
+        }
+
+        @Override
+        public Action getGotoSourceAction() {
+            return null;
+        }
+    };
     
     public static CompletionImpl get() {
         if (singleton == null)
@@ -1189,6 +1213,8 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         }
 
         if (documentationResultSets.size() > 0) {
+            if (layout.isDocumentationVisible())
+                layout.showDocumentation(PLEASE_WAIT_DOC, -1);
             queryResultSets(documentationResultSets);
             newDocumentationResult.queryInvoked();
         } else {
