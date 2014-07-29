@@ -571,4 +571,10 @@ public class PhpTypedBreakInterceptorTest extends PhpTypinghooksTestBase {
         insertBreak(original, expected);
     }
 
+    public void testIssue246078() throws Exception {
+        String original = "<?php\n\"$foo\"^";
+        String expected = "<?php\n\"$foo\"\n        ^";
+        insertBreak(original, expected);
+    }
+
 }
