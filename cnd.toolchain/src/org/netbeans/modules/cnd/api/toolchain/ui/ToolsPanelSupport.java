@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManagerImpl;
 import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
@@ -288,12 +289,19 @@ public class ToolsPanelSupport {
      *
      * @param env  execution environment
      * @param csName  name of toolchain to remove
-     * @return task to wait for completion
+     * @return task to wait for completion. Can be NULL!
      */
     public static RequestProcessor.Task removeCompilerSet(final ExecutionEnvironment env, final String csName) {
         final CompilerSetManagerImpl csm = (CompilerSetManagerImpl) cacheManager.getCompilerSetManagerCopy(env, true);
-        return RP.post(
-                new CompilerSetAction(csm, csm.getCompilerSet(csName), CompilerSetActionType.REMOVE));
+        if (csm != null) {
+            final CompilerSet cs = csm.getCompilerSet(csName);
+            if (cs != null) {
+                return RP.post(
+                        new CompilerSetAction(csm, cs, CompilerSetActionType.REMOVE));
+            }
+        }
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ToolsPanelSupport.class, "ErrorCompilerSetNotFound"));
+        return null;
     }
 
     /**
@@ -350,16 +358,18 @@ public class ToolsPanelSupport {
 
         @Override
         public void run() {
-            switch (action) {
-                case ADD:
-                    compilerSetManager.add(compilerSet);
-                    break;
-                case REMOVE:
-                    compilerSetManager.remove(compilerSetManager.getCompilerSet(compilerSet.getName()));
-                    break;
-                case SET_DEFAULT:
-                    compilerSetManager.setDefault(compilerSetManager.getCompilerSet(compilerSet.getName()));
-                    break;
+            if (compilerSet != null && compilerSetManager != null) {
+                switch (action) {
+                    case ADD:
+                        compilerSetManager.add(compilerSet);
+                        break;
+                    case REMOVE:
+                        compilerSetManager.remove(compilerSetManager.getCompilerSet(compilerSet.getName()));
+                        break;
+                    case SET_DEFAULT:
+                        compilerSetManager.setDefault(compilerSetManager.getCompilerSet(compilerSet.getName()));
+                        break;
+                }
             }
             cacheManager.applyChanges(null);
         }
