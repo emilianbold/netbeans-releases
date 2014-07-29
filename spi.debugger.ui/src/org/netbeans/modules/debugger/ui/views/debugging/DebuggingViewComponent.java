@@ -127,7 +127,7 @@ import org.openide.windows.WindowManager;
  */
 public class DebuggingViewComponent extends TopComponent implements org.openide.util.HelpCtx.Provider,
        ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener, TreeModelListener,
-       AdjustmentListener, ChangeListener, MouseWheelListener, TreeSelectionListener,
+       AdjustmentListener, ChangeListener, MouseWheelListener,
        ViewLifecycle.ModelUpdateListener {
 
     /** unique ID of <code>TopComponent</code> (singleton) */
@@ -663,7 +663,6 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
             TreeModel model = treeView.getTree().getModel();
             model.addTreeModelListener(this);
             treeView.getViewport().addChangeListener(this);
-            treeView.getTree().addTreeSelectionListener(this);
             mainPanel.add(treeView, BorderLayout.CENTER);
         }
     }
@@ -678,7 +677,6 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
             TreeModel model = treeView.getTree().getModel();
             model.removeTreeModelListener(this);
             treeView.getViewport().removeChangeListener(this);
-            treeView.getTree().removeTreeSelectionListener(this);
             treeView.resetSelection();
             mainPanel.remove(treeView);
             treeView = null;
@@ -871,26 +869,6 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
         if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
             int totalScrollAmount = e.getUnitsToScroll() * scrollBar.getUnitIncrement();
             scrollBar.setValue(scrollBar.getValue() + totalScrollAmount);
-        }
-    }
-
-    // **************************************************************************
-    // implementation of TreeSelectionListener
-    // **************************************************************************
-    
-    @Override
-    public void valueChanged(TreeSelectionEvent e) {
-        TreePath path = e.getNewLeadSelectionPath();
-        DebugTreeView tView = getTreeView();
-        if (path != null && tView != null) {
-            JTree tree = tView.getTree();
-            int row = tree.getRowForPath(path);
-            Rectangle rect = tree.getRowBounds(row);
-            if (rect == null) {
-                return ;
-            }
-            JViewport viewport = mainScrollPane.getViewport();
-            ((JComponent)viewport.getView()).scrollRectToVisible(rect);
         }
     }
 
