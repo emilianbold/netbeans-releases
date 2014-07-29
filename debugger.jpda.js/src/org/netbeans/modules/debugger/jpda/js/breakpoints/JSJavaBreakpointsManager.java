@@ -241,7 +241,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                 if (scriptType != null) {
                     // script class method breakpoint so that we know when the script class is actually accessed
                     // we can load the source object only after the script class is initialized
-                    MethodBreakpoint scriptMethodBP = MethodBreakpoint.create(scriptType.getName(), "");
+                    MethodBreakpoint scriptMethodBP = MethodBreakpoint.create(scriptType.getName(), "*getMap");
                     scriptMethodBP.setHidden(true);
                     scriptMethodBP.setSuspend(EventRequest.SUSPEND_EVENT_THREAD);
                     scriptMethodBP.setSession(debugger);
