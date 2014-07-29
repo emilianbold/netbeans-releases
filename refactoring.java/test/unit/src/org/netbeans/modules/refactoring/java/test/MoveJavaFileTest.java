@@ -58,6 +58,16 @@ public class MoveJavaFileTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test241586() throws Exception {
+        writeFilesAndWaitForScan(test,
+                                 new File("t/package-info.java", "package t;"),
+                                 new File("u/B.java", "package u; public class B { public class C { } }"));
+        performMoveClass(Lookups.singleton(test.getFileObject("t/package-info.java")), new URL(test.getURL(), "u/"));
+        verifyContent(test,
+                      new File("u/package-info.java", "package u;"),
+                      new File("u/B.java", "package u; public class B { public class C { } }"));
+    }
+    
     public void test206440() throws Exception { // #206440 - [71cat] ClassCastException: com.sun.tools.javac.code.Symbol$ClassSymbol cannot be cast to javax.lang.model.element.PackageElement
         writeFilesAndWaitForScan(test,
                                  new File("t/package-info.java", "package t;"),

@@ -81,6 +81,10 @@ public class TestBase extends NbTestCase {
     private int workDirPart = 0;
     
     protected void prepareTest(String fileName, String code) throws Exception {
+        prepareTest(fileName, code, null);
+    }
+    
+    protected void prepareTest(String fileName, String code, String sourceLevel) throws Exception {
         FileObject workFO = FileUtil.createFolder(new File(getWorkDir(), String.valueOf(workDirPart++)));
 
         assertNotNull(workFO);
@@ -92,6 +96,8 @@ public class TestBase extends NbTestCase {
         FileObject cache = workFO.createFolder("cache");
 
         FileObject data = FileUtil.createData(sourceRoot, fileName);
+        SourceUtilsTestUtil.setSourceLevel(data, sourceLevel);
+        
         File dataFile = FileUtil.toFile(data);
 
         assertNotNull(dataFile);

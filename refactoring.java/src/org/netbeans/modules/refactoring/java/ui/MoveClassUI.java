@@ -262,7 +262,9 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
             PasteType paste = RefactoringActionsProvider.getPaste(lookup);
             FileObject tar = RefactoringActionsProvider.getTarget(lookup);
 
-            if (files != null && (files.length > 1 || (files.length == 1 && files[0].isFolder()))) {
+            if (files != null && (files.length > 1 ||
+                    (files.length == 1 && files[0].isFolder()) ||
+                    (files.length == 1 && "package-info".equals(files[0].getName())))) {
                 Set<FileObject> s = new HashSet<FileObject>();
                 s.addAll(Arrays.asList(files));
                 return new MoveClassesUI(s, tar, paste);

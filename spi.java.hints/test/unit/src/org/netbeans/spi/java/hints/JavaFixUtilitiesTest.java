@@ -64,6 +64,7 @@ import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompilerUtilities;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.LifecycleManager;
@@ -1127,7 +1128,7 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "            return l.compareTo(r);\n" +
                            "        });\n" +
                            "    }\n" +
-		           "}\n");
+		           "}\n", "1.8");
     }
 
     public void testMemberRef2Null() throws Exception {
@@ -1145,7 +1146,7 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "    public void main(List<String> list) {\n" +
                            "        Collections.sort(list, (String l, String r) -> l.compareTo(r));\n" +
                            "    }\n" +
-		           "}\n");
+		           "}\n", "1.8");
     }
 
     public void testComments232298() throws Exception {
@@ -1175,7 +1176,11 @@ public class JavaFixUtilitiesTest extends TestBase {
     }
     
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
-	prepareTest("test/Test.java", code);
+        performRewriteTest(code, rule, golden, null);
+    }
+    
+    public void performRewriteTest(String code, String rule, String golden, String sourceLevel) throws Exception {
+	prepareTest("test/Test.java", code, sourceLevel);
 
         final String[] split = rule.split("=>");
         assertEquals(2, split.length);
@@ -1225,5 +1230,9 @@ public class JavaFixUtilitiesTest extends TestBase {
 	fix.implement();
 
         assertEquals(golden, doc.getText(0, doc.getLength()));
+    }
+ 
+    static {
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
 }
