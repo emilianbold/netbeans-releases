@@ -1158,19 +1158,14 @@ public class NbModuleSuite {
                             throw new IOException("cannot handle signed JARs");
                         }
                         jos.putNextEntry(entry);
-                        byte[] buf = new byte[(int) entry.getSize()];
-                        int read = 0;
-                        while (read < buf.length) {
-                            int more = jis.read(buf, read, buf.length - read);
+                        byte[] buf = new byte[4092];
+                        for (;;) {
+                            int more = jis.read(buf, 0, buf.length);
                             if (more == -1) {
                                 break;
                             }
-                            read += more;
+                            jos.write(buf, 0, more);
                         }
-                        if (read != buf.length) {
-                            throw new IOException("read wrong amount");
-                        }
-                        jos.write(buf);
                     }
                     jis.close();
                     jos.close();
