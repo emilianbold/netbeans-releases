@@ -399,14 +399,10 @@ public final class GitModuleConfig {
                 connSettings = entry.toConnectionSettings();
                 if (connSettings.isPrivateKeyAuth()) {
                     char[] passphrase = KeyringSupport.read(GURI_PASSPHRASE, connSettings.getUri().toString());
-                    if (passphrase != null) {
-                        connSettings.setPassphrase(passphrase);
-                    }
+                    connSettings.setPassphrase(passphrase == null ? new char[0] : passphrase);
                 } else {
                     char[] password = KeyringSupport.read(GURI_PASSWORD, connSettings.getUri().toString());
-                    if(password != null) {
-                        connSettings.setPassword(password);
-                    }
+                    connSettings.setPassword(password == null ? new char[0] : password);
                 }
             }
             ret.add(connSettings);
@@ -443,14 +439,10 @@ public final class GitModuleConfig {
             if (uriString.equals(entry.guriString) && (username == null || storedSettings.getUser() == null || username.equals(storedSettings.getUser()))) {
                 if (storedSettings.isPrivateKeyAuth()) {
                     char[] passphrase = KeyringSupport.read(GURI_PASSPHRASE, storedSettings.getUri().toString());
-                    if (passphrase != null) {
-                        storedSettings.setPassphrase(passphrase);
-                    }
+                    storedSettings.setPassphrase(passphrase == null ? new char[0] : passphrase);
                 } else {
                     char[] password = KeyringSupport.read(GURI_PASSWORD, storedSettings.getUri().toString());
-                    if(password != null) {
-                        storedSettings.setPassword(password);
-                    }
+                    storedSettings.setPassword(password == null ? new char[0] : password);
                 }
                 retval = storedSettings;
                 break;
