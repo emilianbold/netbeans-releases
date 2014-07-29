@@ -47,8 +47,12 @@ package org.netbeans.modules.project.ui.actions;
 import java.awt.EventQueue;
 import java.awt.FileDialog;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.JFileChooser;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -163,9 +167,27 @@ public class OpenProject extends BasicAction {
                             Project projectsArray[] = new Project[ projects.size() ];
                             projects.toArray( projectsArray );
 
-                            final Project projectToExpand = projectsArray.length >= 1 ? projectsArray[0] : null;
-
                             OpenProjectListSettings opls = OpenProjectListSettings.getInstance();
+                            //236680 - wait until project is opened
+                            OpenProjectList.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+
+                                @Override
+                                public void propertyChange(PropertyChangeEvent evt) {
+                                    if(evt.getPropertyName().equals(OpenProjectList.PROPERTY_OPEN_PROJECTS)) {
+                                        List<Project> oldProjectList = new ArrayList<Project>(Arrays.asList((Project [])evt.getOldValue()));
+                                        List<Project> newProjectList = new ArrayList<Project>(Arrays.asList((Project [])evt.getNewValue()));
+                                        newProjectList.removeAll(oldProjectList);
+                                        final Project projectToExpand = newProjectList.size() > 0 ? newProjectList.get(0):null;
+                                        if(projectToExpand != null) {
+                                            ProjectTab.RP.post(new Runnable() {
+                                                @Override public void run() {
+                                                        ProjectUtilities.selectAndExpandProject(projectToExpand);
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            });
                             OpenProjectList.getDefault().open( 
                                 projectsArray,                    // Put the project into OpenProjectList
                                 opls.isOpenSubprojects(),         // And optionaly open subprojects
@@ -178,13 +200,6 @@ public class OpenProject extends BasicAction {
                                         ProjectUtilities.makeProjectTabVisible();
                                     }
                             });
-                            ProjectTab.RP.post(new Runnable() {
-                                @Override public void run() {
-                                    if (projectToExpand != null) {
-                                        ProjectUtilities.selectAndExpandProject(projectToExpand);
-                                    }
-                                }
-                            }, 500);
                         }
                     }
                 });

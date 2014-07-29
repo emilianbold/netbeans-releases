@@ -115,6 +115,7 @@ public class OpenFilesNoCloneableEditorWithOpenedEditorTest extends OpenFilesNoC
         filePackage = "org.netbeans.test.performance";
         fileName = "JFrame20kB.java";
         fileName_preopen = "Main.java";
+        expectedTime = 2000;
         doMeasurement();
     }
 

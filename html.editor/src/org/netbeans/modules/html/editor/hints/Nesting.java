@@ -126,24 +126,26 @@ public class Nesting extends PatternRule {
             //so we need to try to find out the original case by a little heuristic
             int embeddedStart = context.getSnapshot().getEmbeddedOffset(e.getStartPosition());
             int embeddedEnd = context.getSnapshot().getEmbeddedOffset(e.getEndPosition());
-            CharSequence errorCode = context.getSnapshot().getText().subSequence(embeddedStart, embeddedEnd);
-            //the error contains the whole element including the delimiters and attributes
-            //example: <myDirective myAttr='value'>
-            int expectedElementNameEnd = 1 + unknownElement.length();
-            if(errorCode.length() > expectedElementNameEnd) {
-                CharSequence elementName = errorCode.subSequence(1, expectedElementNameEnd);
-                if(LexerUtils.equals(unknownElement, elementName, true, false)) {
-                    unknownElement = elementName.toString(); //get the correct case from the document
+            if(embeddedEnd != -1 && embeddedEnd != -1) {
+                CharSequence errorCode = context.getSnapshot().getText().subSequence(embeddedStart, embeddedEnd);
+                //the error contains the whole element including the delimiters and attributes
+                //example: <myDirective myAttr='value'>
+                int expectedElementNameEnd = 1 + unknownElement.length();
+                if(errorCode.length() > expectedElementNameEnd) {
+                    CharSequence elementName = errorCode.subSequence(1, expectedElementNameEnd);
+                    if(LexerUtils.equals(unknownElement, elementName, true, false)) {
+                        unknownElement = elementName.toString(); //get the correct case from the document
+                    }
                 }
-            }
-            
-            Map<String, Object> meta = new HashMap<>();
-            meta.put(HintFixProvider.UNKNOWN_ELEMENT_FOUND, unknownElement);
-            meta.put(HintFixProvider.UNKNOWN_ELEMENT_CONTEXT, contextElement);
-            
-            HintFixProvider.Context ctx = new HintFixProvider.Context(context.getSnapshot(), context.getHtmlParserResult(), meta);
-            for (HintFixProvider provider : Lookup.getDefault().lookupAll(HintFixProvider.class)) {
-                fixes.addAll(provider.getHintFixes(ctx));
+
+                Map<String, Object> meta = new HashMap<>();
+                meta.put(HintFixProvider.UNKNOWN_ELEMENT_FOUND, unknownElement);
+                meta.put(HintFixProvider.UNKNOWN_ELEMENT_CONTEXT, contextElement);
+
+                HintFixProvider.Context ctx = new HintFixProvider.Context(context.getSnapshot(), context.getHtmlParserResult(), meta);
+                for (HintFixProvider provider : Lookup.getDefault().lookupAll(HintFixProvider.class)) {
+                    fixes.addAll(provider.getHintFixes(ctx));
+                }
             }
         }
         return fixes;
