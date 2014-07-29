@@ -60,6 +60,7 @@ import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
@@ -104,6 +105,7 @@ public final class JavaIndex {
     }
 
     public static File getIndex(URL url) throws IOException {
+        url = CachingArchiveProvider.getDefault().mapCtSymToJar(url);
         FileObject indexBaseFolder = CacheFolder.getDataFolder(url);
         String path = SPIAccessor.getInstance().getIndexerPath(NAME, VERSION);
         FileObject indexFolder = FileUtil.createFolder(indexBaseFolder, path);

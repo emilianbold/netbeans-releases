@@ -279,8 +279,8 @@ public class ModelUnit implements PropertyChangeListener, FileChangeListener {
         // listen to any change on compilation classpath:
         compilePath.addPropertyChangeListener(WeakListeners.propertyChange(ModelUnit.this, compilePath));
 
-        // The time-consuming listener registration is moved to a background thread since it's capable of blocing
-        // project's actions also on non-JSF project which is pain. It can miss initial configuration changes.
+        // The time-consuming listener registration is moved to a background thread since it can block project's
+        // actions also in case of non-JSF project which is pain. It can miss initial JSF configuration changes.
         RP.submit(new Runnable() {
             @Override
             public void run() {
