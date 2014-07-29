@@ -504,14 +504,21 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
             if (TypingHooksUtils.isStringToken(token) && !isMultiline(token)) {
                 concat = offset != tokenOffsetOnCaret || (id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE && token.length() != 1);
                 if (token.length() == 1) {
-                    if (ts.moveNext()) {
-                        if (TypingHooksUtils.isStringToken(ts.token())) {
-                            concat = false;
-                        } else {
-                            concat = true;
+                    int original = ts.offset();
+                    while (ts.moveNext()) {
+                        Token<? extends PHPTokenId> followingToken = ts.token();
+                        if (followingToken == null) {
+                            break;
                         }
-                        ts.movePrevious();
+                        PHPTokenId followingTokenId = followingToken.id();
+                        if (followingTokenId == PHPTokenId.WHITESPACE) {
+                            continue;
+                        }
+                        concat = !TypingHooksUtils.isStringToken(followingToken) && followingTokenId != PHPTokenId.PHP_CLOSETAG;
+                        break;
                     }
+                    ts.move(original);
+                    ts.moveNext();
                 }
             }
         }
