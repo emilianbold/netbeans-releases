@@ -102,7 +102,6 @@ public class RequireJsHtmlExtension extends HtmlExtension {
 
     @Override
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
-        Element element = context.getCurrentNode();
         String attributeName = context.getAttributeName();
         if (attributeName.equals(DATAMAIN)) {
             FileObject fileObject = context.getResult().getSnapshot().getSource().getFileObject();
