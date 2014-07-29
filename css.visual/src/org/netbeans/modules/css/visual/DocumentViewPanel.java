@@ -284,21 +284,24 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      * Select rule in rule editor upon user action in the document view.
      */
     private void selectRuleInRuleEditor(final RuleHandle handle) {
-        RuleEditorController rec = cssStylesLookup.lookup(RuleEditorController.class);
-        final AtomicReference<Rule> matched_rule_ref = new AtomicReference<>();
+        RP.post(new Runnable() { 
+            @Override
+            public void run() {
+                RuleEditorController rec = cssStylesLookup.lookup(RuleEditorController.class);
+                final AtomicReference<Rule> matched_rule_ref = new AtomicReference<>();
 
-        FileObject file = handle.getFile();
-        Source source = Source.create(file);
-        try {
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css"); //NOI18N
-                    if (ri != null) {
-                        final CssParserResult result = (CssParserResult) ri.getParserResult();
-                        final Model model = Model.getModel(result);
-                        Rule rule = handle.getRule(model);
-                        matched_rule_ref.set(rule);
+                FileObject file = handle.getFile();
+                Source source = Source.create(file);
+                try {
+                    ParserManager.parse(Collections.singleton(source), new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css"); //NOI18N
+                            if (ri != null) {
+                                final CssParserResult result = (CssParserResult) ri.getParserResult();
+                                final Model model = Model.getModel(result);
+                                Rule rule = handle.getRule(model);
+                                matched_rule_ref.set(rule);
 //                        model.runReadTask(new Model.ModelTask() {
 //                            @Override
 //                            public void run(StyleSheet styleSheet) {
@@ -307,18 +310,21 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
 //                                matched_rule_ref.set(match);
 //                            }
 //                        });
-                    }
+                            }
+                        }
+                    });
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            });
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
 
-        Rule match = matched_rule_ref.get();
-        if (match != null) {
-            rec.setModel(match.getModel());
-            rec.setRule(match);
-        }
+                Rule match = matched_rule_ref.get();
+                if (match != null) {
+                    rec.setModel(match.getModel());
+                    rec.setRule(match);
+                }
+            }
+        });
+
     }
 
     @Override

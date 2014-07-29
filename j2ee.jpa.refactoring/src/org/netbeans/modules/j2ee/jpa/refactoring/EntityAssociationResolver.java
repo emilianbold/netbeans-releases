@@ -229,6 +229,10 @@ public class EntityAssociationResolver {
                 info.toPhase(JavaSource.Phase.RESOLVED);
                 Element refactoringTargetProperty = refactoringSource.resolveElement(info);
                 
+                if(refactoringTargetProperty == null || refactoringTargetProperty.getEnclosingElement()==null) {
+                    return;
+                }
+                
                 String sourceClass = refactoringTargetProperty.getEnclosingElement().asType().toString();
                 String propertyName = refactoringTargetProperty.getSimpleName().toString();
                 String targetClass = refactoringTargetProperty.asType().toString();

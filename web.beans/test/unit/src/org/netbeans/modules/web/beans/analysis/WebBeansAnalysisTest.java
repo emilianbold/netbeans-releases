@@ -2103,7 +2103,7 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
                 "@Target({TYPE, METHOD}) "+
                 "public @interface IBinding1  {} ");
         
-        FileObject errorFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/IBinding2.java",
+        FileObject goodFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/IBinding2.java",
                 "package foo; " +
                 "import static java.lang.annotation.ElementType.METHOD; "+
                 "import static java.lang.annotation.ElementType.TYPE; "+
@@ -2146,7 +2146,7 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
                 "@Target({TYPE}) "+
                 " @TypeBinding "+
                 "public @interface IBinding4  {} ");
-        
+
         ResultProcessor processor = new ResultProcessor (){
             @Override
             public void process( TestProblems result ) {
@@ -2156,14 +2156,7 @@ public class WebBeansAnalysisTest extends BaseAnalisysTestCase {
         };
         runAnalysis(errorFile1 , processor);
         
-        processor = new ResultProcessor (){
-            @Override
-            public void process( TestProblems result ) {
-                checkTypeElement(result, "foo.IBinding2");
-            }
-                        
-        };
-        runAnalysis(errorFile2 , processor);
+        runAnalysis(goodFile2 , NO_ERRORS_PROCESSOR);
         
         processor = new ResultProcessor (){
             @Override

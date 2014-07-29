@@ -78,7 +78,7 @@ public class MeasureJ2SEMenusTest {
                 .addTest(ProjectsViewSubMenusTest.class)
                 .addTest(RuntimeViewPopupMenuTest.class)
                 .addTest(SourceEditorPopupMenuTest.class)
-                .addTest(ToolsMenuTest.class)
+                .addTest(ToolsMenuTest.class, "testJavaToolsMenu", "testXmlToolsMenu", "testTxtToolsMenu")
                 .suite());
         return suite;
     }

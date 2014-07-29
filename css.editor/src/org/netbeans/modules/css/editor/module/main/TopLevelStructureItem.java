@@ -153,11 +153,11 @@ public abstract class TopLevelStructureItem implements StructureItem {
 
     public static class Rules extends ChildrenListStructureItem {
 
-        public FeatureContext context;
+        private final Snapshot snapshot;
 
         public Rules(List<StructureItem> children, FeatureContext context) {
             super(children);
-            this.context = context;
+            this.snapshot = context.getSnapshot();
         }
 
         @Override
@@ -175,8 +175,7 @@ public abstract class TopLevelStructureItem implements StructureItem {
 
         @Override
         public long getEndPosition() {
-            Snapshot s = context.getSnapshot();
-            return s.getOriginalOffset(s.getText().length());
+            return snapshot.getOriginalOffset(snapshot.getText().length());
         }
     }
 

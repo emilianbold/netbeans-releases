@@ -40,12 +40,34 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.callgraph.api.ui;
+package org.netbeans.modules.javascript2.requirejs.html;
+
+import javax.swing.ImageIcon;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
+import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
+import org.netbeans.modules.javascript2.requirejs.editor.EditorUtils;
 
 /**
  *
- * @author mtishkov
+ * @author Petr Pisl
  */
-public interface Catalog {
-    String getMessage(String key, Object ... parameters);
+public class RequireJsAttributeCompletionItem extends HtmlCompletionItem.Attribute {
+    
+    private final CustomAttribute attribute;
+    
+    public RequireJsAttributeCompletionItem(CustomAttribute ca, int offset) {
+        super(ca.getName(), offset, ca.isRequired(), ca.getHelp());
+        attribute = ca;
+    }
+    
+    @Override
+    protected ImageIcon getIcon() {
+        return EditorUtils.getRequireJsIcon();
+    }
+    
+    @Override
+    public boolean hasHelp() {
+        return attribute.getHelp() != null;
+    }
+    
 }

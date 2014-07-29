@@ -82,6 +82,9 @@ import org.openide.explorer.propertysheet.*;
  */
 abstract class SheetCell extends AbstractCellEditor implements TableModelListener, PropertyChangeListener, TableCellEditor, TableCellRenderer {
 
+    // Tooltips larger than this are screwed up.
+    private static final int MAX_TOOLTIP_LENGTH = 1000;
+    
     /* Determines how to paint renderer */
     private Boolean flat;
 
@@ -308,7 +311,11 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
                     }
                 }
                 if (toolT != null && toolT.trim ().length () > 0) {
-                    propPanel.setToolTipText (toolT.trim ());
+                    toolT = toolT.trim();
+                    if (toolT.length() > MAX_TOOLTIP_LENGTH) {
+                        toolT = toolT.substring(0, MAX_TOOLTIP_LENGTH) + "...";
+                    }
+                    propPanel.setToolTipText (toolT);
                 } else {
                     propPanel.setToolTipText (null);
                 }
