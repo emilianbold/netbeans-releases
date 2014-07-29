@@ -142,6 +142,9 @@ public class PluginTask extends Task {
                 BufferedReader r = new BufferedReader(new StringReader(plugins));
                 String line;
                 while((line=r.readLine()) != null) {
+                    if (line.startsWith("No plugins added")) {
+                        break;
+                    }
                     currentPlugins.add(new CordovaPlugin(line.substring(0, line.indexOf(" ")), ""));
                 }
             } catch (IOException ex) {
