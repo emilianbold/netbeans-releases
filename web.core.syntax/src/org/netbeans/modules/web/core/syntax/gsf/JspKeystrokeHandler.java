@@ -81,21 +81,21 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
         ts.move(caretOffset);
         boolean found = false;
         while (ts.movePrevious()) {
-            if (ts.token().id() == JspTokenId.SYMBOL && (ts.token().text().toString().equals("<") ||
-                    ts.token().text().toString().equals("</"))) {
+            if (ts.token().id() == JspTokenId.SYMBOL && (ts.token().text().toString().equals("<")
+                    || ts.token().text().toString().equals("</"))) {
                 found = true;
                 break;
             }
             if (ts.token().id() == JspTokenId.SYMBOL && ts.token().text().toString().equals(">")) {
                 break;
             }
-            if (ts.token().id() != JspTokenId.ATTRIBUTE &&
-                    ts.token().id() != JspTokenId.ATTR_VALUE &&
-                    ts.token().id() != JspTokenId.TAG &&
-                    ts.token().id() != JspTokenId.ENDTAG &&
-                    ts.token().id() != JspTokenId.SYMBOL &&
-                    ts.token().id() != JspTokenId.EOL &&
-                    ts.token().id() != JspTokenId.WHITESPACE) {
+            if (ts.token().id() != JspTokenId.ATTRIBUTE
+                    && ts.token().id() != JspTokenId.ATTR_VALUE
+                    && ts.token().id() != JspTokenId.TAG
+                    && ts.token().id() != JspTokenId.ENDTAG
+                    && ts.token().id() != JspTokenId.SYMBOL
+                    && ts.token().id() != JspTokenId.EOL
+                    && ts.token().id() != JspTokenId.WHITESPACE) {
                 break;
             }
         }
@@ -151,8 +151,8 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
         ts.move(caretOffset);
         String closingTagName = null;
         int end = -1;
-        if (ts.moveNext() && ts.token().id() == JspTokenId.SYMBOL &&
-                ts.token().text().toString().equals("</")) {
+        if (ts.moveNext() && ts.token().id() == JspTokenId.SYMBOL
+                && ts.token().text().toString().equals("</")) {
             if (ts.moveNext() && ts.token().id() == JspTokenId.ENDTAG) {
                 closingTagName = ts.token().text().toString();
                 end = ts.offset() + ts.token().text().length();
@@ -164,8 +164,8 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
             return -1;
         }
         boolean foundOpening = false;
-        if (ts.token().id() == JspTokenId.SYMBOL &&
-                ts.token().text().toString().equals(">")) {
+        if (ts.token().id() == JspTokenId.SYMBOL
+                && ts.token().text().toString().equals(">")) {
             while (ts.movePrevious()) {
                 if (ts.token().id() == JspTokenId.TAG) {
                     if (ts.token().text().toString().equals(closingTagName)) {
@@ -200,5 +200,5 @@ public class JspKeystrokeHandler implements KeystrokeHandler {
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
         return -1;
     }
-    
+
 }
