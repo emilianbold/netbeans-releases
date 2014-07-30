@@ -99,7 +99,7 @@ public class QtResourceCreateFromTemplateHandler extends CreateFromTemplateHandl
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
+            // don't report CancellationException
         }
         // It is a xml files
         final Charset encoding = Charset.forName("UTF-8"); // NOI18N

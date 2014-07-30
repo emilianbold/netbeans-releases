@@ -85,6 +85,10 @@ public class MeasureWarmUp extends MeasureStartupTimeTestCase {
         for (int i = 1; i <= repeat; i++) {
             runIDEandMeasureWarmUp(getMeasureFile(i), getUserdirFile(i), 5000);
         }
+        PerformanceData[] pData = this.getPerformanceData();
+        for (PerformanceData pData1 : pData) {
+            org.netbeans.modules.performance.utilities.CommonUtilities.processUnitTestsResults(this.getClass().getName(), System.getProperty("suitename"), pData1);
+        }
     }
 
     /**
@@ -107,7 +111,7 @@ public class MeasureWarmUp extends MeasureStartupTimeTestCase {
             String name = entry.getKey();
             Long value = entry.getValue();
             System.out.println(name + "=" + value);
-            // reportPerformance(name,value,"ms",1);
+            reportPerformance(name, value, "ms", 1);
         }
     }
 

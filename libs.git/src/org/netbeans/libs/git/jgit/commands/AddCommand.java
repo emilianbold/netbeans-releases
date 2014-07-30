@@ -125,11 +125,11 @@ public class AddCommand extends GitCommand {
                 String lastAddedFile = null;
                 WorkingTreeOptions opt = repository.getConfig().get(WorkingTreeOptions.KEY);
                 boolean autocrlf = opt.getAutoCRLF() != CoreConfig.AutoCRLF.FALSE;
-                boolean checkExecutable = Utils.checkExecutable(repository);
                 while (treeWalk.next() && !monitor.isCanceled()) {
                     String path = treeWalk.getPathString();
                     WorkingTreeIterator f = treeWalk.getTree(1, WorkingTreeIterator.class);
-                    if (f != null && (treeWalk.getTree(0, DirCacheIterator.class) == null && f.isEntryIgnored())) {
+                    DirCacheIterator dcit = treeWalk.getTree(0, DirCacheIterator.class);
+                    if (f != null && (dcit == null && f.isEntryIgnored())) {
                         // file is not in index but is ignored, do nothing
                     } else if (!(path.equals(lastAddedFile))) {
                         if (f != null) { // the file exists
@@ -145,7 +145,7 @@ public class AddCommand extends GitCommand {
                                 Logger.getLogger(AddCommand.class.getName()).log(Level.FINE, null, ex);
                             }
                             if (Utils.isFromNested(fm)) {
-                                entry.setFileMode(FileMode.fromBits(fm));
+                                entry.setFileMode(f.getIndexFileMode(dcit));
                                 entry.setLength(sz);
                                 entry.setObjectId(f.getEntryObjectId());
                             } else if (p != null && Files.isSymbolicLink(p)) {
@@ -161,10 +161,12 @@ public class AddCommand extends GitCommand {
                                 treeWalk.enterSubtree();
                                 continue;
                             } else {
-                                if (!checkExecutable) {
-                                    fm = fm & ~0111;
+                                FileMode indexFileMode = f.getIndexFileMode(dcit);
+                                if (dcit == null && indexFileMode == FileMode.EXECUTABLE_FILE && !opt.isFileMode()) {
+                                    // new files should not set exec flag if filemode is set to false
+                                    indexFileMode = FileMode.REGULAR_FILE;
                                 }
-                                entry.setFileMode(FileMode.fromBits(fm));
+                                entry.setFileMode(indexFileMode);
                                 InputStream in = f.openEntryStream();
                                 try {
                                     if (autocrlf) {

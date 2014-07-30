@@ -48,9 +48,11 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -97,6 +99,42 @@ public class ETableTest extends NbTestCase {
         t.sortingPermutation = null; // because that is what we do after calling toggleSortedColumn
         assertEquals("Sort reorder (3) not ok", 3, t.convertRowIndexToModel(0));
         assertEquals("Sort reorder (4) not ok", 4, t.convertRowIndexToModel(5));
+    }
+    
+    /**
+     * Test that table can be sorted just after a column has been removed. See
+     * bug 239045.
+     */
+    public void testRemoveSortedColumn() {
+        ETable t = new ETable();
+        final int[] size = new int[]{10, 4};
+        TableModel tm = new AbstractTableModel() {
+
+            @Override
+            public int getRowCount() {
+                return size[0];
+            }
+            
+            @Override
+            public int getColumnCount() {
+                return size[1];
+            }
+            
+            @Override
+            public Object getValueAt(int rowIndex, int columnIndex) {
+                if (rowIndex < size[0] && columnIndex < size[1]) {
+                    return rowIndex;
+                } else {
+                    throw new IndexOutOfBoundsException();
+                }
+            }
+        };
+        t.setModel(tm);
+        ETableColumnModel etcm = (ETableColumnModel) t.getColumnModel();
+        ETableColumn etc = (ETableColumn) etcm.getColumn(3);
+        etcm.toggleSortedColumn(etc, true);
+        size[1] = 3;
+        t.sortAndFilter();
     }
     
     public void testFirePropertyChangeForQuickFilter() {

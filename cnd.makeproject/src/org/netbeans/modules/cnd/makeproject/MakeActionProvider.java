@@ -865,7 +865,7 @@ public final class MakeActionProvider implements ActionProvider {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (CancellationException ex) {
-                Exceptions.printStackTrace(ex);
+                // don't report cancellation exception
             }
 
             if (buildCommand == null) {

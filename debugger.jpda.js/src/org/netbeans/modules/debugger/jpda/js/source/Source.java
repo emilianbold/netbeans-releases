@@ -175,6 +175,11 @@ public final class Source {
                 return null;
             }
         }
+        return getSource(debugger, classType, sourceVar);
+    }
+    
+    public static Source getSource(JPDADebugger debugger, JPDAClassType classType, ObjectVariable sourceVar) {
+        long uniqueClassID = classType.classObject().getUniqueID();
         Field fieldName = sourceVar.getField(SOURCE_VAR_NAME);
         Field fieldContent = sourceVar.getField(SOURCE_VAR_CONTENT);
         Field fieldHash = sourceVar.getField(SOURCE_VAR_HASH);

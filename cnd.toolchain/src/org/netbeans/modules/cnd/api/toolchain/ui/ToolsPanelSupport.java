@@ -60,8 +60,10 @@ import org.netbeans.modules.cnd.toolchain.ui.options.AddCompilerSetPanel;
 import org.netbeans.modules.cnd.toolchain.ui.options.HostToolsPanelModel;
 import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManagerImpl;
 import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
@@ -288,12 +290,19 @@ public class ToolsPanelSupport {
      *
      * @param env  execution environment
      * @param csName  name of toolchain to remove
-     * @return task to wait for completion
+     * @return task to wait for completion. Can be NULL!
      */
     public static RequestProcessor.Task removeCompilerSet(final ExecutionEnvironment env, final String csName) {
         final CompilerSetManagerImpl csm = (CompilerSetManagerImpl) cacheManager.getCompilerSetManagerCopy(env, true);
-        return RP.post(
-                new CompilerSetAction(csm, csm.getCompilerSet(csName), CompilerSetActionType.REMOVE));
+        if (csm != null) {
+            final CompilerSet cs = csm.getCompilerSet(csName);
+            if (cs != null) {
+                return RP.post(
+                        new CompilerSetAction(csm, cs, CompilerSetActionType.REMOVE));
+            }
+        }
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ToolsPanelSupport.class, "ErrorCompilerSetNotFound"));
+        return null;
     }
 
     /**
@@ -308,12 +317,13 @@ public class ToolsPanelSupport {
      * @param env  execution environment
      * @return task to wait for completion
      */
-    public static RequestProcessor.Task restoreCompilerSets(final ExecutionEnvironment env) {
+    public static void restoreCompilerSets(final ExecutionEnvironment env) {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 CompilerSetManagerImpl oldCsm = (CompilerSetManagerImpl) CompilerSetManager.get(env);
                 cacheManager.restoreCompilerSets(oldCsm);
+                cacheManager.applyChanges(null);
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -325,8 +335,6 @@ public class ToolsPanelSupport {
         } else {
             runnable.run();
         }
-        return RP.post(
-                new CompilerSetAction(null, null, CompilerSetActionType.NONE));
     }
 
     private static enum CompilerSetActionType {
@@ -343,6 +351,8 @@ public class ToolsPanelSupport {
         private final CompilerSetActionType action;
 
         public CompilerSetAction(CompilerSetManagerImpl compilerSetManager, CompilerSet compilerSet, CompilerSetActionType action) {
+            CndUtils.assertNotNull(compilerSetManager, "null compilerSetManager"); //NOI18N
+            CndUtils.assertNotNull(compilerSet, "null compilerSet"); //NOI18N
             this.compilerSetManager = compilerSetManager;
             this.compilerSet = compilerSet;
             this.action = action;
@@ -350,6 +360,9 @@ public class ToolsPanelSupport {
 
         @Override
         public void run() {
+            if (compilerSet == null || compilerSetManager == null) {
+                return;
+            }
             switch (action) {
                 case ADD:
                     compilerSetManager.add(compilerSet);

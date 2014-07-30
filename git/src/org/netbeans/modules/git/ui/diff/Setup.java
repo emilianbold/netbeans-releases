@@ -191,10 +191,12 @@ public final class Setup extends AbstractDiffSetup {
         firstRevision = rev1.getCommitId();
         secondRevision = rev2.getCommitId();
         StringBuilder sb = new StringBuilder(rev1.toString(true));
+        File firstSourceBaseFile = baseFile;
         if (fileInfo != null && fileInfo.getOldPath() != null) {
             sb.append(" (").append(fileInfo.getOldPath()).append(")");
+            firstSourceBaseFile = fileInfo.getOldFile();
         }
-        firstSource = new DiffStreamSource(fileInfo.getOldFile() == null ? baseFile : fileInfo.getOldFile(), baseFile, firstRevision, sb.toString());
+        firstSource = new DiffStreamSource(firstSourceBaseFile, baseFile, firstRevision, sb.toString());
         secondSource = new DiffStreamSource(baseFile, baseFile, secondRevision, rev2.toString(true));
     }
 

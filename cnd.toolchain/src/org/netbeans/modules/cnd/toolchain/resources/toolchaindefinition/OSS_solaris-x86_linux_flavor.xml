@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <toolchain name="OSS" display="Oracle Solaris Studio" family="SunStudio" aliases="SunStudio,OracleSolarisStudio"/>
     <platforms stringvalue="sun_intel,linux"/>
     <default_locations>
-        <platform os="linux" directory="/opt/oracle/solarisstudio/bin"/>
-        <platform os="sun_intel" directory="/opt/solarisstudio/bin"/>
+        <platform os="linux" directory="/opt/oracle/solarisstudiodev/bin"/>
+        <platform os="sun_intel" directory="/opt/solarisstudiodev/bin"/>
     </default_locations>
 </toolchaindefinition>

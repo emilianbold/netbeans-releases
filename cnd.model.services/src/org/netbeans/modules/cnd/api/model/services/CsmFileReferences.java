@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
 import org.netbeans.modules.cnd.support.Interrupter;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.Lookup;
 
 /**
@@ -303,12 +304,7 @@ public abstract class CsmFileReferences {
            txt = ref.getText();
        }
        if (txt != null && txt.length() > 0) {
-           String strTxt = txt.toString();
-           if (strTxt.equals("__func__")) { // NOI18N
-               return true;
-           } else if (strTxt.startsWith("__builtin_")) { // NOI18N
-               return true;
-           }
+           return CharSequenceUtils.startsWith(txt, "__"); //NOI18N
        }
        return false;
    }

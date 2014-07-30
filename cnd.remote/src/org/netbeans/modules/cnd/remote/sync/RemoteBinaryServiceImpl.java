@@ -276,7 +276,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
                     throw new IOException("Cannot run #"+command); // NOI18N
                 }
             } catch (CancellationException ex) {
-                Exceptions.printStackTrace(ex); // TODO:CancellationException error processing
+                // TODO:CancellationException error processing
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

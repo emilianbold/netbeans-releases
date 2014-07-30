@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,52 +34,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.uihandler;
+package org.netbeans.modules.debugger.ui.views.debugging;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import org.openide.util.Lookup;
+import java.awt.Container;
+import java.awt.Rectangle;
+import javax.swing.CellRendererPane;
+import javax.swing.JComponent;
+import javax.swing.JViewport;
 
 /**
- *
- * @author Jaroslav Tulach
+ * Delegate scrolling from this viewport to the parent viewport.
+ * 
+ * @author Martin
  */
-@org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=java.util.logging.Handler.class), @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.uihandler.EarlyHandler.class)})
-public final class EarlyHandler extends Handler {
-    
-    final Queue<LogRecord> earlyRecords = new ArrayDeque<>();
-    private volatile boolean isOn = true;
-    
-    public EarlyHandler() {
-        setLevel(Level.ALL);
-    }
-    
-    public static void disable() {
-        EarlyHandler eh = Lookup.getDefault().lookup(EarlyHandler.class);
-        eh.setLevel(Level.OFF);
-        eh.isOn = false;
-    }
+public class DelegateViewport extends JViewport {
 
     @Override
-    public void publish(LogRecord record) {
-        if (isOn && record.getLoggerName() != null) {
-            synchronized (earlyRecords) {
-                earlyRecords.add(record);
-            }
+    public void scrollRectToVisible(Rectangle contentRect) {
+        Container parent;
+        int dx = getX(), dy = getY();
+
+        for (parent = getParent();
+                 !(parent == null) &&
+                 !(parent instanceof JComponent) &&
+                 !(parent instanceof CellRendererPane);
+             parent = parent.getParent()) {
+             Rectangle bounds = parent.getBounds();
+
+             dx += bounds.x;
+             dy += bounds.y;
         }
-    }
-    
-    @Override
-    public void flush() {
-    }
 
-    @Override
-    public void close() throws SecurityException {
+        if (!(parent == null) && !(parent instanceof CellRendererPane)) {
+            contentRect.x += dx;
+            contentRect.y += dy;
+
+            ((JComponent) parent).scrollRectToVisible(contentRect);
+            contentRect.x -= dx;
+            contentRect.y -= dy;
+        }
+        
     }
     
 }

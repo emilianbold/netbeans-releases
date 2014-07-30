@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -73,6 +74,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
@@ -94,10 +96,10 @@ import org.openide.util.RequestProcessor;
     private int uploadCount;
     private long uploadSize;
     private volatile Thread thread;
-    private boolean cancelled;
+    private volatile boolean cancelled;
     private ProgressHandle progressHandle;
 
-    private final RequestProcessor RP = new RequestProcessor("FtpSyncWorker", 2); // NOI18N
+    private final RequestProcessor RP = new RequestProcessor("FtpSyncWorker", 3); // NOI18N
 
     private static final boolean HARD_CODED_FILTER = Boolean.valueOf(System.getProperty("cnd.remote.hardcoded.filter", "true")); //NOI18N
     
@@ -121,8 +123,11 @@ import org.openide.util.RequestProcessor;
         return sb;
     }
 
-    private boolean needsCopying(File file) {
-
+    private boolean needsCopying(FileCollector.FileCollectorInfo collectorInfo) {
+        final File file = collectorInfo.file;
+        if (!file.exists()) {
+            return false;
+        }
         if (HARD_CODED_FILTER) {
             // Filter out configurations.xml, timestamps, etc
             // Auto-copy would never request these; but FTP will copy, unless filtered out
@@ -144,12 +149,12 @@ import org.openide.util.RequestProcessor;
             }
         }
 
-        FileData.FileInfo info = fileData.getFileInfo(file);
-        FileState state = (info == null) ? FileState.INITIAL : info.state;
+        FileData.FileStateInfo stateInfo = fileData.getFileInfo(file);
+        FileState state = (stateInfo == null) ? FileState.INITIAL : stateInfo.state;
         switch (state) {
             case INITIAL:       return true;
             case TOUCHED:       return true;
-            case COPIED:        return info.timestamp != file.lastModified();
+            case COPIED:        return stateInfo.timestamp != file.lastModified();
             case ERROR:         return true;
             case UNCONTROLLED:  return false;
             default:
@@ -172,6 +177,9 @@ import org.openide.util.RequestProcessor;
 
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_GatherFiles"));
         fileCollector.gatherFiles();
+        if (cancelled) {
+            return;
+        }
 
         progressHandle.switchToDeterminate(fileCollector.getFiles().size());
 
@@ -179,14 +187,33 @@ import org.openide.util.RequestProcessor;
 
         time2 = System.currentTimeMillis();
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckDirs"));
+        progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckDirs"));
         createDirs();
         RemoteLogger.fine("Creating directories at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
-        
+        if (cancelled) {
+            return;
+        }
+
+        if (CndUtils.getBoolean("cnd.remote.sftp.check.existence", true)) {
+            time2 = System.currentTimeMillis();
+            out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckExistence"));
+            progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckExistence"));
+            checkExistence();
+            RemoteLogger.fine("Checking file existence at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
+            if (cancelled) {
+                return;
+            }
+        }
+
         time2 = System.currentTimeMillis();
+        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckLinks"));
         progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckLinks"));
         createLinks();
         RemoteLogger.fine("Creating links at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
-        
+        if (cancelled) {
+            return;
+        }
+
         if (!fileCollector.initNewFilesDiscovery()) {
             throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_NewFilesDiscovery"));
         }
@@ -195,14 +222,16 @@ import org.openide.util.RequestProcessor;
         if (CndUtils.getBoolean("cnd.remote.zip", true)) {
             try {
                 uploadPlainFilesInZip(remoteRoot);
+                RemoteLogger.fine("Uploading and extracting zip to {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
             } catch (ZipIOException ex) {
+                time2 = System.currentTimeMillis();
                 err.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_TryingToRecoverViaPlainFiles"));
                 uploadPlainFiles();
+                RemoteLogger.fine("Uploading plain files to {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
             }
         } else {
             uploadPlainFiles();
         }
-        RemoteLogger.fine("Uploading plain files to {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
 
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Done"));
         out.println();
@@ -219,11 +248,18 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-    private interface XArgsFeeder {
+    private interface Feeder {
         public void feed(BufferedWriter requestWriter) throws IOException;
     }
-    
-    private void xargs(final XArgsFeeder feeder, String command, String... args) throws IOException {
+
+    private interface LineProcessor {
+        void processLine(String line);
+    }
+
+    private void launchAndFeed(final Feeder feeder, 
+            final LineProcessor outProcessor, final LineProcessor errProcessor,
+            String command, String... args) throws IOException {
+
         if (cancelled) {
             return;
         }
@@ -255,12 +291,15 @@ import org.openide.util.RequestProcessor;
 
         RP.post(new Runnable() {
             private final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-
             @Override
             public void run() {
                 try {
                     for (String errLine = errorReader.readLine(); errLine != null; errLine = errorReader.readLine()) {
-                        err.println(errLine); // local println is OK  
+                        if (errProcessor != null) {
+                            errProcessor.processLine(errLine);
+                        } else {
+                            err.println(errLine); // local println is OK
+                        }
                     }
                 } catch (IOException ex) {
                     problem.set(ex);
@@ -273,10 +312,30 @@ import org.openide.util.RequestProcessor;
                 }
             }
         });
-        // output supposed to be empty, but in case it's wrong we must read it
-        for (String line : ProcessUtils.readProcessOutput(process)) {
-            out.println(line); // local println is OK 
-        }
+
+        RP.post(new Runnable() {
+            private final BufferedReader outputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            @Override
+            public void run() {
+                try {
+                    for (String errLine = outputReader.readLine(); errLine != null; errLine = outputReader.readLine()) {
+                        if (outProcessor != null) {
+                            outProcessor.processLine(errLine);
+                        } else {
+                            out.println(errLine); // local println is OK
+                        }
+                    }
+                } catch (IOException ex) {
+                    problem.set(ex);
+                } finally {
+                    try {
+                        outputReader.close();
+                    } catch (IOException ex) {
+                        problem.set(ex);
+                    }
+                }
+            }
+        });
 
         if (problem.get() != null) {
             throw problem.get();
@@ -284,7 +343,7 @@ import org.openide.util.RequestProcessor;
         try {
             int rc = process.waitFor();
             if (rc != 0) {
-                throw new IOException();
+                throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_NonzeroRC", command, rc));
             }
         } catch (InterruptedException ex) {
             throw new InterruptedIOException();
@@ -292,9 +351,8 @@ import org.openide.util.RequestProcessor;
     }
     
     private void createDirs() throws IOException {
-        progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckDirs"));
         final List<String> dirsToCreate = new LinkedList<>();
-        for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
+        for (FileCollector.FileCollectorInfo fileInfo : fileCollector.getFiles()) {
             if (fileInfo.file.isDirectory() && ! fileInfo.isLink()) {
                 String remoteDir = mapper.getRemotePath(fileInfo.file.getAbsolutePath(), true);
                 CndUtils.assertNotNull(remoteDir, "null remote file for " + fileInfo.file.getAbsolutePath()); //NOI18N
@@ -307,7 +365,7 @@ import org.openide.util.RequestProcessor;
             return;
         }
         if (!dirsToCreate.isEmpty()) {
-            XArgsFeeder feeder = new XArgsFeeder() {
+            Feeder feeder = new Feeder() {
                 @Override
                 public void feed(BufferedWriter requestWriter) throws IOException {
                     for (String dir : dirsToCreate) {
@@ -319,7 +377,7 @@ import org.openide.util.RequestProcessor;
                 }
             };
             try {
-                xargs(feeder, "xargs", "mkdir", "-p"); // NOI18N
+                launchAndFeed(feeder, null, null, "xargs", "mkdir", "-p"); // NOI18N
             } catch (InterruptedIOException ex) {
                 throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_Canceled"));
             } catch (IOException ex) {
@@ -331,15 +389,90 @@ import org.openide.util.RequestProcessor;
         }
     }
 
+    private void checkExistence() throws IOException {
+        if (cancelled) {
+            return;
+        }
+
+        boolean needToCheck = false;
+        // fast check
+        for (FileCollector.FileCollectorInfo collectorInfo : fileCollector.getFiles()) {
+            if (!collectorInfo.isLink() && collectorInfo.file.isFile() && collectorInfo.file.exists()) {
+                FileData.FileStateInfo stateInfo = fileData.getFileInfo(collectorInfo.file);
+                if (stateInfo != null && stateInfo.state == FileState.COPIED) {
+                    needToCheck = true;
+                    break;
+                }
+            }
+        }
+        if (!needToCheck) {
+            return;
+        }
+        Feeder feeder = new Feeder() {
+            private boolean mapErrorReported = false;
+            @Override
+            public void feed(BufferedWriter requestWriter) throws IOException {
+                for (FileCollector.FileCollectorInfo collectorInfo : fileCollector.getFiles()) {
+                    if (!collectorInfo.isLink() && collectorInfo.file.isFile() && collectorInfo.file.exists()) {
+                        FileData.FileStateInfo stateInfo = fileData.getFileInfo(collectorInfo.file);
+                        if (stateInfo != null && stateInfo.state == FileState.COPIED) {
+                            String localPath = collectorInfo.file.getAbsolutePath();
+                            String remotePath = mapper.getRemotePath(localPath, false);
+                            if (remotePath != null) {
+                                String line = "if [ ! -f \"" + remotePath + "\" ]; then echo \"" + remotePath + "\"; fi\n"; // NOI18N
+                                requestWriter.append(line);
+                                //NB: no flush! flush here
+                            } else {
+                                if (remotePath != null) {
+
+                                } else { // this never happens since mapper is fixed, but however:
+                                    if (!mapErrorReported && CndUtils.isDebugMode()) {
+                                        mapErrorReported = true;
+                                        CndUtils.assertNotNull(remotePath, "null remote file for " + collectorInfo.file.getAbsolutePath()); //NOI18N
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        LineProcessor outProcessor = new LineProcessor() {
+            private boolean mapErrorReported = false;
+            @Override
+            public void processLine(String line) {
+                String localPath = mapper.getLocalPath(line, false);
+                if (localPath != null) {
+                    fileData.setState(new File(localPath), FileState.INITIAL);
+                } else {
+                    if (!mapErrorReported && CndUtils.isDebugMode()) { // should never be the case
+                        mapErrorReported = true;
+                        CndUtils.assertNotNull(localPath, "null local file for " + line); //NOI18N
+                    }
+                }
+                //fileData.setState(new File, ERROR);
+            }
+        };
+
+        try {
+            launchAndFeed(feeder, outProcessor, null, "sh", "-s"); // NOI18N
+        } catch (InterruptedIOException ex) {
+            throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_Canceled"));
+        } catch (IOException ex) {
+            // no enough reasons to stop the build
+            err.println(NbBundle.getMessage(FtpSyncWorker.class,"FTP_Msg_Err_CheckExistence", ex.getLocalizedMessage()));
+        }
+    }
+
     private void createLinks() throws IOException {
         if (cancelled) {
             return;
         }
-        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckLinks"));
-        XArgsFeeder feeder = new XArgsFeeder() {
+        Feeder feeder = new Feeder() {
             @Override
             public void feed(BufferedWriter requestWriter) throws IOException {
-                for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
+                for (FileCollector.FileCollectorInfo fileInfo : fileCollector.getFiles()) {
                     if (cancelled) {
                         throw new InterruptedIOException();
                     }
@@ -361,7 +494,7 @@ import org.openide.util.RequestProcessor;
             }
         };
         try {
-            xargs(feeder, "sh", "-s"); // NOI18N
+            launchAndFeed(feeder, null, null, "sh", "-s"); // NOI18N
         } catch (InterruptedIOException ex) {
             throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_Canceled"));
         } catch (IOException ex) {
@@ -372,15 +505,14 @@ import org.openide.util.RequestProcessor;
 
     private void uploadPlainFiles() throws InterruptedException, ExecutionException, IOException {
 
-        List<FileCollector.FileInfo> toCopy = new ArrayList<>();
+        List<FileCollector.FileCollectorInfo> toCopy = new ArrayList<>();
 
-        for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
+        for (FileCollector.FileCollectorInfo fileInfo : fileCollector.getFiles()) {
             if (cancelled) {
                 throw new InterruptedException();
             }
             if (!fileInfo.isLink() && !fileInfo.file.isDirectory()) {
-                File srcFile = fileInfo.file;
-                if (srcFile.exists() && needsCopying(srcFile)) {
+                if (needsCopying(fileInfo)) {
                     toCopy.add(fileInfo);
                 }
             }
@@ -392,13 +524,13 @@ import org.openide.util.RequestProcessor;
         }
 
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesPlain", toCopy.size()));
-        for (FileCollector.FileInfo fileInfo : toCopy) {
+        for (FileCollector.FileCollectorInfo fileInfo : toCopy) {
             if (cancelled) {
                 return;
             }
-            if (!fileInfo.isLink() && !fileInfo.file.isDirectory()) {
-                File srcFile = fileInfo.file;
-                if (srcFile.exists() && needsCopying(srcFile)) {
+            if (!fileInfo.isLink() && !fileInfo.file.isDirectory()) {                
+                if (needsCopying(fileInfo)) {
+                    File srcFile = fileInfo.file;
                     progressHandle.progress(srcFile.getAbsolutePath());
                     String remotePath = mapper.getRemotePath(srcFile.getAbsolutePath(), false);
                     Future<UploadStatus> fileTask = CommonTasksSupport.uploadFile(srcFile.getAbsolutePath(),
@@ -432,15 +564,14 @@ import org.openide.util.RequestProcessor;
     
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_UploadFilesInZip"));
         
-        List<FileCollector.FileInfo> toCopy = new ArrayList<>();
+        List<FileCollector.FileCollectorInfo> toCopy = new ArrayList<>();
         
-        for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
+        for (FileCollector.FileCollectorInfo fileInfo : fileCollector.getFiles()) {
             if (cancelled) {
                 throw new InterruptedException();
             }
             if (!fileInfo.isLink() && !fileInfo.file.isDirectory()) {
-                File srcFile = fileInfo.file;
-                if (srcFile.exists() && needsCopying(srcFile)) {
+                if (needsCopying(fileInfo)) {
                     toCopy.add(fileInfo);
                 }
             }
@@ -465,7 +596,7 @@ import org.openide.util.RequestProcessor;
                 RemoteLogger.fine("SFTP/ZIP: Zipping {0} to {1}...", getLocalFilesString(), zipFile);
                 long zipTime = System.currentTimeMillis();
                 int progress = 0;
-                for (FileCollector.FileInfo fileInfo : toCopy) {
+                for (FileCollector.FileCollectorInfo fileInfo : toCopy) {
                     if (cancelled) {
                         throw new InterruptedException();
                     }
@@ -520,6 +651,7 @@ import org.openide.util.RequestProcessor;
             {
                 long unzipTime = System.currentTimeMillis();
                 NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+                pb.getEnvironment().put("TZ", TimeZone.getDefault().getID()); //NOI18N
                 pb.setExecutable("unzip"); // NOI18N
                 pb.setArguments("-oqq", remoteFile); // NOI18N
                 pb.setWorkingDirectory(remoteRoot);
@@ -555,7 +687,7 @@ import org.openide.util.RequestProcessor;
                     throw new ZipIOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Err_Unzip",
                             remoteFile, executionEnvironment, rc)); // NOI18N
                 }
-                for (FileCollector.FileInfo fileInfo : toCopy) {
+                for (FileCollector.FileCollectorInfo fileInfo : toCopy) {
                     fileData.setState(fileInfo.file, FileState.COPIED);
                 }
             }

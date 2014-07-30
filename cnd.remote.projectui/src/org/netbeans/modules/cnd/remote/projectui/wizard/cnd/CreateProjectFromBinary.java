@@ -148,7 +148,7 @@ public class CreateProjectFromBinary implements PropertyChangeListener {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (CancellationException ex) {
-                Exceptions.printStackTrace(ex);
+                // don't report CancellationException
             }
             if (java != null) {
                 if (libraries == null) {
