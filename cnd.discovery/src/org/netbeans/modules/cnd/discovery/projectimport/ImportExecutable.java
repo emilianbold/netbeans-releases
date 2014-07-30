@@ -359,9 +359,9 @@ public class ImportExecutable implements PropertyChangeListener {
                         }
 
                     }
-                    switchModel(model, true, lastSelectedProject);
                     String main = open ? "main": null;  // NOI18N
                     onProjectParsingFinished(main, lastSelectedProject);
+                    switchModel(model, true, lastSelectedProject);
                 } catch (Throwable ex) {
                     Exceptions.printStackTrace(ex);
                 }

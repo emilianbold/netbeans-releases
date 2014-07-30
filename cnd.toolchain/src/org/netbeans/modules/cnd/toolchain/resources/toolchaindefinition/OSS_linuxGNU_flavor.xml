@@ -47,6 +47,6 @@ made subject to such option by the copyright holder.
     <toolchain name="OSS_linuxCompatGNU" display="Oracle Solaris Studio in GNU compatibility mode" family="SunStudio"/>
     <platforms stringvalue="linux"/>
     <default_locations>
-        <platform os="linux" directory="/opt/oracle/solarisstudio/bin"/>
+        <platform os="linux" directory="/opt/oracle/solarisstudiodev/bin"/>
     </default_locations>
 </toolchaindefinition>

@@ -91,7 +91,7 @@ public final class PtyAllocator {
         try {
             hostInfo = HostInfoUtils.getHostInfo(env);
         } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex); // TODO:CancellationException error processing
+            // TODO:CancellationException error processing
         }
 
         if (hostInfo == null) {
