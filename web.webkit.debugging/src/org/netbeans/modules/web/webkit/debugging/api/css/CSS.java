@@ -153,8 +153,12 @@ public class CSS {
             StyleSheetHeader header = getStyleSheetHeader(styleSheetId);
             if (result == null) {
                 // CSS.getStyleSheet has been removed from the CSS domain
-                String styleSheetText = getStyleSheetText(styleSheetId);
-                body = new StyleSheetBody(header, styleSheetText);
+                if (header == null) { // Issue 246143
+                    body = null;
+                } else {
+                    String styleSheetText = getStyleSheetText(styleSheetId);
+                    body = new StyleSheetBody(header, styleSheetText);
+                }
             } else {
                 JSONObject sheetInfo = (JSONObject) result.get("styleSheet"); // NOI18N
                 body = new StyleSheetBody(header, sheetInfo);
