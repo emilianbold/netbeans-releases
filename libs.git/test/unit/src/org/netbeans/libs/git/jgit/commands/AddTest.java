@@ -287,6 +287,36 @@ public class AddTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, f, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_ADDED, false);
     }
     
+    public void testAddKeepExecutableInIndex () throws Exception {
+        if (isWindows()) {
+            // no reason to test on windows
+            return;
+        }
+        File f = new File(workDir, "f");
+        write(f, "hi, i am executable");
+        f.setExecutable(true);
+        File[] roots = { f };
+        GitClient client = getClient(workDir);
+        add(roots);
+        Map<File, GitStatus> statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, f, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false);
+        
+        StoredConfig config = repository.getConfig();
+        config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, false);
+        config.save();
+        // add should not overwrite executable bit in index
+        f.setExecutable(false);
+        add(roots);
+        statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, f, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false);
+        
+        // index should differ from wt
+        config.setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_FILEMODE, true);
+        config.save();
+        statuses = client.getStatus(roots, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, f, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_ADDED, false);
+    }
+    
     public void testUpdateIndexIgnoreExecutable () throws Exception {
         if (isWindows()) {
             // no reason to test on windows

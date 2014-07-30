@@ -258,12 +258,17 @@ public class BreakpointsTreeModel implements TreeModel {
             if (m == null) return;
             if (! (evt.getSource () instanceof Breakpoint))
                 return;
-            if (evt.getPropertyName () == Breakpoint.PROP_GROUP_NAME) {
+            String propertyName = evt.getPropertyName();
+            if (propertyName == Breakpoint.PROP_GROUP_NAME) {
+                m.fireTreeChanged ();
+            } else if (propertyName == DebuggerManager.PROP_CURRENT_SESSION) {
+                // TODO: if all properties would be refreshed, this should be sufficient:
+                // m.fireTreeChanged(new ModelEvent.NodeChanged(m, evt.getSource()));
                 m.fireTreeChanged ();
             } else {
                 m.fireTreeChanged (new ModelEvent.NodeChanged(
                         m, evt.getSource ()));
-                if (evt.getPropertyName () == Breakpoint.PROP_ENABLED) {
+                if (propertyName == Breakpoint.PROP_ENABLED) {
                     Breakpoint bp = (Breakpoint) evt.getSource ();
                     String groupName = bp.getGroupName();
                     if (groupName != null) {

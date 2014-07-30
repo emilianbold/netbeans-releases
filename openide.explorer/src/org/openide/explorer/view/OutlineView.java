@@ -887,10 +887,16 @@ public class OutlineView extends JScrollPane {
                     outline.getSelectionModel().addSelectionInterval(i, i);
                     if (firstSelection == -1) {
                         firstSelection = i;
+                        // Select the rows in the tree column
+                        int treeColumn = outline.convertColumnIndexToView(0);
+                        outline.getColumnModel().getSelectionModel().setSelectionInterval(treeColumn, treeColumn);
                     }
                 }
             }
         }
+//        System.err.println("\nOutlineView.synchronizeSelectedNodes("+java.util.Arrays.toString(arr)+"): "+
+//                           "columnModel = "+outline.getColumnModel()+", column selection model = "+outline.getColumnModel().getSelectionModel()+
+//                           ", column lead selection index = "+outline.getColumnModel().getSelectionModel().getLeadSelectionIndex()+"\n");
         if (scroll && (firstSelection >= 0)) {
             JViewport v = getViewport();
             if (v != null) {
