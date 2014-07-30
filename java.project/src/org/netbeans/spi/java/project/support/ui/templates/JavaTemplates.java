@@ -44,6 +44,7 @@
 
 package org.netbeans.spi.java.project.support.ui.templates;
 
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.project.JavaTargetChooserPanel;
 import org.netbeans.modules.java.project.NewJavaFileWizardIterator;
@@ -130,10 +131,33 @@ public class JavaTemplates {
     }
 
     /**
-     * Icon for Java templates.
+     * Icon for Java Class templates.
      * @see #createJavaTemplateIterator
      * @since 1.40
      */
-    public static final /* XXX #7116293 @StaticResource */ String JAVA_ICON = "org/netbeans/spi/java/project/support/ui/templates/class.png";
-    
+    @StaticResource
+    public static final String JAVA_ICON = "org/netbeans/spi/java/project/support/ui/templates/class.png";
+    /**
+     * Icon for Java Enum templates.
+     * @see #createJavaTemplateIterator
+     * @since 1.60
+     */
+    @StaticResource
+    public static final String ENUM_ICON = "org/netbeans/spi/java/project/support/ui/templates/enum.png";
+
+    /**
+     * Icon for Java Interface templates.
+     * @see #createJavaTemplateIterator
+     * @since 1.60
+     */
+    @StaticResource
+    public static final String INTERFACE_ICON = "org/netbeans/spi/java/project/support/ui/templates/interface.png";
+
+    /**
+     * Icon for Java Annotation Type templates.
+     * @see #createJavaTemplateIterator
+     * @since 1.60
+     */
+    @StaticResource
+    public static final String ANNOTATION_TYPE_ICON = "org/netbeans/spi/java/project/support/ui/templates/annotation.png";
 }
