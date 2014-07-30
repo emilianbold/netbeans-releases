@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.source.parsing;
 
+import com.sun.tools.javac.model.LazyTreeLoader;
 import java.io.*;
 import java.net.URL;
 import java.nio.channels.CompletionHandler;
@@ -59,6 +60,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.JavaIndexerWorker;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.openide.filesystems.FileSystem;
@@ -181,6 +183,14 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
      */
     public static FileManagerTransaction nullWrite() {
         return new Null();
+    }
+
+    /**
+     * Writes allowed only to {@link LazyTreeLoader}.
+     * @return the new {@link FileManagerTransaction}
+     */
+    public static FileManagerTransaction treeLoaderOnly() {
+        return new TreeLoaderOnly();
     }
 
     public static Future<Void> runConcurrent(@NonNull final FileSystem.AtomicAction action) throws IOException {
@@ -347,6 +357,51 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
             //NOP
         }
 
+    }
+
+    private static final class TreeLoaderOnly extends FileManagerTransaction {
+        private final FileManagerTransaction nullWrite;
+        private final FileManagerTransaction writeThrough;
+
+        TreeLoaderOnly() {
+            super(true);
+            nullWrite = nullWrite();
+            writeThrough = writeThrough();
+        }
+
+        @Override
+        public void delete(File file) {
+            getDelegate().delete(file);
+        }
+
+        @Override
+        Iterable<JavaFileObject> filter(Location location, String packageName, Iterable<JavaFileObject> files) {
+            return getDelegate().filter(location, packageName, files);
+        }
+
+        @Override
+        JavaFileObject createFileObject(Location location, File file, File root, JavaFileFilterImplementation filter, Charset encoding) {
+            return getDelegate().createFileObject(location, file, root, filter, encoding);
+        }
+
+        @Override
+        protected void commit() throws IOException {
+            nullWrite.commit();
+            writeThrough.commit();
+        }
+
+        @Override
+        protected void rollBack() throws IOException {
+            nullWrite.commit();
+            writeThrough.commit();
+        }
+
+        @NonNull
+        private FileManagerTransaction getDelegate() {
+            return TreeLoader.isTreeLoading() ?
+                writeThrough :
+                nullWrite;
+        }
     }
 
     private static class Junction implements Runnable, CompletionHandler<Void, Void>, Future<Void> {
