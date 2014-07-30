@@ -58,14 +58,14 @@ import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
 public final class ServerMapping {
 
     private static final Logger LOGGER = Logger.getLogger(ServerMapping.class.getName());
 
     private static final String BASE_PREFIX = "base/"; // NOI18N
-    private static final String ABSOLUTE_PREFIX = "absolute/"; // NOI18N
+    // #245931 - no ending slash!
+    private static final String ABSOLUTE_PREFIX = "absolute"; // NOI18N
 
 
     public FileObject fromServer(Project project, URL serverUrl) {
@@ -75,13 +75,8 @@ public final class ServerMapping {
         if (prefix == null) {
             return null;
         }
-        assert prefix.endsWith("/") : prefix;
         if (serverUrlString.startsWith(prefix)) {
             String absolutePath = serverUrlString.substring(prefix.length());
-            if (Utilities.isUnix()) {
-                // add leading slash
-                absolutePath = "/" + absolutePath; // NOI18N
-            }
             try {
                 absolutePath = URLDecoder.decode(absolutePath, StandardCharsets.UTF_8.name());
             } catch (UnsupportedEncodingException ex) {
@@ -149,18 +144,11 @@ public final class ServerMapping {
     private URL createAbsoluteUrl(String server, FileObject file) {
         assert server.endsWith("/") : server;
         assert file != null;
-        String filePath = FileUtil.toFile(file).getAbsolutePath();
-        if (filePath.startsWith("/")) { // NOI18N
-            // remove leading slash
-            filePath = filePath.substring(1);
-        }
-        return createUrl(server, ABSOLUTE_PREFIX, filePath);
+        return createUrl(server, ABSOLUTE_PREFIX, FileUtil.toFile(file).getAbsolutePath());
     }
 
     private URL createUrl(String server, String prefix, String filePath) {
         assert server.endsWith("/") : server;
-        assert prefix.endsWith("/") : prefix;
-        assert !filePath.startsWith("/") : filePath;
         try {
             return new URL(server + prefix + filePath);
         } catch (MalformedURLException ex) {

@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.editor.lib2.document;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 
 /**
@@ -60,6 +62,8 @@ import org.netbeans.lib.editor.util.ArrayUtilities;
  */
 final class MarkVector {
     
+    // -J-Dorg.netbeans.modules.editor.lib2.document.MarkVector.level=FINE
+    private static final Logger LOG = Logger.getLogger(EditorDocumentContent.class.getName());
     /**
      * Default size of the offset gap. Since 
      */
@@ -180,18 +184,6 @@ final class MarkVector {
             // the gap should be present at gapStart index for insertion of the new mark.
             reallocate(Math.max(4, markArray.length >>> 1));
         }
-        // offset is now raw-offset
-        return newPosition(offset); // Create position; updates gapStart and gapLength
-    }
-
-    /**
-     * Create Mark object (together with EditorPosition) and assign it to gapStart index
-     * in the mark array (decrement gapLength).
-     *
-     * @param offset &gt;=0
-     * @return EditorPosition instance associated with the mark.
-     */
-    private EditorPosition newPosition(int offset) {
         if (offset >= offsetGapStart) {
             offset += offsetGapLength;
         }
@@ -515,6 +507,9 @@ final class MarkVector {
         Mark[] newMarkArray = new Mark[newLength];
         System.arraycopy(markArray, 0, newMarkArray, 0, gapStart);
         System.arraycopy(markArray, gapEnd, newMarkArray, newLength - aboveGapLength, aboveGapLength);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("MarkVector.reallocate() from markArray.length=" + markArray.length + " to newLength=" + newLength + "\n");
+        }
         // gapStart is same
         gapLength = newGapLength;
         markArray = newMarkArray;
@@ -579,6 +574,9 @@ final class MarkVector {
     }
 
     private void removeDisposedMarks() {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("MarkVector.removeDisposedMarks() disposedMarkCount=" + disposedMarkCount + "\n");
+        }
         int rawIndex = 0;
         int validIndex = 0;
         int gapEnd = gapStart + gapLength;
