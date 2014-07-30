@@ -475,7 +475,13 @@ final class CloneableEditorInitializer implements Runnable {
         //#43157 - editor actions need to be accessible from outside using the TopComponent.getLookup(ActionMap.class) call.
         // used in main menu enabling/disabling logic.
         javax.swing.ActionMap paneMap = pane.getActionMap();
-        am.setParent(paneMap);
+        // o.o.windows.DelegateActionMap.setParent() leads to CloneableEditor.getEditorPane()
+        provideUnfinishedPane = true;
+        try {
+            am.setParent(paneMap);
+        } finally {
+            provideUnfinishedPane = false;
+        }
 
         //#41223 set the defaults befor the custom editor + kit get initialized, giving them opportunity to
         // override defaults..
