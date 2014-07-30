@@ -387,7 +387,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
             @NullAllowed final String annotationTemplate) {
         Image result = IMAGE_CACHE.get(resourceId);
         if (result == null) {
-            result = loadImage(resourceId);
+            result = loadImage(resourceId, true);
             if (annotationTemplate != null) {
                 URL resourceURL = JavaNode.class.getClassLoader().getResource(resourceId);
                 final String annotation = MessageFormat.format(
