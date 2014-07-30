@@ -182,7 +182,7 @@ public class HibernateMappingMovePlugin implements RefactoringPlugin {
             String oldPath = fo.getPath();
             String oldResource = oldPath.substring(srcRoot.length() + 1);
             String fileName = oldResource.substring(oldResource.lastIndexOf("/") + 1);
-            String newResource = targetPkgName + "/" + fileName;
+            String newResource = (fileName.endsWith(".hbm.xml") ? targetPkgName.replace('.', '/') : targetPkgName) + "/" + fileName;//NOI18N, safe fix for 242415 in case if this data is used in more places
 
             fileData.add(new MappingFileData(fo, oldResource, newResource));
         }
