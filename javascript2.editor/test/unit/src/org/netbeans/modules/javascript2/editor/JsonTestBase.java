@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.javascript2.editor;
 
-import java.util.Collections;
-import java.util.Set;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;

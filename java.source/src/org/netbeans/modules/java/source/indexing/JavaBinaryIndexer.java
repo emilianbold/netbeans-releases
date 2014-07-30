@@ -56,6 +56,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
@@ -203,12 +204,11 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         }
         TypeElement jc = (TypeElement) jt.getElements().getTypeElementByBinaryName(fqn);
         if (jc != null) {
-            List<ExecutableElement> methods = ElementFilter.methodsIn(jc.getEnclosedElements());
+            List<ExecutableElement> methods = ElementFilter.methodsIn(jt.getElements().getAllMembers(jc));
             for (ExecutableElement method : methods) {
                 List<? extends VariableElement> params = method.getParameters();
                 if (!params.isEmpty()) {
                     params.get(0).getSimpleName();
-                    break;
                 }
             }
         }

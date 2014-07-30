@@ -149,7 +149,7 @@ public class DocumentationScrollPane extends JScrollPane {
     
     public void setData(CompletionDocumentation doc) {
         setDocumentation(doc);
-        if (doc != null) {
+        if (doc != null && doc != CompletionImpl.PLEASE_WAIT_DOC) {
             addToHistory(doc);
         }
     }

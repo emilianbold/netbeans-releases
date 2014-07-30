@@ -136,8 +136,10 @@ public class Zipper {
         InputStream in = getFileInputStream(file);
         // Add ZIP entry to output stream.
         String name = isEmpty(base) ? file.getName() : base + '/' + file.getName();
+        ZipEntry entry = new ZipEntry(name);
+        entry.setTime(file.lastModified());
         //System.err.printf("Zipping %s\n", name);
-        getZipOutputStream().putNextEntry(new ZipEntry(name));
+        getZipOutputStream().putNextEntry(entry);
         // Transfer bytes from the file to the ZIP file
         int len;
         while ((len = in.read(readBuf)) > 0) {

@@ -364,7 +364,7 @@ public class ElementJavadoc {
                     localized |= isLocalized(ts.getLocation(), element);
                     remote |= ts.isRemote();
                 }
-                if (remote) {
+                if (remote && pages.size() > 1) {
                     throw new JavadocHelper.RemoteJavadocException(null);
                 }
                 page = pages.isEmpty() ? null : pages.get(0);

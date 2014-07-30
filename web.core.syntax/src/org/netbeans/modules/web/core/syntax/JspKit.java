@@ -57,6 +57,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -530,14 +531,9 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             }
 
             if (completionSettingEnabled()) {
-                // EL expression completion - #234702
-                if (dotPos > 0) {
-                    String charPrefix = doc.getText(dotPos - 1, 1);
-                    if ("{".equals(str) && ("#".equals(charPrefix) || "$".equals(charPrefix))) { //NOI18N
-                        super.insertString(doc, dotPos, caret, "{}", overwrite);                 //NOI18N
-                        caret.setDot(dotPos + 1);
-                        return;
-                    }
+                // handle EL expression brackets completion - must be done here before HtmlKeystrokeHandler
+                if (handledELBracketsCompletion(doc, dotPos, caret, str, overwrite)) {
+                    return;
                 }
 
                 KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
@@ -613,6 +609,23 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             }
 
             super.replaceSelection(target, dotPos, caret, str, overwrite);
+        }
+
+        private boolean handledELBracketsCompletion(BaseDocument doc, int dotPos, Caret caret, String str, boolean overwrite) throws BadLocationException {
+            // EL expression completion - #234702
+            if (dotPos > 0) {
+                String charPrefix = doc.getText(dotPos - 1, 1);
+                if ("{".equals(str) && ("#".equals(charPrefix) || "$".equals(charPrefix))) { //NOI18N
+                    super.insertString(doc, dotPos, caret, "{}", overwrite);                 //NOI18N
+                    caret.setDot(dotPos + 1);
+
+                    //open completion
+                    Completion.get().showCompletion();
+
+                    return true;
+                }
+            }
+            return false;
         }
 
     }

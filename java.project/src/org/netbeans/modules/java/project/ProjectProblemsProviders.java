@@ -212,7 +212,10 @@ public class ProjectProblemsProviders {
             // references which could not be evaluated
             for (String v : vals) {
                 // we are checking only: project reference, file reference, library reference
-                if (!(v.startsWith("${file.reference.") || v.startsWith("${project.") || v.startsWith("${libs.") || v.startsWith("${var."))) { // NOI18N
+                if (!(v.startsWith("${file.reference.") ||
+                      v.startsWith("${project.") ||
+                      (v.startsWith("${libs.") && v.endsWith(".classpath}"))  ||
+                      v.startsWith("${var."))) { // NOI18N
                     all.append(v);
                     continue;
                 }

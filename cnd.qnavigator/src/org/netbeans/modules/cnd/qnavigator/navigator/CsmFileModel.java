@@ -120,7 +120,7 @@ public class CsmFileModel {
         unopenedProject = null;
         if (csmFile != null && csmFile.isValid()) {
             if (isStandalone) {
-                CppDeclarationNode node = CppDeclarationNode.nodeFactory(csmFile, this, false, lineNumberIndex, canceled);
+                CppDeclarationNode node = CppDeclarationNode.nodeFactory(csmFile, this, false, preBuildModel.newLineNumberIndex, canceled);
                 if (node != null) {
                     preBuildModel.newList.add(node);
                 }

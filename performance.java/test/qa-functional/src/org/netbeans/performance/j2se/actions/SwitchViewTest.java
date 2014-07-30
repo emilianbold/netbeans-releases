@@ -72,7 +72,7 @@ public class SwitchViewTest extends PerformanceTestCase {
      */
     public SwitchViewTest(String testName) {
         super(testName);
-        expectedTime = 100;
+        expectedTime = 150;
         WAIT_AFTER_OPEN = 200;
     }
 
@@ -84,7 +84,7 @@ public class SwitchViewTest extends PerformanceTestCase {
      */
     public SwitchViewTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 100;
+        expectedTime = 150;
         WAIT_AFTER_OPEN = 200;
     }
 

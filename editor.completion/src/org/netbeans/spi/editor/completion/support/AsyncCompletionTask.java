@@ -66,7 +66,7 @@ import org.openide.util.RequestProcessor;
 
 public final class AsyncCompletionTask implements CompletionTask, Runnable {
     
-    private static final RequestProcessor RP = new RequestProcessor("Code Completion", 1, false, false); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Code Completion", 10, false, false); //NOI18N
 
     private final AsyncCompletionQuery query;
     

@@ -79,11 +79,11 @@ public final class FileData {
     //  Public stuff
     //
 
-    public static final class FileInfo {
+    public static final class FileStateInfo {
         public final long timestamp;
         public final FileState state;
 
-        public FileInfo(FileState mode, long timestamp) {
+        public FileStateInfo(FileState mode, long timestamp) {
             this.state = mode;
             this.timestamp = timestamp;
         }
@@ -157,7 +157,7 @@ public final class FileData {
 //    public void addFile(File file) {
 //        CndUtils.assertNormalized(file);
 //        String key = getFileKey(file);
-//        FileInfo info = getFileInfo(key);
+//        FileStateInfo info = getFileInfo(key);
 //        if (info == null) {
 //            setFileInfo(file, FileState.INITIAL);
 //        } else {
@@ -180,7 +180,7 @@ public final class FileData {
 //    }
 
     public FileState getState(File file) {
-        FileInfo info = getFileInfo(file);
+        FileStateInfo info = getFileInfo(file);
         return (info == null) ? FileState.UNCONTROLLED : info.state;
     }
 
@@ -188,7 +188,7 @@ public final class FileData {
         setFileInfo(file, state);
     }
 
-    public FileInfo getFileInfo(File file) {
+    public FileStateInfo getFileInfo(File file) {
         return getFileInfo(getFileKey(file));
     }
 
@@ -250,7 +250,7 @@ public final class FileData {
         return dataFile.lastModified().getTime();
     }
 
-    private FileInfo getFileInfo(String fileKey) {
+    private FileStateInfo getFileInfo(String fileKey) {
         String strValue = data.getProperty(fileKey, null);
         if (strValue != null && strValue.length() > 0) {
             FileState state;
@@ -259,7 +259,7 @@ public final class FileData {
             strValue = strValue.substring(1);
             try {
                 long timeStamp = Long.parseLong(strValue);
-                return new FileInfo(state, timeStamp);
+                return new FileStateInfo(state, timeStamp);
             } catch (NumberFormatException nfe) {
                 RemoteUtil.LOGGER.warning(String.format("Incorrect status/timestamp format \"%s\" for %s", strValue, fileKey)); //NOI18N
             }

@@ -56,6 +56,8 @@ import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AbstractGridAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridActionPerformer;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridBoundsChange;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -150,7 +152,8 @@ public class UndoRedoSupport {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            performer.performAction(new DelegateGridAction(delegate));
+            Action perfAct = delegate instanceof ContextAwareAction ? ((ContextAwareAction)delegate).createContextAwareInstance(Lookup.EMPTY) : delegate;
+            performer.performAction(new DelegateGridAction(perfAct));
         }
         
         final void updateEnabled() {
@@ -168,7 +171,8 @@ public class UndoRedoSupport {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            performer.performAction(new DelegateGridAction(delegate));
+            Action perfAct = delegate instanceof ContextAwareAction ? ((ContextAwareAction)delegate).createContextAwareInstance(Lookup.EMPTY) : delegate;
+            performer.performAction(new DelegateGridAction(perfAct));
         }
         
         final void updateEnabled() {

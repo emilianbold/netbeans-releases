@@ -59,7 +59,7 @@ public class CssDeletedTextInterceptor implements DeletedTextInterceptor {
 
     @Override
     public void remove(Context context) throws BadLocationException {
-        if (CssTypedTextInterceptor.justAddedPairOffset == context.getOffset()) {
+        if (CssTypedTextInterceptor.justAddedPairOffset == context.getOffset() && context.isBackwardDelete()) {
             //removed the paired char, remove the pair as well
             context.getDocument().remove(context.getOffset() - 1, 1);
         }
