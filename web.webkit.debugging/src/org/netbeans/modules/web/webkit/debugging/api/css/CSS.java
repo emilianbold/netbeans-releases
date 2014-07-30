@@ -151,20 +151,20 @@ public class CSS {
         if (response != null) {
             JSONObject result = response.getResult();
             StyleSheetHeader header = getStyleSheetHeader(styleSheetId);
-            if (header == null) {
-                body = null;
-            } else {
-                if (result == null) {
-                    // CSS.getStyleSheet has been removed from the CSS domain
+            if (result == null) {
+                // CSS.getStyleSheet has been removed from the CSS domain
+                if (header == null) { // Issue 246143
+                    body = null;
+                } else {
                     String styleSheetText = getStyleSheetText(styleSheetId);
                     body = new StyleSheetBody(header, styleSheetText);
-                } else {
-                    JSONObject sheetInfo = (JSONObject)result.get("styleSheet"); // NOI18N
-                    body = new StyleSheetBody(header, sheetInfo);
                 }
-                synchronized (this) {
-                    styleSheets.put(styleSheetId, body);
-                }
+            } else {
+                JSONObject sheetInfo = (JSONObject) result.get("styleSheet"); // NOI18N
+                body = new StyleSheetBody(header, sheetInfo);
+            }
+            synchronized (this) {
+                styleSheets.put(styleSheetId, body);
             }
         }
         return body;

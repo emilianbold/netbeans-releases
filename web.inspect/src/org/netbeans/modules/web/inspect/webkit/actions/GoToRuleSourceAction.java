@@ -103,7 +103,9 @@ public class GoToRuleSourceAction extends AbstractAction {
             FileObject fob = resource.toFileObject();
             if (fob == null || fob.isFolder() /* issue 233463 */) {
                 StyleSheetBody body = rule.getParentStyleSheet();
-                if (body != null) {
+                if (body == null) {
+                    return;
+                } else {
                     fob = RemoteStyleSheetCache.getDefault().getFileObject(body);
                     if (fob == null) {
                         return;

@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JTree;
+import javax.swing.JViewport;
 import javax.swing.UIManager;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.plaf.TreeUI;
@@ -146,6 +147,13 @@ public class DebugTreeView extends BeanTreeView {
         setWheelScrollingEnabled(false);
     }
 
+    @Override
+    protected JViewport createViewport() {
+        // We're a ScrollPane, but inside of our own ScrollPane
+        // Therefore requests to scroll to a visible rectangle need to be delegated to the outer viewport
+        return new DelegateViewport();
+    }
+    
     public JTree getTree() {
         return tree;
     }

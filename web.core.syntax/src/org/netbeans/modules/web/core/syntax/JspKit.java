@@ -57,6 +57,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -617,6 +618,10 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 if ("{".equals(str) && ("#".equals(charPrefix) || "$".equals(charPrefix))) { //NOI18N
                     super.insertString(doc, dotPos, caret, "{}", overwrite);                 //NOI18N
                     caret.setDot(dotPos + 1);
+
+                    //open completion
+                    Completion.get().showCompletion();
+
                     return true;
                 }
             }
