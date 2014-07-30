@@ -43,19 +43,32 @@ package org.netbeans.modules.javascript2.requirejs.html;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.ImageIcon;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.requirejs.editor.FSCompletionUtils;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.ValueCompletion;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
 
@@ -127,4 +140,75 @@ public class RequireJsHtmlExtension extends HtmlExtension {
             return HtmlCompletionItem.createGoUpFileCompletionItem(anchor, color, icon); // NOI18N
         }
     }
+
+    @Override
+    public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
+        final TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(doc, caretOffset);
+        if (ts == null) {
+            return super.getReferenceSpan(doc, caretOffset);
+        }
+
+        ts.move(caretOffset);
+        if (ts.moveNext()) {
+            Token<HTMLTokenId> token = ts.token();
+            int offset = ts.offset();
+            if (getDataMainValue(ts, caretOffset) != null) {
+                return new OffsetRange(offset + 1, offset + token.length() - 1);
+            }
+
+        }
+        return super.getReferenceSpan(doc, caretOffset);
+    }
+
+    @Override
+    public DeclarationFinder.DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
+        final TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
+        if (th == null) {
+            return super.findDeclaration(info, caretOffset);
+        }
+        final TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(th, caretOffset);
+        if (ts == null) {
+            return super.findDeclaration(info, caretOffset);
+        }
+        String value = getDataMainValue(ts, caretOffset);
+        if (value != null) {
+            FileObject fo = info.getSnapshot().getSource().getFileObject();
+            if (fo != null) {
+                String name = value + ".js";
+                FileObject targetFO = FSCompletionUtils.findFileObject(fo, name);
+                if (targetFO != null) {
+                    return new DeclarationFinder.DeclarationLocation(targetFO, 0);
+                }
+                name = value + ".JS";
+                targetFO = FSCompletionUtils.findFileObject(fo, name);
+                if (targetFO != null) {
+                    return new DeclarationFinder.DeclarationLocation(targetFO, 0);
+                }
+                name = value + ".Js";
+                targetFO = FSCompletionUtils.findFileObject(fo, name);
+                if (targetFO != null) {
+                    return new DeclarationFinder.DeclarationLocation(targetFO, 0);
+                }
+            }
+        }
+        return super.findDeclaration(info, caretOffset);
+    }
+
+    private String getDataMainValue(TokenSequence<HTMLTokenId> ts, int offset) {
+        ts.move(offset);
+        if (ts.moveNext()) {
+            Token<HTMLTokenId> token = ts.token();
+            HTMLTokenId tokenId = token.id();
+            if (tokenId == HTMLTokenId.VALUE) {
+                String value = token.text().toString();
+                token = LexerUtils.followsToken(ts, Arrays.asList(HTMLTokenId.ARGUMENT), true, false, HTMLTokenId.OPERATOR, HTMLTokenId.ARGUMENT.WS, HTMLTokenId.BLOCK_COMMENT);
+                if (token != null && token.id() == HTMLTokenId.ARGUMENT && DATAMAIN.equals(token.text().toString())) {
+                    return value.substring(1, value.length() - 1);
+                }
+
+            }
+        }
+        return null;
+    }
+
 }
