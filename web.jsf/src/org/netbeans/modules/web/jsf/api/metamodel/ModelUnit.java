@@ -51,6 +51,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
@@ -63,6 +65,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 
@@ -72,6 +75,9 @@ import org.openide.util.WeakListeners;
  * file has changed.
  */
 public class ModelUnit implements PropertyChangeListener, FileChangeListener {
+
+    private static final RequestProcessor RP = new RequestProcessor(ModelUnit.class);
+    private static final Logger LOGGER = Logger.getLogger(ModelUnit.class.getName());
 
     private final ClassPath bootPath;
     private final ClassPath compilePath;
@@ -269,15 +275,24 @@ public class ModelUnit implements PropertyChangeListener, FileChangeListener {
 
     private void initListeners() {
         // listen to any change on source path classpath:
-        sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(this, sourcePath));
+        sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(ModelUnit.this, sourcePath));
         // listen to any change on compilation classpath:
-        compilePath.addPropertyChangeListener(WeakListeners.propertyChange(this, compilePath));
+        compilePath.addPropertyChangeListener(WeakListeners.propertyChange(ModelUnit.this, compilePath));
 
-        // listen to any relevant configuration file change:
-        Project project = projectRef.get();
-        if (project != null) {
-            project.getProjectDirectory().addRecursiveListener(FileUtil.weakFileChangeListener(this, project.getProjectDirectory()));
-        }
+        // The time-consuming listener registration is moved to a background thread since it can block project's
+        // actions also in case of non-JSF project which is pain. It can miss initial JSF configuration changes.
+        RP.submit(new Runnable() {
+            @Override
+            public void run() {
+                // listen to any relevant configuration file change:
+                long start = System.currentTimeMillis();
+                Project project = projectRef.get();
+                if (project != null) {
+                    project.getProjectDirectory().addRecursiveListener(FileUtil.weakFileChangeListener(ModelUnit.this, project.getProjectDirectory()));
+                }
+                LOGGER.log(Level.FINE, "JSF''s ModelUnit ResursiveListener registration took {0}ms.", new Object[]{(System.currentTimeMillis() - start)});
+            }
+        });
     }
 
     @Override

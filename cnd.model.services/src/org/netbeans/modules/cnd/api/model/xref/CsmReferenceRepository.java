@@ -56,7 +56,6 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -147,16 +146,7 @@ public abstract class CsmReferenceRepository {
         if (fileObject == null || !fileObject.isValid()) {
             return null;
         }
-        DataObject dataObject = DataObject.find(fileObject);
-        EditorCookie cookie = dataObject.getLookup().lookup(EditorCookie.class);
-        if (cookie == null) {
-            throw new IllegalStateException("Given file (\"" + fileObject.getPath() + // NOI18N
-                                            "\", data object is instance of class " + dataObject.getClass().getName() + // NOI18N
-                                            ") does not have EditorCookie."); // NOI18N
-        }
-
-        StyledDocument doc = CsmUtilities.openDocument(cookie);
-
+        StyledDocument doc = CsmUtilities.openDocument(DataObject.find(fileObject));
         return doc instanceof BaseDocument ? (BaseDocument) doc : null;
     }
 

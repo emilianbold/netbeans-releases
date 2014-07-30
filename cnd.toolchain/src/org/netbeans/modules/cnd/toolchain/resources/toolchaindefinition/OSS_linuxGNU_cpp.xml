@@ -47,6 +47,7 @@ made subject to such option by the copyright holder.
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <cpp>
         <compiler name="CC"/>
+        <recognizer pattern=".*solarisstudio.*/bin" or_exist_folder="../LEGAL"/>
         <version flags="-V" fingerprint_flags="-compat=g -Wd,-xide" fingerprint_pattern="#\s*__tool_build_number\s*(\w*)"/>
         <system_include_paths parser="Fingerprint"/>
         <system_macros parser="Fingerprint">

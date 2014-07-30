@@ -278,7 +278,7 @@ public final class Utilities {
      * class MyReference extends WeakReference<Thing> implements Runnable {
      *     private final OtherInfo dataToCleanUp;
      *     public MyReference(Thing ref, OtherInfo data) {
-     *         super(ref, Utilities.queue());
+     *         super(ref, Utilities.activeReferenceQueue());
      *         dataToCleanUp = data;
      *     }
      *     public void run() {

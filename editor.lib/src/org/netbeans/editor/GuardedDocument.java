@@ -59,6 +59,7 @@ import javax.swing.text.StyleContext;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 /**
 * Extension to the guarded document that implements
@@ -316,14 +317,18 @@ public class GuardedDocument extends BaseDocument
         boolean completed = false;
         atomicLockImpl ();
         boolean origBreakGuarded = breakGuarded;
+        boolean errorOccurred = false;
         try {
             breakGuarded = true;
             r.run();
             completed = true;
+        } catch (Error e) {
+            errorOccurred = true; // Serious problem => do not attempt breakAtomicLock();
+            Exceptions.printStackTrace(e);
         } finally {
             breakGuarded = origBreakGuarded;
             try {
-                if (!completed) {
+                if (!completed && !errorOccurred) {
                     breakAtomicLock();
                 }
             } finally {

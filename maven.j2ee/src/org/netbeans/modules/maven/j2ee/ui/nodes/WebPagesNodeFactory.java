@@ -95,7 +95,7 @@ public class WebPagesNodeFactory implements NodeFactory {
             List<String> keys = new ArrayList<>();
 
             for (FileObject webRoot : getWebRoots()) {
-                String webRootPath = webRoot.toURI().getPath();
+                String webRootPath = webRoot.getPath();
                 if (webRootPath.endsWith("/")) { // NOI18N
                     webRootPath = webRootPath.substring(0, webRootPath.length() - 1);
                 }

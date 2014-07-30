@@ -86,8 +86,9 @@ public final class IdentifierErrorProvider extends AbstractCodeAudit {
         MAX_ERROR_LIMIT = userInput;
     }
     private static final int UNRESOLVED = 1;
-    private static final int UNRESOLVED_TEMPLATE = 2;
-    private static final int UNRESOLVED_FORWARD = 3;
+    private static final int UNRESOLVED_BUILT_IN = 2;
+    private static final int UNRESOLVED_TEMPLATE = 3;
+    private static final int UNRESOLVED_FORWARD = 4;
     private final int kind;
     private final String message;
     
@@ -146,11 +147,13 @@ public final class IdentifierErrorProvider extends AbstractCodeAudit {
                     if (CsmFileReferences.isAfterUnresolved(context)) {
                         return;
                     }
-                    if (CsmFileReferences.isBuiltInBased(ref) || CsmFileReferences.isMacroBased(context)) {
+                    if (CsmFileReferences.isMacroBased(context)) {
                         return;
                     }
                     int whatKind = UNRESOLVED;
-                    if (CsmFileReferences.isTemplateBased(context)) {
+                    if (CsmFileReferences.isBuiltInBased(ref)) {
+                        whatKind = UNRESOLVED_BUILT_IN;
+                    } else if (CsmFileReferences.isTemplateBased(context)) {
                         whatKind = UNRESOLVED_TEMPLATE;
                     } else if (CsmKindUtilities.isClassForwardDeclaration(ref.getOwner())) { // owner is needed
                         whatKind = UNRESOLVED_FORWARD;
@@ -203,6 +206,17 @@ public final class IdentifierErrorProvider extends AbstractCodeAudit {
             String description = NbBundle.getMessage(IdentifierErrorProvider.class, "IdentifierErrorProvider.unresolved.description"); //NOI18N
             String message = "IdentifierErrorProvider.unresolved.message"; // NOI18N
             return new IdentifierErrorProvider(name, name, description, "error", true, preferences, UNRESOLVED, message); // NOI18N
+        }
+    }
+
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CodeAssistanceHintProvider.NAME, service = CodeAuditFactory.class, position = 4250)
+    public static final class UnresolvedBuildInFactory implements CodeAuditFactory {
+        @Override
+        public AbstractCodeAudit create(AuditPreferences preferences) {
+            String name = NbBundle.getMessage(IdentifierErrorProvider.class, "IdentifierErrorProvider.unresolvedBuiltIn.name"); //NOI18N
+            String description = NbBundle.getMessage(IdentifierErrorProvider.class, "IdentifierErrorProvider.unresolvedBuiltIn.description"); //NOI18N
+            String message = "IdentifierErrorProvider.unresolvedBuiltIn.message"; // NOI18N
+            return new IdentifierErrorProvider(name, name, description, "warning", false, preferences, UNRESOLVED_BUILT_IN, message); // NOI18N
         }
     }
 

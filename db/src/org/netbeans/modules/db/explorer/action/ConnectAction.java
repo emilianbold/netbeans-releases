@@ -390,8 +390,13 @@ public class ConnectAction extends BaseAction {
         }
 
         private boolean supportsConnectWithoutUsername(DatabaseConnection dc) {
-            return dc.findJDBCDriver().getClassName().equals("org.sqlite.JDBC") || //NOI18N
-                    dc.findJDBCDriver().getClassName().equals("org.h2.Driver"); //NOI18N
+            try {
+                return dc.findJDBCDriver().getClassName().equals("org.sqlite.JDBC") //NOI18N
+                        || dc.findJDBCDriver().getClassName().equals("org.h2.Driver"); //NOI18N
+            } catch (NullPointerException ex) {
+                // Most probably findJDBCDriver failed to find a driver
+                return false;
+            }
         }
     }
 

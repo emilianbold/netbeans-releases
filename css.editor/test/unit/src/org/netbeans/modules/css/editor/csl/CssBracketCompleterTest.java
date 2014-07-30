@@ -77,6 +77,7 @@ public class CssBracketCompleterTest extends TestBase {
     private JEditorPane pane;
     private BaseAction defaultKeyTypedAction;
     private BaseAction backspaceAction;
+    private BaseAction deleteAction;
 
     public CssBracketCompleterTest(String name) {
         super(name);
@@ -113,6 +114,7 @@ public class CssBracketCompleterTest extends TestBase {
 
         this.defaultKeyTypedAction = (BaseAction) pane.getActionMap().get(NbEditorKit.defaultKeyTypedAction);
         this.backspaceAction = (BaseAction) pane.getActionMap().get(NbEditorKit.deletePrevCharAction);
+        this.deleteAction = (BaseAction) pane.getActionMap().get(NbEditorKit.deleteNextCharAction);
     }
 
     private void cleanUpEditor() {
@@ -131,8 +133,8 @@ public class CssBracketCompleterTest extends TestBase {
         assertEquals("{}", getText());
 
         //test generated pair autodelete
-//        backspace();
-//        assertEquals("", getText());
+        backspace();
+        assertEquals("", getText());
 
         clear(doc);
 
@@ -141,7 +143,7 @@ public class CssBracketCompleterTest extends TestBase {
         //                   01
         pane.setCaretPosition(1);
         backspace();
-//        assertEquals("}", getText());
+        assertEquals("}", getText());
 
         clear(doc);
 
@@ -156,6 +158,47 @@ public class CssBracketCompleterTest extends TestBase {
         assertEquals(text, getText()); //no change in the text
         assertEquals(18, pane.getCaretPosition()); //+1
 
+    }
+    
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=239848
+    public void testQuotesNoTextPostfix() throws BadLocationException, IOException {
+        doc.insertString(0, "div { background-image: url(); }", null);
+        //                   0123456789012345678901234567890123456789
+        //                   0         1         2         3
+
+        //test pair autocomplete
+        pane.setCaretPosition(28);
+        type('"');
+        assertEquals("div { background-image: url(\"\"); }", getText());
+
+        //test generated pair autodelete
+        backspace();
+        assertEquals("div { background-image: url(); }", getText());
+
+        type('"');
+        assertEquals("div { background-image: url(\"\"); }", getText());
+        
+        delete();
+        assertEquals("div { background-image: url(\"); }", getText());
+
+    }
+    
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=239848
+    public void testQuotesTextPostfix() throws BadLocationException, IOException {
+        doc.insertString(0, "div { background-image: url(myimg.png); }", null);
+        //                   0123456789012345678901234567890123456789
+        //                   0         1         2         3
+
+        //no pair quote added if text after caret is not a symbol
+        pane.setCaretPosition(28);
+        type('"');
+        assertEquals("div { background-image: url(\"myimg.png); }", getText());
+
+        //no pair added either
+        pane.setCaretPosition(38);
+        type('"');
+        assertEquals("div { background-image: url(\"myimg.png\"); }", getText());
+        
     }
     
     public void testQuoteAutocompletion() throws BadLocationException, IOException {
@@ -302,6 +345,10 @@ public class CssBracketCompleterTest extends TestBase {
 
     private void backspace() {
         backspaceAction.actionPerformed(new ActionEvent(doc, 0, null));
+    }
+    
+    private void delete() {
+        deleteAction.actionPerformed(new ActionEvent(doc, 0, null));
     }
 
     private String getText() throws BadLocationException {

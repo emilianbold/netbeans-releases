@@ -50,7 +50,6 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.requirejs.ConfigOption;
 import org.netbeans.modules.javascript2.requirejs.RequireJsDataProvider;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,8 +57,6 @@ import org.openide.util.NbBundle;
  * @author Petr Pisl
  */
 public class RequireJsCompletionItem implements CompletionProposal {
-
-    private static ImageIcon REQUIREJS_ICON = null;
 
     private final int anchor;
     private final ElementHandle element;
@@ -91,11 +88,7 @@ public class RequireJsCompletionItem implements CompletionProposal {
 
     @Override
     public ImageIcon getIcon() {
-
-        if (REQUIREJS_ICON == null) {
-            REQUIREJS_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/requirejs/resources/requirejs.png")); //NOI18N
-        }
-        return REQUIREJS_ICON;
+        return EditorUtils.getRequireJsIcon();
     }
 
     @Override

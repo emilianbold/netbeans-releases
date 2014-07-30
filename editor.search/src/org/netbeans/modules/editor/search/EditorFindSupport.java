@@ -453,7 +453,7 @@ public final class EditorFindSupport {
     
     private void ensureVisible(JTextComponent c, int startOffset, int endOffset) {
         // TODO: read insets from settings
-        ensureVisible(c, startOffset, endOffset, new Insets(TIME_LIMIT, TIME_LIMIT, TIME_LIMIT, TIME_LIMIT));
+        ensureVisible(c, startOffset, endOffset, new Insets(10, 10, 10, 10));
     }
     
     /**

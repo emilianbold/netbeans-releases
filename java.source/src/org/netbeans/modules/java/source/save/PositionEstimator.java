@@ -1155,25 +1155,42 @@ public abstract class PositionEstimator {
             }
             seq.move(sectionEnd);
             seq.movePrevious();
+            
+            // PENDING: comment conditional removal (if mapped) should be replicated into other Estimators.
             boolean moreWhitespaces = false;
+            int lastNewline = -1;
             while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
                 if (JavaTokenId.LINE_COMMENT == token.id()) {
                     sectionEnd = seq.offset();
+                    boolean mapped = diffContext.usedComments.get(sectionEnd) != null;
                     // only remove 1st line of line comment if there's a whitespace between the removed
                     // content and the comment
-                    if (!moreWhitespaces && seq.moveNext()) {
-                        sectionEnd = seq.offset();
+                    if (!mapped) {
+                        if (!moreWhitespaces && seq.moveNext()) {
+                            sectionEnd = seq.offset();
+                        }
+                        break;
+                    } else {
+                        sectionEnd = seq.offset() + seq.token().length();
+                        lastNewline = sectionEnd;
                     }
-                    break;
                 } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
-                    break;
+                    boolean mapped = diffContext.usedComments.get(sectionEnd) != null;
+                    if (!mapped) {
+                        break;
+                    }
+                    // comments from removed statements are colleted elsewhere
+                    lastNewline = -1;
+                    continue;
                 } else if (JavaTokenId.WHITESPACE == token.id()) {
                     int indexOf = token.text().toString().lastIndexOf('\n');
+                    int after = seq.offset() + token.text().length();
                     if (indexOf > -1) {
                         sectionEnd = seq.offset() + indexOf + 1;
                         moreWhitespaces |= token.text().toString().indexOf('\n') != indexOf;
-                    } else {
-                        sectionEnd = seq.offset() + token.text().length();
+                        lastNewline = sectionEnd;
+                    } else if (lastNewline == -1) {
+                        sectionEnd = after;
                     }
                 }
             }

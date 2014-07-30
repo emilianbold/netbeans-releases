@@ -1020,7 +1020,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (CancellationException ex) {
-                    Exceptions.printStackTrace(ex);
+                    // don't report CancellationException
                 }
                 if (java != null) {
                     execute = ProcessUtils.execute(executionEnvironment, projectCreator.getPath()

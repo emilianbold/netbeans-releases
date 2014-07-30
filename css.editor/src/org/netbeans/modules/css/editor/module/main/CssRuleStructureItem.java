@@ -135,7 +135,7 @@ public class CssRuleStructureItem implements StructureItem {
     public int hashCode() {
         int hash = 7;
         hash = 29 * hash + (this.name != null ? this.name.hashCode() : 0);
-        return hash;
+        return hash + new Long(getPosition()).hashCode();
     }
 
     @Override
@@ -150,7 +150,7 @@ public class CssRuleStructureItem implements StructureItem {
         if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
             return false;
         }
-        return true;
+        return getPosition() == other.getPosition();
     }
     
 

@@ -263,24 +263,33 @@ public final class DatabaseConnection implements DBConnection {
         setConnectionProperties(connectionProperties);
     }
 
+    /**
+     * Find a registered JDBC driver matching this connection. The function
+     * makes a best effort search, if at least a driver with a matching classname
+     * is present this function will succeed. If a driver with a matching name is
+     * present this will be returned.
+     * 
+     * @return matching JDBC driver for connection or NULL if no match is found
+     */
     public JDBCDriver findJDBCDriver() {
         JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
-        if (drivers == null || ! Arrays.equals(drvs, drivers)) {
+        if (drivers == null || !Arrays.equals(drvs, drivers)) {
             drivers = drvs;
 
-            if (drvs.length <= 0) {
-                return null;
-            }
+            JDBCDriver useDriver = null;
 
-            JDBCDriver useDriver = drvs[0];
+            if (drvs.length > 0) {
+                // Fallback - potentially false driver (by name), but at least matches requested class
+                useDriver = drvs[0];
             for (int i = 0; i < drvs.length; i++) {
                 if (drvs[i].getName().equals(getDriverName())) {
                     useDriver = drvs[i];
                     break;
                 }
             }
-            jdbcdrv = useDriver;
+            }
             
+            jdbcdrv = useDriver;
         }
         return jdbcdrv;
     }

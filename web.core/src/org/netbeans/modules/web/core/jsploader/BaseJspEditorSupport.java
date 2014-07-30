@@ -148,20 +148,30 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             }
         });
 
-        WebModule webModule = getWebModule(getDataObject().getPrimaryFile());
-        if (webModule != null) {
-            FileObject wmRoot = webModule.getDocumentBase();
-            // register class path listener
-            ClassPath cp = ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE);
-            if (cp != null) {
-                cp.addPropertyChangeListener(WeakListeners.propertyChange(new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        // the classpath was changed, need to reparsed
-                        restartParserTask();
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                WebModule webModule = getWebModule(getDataObject().getPrimaryFile());
+                if (webModule != null) {
+                    FileObject wmRoot = webModule.getDocumentBase();
+                    // register class path listener
+                    ClassPath cp = ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE);
+                    if (cp != null) {
+                        cp.addPropertyChangeListener(WeakListeners.propertyChange(new PropertyChangeListener() {
+                            @Override
+                            public void propertyChange(PropertyChangeEvent evt) {
+                                // the classpath was changed, need to reparsed
+                                restartParserTask();
+                            }
+                        }, cp));
                     }
-                }, cp));
+                }
             }
-        }
+
+        });
+
+        
 
         //EditorCookie.Observable listener
         addPropertyChangeListener(new PropertyChangeListener() {

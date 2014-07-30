@@ -130,16 +130,18 @@ public class PatternResourcesIterator implements WizardDescriptor.ProgressInstan
                     result.addAll(new GenericResourceGenerator(targetFolder, 
                             bean).generate(pHandle));
                 }
-                if (restAppPack != null && appClassName!= null && !useJersey) {
+                if (restSupport != null && restAppPack != null && appClassName != null && !useJersey) {
                     FileObject fo = RestUtils.createApplicationConfigClass(restSupport, restAppPack, appClassName);
                     if (fo != null) {
                         // open generated Application subclass too:
                         result.add(fo);
                     }
                 }
-                restSupport.configure(
-                        wizard.getProperty(
-                                WizardProperties.RESOURCE_PACKAGE).toString());
+                if (restSupport != null) {
+                    restSupport.configure(
+                            wizard.getProperty(
+                                    WizardProperties.RESOURCE_PACKAGE).toString());
+                }
                 for (FileObject fobj : result) {
                     DataObject dobj = DataObject.find(fobj);
                     EditorCookie cookie = dobj.getCookie(EditorCookie.class);

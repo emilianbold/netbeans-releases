@@ -88,6 +88,7 @@ public class IfsTest {
                               "            System.err.println(\"2\");\n" +
                               "            //6\n" +
                               "        } //E\n" +
+                              "        // C\n" +
                               "        else\n" +
                               "        // B\n" +
                               "        { //1\n" +
@@ -95,7 +96,6 @@ public class IfsTest {
                               "            System.err.println(\"1\");\n" +
                               "            //3\n" +
                               "        }\n" +
-                              "        // C\n" +
                               "    }\n" +
                               "}\n");
     }
