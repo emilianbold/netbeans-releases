@@ -94,6 +94,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -340,53 +341,59 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     }//GEN-LAST:event_removePlatform
 
     private void addNewPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNewPlatform
-        final List<? extends GeneralPlatformInstall> installs = InstallerRegistry.getDefault().getAllInstallers();
-        if (installs.isEmpty()) {
-            DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(
-                    NbBundle.getMessage(PlatformsCustomizer.class, "ERR_NoPlatformImpl"),
-                    NotifyDescriptor.INFORMATION_MESSAGE));
-            return;
-        }
-        try {
-            WizardDescriptor wiz = new WizardDescriptor (PlatformInstallIterator.create());
-            final FileObject templateFo = FileUtil.getConfigFile(TEMPLATE);
-            if (templateFo == null) {
-                final StringBuilder sb = new StringBuilder("Broken system filesystem: ");   //NOI18N
-                final String[] parts = TEMPLATE.split("/");   //NOI18N
-                FileObject f = FileUtil.getConfigRoot();
-                for (int i = 0; f != null && i < parts.length; i++) {
-                    sb.append(f.getName()).append('/'); //NOI18N;
-                    f = f.getFileObject(parts[i]);
+        final PlatformsCustomizer self = this;
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                final List<? extends GeneralPlatformInstall> installs = InstallerRegistry.getDefault().getAllInstallers();
+                if (installs.isEmpty()) {
+                    DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            NbBundle.getMessage(PlatformsCustomizer.class, "ERR_NoPlatformImpl"),
+                            NotifyDescriptor.INFORMATION_MESSAGE));
+                    return;
                 }
-                throw new IllegalStateException(sb.toString());
-            }
-            DataObject template = DataObject.find (templateFo);
-            wiz.putProperty("targetTemplate", template);    //NOI18N
-            DataFolder folder = DataFolder.findFolder(FileUtil.getConfigFile(STORAGE));
-            wiz.putProperty("targetFolder",folder); //NOI18N
-            wiz.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
-            wiz.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
-            wiz.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
-            wiz.setTitle(NbBundle.getMessage(PlatformsCustomizer.class,"CTL_AddPlatformTitle"));
-            wiz.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
-            Dialog dlg = DialogDisplayer.getDefault().createDialog(wiz);
-            try {
-                dlg.setVisible(true);
-                if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
-                    this.getChildren().refreshPlatforms();
-                    Set result = wiz.getInstantiatedObjects();
-                    this.expandPlatforms (result.isEmpty() ? null : (JavaPlatform)result.iterator().next());
+                try {
+                    WizardDescriptor wiz = new WizardDescriptor (PlatformInstallIterator.create());
+                    final FileObject templateFo = FileUtil.getConfigFile(TEMPLATE);
+                    if (templateFo == null) {
+                        final StringBuilder sb = new StringBuilder("Broken system filesystem: ");   //NOI18N
+                        final String[] parts = TEMPLATE.split("/");   //NOI18N
+                        FileObject f = FileUtil.getConfigRoot();
+                        for (int i = 0; f != null && i < parts.length; i++) {
+                            sb.append(f.getName()).append('/'); //NOI18N;
+                            f = f.getFileObject(parts[i]);
+                        }
+                        throw new IllegalStateException(sb.toString());
+                    }
+                    DataObject template = DataObject.find (templateFo);
+                    wiz.putProperty("targetTemplate", template);    //NOI18N
+                    DataFolder folder = DataFolder.findFolder(FileUtil.getConfigFile(STORAGE));
+                    wiz.putProperty("targetFolder",folder); //NOI18N
+                    wiz.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
+                    wiz.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
+                    wiz.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
+                    wiz.setTitle(NbBundle.getMessage(PlatformsCustomizer.class,"CTL_AddPlatformTitle"));
+                    wiz.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
+                    Dialog dlg = DialogDisplayer.getDefault().createDialog(wiz);
+                    try {
+                        dlg.setVisible(true);
+                        if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
+                            self.getChildren().refreshPlatforms();
+                            Set result = wiz.getInstantiatedObjects();
+                            self.expandPlatforms (result.isEmpty() ? null : (JavaPlatform)result.iterator().next());
+                        }
+                    } finally {
+                        dlg.dispose();
+                    }
+                } catch (DataObjectNotFoundException dfne) {
+                    Exceptions.printStackTrace(dfne);
                 }
-            } finally {
-                dlg.dispose();
+                catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
             }
-        } catch (DataObjectNotFoundException dfne) {
-            Exceptions.printStackTrace(dfne);
-        }
-        catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+        });
     }//GEN-LAST:event_addNewPlatform
 
 

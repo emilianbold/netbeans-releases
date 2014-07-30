@@ -44,8 +44,8 @@ import org.netbeans.libs.git.GitURI;
  * @author ondra
  */
 public class ConnectionSettings {
-    private char[] password;
-    private char[] passphrase;
+    private char[] password = new char[0];
+    private char[] passphrase = new char[0];
     private GitURI uri;
     private String identityFile;
     private boolean saveCredentials;

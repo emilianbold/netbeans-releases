@@ -91,6 +91,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     public static final String UNCAUGHT_EXCEPTION_TYPE = "uncaughtExceptionType"; //NOI18N
     public static final String UNCAUGHT_EXCEPTION_CATCH_STATEMENTS = "uncaughtExceptionCatchStatements"; //NOI18N
     public static final String CURRENT_CLASS_NAME = "currClassName"; //NOI18N
+    public static final String CURRENT_CLASS_FULLY_QUALIFIED_NAME = "currClassFQName"; //NOI18N
+    public static final String CURRENT_PACKAGE_NAME = "currPackageName"; //NOI18N
     public static final String CURRENT_METHOD_NAME = "currMethodName"; //NOI18N
 
     private static final String TRUE = "true"; //NOI18N
@@ -132,6 +134,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         || CAST.equals(hint)
                         || NEW_VAR_NAME.equals(hint)
                         || CURRENT_CLASS_NAME.equals(hint)
+                        || CURRENT_CLASS_FULLY_QUALIFIED_NAME.equals(hint)
+                        || CURRENT_PACKAGE_NAME.equals(hint)
                         || CURRENT_METHOD_NAME.equals(hint)
                         || ITERABLE_ELEMENT_TYPE.equals(hint)
                         || UNCAUGHT_EXCEPTION_TYPE.equals(hint)) {
@@ -512,7 +516,13 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 return newVarName(param.getInsertTextOffset() + 1, (String)value);
             } else if (CURRENT_CLASS_NAME.equals(entry.getKey())) {
                 param2hints.put(param, CURRENT_CLASS_NAME);
-                return owningClassName();
+                return owningClassName(false);
+            } else if (CURRENT_CLASS_FULLY_QUALIFIED_NAME.equals(entry.getKey())) {
+                param2hints.put(param, CURRENT_CLASS_FULLY_QUALIFIED_NAME);
+                return owningClassName(true);
+            } else if (CURRENT_PACKAGE_NAME.equals(entry.getKey())) {
+                param2hints.put(param, CURRENT_PACKAGE_NAME);
+                return owningPackageName();
             } else if (CURRENT_METHOD_NAME.equals(entry.getKey())) {
                 param2hints.put(param, CURRENT_METHOD_NAME);
                 return owningMethodName();
@@ -882,23 +892,37 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         return null;
     }
 
-    private String owningClassName() {
+    private String owningClassName(boolean fqn) {
         try {
             if (cInfo != null) {
                 TreePath path = treePath;
                 while ((path = Utilities.getPathElementOfKind (TreeUtilities.CLASS_TREE_KINDS, path)) != null) {
-                    ClassTree tree = (ClassTree) path.getLeaf();
-                    String result = tree.getSimpleName().toString();
-                    if (result.length() > 0)
-                        return result;
-                    path = path.getParentPath();
+                    Element element = cInfo.getTrees().getElement(path);
+                    if (element != null && (element.getKind().isClass() || element.getKind().isInterface())) {
+                        Name name = fqn ? ((TypeElement) element).getQualifiedName() : ((TypeElement) element).getSimpleName();
+                        if (name != null)
+                            return name.toString();
+                    }
                 }
-                return null;
             }
         } catch (Exception e) {
         }
         return null;
     }
+
+    private String owningPackageName() {
+        try {
+            if (cInfo != null) {
+                ExpressionTree packageName = treePath.getCompilationUnit().getPackageName();
+                String result = packageName != null ? packageName.toString() : null;
+                if (result != null && !result.equals(ERROR))
+                    return result;
+            }
+        } catch (Exception e) {
+        }
+        return null;
+    }
+    
     private String owningMethodName() {
         try {
             if (cInfo != null) {
@@ -916,7 +940,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         }
         return null;
     }
-    
+
     private TypeMirror uncaughtExceptionType(int caretOffset) {
         try {
             if (cInfo != null) {

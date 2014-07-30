@@ -101,12 +101,18 @@ public class RemoveSurroundingTag extends Hint {
                         if (surroundingPair == null) {
                             return;
                         }
-                        int otfrom = surroundingPair[0].from();
-                        int otto = surroundingPair[0].to();
+                        Snapshot s = context.parserResult.getSnapshot();
+                        
+                        int otfrom = s.getOriginalOffset(surroundingPair[0].from());
+                        int otto = s.getOriginalOffset(surroundingPair[0].to());
                         int otlen = otto - otfrom;
 
-                        int ctfrom = surroundingPair[1].from();
-                        int ctto = surroundingPair[1].to();
+                        int ctfrom = s.getOriginalOffset(surroundingPair[1].from());
+                        int ctto = s.getOriginalOffset(surroundingPair[1].to());
+                        
+                        if(otfrom == -1 || otto == -1 || ctfrom == -1 || ctto == -1) {
+                            return ;
+                        }
 
                         context.doc.remove(otfrom, otlen);
                         context.doc.remove(ctfrom - otlen, ctto - ctfrom);

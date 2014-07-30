@@ -46,11 +46,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.ImageIcon;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -64,7 +66,16 @@ public class EditorUtils {
     public static final String PATHS = "paths";        //NOI18N
     public static final String BASE_URL = "baseUrl";    //NOI8N
     public static final String CONFIG_METHOD_NAME = "config"; //NOI18N
-
+    
+    private static final String REQUIRE_JS_ICON_PATH = "org/netbeans/modules/javascript2/requirejs/resources/requirejs.png"; //NOI18N
+    private static ImageIcon REQUIREJS_ICON = null;
+    
+    public static ImageIcon getRequireJsIcon () {
+        if (REQUIREJS_ICON == null) {
+            REQUIREJS_ICON = new ImageIcon(ImageUtilities.loadImage(REQUIRE_JS_ICON_PATH)); //NOI18N
+        }
+        return REQUIREJS_ICON;
+    }
     /**
      * Returns true if at the offset there is a string and the string is in a
      * call of define or require method.
