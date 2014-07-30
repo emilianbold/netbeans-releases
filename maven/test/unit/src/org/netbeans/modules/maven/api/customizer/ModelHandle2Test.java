@@ -42,9 +42,11 @@ import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
+import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -113,10 +115,20 @@ public class ModelHandle2Test extends NbTestCase {
         Map<String,String> props = mapp.getProperties();
         assertNotNull(props);
         assertEquals("{someprop=v}", props.toString());
+
+        {
+            RunConfig run = conf.createConfigForDefaultAction("run", project, project.getLookup());
+            assertEquals("One goal", 1, run.getGoals().size());
+            assertEquals("jetty:run", run.getGoals().get(0));
+        }
         
-        RunConfig run = conf.createConfigForDefaultAction("run", project, project.getLookup());
-        assertEquals("One goal", 1, run.getGoals().size());
-        assertEquals("jetty:run", run.getGoals().get(0));
+        {
+            RunConfig run = ActionToGoalUtils.createRunConfig("run", (NbMavenProjectImpl) project, project.getLookup());
+            assertEquals("One goal", 1, run.getGoals().size());
+            assertEquals("jetty:run", run.getGoals().get(0));
+            assertEquals("Profile activated in profile action: " + run.getActivatedProfiles(), 1, run.getActivatedProfiles().size());
+        }
+        
     }
     
     public void testConfigInOneFileFallbacksToBaseProfile() throws Exception { // #229192
@@ -142,10 +154,19 @@ public class ModelHandle2Test extends NbTestCase {
         NetbeansActionMapping mapp = ModelHandle2.getMapping("debug", project, cp.getActiveConfiguration());
         assertNotNull(mapp);
         assertEquals("DbgJtt", mapp.getDisplayName());
-        
-        RunConfig run = conf.createConfigForDefaultAction("debug", project, project.getLookup());
-        assertEquals("One goal", 1, run.getGoals().size());
-        assertEquals("package", run.getGoals().get(0));
+
+        {
+            RunConfig run = conf.createConfigForDefaultAction("debug", project, project.getLookup());
+            assertEquals("One goal", 1, run.getGoals().size());
+            assertEquals("package", run.getGoals().get(0));
+            assertTrue("No profile activated, we are fallback: " + run.getActivatedProfiles(), run.getActivatedProfiles().isEmpty());
+        }
+        {
+            RunConfig run = ActionToGoalUtils.createRunConfig("debug", (NbMavenProjectImpl) project, project.getLookup());
+            assertEquals("One goal", 1, run.getGoals().size());
+            assertEquals("package", run.getGoals().get(0));
+            assertTrue("No profile activated in action, we are fallback: " + run.getActivatedProfiles(), run.getActivatedProfiles().isEmpty());
+        }
     }
 
 }

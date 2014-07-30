@@ -254,14 +254,15 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
 
     private RunConfig mapGoalsToAction(Project project, String actionName, Map<String, String> replaceMap, FileObject selectedFile, Lookup lookup) {
         try {
+            boolean[] fallback = { false };
             NetbeansActionMapping action;
             if (this instanceof M2Configuration) {
-                action = ((M2Configuration)this).findMappingFor(replaceMap, project, actionName);
+                action = ((M2Configuration)this).findMappingFor(replaceMap, project, actionName, fallback);
             } else {
                 action = findMapAction(replaceMap, project, actionName);
             }
             if (action != null) {
-                ModelRunConfig mrc = new ModelRunConfig(project, action, actionName, selectedFile, lookup);
+                ModelRunConfig mrc = new ModelRunConfig(project, action, actionName, selectedFile, lookup, fallback[0]);
                 if (replaceMap.containsKey(DefaultReplaceTokenProvider.METHOD_NAME)) {
                     //sort of hack to push the method name through the current apis..
                     mrc.setProperty(DefaultReplaceTokenProvider.METHOD_NAME, replaceMap.get(DefaultReplaceTokenProvider.METHOD_NAME));
