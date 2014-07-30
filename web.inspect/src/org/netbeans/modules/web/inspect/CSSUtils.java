@@ -296,8 +296,8 @@ public class CSSUtils {
         // character that ensures that the last group is ended.
         // This character is removed at the end of this method.
         selector += 'A';
-        String whitespaceChars = " \t\n\r\f"; // NOI18N
-        String specialChars = ".>+~#:*()[]|,"; // NOI18N
+        String whitespaceChars = " \t\n\r\f\""; // NOI18N
+        String specialChars = ".>+~#:*()[]|,="; // NOI18N
         StringBuilder main = new StringBuilder();
         StringBuilder group = null;
         for (int i=0; i<selector.length(); i++) {
