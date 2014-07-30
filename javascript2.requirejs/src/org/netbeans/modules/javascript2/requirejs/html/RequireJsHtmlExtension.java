@@ -170,7 +170,8 @@ public class RequireJsHtmlExtension extends HtmlExtension {
         if (ts == null) {
             return super.findDeclaration(info, caretOffset);
         }
-        String value = getDataMainValue(ts, caretOffset);
+        int eOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        String value = getDataMainValue(ts, eOffset);
         if (value != null) {
             FileObject fo = info.getSnapshot().getSource().getFileObject();
             if (fo != null) {
