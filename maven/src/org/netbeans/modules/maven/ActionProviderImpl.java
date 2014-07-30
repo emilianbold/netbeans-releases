@@ -491,7 +491,7 @@ public class ActionProviderImpl implements ActionProvider {
         }
 
         private ModelRunConfig createCustomRunConfig(M2ConfigProvider conf) {
-            ModelRunConfig rc = new ModelRunConfig(proj, mapping, mapping.getActionName(), null, Lookup.EMPTY);
+            ModelRunConfig rc = new ModelRunConfig(proj, mapping, mapping.getActionName(), null, Lookup.EMPTY, false);
 
             //#171086 also inject profiles from currently selected configuratiin
             List<String> acts = new ArrayList<String>();

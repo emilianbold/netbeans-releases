@@ -305,7 +305,10 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
         return originalMappings;
     }
 
-    public NetbeansActionMapping getProfileMappingForAction(String action, Project project, Map<String,String> replaceMap) {
+    public NetbeansActionMapping getProfileMappingForAction(
+        String action, Project project, 
+        Map<String,String> replaceMap, boolean[] fallback
+    ) {
         NetbeansActionReader parsed = new NetbeansActionReader() {
             @Override
             protected String getRawMappingsAsString() {
@@ -335,12 +338,20 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
         NetbeansActionMapping ret = parsed.getMappingForAction(reader, LOG, action, project, id, replaceMap);
         if (ret == null) {
             ret = parsed.getMappingForAction(reader, LOG, action, project, null, replaceMap);
+            if (fallback != null && ret != null) {
+                fallback[0] = true;
+            }
         }
         return ret;
     }
 
-    public NetbeansActionMapping findMappingFor(Map<String, String> replaceMap, Project project, String actionName) {
-        NetbeansActionMapping action = getProfileMappingForAction(actionName, project, replaceMap);
+    public NetbeansActionMapping findMappingFor(
+        Map<String, String> replaceMap, Project project, String actionName,
+        boolean[] fallback
+    ) {
+        NetbeansActionMapping action = getProfileMappingForAction(
+            actionName, project, replaceMap, fallback
+        );
         if (action != null) {
             return action;
         }
