@@ -302,10 +302,12 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
         IOProvider iop = IOProvider.getDefault();
         assert iop instanceof CndTestIOProvider : "found " + iop.getClass();
+        final StringBuilder buf = new StringBuilder();
         ((CndTestIOProvider) iop).addListener(new CndTestIOProvider.Listener() {
             @Override
             public void linePrinted(String line) {
                 if(line != null) {
+                    buf.append(line).append('\n');
                     if (line.trim().startsWith(successLine)) {
                         build_rc.set(0);
                         done.countDown();
@@ -356,6 +358,6 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         } catch (InterruptedException ir) {
         }
 
-        assertTrue("build failed - rc = " + build_rc.intValue(), build_rc.intValue() == 0);
+        assertTrue("build failed - rc = " + build_rc.intValue()+"\nBuildLog:\n"+buf.toString(), build_rc.intValue() == 0);
     }
 }
