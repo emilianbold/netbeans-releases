@@ -191,7 +191,14 @@ public class DownloadBinaries extends Task {
         if (clean || !f.exists()) {
             String cacheName = ids[0].replace('.', '/') + "/" +
                     ids[1] + "/" + ids[2] + "/" + ids[1] + "-" + ids[2] + ".jar";
-            final String url = "http://central.maven.org/maven2/" + cacheName;
+            
+            File local = new File(new File(new File(new File(System.getProperty("user.home")), ".m2"), "repository"), cacheName.replace('/', File.separatorChar));
+            final String url;
+            if (local.exists()) {
+                url = local.toURI().toString();
+            } else {
+                url = "http://central.maven.org/maven2/" + cacheName;
+            }
             try {
                 URL u = new URL(url);
                 downloadFromServer(u, cacheName, f, null);
