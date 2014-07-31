@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -62,8 +62,8 @@ BUNDLE_LONG_NAMES[2] = "C/C++";
 BUNDLE_LONG_NAMES[3] = "HTML5&nbsp;&amp;&nbsp;PHP";
 BUNDLE_LONG_NAMES[4] = "All";
 
-var RELEASE_NOTES_LINK  = "http://netbeans.org/community/releases/74/relnotes.html";
-var INSTALL_NOTES_LINK  = "http://netbeans.org/community/releases/74/install.html";
+var RELEASE_NOTES_LINK  = "http://netbeans.org/community/releases/80/relnotes.html";
+var INSTALL_NOTES_LINK  = "http://netbeans.org/community/releases/80/install.html";
 
 var LEGAL_INFO_HEADER = "Important Legal Information:";
 
