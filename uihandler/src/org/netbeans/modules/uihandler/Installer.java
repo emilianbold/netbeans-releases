@@ -1145,10 +1145,16 @@ public class Installer extends ModuleInstall implements Runnable {
     static void parseButtons(InputStream is, final Object defaultButton, final DialogDescriptor dd)
             throws IOException, ParserConfigurationException, SAXException, InterruptedException, InvocationTargetException {
         final ButtonsHTMLParser bp = new ButtonsHTMLParser(is);
-        bp.parse();
+        final IOException[] ioExPtr = new IOException[] { null };
         Runnable buttonsCreation = new Runnable() {
             @Override
             public void run() {
+                try {
+                    bp.parse();
+                } catch (IOException ioex) {
+                    ioExPtr[0] = ioex;
+                    return ;
+                }
                 bp.createButtons();
                 List<Object> options = bp.getOptions();
                 if (!bp.containsExitButton() && (defaultButton != null)){
@@ -1166,6 +1172,9 @@ public class Installer extends ModuleInstall implements Runnable {
             buttonsCreation.run();
         }else{
             EventQueue.invokeAndWait(buttonsCreation);
+        }
+        if (ioExPtr[0] != null) {
+            throw ioExPtr[0];
         }
     }
     
