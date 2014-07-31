@@ -91,6 +91,14 @@ public final class ProcessJsAnnotationsTask extends Task {
 
     @Override
     public void execute() throws BuildException {
+        if (classes == null) {
+            throw new BuildException("root of classes must be specified!");
+        }
+        File master = new File(new File(classes, "META-INF"), "net.java.html.js.classes");
+        if (!master.exists()) {
+            return;
+        }
+        
         LinkedList<URL> arr = new LinkedList<URL>();
         boolean foundAsm = false;
         for (String s : cp.list()) {
@@ -120,7 +128,6 @@ public final class ProcessJsAnnotationsTask extends Task {
         }
         URLClassLoader l = new URLClassLoader(arr.toArray(new URL[arr.size()]));
         try {
-            File master = new File(new File(classes, "META-INF"), "net.java.html.js.classes");
             processClasses(l, master, classes);
         } catch (IOException ex) {
             throw new BuildException("Problem converting JavaScriptXXX annotations", ex);
