@@ -89,7 +89,7 @@ public class RequireJsDataProvider {
 
     private static final String CACHE_FOLDER_NAME = "requirejs-doc"; //NOI18N
     private static final String API_FILE = "api.html"; //NOI18N
-    private static final String API_URL = "http://requirejs.org/docs/api.html";
+    public static final String API_URL = "http://requirejs.org/docs/api.html";
 
     private static final int URL_CONNECTION_TIMEOUT = 1000; //ms
     private static final int URL_READ_TIMEOUT = URL_CONNECTION_TIMEOUT * 3; //ms
@@ -197,11 +197,16 @@ public class RequireJsDataProvider {
         return result;
     }
 
+    public static File getCachedAPIFile() {
+        String pathFile =  new StringBuilder().append(CACHE_FOLDER_NAME).append('/').append(API_FILE).toString();
+        File cacheFile = Places.getCacheSubfile(pathFile);
+        return cacheFile;
+    }
+    
     private String getContentApiFile() {
         String result = null;
         try {
-            String pathFile = new StringBuilder().append(CACHE_FOLDER_NAME).append('/').append(API_FILE).toString(); // NOI18N
-            File cacheFile = Places.getCacheSubfile(pathFile);
+            File cacheFile = getCachedAPIFile();
             if (!cacheFile.exists()) {
 
                 //if any of the files is not loaded yet, start the loading process
