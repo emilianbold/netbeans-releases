@@ -1497,11 +1497,6 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                             }
                         }
                     }
-                    
-                    if (newType instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
-                        newType = createType(newType, instantiation);
-                    }
-                    
                     origType = paramType.getTemplateType();
                 } else {
                     newType = type;
