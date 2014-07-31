@@ -295,50 +295,31 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
      * @param mapping
      * @return true if template shouldn't be instantiated, false otherwise
      */
-    private static boolean canSkipInstantiation(CsmObject template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
-        for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : mapping.entrySet()) {
-            if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(entry.getValue())) {
-                // in case of expression parameter we should be able to have same mappings multiple times
-                return false; 
+    private static boolean canSkipInstantiation(CsmObject template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {        
+        CsmObject current = template;
+        
+        while (CsmKindUtilities.isInstantiation(current) || current instanceof Type) {
+            Map<CsmTemplateParameter, CsmSpecializationParameter> origMapping = null;
+            
+            if (CsmKindUtilities.isInstantiation(current)) {
+                origMapping = ((CsmInstantiation) current).getMapping();
+                current = ((CsmInstantiation) current).getTemplateDeclaration();
+            } else if (current instanceof Type) {
+                origMapping = ((Type) current).getInstantiation().getMapping();
+                current = ((Type) current).originalType;
+            } else {
+                return false; // paranoia
+            }
+            
+            // If instances are the same, then it is erroneous instantiation
+            if (origMapping == mapping) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "REFUSE TO INSTANTITATE:\n{0}\n", new Object[] {template}); //NOI18N
+                }
+                return true;
             }
         }
-        
-        Map<CsmTemplateParameter, CsmSpecializationParameter> origMapping = null;
-        
-        if (CsmKindUtilities.isInstantiation(template)) {
-            origMapping = ((CsmInstantiation) template).getMapping();
-        } else if (template instanceof Type) {
-            origMapping = ((Type) template).getInstantiation().getMapping();
-        }
-         
-        if (origMapping != null) {
-            if (mapping.size() == origMapping.size()) {
-                boolean areEqual = true;
                 
-                for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : origMapping.entrySet()) {
-                    CsmSpecializationParameter ourParam = entry.getValue();
-                    CsmSpecializationParameter otherParam = mapping.get(entry.getKey());                    
-                    if (!ourParam.equals(otherParam)) {
-                        areEqual = false;
-                        break;
-                    }
-                }
-                
-                if (areEqual) {
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.log(Level.FINE, "REFUSE TO INSTANTITATE:\n{0}\n", new Object[] {template}); //NOI18N
-                    }
-                    return true;
-                }
-            }
-        }
-        
-        if (CsmKindUtilities.isInstantiation(template)) {
-            return canSkipInstantiation(((CsmInstantiation) template).getTemplateDeclaration(), mapping);
-        } else if (template instanceof Type) {
-            return canSkipInstantiation(((Type) template).originalType, mapping);
-        }
-        
         return false;
     }
     
