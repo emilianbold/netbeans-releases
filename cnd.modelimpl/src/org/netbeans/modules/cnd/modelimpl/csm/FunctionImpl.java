@@ -52,6 +52,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -95,6 +97,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.RawNamable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import static org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities.UID_SIGNATURE_PREFIX;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -104,7 +107,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
-import static org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities.UID_SIGNATURE_PREFIX;
 
 /**
  *
@@ -113,6 +115,8 @@ import static org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities.UID_SIG
  */
 public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         implements CsmFunction, Disposable, RawNamable, CsmTemplate {
+    
+    private static final Logger LOG = Logger.getLogger(FunctionImpl.class.getName());
      
     /*package*/ static final String OPERATOR = "operator"; // NOI18N;
 
@@ -242,7 +246,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     protected void setParameters(FunctionParameterListImpl parameterList, boolean voidParamList) {
         if (parameterList == null) {
-            System.err.println("NO PARAM LIST FOR FUNC:" + name + " at " + getStartOffset() + " in " + getContainingFile());
+            LOG.log(Level.WARNING, "NO PARAM LIST FOR FUNC:{0} at {1} in {2}", new Object[]{name, getStartOffset(), getContainingFile()}); // NOI18N
         }        
         this.parameterList = parameterList;
         setFlags(FLAGS_VOID_PARMLIST, voidParamList);
