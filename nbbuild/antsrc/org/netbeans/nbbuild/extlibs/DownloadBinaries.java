@@ -263,7 +263,7 @@ public class DownloadBinaries extends Task {
             try {
                 url = new URL(prefix + cacheName);
                 if (downloadFromServer(url, cacheName, destination, expectedHash)) {
-                    break;
+                    return;
                 }
             } catch (IOException x) {
                 String msg = "Could not download " + url + " to " + destination + ": " + x;
