@@ -46,7 +46,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ChangeEvent;
@@ -55,11 +58,23 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance.LibraryManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.wizard.AbstractPanel.Settings;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -68,6 +83,8 @@ import org.openide.util.Utilities;
 public class JaxRsConfigurationPanel extends javax.swing.JPanel implements ChangeListener, Settings {
     
     private static final long serialVersionUID = 5841706512529345806L;
+    private static final Logger LOGGER = Logger.getLogger(JaxRsConfigurationPanel.class.getName());
+    private static final String JAX_RS_LIBRARY_NAME="jax-rs"; //NOI18N
     private String parentPackageName = null;
     
     public JaxRsConfigurationPanel( SourcePanel sourcePanel ) {
@@ -141,8 +158,15 @@ public class JaxRsConfigurationPanel extends javax.swing.JPanel implements Chang
         Project project = Templates.getProject(wizard);
         final RestSupport restSupport = project.getLookup().
                 lookup(RestSupport.class);
+
+        boolean hasJersey1 = restSupport.hasJersey1(true);
+        boolean hasJersey2 = restSupport.hasJersey2(true);
+        if (hasJersey1 && !hasJersey2) {
+            configureJaxRsLibrary(project);
+        }
+        
         // show Jersey option only for Jersey 1.x server and Java EE6:
-        boolean showJerseyChoice = (restSupport.isEE6() && restSupport.hasJersey1(true) && !restSupport.hasJersey2(true));
+        boolean showJerseyChoice = (restSupport.isEE6() && hasJersey1 && !restSupport.hasJersey2(true));
         useJersey.setVisible(showJerseyChoice);
 
         // except of Jersey 1.x server and Java EE6 it is not necessary to ask user for
@@ -257,6 +281,53 @@ public class JaxRsConfigurationPanel extends javax.swing.JPanel implements Chang
         
         for (ChangeListener listener : listeners) {
             listener.stateChanged(event);
+        }
+    }
+    /** Configure Project to use JAX-RS-2.0 library (or higher) if available on target server 
+     * 
+     * @param project Project instance
+     */
+    private void configureJaxRsLibrary(Project project) {
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        String serverInstanceID = provider.getServerInstanceID();
+        if (serverInstanceID != null) {
+            ServerInstance serverInstance = Deployment.getDefault().getServerInstance(serverInstanceID);
+            if (serverInstance != null) {
+                try {
+                    LibraryManager libraryManager = serverInstance.getLibraryManager();
+                    if (libraryManager != null) {
+                        Iterator<ServerLibrary> it = libraryManager.getDeployedLibraries().iterator();
+                        while (it.hasNext()) {
+                            ServerLibrary lib = it.next();
+                            if (JAX_RS_LIBRARY_NAME.equals(lib.getName())) {
+                                Version specVersion = lib.getSpecificationVersion();
+                                if (specVersion != null && specVersion.isAboveOrEqual(Version.fromDottedNotationWithFallback("2.0"))) {
+                                    String libraryDisplayName = lib.getName().toUpperCase()+" "+specVersion.toString(); //NOI18N
+                                    NotifyDescriptor dd = new NotifyDescriptor.Confirmation (
+                                        NbBundle.getMessage(JaxRsConfigurationPanel.class,
+                                                "MSG_Jersey2AvailableOnServer",
+                                                new Object[]{libraryDisplayName, serverInstance.getServerDisplayName()}),
+                                        NotifyDescriptor.YES_NO_OPTION);
+                                    DialogDisplayer.getDefault().notify(dd);
+                                    if (NotifyDescriptor.OK_OPTION.equals(dd.getValue())) {
+                                        try {
+                                            provider.getConfigSupport().configureLibrary(
+                                                ServerLibraryDependency.minimalVersion(lib.getName(),
+                                                lib.getSpecificationVersion(),
+                                                lib.getImplementationVersion()));
+                                        } catch (ConfigurationException ex) {
+                                            LOGGER.log(Level.WARNING, "Exception during JAX-RS library configuration", ex); //NOI18N
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } catch (InstanceRemovedException ex) {
+                    LOGGER.log(Level.INFO, "Server Instance was removed", ex); //NOI18N
+                }
+            }
         }
     }
     
