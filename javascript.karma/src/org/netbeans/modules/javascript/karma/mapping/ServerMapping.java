@@ -58,6 +58,7 @@ import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 public final class ServerMapping {
 
@@ -81,6 +82,9 @@ public final class ServerMapping {
                 absolutePath = URLDecoder.decode(absolutePath, StandardCharsets.UTF_8.name());
             } catch (UnsupportedEncodingException ex) {
                 LOGGER.log(Level.WARNING, null, ex);
+            }
+            if (Utilities.isWindows()) {
+                absolutePath = absolutePath.replace('/', '\\'); // NOI18N
             }
             return FileUtil.toFileObject(new File(absolutePath));
         }
@@ -149,8 +153,16 @@ public final class ServerMapping {
 
     private URL createUrl(String server, String prefix, String filePath) {
         assert server.endsWith("/") : server;
+        String urlPath;
+        if (Utilities.isWindows()) {
+            urlPath = filePath.replace('\\', '/'); // NOI18N
+        } else {
+            urlPath = filePath;
+        }
+        // encode only spaces, nothing more
+        urlPath = urlPath.replace(" ", "%20"); // NOI18N
         try {
-            return new URL(server + prefix + filePath);
+            return new URL(server + prefix + urlPath);
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
