@@ -224,18 +224,23 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
     }
 
     protected void applyRunargs() {
-	// Temp fix. Begin
-        DebugTarget debugTarget = debugger.getNDI().getDebugTarget();
         String runargs;
-        if ( (debugTarget != null) && (debugTarget.getUnparsedArgs() != null) ) {
-            runargs = debugTarget.getUnparsedArgs();
+        NativeDebuggerInfo ndi = debugger.getNDI();
+        if (ndi.isCaptured()) {
+            runargs = ndi.getCaptureInfo().quotedArgvString();
         } else {
-            // Temp fix. End
-            runargs = getArgsFlatEx();
-        }
-        
-	if (runargs == null) {
-	    runargs = "";
+            // Temp fix. Begin
+            DebugTarget debugTarget = ndi.getDebugTarget();
+            if ( (debugTarget != null) && (debugTarget.getUnparsedArgs() != null) ) {
+                runargs = debugTarget.getUnparsedArgs();
+            } else {
+                // Temp fix. End
+                runargs = getArgsFlatEx();
+            }
+
+            if (runargs == null) {
+                runargs = "";
+            }
         }
         String command = "runargs " + runargs; //NOI18N
 	// maybe conflict with "Standard output" implementation
@@ -254,7 +259,13 @@ public final class DbxDebuggerSettingsBridge extends DebuggerSettingsBridge {
     }
     
     protected void applyRunDirectory() {
-        String runDirectory = getRunDirectory();
+        String runDirectory;
+        NativeDebuggerInfo ndi = debugger.getNDI();
+        if (ndi.isCaptured()) {
+            runDirectory = ndi.getCaptureInfo().workingDirectory;
+        } else {
+            runDirectory = getRunDirectory();
+        }
 	if (runDirectory != null) {
 	    /* DEBUG
 	    String baseDir = mainRunProfile.getBaseDir();

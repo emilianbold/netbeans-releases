@@ -675,11 +675,6 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             // followed exec
             setCaptureState(CaptureState.NONE);
             startUpdates();
-
-            // Hmm, profileBridge().noteProgLoaded doesn't set runargs?
-            dbx.sendCommand(0, 0, "runargs " + // NOI18N
-                    getCaptureInfo().quotedArgvString());
-
         } else {
             setCaptureState(CaptureState.NONE);
         }
