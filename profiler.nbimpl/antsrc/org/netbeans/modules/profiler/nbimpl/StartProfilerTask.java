@@ -43,12 +43,9 @@ package org.netbeans.modules.profiler.nbimpl;
 
 import java.io.File;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.types.LogLevel;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;

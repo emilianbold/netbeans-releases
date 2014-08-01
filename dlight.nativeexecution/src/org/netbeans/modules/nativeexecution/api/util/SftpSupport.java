@@ -119,8 +119,6 @@ class SftpSupport {
             Integer.getInteger("remote.sftp.threads", Runtime.getRuntime().availableProcessors() + 2); // NOI18N
 
     private static final String PREFIX = "SFTP: "; // NOI18N;
-//    private final RequestProcessor readRuestProcessor = new RequestProcessor(PREFIX + "read", CONCURRENCY_LEVEL); //NOI18N
-//    private final RequestProcessor writeRuestProcessor = new RequestProcessor(PREFIX + "write", 1); //NOI18N
     private final RequestProcessor requestProcessor = new RequestProcessor(PREFIX, CONCURRENCY_LEVEL); //NOI18N
         
     //
@@ -141,14 +139,6 @@ class SftpSupport {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "SftpSupport for {0} started with maximum thread count: {1}", new Object[]{execEnv, CONCURRENCY_LEVEL});
         }
-    }
-
-    private RequestProcessor getReadRequestProcessor() {
-        return requestProcessor; // readRuestProcessor;
-    }
-
-    public RequestProcessor getWriteRuestProcessor() {
-        return requestProcessor; // writeRuestProcessor;
     }
 
     private void incrementStatistics() {
@@ -529,7 +519,7 @@ class SftpSupport {
         Logger.assertTrue(parameters.dstExecEnv.equals(execEnv));
         Uploader uploader = new Uploader(parameters);
         final FutureTask<UploadStatus> ftask = new FutureTask<UploadStatus>(uploader);
-        RequestProcessor.Task requestProcessorTask = getWriteRuestProcessor().create(ftask);
+        RequestProcessor.Task requestProcessorTask = requestProcessor.create(ftask);
         if (parameters.callback != null) {
             final ChangeListener callback = parameters.callback;
             requestProcessorTask.addTaskListener(new TaskListener() {
@@ -553,7 +543,7 @@ class SftpSupport {
 
         Downloader downloader = new Downloader(srcFileName, dstFileName, error);
         FutureTask<Integer> ftask = new FutureTask<Integer>(downloader);
-        getReadRequestProcessor().post(ftask);
+        requestProcessor.post(ftask);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "{0} schedulled", downloader.getTraceName());
         }
@@ -760,7 +750,7 @@ class SftpSupport {
     /*package*/ Future<StatInfo> lstat(String absPath, Writer error) {
         StatLoader loader = new StatLoader(absPath, true);
         FutureTask<StatInfo> ftask = new FutureTask<StatInfo>(loader);
-        getReadRequestProcessor().post(ftask);
+        requestProcessor.post(ftask);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "{0} schedulled", loader.getTraceName());
         }
@@ -770,7 +760,7 @@ class SftpSupport {
     /*package*/ Future<StatInfo> stat(String absPath, Writer error) {
         StatLoader loader = new StatLoader(absPath, false);
         FutureTask<StatInfo> ftask = new FutureTask<StatInfo>(loader);
-        getReadRequestProcessor().post(ftask);
+        requestProcessor.post(ftask);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "{0} schedulled", loader.getTraceName());
         }
@@ -780,7 +770,7 @@ class SftpSupport {
     /*package*/ Future<StatInfo[]> ls(String absPath, Writer error) {
         LsLoader loader = new LsLoader(absPath);
         FutureTask<StatInfo[]> ftask = new FutureTask<StatInfo[]>(loader);
-        getReadRequestProcessor().post(ftask);
+        requestProcessor.post(ftask);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "{0} schedulled", loader.getTraceName());
         }
