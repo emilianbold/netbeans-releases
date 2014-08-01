@@ -67,7 +67,6 @@ import org.netbeans.lib.profiler.results.cpu.CPUResultsSnapshot;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.modules.profiler.LoadedSnapshot;
-import org.netbeans.modules.profiler.ProfilerControlPanel2;
 import org.netbeans.modules.profiler.ResultsManager;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
@@ -75,6 +74,7 @@ import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointReport;
 import org.netbeans.modules.profiler.ppoints.ui.TakeSnapshotCustomizer;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
+import org.netbeans.modules.profiler.v2.SnapshotsWindow;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -639,8 +639,10 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
             if (heapdumpFile.exists()) {
                 File fixedHeapdumpFile = constructHeapDumpFile(Utils.getTimeInMillis(time));
                 heapdumpFile.renameTo(fixedHeapdumpFile);
-                if (ProfilerControlPanel2.hasDefault())
-                    ProfilerControlPanel2.getDefault().refreshSnapshotsList();
+                FileObject folder = FileUtil.toFileObject(fixedHeapdumpFile.getParentFile());
+                SnapshotsWindow.instance().refreshFolder(folder, true);
+//                if (ProfilerControlPanel2.hasDefault())
+//                    ProfilerControlPanel2.getDefault().refreshSnapshotsList();
 
                 return fixedHeapdumpFile.toURI().toURL().toExternalForm();
             }
