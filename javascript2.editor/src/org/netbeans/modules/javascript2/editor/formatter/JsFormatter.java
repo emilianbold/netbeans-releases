@@ -127,9 +127,6 @@ public class JsFormatter implements Formatter {
             public void run() {
                 long startTime = System.nanoTime();
 
-                FormatContext formatContext = new FormatContext(context, provider, compilationInfo.getSnapshot(), language);
-                CodeStyle.Holder codeStyle = CodeStyle.get(formatContext).toHolder();
-
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
                         compilationInfo.getSnapshot().getTokenHierarchy(), context.startOffset(), language);
 
@@ -157,6 +154,9 @@ public class JsFormatter implements Formatter {
 
                 startTime = System.nanoTime();
 
+                FormatContext formatContext = new FormatContext(context, provider, compilationInfo.getSnapshot(), language, root);
+                CodeStyle.Holder codeStyle = CodeStyle.get(formatContext).toHolder();
+                
                 int indentLevelSize = codeStyle.indentSize;
 
                 int initialIndent = codeStyle.initialIndent;
@@ -604,19 +604,31 @@ public class JsFormatter implements Formatter {
             }
         }
 
-        FormatToken end = null;
-        for (FormatToken current = token.next(); current != null;
-                current = current.next()) {
+        if (start == null) {
+            return;
+        }
 
-            if (!current.isVirtual()) {
-                if (current.getKind() != FormatToken.Kind.WHITESPACE
-                        && current.getKind() != FormatToken.Kind.EOL) {
-                    end = current;
+        int regionEnd = formatContext.getEmbeddedRegionEnd(start.getOffset());
+        FormatToken end = null;
+        // we must not cross the region boundaries in embedded case (might happen for broken source)
+        FormatToken candidate = null;
+        for (FormatToken testToken = token.next(); testToken != null
+                && (testToken.isVirtual() || regionEnd < 0 || testToken.getOffset() < regionEnd);
+                testToken = testToken.next()) {
+
+            if (!testToken.isVirtual()) {
+                if (testToken.getKind() != FormatToken.Kind.WHITESPACE
+                        && testToken.getKind() != FormatToken.Kind.EOL) {
+                    end = testToken;
                     break;
-                } else if (current.getKind() == FormatToken.Kind.EOL) {
-                    lastEol = current;
+                } else if (testToken.getKind() == FormatToken.Kind.EOL) {
+                    lastEol = testToken;
                 }
+                candidate = testToken;
             }
+        }
+        if (end == null) {
+            end = candidate;
         }
 
         // we mark space and WRAP_NEVER tokens as processed
@@ -630,7 +642,7 @@ public class JsFormatter implements Formatter {
         }
 
         // FIXME if end is null we might be at EOF
-        if (start != null && end != null) {
+        if (end != null) {
             boolean remove = !isSpace(token, formatContext, codeStyle, true, false);
 
             // we fetch the space or next token to start
@@ -878,6 +890,7 @@ public class JsFormatter implements Formatter {
 
         return !(JsTokenId.BRACKET_LEFT_CURLY == result.getId()
                 || JsTokenId.BRACKET_RIGHT_CURLY == result.getId()
+                || (formatContext.isBrokenSource() && JsTokenId.OPERATOR_SEMICOLON == result.getId())
                 || formatContext.isGenerated(result));
 
     }
