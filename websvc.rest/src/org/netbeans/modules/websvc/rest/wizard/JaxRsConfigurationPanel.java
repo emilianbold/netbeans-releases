@@ -142,7 +142,7 @@ public class JaxRsConfigurationPanel extends javax.swing.JPanel implements Chang
         final RestSupport restSupport = project.getLookup().
                 lookup(RestSupport.class);
         // show Jersey option only for Jersey 1.x server and Java EE6:
-        boolean showJerseyChoice = (restSupport.isEE6() && restSupport.hasJersey1(true));
+        boolean showJerseyChoice = (restSupport.isEE6() && restSupport.hasJersey1(true) && !restSupport.hasJersey2(true));
         useJersey.setVisible(showJerseyChoice);
 
         // except of Jersey 1.x server and Java EE6 it is not necessary to ask user for

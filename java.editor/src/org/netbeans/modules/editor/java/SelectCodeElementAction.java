@@ -148,7 +148,7 @@ final class SelectCodeElementAction extends BaseAction {
         private String name;
         private SelectionInfo[] selectionInfos;
         private int selIndex = -1;
-        private boolean ignoreNextCaretUpdate;
+        private int selOffset = -1;
         private AtomicBoolean cancel;
 
         SelectionHandler(JTextComponent target, String name) {
@@ -182,20 +182,17 @@ final class SelectCodeElementAction extends BaseAction {
 
         private void select(SelectionInfo selectionInfo) {
             Caret caret = target.getCaret();
-            ignoreNextCaretUpdate = true;
-            try {
-                caret.setDot(selectionInfo.getEndOffset());
-                caret.moveDot(selectionInfo.getStartOffset());
-            } finally {
-                ignoreNextCaretUpdate = false;
-            }
+            selOffset = selectionInfo.getStartOffset();
+            caret.setDot(selectionInfo.getEndOffset());
+            caret.moveDot(selOffset);
         }
         
         public void caretUpdate(CaretEvent e) {
-            if (!ignoreNextCaretUpdate) {
+            if (selOffset != e.getDot()) {
                 synchronized (this) {
                     selectionInfos = null;
                     selIndex = -1;
+                    selOffset = -1;
                 }
             }
         }

@@ -577,7 +577,9 @@ public final class Utilities {
         if (suggestedName != null) {
             vnct = new LinkedHashSet<>();
             vnct.add(suggestedName);
-            vnct.addAll(varNamesForType(type, types, elements, prefix));
+            if (type != null) {
+                vnct.addAll(varNamesForType(type, types, elements, prefix));
+            }
         } else {
             vnct = varNamesForType(type, types, elements, prefix);
         }

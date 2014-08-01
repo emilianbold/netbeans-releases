@@ -89,7 +89,6 @@
     <property name="glassfish.id"           value="${glassfish.display.version}"/>
     <property name="glassfish.install.dir"  value="${install.dir}/glassfish-4.0.1"/>
     <property name="glassfish_location"     value="${glassfish.location.prefix}/${glassfish.build.type}/${glassfish.version}/archive/bundles/glassfish-4.0.1-${glassfish.version}.zip"/>
-    <!--property name="glassfish_location_ml"  value="${glassfish.location.prefix}/${glassfish.build.type}/${glassfish.version}/archive/bundles/glassfish-4.0.1-${glassfish.version}-ml.zip"/ -->
     <property name="glassfish.subdir"       value="glassfish4"/>
     
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         

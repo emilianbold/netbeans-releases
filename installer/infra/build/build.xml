@@ -247,14 +247,6 @@
 		     </not>
              </and>
         </condition>
-
-
-        <set property="glassfish.build.suffix" value="ml"/>
-
-        <set property="glassfish-mod-sun.build.suffix" value="ml"/>
-        <set property="glassfish-mod-sun.ml.appendix" value="-ml"/>
-        <set property="glassfish-mod.build.suffix" value="ml"/>
-        <set property="glassfish-mod.ml.appendix" value="-ml"/>
         
 	<set property="nb.build.number"
              value="${build.number}"/>
