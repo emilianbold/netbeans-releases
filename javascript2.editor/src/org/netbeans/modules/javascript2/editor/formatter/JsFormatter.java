@@ -608,27 +608,19 @@ public class JsFormatter implements Formatter {
             return;
         }
 
-        int regionEnd = formatContext.getEmbeddedRegionEnd(start.getOffset());
         FormatToken end = null;
-        // we must not cross the region boundaries in embedded case (might happen for broken source)
-        FormatToken candidate = null;
-        for (FormatToken testToken = token.next(); testToken != null
-                && (testToken.isVirtual() || regionEnd < 0 || testToken.getOffset() < regionEnd);
-                testToken = testToken.next()) {
+        for (FormatToken current = token.next(); current != null;
+                current = current.next()) {
 
-            if (!testToken.isVirtual()) {
-                if (testToken.getKind() != FormatToken.Kind.WHITESPACE
-                        && testToken.getKind() != FormatToken.Kind.EOL) {
-                    end = testToken;
+            if (!current.isVirtual()) {
+                if (current.getKind() != FormatToken.Kind.WHITESPACE
+                        && current.getKind() != FormatToken.Kind.EOL) {
+                    end = current;
                     break;
-                } else if (testToken.getKind() == FormatToken.Kind.EOL) {
-                    lastEol = testToken;
+                } else if (current.getKind() == FormatToken.Kind.EOL) {
+                    lastEol = current;
                 }
-                candidate = testToken;
             }
-        }
-        if (end == null) {
-            end = candidate;
         }
 
         // we mark space and WRAP_NEVER tokens as processed
@@ -643,31 +635,49 @@ public class JsFormatter implements Formatter {
 
         // FIXME if end is null we might be at EOF
         if (end != null) {
-            boolean remove = !isSpace(token, formatContext, codeStyle, true, false);
-
             // we fetch the space or next token to start
             start = FormatTokenStream.getNextNonVirtual(start);
+            if (start == null) {
+                return;
+            }
 
-            if (start != null) {
-                if (start.getKind() != FormatToken.Kind.WHITESPACE
-                        && start.getKind() != FormatToken.Kind.EOL) {
-                    assert start == end : start;
-                    if (!remove) {
-                        formatContext.insert(start.getOffset(), " "); // NOI18N
+            // we must not cross the region boundaries in embedded case (might happen for broken source)
+            int regionEnd = formatContext.getEmbeddedRegionEnd(start.getOffset());
+            if (regionEnd >= 0) {
+                if (end.getOffset() > regionEnd) {
+                    while (end != null && end != start && (end.isVirtual() || end.getOffset() > regionEnd)) {
+                        end = end.previous();
                     }
+                }
+                if (lastEol != null && lastEol.getOffset() > regionEnd) {
+                    while (lastEol != null && lastEol != start && (lastEol.isVirtual()
+                            || lastEol.getOffset() > regionEnd || lastEol.getKind() != FormatToken.Kind.EOL)) {
+                        lastEol = lastEol.previous();
+                    }
+                }
+            }
+            // end of cross the region fix
+
+            boolean remove = !isSpace(token, formatContext, codeStyle, true, false);
+
+            if (start.getKind() != FormatToken.Kind.WHITESPACE
+                    && start.getKind() != FormatToken.Kind.EOL) {
+                assert start == end : start + " " + end;
+                if (!remove) {
+                    formatContext.insert(start.getOffset(), " "); // NOI18N
+                }
+            } else {
+                if (lastEol != null) {
+                    end = lastEol;
+                }
+                // if it should be removed or there is eol (in fact space)
+                // which will stay there
+                if (remove || end.getKind() == FormatToken.Kind.EOL) {
+                    formatContext.remove(start.getOffset(),
+                            end.getOffset() - start.getOffset());
                 } else {
-                    if (lastEol != null) {
-                        end = lastEol;
-                    }
-                    // if it should be removed or there is eol (in fact space)
-                    // which will stay there
-                    if (remove || end.getKind() == FormatToken.Kind.EOL) {
-                        formatContext.remove(start.getOffset(),
-                                end.getOffset() - start.getOffset());
-                    } else {
-                        formatContext.replace(start.getOffset(),
-                                end.getOffset() - start.getOffset(), " "); // NOI18N
-                    }
+                    formatContext.replace(start.getOffset(),
+                            end.getOffset() - start.getOffset(), " "); // NOI18N
                 }
             }
         }
