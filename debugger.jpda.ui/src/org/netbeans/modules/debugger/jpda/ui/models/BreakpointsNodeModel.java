@@ -44,10 +44,13 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.util.Map;
 import java.util.Vector;
-
+import java.util.WeakHashMap;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
@@ -58,10 +61,9 @@ import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-
 import org.openide.util.NbBundle;
 
 
@@ -445,7 +447,7 @@ public class BreakpointsNodeModel implements NodeModel {
     }
     
     public String getIconBase (Object o) throws UnknownTypeException {
-        boolean current = currentBreakpoint == o;
+        boolean current = getCurrentBreakpoint() == o;
         boolean disabled = !((Breakpoint) o).isEnabled();
         boolean invalid = ((Breakpoint) o).getValidity() == VALIDITY.INVALID;
         if (o instanceof LineBreakpoint) {
@@ -550,9 +552,17 @@ public class BreakpointsNodeModel implements NodeModel {
         return s.substring (i + 1);
     }
     
-    private JPDABreakpoint currentBreakpoint;
+    private final Map<Session, JPDABreakpoint> currentBreakpoints = new WeakHashMap<Session, JPDABreakpoint>();
+    
+    private JPDABreakpoint getCurrentBreakpoint() {
+        Session s = DebuggerManager.getDebuggerManager().getCurrentSession();
+        synchronized (currentBreakpoints) {
+            return currentBreakpoints.get(s);
+        }
+    }
+    
     private String bold (JPDABreakpoint b, String name) {
-        return b == currentBreakpoint ?
+        return b == getCurrentBreakpoint() ?
             BoldVariablesTableModelFilter.toHTML (
                 name,
                 true,
@@ -562,9 +572,16 @@ public class BreakpointsNodeModel implements NodeModel {
             name;
     }
     
-    public void setCurrentBreakpoint (JPDABreakpoint currentBreakpoint) {
-        JPDABreakpoint oldCurrentBreakpoint = this.currentBreakpoint;
-        this.currentBreakpoint = currentBreakpoint;
+    public void setCurrentBreakpoint (Session s, JPDABreakpoint currentBreakpoint) {
+        JPDABreakpoint oldCurrentBreakpoint;
+        synchronized (currentBreakpoints) {
+            oldCurrentBreakpoint = currentBreakpoints.get(s);
+            if (currentBreakpoint == null) {
+                currentBreakpoints.remove(s);
+            } else {
+                currentBreakpoints.put(s, currentBreakpoint);
+            }
+        }
         if (oldCurrentBreakpoint != null)
             fireNodeChanged (oldCurrentBreakpoint);
         if (currentBreakpoint != null)

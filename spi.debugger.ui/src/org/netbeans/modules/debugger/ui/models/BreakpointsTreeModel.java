@@ -213,6 +213,10 @@ public class BreakpointsTreeModel implements TreeModel {
                 DebuggerManager.PROP_BREAKPOINTS,
                 this
             );
+            DebuggerManager.getDebuggerManager ().addDebuggerListener (
+                DebuggerManager.PROP_CURRENT_SESSION,
+                this
+            );
             Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
                 getBreakpoints ();
             int i, k = bs.length;
@@ -225,6 +229,10 @@ public class BreakpointsTreeModel implements TreeModel {
             if (m == null) {
                 DebuggerManager.getDebuggerManager ().removeDebuggerListener (
                     DebuggerManager.PROP_BREAKPOINTS,
+                    this
+                );
+                DebuggerManager.getDebuggerManager ().removeDebuggerListener (
+                    DebuggerManager.PROP_CURRENT_SESSION,
                     this
                 );
                 Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
@@ -256,14 +264,13 @@ public class BreakpointsTreeModel implements TreeModel {
         public void propertyChange (PropertyChangeEvent evt) {
             BreakpointsTreeModel m = getModel ();
             if (m == null) return;
+            String propertyName = evt.getPropertyName();
+            if (propertyName == DebuggerManager.PROP_CURRENT_SESSION) {
+                m.fireTreeChanged ();
+            }
             if (! (evt.getSource () instanceof Breakpoint))
                 return;
-            String propertyName = evt.getPropertyName();
             if (propertyName == Breakpoint.PROP_GROUP_NAME) {
-                m.fireTreeChanged ();
-            } else if (propertyName == DebuggerManager.PROP_CURRENT_SESSION) {
-                // TODO: if all properties would be refreshed, this should be sufficient:
-                // m.fireTreeChanged(new ModelEvent.NodeChanged(m, evt.getSource()));
                 m.fireTreeChanged ();
             } else {
                 m.fireTreeChanged (new ModelEvent.NodeChanged(
