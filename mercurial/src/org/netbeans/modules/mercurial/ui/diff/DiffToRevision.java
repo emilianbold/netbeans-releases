@@ -93,7 +93,7 @@ public class DiffToRevision  implements ActionListener {
         cancelButton.getAccessibleContext().setAccessibleDescription(Bundle.CTL_DiffToRevision_cancelButton_ACSD());
         initializeSelections();
         attachListeners();
-        panel.rbLocalToBase.doClick();
+        panel.rbLocalToAny.doClick();
     } 
 
     public boolean showDialog() {
