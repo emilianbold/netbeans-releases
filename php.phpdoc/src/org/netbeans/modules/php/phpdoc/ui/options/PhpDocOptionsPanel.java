@@ -87,7 +87,8 @@ public final class PhpDocOptionsPanel extends JPanel {
         initComponents();
 
         // not set in Design because of windows (panel too wide then)
-        phpDocUsageLabel.setText(NbBundle.getMessage(PhpDocOptionsPanel.class, "LBL_PhpDocUsage", PhpDocScript.SCRIPT_NAME_LONG));
+        phpDocUsageLabel.setText(NbBundle.getMessage(PhpDocOptionsPanel.class, "LBL_PhpDocUsage",
+                PhpDocScript.SCRIPT_NAME, PhpDocScript.SCRIPT_NAME_LONG, PhpDocScript.SCRIPT_NAME_PHAR));
         errorLabel.setText(" "); // NOI18N
 
         phpDocTextField.getDocument().addDocumentListener(new DocumentListener() {
