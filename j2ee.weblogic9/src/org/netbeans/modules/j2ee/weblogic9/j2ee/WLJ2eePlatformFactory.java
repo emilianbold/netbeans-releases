@@ -459,7 +459,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
     }
 
-    private static File getMiddlewareModules(File middleware) {
+    @NonNull
+    public static File getMiddlewareModules(File middleware) {
         File modules = new File(middleware, "modules"); // NOI18N
         if (!modules.exists() || !modules.isDirectory()) {
             modules = new File(new File(middleware, "oracle_common"), "modules"); // NOI18N
