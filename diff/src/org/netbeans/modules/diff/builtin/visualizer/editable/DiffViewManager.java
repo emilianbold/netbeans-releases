@@ -734,17 +734,17 @@ class DiffViewManager implements ChangeListener {
                     scrollMap[topRight] = topLeft;
                     interpolate(scrollMap, lastOffset, topRight);
                     lastOffset = Math.max(lastOffset, lastDelete
-                            ? topRight - 50
-                            : (topRight + lastOffset) / 2);
+                            ? (topRight + lastOffset) / 2
+                            : topRight - 150);
                     int newLastOffset = rightPanelHeightCached - 1;
                     if (i < diffs.length - 1) {
                         newLastOffset = diffs[i + 1].topRight;
                         scrollMap[newLastOffset] = diffs[i + 1].topLeft;
                     }
-                    scrollMap[topRight] = (topLeft + bottomLeft) / 2;
+                    scrollMap[topRight] = bottomLeft;
                     interpolate(scrollMap, topRight, newLastOffset);
                     
-                    newLastOffset = Math.min((topRight + newLastOffset) / 2, topRight + 50);
+                    newLastOffset = Math.min((topRight + newLastOffset) / 2, topRight + 150);
                     interpolate(scrollMap, lastOffset, newLastOffset);
                     lastOffset = newLastOffset;
                     lastDelete = true;
@@ -753,6 +753,7 @@ class DiffViewManager implements ChangeListener {
                     interpolate(scrollMap, lastOffset, topRight);
                     interpolate(scrollMap, topRight, bottomRight);
                     lastOffset = bottomRight;
+                    lastDelete = false;
                 }
             }
             interpolate(scrollMap, lastOffset, rightPanelHeightCached - 1);
