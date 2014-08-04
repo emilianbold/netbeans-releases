@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.deployment.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -388,21 +389,24 @@ public final class DeployOnSaveManager {
 
     private static final class CopyOnSaveListener implements ArtifactListener {
 
-        private final J2eeModuleProvider provider;
+        private final WeakReference<J2eeModuleProvider> provider;
 
         public CopyOnSaveListener(J2eeModuleProvider provider) {
-            this.provider = provider;
+            this.provider = new WeakReference<J2eeModuleProvider>(provider);
         }
 
+        @Override
         public void artifactsUpdated(Iterable<Artifact> artifacts) {
             if (LOGGER.isLoggable(Level.FINE)) {
                 for (Artifact artifact : artifacts) {
                     LOGGER.log(Level.FINE, "Delivered copy artifact: {0}", artifact);
                 }
             }
-            DeployOnSaveManager.getDefault().submitChangedArtifacts(provider, artifacts);
+            J2eeModuleProvider realProvider = provider.get();
+            if (realProvider != null) {
+                DeployOnSaveManager.getDefault().submitChangedArtifacts(realProvider, artifacts);
+            }
         }
-
     }
 
     private class DeployTask implements Runnable {
