@@ -140,7 +140,7 @@ public class DiffToRevision  implements ActionListener {
             if (picker.showDialog()) {
                 HgLogMessage msg = picker.getSelectionRevision();
                 selectionsFirst.put(panel.rbLocalToAny, msg.getHgRevision());
-                panel.tfSelectedRevisionBaseToAny.setText(msg.toAnnotatedString(baseRevision.getChangesetId()));
+                panel.tfSelectedRevisionLocalToAny.setText(msg.toAnnotatedString(baseRevision.getChangesetId()));
             }
         }
     }
