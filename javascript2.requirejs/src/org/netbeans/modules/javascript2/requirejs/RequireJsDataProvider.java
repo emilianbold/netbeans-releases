@@ -232,6 +232,7 @@ public class RequireJsDataProvider {
         } catch (URISyntaxException | IOException ex) {
             loadingStarted = false;
             LOG.log(Level.INFO, "Cannot load RequireJS documentation from \"{0}\".", new Object[]{API_URL}); //NOI18N
+            LOG.log(Level.INFO, "", ex);
         }
         return result;
     }
@@ -251,7 +252,8 @@ public class RequireJsDataProvider {
             String tmpFileName = cacheFile.getAbsolutePath() + ".tmp";
             File tmpFile = new File(tmpFileName);
             try (Writer writer = new OutputStreamWriter(new FileOutputStream(tmpFile), "UTF-8")) { // NOI18N
-                loadURL(url, writer, null);
+                loadURL(url, writer, Charset.forName("UTF-8")); //NOI18N
+                writer.close();
                 tmpFile.renameTo(cacheFile);
             } finally {
                 if (tmpFile.exists()) {
