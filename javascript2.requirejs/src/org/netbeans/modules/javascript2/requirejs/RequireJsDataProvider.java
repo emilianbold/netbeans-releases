@@ -108,6 +108,10 @@ public class RequireJsDataProvider {
         TRANSLATE_NAME.put("map-notes", ""); //NOI18N
     }
 
+    private RequireJsDataProvider() {
+        loadingStarted = false;
+    }
+    
     public static synchronized RequireJsDataProvider getDefault() {
         if (INSTANCE == null) {
             INSTANCE = new RequireJsDataProvider();
@@ -216,14 +220,17 @@ public class RequireJsDataProvider {
                 }
                 //load from web and cache locally
                 loadDoc(cacheFile);
-                progress.progress(1);
-                progress.finish();
-                progress = null;
+                if (progress != null) {
+                    progress.progress(1);
+                    progress.finish();
+                    progress = null;
+                }
 
                 LOG.log(Level.FINE, "Loading doc finished."); //NOI18N
             }
             result = getFileContent(cacheFile);
         } catch (URISyntaxException | IOException ex) {
+            loadingStarted = false;
             LOG.log(Level.INFO, "Cannot load RequireJS documentation from \"{0}\".", new Object[]{API_URL}); //NOI18N
         }
         return result;
