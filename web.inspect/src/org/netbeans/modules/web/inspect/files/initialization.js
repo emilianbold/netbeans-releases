@@ -576,6 +576,9 @@ NetBeans.replaceInCSSSelectors = function(oldString, newString) {
 
 NetBeans.getClientRects = function(element) {
     var rects = element.getClientRects();
+    if (rects.length === 1) { // Issue 244527
+        rects = [element.getBoundingClientRect()];
+    }
     // Workaround for issue 236445
     if (NetBeans.clientRectsBug && NetBeans.isScrolling(element)) {
         var newRects = [];
