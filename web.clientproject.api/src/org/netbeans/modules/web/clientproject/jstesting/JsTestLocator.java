@@ -107,7 +107,7 @@ public final class JsTestLocator implements TestLocator {
     @NbBundle.Messages({
         "# {0} - file name",
         "# {1} - file path",
-        "JsTestLocator.not.found.source=Tested file not found for {0} in <sources>/{1}.",
+        "JsTestLocator.not.found.source=Tested file not found for {0} in <siteroot>/{1}.",
         "# {0} - file name",
         "# {1} - file path",
         "JsTestLocator.not.found.test=Test file not found for {0} in <tests>/{1}.",
