@@ -146,13 +146,14 @@ public class RequireJsCustomAttribute implements CustomAttribute {
 
         @Override
         public URL resolveLink(URL base, String link) {
-            if (base != null) {
-                try {
-                    URL url = new URL(base.toString() + link);
+            try {
+                if (!link.startsWith("http")) {  //NOI18N
+                    // try to read from cachd file
+                    URL url = new URL(RequireJsDataProvider.getCachedAPIFile().toURI().toURL().toString() + link);
                     return url;
-                } catch (MalformedURLException ex) {
-                    LOG.log(Level.INFO, null, ex);
                 }
+            } catch (MalformedURLException ex) {
+                LOG.log(Level.INFO, null, ex);
             }
             return null;
         }
