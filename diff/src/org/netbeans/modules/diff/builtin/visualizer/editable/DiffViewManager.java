@@ -725,6 +725,10 @@ class DiffViewManager implements ChangeListener {
                 int topRight = ddiff.getTopRight();
                 int bottomLeft = ddiff.getBottomLeft();
                 int bottomRight = ddiff.getBottomRight();
+                if (topRight >= scrollMap.length || bottomRight >= scrollMap.length) {
+                    Logger.getLogger(DiffViewManager.class.getName()).log(Level.FINE, "Skipping temporary diff highlights");
+                    break;
+                }
                 scrollMap[topRight] = topLeft;
                 if (bottomLeft == -1) {
                     bottomLeft = topLeft;
