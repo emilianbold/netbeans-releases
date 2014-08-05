@@ -45,7 +45,9 @@ package org.netbeans.modules.php.api.documentation;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.php.api.documentation.ui.customizer.CompositeCategoryProviderImpl;
 import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.Parameters;
@@ -63,6 +65,11 @@ public final class PhpDocumentations {
      * Path on SFS where {@link PhpDocumentationProvider PHP documentation providers} need to be registered.
      */
     public static final String DOCUMENTATION_PATH = "PHP/Documentation"; //NOI18N
+    /**
+     * Identifier of Project Customizer for documentation.
+     * @since 0.11
+     */
+    public static final String CUSTOMIZER_IDENT = "Documentation"; // NOI18N
 
     private static final Lookup.Result<PhpDocumentationProvider> DOCUMENTATIONS = Lookups.forPath(DOCUMENTATION_PATH).lookupResult(PhpDocumentationProvider.class);
 
@@ -99,4 +106,14 @@ public final class PhpDocumentations {
         Parameters.notNull("listener", listener);
         DOCUMENTATIONS.removeLookupListener(listener);
     }
+
+    /**
+     * Create project customizer for documentation providers.
+     * @return project customizer for documentation providers
+     * @since 0.11
+     */
+    public static ProjectCustomizer.CompositeCategoryProvider createCustomizer() {
+        return new CompositeCategoryProviderImpl();
+    }
+
 }

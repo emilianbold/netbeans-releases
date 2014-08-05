@@ -58,6 +58,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
+import org.netbeans.modules.php.api.documentation.PhpDocumentations;
 import org.netbeans.modules.php.api.framework.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.testing.PhpTesting;
@@ -354,6 +355,13 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             position = 351)
     public static ProjectCustomizer.CompositeCategoryProvider createJsTesting() {
         return JsTestingProviders.getDefault().createCustomizer();
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = UiUtils.CUSTOMIZER_PATH,
+            position = 360)
+    public static ProjectCustomizer.CompositeCategoryProvider createPhpDocumentation() {
+        return PhpDocumentations.createCustomizer();
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

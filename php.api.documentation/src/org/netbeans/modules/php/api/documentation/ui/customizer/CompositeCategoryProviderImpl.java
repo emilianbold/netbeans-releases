@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.api.documentation.ui.customizer;
 
-package org.netbeans.modules.php.phpdoc;
-
-import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import javax.swing.JComponent;
+import org.netbeans.modules.php.api.documentation.PhpDocumentations;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.phpdoc.ui.customizer.PhpModuleCustomizerImpl;
-import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizer;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public final class PhpDocumentorProvider extends PhpDocumentationProvider {
-    public static final String PHPDOC_LAST_FOLDER_SUFFIX = ".phpdoc.dir"; // NOI18N
+public final class CompositeCategoryProviderImpl  implements ProjectCustomizer.CompositeCategoryProvider {
 
-    private static final PhpDocumentorProvider INSTANCE = new PhpDocumentorProvider();
-
-    private PhpDocumentorProvider() {
-        super("phpDocumentor", NbBundle.getMessage(PhpDocumentorProvider.class, "LBL_Name")); // NOI18N
-    }
-
-    @PhpDocumentationProvider.Registration(position=100)
-    public static PhpDocumentorProvider getInstance() {
-        return INSTANCE;
-    }
-
+    @NbBundle.Messages("CompositeCategoryProviderImpl.documentation.title=Documentation")
     @Override
-    public PhpModuleCustomizer createPhpModuleCustomizer(PhpModule phpModule) {
-        return new PhpModuleCustomizerImpl(phpModule);
-    }
-
-    @Override
-    public void generateDocumentation(PhpModule phpModule) {
-        try {
-            PhpDocScript.getDefault().generateDocumentation(phpModule);
-        } catch (InvalidPhpExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpDocScript.OPTIONS_SUB_PATH);
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+        PhpModule phpModule = PhpModule.Factory.lookupPhpModule(context);
+        if (phpModule == null) {
+            throw new IllegalStateException("PHP module must be found in context: " + context);
         }
+        return ProjectCustomizer.Category.create(
+                PhpDocumentations.CUSTOMIZER_IDENT,
+                Bundle.CompositeCategoryProviderImpl_documentation_title(),
+                null);
     }
+
+    @Override
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        if (PhpDocumentations.CUSTOMIZER_IDENT.equals(category.getName())) {
+            PhpModule phpModule = PhpModule.Factory.lookupPhpModule(context);
+            assert phpModule != null : "Cannot find php module in lookup: " + context;
+            return new CustomizerDocumentation(category, phpModule);
+        }
+        return null;
+    }
+
 }
