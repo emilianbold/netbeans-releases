@@ -2616,7 +2616,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         if (dbx != null && dbx.connected()) {
             // Ask dbx to quit (shutdown)
-            dbx.sendCommandIntNoresume(0, 0, "quit");	// NOI18N
+            dbx.disconnect();
         } else {
             // since there's no dbx connection (e.g. failed to start)
             // call kill directly
