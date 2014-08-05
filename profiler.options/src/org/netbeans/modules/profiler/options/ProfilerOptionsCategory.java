@@ -43,15 +43,16 @@
 
 package org.netbeans.modules.profiler.options;
 
+import java.beans.PropertyChangeListener;
+import javax.swing.JComponent;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
-import org.netbeans.modules.profiler.options.ui.ProfilerOptionsPanel;
+import org.netbeans.modules.profiler.options.ui.v2.ProfilerOptionsContainer;
+import org.netbeans.modules.profiler.options.ui.v2.ProfilerOptionsPanel;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import java.beans.PropertyChangeListener;
-import javax.swing.*;
-import org.netbeans.modules.options.java.api.JavaOptions;
 
 @OptionsPanelController.SubRegistration(
     location=JavaOptions.JAVA,
@@ -67,7 +68,7 @@ public class ProfilerOptionsCategory extends OptionsPanelController {
 
         public boolean isChanged() {
             if (settingsPanel == null) return false;
-            return !settingsPanel.currentSettingsEquals(ProfilerIDESettings.getInstance());
+            return !settingsPanel.equalsTo(ProfilerIDESettings.getInstance());
         }
 
         public JComponent getComponent() {
@@ -75,7 +76,7 @@ public class ProfilerOptionsCategory extends OptionsPanelController {
         }
 
         public JComponent getComponent(Lookup lookup) {
-            if (settingsPanel == null) settingsPanel = new ProfilerOptionsPanel();
+            if (settingsPanel == null) settingsPanel = new ProfilerOptionsContainer();
             return settingsPanel;
         }
 
@@ -93,7 +94,7 @@ public class ProfilerOptionsCategory extends OptionsPanelController {
 
         public void applyChanges() {
             if (settingsPanel == null) return;
-            settingsPanel.applySettings(ProfilerIDESettings.getInstance());
+            settingsPanel.storeTo(ProfilerIDESettings.getInstance());
         }
 
         public void cancel() {
@@ -104,7 +105,7 @@ public class ProfilerOptionsCategory extends OptionsPanelController {
 
         public void update() {
             if (settingsPanel == null) return;
-            settingsPanel.init(ProfilerIDESettings.getInstance());
+            settingsPanel.loadFrom(ProfilerIDESettings.getInstance());
         }
 
 }
