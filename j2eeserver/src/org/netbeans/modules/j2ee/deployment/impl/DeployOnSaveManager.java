@@ -351,12 +351,12 @@ public final class DeployOnSaveManager {
     
     private static final class CompileOnSaveListener implements ArtifactsUpdated {
 
-        private final J2eeModuleProvider provider;
+        private final WeakReference<J2eeModuleProvider> provider;
 
         private final List<URL> registered;
 
         public CompileOnSaveListener(J2eeModuleProvider provider, List<URL> registered) {
-            this.provider = provider;
+            this.provider = new WeakReference<J2eeModuleProvider>(provider);
             this.registered = registered;
         }
 
@@ -365,7 +365,12 @@ public final class DeployOnSaveManager {
         }
 
         public void artifactsUpdated(Iterable<File> artifacts) {
-            J2eeModuleProvider.DeployOnSaveClassInterceptor interceptor = provider.getDeployOnSaveClassInterceptor();
+            J2eeModuleProvider realProvider = provider.get();
+            if (realProvider == null) {
+                return;
+            }
+
+            J2eeModuleProvider.DeployOnSaveClassInterceptor interceptor = realProvider.getDeployOnSaveClassInterceptor();
             Set<Artifact> realArtifacts = new HashSet<Artifact>();
             for (File file : artifacts) {
                 if (file != null) {
@@ -382,7 +387,7 @@ public final class DeployOnSaveManager {
                     LOGGER.log(Level.FINE, "Delivered compile artifact: {0}", artifact);
                 }
             }
-            DeployOnSaveManager.getDefault().submitChangedArtifacts(provider, realArtifacts);
+            DeployOnSaveManager.getDefault().submitChangedArtifacts(realProvider, realArtifacts);
         }
 
     }

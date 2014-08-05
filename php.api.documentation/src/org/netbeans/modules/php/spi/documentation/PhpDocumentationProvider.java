@@ -46,8 +46,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizer;
 import org.openide.util.Parameters;
 
 /**
@@ -112,6 +114,16 @@ public abstract class PhpDocumentationProvider {
      */
     public boolean isInPhpModule(@NonNull PhpModule phpModule) {
         return true;
+    }
+
+    /**
+     * Creates customizer for given PHP module.
+     * @param phpModule PHP module, never {@code null}
+     * @return customizer for given PHP module or {@code null} if no customization is needed/available.
+     */
+    @CheckForNull
+    public PhpModuleCustomizer createPhpModuleCustomizer(PhpModule phpModule) {
+        return null;
     }
 
     /**
