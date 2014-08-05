@@ -196,7 +196,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
          */
         do {
             Token<JspTokenId> token = tokenSequence.token();
-            String tokenText = CharSequenceUtilities.toString(token.text()).trim();
+            String tokenText = token.text() == null ? "" : CharSequenceUtilities.toString(token.text()).trim(); //NOI18N
             if (token.id() == JspTokenId.SCRIPTLET) {
                 int blockStart = token.offset(tokenHierarchy);
                 // workaround for #172594
