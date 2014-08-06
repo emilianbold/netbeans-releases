@@ -60,17 +60,15 @@ public class WildflyTargetModuleID implements TargetModuleID {
     private String jar_name;
     private String context_url;
     private J2eeModule.Type type;
+    private boolean exploded = false;
 
     private Vector childs = new Vector();
     private TargetModuleID parent = null;
 
-    WildflyTargetModuleID(Target target, J2eeModule.Type type) {
-        this(target, "", type);
-    }
-
-    public WildflyTargetModuleID(Target target, String moduleName, J2eeModule.Type type) {
+    public WildflyTargetModuleID(Target target, String moduleName, J2eeModule.Type type, boolean exploded) {
         this.target = target;
         this.type = type;
+        this.exploded = exploded;
         this.jar_name = computeArchiveName(moduleName);
         if (type == Type.WAR) {
             context_url = '/' + this.jar_name.substring(0, this.jar_name.length() - 4);
@@ -171,5 +169,9 @@ public class WildflyTargetModuleID implements TargetModuleID {
     @Override
     public String toString() {
         return getModuleID();
+    }
+
+    public boolean isExploded() {
+        return exploded;
     }
 }
