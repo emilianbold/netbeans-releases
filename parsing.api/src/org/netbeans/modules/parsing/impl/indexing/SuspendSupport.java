@@ -136,7 +136,7 @@ public final class SuspendSupport {
     private static final class NopImpl implements SuspendStatusImpl {
         @Override
         public boolean isSuspendSupported() {
-            return false;
+            return true;
         }
         @Override
         public boolean isSuspended() {
