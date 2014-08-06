@@ -110,6 +110,19 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="SuspendStatus.isSuspendSupported">
+          <api name="ParsingAPI"/>
+          <summary>Added <code>SuspendStatus.isSuspendSupported</code></summary>
+          <version major="1" minor="78"/>
+          <date day="7" month="7" year="2014"/>
+          <author login="tzezula"/>
+          <compatibility source="compatible" binary="compatible" semantic="compatible" addition="yes"/>
+          <description>
+              Added <code>SuspendStatus.isSuspendSupported</code> which test if active indexing task
+              supports suspending.
+          </description>
+          <class package="org.netbeans.modules.parsing.spi.indexing" name="SuspendStatus"/>
+      </change>
       <change id="QuerySupport.per-project-roots">
           <api name="ParsingAPI"/>
           <summary>Added <code>QuerySupport.findRoots</code> mapping class paths roots by projects.</summary>
