@@ -47,9 +47,12 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
+import org.netbeans.modules.weblogic.common.api.WebLogicRuntime;
 
 /**
  *
@@ -62,7 +65,7 @@ public final class CommonBridge {
     }
 
     @NonNull
-    public static WebLogicConfiguration getConfiguration(@NonNull WLDeploymentManager dm) {
+    public static WebLogicConfiguration getConfiguration(@NonNull final WLDeploymentManager dm) {
         InstanceProperties ip = dm.getInstanceProperties();
         String username = ip.getProperty(InstanceProperties.USERNAME_ATTR);
         String password = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
@@ -70,6 +73,7 @@ public final class CommonBridge {
         String serverHome = ip.getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
         String domainHome = ip.getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
 
+        final WebLogicConfiguration config;
         if (dm.isRemote()) {
             String uri = ip.getProperty(InstanceProperties.URL_ATTR);
             // it is guaranteed it is WL
@@ -83,9 +87,25 @@ public final class CommonBridge {
             } catch (NumberFormatException ex) {
                 realPort = 7001;
             }
-            return WebLogicConfiguration.forRemoteDomain(new File(serverHome), host, realPort, username, password);
+            config = WebLogicConfiguration.forRemoteDomain(new File(serverHome), host, realPort, username, password);
+        } else {
+            config = WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome), username, password);
         }
-        return WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome), username, password);
+        Deployment.getDefault().addInstanceListener(new InstanceListener() {
+
+            @Override
+            public void instanceAdded(String serverInstanceID) {
+            }
+
+            @Override
+            public void instanceRemoved(String serverInstanceID) {
+                if (serverInstanceID.equals(dm.getUri())) {
+                    WebLogicRuntime.clear(config);
+                    Deployment.getDefault().removeInstanceListener(this);
+                }
+            }
+        });
+        return config;
     }
 
     @CheckForNull
