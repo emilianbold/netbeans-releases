@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "ProfilerOptionsContainer_Categories=&Categories"
+    "ProfilerOptionsContainer_Categories=&Categories:"
 })
 public class ProfilerOptionsContainer extends ProfilerOptionsPanel {
     

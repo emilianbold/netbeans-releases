@@ -43,7 +43,12 @@
 
 package org.netbeans.modules.profiler.options.ui.v2;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 
 /**
@@ -59,5 +64,36 @@ public abstract class ProfilerOptionsPanel extends JPanel {
     public abstract void loadFrom(ProfilerIDESettings settings);
     
     public abstract boolean equalsTo(ProfilerIDESettings settings);
+    
+    
+    public class Separator extends JPanel {
+        public Separator(String caption) {
+            setLayout(new GridBagLayout());
+
+            GridBagConstraints constraints;
+
+            // captionLabel
+            JLabel captionLabel = new JLabel(caption, JLabel.LEADING);
+            constraints = new GridBagConstraints();
+            constraints.gridx = 0;
+            constraints.gridy = 0;
+            constraints.anchor = GridBagConstraints.WEST;
+            constraints.fill = GridBagConstraints.NONE;
+            constraints.insets = new Insets(0, 0, 0, 0);
+            add(captionLabel, constraints);
+
+            // captionSeparator
+            JSeparator captionSeparator = new JSeparator();
+            constraints = new GridBagConstraints();
+            constraints.gridx = 1;
+            constraints.gridy = 0;
+            constraints.weightx = 1;
+            constraints.weighty = 1;
+            constraints.anchor = GridBagConstraints.CENTER;
+            constraints.fill = GridBagConstraints.HORIZONTAL;
+            constraints.insets = new Insets(0, 4, 0, 0);
+            add(captionSeparator, constraints);
+        }
+    }
     
 }

@@ -43,6 +43,12 @@
 
 package org.netbeans.modules.profiler.options.ui.v2.impl;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.options.ui.v2.ProfilerOptionsPanel;
 import org.openide.util.lookup.ServiceProvider;
@@ -55,7 +61,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class SnapshotsOptionsPanel extends ProfilerOptionsPanel {
     
     public SnapshotsOptionsPanel() {
-        setBackground(java.awt.Color.GREEN);
+        initUI();
     }
     
     public String getDisplayName() {
@@ -70,6 +76,223 @@ public final class SnapshotsOptionsPanel extends ProfilerOptionsPanel {
 
     public boolean equalsTo(ProfilerIDESettings settings) {
         return true;
+    }
+    
+    
+    private void initUI() {
+        setLayout(new GridBagLayout());
+        
+        GridBagConstraints c;
+        int y = 0;
+        int htab = 8;
+        int hgap = 10;
+        int vgap = 5;
+        
+        Separator snapshotsSeparator = new Separator("Snapshots");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, 0, vgap * 2, 0);
+        add(snapshotsSeparator, c);
+        
+        JLabel onSnapshotLabel = new JLabel("On Take Snapshot:");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(0, htab, vgap, 0);
+        add(onSnapshotLabel, c);
+        
+        JComboBox onSnapshotCombo = new JComboBox(new String[] { "Open snapshot", "Save snapshot", "Save and open snapshot" });
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.gridy = y;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, hgap, vgap, 0);
+        add(onSnapshotCombo, c);
+        
+        JPanel filler1 = new JPanel(null);
+        c = new GridBagConstraints();
+        c.gridx = 2;
+        c.gridy = y++;
+        c.weightx = 1;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        add(filler1, c);
+        
+        JLabel onThreadDumpLabel = new JLabel("On Thread Dump:");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(vgap * 3, htab, vgap, 0);
+        add(onThreadDumpLabel, c);
+        
+        JComboBox onThreadDumpCombo = new JComboBox(new String[] { "Open snapshot", "Save snapshot", "Save and open snapshot" });
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.gridy = y;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(vgap * 3, hgap, vgap, 0);
+        add(onThreadDumpCombo, c);
+        
+        JPanel filler2 = new JPanel(null);
+        c = new GridBagConstraints();
+        c.gridx = 2;
+        c.gridy = y++;
+        c.weightx = 1;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        add(filler2, c);
+        
+        JLabel onHeapDumpLabel = new JLabel("On Heap Dump:");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(vgap * 3, htab, vgap, 0);
+        add(onHeapDumpLabel, c);
+        
+        JComboBox onHeapDumpCombo = new JComboBox(new String[] { "Save snapshot", "Save and open snapshot", "Save and confirm open" });
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.gridy = y;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(vgap * 3, hgap, vgap, 0);
+        add(onHeapDumpCombo, c);
+        
+        JPanel filler3 = new JPanel(null);
+        c = new GridBagConstraints();
+        c.gridx = 2;
+        c.gridy = y++;
+        c.weightx = 1;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        add(filler3, c);
+        
+        JLabel onOOMEHeapDumpLabel = new JLabel("On OOME Heap Dump:");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(0, htab, vgap, 0);
+        add(onOOMEHeapDumpLabel, c);
+        
+        JComboBox onOOMEHeapDumpCombo = new JComboBox(new String[] { "Do nothing", "Save snapshot", "Save and open snapshot", "Save and confirm open" });
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.gridy = y;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, hgap, vgap, 0);
+        add(onOOMEHeapDumpCombo, c);
+        
+        JPanel filler4 = new JPanel(null);
+        c = new GridBagConstraints();
+        c.gridx = 2;
+        c.gridy = y++;
+        c.weightx = 1;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        add(filler4, c);
+        
+        JLabel saveHeapDumpLabel = new JLabel("Save Heap Dump to:");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(0, htab, vgap, 0);
+        add(saveHeapDumpLabel, c);
+        
+        JComboBox saveHeapDumpCombo = new JComboBox(new String[] { "Project", "Temporary directory", "Custom directory:" });
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.gridy = y;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, hgap, vgap, 0);
+        add(saveHeapDumpCombo, c);
+        
+        JPanel filler5 = new JPanel(null);
+        c = new GridBagConstraints();
+        c.gridx = 2;
+        c.gridy = y++;
+        c.weightx = 1;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        add(filler5, c);
+        
+        Separator snapshotsWindowSeparator = new Separator("Snapshots Window");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(vgap * 3, 0, vgap * 2, 0);
+        add(snapshotsWindowSeparator, c);
+        
+        JLabel openSnapshotsWindowLabel = new JLabel("Open automatically:");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(0, htab, vgap, 0);
+        add(openSnapshotsWindowLabel, c);
+        
+        JComboBox openSnapshotsWindowCombo = new JComboBox(new String[] { "Never", "On new profiling session", "On first snapshot", "On each snapshot" });
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.gridy = y;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, hgap, vgap, 0);
+        add(openSnapshotsWindowCombo, c);
+        
+        JPanel filler6 = new JPanel(null);
+        c = new GridBagConstraints();
+        c.gridx = 2;
+        c.gridy = y++;
+        c.weightx = 1;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        add(filler6, c);
+        
+        JLabel closeSnapshotsWindowLabel = new JLabel("Close automatically:");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(0, htab, vgap, 0);
+        add(closeSnapshotsWindowLabel, c);
+        
+        JComboBox closeSnapshotsWindowCombo = new JComboBox(new String[] { "Never", "On close profiling session" });
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.gridy = y;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, hgap, vgap, 0);
+        add(closeSnapshotsWindowCombo, c);
+        
+        JPanel filler7 = new JPanel(null);
+        c = new GridBagConstraints();
+        c.gridx = 2;
+        c.gridy = y++;
+        c.weightx = 1;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        add(filler7, c);
+        
+        JPanel filler = new JPanel(null);
+        filler.setOpaque(false);
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.weightx = 1;
+        c.weighty = 1;
+        c.anchor = GridBagConstraints.NORTHWEST;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.BOTH;
+        add(filler, c);
+        
     }
     
 }
