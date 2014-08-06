@@ -45,8 +45,10 @@ import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.apigen.commands.ApiGenScript;
+import org.netbeans.modules.php.apigen.ui.customizer.PhpModuleCustomizerImpl;
 import org.netbeans.modules.php.apigen.ui.options.ApiGenOptionsPanelController;
 import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizer;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,6 +73,11 @@ public final class ApiGenProvider extends PhpDocumentationProvider {
 
     public static String lastDirFor(PhpModule phpModule) {
         return ApiGenProvider.class.getName() + LAST_FOLDER_SUFFIX + phpModule.getName();
+    }
+
+    @Override
+    public PhpModuleCustomizer createPhpModuleCustomizer(PhpModule phpModule) {
+        return new PhpModuleCustomizerImpl(phpModule);
     }
 
     @Override

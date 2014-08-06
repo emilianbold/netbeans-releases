@@ -252,13 +252,6 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("deepNestedTemplateEntities.cpp", 27, 36, "deepNestedTemplateEntities.cpp", 26, 57);        
     }
     
-    public void testBug243083() throws Exception {
-        // Bug 243083 - unresolved method after dereferencing template based interator
-        performTest("bug243083.cpp", 36, 13, "bug243083.cpp", 27, 9);
-        performTest("bug243083.cpp", 37, 16, "bug243083.cpp", 27, 9);
-        performTest("bug243083.cpp", 38, 18, "bug243083.cpp", 27, 9);
-    }
-    
     public void testBug232530() throws Exception {
         // Bug 232530 - "Empty class specialization name" in messages log
         performTest("bug232530.cpp", 9, 19, "bug232530.cpp", 4, 9);
@@ -274,6 +267,20 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 235447 - regression in inaccuracy tests ("variadic template" suite)
         performTest("bug235447.cpp", 9, 28, "bug235447.cpp", 12, 9);
     }    
+    
+    public void testBug243083() throws Exception {
+        // Bug 243083 -  unresolved method after dereferencing template based interator
+        performTest("bug243083.cpp", 38, 13, "bug243083.cpp", 29, 9);
+        performTest("bug243083.cpp", 39, 16, "bug243083.cpp", 29, 9);
+        performTest("bug243083.cpp", 47, 43, "bug243083.cpp", 46, 7);
+    }        
+    
+    public void testBug243083_1() throws Exception {
+        // Bug 243083 -  unresolved method after dereferencing template based interator
+        performTest("bug243083_1.cpp", 25, 16, "bug243083_1.cpp", 9, 9);
+        performTest("bug243083_1.cpp", 27, 16, "bug243083_1.cpp", 14, 9);
+        performTest("bug243083_1.cpp", 29, 16, "bug243083_1.cpp", 19, 9);
+    }      
     
     public static class Failed extends HyperlinkBaseTestCase {
 

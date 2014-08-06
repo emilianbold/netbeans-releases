@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,84 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.apigen.ui.customizer;
+package org.netbeans.modules.php.phpdoc.ui.customizer;
 
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.php.phpdoc.PhpDocumentorProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizer;
 
-/**
- * Customizer panel for ApiGen.
- */
-public final class ApiGenCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+public final class PhpModuleCustomizerImpl implements PhpModuleCustomizer {
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = UiUtils.CUSTOMIZER_PATH,
-        position = 355
-    )
-    public static ApiGenCustomizer createCustomizer() {
-        return new ApiGenCustomizer();
-    }
+    private final PhpModule phpModule;
 
-    @NbBundle.Messages("ApiGenCustomizer.displayName=ApiGen")
-    @Override
-    public ProjectCustomizer.Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                "ApiGen", // NOI18N
-                Bundle.ApiGenCustomizer_displayName(),
-                null,
-                (ProjectCustomizer.Category[]) null);
+    private volatile PhpDocPanel panel;
+
+
+    public PhpModuleCustomizerImpl(PhpModule phpModule) {
+        this.phpModule = phpModule;
     }
 
     @Override
-    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        PhpModule phpModule = PhpModule.Factory.lookupPhpModule(context);
-        return new ApiGenPanel(category, phpModule);
+    public String getName() {
+        return PhpDocumentorProvider.getInstance().getName();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return PhpDocumentorProvider.getInstance().getDisplayName();
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        getComponent();
+        panel.addChangeListener(listener);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        getComponent();
+        panel.removeChangeListener(listener);
+    }
+
+    @Override
+    public JComponent getComponent() {
+        if (panel == null) {
+            panel = new PhpDocPanel(phpModule);
+        }
+        return panel;
+    }
+
+    @Override
+    public boolean isValid() {
+        getComponent();
+        return panel.isValidData();
+    }
+
+    @Override
+    public String getErrorMessage() {
+        getComponent();
+        return panel.getErrorMessage();
+    }
+
+    @Override
+    public String getWarningMessage() {
+        getComponent();
+        return panel.getWarningMessage();
+    }
+
+    @Override
+    public void save() {
+        getComponent();
+        panel.storeData();
+    }
+
+    @Override
+    public void close() {
+        // noop
     }
 
 }

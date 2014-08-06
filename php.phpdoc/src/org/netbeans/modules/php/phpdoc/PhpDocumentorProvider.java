@@ -45,7 +45,9 @@ package org.netbeans.modules.php.phpdoc;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.phpdoc.ui.customizer.PhpModuleCustomizerImpl;
 import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizer;
 import org.openide.util.NbBundle;
 
 public final class PhpDocumentorProvider extends PhpDocumentationProvider {
@@ -60,6 +62,11 @@ public final class PhpDocumentorProvider extends PhpDocumentationProvider {
     @PhpDocumentationProvider.Registration(position=100)
     public static PhpDocumentorProvider getInstance() {
         return INSTANCE;
+    }
+
+    @Override
+    public PhpModuleCustomizer createPhpModuleCustomizer(PhpModule phpModule) {
+        return new PhpModuleCustomizerImpl(phpModule);
     }
 
     @Override

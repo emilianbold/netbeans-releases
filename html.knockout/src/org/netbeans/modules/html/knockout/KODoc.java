@@ -51,6 +51,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -146,7 +147,7 @@ public class KODoc {
         synchronized (cacheFile) {
             StringWriter sw = new StringWriter();
             //load from the URL
-            KOUtils.loadURL(url, sw, null);
+            KOUtils.loadURL(url, sw, Charset.forName("UTF-8")); //NOI18N
             //strip off the proper content
             String knockoutDocumentationContent = KOUtils.getKnockoutDocumentationContent(sw.getBuffer().toString());
             //save to cache file

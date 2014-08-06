@@ -196,7 +196,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
          */
         do {
             Token<JspTokenId> token = tokenSequence.token();
-
+            String tokenText = token.text() == null ? "" : CharSequenceUtilities.toString(token.text()).trim(); //NOI18N
             if (token.id() == JspTokenId.SCRIPTLET) {
                 int blockStart = token.offset(tokenHierarchy);
                 // workaround for #172594
@@ -227,7 +227,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
                         buff.add(snapshot.create(" ; ", "text/x-java"));
                     }
                 }
-            } else if (token.id() == JspTokenId.TAG && "include".equals(token.text())) {
+            } else if (token.id() == JspTokenId.TAG && "include".equals(tokenText)) {
                 processIncludes(false, getIncludedPath(tokenSequence));
             }
         } while (tokenSequence.moveNext());

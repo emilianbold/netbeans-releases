@@ -197,4 +197,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 244199 - C++11 attributes are not supported
         performTest("bug244199.cpp");
     }
+    
+    public void testBug246170 () throws Exception {
+        // Bug 246170 - Unexpected token in case of c++11 array initialization
+        performTest("bug246170.cpp");
+    }
 }
