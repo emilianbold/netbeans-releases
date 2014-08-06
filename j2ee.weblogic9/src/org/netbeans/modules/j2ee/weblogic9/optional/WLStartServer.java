@@ -42,34 +42,18 @@
 
 package org.netbeans.modules.j2ee.weblogic9.optional;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.nio.charset.Charset;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
-import org.netbeans.api.extexecution.base.Processes;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
-import org.netbeans.api.extexecution.base.input.InputReaderTask;
-import org.netbeans.api.extexecution.base.input.InputReaders;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.modules.j2ee.deployment.plugins.api.CommonServerBridge;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -79,13 +63,10 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.j2ee.weblogic9.CommonBridge;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.weblogic.common.api.RuntimeListener;
 import org.netbeans.modules.weblogic.common.api.WebLogicRuntime;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.InputOutput;
 
@@ -251,12 +232,12 @@ public final class WLStartServer extends StartServer {
 
     @Override
     public boolean supportsStartDeploymentManager() {
-        return true;
+        return !dm.isRemote();
     }
 
     @Override
     public boolean supportsStartProfiling( Target target ) {
-        return true;
+        return !dm.isRemote();
     }
 
     @Override
