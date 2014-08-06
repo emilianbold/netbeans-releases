@@ -170,7 +170,7 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
 
     @Override
     public ProgressObject initialDeploy(Target target, DeploymentContext context) {
-        return deployer.deploy(target, context.getModule().getType(), context.getModuleFile());
+        return initialDeploy(target, context.getModule(), null, context.getModuleFile());
     }
 
     @Override
