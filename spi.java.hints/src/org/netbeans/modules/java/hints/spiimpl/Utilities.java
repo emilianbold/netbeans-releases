@@ -516,6 +516,22 @@ public class Utilities {
 
         if (errors != null) {
             for (Diagnostic<? extends JavaFileObject> d : patternTreeErrors) {
+                if (d.getCode().equals("compiler.err.cant.resolve")) { // NOI18N
+                    String msg = d.getMessage(Locale.ENGLISH);
+                    if (msg != null) {
+                        int symIdx = msg.indexOf("symbol: "); // NOI18N
+                        if (symIdx > 0) {
+                            symIdx += 8;
+                            // ignore errors for $ placeholders; may be identified as classnames as well
+                            if (msg.charAt(symIdx) == '$' || msg.substring(symIdx, symIdx + 7).equals("class $")) { // NOI18N
+                                continue;
+                            }
+                        }
+                    }
+                }
+                if (d.getStartPosition() == -1 || d.getEndPosition() == -1) {
+                    continue;
+                }
                 errors.add(new OffsetDiagnostic<JavaFileObject>(d, sourcePositions[0], -offset));
             }
         }
