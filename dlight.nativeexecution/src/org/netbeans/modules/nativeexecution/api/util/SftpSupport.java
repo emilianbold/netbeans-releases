@@ -637,6 +637,64 @@ class SftpSupport {
         }
     }
     
+    private class MoveWorker extends BaseWorker implements Callable<StatInfo> {
+
+        private final String from;
+        private final String to;
+
+        public MoveWorker(String from, String to) {
+            softAssertAbsolutePath(from);
+            softAssertAbsolutePath(to);
+            this.from = from;
+            this.to = to;
+        }
+
+        @Override
+        protected String getTraceName() {
+            return "moving " + from + " to " + to; //NOI18N
+        }
+
+        @Override
+        public StatInfo call() throws Exception {
+            StatInfo result = null;
+            SftpException exception = null;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "{0} started", getTraceName());
+            }
+            String threadName = Thread.currentThread().getName();
+            Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
+            RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("move", from); // NOI18N
+            ChannelSftp cftp = null;
+            try {
+                cftp = getChannel();
+                cftp.rename(from, to);
+            } catch (SftpException e) {
+                exception = e;
+                if (e.id == SftpIOException.SSH_FX_FAILURE) {
+                    if (MiscUtils.mightBrokeSftpChannel(e)) {
+                        cftp.quit();
+                    }
+                }
+            } finally {
+                RemoteStatistics.stopChannelActivity(activityID);
+                releaseChannel(cftp);
+                Thread.currentThread().setName(threadName);
+            }
+            if (exception != null) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "{0} failed", getTraceName());
+                }
+                throw decorateSftpException(exception, from + " to " + to); //NOI18N
+            }
+
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "{0} finished", new Object[] {getTraceName()});
+            }
+            return result;
+        }        
+        
+    }
+
     private class LsLoader extends BaseWorker implements Callable<StatInfo[]> {
 
         //private static final int S_IFMT   =  0xF000; //bitmask for the file type bitfields
@@ -773,6 +831,16 @@ class SftpSupport {
         requestProcessor.post(ftask);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "{0} schedulled", loader.getTraceName());
+        }
+        return ftask;
+    }
+    
+    /*package*/ Future<StatInfo> move(String from, String to) {
+        MoveWorker worker = new MoveWorker(from, to);
+        FutureTask<StatInfo> ftask = new FutureTask<StatInfo>(worker);
+        requestProcessor.post(ftask);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "{0} schedulled", worker.getTraceName());
         }
         return ftask;
     }

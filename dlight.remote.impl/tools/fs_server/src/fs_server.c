@@ -45,12 +45,12 @@
 
 #include <pthread.h>
 #include <stddef.h>
-#include <dirent.h> 
-#include <limits.h> 
-#include <stdio.h> 
+#include <dirent.h>
+#include <limits.h>
+#include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-#include <ctype.h> 
+#include <ctype.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <grp.h>
@@ -59,7 +59,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <getopt.h>
-#include <sys/stat.h> 
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
 
@@ -68,7 +68,7 @@
 
 typedef struct {
     int no;
-    pthread_t id;    
+    pthread_t id;
 } thread_info;
 
 static int rp_thread_count = DEFAULT_THREAD_COUNT;
@@ -86,8 +86,8 @@ static int refresh_sleep = 1;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 1
-#define FS_SERVER_MINOR_VERSION 25
+#define FS_SERVER_MID_VERSION 2
+#define FS_SERVER_MINOR_VERSION 1
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -103,7 +103,7 @@ typedef struct fs_entry {
 } fs_entry;
 
 static struct {
-    /** This mutex to be used ONLY to guard access to proceed field. 
+    /** This mutex to be used ONLY to guard access to proceed field.
      * NO other activity should be done under this mutex except for getting/setting proceed field. */
     pthread_mutex_t mutex;
     bool proceed;
@@ -116,7 +116,7 @@ static __thread struct {
 } err_info;
 
 static const int thread_emsg_bufsize = PATH_MAX * 2 + 128; // should it be less?
-static const int strerr_bufsize = PATH_MAX * 2 + 128; // should it be less?    
+static const int strerr_bufsize = PATH_MAX * 2 + 128; // should it be less?
 
 static void err_init() {
     err_info.err_no = 0;
@@ -144,7 +144,7 @@ static const char* err_get_message() {
 static const char* err_to_string(int err_no) {
 #if __linux__
     return strerror_r(err_no, err_info.errmsg, thread_emsg_bufsize);
-#else    
+#else
     if (strerror_r(err_no, err_info.strerr, thread_emsg_bufsize)) {
         return "";
     } else {
@@ -158,21 +158,21 @@ static void err_set(int code, const char *format, ...) {
     va_list args;
     va_start (args, format);
     vsnprintf(err_info.errmsg, thread_emsg_bufsize, format, args);
-    va_end (args);    
+    va_end (args);
 }
 
-static bool state_get_proceed() {    
+static bool state_get_proceed() {
     bool proceed;
     mutex_lock(&state.mutex);
     proceed = state.proceed; // don't even think of doing smth else under this mutex!
-    mutex_unlock(&state.mutex);    
+    mutex_unlock(&state.mutex);
     return proceed;
 }
 
 static void state_set_proceed(bool proceed) {
     mutex_lock(&state.mutex);
     state.proceed = proceed; // don't even think of doing smth else under this mutex!
-    mutex_unlock(&state.mutex);    
+    mutex_unlock(&state.mutex);
 }
 
 static bool need_to_proceed() {
@@ -227,7 +227,21 @@ static bool is_prohibited(const char* abspath) {
     return false;
 }
 
-/** 
+static bool has_second_path(enum  fs_request_kind kind) {
+    return kind == FS_REQ_COPY;
+}
+
+static void clone_request(fs_request* dst, fs_request* src) {
+    memcpy(dst, src, src->size);
+    if (dst->path) {
+        dst->path = dst->data + (src->path - src->data);
+    }
+    if (dst->path2) {
+        dst->path2 = dst->data + (src->path2 - src->data);
+    }
+}
+
+/**
  * Decodes in-place fs_raw_request into fs_request
  */
 static fs_request* decode_request(char* raw_request, fs_request* request, int request_max_size) {
@@ -264,21 +278,44 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
     }
     //fs_request->kind = request->kind;
     //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
-    
+
     path_len = utf8_bytes_count(p, path_len);
 
     if (path_len > (request_max_size - sizeof (fs_request) - 1)) {
         report_error("wrong (too long path) request: %s", raw_request);
         return NULL;
     }
-    
-    strncpy(request->path, p, path_len);
-    request->path[path_len] = 0;
-    unescape_strcpy(request->path, request->path);
-    path_len = strlen(request->path);
+
+    request->path = request->data;
+    strncpy(request->data, p, path_len);
+    request->data[path_len] = 0;
+    unescape_strcpy(request->data, request->data);
+    path_len = strlen(request->data);
     request->id = id;
     request->len = path_len;
-    request->size = offsetof(fs_request, path)+path_len+1; //(request->path-&request)+len+1;
+    if (has_second_path(request->kind)) {
+        p += path_len + 1;
+        p = decode_int(p, &path_len);
+        if (p == NULL) {
+            return NULL;
+        }
+        path_len = utf8_bytes_count(p, path_len);
+        if (path_len > (request_max_size - sizeof (fs_request) - 1)) {
+            report_error("wrong (too long path) request: %s", raw_request);
+            return NULL;
+        }
+        char *path2 = request->data + request->len + 1;
+        strncpy(path2, p, path_len);
+        path2[path_len] = 0;
+        unescape_strcpy(path2, path2);
+        request->len2 = path_len;
+        request->path2 = path2;
+        request->size = offsetof(fs_request, data)+request->len+request->len2+2;
+    } else {
+        request->len2 = 0;
+        request->path2 = NULL;
+        request->size = offsetof(fs_request, data)+path_len+1;
+    }
     return request;
 }
 
@@ -306,7 +343,7 @@ static fs_entry* create_fs_entry(fs_entry *entry2clone) {
 }
 
 
-/** 
+/**
  * Creates a fs_entry on heap.
  * NB: modifies buf: can unescape and zero-terminate strings
  */
@@ -317,13 +354,13 @@ static fs_entry *decode_entry_response(char* buf, int buf_size) {
 
     const char* p = decode_int(buf, &tmp.name_len);
     if (!p) { return NULL; }; // decode_int already printed error message
-    
+
     tmp.name = (char*) p;
     tmp.name_len = utf8_bytes_count(tmp.name, tmp.name_len);
     if (p + tmp.name_len >= buf + buf_size) {
         report_error("wrong entry format: too long (%i) name: %s", tmp.name_len, buf);
         return NULL;
-    }        
+    }
     tmp.name[tmp.name_len] = 0;
     unescape_strcpy(tmp.name, tmp.name);
     p += tmp.name_len + 1;
@@ -331,28 +368,28 @@ static fs_entry *decode_entry_response(char* buf, int buf_size) {
 
     p = decode_uint(p, &tmp.uid);
     if (!p) { return NULL; }; // decode_int already printed error message
-    
+
     p = decode_uint(p, &tmp.gid);
     if (!p) { return NULL; };
-    
+
     p = decode_uint(p, &tmp.mode);
     if (!p) { return NULL; };
-    
+
     p = decode_long(p, &tmp.size);
     if (!p) { return NULL; };
-    
+
     p = decode_long_long(p, &tmp.mtime);
     if (!p) { return NULL; };
-    
+
     p = decode_int(p, &tmp.link_len);
     if (!p) { return NULL; };
 
-    if (tmp.link_len) {        
+    if (tmp.link_len) {
         tmp.link = (char*) p;
         if (p + tmp.link_len >= buf + buf_size) {
             report_error("wrong entry format: too long (%i) link name: %s", tmp.link_len, buf);
             return NULL;
-        }        
+        }
         tmp.link[tmp.link_len] = 0;
         unescape_strcpy(tmp.link, tmp.link);
         tmp.link_len = strlen(tmp.link);
@@ -370,15 +407,15 @@ static fs_entry *decode_entry_response(char* buf, int buf_size) {
     return create_fs_entry(&tmp);
 }
 
-static bool read_entries_from_cache_impl(array/*<fs_entry>*/ *entries, FILE* cache_fp, 
+static bool read_entries_from_cache_impl(array/*<fs_entry>*/ *entries, FILE* cache_fp,
         const char *cache_path, char *buf, int buf_size, const char* path) {
 
-    if (!fgets(buf, buf_size, cache_fp)) {            
+    if (!fgets(buf, buf_size, cache_fp)) {
         if (feof(cache_fp)) {
             report_error("error reading cache from %s for %s: preliminary EOF\n", cache_path, path);
         } else {
             report_error("error reading cache from %s for %s: %s\n", cache_path, path, strerror(errno));
-        }        
+        }
         return false;
     }
 
@@ -412,7 +449,7 @@ static bool read_entries_from_cache_impl(array/*<fs_entry>*/ *entries, FILE* cac
 
     return success;
 }
-    
+
 static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element* el, const char* path) {
     const char *cache_path = dirtab_get_element_cache_path(el);
     FILE* cache_fp = fopen(cache_path, "r");
@@ -425,7 +462,7 @@ static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element
         free(buf);
         fclose(cache_fp);
     }
-    array_truncate(entries);    
+    array_truncate(entries);
     return success;
 }
 
@@ -456,25 +493,25 @@ static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path
     array_truncate(entries);
 }
 
-static bool response_entry_create(buffer response_buf, 
-        const char *abspath, const char *basename, 
+static bool response_entry_create(buffer response_buf,
+        const char *abspath, const char *basename,
         buffer work_buf) {
     struct stat stat_buf;
     if (lstat(abspath, &stat_buf) == 0) {
-        
+
         //int escaped_name_size = escape_strlen(entry->d_name);
         escape_strcpy(work_buf.data, basename);
         char *escaped_name = work_buf.data;
         int escaped_name_size = strlen(escaped_name);
         int work_buf_size = work_buf.size - (escaped_name_size + 1);
-        
+
         bool link_flag = S_ISLNK(stat_buf.st_mode);
 
         int escaped_link_size = 0;
         char* escaped_link = "";
-        
+
         if (link_flag) {
-            char* link = work_buf.data + escaped_name_size + 1; 
+            char* link = work_buf.data + escaped_name_size + 1;
             ssize_t sz = readlink(abspath, link, work_buf_size);
            if (sz == -1) {
                 report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
@@ -532,7 +569,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
 
     buffer response_buf = buffer_alloc(PATH_MAX * 2); // TODO: accurate size calculation
     buffer work_buf = buffer_alloc((PATH_MAX + MAXNAMLEN) * 2 + 2);
-    
+
     FILE *cache_fp = NULL;
     dirtab_element *el = NULL;
     if (persistence) {
@@ -548,13 +585,13 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
             dirtab_unlock(el);
         }
     }
-        
+
     response_ls_data data = { request_id, response_buf, work_buf, cache_fp };
     visit_dir_entries(path, response_ls_plain_visitor, &data);
 
     my_fprintf(STDOUT, "%c %d %li %s %lli\n", FS_RSP_END, request_id, (long) utf8_strlen(path), path, get_curretn_time_millis());
     my_fflush(STDOUT);
-    
+
     if (el) {
         if (cache_fp) {
             fclose(cache_fp);
@@ -571,8 +608,8 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
         }
     }
 
-    buffer_free(&response_buf);    
-    buffer_free(&work_buf);    
+    buffer_free(&response_buf);
+    buffer_free(&work_buf);
 }
 
 static void response_error(int request_id, const char* path, int err_code, const char *err_msg) {
@@ -586,7 +623,7 @@ static void response_info(int request_id) {
 }
 
 static void response_delete(int request_id, const char* path) {
-    
+
     const char* last_slash = strrchr(path, '/');
     if (!last_slash) {
         response_error(request_id, path, 0, "wrong path");
@@ -626,17 +663,17 @@ static void response_delete(int request_id, const char* path) {
         response_error(request_id, path, errno, "error getting stat");
         return;
     }
-    
+
     // the file or directory successfully removed
     response_ls(request_id, canonical_parent, false, false);
 }
 
 static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p) {
-    
+
     response_ls_data *data = p;
-    //trace("\tentry: '%s'\n", entry->d_name);            
+    //trace("\tentry: '%s'\n", entry->d_name);
     // on NFS entry->d_name may contain '/' or even be absolute!
-    // for example, "/ws" directory can contain 
+    // for example, "/ws" directory can contain
     // "bb-11u1", /ws/bb-11u1/packages" and "bb-11u1/packages" entries!
     // TODO: investigate how to process this properly
     // for now just ignoring such entries
@@ -652,7 +689,7 @@ static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* l
     } else {
         report_error("error formatting response for '%s'\n", child_abspath);
     }
-    
+
     return need_to_proceed();
 }
 
@@ -665,8 +702,8 @@ static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, cha
 }
 
 
-static void response_stat(int request_id, const char* path) {  
-    struct stat stat_buf;    
+static void response_stat(int request_id, const char* path) {
+    struct stat stat_buf;
     if (stat(path, &stat_buf) == 0) {
         int buf_size = MAXNAMLEN * 2 + 80; // *2 because of escaping. TODO: accurate size calculation
         char* escaped_name = malloc(buf_size);
@@ -685,7 +722,7 @@ static void response_stat(int request_id, const char* path) {
                 get_mtime(&stat_buf),
                 0, "");
         my_fflush(STDOUT);
-        free(escaped_name);        
+        free(escaped_name);
     }  else {
         int err_code = errno;
         const char* strerr = err_to_string(err_code);
@@ -695,7 +732,82 @@ static void response_stat(int request_id, const char* path) {
     }
 }
 
-static void response_lstat(int request_id, const char* path) {    
+static void response_copy(const fs_request* request) {
+
+    FILE *src = NULL;
+    FILE *dst = NULL;
+    char *buf = NULL;
+
+    // if file exists, return error
+    struct stat stat_buf;
+    if (lstat(request->path2, &stat_buf) == 0) {
+        response_error(request->id, request->path2, 0, "file already exists");
+        return;
+    }
+
+    src = fopen(request->path, "r");
+    if (!src) {
+        response_error(request->id, request->path, errno, err_to_string(errno));
+        return;
+    }
+
+    dst = fopen(request->path2, "w");
+    if (!dst) {
+        response_error(request->id, request->path2, errno, err_to_string(errno));
+        fclose(src);
+        return;
+    }
+
+    bool success = false;
+
+    const int buf_size = 16 * 1024;
+    buf = malloc(buf_size);
+    if (buf) {
+        int read_cnt;
+        while ((read_cnt = fread(buf, 1, buf_size, src))) {
+            size_t write_cnt = fwrite(buf, 1, read_cnt, dst);
+            if (write_cnt != read_cnt) {
+                int errcode = ferror(dst);
+                if (errcode) {
+                    response_error(request->id, request->path2, errcode, err_to_string(errcode));
+                } else {
+                    response_error(request->id, request->path2, 0, "error writing");
+                }
+                break;
+            }
+        }
+        if (feof(src)) {
+            success = true;
+        } else {
+            int errcode = ferror(src);
+            if (errcode) {
+                response_error(request->id, request->path, errcode, err_to_string(errcode));
+            } else {
+                response_error(request->id, request->path, 0, "error reading");
+            }
+        }
+        free(buf);
+    } else {
+        response_error(request->id, request->path2, 0, "not enough memory");
+    }
+
+    fclose(src);
+    fclose(dst);
+
+    if (success) {
+        char *dst_parent = strdup(request->path2);
+        char *last_slash = strrchr(dst_parent, '/');
+        if (last_slash) {
+            *last_slash = 0;
+            response_ls(request->id, dst_parent, false, true);
+        } else {
+            response_error(request->id, dst_parent, 0, "path does not contain '/'");
+        }
+        free(dst_parent);
+    }
+}
+
+static void response_lstat(int request_id, const char* path) {
     buffer response_buf = buffer_alloc(PATH_MAX * 2); // *2 because of escaping. TODO: accurate size calculation
     buffer work_buf = buffer_alloc((PATH_MAX + MAXNAMLEN) * 2 + 2);
     const char* basename = get_basename(path);
@@ -749,7 +861,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
         return need_to_proceed();
     }
     trace(TRACE_FINER, "refresh manager: visiting %s\n", path);
-    
+
     array/*<fs_entry>*/ old_entries;
     array/*<fs_entry>*/ new_entries;
     dirtab_state state = dirtab_get_state(el);
@@ -781,7 +893,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
         report_error("error refreshing %s: error reading cache\n", path);
         differs = true;
     }
-    
+
     if (!differs) {
         differs = array_size(&new_entries) != array_size(&old_entries);
     }
@@ -816,7 +928,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
                     differs = true;
                     trace(TRACE_FINE, "refresh manager: links differ (2) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
                     break;
-                }                
+                }
             }
             // names, modes and link targets are same
             if (new_entry->uid != old_entry->uid) {
@@ -847,7 +959,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
     if (differs) {
         trace(TRACE_INFO, "refresh manager: sending notification for %s\n", path);
         // trailing '\n' already there, added by form_entry_response
-        my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_CHANGE, 
+        my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_CHANGE,
                 request ? request->id : 0, (long) utf8_strlen(path), path);
         my_fflush(STDOUT);
         dirtab_set_state(el, DE_STATE_REFRESH_SENT);
@@ -882,12 +994,12 @@ static void refresh_cycle(fs_request* request) {
     if (request && request->id) { // zero id means nobody is waiting, so no need for header and end marker
         my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_END, request->id, (long) utf8_strlen(request->path), request->path);
     }
-    stopwatch_stop(TRACE_FINE, "refresh cycle");    
+    stopwatch_stop(TRACE_FINE, "refresh cycle");
 }
 
 static void *refresh_loop(void *data) {
     trace(TRACE_INFO, "Refresh manager started; sleep interval is %d\n", refresh_sleep);
-    thread_init();    
+    thread_init();
     int pass = 0;
     while (!is_broken_pipe() && dirtab_is_empty() && state_get_proceed()) { //TODO: replace with notification?
         sleep(refresh_sleep ? refresh_sleep : 2);
@@ -938,6 +1050,9 @@ static void process_request(fs_request* request) {
         case FS_REQ_REFRESH:
             response_refresh(request);
             break;
+        case FS_REQ_COPY:
+            response_copy(request);
+            break;
         default:
             report_error("unexpected mode: '%c'\n", request->kind);
     }
@@ -950,7 +1065,7 @@ static void *rp_loop(void *data) {
     while (!is_broken_pipe()) {
         fs_request* request = blocking_queue_poll(&req_queue);
         if (request) {
-            trace(TRACE_FINE, "thread[%d] request #%d sz=%d kind=%c len=%d path=%s\n", 
+            trace(TRACE_FINE, "thread[%d] request #%d sz=%d kind=%c len=%d path=%s\n",
                     ti->no, request->id, request->size, request->kind, request->len, request->path);
             process_request(request);
             free(request);
@@ -986,22 +1101,22 @@ static void lock_or_unlock(bool lock) {
             report_error("error unlocking lock file %s/%s: %s\n", dirtab_get_basedir(), lock_file_name, strerror(errno));
             exit(FAILURE_LOCKING_LOCK_FILE);
         }
-        close(lock_fd);        
+        close(lock_fd);
     }
 }
 
 static void exit_function() {
     dirtab_flush();
-    lock_or_unlock(false);    
+    lock_or_unlock(false);
 }
 
 static void main_loop() {
-    //TODO: handshake with version    
-    int buf_size = 256 + PATH_MAX * 2;
+    //TODO: handshake with version
+    int buf_size = 256 + 2 * (PATH_MAX * 2);
     char *raw_req_buffer = malloc(buf_size);
     char *req_buffer = malloc(buf_size);
     while(!is_broken_pipe() &&fgets(raw_req_buffer, buf_size, stdin)) {
-        trace(TRACE_FINE, "request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
+        trace(TRACE_FINE, "request: %s", raw_req_buffer); // no LF since buffer ends it anyhow
         log_print(raw_req_buffer);
         fs_request* request = decode_request(raw_req_buffer, (fs_request*) req_buffer, buf_size);
         if (request) {
@@ -1028,7 +1143,7 @@ static void main_loop() {
             }
             if (rp_thread_count > 1) {
                 fs_request* new_request = malloc(request->size);
-                memcpy(new_request, request, request->size);
+                clone_request(new_request, request);
                 blocking_queue_add(&req_queue, new_request);
             } else {
                 process_request(request);
@@ -1043,7 +1158,7 @@ static void main_loop() {
 
 static void usage(char* argv[]) {
     char *prog_name = strrchr(argv[0], '/');
-    my_fprintf(STDERR, 
+    my_fprintf(STDERR,
             "Usage: %s [-t nthreads] [-v] [-p] [-r]\n"
             "   -t <nthreads> response processing threads count (default is %d)\n"
             "   -p log responses into persisnence\n"
@@ -1060,7 +1175,7 @@ static void usage(char* argv[]) {
 void process_options(int argc, char* argv[]) {
     int opt;
     int new_thread_count, new_refresh_sleep, new_trace_level;
-    TraceLevel default_trace_leve = TRACE_INFO;    
+    TraceLevel default_trace_leve = TRACE_INFO;
     while ((opt = getopt(argc, argv, "r:pv:t:lsd:cR:")) != -1) {
         switch (opt) {
             case 'R':
@@ -1111,7 +1226,7 @@ void process_options(int argc, char* argv[]) {
                         set_trace(new_trace_level);
                         break;
                     default:
-                        report_error("incorrect value of -v flag: %d. Defaulting to %d\n", 
+                        report_error("incorrect value of -v flag: %d. Defaulting to %d\n",
                                 new_trace_level, default_trace_leve);
                         set_trace(new_trace_level);
                         break;
@@ -1197,7 +1312,7 @@ static void startup() {
             rp_threads[curr_thread].no = curr_thread;
             pthread_create(&rp_threads[curr_thread].id, NULL, &rp_loop, &rp_threads[curr_thread]);
         }
-        trace(TRACE_INFO, "Started %d response threads\n", rp_thread_count);        
+        trace(TRACE_INFO, "Started %d response threads\n", rp_thread_count);
     } else {
         trace(TRACE_INFO, "Starting in single-thread mode\n");
     }
@@ -1209,24 +1324,24 @@ static void startup() {
         report_error("error setting exit function: %s\n", strerror(errno));
         exit(FAILURE_SETTING_EXIT_FUNCTION);
     }
-    
+
     struct sigaction new_sigaction;
     new_sigaction.sa_handler = signal_handler;
     new_sigaction.sa_flags = SA_RESTART;
     sigemptyset(&new_sigaction.sa_mask);
     sigaction_wrapper(SIGHUP, &new_sigaction, NULL);
     sigaction_wrapper(SIGQUIT, &new_sigaction, NULL);
-    sigaction_wrapper(SIGINT, &new_sigaction, NULL);    
-        
+    sigaction_wrapper(SIGINT, &new_sigaction, NULL);
+
     new_sigaction.sa_handler = signal_empty_handler;
     new_sigaction.sa_flags = SA_RESTART;
     sigemptyset(&new_sigaction.sa_mask);
-    sigaction_wrapper(SIGUSR1, &new_sigaction, NULL);    
-            
+    sigaction_wrapper(SIGUSR1, &new_sigaction, NULL);
+
     new_sigaction.sa_handler = sigpipe_handler;
     new_sigaction.sa_flags = 0;
     sigemptyset(&new_sigaction.sa_mask);
-    sigaction_wrapper(SIGPIPE, &new_sigaction, NULL);    
+    sigaction_wrapper(SIGPIPE, &new_sigaction, NULL);
 }
 
 static void *killer(void *data) {
@@ -1248,7 +1363,7 @@ static void shutdown() {
     trace(TRACE_INFO, "Shutting down. Joining threads...\n");
     pthread_t killer_thread;
     pthread_create(&killer_thread, NULL, killer, (void*) pthread_self());
-    
+
     trace(TRACE_INFO, "Shutting down. Joining threads...\n");
     // NB: we aren't joining refresh thread; it's safe
     for (int i = 0; i < rp_thread_count; i++) {
@@ -1261,7 +1376,7 @@ static void shutdown() {
         trace(TRACE_FINE, "Shutting down. Joining refresh thread #%i [%ui]\n", refresh_thread_idx, rp_threads[refresh_thread_idx].id);
         pthread_join(rp_threads[refresh_thread_idx].id, NULL);
     }
-    
+
     if (!dirtab_flush()) {
         report_error("error storing dirtab\n");
     }
@@ -1275,31 +1390,31 @@ static void shutdown() {
 static void log_header(int argc, char* argv[]) {
     if (log_flag) {
        log_open("log") ;
-       log_print("\n--------------------------------------\nfs_server version %d.%d.%d (%s %s) started on ", 
+       log_print("\n--------------------------------------\nfs_server version %d.%d.%d (%s %s) started on ",
                FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
        time_t t = time(NULL);
        struct tm *tt = localtime(&t);
        if (tt) {
-           log_print("%d/%02d/%02d at %02d:%02d:%02d\n", 
-                   tt->tm_year+1900, tt->tm_mon + 1, tt->tm_mday, 
+           log_print("%d/%02d/%02d at %02d:%02d:%02d\n",
+                   tt->tm_year+1900, tt->tm_mon + 1, tt->tm_mday,
                    tt->tm_hour, tt->tm_min, tt->tm_sec);
        } else {
            log_print("<error getting time: %s>\n", strerror(errno));
-       }       
+       }
        for (int i = 0; i < argc; i++) {
            log_print("%s ", argv[i]);
        }
        log_print("\n");
-    }    
+    }
 }
 
-int main(int argc, char* argv[]) {    
+int main(int argc, char* argv[]) {
     process_options(argc, argv);
-    trace(TRACE_INFO, "Version %d.%d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION, 
+    trace(TRACE_INFO, "Version %d.%d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION,
             FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
     startup();
     log_header(argc, argv);
-    main_loop();    
+    main_loop();
     shutdown();
     return 0;
 }
