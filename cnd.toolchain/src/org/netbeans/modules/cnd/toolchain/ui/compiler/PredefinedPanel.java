@@ -241,7 +241,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
     }
 
     boolean isChanged() {
-        boolean isChanged = false;
+        boolean isChanged = settingsReseted;
         if (this.includesPanel != null) {
             isChanged |= !compiler.getSystemIncludeDirectories().equals(includesPanel.getListData());
         }
