@@ -58,6 +58,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
@@ -106,7 +107,7 @@ final class SelectCodeElementAction extends BaseAction {
             putValue(SHORT_DESCRIPTION, desc);
         }
     }
-        
+
     public String getShortDescription(){
         String name = (String)getValue(Action.NAME);
         if (name == null) return null;
@@ -118,7 +119,7 @@ final class SelectCodeElementAction extends BaseAction {
         }
         return shortDesc;
     }
-    
+
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         if (target != null) {
             int selectionStartOffset = target.getSelectionStart();
@@ -132,7 +133,7 @@ final class SelectCodeElementAction extends BaseAction {
                     // is stored is the client-property of the component itself
                     target.putClientProperty(SelectionHandler.class, handler);
                 }
-                
+
                 if (selectNext) { // select next element
                     handler.selectNext();
                 } else { // select previous
@@ -143,12 +144,12 @@ final class SelectCodeElementAction extends BaseAction {
     }
 
     private static final class SelectionHandler implements CaretListener, Task<CompilationController>, Runnable {
-        
+
         private JTextComponent target;
         private String name;
         private SelectionInfo[] selectionInfos;
         private int selIndex = -1;
-        private int selOffset = -1;
+        private boolean ignoreNextCaretUpdate;
         private AtomicBoolean cancel;
 
         SelectionHandler(JTextComponent target, String name) {
@@ -170,7 +171,7 @@ final class SelectCodeElementAction extends BaseAction {
                         }
                     }, name, cancel, false);
                 }
-            }            
+            }
             run();
         }
 
@@ -181,18 +182,23 @@ final class SelectCodeElementAction extends BaseAction {
         }
 
         private void select(SelectionInfo selectionInfo) {
+            assert SwingUtilities.isEventDispatchThread();
             Caret caret = target.getCaret();
-            selOffset = selectionInfo.getStartOffset();
-            caret.setDot(selectionInfo.getEndOffset());
-            caret.moveDot(selOffset);
+            ignoreNextCaretUpdate = true;
+            try {
+                caret.setDot(selectionInfo.getEndOffset());
+                caret.moveDot(selectionInfo.getStartOffset());
+            } finally {
+                ignoreNextCaretUpdate = false;
+            }
         }
-        
+
         public void caretUpdate(CaretEvent e) {
-            if (selOffset != e.getDot()) {
+            assert SwingUtilities.isEventDispatchThread();
+            if (!ignoreNextCaretUpdate) {
                 synchronized (this) {
                     selectionInfos = null;
                     selIndex = -1;
-                    selOffset = -1;
                 }
             }
         }
@@ -212,7 +218,7 @@ final class SelectCodeElementAction extends BaseAction {
                 Exceptions.printStackTrace(ex);
             }
         }
-        
+
         private SelectionInfo[] initSelectionPath(JTextComponent target, CompilationController ci) {
             List<SelectionInfo> positions = new ArrayList<SelectionInfo>();
             int caretPos = target.getCaretPosition();
@@ -234,18 +240,18 @@ final class SelectCodeElementAction extends BaseAction {
                 int startPos = (int)sp.getStartPosition(tp.getCompilationUnit(), tree);
                 int endPos = (int)sp.getEndPosition(tp.getCompilationUnit(), tree);
                 positions.add(new SelectionInfo(startPos, endPos));
-		
+
                 //support content selection within the string literal too
                 //"A|BC" -> ABC
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
                     positions.add(new SelectionInfo(startPos + 1, endPos - 1));
                 }
                 //support content selection within the {}-block too
-                //{A|BC} -> ABC 
+                //{A|BC} -> ABC
                 if (tree.getKind() == Tree.Kind.BLOCK) {
                     positions.add(new SelectionInfo(startPos + 1, endPos - 1));
                 }
-                
+
 		//Support selection of JavaDoc
 		int docBegin = Integer.MAX_VALUE;
                 for (Comment comment : treeUtilities.getComments(tree, true)) {
@@ -279,7 +285,7 @@ final class SelectCodeElementAction extends BaseAction {
 	    //for each selectioninfo add its line selection
 	    if (target.getDocument() instanceof StyledDocument) {
 		StyledDocument doc = (StyledDocument) target.getDocument();
-                
+
                 Iterator<SelectionInfo> it = positions.iterator();
                 SelectionInfo selectionInfo = it.hasNext() ? it.next() : null;
 		while (selectionInfo != null) {
@@ -299,7 +305,7 @@ final class SelectCodeElementAction extends BaseAction {
                     selectionInfo = next;
 		}
 	    }
-	    
+
 	    return orderedPositions.toArray(new SelectionInfo[orderedPositions.size()]);
         }
 
@@ -310,21 +316,21 @@ final class SelectCodeElementAction extends BaseAction {
         }
 
     }
-    
+
     private static final class SelectionInfo {
-        
+
         private int startOffset;
         private int endOffset;
-        
+
         SelectionInfo(int startOffset, int endOffset) {
             this.startOffset = startOffset;
             this.endOffset = endOffset;
         }
-        
+
         public int getStartOffset() {
             return startOffset;
         }
-        
+
         public int getEndOffset() {
             return endOffset;
         }
