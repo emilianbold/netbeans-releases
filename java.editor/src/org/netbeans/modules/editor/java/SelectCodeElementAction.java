@@ -143,28 +143,59 @@ final class SelectCodeElementAction extends BaseAction {
         }
     }
 
-    private static final class SelectionHandler implements CaretListener, Task<CompilationController>, Runnable {
+    private static final class SelectionHandler implements CaretListener, Runnable {
 
-        private JTextComponent target;
-        private String name;
+        private final JTextComponent target;
+        private final String name;
+        //@GuardedBy("this")
         private SelectionInfo[] selectionInfos;
+        //@GuardedBy("this")
         private int selIndex = -1;
+        //Threading: Confinement within EDT
         private boolean ignoreNextCaretUpdate;
-        private AtomicBoolean cancel;
 
         SelectionHandler(JTextComponent target, String name) {
             this.target = target;
+            this.name = name;
         }
 
         public void selectNext() {
-            if (selectionInfos == null) {
+            SelectionInfo[] si;
+            synchronized (this) {
+                si = selectionInfos;
+            }
+            if (si == null) {
                 final JavaSource js = JavaSource.forDocument(target.getDocument());
                 if (js != null) {
-                    cancel = new AtomicBoolean();
+                    final AtomicBoolean cancel = new AtomicBoolean();
                     ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                        @Override
                         public void run() {
                             try {
-                                js.runUserActionTask(SelectionHandler.this, true);
+                                js.runUserActionTask(
+                                    new Task<CompilationController>(){
+                                        @Override
+                                        public void run(CompilationController cc) throws Exception {
+                                            try {
+                                                if (cancel.get()) {
+                                                    return;
+                                                }
+                                                cc.toPhase(Phase.RESOLVED);
+                                                if (cancel.get()) {
+                                                    return;
+                                                }
+                                                synchronized (SelectionHandler.this) {
+                                                    selectionInfos = initSelectionPath(target, cc);
+                                                    if (selectionInfos != null && selectionInfos.length > 0) {
+                                                        selIndex = 0;
+                                                    }
+                                                }
+                                            } catch (IOException ex) {
+                                                Exceptions.printStackTrace(ex);
+                                            }
+                                        }
+                                    },
+                                    true);
                             } catch (IOException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
@@ -200,22 +231,6 @@ final class SelectCodeElementAction extends BaseAction {
                     selectionInfos = null;
                     selIndex = -1;
                 }
-            }
-        }
-
-
-        public void run(CompilationController cc) {
-            try {
-                if (cancel != null && cancel.get())
-                    return;
-                cc.toPhase(Phase.RESOLVED);
-                if (cancel != null && cancel.get())
-                    return;
-                selectionInfos = initSelectionPath(target, cc);
-                if (selectionInfos != null && selectionInfos.length > 0)
-                    selIndex = 0;
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
 
@@ -309,7 +324,7 @@ final class SelectCodeElementAction extends BaseAction {
 	    return orderedPositions.toArray(new SelectionInfo[orderedPositions.size()]);
         }
 
-        public void run() {
+        public synchronized void run() {
             if (selectionInfos != null && selIndex < selectionInfos.length - 1) {
                 select(selectionInfos[++selIndex]);
             }
