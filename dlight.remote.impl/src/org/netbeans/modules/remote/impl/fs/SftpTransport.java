@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -96,7 +97,33 @@ public class SftpTransport extends RemoteFileSystemTransport {
         
         return stat.get();
     }
-    
+
+    @Override
+    protected boolean canCopy(String from, String to) {
+        return false;
+    }
+
+    @Override
+    protected DirEntryList copy(String from, String to) throws InterruptedException, CancellationException, ExecutionException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected boolean canMove(String from, String to) {
+        return true;
+    }
+
+    @Override
+    protected MoveInfo move(String from, String to) throws InterruptedException, CancellationException, ExecutionException {
+        Future<FileInfoProvider.StatInfo> f = FileInfoProvider.move(execEnv, from, to);
+        f.get();
+        String fromParent = PathUtilities.getDirName(from);
+        DirEntryList fromList = readDirectory(fromParent == null ? "/" : fromParent); // NOI18N
+        String toParent = PathUtilities.getDirName(to);
+        DirEntryList toList = readDirectory(toParent == null ? "/" : toParent); // NOI18N
+        return new MoveInfo(fromList, toList);
+    }
+
     @Override
     protected DirEntryList readDirectory(String remotePath) throws InterruptedException, CancellationException, ExecutionException {
         if (remotePath.length() == 0) {
