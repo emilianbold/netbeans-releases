@@ -207,7 +207,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
                 throw createIOException(pkg);
             } else if(pkg.getKind() != FSSResponseKind.FS_RSP_LS) {
-                throw new IOException("Unexpected package kind: " + pkg.getKind() + " expected " + FSSResponseKind.FS_RSP_LS);
+                throw new IOException("Unexpected package kind: " + pkg.getKind() + " expected " + FSSResponseKind.FS_RSP_LS); // NOI18N
             }
             return readEntries(response, to, request.getId(), dirReadCnt);
         } catch (ConnectException ex) {
