@@ -109,13 +109,14 @@ import org.openide.util.CharSequences;
  * @author Vladimir Kvashin
  */
 public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBasedProvider {
+    private static final CharSequence NON_INITIALIZED_CLASSIFIER_TEXT = CharSequences.empty();
+    
     private static final byte FLAGS_TYPE_OF_TYPEDEF = 1;
     private static final byte FLAGS_REFERENCE = 1 << 1;
     private static final byte FLAGS_CONST = 1 << 2;
     private static final byte FLAGS_TYPE_WITH_CLASSIFIER = 1 << 3;
     private static final byte FLAGS_RVALREFERENCE = 1 << 4;
     protected static final int LAST_USED_FLAG_INDEX = 5;
-    private static final CharSequence NON_INITIALIZED_CLASSIFIER_TEXT = CharSequences.empty();
     
     private final byte pointerDepth;
     
@@ -548,6 +549,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }
     
     public boolean isConst(int pointerDepth) {
+        return isConst(constQualifiers, pointerDepth);
+    }
+    
+    static boolean isConst(int constQualifiers, int pointerDepth) {
         return (constQualifiers & (1 << pointerDepth)) != 0;
     }
 

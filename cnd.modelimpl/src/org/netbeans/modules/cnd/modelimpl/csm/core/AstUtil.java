@@ -294,22 +294,30 @@ public class AstUtil {
     }
 
     public static AST findChildOfType(AST ast, int type) {
-        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
+        return findChildOfType(ast, type, null);
+    }
+    
+    public static AST findChildOfType(AST ast, int type, AST stopToken) {
+        for( AST token = ast.getFirstChild(); token != null && token != stopToken; token = token.getNextSibling() ) {
             if( token.getType() == type ) {
                 return token;
             }
         }
         return null;
-    }
+    }    
 
     public static AST findSiblingOfType(AST ast, int type) {
-        for( AST token = ast; token != null; token = token.getNextSibling() ) {
+        return findSiblingOfType(ast, type, null);
+    }
+    
+    public static AST findSiblingOfType(AST ast, int type, AST stopToken) {
+        for( AST token = ast; token != null && token != stopToken; token = token.getNextSibling() ) {
             if( token.getType() == type ) {
                 return token;
             }
         }
         return null;
-    }
+    }    
 
     public static AST findLastSiblingOfType(AST ast, int type) {
         AST result = null;
