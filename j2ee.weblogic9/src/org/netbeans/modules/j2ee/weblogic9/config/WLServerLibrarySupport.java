@@ -108,6 +108,8 @@ public class WLServerLibrarySupport {
     private final File domainPath;
 
     private final File serverRoot;
+    
+    private final boolean remote;
 
     public WLServerLibrarySupport(WLDeploymentManager dm) {
         String domainDir = dm.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
@@ -117,17 +119,21 @@ public class WLServerLibrarySupport {
 
         this.domainPath = domainDir == null ? null : new File(domainDir);
         this.serverRoot = new File(serverDir);
+        this.remote = dm.isRemote();
+        assert domainPath != null || remote;
     }
 
     public WLServerLibrarySupport(File serverRoot, File domainPath) {
         this.domainPath = domainPath;
         this.serverRoot = serverRoot;
+        this.remote = domainPath == null;
+        assert domainPath != null || remote;
     }
 
     public Map<ServerLibrary, List<File>> getClasspathEntries(Set<ServerLibraryDependency> libraries)
             throws ConfigurationException {
 
-        if (domainPath == null) {
+        if (remote) {
             return Collections.emptyMap();
         }
 
@@ -179,7 +185,7 @@ public class WLServerLibrarySupport {
     }
 
     public Set<WLServerLibrary> getDeployedLibraries() {
-        if (domainPath == null) {
+        if (remote) {
             return Collections.emptySet();
         }
         FileObject domainConfig = WLPluginProperties.getDomainConfigFileObject(domainPath);
