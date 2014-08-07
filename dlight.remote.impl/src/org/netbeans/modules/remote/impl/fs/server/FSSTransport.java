@@ -42,6 +42,7 @@ package org.netbeans.modules.remote.impl.fs.server;
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.ConnectException;
@@ -198,7 +199,6 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_COPY, from, to);
         FSSResponse response = null;
         RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_copy", from, to); // NOI18N
-        AtomicInteger cnt = new AtomicInteger(0);
         long time = System.currentTimeMillis();
         try {
             RemoteLogger.finest("Sending request #{0} for copying {1} to {2} to fs_server", request.getId(), from, to);
@@ -206,8 +206,8 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             FSSResponse.Package pkg = response.getNextPackage();
             if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
                 throw createIOException(pkg);
-            } else {
-                assert pkg.getKind() == FSSResponseKind.FS_RSP_LS;
+            } else if(pkg.getKind() != FSSResponseKind.FS_RSP_LS) {
+                throw new IOException("Unexpected package kind: " + pkg.getKind() + " expected " + FSSResponseKind.FS_RSP_LS);
             }
             return readEntries(response, to, request.getId(), dirReadCnt);
         } catch (ConnectException ex) {
@@ -217,11 +217,15 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         } catch (InterruptedException ex) {
             throw new IOException(ex);
         } catch (ExecutionException ex) {
-            throw new IOException(ex);
+            if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
+                throw new FileNotFoundException(from + " or " + to); //NOI18N
+            } else {
+                throw new IOException(ex);
+            }
         } finally {
             RemoteStatistics.stopChannelActivity(activityID, 0);
-            RemoteLogger.finest("Communication #{0} with fs_server for copying {1} to {1} ({2} entries read) took {3} ms",
-                    request.getId(), from, to, cnt.get(), System.currentTimeMillis() - time);
+            RemoteLogger.finest("Communication #{0} with fs_server for copying {1} to {2} took {3} ms",
+                    request.getId(), from, to, System.currentTimeMillis() - time);
             if (response != null) {
                 response.dispose();
             }

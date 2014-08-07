@@ -392,8 +392,11 @@ public class RemoteFileSystemUtils {
                 } catch (CancellationException ex) {
                     throw new InterruptedIOException(ex.getLocalizedMessage());
                 } catch (ExecutionException ex) {
-                    ex.printStackTrace(System.err);
-                    // and fall back to default implementation
+                    if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
+                        throw new FileNotFoundException(from + " or " + newPath); //NOI18N
+                    } else {
+                        throw new IOException(ex);
+                    }
                 }
             }
         }
