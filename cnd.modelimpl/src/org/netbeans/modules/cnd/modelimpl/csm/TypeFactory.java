@@ -169,13 +169,17 @@ public class TypeFactory {
     }    
 
     static int getReferenceValue(CsmType type) {
-        if (type.isRValueReference()) {
+        return getReferenceValue(type.isReference(), type.isRValueReference());
+    }
+    
+    static int getReferenceValue(boolean isReference, boolean isRValueReference) {
+        if (isRValueReference) {
             return 2;
-        } else if (type.isReference()) {
+        } else if (isReference) {
             return 1;
         }
         return 0;
-    }
+    }    
     
     public static TypeImpl createType(AST ast, CsmClassifier classifier, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
         return createType(ast, classifier, file, null, ptrOperator, arrayDepth, parent, scope, inFunctionParameters, inTypedef);
@@ -364,7 +368,7 @@ public class TypeFactory {
                                             || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                                             || AstUtil.isElaboratedKeyword(namePart)) {
                                         CsmType t = AstRenderer.renderType(namePart, file, true, scope, true);
-                                        type.addInstantiationParam(new TypeBasedSpecializationParameterImpl(t));
+                                        type.addInstantiationParam(new TypeBasedSpecializationParameterImpl(TemplateUtils.checkTemplateType(t, scope)));
                                     }
                                     if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
                                         type.addInstantiationParam(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, type.getContainingFile(), scope),
