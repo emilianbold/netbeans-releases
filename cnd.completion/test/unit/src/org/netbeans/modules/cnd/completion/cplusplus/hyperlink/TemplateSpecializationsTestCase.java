@@ -218,6 +218,24 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug240123.cpp", 12, 49, "bug240123.cpp", 6, 13);
     }    
     
+    public void testBug246332() throws Exception {
+        // Bug 246332 - Code model and completion cannot handle function types in template arguments
+        performTest("bug246332.cpp", 25, 45, "bug246332.cpp", 7, 9);
+        performTest("bug246332.cpp", 26, 53, "bug246332.cpp", 12, 9);
+        performTest("bug246332.cpp", 27, 65, "bug246332.cpp", 12, 9);
+        performTest("bug246332.cpp", 28, 36, "bug246332.cpp", 7, 9);
+        performTest("bug246332.cpp", 29, 38, "bug246332.cpp", 12, 9);
+        performTest("bug246332.cpp", 30, 38, "bug246332.cpp", 12, 9);        
+    }
+    
+    public void testBug246332_1() throws Exception {
+        // Bug 246332 - Code model and completion cannot handle function types in template arguments
+        performTest("bug246332_1.cpp", 26, 15, "bug246332_1.cpp", 12, 9);
+        performTest("bug246332_1.cpp", 27, 15, "bug246332_1.cpp", 7, 9);
+        performTest("bug246332_1.cpp", 51, 15, "bug246332_1.cpp", 35, 9);
+        performTest("bug246332_1.cpp", 52, 15, "bug246332_1.cpp", 35, 9);        
+    }    
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

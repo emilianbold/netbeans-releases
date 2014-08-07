@@ -288,17 +288,19 @@ public final class CsmTracer {
                 // Do nothing. Only test for stack overflow
                 // See IZ#144276: StackOverflowError on typedef C::C C;
             }
-            if (type.isConst()) {
-                sb.append("const "); // NOI18N
-            }
-            if (type.isPointer()) {
-                for (int i = 0; i < type.getPointerDepth(); i++) {
-                    sb.append("*"); // NOI18N
+            if (!CsmKindUtilities.isFunctionPointerType(type)) {
+                if (type.isConst()) {
+                    sb.append("const "); // NOI18N
                 }
+                if (type.isPointer()) {
+                    for (int i = 0; i < type.getPointerDepth(); i++) {
+                        sb.append("*"); // NOI18N
+                    }
+                }
+                if (type.isReference()) {
+                    sb.append("&"); // NOI18N
+                } 
             }
-            if (type.isReference()) {
-                sb.append("&"); // NOI18N
-            } 
             CsmClassifier classifier = type.getClassifier();
             if (classifier != null) {
                 sb.append(classifier.getQualifiedName());
@@ -313,7 +315,6 @@ public final class CsmTracer {
             } else {
                 sb.append("<*no_classifier*>"); // NOI18N
             }
-
             for (int i = 0; i < type.getArrayDepth(); i++) {
                 sb.append("[]"); // NOI18N
             }
