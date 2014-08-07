@@ -30,9 +30,9 @@ FUNCTION fun2 [6:1/135-6:21/155] FunctionImpl SCOPE: $Global$
          [6:11/145-6:14/148]  TYPE: int TEXT=int  [6:11/145-6:14/148]  INIT: null  SCOPE: fun2 
          [6:16/150-6:19/153]  TYPE: int TEXT=int  [6:16/150-6:19/153]  INIT: null  SCOPE: fun2 
     RETURNS *int TEXT=int*  [6:1/135-6:5/139]
-VARIABLE fp_fun2 [7:1/156-7:34/189]  TYPE: *int(int,int) TEXT=int*(*)(int,int)  [7:1/156-7:26/181]  INIT: text='fun2'  SCOPE: $Global$ 
-VARIABLE fpp_fun2 [8:1/190-8:40/229]  TYPE: *int(int,int) TEXT=int*(**)(int,int)  [8:1/190-8:28/217]  INIT: text='&fp_fun2'  SCOPE: $Global$ 
-VARIABLE fppp_fun2 [9:1/230-9:43/272]  TYPE: *int(int,int) TEXT=int*(***)(int,int)  [9:1/230-9:30/259]  INIT: text='&fpp_fun2'  SCOPE: $Global$ 
+VARIABLE fp_fun2 [7:1/156-7:34/189]  TYPE: int*(int,int) TEXT=int*(*)(int,int)  [7:1/156-7:26/181]  INIT: text='fun2'  SCOPE: $Global$ 
+VARIABLE fpp_fun2 [8:1/190-8:40/229]  TYPE: int*(int,int) TEXT=int*(**)(int,int)  [8:1/190-8:28/217]  INIT: text='&fp_fun2'  SCOPE: $Global$ 
+VARIABLE fppp_fun2 [9:1/230-9:43/272]  TYPE: int*(int,int) TEXT=int*(***)(int,int)  [9:1/230-9:30/259]  INIT: text='&fpp_fun2'  SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
 FUNCTION fun1 [1:1/0-1:20/19] FunctionImpl SCOPE: $Global$ 
@@ -54,7 +54,7 @@ FUNCTION fun2 [6:1/135-6:21/155] FunctionImpl SCOPE: $Global$
          [6:11/145-6:14/148]  TYPE: int TEXT=int  [6:11/145-6:14/148]  INIT: null  SCOPE: fun2 
          [6:16/150-6:19/153]  TYPE: int TEXT=int  [6:16/150-6:19/153]  INIT: null  SCOPE: fun2 
     RETURNS *int TEXT=int*  [6:1/135-6:5/139]
-VARIABLE fp_fun2 [7:1/156-7:34/189]  TYPE: *int(int,int) TEXT=int*(*)(int,int)  [7:1/156-7:26/181]  INIT: text='fun2'  SCOPE: $Global$ 
-VARIABLE fpp_fun2 [8:1/190-8:40/229]  TYPE: *int(int,int) TEXT=int*(**)(int,int)  [8:1/190-8:28/217]  INIT: text='&fp_fun2'  SCOPE: $Global$ 
-VARIABLE fppp_fun2 [9:1/230-9:43/272]  TYPE: *int(int,int) TEXT=int*(***)(int,int)  [9:1/230-9:30/259]  INIT: text='&fpp_fun2'  SCOPE: $Global$ 
+VARIABLE fp_fun2 [7:1/156-7:34/189]  TYPE: int*(int,int) TEXT=int*(*)(int,int)  [7:1/156-7:26/181]  INIT: text='fun2'  SCOPE: $Global$ 
+VARIABLE fpp_fun2 [8:1/190-8:40/229]  TYPE: int*(int,int) TEXT=int*(**)(int,int)  [8:1/190-8:28/217]  INIT: text='&fp_fun2'  SCOPE: $Global$ 
+VARIABLE fppp_fun2 [9:1/230-9:43/272]  TYPE: int*(int,int) TEXT=int*(***)(int,int)  [9:1/230-9:30/259]  INIT: text='&fpp_fun2'  SCOPE: $Global$ 
 

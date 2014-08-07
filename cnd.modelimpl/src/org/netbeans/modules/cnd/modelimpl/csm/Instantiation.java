@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -85,7 +86,9 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndCollectionUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MutableObject;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.openide.util.Pair;
 
 /**
  * Instantiations.
@@ -257,10 +260,15 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
     public static CsmObject create(CsmTemplate template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
 //        System.err.println("Instantiation.create for " + template + " with mapping " + mapping);
-        if (canSkipInstantiation(template, mapping)) {
+        Pair<Boolean, Integer> skipCheckResult = canSkipInstantiation(template, mapping);
+        if (skipCheckResult.first()) {
             return template;
         }
-        
+        if (skipCheckResult.second() > MAX_INHERITANCE_DEPTH) {
+            if (isRecursiveInstantiation(template, mapping, MAX_INHERITANCE_DEPTH)) {
+                return template;
+            }
+        }
         if (template instanceof CsmClass) {
             Class newClass = new Class((CsmClass)template, mapping);
             if(UIDProviderIml.isPersistable(newClass.getUID())) {
@@ -293,10 +301,55 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
      * 
      * @param template
      * @param mapping
+     * @return pair where first value is true if template shouldn't be instantiated, false otherwise
+     *                     second value is depth on which duplicate was found, or depth of instantiation if there are no duplicates
+     */
+    private static Pair<Boolean, Integer> canSkipInstantiation(CsmObject template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {        
+        CsmObject current = template;
+        
+        int depth = 0;
+        
+        while (CsmKindUtilities.isInstantiation(current) || current instanceof Type) {
+            ++depth;
+            
+            Map<CsmTemplateParameter, CsmSpecializationParameter> origMapping = null;
+            
+            if (CsmKindUtilities.isInstantiation(current)) {
+                origMapping = ((CsmInstantiation) current).getMapping();
+                current = ((CsmInstantiation) current).getTemplateDeclaration();
+            } else if (current instanceof Type) {
+                origMapping = ((Type) current).getInstantiation().getMapping();
+                current = ((Type) current).originalType;
+            } else {
+                return Pair.of(false, depth); // paranoia
+            }
+            
+            // If instances are the same, then it is erroneous instantiation
+            if (origMapping == mapping) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "REFUSE TO INSTANTITATE:\n{0}\n", new Object[] {template}); //NOI18N
+                }
+                return Pair.of(true, depth);
+            }
+        }
+                
+        return Pair.of(false, depth);
+    }
+    
+    /**
+     * Method ensures that instantiating of a template doesn't cause a recursion.
+     * Repeating pattern in instantiations in most cases means recursion.
+     * 
+     * @param template
+     * @param mapping
      * @return true if template shouldn't be instantiated, false otherwise
      */
-    private static boolean canSkipInstantiation(CsmObject template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {        
+    private static boolean isRecursiveInstantiation(CsmObject template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, final int recursionLimit) {                
         CsmObject current = template;
+        
+        Map<TemplateMapKey, Integer> repeatings = new HashMap<>();
+        
+        repeatings.put(new TemplateMapKey(mapping), 1);
         
         while (CsmKindUtilities.isInstantiation(current) || current instanceof Type) {
             Map<CsmTemplateParameter, CsmSpecializationParameter> origMapping = null;
@@ -311,16 +364,61 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 return false; // paranoia
             }
             
-            // If instances are the same, then it is erroneous instantiation
-            if (origMapping == mapping) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "REFUSE TO INSTANTITATE:\n{0}\n", new Object[] {template}); //NOI18N
+            TemplateMapKey mapKey = new TemplateMapKey(origMapping);
+            Integer counter = repeatings.get(mapKey);
+            if (counter != null) {
+                if (counter < recursionLimit) {
+                    counter += 1;
+                } else {
+                    return true;
                 }
-                return true;
+            } else {
+                counter = 1;
             }
+            repeatings.put(mapKey, counter);
         }
                 
         return false;
+    }    
+    
+    // TODO: consider if we should check CsmSpecializationParameters as well
+    private static final class TemplateMapKey {
+                
+        private final Map<CsmTemplateParameter, CsmSpecializationParameter> map;
+
+        public TemplateMapKey(Map<CsmTemplateParameter, CsmSpecializationParameter> map) {
+            this.map = map;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            for (CsmTemplateParameter templateParam : map.keySet()) {
+                hash = 79 * hash + Objects.hashCode(templateParam);
+            }
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final TemplateMapKey other = (TemplateMapKey) obj;
+            if (map.size() != other.map.size()) {
+                return false;
+            }
+            for (CsmTemplateParameter templateParam : map.keySet()) {
+                if (!other.map.containsKey(templateParam)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
     }
     
     @Override
@@ -1318,9 +1416,15 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         if (type == null) {
             throw new NullPointerException("no type for " + instantiation); // NOI18N
         }
-        if (canSkipInstantiation(type, instantiation.getMapping())) {
+        Pair<Boolean, Integer> skipCheckResult = canSkipInstantiation(type, instantiation.getMapping());
+        if (skipCheckResult.first()) {
             return type;
         }
+        if (skipCheckResult.second() > MAX_INHERITANCE_DEPTH) {
+            if (isRecursiveInstantiation(type, instantiation.getMapping(), MAX_INHERITANCE_DEPTH)) {
+                return type;
+            }
+        }        
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "Instantiation.createType {0}; inst:{1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
         }
@@ -1349,10 +1453,11 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
     }   
     
     public static CsmType createType(CsmType type, List<CsmInstantiation> instantiations) {
+        CsmType result = type;
         for (CsmInstantiation instantiation : instantiations) {
-            type = createType(type, instantiation);
+            result = createType(result, instantiation);
         }
-        return type;
+        return result;
     }            
    
     private static class TemplateParameterType extends Type implements CsmTemplateParameterType {

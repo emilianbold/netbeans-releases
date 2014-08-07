@@ -161,7 +161,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         
         AST fakeTypeAst = AstUtil.cloneAST(typeASTStart, typeASTEnd);
         
-        initFunctionReturnType(fakeTypeAst, this, this, getContainingFile());
+        initFunctionReturnType(fakeTypeAst, this, getContainingFile());
         
         setClassifierText(NameCache.getManager().getString(decorateText("", this, false, null)));
     }
@@ -208,6 +208,21 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     }
 
     @Override
+    public int getPointerDepth() {
+        return functionPointerDepth;
+    }
+
+    @Override
+    public boolean isReference() {
+        return false; // Not implemented
+    }
+
+    @Override
+    public boolean isRValueReference() {
+        return false; // Not implemented
+    }
+
+    @Override
     public Collection<CsmParameter> getParameters() {
         if (functionParameters == null) {
             return Collections.<CsmParameter>emptyList();
@@ -244,16 +259,6 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
             sb.append("const "); // NOI18N
         }
         sb.append(getReturnType().getText());
-        for (int i = 0; i < decorator.getPointerDepth(); i++) {
-            sb.append('*');
-        }
-        if (decorator.isReference()) {
-            sb.append('&');
-        }
-        for (int i = 0; i < decorator.getArrayDepth(); i++) {
-            sb.append(canonical ? "*" : "[]"); // NOI18N
-        }
-
         sb.append('(');
         for (int i = 0; i < functionPointerDepth; i++) {
             sb.append('*');
@@ -261,6 +266,12 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
                 sb.append(variableNameToInsert);
             }
         }
+        if (decorator.isReference()) {
+            sb.append('&');
+        }        
+        for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
+            sb.append("[]"); // NOI18N
+        }               
         sb.append(')');
         InstantiationProviderImpl.appendParametersSignature(getParameters(), sb);
         return sb;
@@ -301,6 +312,13 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
             if (inFunctionParams && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
                 // this is start of function params
                 next = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+            } else if (inFunctionParams && next.getType() == CPPTokenTypes.RPAREN) {
+                if (AstUtil.findSiblingOfType(ast, CPPTokenTypes.ASSIGNEQUAL, brace) != null) {
+                    // int a = foo()
+                    return false;
+                }
+                // int()
+                next = null;
             } else if (inTypedef && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
                 // typedef void foo_type(...);
             } else if (next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) {
@@ -331,6 +349,12 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
 
         if (inFunctionParams && next == null) {
             next = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+        }
+        if (inFunctionParams && next == null && brace != null) {
+            // This could be a function type without name, like int(int)
+            next = new FakeAST();
+            next.setType(CPPTokenTypes.CSM_QUALIFIED_ID);
+            next.setNextSibling(brace);
         }
         if (inFunctionParams && next != null && next.getType() == CPPTokenTypes.RPAREN) {
             next = next.getNextSibling();
@@ -388,6 +412,13 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
             return true;
         }
         
+        if (inFunctionParams && next.getType() == CPPTokenTypes.RPAREN) {
+            if (next.getNextSibling() == null) {
+                // () without CMS_PARMLIST
+                return true;
+            }
+        }
+        
         next = next.getNextSibling();
         
         // skip except specification
@@ -428,14 +459,18 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         }
     }
     
-    private static void initFunctionReturnType(AST typeAST, TypeFunPtrImpl instance, CsmScope scope, CsmFile file) {
+    private void initFunctionReturnType(AST typeAST, CsmScope scope, CsmFile file) {
         if (typeAST != null) {
             AST fakeParent = new FakeAST();
             fakeParent.addChild(typeAST);
-            instance.returnType = AstRenderer.FunctionRenderer.createReturnType(fakeParent, scope, file);
+            returnType = AstRenderer.FunctionRenderer.createReturnType(fakeParent, scope, file);
         } else {
-            instance.returnType = TypeFactory.createBuiltinType("int", (AST) null, 0,  null, file); // NOI18N
+            returnType = TypeFactory.createBuiltinType("int", (AST) null, 0,  null, file); // NOI18N
         }
+        int retPointerDepth = super.getPointerDepth();
+        int retReference = TypeFactory.getReferenceValue(super.isReference(), super.isRValueReference());
+        boolean retIsConst = super.isConst();
+        returnType = TypeFactory.createType(returnType, retPointerDepth, retReference, returnType.getArrayDepth(), retIsConst);
     }
     
     public static int getEndOffset(AST node) {
