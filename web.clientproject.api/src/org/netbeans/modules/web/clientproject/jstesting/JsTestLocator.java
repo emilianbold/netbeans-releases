@@ -128,8 +128,7 @@ public final class JsTestLocator implements TestLocator {
             } else if (source.second() != null) {
                 foundLocation(new LocationResult(source.second(), -1), fo, callback);
             } else {
-                String path = source.first().substring(0, source.first().length() - 1);
-                foundLocation(new LocationResult(Bundle.JsTestLocator_not_found_source(fo.getNameExt(), path)), fo, callback);
+                foundLocation(new LocationResult(Bundle.JsTestLocator_not_found_source(fo.getNameExt(), getProperRelativePath(source.first()))), fo, callback);
             }
         } else if (fileType == FileType.TESTED) {
             Pair<String, FileObject> test = findTest(project, fo);
@@ -138,12 +137,20 @@ public final class JsTestLocator implements TestLocator {
             } else if (test.second() != null) {
                 foundLocation(new LocationResult(test.second(), -1), fo, callback);
             } else {
-                String path = test.first().substring(0, test.first().length() - 1);
-                foundLocation(new LocationResult(Bundle.JsTestLocator_not_found_test(fo.getNameExt(), path)), fo, callback);
+                foundLocation(new LocationResult(Bundle.JsTestLocator_not_found_test(fo.getNameExt(), getProperRelativePath(test.first()))), fo, callback);
             }
         } else {
             foundLocation(null, fo, callback);
         }
+    }
+
+    private String getProperRelativePath(String relPath) {
+        assert relPath != null;
+        String path = relPath;
+        if (!path.isEmpty()) {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path;
     }
 
     @Override
