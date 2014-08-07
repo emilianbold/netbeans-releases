@@ -109,6 +109,10 @@ public abstract class CompileWorkerTestBase extends NbTestCase {
         TransactionContext txc = TransactionContext.beginStandardTransaction(src.toURL(), true, false, false);
         Factory f = new JavaCustomIndexer.Factory();
         Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(src.toURL()), src.toURL(), f.getIndexerName(), f.getIndexVersion(), LuceneIndexFactory.getDefault(), false, false, true, SPIAccessor.getInstance().createSuspendStatus(new SuspendStatusImpl() {
+            @Override
+            public boolean isSuspendSupported() {
+                return true;
+            }
             @Override public boolean isSuspended() {
                 return false;
             }
