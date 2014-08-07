@@ -82,6 +82,9 @@
 				<tocitem text="Usages Window" target="UsagesWindow" />
 				<tocitem text="Using the Type Hierarchy Window" target="TypeView" />
 				<tocitem text="Using the Include Hierarchy Window" target="IncludeView" />
+                                <tocitem text="Using the Macro Expansion Window" target="MacroExpansionWindow" />
+                                <tocitem text="Using the C/C++ Documentation Window" target="CppDocumentation" />
+                                
 			</tocitem>
                  </tocitem>
                 <tocitem text="Using Remote Development for C/C++/Fortran Projects">
