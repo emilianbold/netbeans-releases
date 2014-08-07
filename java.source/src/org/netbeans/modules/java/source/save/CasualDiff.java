@@ -2593,12 +2593,12 @@ public class CasualDiff {
         if (localPointer < posHint)
             copyTo(localPointer, localPointer = posHint);
         if (oldT.body != null && newT.body != null) {
-            int[] bodyBounds = getBounds(oldT.body);
+            int[] bodyBounds = getCommentCorrectedBounds(oldT.body);
             copyTo(localPointer, bodyBounds[0]);
             localPointer = diffTree(oldT.body, newT.body, bodyBounds);
         }
-        copyTo(localPointer, bounds[1]);
-        return bounds[1];
+        localPointer = copyUpTo(localPointer, bounds[1]);
+        return localPointer;
     }
     
     private static final EnumSet<JavaTokenId> LAMBDA_PARAM_END_TOKENS = EnumSet.of(JavaTokenId.RPAREN, JavaTokenId.ARROW);
