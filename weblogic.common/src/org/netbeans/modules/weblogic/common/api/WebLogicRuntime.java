@@ -117,6 +117,12 @@ public final class WebLogicRuntime {
         return new WebLogicRuntime(config);
     }
 
+    public static void clear(WebLogicConfiguration config) {
+        synchronized (INSTANCES) {
+            INSTANCES.remove(config);
+        }
+    }
+
     public void startAndWait(@NullAllowed final BaseExecutionDescriptor.InputProcessorFactory outFactory,
             @NullAllowed final BaseExecutionDescriptor.InputProcessorFactory errFactory,
             @NullAllowed final Map<String, String> environment) throws InterruptedException, ExecutionException {
