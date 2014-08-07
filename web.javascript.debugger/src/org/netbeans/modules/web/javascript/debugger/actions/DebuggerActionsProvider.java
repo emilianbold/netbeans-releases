@@ -96,9 +96,10 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
                     })));
     
     private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.debugger"); // NOI18N
+    private static final String USG_LOG_MSG = "USG_DEBUG_HTML5_JS";   // NOI18N
 
     private Debugger debugger;
-    private boolean usgLogged = false;
+    private static boolean usgLogged = false;
 
     private void updateDebuggerState() {
         if (!debugger.isEnabled()) {
@@ -241,7 +242,7 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
     }
     
     private void logJSDebugAction() {
-        LogRecord record = new LogRecord(Level.INFO, "USG_DEBUG_HTML5");    // NOI18N
+        LogRecord record = new LogRecord(Level.INFO, USG_LOG_MSG);
         record.setResourceBundle(NbBundle.getBundle(DebuggerActionsProvider.class));
         record.setResourceBundleName(DebuggerActionsProvider.class.getPackage().getName() + ".Bundle"); // NOI18N
         record.setLoggerName(USG_LOGGER.getName());
