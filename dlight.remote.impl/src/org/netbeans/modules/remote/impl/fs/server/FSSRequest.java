@@ -93,7 +93,7 @@ public final class FSSRequest {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + ' ' + kind + ' ' + id + path; //NOI18N
+        return getClass().getSimpleName() + ' ' + kind + ' ' + id + ' ' + path + ' ' + ((path2 == null) ? "" : path2); //NOI18N
     }
 
     /*package*/ boolean needsResponse() {
