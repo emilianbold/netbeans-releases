@@ -43,6 +43,17 @@
 
 package org.netbeans.modules.profiler.options.ui.v2.impl;
 
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+import org.netbeans.lib.profiler.ui.components.JExtendedSpinner;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.options.ui.v2.ProfilerOptionsPanel;
 import org.openide.util.lookup.ServiceProvider;
@@ -55,7 +66,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class GeneralOptionsPanel extends ProfilerOptionsPanel {
     
     public GeneralOptionsPanel() {
-        setBackground(java.awt.Color.RED);
+        initUI();
     }
     
     public String getDisplayName() {
@@ -70,6 +81,145 @@ public final class GeneralOptionsPanel extends ProfilerOptionsPanel {
 
     public boolean equalsTo(ProfilerIDESettings settings) {
         return true;
+    }
+    
+    
+    private void initUI() {
+        setLayout(new GridBagLayout());
+        
+        GridBagConstraints c;
+        int y = 0;
+        int htab = 8;
+        int hgap = 10;
+        int vgap = 5;
+        
+        Separator dataTransferSeparator = new Separator("Appearance");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, 0, vgap * 2, 0);
+        add(dataTransferSeparator, c);
+        
+        JCheckBox toolbarNamesChoice = new JCheckBox("Display toolbar names");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        c.insets = new Insets(0, htab, vgap, 0);
+        add(toolbarNamesChoice, c);
+        
+        JCheckBox actionNamesChoice = new JCheckBox("Display important action names");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        c.insets = new Insets(0, htab, vgap, 0);
+        add(actionNamesChoice, c);
+        
+        Separator profilingSeparator = new Separator("Profiling");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(vgap * 4, 0, vgap * 2, 0);
+        add(profilingSeparator, c);
+        
+        JLabel portLabel = new JLabel("Profiling port:");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        c.insets = new Insets(0, htab, vgap, 0);
+        add(portLabel, c);
+        
+        JSpinner portSpinner = new JExtendedSpinner(new SpinnerNumberModel(5140, 1, 65535, 1));
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.gridy = y++;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, hgap, vgap, 0);
+        add(portSpinner, c);
+        
+        JLabel manageCalibrationLabel = new JLabel("Manage calibration data:");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y;
+        c.gridwidth = 3;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(0, htab, vgap, 0);
+        add(manageCalibrationLabel, c);
+        
+        JButton manageCalibrationButton = new JButton("Manage");
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.gridy = y++;
+        c.fill = GridBagConstraints.NONE;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(0, hgap, vgap, 0);
+        add(manageCalibrationButton, c);
+        
+        Separator miscSeparator = new Separator("Miscellaneous");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(vgap * 4, 0, vgap * 2, 0);
+        add(miscSeparator, c);
+        
+        JLabel resetDNSALabel = new JLabel("Reset all 'Do not show again' confirmations:");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(0, htab, vgap, 0);
+        add(resetDNSALabel, c);
+        
+        JButton resetDNSAButton = new JButton("Reset");
+        c = new GridBagConstraints();
+        c.gridx = 1;
+        c.gridy = y++;
+        c.fill = GridBagConstraints.NONE;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(0, hgap, vgap, 0);
+        add(resetDNSAButton, c);
+        
+        JPanel filler = new JPanel(null);
+        filler.setOpaque(false);
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.weightx = 1;
+        c.weighty = 1;
+        c.anchor = GridBagConstraints.NORTHWEST;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.BOTH;
+        add(filler, c);
+        
+        Dimension dim1 = manageCalibrationButton.getPreferredSize();
+        Dimension dim2 = resetDNSAButton.getPreferredSize();
+        Dimension dim3 = portSpinner.getPreferredSize();
+        
+        int width = manageCalibrationButton.getPreferredSize().width;
+        width = Math.max(dim1.width, dim2.width);
+        width = Math.max(width, dim3.width);
+        
+        dim1.width = width;
+        dim2.width = width;
+        dim3.width = width;
+        
+        manageCalibrationButton.setPreferredSize(dim1);
+        resetDNSAButton.setPreferredSize(dim2);
+        portSpinner.setPreferredSize(dim3);
+        
     }
     
 }

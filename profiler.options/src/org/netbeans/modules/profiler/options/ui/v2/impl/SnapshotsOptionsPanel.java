@@ -228,7 +228,7 @@ public final class SnapshotsOptionsPanel extends ProfilerOptionsPanel {
         c.gridy = y++;
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(vgap * 3, 0, vgap * 2, 0);
+        c.insets = new Insets(vgap * 4, 0, vgap * 2, 0);
         add(snapshotsWindowSeparator, c);
         
         JLabel openSnapshotsWindowLabel = new JLabel("Open automatically:");

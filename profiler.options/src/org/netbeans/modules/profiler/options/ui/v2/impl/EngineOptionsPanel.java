@@ -43,6 +43,10 @@
 
 package org.netbeans.modules.profiler.options.ui.v2.impl;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.JPanel;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.options.ui.v2.ProfilerOptionsPanel;
 import org.openide.util.lookup.ServiceProvider;
@@ -55,7 +59,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class EngineOptionsPanel extends ProfilerOptionsPanel {
     
     public EngineOptionsPanel() {
-        setBackground(java.awt.Color.BLUE);
+        initUI();
     }
     
     public String getDisplayName() {
@@ -70,6 +74,57 @@ public final class EngineOptionsPanel extends ProfilerOptionsPanel {
 
     public boolean equalsTo(ProfilerIDESettings settings) {
         return true;
+    }
+    
+    
+    private void initUI() {
+        setLayout(new GridBagLayout());
+        
+        GridBagConstraints c;
+        int y = 0;
+        int htab = 8;
+        int hgap = 10;
+        int vgap = 5;
+        
+        Separator dataTransferSeparator = new Separator("Threads Settings");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, 0, vgap * 2, 0);
+        add(dataTransferSeparator, c);
+        
+        Separator cpuSettingsSeparator = new Separator("CPU Settings");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(vgap * 4, 0, vgap * 2, 0);
+        add(cpuSettingsSeparator, c);
+        
+        Separator memorySettingsSeparator = new Separator("Memory Settings");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(vgap * 4, 0, vgap * 2, 0);
+        add(memorySettingsSeparator, c);
+        
+        JPanel filler = new JPanel(null);
+        filler.setOpaque(false);
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.weightx = 1;
+        c.weighty = 1;
+        c.anchor = GridBagConstraints.NORTHWEST;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.BOTH;
+        add(filler, c);
+        
     }
     
 }
