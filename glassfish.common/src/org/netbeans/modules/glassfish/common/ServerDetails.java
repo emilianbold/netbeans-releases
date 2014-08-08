@@ -150,6 +150,18 @@ public enum ServerDetails {
         401,
         "http://download.java.net/glassfish/4.0.1/release/glassfish-4.0.1-ml.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post71v4-0-1.txt" // NOI18N
+    ),
+    
+    /**
+     * details for an instance of GlassFish Server 4.0.1
+     */
+    GLASSFISH_SERVER_4_1(NbBundle.getMessage(ServerDetails.class, "STR_41_SERVER_NAME", new Object[]{}), // NOI18N
+        "deployer:gfv3ee6wc", // NOI18N
+        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-4.1"}, // NOI18N
+        new String[0],
+        410,
+        "http://download.java.net/glassfish/4.1/release/glassfish-4.1-ml.zip?nbretriever=fallback", // NOI18N
+        "http://serverplugins.netbeans.org/glassfishv3/post71v4-1.txt" // NOI18N
     );
 
     /**
@@ -161,6 +173,7 @@ public enum ServerDetails {
     public static WizardDescriptor.InstantiatingIterator
             getInstantiatingIterator() {
         return new ServerWizardIterator(new ServerDetails[]{
+                    GLASSFISH_SERVER_4_1,
                     GLASSFISH_SERVER_4_0_1,
                     GLASSFISH_SERVER_4_0,
                     GLASSFISH_SERVER_3_1_2_2,
@@ -170,6 +183,7 @@ public enum ServerDetails {
                     GLASSFISH_SERVER_3_0_1,
                     GLASSFISH_SERVER_3,},
                 new ServerDetails[]{
+                    GLASSFISH_SERVER_4_1,
                     GLASSFISH_SERVER_4_0,
                     GLASSFISH_SERVER_3_1_2_2});
     }
@@ -201,7 +215,9 @@ public enum ServerDetails {
 //                default:         return -1;
 //            }
 //        }
-        if (GLASSFISH_SERVER_4_0_1.isInstalledInDirectory(glassfishDir)) {
+        if (GLASSFISH_SERVER_4_1.isInstalledInDirectory(glassfishDir)) {
+            sd = GLASSFISH_SERVER_4_1;
+        } else if (GLASSFISH_SERVER_4_0_1.isInstalledInDirectory(glassfishDir)) {
             sd = GLASSFISH_SERVER_4_0_1;
         } else if (GLASSFISH_SERVER_4_0.isInstalledInDirectory(glassfishDir)) {
             sd = GLASSFISH_SERVER_4_0;
