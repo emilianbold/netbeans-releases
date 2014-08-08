@@ -125,7 +125,12 @@ import org.xml.sax.SAXParseException;
 public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         implements DDChangeListener, FileChangeListener, ChangeListener {
     private EjbJarProxy ejbJar;
+
+    //@GuardedBy(srcRoots)
     private final List<FileObject> srcRoots = new ArrayList<FileObject>();
+    //@GuardedBy(srcRoots)
+    private boolean initialized = false;
+
     private PropertyChangeListener ejbJarChangeListener;
     private Map entityHelperMap = new HashMap();
     private Map sessionHelperMap = new HashMap();
@@ -145,11 +150,11 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     private static final String OVERVIEW = "Overview"; //NOI18N
     private static final String CMP_RELATIONSHIPS = "CmpRelationships"; //NOI18N
     
-    private static final RequestProcessor rp = new RequestProcessor(EjbJarMultiViewDataObject.class);
-    private final RequestProcessor.Task refreshSourcesTask = rp.create(new Runnable() {
+    private static final RequestProcessor RP = new RequestProcessor(EjbJarMultiViewDataObject.class);
+    private final RequestProcessor.Task refreshSourcesTask = RP.create(new Runnable() {
         @Override
         public void run() {
-            refreshSourceFolders ();
+            refreshSourceFolders();
         }
     });
 
@@ -163,14 +168,22 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         set.add(validateCookie);
         CookieSet.Factory viewCookieFactory = new ViewCookieFactory();
         set.add(ViewCookie.class, viewCookieFactory);
-        
-        
-        Project project = getProject();
-        if (project != null) {
-            Sources sources = ProjectUtils.getSources(project);
-            sources.addChangeListener(this);
-        }
-        refreshSourceFolders();
+
+        // initialize srcRoots
+        refreshSourcesTask.schedule(0);
+
+        RP.submit(new Runnable() {
+            @Override
+            public void run() {
+                Project project = getProject();
+                if (project != null) {
+                    Sources sources = ProjectUtils.getSources(project);
+                    sources.addChangeListener(EjbJarMultiViewDataObject.this);
+                }
+                // refresh srcRoots if any change happened in the meantime
+                refreshSourcesTask.schedule(0);
+            }
+        });
     }
     
     
@@ -184,7 +197,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             groups = null;
         }
         if (groups != null) {
-            synchronized(srcRoots){
+            synchronized(srcRoots) {
                 srcRoots.clear();
                 for (int i = 0; i < groups.length; i++) {
                     org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(groups[i].getRootFolder());
@@ -200,6 +213,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
                         }
                     }
                 }
+                initialized = true;
             }
         }
     }
@@ -225,6 +239,9 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     
     private String getPackageName(FileObject clazz) {
         synchronized(srcRoots){
+            if (!initialized) {
+                refreshSourcesTask.waitFinished();
+            }
             for (FileObject fo : srcRoots) {
                 String rp = FileUtil.getRelativePath(fo, clazz);
                 if (rp != null) {
