@@ -323,7 +323,7 @@ public class VariableProvider {
                                     instantiation = ip.instantiate((CsmTemplate) instantiation, variableFile, variableStartOffset, maps.get(i), false);
                                 }
                                 if (!maps.isEmpty()) {
-                                    instantiation = ip.instantiate((CsmTemplate) instantiation, variableFile, variableStartOffset, maps.get(0));
+                                    instantiation = ip.instantiate((CsmTemplate) instantiation, variableFile, variableStartOffset, maps.get(0), true);
                                 }
                                 
                                 if (CsmKindUtilities.isClassifier(instantiation)) {
