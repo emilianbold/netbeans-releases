@@ -339,4 +339,10 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         // Bug 244177 - Unresolved decltype inside decltype
         performTest("bug244177.cpp", 12, 20, "bug244177.cpp", 3, 9);
     }        
+    
+    public void testBug246349() throws Exception {
+        // Bug 246349 - Unresolved symbols inside lamda defined in constructor initializer list
+        performTest("bug246349.cpp", 9, 45, "bug246349.cpp", 9, 37);
+        performTest("bug246349.cpp", 9, 63, "bug246349.cpp", 9, 37);
+    }            
 }

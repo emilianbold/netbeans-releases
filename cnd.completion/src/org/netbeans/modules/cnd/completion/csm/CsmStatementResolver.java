@@ -245,27 +245,9 @@ public class CsmStatementResolver {
                             }
                         }
                     }
-                }
-                    
-                    
+                }   
             } else if (CsmKindUtilities.isVariable(decl)) {
-                CsmExpression initialValue = ((CsmVariable)decl).getInitialValue();
-                if(initialValue != null) {
-                    for (CsmStatement csmStatement : initialValue.getLambdas()) {
-                        CsmDeclarationStatement lambda = (CsmDeclarationStatement)csmStatement;
-                        if ((!CsmOffsetUtilities.sameOffsets(decl, lambda) || lambda.getStartOffset() != lambda.getEndOffset()) && CsmOffsetUtilities.isInObject(lambda, offset)) {
-                            // offset is in body, try to find inners statement
-                            if (CsmStatementResolver.findInnerObject(lambda, offset, context)) {
-                                // if found exact object => return it, otherwise return last found scope
-                                CsmObject found = context.getLastObject();
-                                if (!CsmOffsetUtilities.sameOffsets(lambda, found)) {
-                                    context.setLastObject(found);
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
+                findInner(((CsmVariable)decl).getInitialValue(), offset, context);
             }
             return true;
         }
