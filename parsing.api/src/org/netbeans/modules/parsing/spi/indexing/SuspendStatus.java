@@ -72,6 +72,15 @@ public final class SuspendStatus {
     }
 
     /**
+     * Checks if a indexing task supports suspend.
+     * @return true if suspend is supported by the active indexing task.
+     * @since 1.78
+     */
+    public boolean isSuspendSupported() {
+        return impl.isSuspendSupported();
+    }
+
+    /**
      * Checks if an indexing is suspended.
      * @return true if an indexing is suspended.
      */

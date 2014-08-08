@@ -44,8 +44,10 @@ package org.netbeans.modules.java.source.indexing;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -153,7 +155,7 @@ public final class JavaIndexerWorker {
         final boolean doPrefetch = TEST_DO_PREFETCH != null?
                 TEST_DO_PREFETCH:
                 supportsPar;
-        if (doPrefetch) {
+        if (doPrefetch && suspendStatus.isSuspendSupported()) {
             LOG.log(
                 Level.FINE,
                 "Using concurrent iterator, {0} workers",    //NOI18N
@@ -247,11 +249,16 @@ public final class JavaIndexerWorker {
 
     private static final class ConcurrentIterator extends SuspendableIterator implements Closeable {
 
-        private static final CompileTuple DUMMY = new CompileTuple(null, null);
+        private static final CompileTuple DUMMY = new CompileTuple(
+            null,
+            null,
+            true,   //DUMMY is virtual not scheduled to worker thread
+            false);
 
 
         private final CompletionService<CompileTuple> cs;
         private final Semaphore sem;
+        private final Deque<CompileTuple> virtuals;
         //@NotThreadSafe
         private int count;
         //@NotThreadSafe
@@ -265,26 +272,32 @@ public final class JavaIndexerWorker {
             super(suspendStatus);
             this.cs = JavaIndexerWorker.newCompletionService();
             this.sem = new Semaphore(BUFFER_SIZE);
+            this.virtuals = new ArrayDeque<>();
 
             for (final CompileTuple ct : files) {
-                cs.submit(new Callable<CompileTuple>() {
-                    @NonNull
-                    @Override
-                    public CompileTuple call() throws Exception {
-                        safePark();
-                        if (closed) {
-                            LOG.finest("Skipping prefetch due to close.");  //NOI18N
+                if (ct.virtual) {
+                    //Virtual sources are already in memory no need to post them to other thread.
+                    virtuals.offer(ct);
+                } else {
+                    cs.submit(new Callable<CompileTuple>() {
+                        @NonNull
+                        @Override
+                        public CompileTuple call() throws Exception {
+                            safePark();
+                            if (closed) {
+                                LOG.finest("Skipping prefetch due to close.");  //NOI18N
+                                return ct;
+                            }
+                            final int len = Math.min(BUFFER_SIZE,ct.jfo.prefetch());
+                            if (LOG.isLoggable(Level.FINEST) &&
+                                (sem.availablePermits() - len) < 0) {
+                                LOG.finest("Buffer full");  //NOI18N
+                            }
+                            sem.acquire(len);
                             return ct;
                         }
-                        final int len = Math.min(BUFFER_SIZE,ct.jfo.prefetch());
-                        if (LOG.isLoggable(Level.FINEST) &&
-                            (sem.availablePermits() - len) < 0) {
-                            LOG.finest("Buffer full");  //NOI18N
-                        }
-                        sem.acquire(len);
-                        return ct;
-                    }
-                });
+                    });
+                }
                 count++;
             }
         }
@@ -306,7 +319,9 @@ public final class JavaIndexerWorker {
             }
             safePark();
             try {
-                active = cs.take().get();
+                active = virtuals.isEmpty() ?
+                    cs.take().get() :
+                    virtuals.removeFirst();
             } catch (InterruptedException ex) {
                 active = DUMMY;
                 Exceptions.printStackTrace(ex);
@@ -331,7 +346,7 @@ public final class JavaIndexerWorker {
                 throw new IllegalStateException("Call next before remove");   //NOI18N
             }
             try {
-                if (active != DUMMY) {
+                if (!active.virtual) {
                     final int len = Math.min(BUFFER_SIZE, active.jfo.dispose());
                     sem.release(len);
                 }
