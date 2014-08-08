@@ -3952,7 +3952,9 @@ public class CasualDiff {
             if (!firstNewCommentPrinted && preceding) {
                 copyTo(localPointer, localPointer = oldTreeStartPos);
             }
-            printer.print((DCTree) newDoc);
+            // suppress potential margin after doc comment: there's a whitespace ready between the comment and the 
+            // JCTree.
+            printer.print((DCTree) newDoc, true);
         }
         return localPointer;
     }
