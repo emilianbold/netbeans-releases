@@ -114,6 +114,7 @@
 				<file title="UsingHyperlinks.html"/>
 				<file title="UsingNavigator.html"/>
 				<file title="UsingPairCompletion.html"/>
+                                <file title="MacroExpansionWindow.html"/>
 			</directory>
 			<directory title="GettingStarted">
 				<file title="CandC++ProjectsMakefiles.html"/>
