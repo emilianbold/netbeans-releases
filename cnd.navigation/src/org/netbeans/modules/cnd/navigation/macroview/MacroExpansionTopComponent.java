@@ -49,6 +49,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -217,6 +218,11 @@ public final class MacroExpansionTopComponent extends TopComponent {
 
     public static boolean isMacroExpansionInitialized() {
         return panelInitialized.get();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("MacroExpansionWindow"); //NOI18N
     }
     
     public
