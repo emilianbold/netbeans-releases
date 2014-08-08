@@ -263,6 +263,9 @@ public class JdbRetriever implements JdbcChildrenFactory.Retriever {
             JdbcConfigHandler handler = new JdbcConfigHandler();
             FileObject jdbcConfig = FileUtil.toFileObject( FileUtil.
                     normalizeFile( new File(path)));
+            if (jdbcConfig == null) {
+                return;
+            }
             parser.parse(new BufferedInputStream(
                     jdbcConfig.getInputStream()), handler);
             List<String> jndiNames = handler.getJndiNames();
@@ -433,7 +436,7 @@ public class JdbRetriever implements JdbcChildrenFactory.Retriever {
 
         private void failNotify(){
             NotifyDescriptor notDesc = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(JdbcRetriever.class, "MSG_UnableUnregister"),
+                    NbBundle.getMessage(JdbRetriever.class, "MSG_UnableUnregister"),
                     NotifyDescriptor.ERROR_MESSAGE );
             DialogDisplayer.getDefault().notify(notDesc);
         }
@@ -549,7 +552,7 @@ public class JdbRetriever implements JdbcChildrenFactory.Retriever {
 
         private void failNotify(){
             NotifyDescriptor notDesc = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(JdbcRetriever.class, "MSG_UnableUnregister"),
+                    NbBundle.getMessage(JdbRetriever.class, "MSG_UnableUnregister"),
                     NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(notDesc);
         }
