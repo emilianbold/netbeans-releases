@@ -303,11 +303,15 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     }
     
     public void print(DCTree t) {
+        print(t, false);
+    }
+    
+    public void print(DCTree t, boolean noMarginAfter) {
         if (t == null) return;
-        blankLines(t, true);
+        blankLines(t, true, false);
         toLeftMargin();
         doAccept(t);
-        blankLines(t, false);
+        blankLines(t, false, noMarginAfter);
     }
     
     private Map<JCTree, Integer> overrideStartPositions;
@@ -1905,7 +1909,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
      * <li>@deprecated (see How and When To Deprecate APIs)</li>
      * </ul>
      */
-    private void blankLines(DCTree tree, boolean before) {
+    private void blankLines(DCTree tree, boolean before, boolean suppressMarginAfter) {
         if (tree == null) {
             return;
         }
@@ -1935,7 +1939,9 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 } else {
                     newline();
                 }
-                toLeftMargin();
+                if (!suppressMarginAfter) {
+                    toLeftMargin();
+                }
                 break;
             default:
                 break;
