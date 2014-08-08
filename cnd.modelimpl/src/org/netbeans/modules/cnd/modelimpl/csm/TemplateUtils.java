@@ -369,8 +369,14 @@ public class TemplateUtils {
                     case CPPTokenTypes.COMMA:
                     case CPPTokenTypes.GREATERTHAN:
                         if (type != null) {
-                            res.add(new TypeBasedSpecializationParameterImpl(TypeFactory.createType(type, file, ptr, 0, scope),
-                                    file, OffsetableBase.getStartOffset(type), OffsetableBase.getEndOffset(type)));
+                            res.add(
+                                new TypeBasedSpecializationParameterImpl(TemplateUtils.checkTemplateType(
+                                    TypeFactory.createType(type, file, ptr, 0, null, scope, true, false), scope
+                                ),
+                                file, 
+                                OffsetableBase.getStartOffset(type), 
+                                OffsetableBase.getEndOffset(type))
+                            );
                         }
                         type = null;
                         ptr = null;

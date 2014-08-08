@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,77 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.apigen.ui.customizer;
+package org.netbeans.modules.javascript2.nodejs;
 
-import javax.swing.JComponent;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.openide.filesystems.FileObject;
 
 /**
- * Customizer panel for ApiGen.
+ *
+ * @author Petr Pisl
  */
-public final class ApiGenCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+public class NodeJsElement implements ElementHandle {
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = UiUtils.CUSTOMIZER_PATH,
-        position = 355
-    )
-    public static ApiGenCustomizer createCustomizer() {
-        return new ApiGenCustomizer();
-    }
+    private final String name;
+    private final ElementKind kind;
+    private final String documentation;
 
-    @NbBundle.Messages("ApiGenCustomizer.displayName=ApiGen")
-    @Override
-    public ProjectCustomizer.Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                "ApiGen", // NOI18N
-                Bundle.ApiGenCustomizer_displayName(),
-                null,
-                (ProjectCustomizer.Category[]) null);
+    public NodeJsElement(String name, String documentation, ElementKind kind) {
+        this.name = name;
+        this.kind = kind;
+        this.documentation = documentation;
     }
 
     @Override
-    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        PhpModule phpModule = PhpModule.Factory.lookupPhpModule(context);
-        return new ApiGenPanel(category, phpModule);
+    public FileObject getFileObject() {
+        return null;
+    }
+
+    @Override
+    public String getMimeType() {
+        return "";
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getIn() {
+        return "";
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return kind;
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        return Collections.<Modifier>emptySet();
+    }
+
+    @Override
+    public boolean signatureEquals(ElementHandle handle) {
+        return false;
+    }
+
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return OffsetRange.NONE;
+    }
+
+    public String getDocumentation() {
+        return documentation;
     }
 
 }

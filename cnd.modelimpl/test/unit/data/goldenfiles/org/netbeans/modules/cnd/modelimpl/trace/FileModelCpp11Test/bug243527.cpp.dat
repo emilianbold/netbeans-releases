@@ -15,8 +15,8 @@ NAMESPACE DEFINITOIN bug243527 [1:1/0-18:2/535] SCOPE: bug243527.cpp
     STRUCT X0_243527 (bug243527::X0_243527 ) [2:5/26-17:6/532] lcurly=43 SCOPE: bug243527 
         BASE CLASSES:
         MEMBERS:
-            TYPEDEF func_int_ref243527  [3:7/51-3:44/88] TYPE: &int() TEXT=int&(*)()  [3:15/59-3:43/87] SCOPE: X0_243527 
-            TYPEDEF func_float_ref243527  [4:7/95-4:48/136] TYPE: &float() TEXT=float&(*)()  [4:15/103-4:47/135] SCOPE: X0_243527 
+            TYPEDEF func_int_ref243527  [3:7/51-3:44/88] TYPE: int&() TEXT=int&(*)()  [3:15/59-3:43/87] SCOPE: X0_243527 
+            TYPEDEF func_float_ref243527  [4:7/95-4:48/136] TYPE: float&() TEXT=float&(*)()  [4:15/103-4:47/135] SCOPE: X0_243527 
             FUNCTION operator  func_int_ref243527 [6:7/148-6:38/179] MethodImpl SCOPE: X0_243527 
                 DEFINITION: null
                 SIGNATURE operator  func_int_ref243527()
@@ -79,8 +79,8 @@ NAMESPACE bug243527 (bug243527)
     STRUCT X0_243527 (bug243527::X0_243527 ) [2:5/26-17:6/532] lcurly=43 SCOPE: bug243527 
         BASE CLASSES:
         MEMBERS:
-            TYPEDEF func_int_ref243527  [3:7/51-3:44/88] TYPE: &int() TEXT=int&(*)()  [3:15/59-3:43/87] SCOPE: X0_243527 
-            TYPEDEF func_float_ref243527  [4:7/95-4:48/136] TYPE: &float() TEXT=float&(*)()  [4:15/103-4:47/135] SCOPE: X0_243527 
+            TYPEDEF func_int_ref243527  [3:7/51-3:44/88] TYPE: int&() TEXT=int&(*)()  [3:15/59-3:43/87] SCOPE: X0_243527 
+            TYPEDEF func_float_ref243527  [4:7/95-4:48/136] TYPE: float&() TEXT=float&(*)()  [4:15/103-4:47/135] SCOPE: X0_243527 
             FUNCTION operator  func_int_ref243527 [6:7/148-6:38/179] MethodImpl SCOPE: X0_243527 
                 DEFINITION: null
                 SIGNATURE operator  func_int_ref243527()

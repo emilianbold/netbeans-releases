@@ -42,10 +42,20 @@
 
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmTypes;
+import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.ShiftedTokenStream;
+import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.spi.model.TypesProvider;
 
 /**
@@ -54,6 +64,25 @@ import org.netbeans.modules.cnd.spi.model.TypesProvider;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.TypesProvider.class)
 public class TypesProviderImpl implements TypesProvider {
+    
+    @Override
+    public CsmType createType(CharSequence sequence, CsmScope scope, CsmTypes.SequenceDescriptor descriptor) {
+        AST typeAst = tryParseType(sequence, descriptor.lang, descriptor.langFlavour, descriptor.offsets);
+        if (typeAst != null) {
+            AST ptrOperator = AstUtil.findSiblingOfType(typeAst, CPPTokenTypes.CSM_PTR_OPERATOR);
+            return TypeFactory.createType(
+                typeAst, 
+                descriptor.offsets.getContainer(), 
+                ptrOperator, 
+                0, 
+                null, 
+                scope, 
+                descriptor.inFunctionParams | descriptor.inTemplateDescriptor,  // TODO: they should be separated
+                descriptor.inTypedef
+            );
+        }
+        return null;
+    }    
     
     @Override
     public CsmType createType(CsmClassifier cls, CsmTypes.TypeDescriptor td, CsmTypes.OffsetDescriptor offs) {
@@ -69,5 +98,42 @@ public class TypesProviderImpl implements TypesProvider {
                 newDescriptor.getArrDepth(), 
                 newDescriptor.isConst()
         );
+    }
+    
+    private static AST tryParseType(CharSequence sequence, String lang, String langFlavour, CsmTypes.OffsetDescriptor offs) {
+        CPPParserEx parser = createParser(sequence, lang, langFlavour, offs);
+        if (parser != null) {
+            parser.type_name();
+            if (!parser.matchError) {
+                return parser.getAST();
+            }
+        }
+        return null;
+    }    
+    
+    private static CPPParserEx createParser(CharSequence sequence, String lang, String langFlavour, CsmTypes.OffsetDescriptor offs) {
+        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(sequence.toString(), lang);
+        if (ts != null) {
+            if (offs.getStartOffset() != 0) {
+                ts = new ShiftedTokenStream(ts, offs.getStartOffset());
+            }
+            int flags = getParserFlags(lang, langFlavour);        
+            APTLanguageFilter langFilter = APTLanguageSupport.getInstance().getFilter(lang, langFlavour);
+            return CPPParserEx.getInstance("In_memory_parse", langFilter.getFilteredStream(ts), flags); // NOI18N
+        }
+        return null;
+    }
+    
+    private static int getParserFlags(String lang, String langFlavour) {
+        int flags = CPPParserEx.CPP_SUPPRESS_ERRORS;
+        if (APTLanguageSupport.GNU_CPP.equals(lang)) {
+            flags |= CPPParserEx.CPP_CPLUSPLUS;
+        } else {
+            flags |= CPPParserEx.CPP_ANSI_C;
+        }
+        if (APTLanguageSupport.FLAVOR_CPP11.equals(langFlavour)) {
+            flags |= CPPParserEx.CPP_FLAVOR_CPP11;
+        }
+        return flags;
     }
 }

@@ -157,7 +157,7 @@ class DiffToRevision  implements ActionListener, PropertyChangeListener {
         }
         panel.cmbDiffKind.setModel(model);
         panel.cmbDiffKind.setRenderer(new DiffKindRenderer());
-        panel.cmbDiffKind.setSelectedIndex(0);
+        panel.cmbDiffKind.setSelectedIndex(1);
     }
 
     private DiffToRevisionKind getSelectedKind () {

@@ -76,6 +76,6 @@ public class FormattingCustomizerNode extends CustomizerNode {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("ProjectProperties"); // NOI18N
+        return new HelpCtx("ProjectPropsFormatting"); // NOI18N
     }
 }

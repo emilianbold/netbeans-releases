@@ -46,9 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
-import junit.framework.Test;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -78,10 +76,6 @@ public class ImportDataCreatorTest extends PHPTestBase {
 
     public ImportDataCreatorTest(String testName) {
         super(testName);
-    }
-
-    public static Test suite() {
-        return NbModuleSuite.createConfiguration(ImportDataCreatorTest.class).suite();
     }
 
     public void testImportData_01() throws Exception {

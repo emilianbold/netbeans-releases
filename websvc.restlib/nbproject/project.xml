@@ -82,25 +82,25 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/jaxrs-2.0/javax.ws.rs-api-2.0.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/asm-debug-all-5.0.2.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/asm-all-repackaged-2.2.0-b21.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/jersey-guava-2.10.1.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/guava-14.0.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/hk2-api-2.3.0-b05.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/hk2-api-2.2.0-b21.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/hk2-locator-2.3.0-b05.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/hk2-locator-2.2.0-b21.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/hk2-utils-2.3.0-b05.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/hk2-utils-2.2.0-b21.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jersey2/ext/javax.annotation-api-1.2.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/javax.inject-2.3.0-b05.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/javax.inject-2.2.0-b21.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jersey2/jersey-client.jar</runtime-relative-path>

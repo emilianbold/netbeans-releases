@@ -350,7 +350,15 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(ReferenceNode rNode) {
-        add(new TypeUsageImpl(Type.FUNCTION, rNode.getReference().getStart(), true));
+        List<? extends Node> path = getPath();
+        boolean functionType = true;
+        if (!path.isEmpty()) {
+            Node lastNode = path.get(path.size() - 1);
+            functionType = !(lastNode instanceof CallNode);
+        }
+        if (functionType) {
+            add(new TypeUsageImpl(Type.FUNCTION, rNode.getReference().getStart(), true));
+        }
         return null;
     }
     

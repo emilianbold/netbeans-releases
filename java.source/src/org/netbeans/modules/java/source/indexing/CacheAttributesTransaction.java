@@ -58,6 +58,7 @@ class CacheAttributesTransaction extends TransactionContext.Service {
     private final boolean srcRoot;
     private final boolean allFiles;
     private boolean closed;
+    private boolean invalid;
 
     private CacheAttributesTransaction(
         @NonNull final URL root,
@@ -93,13 +94,19 @@ class CacheAttributesTransaction extends TransactionContext.Service {
                 JavaIndex.setAttribute(root, ClassIndexManager.PROP_SOURCE_ROOT, Boolean.FALSE.toString());
             }
         }
-        uq.setState(ClassIndexImpl.State.INITIALIZED);
+        if (!invalid) {
+            uq.setState(ClassIndexImpl.State.INITIALIZED);
+        }
     }
 
     @Override
     protected void rollBack() throws IOException {
         closeTx();
         //NOP - keep index state as NEW
+    }
+
+    void setInvalid(final boolean invalid) {
+        this.invalid = invalid;
     }
 
     private void closeTx() {

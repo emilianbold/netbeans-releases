@@ -67,6 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -223,8 +224,8 @@ public final class ClassPath {
 
     private static final Logger LOG = Logger.getLogger(ClassPath.class.getName());
     
-    private static final Lookup.Result<? extends ClassPathProvider> implementations =
-        Lookup.getDefault().lookupResult(ClassPathProvider.class);
+    private static final AtomicReference<Lookup.Result<? extends ClassPathProvider>> implementations =
+        new AtomicReference<>();
 
     private final ClassPathImplementation impl;
     private final Throwable caller;
@@ -624,7 +625,14 @@ public final class ClassPath {
             Thread.dumpStack();
             return null;
         }
-        for (ClassPathProvider impl  : implementations.allInstances()) {
+        Lookup.Result<? extends ClassPathProvider> impls = implementations.get();
+        if (impls == null) {
+            impls = Lookup.getDefault().lookupResult(ClassPathProvider.class);
+            if (!implementations.compareAndSet(null, impls)) {
+                impls = implementations.get();
+            }
+        }
+        for (ClassPathProvider impl  : impls.allInstances()) {
             ClassPath cp = impl.findClassPath(f, id);
             if (cp != null) {
                 LOG.log(Level.FINE, "getClassPath({0}, {1}) -> {2} from {3}", new Object[] {f, id, cp, impl});

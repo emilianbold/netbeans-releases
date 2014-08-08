@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,84 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.phpdoc.ui.customizer;
 
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.php.phpdoc.PhpDocumentorProvider;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizer;
 
-public class PhpDocCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+public final class PhpModuleCustomizerImpl implements PhpModuleCustomizer {
 
-    private static final String PHP_DOC = "PhpDoc"; // NOI18N
+    private final PhpModule phpModule;
 
-    @Override
-    public Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                PHP_DOC,
-                NbBundle.getMessage(PhpDocCustomizer.class, "LBL_Config_PhpDoc"),
-                null,
-                (ProjectCustomizer.Category[]) null);
+    private volatile PhpDocPanel panel;
+
+
+    public PhpModuleCustomizerImpl(PhpModule phpModule) {
+        this.phpModule = phpModule;
     }
 
     @Override
-    public JComponent createComponent(Category category, Lookup context) {
-        PhpModule phpModule = PhpModule.Factory.lookupPhpModule(context);
-        return new PhpDocPanel(category, phpModule);
+    public String getName() {
+        return PhpDocumentorProvider.getInstance().getName();
     }
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = UiUtils.CUSTOMIZER_PATH,
-        position = 360
-    )
-    public static PhpDocCustomizer createCustomizer() {
-        return new PhpDocCustomizer();
+    @Override
+    public String getDisplayName() {
+        return PhpDocumentorProvider.getInstance().getDisplayName();
     }
+
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        getComponent();
+        panel.addChangeListener(listener);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        getComponent();
+        panel.removeChangeListener(listener);
+    }
+
+    @Override
+    public JComponent getComponent() {
+        if (panel == null) {
+            panel = new PhpDocPanel(phpModule);
+        }
+        return panel;
+    }
+
+    @Override
+    public boolean isValid() {
+        getComponent();
+        return panel.isValidData();
+    }
+
+    @Override
+    public String getErrorMessage() {
+        getComponent();
+        return panel.getErrorMessage();
+    }
+
+    @Override
+    public String getWarningMessage() {
+        getComponent();
+        return panel.getWarningMessage();
+    }
+
+    @Override
+    public void save() {
+        getComponent();
+        panel.storeData();
+    }
+
+    @Override
+    public void close() {
+        // noop
+    }
+
 }

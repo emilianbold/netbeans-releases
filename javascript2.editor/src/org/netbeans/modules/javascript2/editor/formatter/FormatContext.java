@@ -42,11 +42,14 @@
 package org.netbeans.modules.javascript2.editor.formatter;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
+import jdk.nashorn.internal.ir.FunctionNode;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -70,6 +73,20 @@ public final class FormatContext {
     private static final Logger LOGGER = Logger.getLogger(FormatContext.class.getName());
 
     private static final Pattern SAFE_DELETE_PATTERN = Pattern.compile("\\s*"); // NOI18N
+    
+    private static final Comparator<Region> REGION_COMPARATOR = new Comparator<Region>() {
+
+        @Override
+        public int compare(Region o1, Region o2) {
+            if (o1.getOriginalStart() < o2.getOriginalStart()) {
+                return -1;
+            }
+            if (o1.getOriginalStart() > o2.getOriginalStart()) {
+                return 1;
+            }
+            return 0;
+        }
+    };
 
     private final Context context;
 
@@ -78,6 +95,8 @@ public final class FormatContext {
     private final Language<JsTokenId> languange;
 
     private final Defaults.Provider provider;
+    
+    private final FunctionNode root;
 
     private final int initialStart;
 
@@ -102,11 +121,12 @@ public final class FormatContext {
     private int tabCount;
 
     public FormatContext(Context context, Defaults.Provider provider,
-            Snapshot snapshot, Language<JsTokenId> language) {
+            Snapshot snapshot, Language<JsTokenId> language, FunctionNode root) {
         this.context = context;
         this.snapshot = snapshot;
         this.languange = language;
         this.provider = provider;
+        this.root = root;
         this.initialStart = context.startOffset();
         this.initialEnd = context.endOffset();
 
@@ -114,6 +134,7 @@ public final class FormatContext {
         for (Context.Region region : context.indentRegions()) {
             regions.add(new Region(region));
         }
+        Collections.sort(regions, REGION_COMPARATOR);
 
         dumpRegions();
 
@@ -252,6 +273,25 @@ public final class FormatContext {
         }
     }
     
+    
+    public int getEmbeddedRegionEnd(int offset) {
+        if (!embedded) {
+            return -1;
+        }
+
+        int docOffset = snapshot.getOriginalOffset(offset);
+        if (docOffset < 0) {
+            return -1;
+        }
+
+        for (Region region : regions) {
+            if (docOffset >= region.getOriginalStart() && docOffset < region.getOriginalEnd()) {
+                return snapshot.getEmbeddedOffset(region.getOriginalEnd());
+            }
+        }
+        return -1;
+    }
+    
     public int getDocumentOffset(int offset) {
         return getDocumentOffset(offset, true);
     }
@@ -382,6 +422,10 @@ public final class FormatContext {
         // return embedded && getDocumentOffset(token.getOffset()) < 0;
         return embedded && JsEmbeddingProvider.isGeneratedIdentifier(token.getText().toString());
     }
+    
+    public boolean isBrokenSource() {
+        return embedded && root == null;
+    }
 
     public BaseDocument getDocument() {
         return (BaseDocument) context.document();
@@ -483,6 +527,9 @@ public final class FormatContext {
 
         BaseDocument doc = getDocument();
         try {
+            if(doc.getText(offset + offsetDiff, length).contains("\n")) {
+                LOGGER.log(Level.WARNING, "Tried to remove EOL");
+            }
             if (SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, length)).matches()) {
                 doc.remove(offset + offsetDiff, length);
                 setOffsetDiff(offsetDiff - length);

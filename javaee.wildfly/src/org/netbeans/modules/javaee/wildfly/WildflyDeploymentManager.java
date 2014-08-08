@@ -180,7 +180,7 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
         }
         List<WildflyTargetModuleID> moduleIds = new ArrayList<WildflyTargetModuleID>(targets.length);
         for (Target target : targets) {
-            moduleIds.add(new WildflyTargetModuleID(target, deployment.getModuleFile().getName(), deployment.getModule().getType()));
+            moduleIds.add(new WildflyTargetModuleID(target, deployment.getModuleFile().getName(), deployment.getModule().getType(), deployment.getModuleFile().isDirectory()));
         }
         WildflyTargetModuleID[] tmids = moduleIds.toArray(new WildflyTargetModuleID[targets.length]);
         final WildflyProgressObject progress = new WildflyProgressObject(tmids);
@@ -230,13 +230,13 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
             if (ModuleType.EJB.equals(mt)) {
                 for (WildflyModule module : modules) {
                     if (module.getArchiveName().endsWith("jar") && module.isRunning()) {
-                        result.add(new WildflyTargetModuleID(targets[0], module.getArchiveName(), Type.fromJsrType(mt)));
+                        result.add(new WildflyTargetModuleID(targets[0], module.getArchiveName(), Type.fromJsrType(mt), false));
                     }
                 }
             } else if (ModuleType.WAR.equals(mt)) {
                 for (WildflyModule module : modules) {
                     if (module.getArchiveName().endsWith("war") && module.isRunning()) {
-                        WildflyTargetModuleID moduleId = new WildflyTargetModuleID(targets[0], module.getArchiveName(), Type.fromJsrType(mt));
+                        WildflyTargetModuleID moduleId = new WildflyTargetModuleID(targets[0], module.getArchiveName(), Type.fromJsrType(mt), false);
                         moduleId.setContextURL(module.getUrl());
                         result.add(moduleId);
                     }
@@ -270,13 +270,13 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
             if (ModuleType.EJB.equals(mt)) {
                 for (WildflyModule module : modules) {
                     if (module.getArchiveName().endsWith("jar") && module.isRunning()) {
-                        result.add(new WildflyTargetModuleID(targets[0], module.getArchiveName(),  Type.fromJsrType(mt)));
+                        result.add(new WildflyTargetModuleID(targets[0], module.getArchiveName(),  Type.fromJsrType(mt), false));
                     }
                 }
             } else if (ModuleType.WAR.equals(mt)) {
                 for (WildflyModule module : modules) {
                     if (module.getArchiveName().endsWith("war")) {
-                        WildflyTargetModuleID moduleId = new WildflyTargetModuleID(targets[0], module.getArchiveName(), Type.fromJsrType(mt));
+                        WildflyTargetModuleID moduleId = new WildflyTargetModuleID(targets[0], module.getArchiveName(), Type.fromJsrType(mt), false);
                         moduleId.setContextURL(module.getUrl());
                         result.add(moduleId);
                     }
@@ -302,15 +302,18 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
         final WildflyProgressObject progress = new WildflyProgressObject(tmids);
         progress.fireProgressEvent(null, new WildflyDeploymentStatus(
                 ActionType.EXECUTE, CommandType.START, StateType.RUNNING, null));
-        try {
-            if (client.startModule(tmids[0].getModuleID())) {
-                progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(
-                        ActionType.EXECUTE, CommandType.START, StateType.COMPLETED, null));
+        for (TargetModuleID tmid : tmids) {
+            WildflyTargetModuleID wflyTmid = (WildflyTargetModuleID) tmid;
+            try {
+                if (wflyTmid.isExploded() || client.startModule(wflyTmid.getModuleID())) {
+                    progress.fireProgressEvent(tmid, new WildflyDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.START, StateType.COMPLETED, null));
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                progress.fireProgressEvent(wflyTmid, new WildflyDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.START, StateType.FAILED, null));
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(
-                    ActionType.EXECUTE, CommandType.START, StateType.FAILED, null));
         }
         return progress;
     }

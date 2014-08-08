@@ -159,16 +159,19 @@ public class JavaCustomIndexer extends CustomIndexer {
             APTUtils.sourceRootRegistered(context.getRoot(), context.getRootURI());
             final ClassPath sourcePath = ClassPath.getClassPath(root, ClassPath.SOURCE);
             final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
-            final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);                                    
+            final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
             if (sourcePath == null || bootPath == null || compilePath == null) {
+                txCtx.get(CacheAttributesTransaction.class).setInvalid(true);
                 JavaIndex.LOG.log(Level.WARNING, "Ignoring root with no ClassPath: {0}", FileUtil.getFileDisplayName(root)); // NOI18N
                 return;
-            }            
+            }
             if (!Arrays.asList(sourcePath.getRoots()).contains(root)) {
+                txCtx.get(CacheAttributesTransaction.class).setInvalid(true);
                 JavaIndex.LOG.log(Level.WARNING, "Source root: {0} is not on its sourcepath", FileUtil.getFileDisplayName(root)); // NOI18N
                 return;
             }
             if (isAptBuildGeneratedFolder(context.getRootURI(),sourcePath)) {
+                txCtx.get(CacheAttributesTransaction.class).setInvalid(true);
                 JavaIndex.LOG.fine("Ignoring annotation processor build generated folder"); //NOI18N
                 return;
             }
@@ -192,7 +195,6 @@ public class JavaCustomIndexer extends CustomIndexer {
                         JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                     }
                 }
-                
             } else {
                 final List<Indexable> javaSources = new ArrayList<Indexable>();
                 final Collection<? extends CompileTuple> virtualSourceTuples = translateVirtualSources (
