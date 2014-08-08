@@ -160,7 +160,7 @@ public enum ServerDetails {
         new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-4.1"}, // NOI18N
         new String[0],
         410,
-        "http://download.java.net/glassfish/4.1/release/glassfish-4.1-ml.zip?nbretriever=fallback", // NOI18N
+        "http://download.java.net/glassfish/4.1/release/glassfish-4.1.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post71v4-1.txt" // NOI18N
     );
 
