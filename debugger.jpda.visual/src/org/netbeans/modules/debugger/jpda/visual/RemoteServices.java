@@ -334,8 +334,10 @@ public class RemoteServices {
             } catch(ClassNotLoadedException | ClassNotPreparedExceptionWrapper | InvalidTypeException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            return Pair.of(serviceClass, preferredEventThreadField);
+        } else {
+            return null;
         }
-        return Pair.of(serviceClass, preferredEventThreadField);
     }
     
     static void clearPreferredEQThread(JPDADebugger dbg, Pair<ClassType, Field> preferredEventThreadFieldAndServiceClass) {
