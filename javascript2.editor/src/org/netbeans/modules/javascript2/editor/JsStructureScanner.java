@@ -94,13 +94,13 @@ public class JsStructureScanner implements StructureScanner {
         model.resolve();
         JsObject globalObject = model.getGlobalObject();
         
-        getEmbededItems(result, globalObject, items);
+        getEmbededItems(result, globalObject, items, new ArrayList<String>());
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Creating structure took {0} ms", new Object[]{(end - start)});
         return items;
     }
     
-    private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems) {
+    private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems, List<String> displayedAnonymousObjects) {
         Collection<? extends JsObject> properties = new ArrayList(jsObject.getProperties().values());
         boolean countFunctionChild = (jsObject.getJSKind().isFunction() && !jsObject.isAnonymous() && jsObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
                 && !containsFunction(jsObject)) 
@@ -121,7 +121,7 @@ public class JsStructureScanner implements StructureScanner {
                 continue;
             }
             if (!(child instanceof JsObjectReference && ModelUtils.isDescendant(child, ((JsObjectReference)child).getOriginal()))) {
-                children = getEmbededItems(result, child, children);
+                children = getEmbededItems(result, child, children, displayedAnonymousObjects);
             }
             if ((child.hasExactName() || child.isAnonymous() || child.getJSKind() == JsElement.Kind.CONSTRUCTOR) && child.getJSKind().isFunction()) {
                 JsFunction function = (JsFunction)child;
@@ -141,16 +141,50 @@ public class JsStructureScanner implements StructureScanner {
                 collectedItems.add(new JsSimpleStructureItem(child, "prop-", result)); //NOI18N
             } else if (child.getJSKind() == JsElement.Kind.VARIABLE && child.isDeclared()
                 && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && jsObject.getFullyQualifiedName().indexOf('.') == -1))) {
-                    collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N
+                    if (children.isEmpty()) {
+                        collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N
+                    } else {
+                        collectedItems.add(new JsObjectStructureItem(child, children, result));
+                    }
             }
          }
         
         if (jsObject instanceof JsFunction) {
-            for (JsObject param: ((JsFunction)jsObject).getParameters()) {
+            JsFunction jsFunction = (JsFunction)jsObject;
+            for (JsObject param: jsFunction.getParameters()) {
                 if (hasDeclaredProperty(param) && !(jsObject instanceof JsObjectReference && !((JsObjectReference)jsObject).getOriginal().isAnonymous())) { 
                     final List<StructureItem> items = new ArrayList<StructureItem>();
-                    getEmbededItems(result, param, items);
+                    getEmbededItems(result, param, items, displayedAnonymousObjects);
                     collectedItems.add(new JsObjectStructureItem(param, items, result));
+                }
+            }
+            if (jsFunction.getReturnTypes().size() == 1 && !jsFunction.isAnonymous()) {
+                TypeUsage returnType = jsFunction.getReturnTypes().iterator().next();
+                JsObject returnObject = ModelUtils.findJsObjectByName(result.getModel().getGlobalObject(), returnType.getType());
+                if(returnObject != null && returnObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT 
+                        && !displayedAnonymousObjects.contains(returnObject.getFullyQualifiedName())) {
+                    displayedAnonymousObjects.add(returnObject.getFullyQualifiedName());
+                     for (JsObject property: returnObject.getProperties().values()) {
+                        final List<StructureItem> items = new ArrayList<StructureItem>();
+                        getEmbededItems(result, property, items, displayedAnonymousObjects);
+                        collectedItems.add(new JsObjectStructureItem(property, items, result));
+                    }
+                } 
+            }
+        }
+        
+        if (jsObject.getDeclarationName() != null) {
+            Collection<? extends TypeUsage> assignmentForOffset = jsObject.getAssignmentForOffset(jsObject.getDeclarationName().getOffsetRange().getEnd());
+            if (assignmentForOffset.size() == 1) {
+                JsObject assignedObject = ModelUtils.findJsObjectByName(result.getModel().getGlobalObject(), assignmentForOffset.iterator().next().getType());
+                if (assignedObject != null && assignedObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT
+                        && !displayedAnonymousObjects.contains(assignedObject.getFullyQualifiedName())) {
+                    displayedAnonymousObjects.add(assignedObject.getFullyQualifiedName());
+                    for (JsObject property : assignedObject.getProperties().values()) {
+                        final List<StructureItem> items = new ArrayList<StructureItem>();
+                        getEmbededItems(result, property, items, displayedAnonymousObjects);
+                        collectedItems.add(new JsObjectStructureItem(property, items, result));
+                    }
                 }
             }
         }
