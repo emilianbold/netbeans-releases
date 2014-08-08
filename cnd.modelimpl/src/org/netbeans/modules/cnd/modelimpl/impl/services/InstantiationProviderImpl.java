@@ -103,6 +103,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmCacheMap;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionEvaluator;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
+import org.netbeans.modules.cnd.api.model.services.CsmResolveContext;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmTypes;
@@ -218,7 +219,10 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
     
     public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, boolean specialize) {
-        return instantiate(template, null, 0, params, specialize);
+        CsmResolveContext context = getLastResolveContext();
+        CsmFile contextFile = (context != null) ? context.getFile() : null;
+        int contextOffset = (context != null) ? context.getOffset() : 0;
+        return instantiate(template, contextFile, contextOffset, params, specialize);
     }
     
     public CsmObject instantiate(CsmTemplate template, CsmFile contextFile, int contextOffset, List<CsmSpecializationParameter> params, boolean specialize) {
@@ -237,8 +241,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 if (contextFile == null) {
                     contextFile = ((CsmOffsetable) template).getContainingFile();
                     contextOffset = ((CsmOffsetable) template).getStartOffset();
-                }
-                
+                }                
                 List<CsmTemplateParameter> templateParams = template.getTemplateParameters();
                 Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<>();
                 Iterator<CsmSpecializationParameter> paramsIter = params.iterator();
@@ -295,25 +298,23 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
      
     public CsmObject instantiate(CsmTemplate template, CsmInstantiation instantiation, boolean specialize) {
-        return instantiate(template, null, 0, instantiation, specialize);
-    }
-    
-    public CsmObject instantiate(CsmTemplate template, CsmFile contextFile, int contextOffset, CsmInstantiation instantiation, boolean specialize) {
+        CsmResolveContext context = getLastResolveContext();
+        CsmFile contextFile = (context != null) ? context.getFile() : null;
+        int contextOffset = (context != null) ? context.getOffset() : 0;        
         return instantiate(template, contextFile, contextOffset, instantiation.getMapping(), specialize);
-    }    
-    
+    }
+
     @Override
     public CsmObject instantiate(CsmTemplate template, CsmType type) {
         return instantiate(template, type, true);
     }
     
     public CsmObject instantiate(CsmTemplate template, CsmType type, boolean specialize) {
-        return instantiate(template, type.getContainingFile(), type.getStartOffset(), type.getInstantiationParams(), specialize);
-    }
-    
-    public CsmObject instantiate(CsmTemplate template, CsmFile contextFile, int contextOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
-        return instantiate(template, contextFile, contextOffset, mapping, true);
-    }
+        CsmResolveContext context = getLastResolveContext();
+        CsmFile contextFile = (context != null) ? context.getFile() : null;
+        int contextOffset = (context != null) ? context.getOffset() : 0;                
+        return instantiate(template, contextFile, contextOffset, type.getInstantiationParams(), specialize);
+    }    
     
     public CsmObject instantiate(CsmTemplate template, CsmFile contextFile, int contextOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, boolean specialize) {
         long time = System.currentTimeMillis();
@@ -1273,6 +1274,13 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             }
         }
         return counter;
+    }    
+    
+    private CsmResolveContext getLastResolveContext() {
+        CsmResolveContext context;
+        Stack<CsmResolveContext> contexts = (Stack<CsmResolveContext>) CsmCacheManager.get(CsmResolveContext.class);
+        context = (contexts != null && !contexts.empty()) ? contexts.peek() : null;
+        return context;
     }    
 
     private static class TypeDigger {
