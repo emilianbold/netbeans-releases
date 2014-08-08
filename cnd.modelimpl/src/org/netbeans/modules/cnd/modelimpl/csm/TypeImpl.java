@@ -805,16 +805,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             if (ip instanceof InstantiationProviderImpl) {
                 Resolver resolver = ResolverFactory.createResolver(this);
                 try {
-                    CsmResolveContext context = getLastResolveContext();
-                    
-                    CsmFile contextFile = context != null ? context.getFile() : this.getContainingFile();
-                    int contextOffset = context != null ? context.getOffset() : this.getStartOffset();
-                    
                     if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
                         for (int i = instantiations.size() - 1; i > 0; i--) {
-                            obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, contextFile, contextOffset, instantiations.get(i), false);
+                            obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, instantiations.get(i), false);
                         }
-                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, contextFile, contextOffset, instantiations.get(0), true);
+                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, instantiations.get(0), true);
                     }
                 } finally {
                     ResolverFactory.releaseResolver(resolver);
@@ -982,14 +977,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             }
         }
         return null;
-    }
-    
-    private CsmResolveContext getLastResolveContext() {
-        CsmResolveContext context;
-        Stack<CsmResolveContext> contexts = (Stack<CsmResolveContext>) CsmCacheManager.get(CsmResolveContext.class);
-        context = (contexts != null && !contexts.empty()) ? contexts.peek() : null;
-        return context;
-    }
+    }    
 
     @Override
     public int getArrayDepth() {
