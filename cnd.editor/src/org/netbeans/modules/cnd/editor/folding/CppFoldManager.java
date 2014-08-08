@@ -151,9 +151,9 @@ final class CppFoldManager extends CppFoldManagerBase
     }
 
     synchronized private void updateFolds() {
-        if (log.isLoggable(Level.FINE)){
-            log.log(Level.FINE, "CFM.updateFolds: Processing {0} [{1}]",
-                    new Object[]{getShortName(), Thread.currentThread().getName()}); // NOI18N
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "CFM.updateFolds: Processing {0} [{1}]", // NOI18N
+                    new Object[]{getShortName(), Thread.currentThread().getName()});
         }
         final UpdateFoldsRequest request = collectFoldUpdates();
 
@@ -172,29 +172,30 @@ final class CppFoldManager extends CppFoldManagerBase
                     if (!(doc instanceof AbstractDocument)) {
                         return; // can happen (e.g. after component close)
                     }
-                    if (log.isLoggable(Level.FINE)){
-                        log.log(Level.FINE, "CFM.updateFolds$X1.run: Processing {0} [{1}]",
-                                new Object[]{getShortName(), Thread.currentThread().getName()}); // NOI18N
+                    if (log.isLoggable(Level.FINE)) {
+                        log.log(Level.FINE, "CFM.updateFolds$X1.run: Processing {0} [{1}]", // NOI18N
+                                new Object[]{getShortName(), Thread.currentThread().getName()});
                     }
-
                     AbstractDocument adoc = (AbstractDocument) doc;
                     adoc.readLock();
                     try {
+                        if (request.isDocumentChanged(doc)) {
+                            if (log.isLoggable(Level.FINE)) {
+                                log.log(Level.FINE, "CFM.updateFolds$X1.run: Cancel processUpdateFoldRequest for {0} [{1}] because documet was changed", // NOI18N
+                                        new Object[]{getShortName(), Thread.currentThread().getName()});
+                            }
+                            return;
+                        }
                         FoldHierarchy hierarchy = getOperation().getHierarchy();
                         hierarchy.lock();
                         try {
                             FoldHierarchyTransaction t = getOperation().openTransaction();
                             try {
-                                if (log.isLoggable(Level.FINE)){
-                                    log.log(Level.FINE, "CFM.updateFolds$X1.run: Calling " +
-                                            "processUpdateFoldRequest for {0} [{1}]",  // NOI18N
-                                            new Object[]{getShortName(), Thread.currentThread().getName()}); // NOI18N
+                                if (log.isLoggable(Level.FINE)) {
+                                    log.log(Level.FINE, "CFM.updateFolds$X1.run: Calling processUpdateFoldRequest for {0} [{1}]", // NOI18N
+                                            new Object[]{getShortName(), Thread.currentThread().getName()});
                                 }
-//                                System.out.println("=========== " + getShortName() + " ===========");
-//                                System.out.println(hierarchy.toString());
                                 processUpdateFoldRequest(request, t);
-//                                System.out.println("------------ VV -----------");
-//                                System.out.println(hierarchy.toString());
                             } finally {
                                 t.commit();
                             }
@@ -208,9 +209,9 @@ final class CppFoldManager extends CppFoldManagerBase
             }
         };
         // Do fold updates in AWT
-        if (log.isLoggable(Level.FINE)){
-            log.log(Level.FINE, "CFM.updateFolds: Starting update for {0} on AWT thread",
-                    getShortName()); // NOI18N
+        if (log.isLoggable(Level.FINE)) {
+            log.log(Level.FINE, "CFM.updateFolds: Starting update for {0} on AWT thread", // NOI18N
+                    getShortName());
         }
         SwingUtilities.invokeLater(hierarchyUpdate);
     }
@@ -242,7 +243,7 @@ final class CppFoldManager extends CppFoldManagerBase
             return null;
         }
 
-        UpdateFoldsRequest request = new UpdateFoldsRequest();
+        UpdateFoldsRequest request = new UpdateFoldsRequest(cpf);
 
         AbstractDocument adoc = (AbstractDocument) doc;
         adoc.readLock();
@@ -296,7 +297,10 @@ final class CppFoldManager extends CppFoldManagerBase
                     try {
                         info.addToHierarchy(transaction);
                     } catch (BadLocationException e) {
-                        // it is OK to skip such exceptions
+                        // it is OK to skip such exceptions?
+                        if (log.isLoggable(Level.FINE)){
+                            log.log(Level.FINE, "CFM.processUpdateFoldRequest: filed processing fold {0}", info.toString()); // NOI18N
+                        }
                     }
                 } else {
                     map.remove(info);
@@ -485,11 +489,13 @@ final class CppFoldManager extends CppFoldManagerBase
     private final class UpdateFoldsRequest {
 
         private final Document creationTimeDoc;
+        private final CppFile cpf;
         /** List of the code block folds (methods, functions, compound statements etc.) */
         private final List<BlockFoldInfo> blockFoldInfos = new LinkedList<BlockFoldInfo>();
 
-        UpdateFoldsRequest() {
+        UpdateFoldsRequest(CppFile cpf) {
             creationTimeDoc = getDocument();
+            this.cpf = cpf;
         }
 
         boolean isValid() {
@@ -497,7 +503,11 @@ final class CppFoldManager extends CppFoldManagerBase
             // is still in use by the fold hierarchy
             return (creationTimeDoc != null && creationTimeDoc == getDocument());
         }
-
+        
+        boolean isDocumentChanged(Document doc) {
+            return cpf.needsUpdate(doc);
+        }
+        
         List<BlockFoldInfo> getBlockFoldInfos() {
             return blockFoldInfos;
         }
