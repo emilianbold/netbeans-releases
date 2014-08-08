@@ -98,7 +98,7 @@ public class CppFile {
     //private Document doc;
 
     //private int next = 0;
-    private long version = -1;
+    private volatile long version = -1;
     /** record of initial comment fold information */
     private CppFoldRecord initialCommentFoldRecord;
     /** record of includes block fold information */
