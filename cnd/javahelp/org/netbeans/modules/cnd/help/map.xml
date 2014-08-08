@@ -391,5 +391,7 @@
 	<mapID target="ProjectPropsFormatting" url="WorkingWithCandC++Projects/ProjectPropsFormatting.html"/>
 	<mapID target="MacroExpansionWindow" url="EditingSourceFiles/MacroExpansionWindow.html"/>
         <mapID target="CppDocumentation" url="EditingSourceFiles/CppDocumentation.html"/>
+        <mapID target="EncapsulateFields" url="EditingSourceFiles/EncapsulateFields.html"/>
+        <mapID target="ChangeFunctionParameters" url="EditingSourceFiles/ChangeFunctionParameters.html"/>
 
 </map>
