@@ -3667,7 +3667,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    MITList props = b.value().asTuple();
 	    // System.out.printf("props %s\n", props.toString());
 
-	    int hid = Integer.parseInt(props.getConstValue(MI_NUMBER));
+            int hid = -1;
+            try {
+                hid = Integer.parseInt(props.getConstValue(MI_NUMBER));
+            } catch (NumberFormatException ex) {
+                /* Handling sub-breakpoints with <number>.<sub-number> IDs.
+                   As hid was set to -1 there will be no handler for such a breakpoint.
+                
+                   This is a temporary solution until CND supports multiple breakpoints in full
+                */
+            }
 	    Handler h = bm().findHandler(hid);
 
 	    if (h != null && h.breakpoint().hasCountLimit()) {
