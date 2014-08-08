@@ -43,6 +43,8 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
           lineWidth:FIELD:[PUBLIC]:ESCAPED{lineWidth}<font color="#999999">ESCAPED{ : }Number</font>:
           strokeStyle:FIELD:[PUBLIC]:ESCAPED{strokeStyle}<font color="#999999">ESCAPED{ : }@var;color</font>:
         getMousePos:METHOD:[PUBLIC]:ESCAPED{getMousePos}ESCAPED{(}ESCAPED{c}ESCAPED{, }ESCAPED{e}ESCAPED{)}:
+          x:FIELD:[PUBLIC]:ESCAPED{x}:
+          y:FIELD:[PUBLIC]:ESCAPED{y}:
         id:FIELD:[PUBLIC]:ESCAPED{id}:
         json:CLASS:[PUBLIC]:ESCAPED{json}:
         layer:CLASS:[PUBLIC]:ESCAPED{layer}:
