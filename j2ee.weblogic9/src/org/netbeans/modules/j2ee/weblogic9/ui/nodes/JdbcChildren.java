@@ -59,8 +59,8 @@ class JdbcChildren extends WLNodeChildren {
     private final JdbcChildrenFactory.UnregisterFactory unregisterFactory;
 
     JdbcChildren(Lookup lookup) {
-        this.retriever = new JdbRetriever(lookup);
-        this.unregisterFactory = new JdbRetriever.JdbcUnregisterFactory();
+        this.retriever = new JdbcRetriever(lookup);
+        this.unregisterFactory = newJdbcRetrieverr.JdbcUnregisterFactory();
 
         setKeys(new Object[]{
                 createJDBCResourcesNode(lookup),

@@ -83,9 +83,9 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author Petr Hejl
  */
-public class JdbRetriever implements JdbcChildrenFactory.Retriever {
+public class JdbcRetriever implements JdbcChildrenFactory.Retriever {
 
-    private static final Logger LOGGER = Logger.getLogger(JdbRetriever.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(JdbcRetriever.class.getName());
 
     private static final String JDBC = "jdbc"; // NOI18N
 
@@ -99,7 +99,7 @@ public class JdbRetriever implements JdbcChildrenFactory.Retriever {
 
     private boolean isRetrieveStarted;
 
-    public JdbRetriever(Lookup lookup) {
+    public JdbcRetriever(Lookup lookup) {
         this.lookup = lookup;
     }
 
@@ -436,7 +436,7 @@ public class JdbRetriever implements JdbcChildrenFactory.Retriever {
 
         private void failNotify(){
             NotifyDescriptor notDesc = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(JdbRetriever.class, "MSG_UnableUnregister"),
+                    NbBundle.getMessage(JdbcRetriever.class, "MSG_UnableUnregister"),
                     NotifyDescriptor.ERROR_MESSAGE );
             DialogDisplayer.getDefault().notify(notDesc);
         }
@@ -552,7 +552,7 @@ public class JdbRetriever implements JdbcChildrenFactory.Retriever {
 
         private void failNotify(){
             NotifyDescriptor notDesc = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(JdbRetriever.class, "MSG_UnableUnregister"),
+                    NbBundle.getMessage(JdbcRetriever.class, "MSG_UnableUnregister"),
                     NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(notDesc);
         }
