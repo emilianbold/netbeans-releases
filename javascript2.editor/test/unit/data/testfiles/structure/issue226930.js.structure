@@ -27,6 +27,10 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
     filterSelect:METHOD:[PRIVATE]:ESCAPED{filterSelect}ESCAPED{(}ESCAPED{text}ESCAPED{, }ESCAPED{target}ESCAPED{, }ESCAPED{selectFirst}ESCAPED{, }ESCAPED{useTimeout}ESCAPED{)}:
     filterTimeout:VARIABLE:[PRIVATE]:ESCAPED{filterTimeout}:
     getSelect:METHOD:[PRIVATE]:ESCAPED{getSelect}ESCAPED{(}ESCAPED{targetName}ESCAPED{)}:
+      sourceData:FIELD:[PUBLIC]:ESCAPED{sourceData}:
+      sourceSelect:FIELD:[PUBLIC]:ESCAPED{sourceSelect}:
+      targetData:FIELD:[PUBLIC]:ESCAPED{targetData}:
+      targetSelect:FIELD:[PUBLIC]:ESCAPED{targetSelect}:
     initGuiMultiple:METHOD:[PRIVATE]:ESCAPED{initGuiMultiple}ESCAPED{(}ESCAPED{)}:
     initGuiSingle:METHOD:[PRIVATE]:ESCAPED{initGuiSingle}ESCAPED{(}ESCAPED{)}:
     leftSelectOptionsData:VARIABLE:[PRIVATE]:ESCAPED{leftSelectOptionsData}<font color="#999999">ESCAPED{ : }Array</font>:
