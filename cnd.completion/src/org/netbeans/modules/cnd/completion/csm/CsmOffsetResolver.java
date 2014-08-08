@@ -165,6 +165,20 @@ public class CsmOffsetResolver {
                 CsmInitializerListContainer ctor = (CsmInitializerListContainer)lastObj;
                 for (CsmExpression izer : ctor.getInitializerList()) {
                     if (!CsmOffsetUtilities.sameOffsets(lastObj, izer) && CsmOffsetUtilities.isInObject(izer, offset)) {
+                        for (CsmStatement csmStatement : izer.getLambdas()) {
+                            CsmDeclarationStatement lambda = (CsmDeclarationStatement)csmStatement;
+                            if ((!CsmOffsetUtilities.sameOffsets(lastObj, lambda) || lambda.getStartOffset() != lambda.getEndOffset()) && CsmOffsetUtilities.isInObject(lambda, offset)) {
+                                // offset is in body, try to find inners statement
+                                if (CsmStatementResolver.findInnerObject(lambda, offset, context)) {
+                                    // if found exact object => return it, otherwise return last found scope
+                                    CsmObject found = context.getLastObject();
+                                    if (!CsmOffsetUtilities.sameOffsets(lambda, found)) {
+                                        context.setLastObject(found);
+                                        return found;
+                                    }
+                                }
+                            }
+                        }
                         context.setLastObject(izer);
                         return izer;
                     }
