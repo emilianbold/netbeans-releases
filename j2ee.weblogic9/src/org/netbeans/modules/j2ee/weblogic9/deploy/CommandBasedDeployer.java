@@ -133,7 +133,11 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
     public ProgressObject deploy(Target[] target, final File file, final File plan, String host, String port) {
         // TODO is this correct only first server mentioned
-        final TargetModuleID moduleId = createModuleId(target[0], file, host, port, file.getName(), null);
+        String name = file.getName();
+        if (name.endsWith(".war") || name.endsWith(".ear")) {
+            name = name.substring(0, name.length() - 4);
+        }
+        final TargetModuleID moduleId = createModuleId(target[0], file, host, port, name, null);
         return deploy(moduleId, file, null);
     }
 
