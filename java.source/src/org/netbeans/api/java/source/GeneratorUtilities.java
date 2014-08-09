@@ -683,9 +683,18 @@ public final class GeneratorUtilities {
             pkg = elements.getPackageElement(elements.getName("")); //NOI18N
         pkgCounts.put(pkg, -2);
         Map<TypeElement, Integer> typeCounts = new LinkedHashMap<TypeElement, Integer>();
+        // initially the import scope has no symbols. We must fill it in by:
+        // existing CUT named imports, package members AND then star imports, in this specific order
+        JCCompilationUnit jcut = (JCCompilationUnit)cut;
         StarImportScope importScope = new StarImportScope((Symbol)pkg);
-        if (((JCCompilationUnit)cut).starImportScope != null)
+        if (jcut.starImportScope != null)
             importScope.importAll(((JCCompilationUnit)cut).starImportScope);
+        if (jcut.packge != null) {
+            importScope.importAll(jcut.packge.members_field);
+        }
+        if (jcut.namedImportScope != null) {
+            importScope.importAll(jcut.namedImportScope);
+        }
         for (Element e : elementsToImport) {
             boolean isStatic = false;
             Element el = null;
@@ -789,8 +798,9 @@ public final class GeneratorUtilities {
                     if (e.sym.getKind().isClass() || e.sym.getKind().isInterface()) {
                         if (e.sym != element) {
                             explicitNamedImports.add(element);
-                            break;
                         }
+                        // break if explicitNameImport was added, or when the symbol is correctly resolved.
+                        break;
                     }
                 }
             }
