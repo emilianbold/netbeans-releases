@@ -52,6 +52,7 @@ import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LocalVariable;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.modules.debugger.jpda.js.JSUtils;
 import org.netbeans.modules.debugger.jpda.js.vars.JSThis;
@@ -90,7 +91,12 @@ public class VariablesJSTreeModel implements TreeModelFilter {
     @Override
     public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
         if (parent instanceof JSVariable) {
-            return ((JSVariable) parent).getChildren();
+            JSVariable jsVar = (JSVariable) parent;
+            ObjectVariable valueObject = jsVar.getValueObject();
+            if (valueObject != null) {
+                return original.getChildren(valueObject, from, to);
+            }
+            return jsVar.getChildren();
         }
         Object[] children = original.getChildren(parent, from, to);
         List<Object> newChildren = new ArrayList<>();
@@ -158,7 +164,12 @@ public class VariablesJSTreeModel implements TreeModelFilter {
     @Override
     public boolean isLeaf(TreeModel original, Object node) throws UnknownTypeException {
         if (node instanceof JSVariable) {
-            return !((JSVariable) node).isExpandable();
+            JSVariable jsVar = (JSVariable) node;
+            ObjectVariable valueObject = jsVar.getValueObject();
+            if (valueObject != null) {
+                return original.isLeaf(valueObject);
+            }
+            return !jsVar.isExpandable();
         }
         return original.isLeaf(node);
     }
