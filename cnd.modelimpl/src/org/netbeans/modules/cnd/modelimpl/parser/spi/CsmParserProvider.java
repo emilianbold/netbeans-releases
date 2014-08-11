@@ -110,6 +110,7 @@ public abstract class CsmParserProvider {
             ENUM_BODY,
             TRY_BLOCK,
             COMPOUND_STATEMENT,
+            INITIALIZER,
             NAMESPACE_DEFINITION_BODY,
             FUNCTION_DEFINITION_AFTER_DECLARATOR
         }

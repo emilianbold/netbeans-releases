@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
@@ -185,6 +186,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
                             parser.setLazyCompound(false);
                             parser.compound_statement();
                             break;
+                        case INITIALIZER:
+                            parser.initializer();
+                            break;
                         case NAMESPACE_DEFINITION_BODY:
                             parser.translation_unit();
                             break;
@@ -217,11 +221,17 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 long start = System.currentTimeMillis();
                 switch (kind) {
                     case TRY_BLOCK:
-                    case COMPOUND_STATEMENT:
+                    case COMPOUND_STATEMENT: {
                         @SuppressWarnings("unchecked")
                         List<CsmStatement> list = (List<CsmStatement>) context[0];
                         ((LazyStatementImpl)parserContainer).renderStatements(ast, list, objects);
                         break;
+                    }
+                    case INITIALIZER: {
+                        List<CsmStatement> list = (List<CsmStatement>) context[0];
+                        ((ExpressionBase)parserContainer).renderStatements(ast, list, objects);
+                        break;
+                    }
                     case TRANSLATION_UNIT_WITH_COMPOUND:
                     case TRANSLATION_UNIT:
                         if (ast != null) {
