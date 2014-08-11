@@ -6,9 +6,9 @@
 
 package org.netbeans.modules.debugger.jpda.backend.truffle.js;
 
-import com.oracle.truffle.api.instrument.PhylumTag;
-import static com.oracle.truffle.api.instrument.StandardTag.CALL;
-import static com.oracle.truffle.api.instrument.StandardTag.STATEMENT;
+import static com.oracle.truffle.api.instrument.StandardSyntaxTag.CALL;
+import static com.oracle.truffle.api.instrument.StandardSyntaxTag.STATEMENT;
+import com.oracle.truffle.api.instrument.SyntaxTag;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.debug.impl.AbstractDebugManager;
 import com.oracle.truffle.debug.instrument.DebugCallInstrument;
@@ -82,9 +82,10 @@ public class JPDAJSNodeProber implements JSNodeProber {
     }
 
     @Override
-    public Node probeAs(Node node, PhylumTag pt, Object... os) {
-        //System.err.println("JPDAJSNodeProber.probeAs("+node+", "+pt+")");
+    public Node probeAs(Node node, SyntaxTag st, Object... os) {
+        //System.err.println("JPDAJSNodeProber.probeAs("+node+", "+st+")");
         // TODO
+        
         return null;
     }
     

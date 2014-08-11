@@ -63,7 +63,7 @@ public class TruffleObject {
         if (object instanceof JSObject) {
             JSObject jso = (JSObject) object;
             //jso.getShape().
-            Iterable<Property> enumerableProperties = jso.getEnumerableProperties((JSContext) context);
+            Iterable<Property> enumerableProperties = jso.getEnumerableProperties();
             List<Object> ch = new ArrayList<>();
             for (Property p : enumerableProperties) {
                 String name = p.getName();

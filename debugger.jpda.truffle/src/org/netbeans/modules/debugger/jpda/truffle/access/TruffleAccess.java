@@ -343,6 +343,9 @@ public class TruffleAccess implements JPDABreakpointListener {
                     src = Source.getSource(debugger, id, name, path, code);
                 }
                 SourcePosition sp = new SourcePosition(debugger, id, src, line);
+                if (frameSlots == null) {
+                    frameSlots = new Variable[]{};
+                }
                 TruffleSlotVariable[] vars = createVars(debugger, frame, frameSlots, slotNames, slotTypes);
                 TruffleStackFrame topFrame = new TruffleStackFrame(debugger, 0, stackTrace, topFrameDescription, code, vars);
                 TruffleStackInfo stack = new TruffleStackInfo(debugger, frameSlots, stackTrace);

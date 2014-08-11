@@ -10,10 +10,11 @@ import com.oracle.truffle.api.ExecutionContext;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
+import com.oracle.truffle.api.frame.FrameInstanceVisitor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.instrument.PhylumTag;
+import com.oracle.truffle.api.instrument.SyntaxTag;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
@@ -184,11 +185,10 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
                 System.err.println("    "+slotNames[i]+" = "+JPDATruffleAccessor.getSlotValue(frame, slots[i]));
             }
             */
-            Iterable<FrameInstance> stackTraceIt = Truffle.getRuntime().getStackTrace();
             ArrayList<FrameInstance> stackTraceArr = new ArrayList<>();
-            for (FrameInstance fi : stackTraceIt) {
-                stackTraceArr.add(fi);
-            }
+            Truffle.getRuntime().iterateFrames((FrameInstance fi) -> {
+                return stackTraceArr.add(fi);
+            });
             FrameInstance[] stackTrace = stackTraceArr.toArray(new FrameInstance[]{});
             /*
             String[] stackNames = new String[stackTrace.length];
@@ -334,9 +334,9 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
         }
 
         @Override
-        public Node probeAs(Node node, PhylumTag pt, Object... os) {
+        public Node probeAs(Node node, SyntaxTag st, Object... os) {
             for (JSNodeProber p : probers) {
-                node = p.probeAs(node, pt, os);
+                node = p.probeAs(node, st, os);
             }
             return node;
         }
