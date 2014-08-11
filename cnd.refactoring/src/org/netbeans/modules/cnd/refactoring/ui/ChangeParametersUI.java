@@ -161,6 +161,6 @@ public class ChangeParametersUI implements RefactoringUI {
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ChangeParametersUI.class);
+        return new HelpCtx("ChangeFunctionParameters"); //NOI18N
     }
 }
