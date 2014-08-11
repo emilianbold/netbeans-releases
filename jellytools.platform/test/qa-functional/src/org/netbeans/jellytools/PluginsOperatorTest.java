@@ -63,9 +63,9 @@ public class PluginsOperatorTest extends JellyTestCase {
     public static final String[] tests = new String[]{
         "testSetProxy",
         "testInvoke",
-        "testInstall",
-        "testUninstall",
-        "testDeactivate",
+//        "testInstall",
+//        "testUninstall",
+//        "testDeactivate",
         "testSettings",
         "testDowloaded",
         "testClose"};
