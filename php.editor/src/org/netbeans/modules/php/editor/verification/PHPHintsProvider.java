@@ -182,6 +182,13 @@ public class PHPHintsProvider implements HintsProvider {
                     adjustAndInvoke(rule, adjuster);
                 }
             }
+            boolean checkResult = false;
+            assert checkResult = true;
+            if (checkResult) {
+                for (T item : result) {
+                    assert item != null : item;
+                }
+            }
         }
 
         private void adjustAndInvoke(Rule rule, RuleAdjuster adjuster) {
