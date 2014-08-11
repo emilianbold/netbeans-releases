@@ -64,9 +64,9 @@ public abstract class NetbeansActionReader {
     
     
     public final NetbeansActionMapping getMappingForAction(
-        NetbeansBuildActionXpp3Reader reader, Logger LOG,
-        String actionName, Project project, String profile,
-        Map<String, String> map
+            NetbeansBuildActionXpp3Reader reader, Logger LOG,
+            String actionName, boolean[] hasInnerProfiles,
+            Project project, String profile, Map<String, String> map
     ) {
         NetbeansActionMapping action = null;
         try {
@@ -89,6 +89,9 @@ public abstract class NetbeansActionReader {
                         break;
                     }
                 }
+            }
+            if (hasInnerProfiles != null) {
+                hasInnerProfiles[0] = !mapping.getProfiles().isEmpty();
             }
             Iterator<NetbeansActionMapping> it = actions.iterator();
             NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
