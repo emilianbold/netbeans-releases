@@ -76,6 +76,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
@@ -241,6 +242,14 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
             initializeExpression(node.getKey());
             initializeExpression(node.getValue());
             scan(node.getStatement());
+        }
+
+        @Override
+        public void visit(ForStatement node) {
+            scan(node.getInitializers());
+            scan(node.getConditions());
+            scan(node.getBody());
+            scan(node.getUpdaters());
         }
 
         @Override

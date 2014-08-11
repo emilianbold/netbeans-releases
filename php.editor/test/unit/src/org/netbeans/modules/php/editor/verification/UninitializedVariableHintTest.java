@@ -77,6 +77,10 @@ public class UninitializedVariableHintTest extends PHPHintsTestBase {
         checkHints(new UninitializedVariableHintStub(false), "testIssue233268.php");
     }
 
+    public void testIssue246125() throws Exception {
+        checkHints(new UninitializedVariableHintStub(false), "testIssue246125.php");
+    }
+
     private class UninitializedVariableHintStub extends UninitializedVariableHint {
         private final boolean uninitializedVariable;
 
