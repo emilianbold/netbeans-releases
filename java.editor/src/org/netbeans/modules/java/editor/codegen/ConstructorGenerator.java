@@ -201,7 +201,7 @@ public class ConstructorGenerator implements CodeGenerator {
                 if (js != null) {
                     ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                         public void run(WorkingCopy copy) throws IOException {
-                            doGenerateConstructor(existingWorkingCopy, fieldHandles, constrHandles, caretOffset);
+                            doGenerateConstructor(copy, fieldHandles, constrHandles, caretOffset);
                         }
                     });
                     GeneratorUtils.guardedCommit(component, mr);
