@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
@@ -166,29 +167,31 @@ public abstract class CsmInstantiationProvider {
      * @param type - type for parameter
      * @return specialization parameter
      */
-    public abstract CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type);
+    public abstract CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmScope scope);
     
     /**
      * Creates specialization parameter based on type.
      *
      * @param type - type for parameter
+     * @param scope - scope of expression
      * @param file - containing file
      * @param start - start offset
      * @param end - end offset* 
      * @return specialization parameter
      */
-    public abstract CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmFile file, int start, int end);    
+    public abstract CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmScope scope, CsmFile file, int start, int end);    
 
      /**
      * Creates specialization parameter based on expression.
      *
      * @param expression - string with expression
+     * @param scope - scope of expression
      * @param file - containing file
      * @param start - start offset
      * @param end - end offset
      * @return specialization parameter
       */
-    public abstract CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmFile file, int start, int end);
+    public abstract CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmScope scope, CsmFile file, int start, int end);
     /**
      * returns instantiated text if possible to resolve all instantiation mappings
      */
@@ -291,17 +294,17 @@ public abstract class CsmInstantiationProvider {
         }
 
         @Override
-        public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type) {
+        public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmScope scope) {
             return null;
         }
         
         @Override
-        public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmFile file, int start, int end) {
+        public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmScope scope, CsmFile file, int start, int end) {
             return null;
         }        
 
         @Override
-        public CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmFile file, int start, int end) {
+        public CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmScope scope, CsmFile file, int start, int end) {
             return null;
         }
 

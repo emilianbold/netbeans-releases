@@ -1142,7 +1142,7 @@ public final class CompletionSupport implements DocumentListener {
             List<CsmSpecializationParameter> params = new ArrayList<CsmSpecializationParameter>();        
             params.addAll(collectInstantiationParameters(context, template, ip, exp));
             if (CsmKindUtilities.isFunction(template)) {
-                params.addAll(collectInstantiationParameters(ip, (CsmFunction)template, params.size(), typeList));
+                params.addAll(collectInstantiationParameters(context, ip, (CsmFunction)template, params.size(), typeList));
             }
             if (!params.isEmpty()) {
                 instantiation = ip.instantiate(template, params);
@@ -1175,8 +1175,13 @@ public final class CompletionSupport implements DocumentListener {
                     if (paramInst != null) {
                         switch (paramInst.getExpID()) {
                             case CsmCompletionExpression.CONSTANT:
-                                params.add(ip.createExpressionBasedSpecializationParameter(paramInst.getTokenText(0),
-                                        context.getContextFile(), paramInst.getTokenOffset(0), paramInst.getTokenOffset(0) + paramInst.getTokenLength(0)));
+                                params.add(ip.createExpressionBasedSpecializationParameter(
+                                    paramInst.getTokenText(0),
+                                    getContextScope(context),
+                                    context.getContextFile(), 
+                                    paramInst.getTokenOffset(0), 
+                                    paramInst.getTokenOffset(0) + paramInst.getTokenLength(0))
+                                );
                                 break;
                             default:
                                 CsmType type = null;
@@ -1210,6 +1215,7 @@ public final class CompletionSupport implements DocumentListener {
                                     RenderedExpression renderedExpression = renderExpression(paramInst, new MockExpressionBuilderImpl.Creator());
                                     params.add(ip.createTypeBasedSpecializationParameter(
                                             type, 
+                                            getContextScope(context), 
                                             context.getContextFile(), 
                                             renderedExpression.startOffset, 
                                             renderedExpression.endOffset
@@ -1218,6 +1224,7 @@ public final class CompletionSupport implements DocumentListener {
                                     RenderedExpression renderedExpression = renderExpression(paramInst, new ExpressionBuilderImpl.Creator());
                                     params.add(ip.createExpressionBasedSpecializationParameter(
                                             renderedExpression.text,
+                                            getContextScope(context), 
                                             context.getContextFile(), 
                                             renderedExpression.startOffset, 
                                             renderedExpression.endOffset
@@ -1234,7 +1241,7 @@ public final class CompletionSupport implements DocumentListener {
         return Collections.emptyList();
     }
     
-    static List<CsmSpecializationParameter> collectInstantiationParameters(CsmInstantiationProvider ip, CsmFunction function, int explicitelyMappedSize, List<CsmType> typeList) {            
+    static List<CsmSpecializationParameter> collectInstantiationParameters(Context context, CsmInstantiationProvider ip, CsmFunction function, int explicitelyMappedSize, List<CsmType> typeList) {            
         if (CsmKindUtilities.isTemplate(function)) {
             List<CsmSpecializationParameter> result = new ArrayList<CsmSpecializationParameter>();
             
@@ -1248,7 +1255,7 @@ public final class CompletionSupport implements DocumentListener {
                     CsmTemplateParameter param = templateParams.get(i);
                     CsmType mappedType = paramsMap.get(param);
                     if (mappedType != null) {
-                        result.add(ip.createTypeBasedSpecializationParameter(mappedType));
+                        result.add(ip.createTypeBasedSpecializationParameter(mappedType, getContextScope(context)));
                     } else {
                         // error
                         return result;
@@ -1599,6 +1606,21 @@ public final class CompletionSupport implements DocumentListener {
             }
             cursor--;
         }
+    }
+    
+    private static CsmScope getContextScope(Context context) {
+        if (context != null) {
+            if (context.getContextScope() != null) {
+                return context.getContextScope();
+            }
+            CsmOffsetableDeclaration contextElement = context.getContextElement();
+            if (CsmKindUtilities.isScope(contextElement)) {
+                return (CsmScope) contextElement;
+            } else if (CsmKindUtilities.isScopeElement(contextElement)) {
+                return contextElement.getScope();
+            }
+        }
+        return null;
     }
     
     @Override

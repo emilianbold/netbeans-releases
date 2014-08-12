@@ -948,7 +948,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                                     || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                                     || namePart.getType() == CPPTokenTypes.LITERAL_struct) {
                                 CsmType type = AstRenderer.renderType(namePart, getContainingFile(), true, null, false); // last two params just dummy ones
-                                addInstantiationParam(new TypeBasedSpecializationParameterImpl(type));
+                                addInstantiationParam(new TypeBasedSpecializationParameterImpl(type, null)); // TODO: null?
                             }
                             if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
                                 addInstantiationParam(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, getContainingFile(), null),

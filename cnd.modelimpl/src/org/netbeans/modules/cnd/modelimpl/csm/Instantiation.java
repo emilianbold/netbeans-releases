@@ -1435,11 +1435,16 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 return new TemplateParameterType(type, instantiation, templateParamResolver);
             } else if (instantiatedType instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
                 return new NestedTemplateParameterType(type, instantiation, templateParamResolver);
+            } else if (CsmKindUtilities.isFunctionPointerType(instantiatedType)) {
+                return new FunPtrTemplateParameterType(type, instantiation, templateParamResolver);
             }
         }
         if (type instanceof NestedTemplateParameterType) {
             return new NestedTemplateParameterType(type, instantiation, templateParamResolver);
         }
+        if (type instanceof FunPtrTemplateParameterType) {
+            return new FunPtrTemplateParameterType(type, instantiation, templateParamResolver);
+        }        
         if (isNestedType(type)) {
             return new NestedType(type, instantiation, templateParamResolver);
         }
@@ -1494,6 +1499,45 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             }
         }        
     }
+    
+    // Type that represents template paramter type resolved into function pointer type
+    private static class FunPtrTemplateParameterType extends Type implements CsmFunctionPointerType {
+        
+        public FunPtrTemplateParameterType(CsmType type, CsmInstantiation instantiation, TemplateParameterResolver templateParamResolver) {
+            super(type, instantiation, templateParamResolver);
+            
+            if (CsmKindUtilities.isTemplateParameterType(type)) {
+                if (instantiationHappened() && CsmKindUtilities.isFunctionPointerType(instantiatedType)) {
+                    instantiatedType = createType(instantiatedType, instantiation, templateParamResolver);
+                }                
+            } else if (type instanceof FunPtrTemplateParameterType) {
+                FunPtrTemplateParameterType prev = (FunPtrTemplateParameterType) type;
+                if (!instantiationHappened() && CsmKindUtilities.isFunctionPointerType(prev.instantiatedType)) {
+                    instantiatedType = createType(prev.instantiatedType, instantiation, templateParamResolver);
+                }
+            }
+        }        
+
+        @Override
+        public Collection<CsmParameter> getParameters() {
+            return ((CsmFunctionPointerType) instantiatedType).getParameters();
+        }
+
+        @Override
+        public CsmType getReturnType() {
+            return ((CsmFunctionPointerType) instantiatedType).getReturnType();
+        }
+
+        @Override
+        public Collection<CsmScopeElement> getScopeElements() {
+            return ((CsmFunctionPointerType) instantiatedType).getScopeElements();
+        }
+
+        @Override
+        public CsmScope getScope() {
+            return ((CsmFunctionPointerType) instantiatedType).getScope();
+        }
+    }    
 
     private static class Type implements CsmType, Resolver.SafeTemplateBasedProvider {
         protected final CsmType originalType;

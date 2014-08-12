@@ -369,14 +369,13 @@ public class TemplateUtils {
                     case CPPTokenTypes.COMMA:
                     case CPPTokenTypes.GREATERTHAN:
                         if (type != null) {
-                            res.add(
-                                new TypeBasedSpecializationParameterImpl(TemplateUtils.checkTemplateType(
-                                    TypeFactory.createType(type, file, ptr, 0, null, scope, true, false), scope
-                                ),
+                            res.add(new TypeBasedSpecializationParameterImpl(
+                                TemplateUtils.checkTemplateType(TypeFactory.createType(type, file, ptr, 0, null, scope, true, false), scope),
+                                scope,
                                 file, 
                                 OffsetableBase.getStartOffset(type), 
-                                OffsetableBase.getEndOffset(type))
-                            );
+                                OffsetableBase.getEndOffset(type)
+                            ));
                         }
                         type = null;
                         ptr = null;
@@ -420,7 +419,13 @@ public class TemplateUtils {
                 if (CsmKindUtilities.isTypeBasedSpecalizationParameter(instParam)) {
                     CsmType newType = checkTemplateType(((CsmTypeBasedSpecializationParameter) instParam).getType(), scope, additionalParams);
                     if (newType != instParam) {
-                        params.set(i, new TypeBasedSpecializationParameterImpl(newType));
+                        if (CsmKindUtilities.isScope(scope)) {
+                            params.set(i, new TypeBasedSpecializationParameterImpl(newType, (CsmScope) scope));
+                        } else if (CsmKindUtilities.isScopeElement(scope)) {
+                            params.set(i, new TypeBasedSpecializationParameterImpl(newType, ((CsmScopeElement) scope).getScope()));
+                        } else {
+                            params.set(i, new TypeBasedSpecializationParameterImpl(newType, null));
+                        }                        
                     }
                 }
             }
