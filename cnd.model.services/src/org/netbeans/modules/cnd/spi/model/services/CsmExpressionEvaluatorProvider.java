@@ -58,6 +58,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 
@@ -74,7 +75,7 @@ public interface CsmExpressionEvaluatorProvider {
      * @param expr - expression as string
      * @return result object
      */
-    public Object eval(String expr);
+    public Object eval(String expr, CsmScope scope);
 
     /**
      * Evaluates expression.
@@ -83,7 +84,7 @@ public interface CsmExpressionEvaluatorProvider {
      * @param inst - instantiation
      * @return result object
      */
-    public Object eval(String expr, CsmInstantiation inst);
+    public Object eval(String expr, CsmInstantiation inst, CsmScope scope);
 
 
     /**
@@ -94,7 +95,7 @@ public interface CsmExpressionEvaluatorProvider {
      * @param mapping - specialization mapping
      * @return result object
      */
-    public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping);
+    public Object eval(String expr, CsmOffsetableDeclaration decl, CsmScope scope, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping);
     
     /**
      * Evaluates expression.
@@ -107,6 +108,6 @@ public interface CsmExpressionEvaluatorProvider {
      * @param mapping - specialization mapping
      * @return result object
      */
-    public Object eval(String expr, CsmOffsetableDeclaration decl, CsmFile expressionFile, int startOffset, int endOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping);    
+    public Object eval(String expr, CsmOffsetableDeclaration decl, CsmScope scope, CsmFile expressionFile, int startOffset, int endOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping);    
 
 }

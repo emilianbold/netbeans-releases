@@ -1473,7 +1473,7 @@ public class AstRenderer {
                 AST next = tokType.getNextSibling();
                 AST ptrOperator = (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
                 if(inSpecializationParams) {
-                    return TypeFactory.createType(typeAST, file, ptrOperator, 0, null, null, false, true);
+                    return TypeFactory.createType(typeAST, file, ptrOperator, 0, null, null, true, false);
                 } else {
                     return TypeFactory.createType(typeAST, file, ptrOperator, 0);
                 }                

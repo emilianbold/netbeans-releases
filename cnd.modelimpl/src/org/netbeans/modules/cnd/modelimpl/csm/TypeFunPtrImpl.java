@@ -410,14 +410,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
                 instance.functionParameters = AstRenderer.renderParameters(next, instance.getContainingFile(), fileContent, null);
             }
             return true;
-        }
-        
-        if (inFunctionParams && next.getType() == CPPTokenTypes.RPAREN) {
-            if (next.getNextSibling() == null) {
-                // () without CMS_PARMLIST
-                return true;
-            }
-        }
+        }       
         
         next = next.getNextSibling();
         
@@ -426,6 +419,15 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
             next = AstUtil.findSiblingOfType(next, CPPTokenTypes.RPAREN);
             if (next != null) {
                 next = next.getNextSibling(); // closing brace of except specification
+            }
+        }
+        
+        if (inFunctionParams) {
+            // () without CMS_PARMLIST or <bla()>
+            if (next == null) {
+                return true;
+            } else if (next.getType() == CPPTokenTypes.GREATERTHAN) {
+                return true;
             }
         }
 

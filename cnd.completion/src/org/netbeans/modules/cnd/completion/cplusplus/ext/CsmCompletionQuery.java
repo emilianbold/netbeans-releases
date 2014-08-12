@@ -1248,6 +1248,10 @@ abstract public class CsmCompletionQuery {
             return contextScope; 
         }
         
+        CsmOffsetableDeclaration getContextElement() {
+            return contextElement;
+        }
+        
         List<CsmInstantiation> getContextInstantiations() {
             return instantiations;
         }
