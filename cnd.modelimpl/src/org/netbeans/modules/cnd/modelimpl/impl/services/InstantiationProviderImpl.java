@@ -89,6 +89,7 @@ import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
@@ -261,7 +262,13 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                             CsmType defaultType = ((CsmTypeBasedSpecializationParameter)defaultValue).getType();
                             defaultType = TemplateUtils.checkTemplateType(defaultType, template);
                             if (defaultType != null) {
-                                mapping.put(templateParam, new TypeBasedSpecializationParameterImpl(defaultType));
+                                CsmScope paramScope = null;
+                                if (CsmKindUtilities.isScope(template)) {
+                                    paramScope = (CsmScope) template;
+                                } else if (CsmKindUtilities.isScopeElement(template)) {
+                                    paramScope = ((CsmScopeElement) template).getScope();
+                                }
+                                mapping.put(templateParam, new TypeBasedSpecializationParameterImpl(defaultType, paramScope));
                             }
                         } else if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(defaultValue)) {
                             mapping.put(templateParam, defaultValue);
@@ -692,15 +699,16 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                         DefaultCalcTemplateTypeStrategy calcStrategy = new DefaultCalcTemplateTypeStrategy(CalcTemplateTypeStrategy.Error.MatchQualsError);
                         CsmType result = calcTemplateType(specTemplateParam, specParamType, instType, calcStrategy);
                         if (result != null) {
-                            newMapping.put(specTemplateParam, createTypeBasedSpecializationParameter(result));
+                            newMapping.put(specTemplateParam, createTypeBasedSpecializationParameter(result, specParam.getScope()));
                             break;
                         }
                     } else if (!specTemplateParam.isTypeBased() && CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
                         CsmType specParamType = ((CsmTypeBasedSpecializationParameter) specParam).getType();
-                        String specParamText = specParamType != null ? specParamType.getCanonicalText().toString() : null;                        
+                        String specParamText = specParamType != null ? specParamType.getCanonicalText().toString() : null;
                         if (specTemplateParam.getName().toString().equals(specParamText)) {
                             newMapping.put(specTemplateParam, createExpressionBasedSpecializationParameter(
                                 instParamText, 
+                                specParam.getScope(),
                                 instParam.getContainingFile(),
                                 instParam.getStartOffset(),
                                 instParam.getEndOffset()
@@ -712,6 +720,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                         if (specTemplateParam.getName().toString().equals(specParamText)) {
                             newMapping.put(specTemplateParam, createExpressionBasedSpecializationParameter(
                                 instParamText, 
+                                specParam.getScope(),
                                 instParam.getContainingFile(),
                                 instParam.getStartOffset(),
                                 instParam.getEndOffset()
@@ -814,6 +823,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 }
             }
 
+            List<CsmSpecializationParameter> instParams = new ArrayList<>();
             List<CharSequence> paramsText = new ArrayList<>();
             List<CsmType> paramsType = new ArrayList<>();
             for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : params) {
@@ -825,9 +835,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                         paramType = Instantiation.createType(paramType, pair.second());
                     }
                     
+                    instParams.add(param);
                     paramsType.add(paramType);
                     paramsText.add(paramType.getCanonicalText());
                 } else if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {
+                    instParams.add(param);
                     paramsType.add(null);
                     paramsText.add(((CsmExpressionBasedSpecializationParameter) param).getText());
                 }
@@ -928,7 +940,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                     }
                                 }
                             } else if (isExpressionParameter(cls, specParam, i)) {
-                                match += evaluateExpression(cls, specParam, i, paramsText);
+                                match += evaluateExpression(cls, specParam, i, paramsText, instParams);
                             } else {
                                 match = 0;
                                 break;
@@ -961,7 +973,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return false;
     }
     
-    private static int evaluateExpression(final CsmClassifier cls, CsmSpecializationParameter specParam, int paramIndex, List<CharSequence> paramsText) {
+    private static int evaluateExpression(final CsmClassifier cls, CsmSpecializationParameter specParam, int instParamIndex, List<CharSequence> instParamsText, List<CsmSpecializationParameter> instParams) {
         String specParamText = null; 
         if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(specParam)) {
             specParamText = ((CsmExpressionBasedSpecializationParameter) specParam).getText().toString();
@@ -973,7 +985,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         }
         
         if (specParamText != null) {
-            if (paramsText.get(paramIndex).equals(specParamText)) {
+            if (instParamsText.get(instParamIndex).equals(specParamText)) {
                 return 2;
             }
             // Expression evaluation
@@ -983,11 +995,19 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     final Object val1;
                     final Object val2;
                     if(p instanceof ExpressionEvaluator) {
-                         val1 = ((ExpressionEvaluator)p).eval(((CsmTemplate) ((CsmInstantiation) cls).getTemplateDeclaration()).getTemplateParameters().get(paramIndex).getName().toString(), (CsmInstantiation) cls);
-                         val2 = ((ExpressionEvaluator)p).eval(specParamText);
+                         val1 = ((ExpressionEvaluator)p).eval(
+                             ((CsmTemplate) ((CsmInstantiation) cls).getTemplateDeclaration()).getTemplateParameters().get(instParamIndex).getName().toString(), 
+                             (CsmInstantiation) cls,
+                             CsmKindUtilities.isScope(cls) ? (CsmScope) cls : cls.getScope()
+                         );
+                         val2 = ((ExpressionEvaluator)p).eval(specParamText, specParam.getScope());
                     } else {
-                         val1 = p.eval(((CsmTemplate) ((CsmInstantiation) cls).getTemplateDeclaration()).getTemplateParameters().get(paramIndex).getName().toString(), (CsmInstantiation) cls);
-                         val2 = p.eval(specParamText);
+                         val1 = p.eval(
+                             ((CsmTemplate) ((CsmInstantiation) cls).getTemplateDeclaration()).getTemplateParameters().get(instParamIndex).getName().toString(), 
+                             (CsmInstantiation) cls,
+                             CsmKindUtilities.isScope(cls) ? (CsmScope) cls : cls.getScope()
+                         );
+                         val2 = p.eval(specParamText, specParam.getScope());
                     }
                     if (val1.equals(val2)) {
                         return 2;
@@ -996,11 +1016,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     final Object val1;
                     final Object val2;
                     if(p instanceof ExpressionEvaluator) {
-                        val1 = ((ExpressionEvaluator)p).eval(paramsText.get(paramIndex).toString());
-                        val2 = ((ExpressionEvaluator)p).eval(specParamText);
+                        val1 = ((ExpressionEvaluator)p).eval(instParamsText.get(instParamIndex).toString(), instParams.get(instParamIndex).getScope());
+                        val2 = ((ExpressionEvaluator)p).eval(specParamText, specParam.getScope());
                     } else {
-                        val1 = p.eval(paramsText.get(paramIndex).toString());
-                        val2 = p.eval(specParamText);
+                        val1 = p.eval(instParamsText.get(instParamIndex).toString(), instParams.get(instParamIndex).getScope());
+                        val2 = p.eval(specParamText, specParam.getScope());
                     }
                     if (val1.equals(val2)) {
                         return 2;
@@ -1116,18 +1136,18 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     @Override
-    public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type) {
-        return new TypeBasedSpecializationParameterImpl(type);
+    public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmScope scope) {
+        return new TypeBasedSpecializationParameterImpl(type, scope);
     }
     
     @Override
-    public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmFile file, int start, int end) {
-        return new TypeBasedSpecializationParameterImpl(type, file, start, end);
+    public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmScope scope, CsmFile file, int start, int end) {
+        return new TypeBasedSpecializationParameterImpl(type, scope, file, start, end);
     }
 
     @Override
-    public CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmFile file, int start, int end) {
-        return ExpressionBasedSpecializationParameterImpl.create(expression, file, start, end);
+    public CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmScope scope, CsmFile file, int start, int end) {
+        return ExpressionBasedSpecializationParameterImpl.create(expression, scope, file, start, end);
     }
     
     public List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> getInstantiationParams(CsmObject o) {
