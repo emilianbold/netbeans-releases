@@ -52,11 +52,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
+import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.CommandBasedDeployer;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
@@ -135,6 +138,23 @@ public class WLDatasourceManager implements DatasourceManager {
 
     @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
+        if (manager.isRemote()) {
+            try {
+                return new HashSet<Datasource>(manager.getConnectionSupport().executeAction(new WLConnectionSupport.JMXRuntimeAction<Set<WLDatasource>>(){
+
+                    @Override
+                    public Set<WLDatasource> call(MBeanServerConnection connection, ObjectName service) throws Exception {
+                        return WLDatasourceSupport.getSystemDatasources(connection, service);
+                    }
+                }));
+            } catch (Exception ex) {
+                if (ex instanceof ConfigurationException) {
+                    throw (ConfigurationException) ex;
+                }
+                throw new ConfigurationException("Datasource fetch failed", ex);
+            }
+        }
+
         // FIXME use methods from WLPluginproperties
         String domainDir = manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
         File domainPath = FileUtil.normalizeFile(new File(domainDir));
