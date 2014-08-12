@@ -885,6 +885,11 @@ public final class GeneratorUtilities {
                 }
                 boolean isStar = currentToImportElement.getKind() == ElementKind.PACKAGE
                         || isStatic && (currentToImportElement.getKind().isClass() || currentToImportElement.getKind().isInterface());
+                ExpressionTree qualIdent = qualIdentFor(currentToImportElement);
+                if (isStar) {
+                    qualIdent = make.MemberSelect(qualIdent, elements.getName("*")); //NOI18N
+                }
+                ImportTree nImport = make.Import(qualIdent, isStatic);
                 while (currentExisting >= 0) {
                     ImportTree imp = imports.get(currentExisting);
                     Element impElement = getImportedElement(cut, imp);
@@ -893,15 +898,14 @@ public final class GeneratorUtilities {
                             : impElement.getKind() == ElementKind.PACKAGE ? impElement : (impElement.getKind().isClass() || impElement.getKind().isInterface()) && impElement.getEnclosingElement().getKind() == ElementKind.PACKAGE ? impElement.getEnclosingElement() : null;
                     if (isStatic == imp.isStatic() && (currentToImportElement == impElement || isStar && currentToImportElement == el)) {
                         imports.remove(currentExisting);                        
-                    } else if (comparator.compare(currentToImportElement, imp) > 0) {
-                        break;
+                    } else {
+                        if (comparator.compare(nImport, imp) > 0) {
+                            break;
+                        }
                     }
                     currentExisting--;
                 }
-                ExpressionTree qualIdent = qualIdentFor(currentToImportElement);
-                if (isStar)
-                    qualIdent = make.MemberSelect(qualIdent, elements.getName("*")); //NOI18N
-                imports.add(currentExisting + 1, make.Import(qualIdent, isStatic));
+                imports.add(currentExisting + 1, nImport);
                 currentToImport--;
             }
         }
@@ -1320,7 +1324,11 @@ public final class GeneratorUtilities {
                 return parent;
             }
         }
-        Element element = trees.getElement(TreePath.getPath(cut, qualIdent));
+        TreePath found = TreePath.getPath(cut, qualIdent);
+        if (found == null) {
+            found = new TreePath(new TreePath(new TreePath(cut), imp), qualIdent);
+        }
+        Element element = trees.getElement(found);
         if (element == null)
             element = getElementByFQN(qualIdent.toString());
         return element;
