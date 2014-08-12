@@ -116,7 +116,7 @@ public class WLDatasourceSupport {
 
     private static final Logger LOGGER = Logger.getLogger(WLDatasourceSupport.class.getName());
 
-    private File resourceDir;
+    private final File resourceDir;
 
     public WLDatasourceSupport(File resourceDir) {
         assert resourceDir != null : "Resource directory can't be null"; // NOI18N
