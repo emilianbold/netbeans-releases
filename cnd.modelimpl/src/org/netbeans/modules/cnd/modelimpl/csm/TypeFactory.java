@@ -368,7 +368,7 @@ public class TypeFactory {
                                             || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                                             || AstUtil.isElaboratedKeyword(namePart)) {
                                         CsmType t = AstRenderer.renderType(namePart, file, true, scope, true);
-                                        type.addInstantiationParam(new TypeBasedSpecializationParameterImpl(TemplateUtils.checkTemplateType(t, scope)));
+                                        type.addInstantiationParam(new TypeBasedSpecializationParameterImpl(TemplateUtils.checkTemplateType(t, scope), scope));
                                     }
                                     if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
                                         type.addInstantiationParam(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, type.getContainingFile(), scope),
