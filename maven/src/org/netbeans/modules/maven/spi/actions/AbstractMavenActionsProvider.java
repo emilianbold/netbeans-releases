@@ -243,7 +243,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
             protected Reader performDynamicSubstitutions(Map<String, String> replaceMap, String in) throws IOException {
                 return AbstractMavenActionsProvider.this.performDynamicSubstitutions(replaceMap, in);
             }
-        }.getMappingForAction(reader, LOG, actionName, project, null, Collections.<String, String>emptyMap());
+        }.getMappingForAction(reader, LOG, actionName, null, project, null, Collections.<String, String>emptyMap());
     }
 
     /**
