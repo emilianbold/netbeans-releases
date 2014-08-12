@@ -104,7 +104,23 @@ public final class NamingFactory {
         return namesCount;
     }
     
-    public static FileNaming fromFile(final FileNaming parentFn, final File file, boolean ignoreCache) {
+    public static FileNaming fromFile(final FileNaming parentFn, final File file,
+            boolean ignoreCache) {
+        return fromFile(parentFn, file, ignoreCache, true);
+    }
+
+    /**
+     * @param parentFn
+     * @param file
+     * @param ignoreCache
+     * @param canonicalName If true, the letter-case of name of {@code file} is
+     * considered to be the canonical one and the cached name can be updated
+     * (applicable only if {@code ignoreCache} is true).
+     * @return
+     */
+    public static FileNaming fromFile(final FileNaming parentFn, final File file,
+            boolean ignoreCache, boolean canonicalName) {
+
         FileInfo info = new FileInfo(file);
         List<FileInfo> checkDirs = new ArrayList<FileInfo>();
         for (;;) {
@@ -115,7 +131,7 @@ public final class NamingFactory {
             synchronized (NamingFactory.class) {
                 ret = NamingFactory.registerInstanceOfFileNaming(
                     parentFn, info, null, ignoreCache,
-                    FileType.unknown, checkDirs
+                    FileType.unknown, checkDirs, canonicalName
                 );
             }
             if (ret != null) {
@@ -210,7 +226,7 @@ public final class NamingFactory {
         Collection<? super FileInfo> computeDirectoryStatus
     ) {
         return NamingFactory.registerInstanceOfFileNaming(
-            parentName, file, null,false, type, computeDirectoryStatus
+            parentName, file, null,false, type, computeDirectoryStatus, true
         );
     }
     
@@ -247,7 +263,8 @@ public final class NamingFactory {
     private static FileNaming registerInstanceOfFileNaming(
         final FileNaming parentName, final FileInfo file, 
         final FileNaming newValue,boolean ignoreCache, FileType type,
-        Collection<? super FileInfo> computeDirectoryStatus
+        Collection<? super FileInfo> computeDirectoryStatus,
+        boolean canonicalName
     ) {
         assert Thread.holdsLock(NamingFactory.class);
         
@@ -273,7 +290,7 @@ public final class NamingFactory {
                     cachedElement = null;
                 }
             }
-            if (cachedElement != null) {
+            if (cachedElement != null && canonicalName) {
                 try {
                     checkCaseSensitivity(cachedElement, file.getFile());
                 } catch (IOException ex) {
