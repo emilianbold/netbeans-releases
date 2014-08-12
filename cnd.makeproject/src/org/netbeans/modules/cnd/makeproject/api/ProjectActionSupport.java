@@ -95,11 +95,9 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.IOTabsController;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -263,6 +261,23 @@ public class ProjectActionSupport {
         tasksProcessor.post(eventsProcessor);
     }
 
+    /**
+     * checks whether the project is ok (not deleted)
+     */
+    private static boolean checkProject(ProjectActionEvent pae) {
+        Project project = pae.getProject();
+        if (project != null) { // paranoidal null checks are better than latent NPE :)
+            if (CndUtils.isUnitTestMode() || OpenProjects.getDefault().isProjectOpen(project)) { // OpenProjects don't work in test mode
+                FileObject projectDirectory = project.getProjectDirectory();
+                if (projectDirectory != null) {
+                    FileObject nbproject = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
+                    return nbproject != null && nbproject.isValid();
+                }
+            }
+        }
+        return false;
+    }
+
 ////////////////////////////////////////////////////////////////////////////////
     private final class ProjectFileOperationsNotifier {
 
@@ -419,7 +434,7 @@ public class ProjectActionSupport {
                 for (final ProjectActionEvent currentEvent : paes) {
                     currentEventIndex.incrementAndGet();
 
-                    if (!checkProject(currentEvent)) {
+                    if (!ProjectActionSupport.checkProject(currentEvent)) {
                         return;
                     }
 
@@ -639,30 +654,6 @@ public class ProjectActionSupport {
             }
         }
 
-        /**
-         * checks whether the project is ok (not deleted)
-         */
-        private boolean checkProject(ProjectActionEvent pae) {
-            Project project = pae.getProject();
-            if (project != null) { // paranoidal null checks are better than latent NPE :)
-                if (CndUtils.isUnitTestMode() || OpenProjects.getDefault().isProjectOpen(project)) { // OpenProjects don't work in test mode
-                    FileObject projectDirectory = project.getProjectDirectory();
-                    if (projectDirectory != null) {
-                        FileObject nbproject = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_FOLDER); // NOI18N
-                        return nbproject != null && nbproject.isValid();
-//                        Should use the check below when working with local projects?
-//                        if (nbproject != null) {
-//                            // I'm more sure in java.io.File.exists() - practice shows that FileObjects might be sometimes cached...
-//                            File file = FileUtil.toFile(nbproject);
-//                            return file != null && file.exists();
-//                        }
-
-                    }
-                }
-            }
-            return false;
-        }
-        
         private final String FILE_LOCATIONS[] = {
             "/usr/bin", //NOI18N
             "/usr/sbin", //NOI18N
@@ -888,23 +879,25 @@ public class ProjectActionSupport {
         public void actionPerformed(ActionEvent e) {
             for (int i = handleEvents.paes.length - 1; i >= 0; i--) {
                 ProjectActionEvent pae = handleEvents.paes[i];
-                String projectName = ProjectUtils.getInformation(pae.getProject()).getDisplayName();
-                String dir = pae.getProfile().getRunDirectory();
-                ExecutionEnvironment env = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
-                if (env.isRemote()) {
-                    if (RemoteFileUtil.getProjectSourceExecutionEnvironment(pae.getProject()).isLocal()) {
-                        PathMap pathMap = RemoteSyncSupport.getPathMap(pae.getProject());
-                        if (pathMap != null) {
-                            String aDir = pathMap.getRemotePath(dir);
-                            if (aDir != null) {
-                                dir = aDir;
+                if (ProjectActionSupport.checkProject(pae)) {
+                    String projectName = ProjectUtils.getInformation(pae.getProject()).getDisplayName();
+                    String dir = pae.getProfile().getRunDirectory();
+                    ExecutionEnvironment env = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
+                    if (env.isRemote()) {
+                        if (RemoteFileUtil.getProjectSourceExecutionEnvironment(pae.getProject()).isLocal()) {
+                            PathMap pathMap = RemoteSyncSupport.getPathMap(pae.getProject());
+                            if (pathMap != null) {
+                                String aDir = pathMap.getRemotePath(dir);
+                                if (aDir != null) {
+                                    dir = aDir;
+                                }
+                            } else {
+                                LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{pae.getProject(), dir}); //NOI18N
                             }
-                        } else {
-                            LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{pae.getProject(), dir}); //NOI18N
                         }
                     }
+                    TerminalSupport.openTerminal(getString("TargetExecutor.TermAction.tabTitle", projectName, env.getDisplayName()), env, dir); // NOI18N
                 }
-                TerminalSupport.openTerminal(getString("TargetExecutor.TermAction.tabTitle", projectName, env.getDisplayName()), env, dir); // NOI18N
                 break;
             }
         }
