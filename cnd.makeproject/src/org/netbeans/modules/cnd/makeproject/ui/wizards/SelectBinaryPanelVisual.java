@@ -943,12 +943,8 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
 
     private String selectBinaryFile(String path) {
         FileFilter[] filters = FileFilterFactory.getBinaryFilters(fileSystem);
-        if (path.isEmpty() && HostInfoUtils.isHostInfoAvailable(env)) { 
-            try {  
-                path = HostInfoUtils.getHostInfo(env).getUserDir();
-            } catch (    IOException | ConnectionManager.CancellationException ex) {
-                // reporting doesn't has much sense here
-            }
+        if (path.isEmpty()) { 
+            path = SelectModePanel.getDefaultDirectory(env);
         }
         JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
                 controller.getWizardDescriptor(),
