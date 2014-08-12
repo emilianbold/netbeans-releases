@@ -150,8 +150,16 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
 
     private void doUIandUsageLogging() {
         if ((addedFrameworks != null) && (addedFrameworks.size() > 0)) {
-            LoggingUtils.logUI(this.getClass(), "UI_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED", addedFrameworks.toArray(), "web.project");  //NOI18N
-            LoggingUtils.logUsage(this.getClass(), "USG_PROJECT_CONFIG_WEB", new Object[] {findServerName(), addedFrameworks.toArray()}, "web.project");  //NOI18N
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < addedFrameworks.size(); i++) {
+                if (sb.length() > 0) {
+                    sb.append("|"); //NOI18N
+                }
+                sb.append(addedFrameworks.get(i));
+            }
+            String addedFrameworksNames = sb.toString();
+            LoggingUtils.logUI(this.getClass(), "UI_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED", new Object[]{addedFrameworksNames}, "web.project");  //NOI18N
+            LoggingUtils.logUsage(this.getClass(), "USG_PROJECT_CONFIG_WEB", new Object[] {findServerName(), addedFrameworksNames}, "web.project");  //NOI18N
         }
     }
 

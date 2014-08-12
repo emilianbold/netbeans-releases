@@ -455,7 +455,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                                 continue;
                             }
                             GlassfishInstance si = GlassfishInstance
-                                    .readInstanceFromFile(instanceFOs[i]);
+                                    .readInstanceFromFile(instanceFOs[i], false);
                             if (si != null) {
                                 activeDisplayNames.add(si.getDisplayName());
                             } else {
@@ -475,7 +475,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                 .get(AUTOINSTANCECOPIED, null)) {
             try {
                 GlassfishInstance igi = GlassfishInstance.
-                        readInstanceFromFile(installedInstance);
+                        readInstanceFromFile(installedInstance, true);
                 try {
                     NbPreferences.forModule(this.getClass())
                             .put(AUTOINSTANCECOPIED, "true"); // NOI18N
