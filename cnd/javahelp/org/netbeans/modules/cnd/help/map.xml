@@ -387,11 +387,12 @@
 	<mapID target="NewMakeWizardP41" url="WorkingWithCandC++Projects/NewMakeWizardP4.html"/>
 	<mapID target="NewMakeWizardP51" url="WorkingWithCandC++Projects/NewMakeWizardP5.html"/>
 	<mapID target="UsingBreadcrumbs" url="EditingSourceFiles/UsingBreadcrumbs.html"/>
-        <mapID target="CreatingCorC++ProjectBinary" url="WorkingWithCandC++Projects/CreatingCorC++ProjectBinary.html"/>
+	<mapID target="CreatingCorC++ProjectBinary" url="WorkingWithCandC++Projects/CreatingCorC++ProjectBinary.html"/>
 	<mapID target="ProjectPropsFormatting" url="WorkingWithCandC++Projects/ProjectPropsFormatting.html"/>
 	<mapID target="MacroExpansionWindow" url="EditingSourceFiles/MacroExpansionWindow.html"/>
-        <mapID target="CppDocumentation" url="EditingSourceFiles/CppDocumentation.html"/>
-        <mapID target="EncapsulateFields" url="EditingSourceFiles/EncapsulateFields.html"/>
-        <mapID target="ChangeFunctionParameters" url="EditingSourceFiles/ChangeFunctionParameters.html"/>
-
+	<mapID target="CppDocumentation" url="EditingSourceFiles/CppDocumentation.html"/>
+	<mapID target="EncapsulateFields" url="EditingSourceFiles/EncapsulateFields.html"/>
+	<mapID target="ChangeFunctionParameters" url="EditingSourceFiles/ChangeFunctionParameters.html"/>
+	<mapID target="BreakpointGroups_options_16" url="images/BreakpointGroups_options_16.png"/>
+	<mapID target="NewBreakpoint" url="images/NewBreakpoint.png"/>
 </map>
