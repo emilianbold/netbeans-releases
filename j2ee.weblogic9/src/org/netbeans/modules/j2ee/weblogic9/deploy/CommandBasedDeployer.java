@@ -216,7 +216,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                CommonBridge.getConfiguration(getDeploymentManager()), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
         deployer.undeploy(names.keySet(), listener);
 
         return progress;
@@ -298,7 +298,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                CommonBridge.getConfiguration(getDeploymentManager()), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
         deployer.start(names.keySet(), listener);
 
         return progress;
@@ -374,7 +374,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                CommonBridge.getConfiguration(getDeploymentManager()), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
         deployer.stop(names.keySet(), listener);
 
         return progress;
@@ -584,7 +584,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                CommonBridge.getConfiguration(getDeploymentManager()), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
         deployer.deploy(file, listener, name);
 
         return progress;
@@ -662,7 +662,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                CommonBridge.getConfiguration(getDeploymentManager()), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
         if (file != null) {
             deployer.redeploy(targetModuleID[0].getModuleID(), file, listener);
         } else {

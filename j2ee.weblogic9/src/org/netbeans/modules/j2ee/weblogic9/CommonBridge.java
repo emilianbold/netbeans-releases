@@ -65,10 +65,21 @@ public final class CommonBridge {
     }
 
     @NonNull
-    public static WebLogicConfiguration getConfiguration(@NonNull final WLDeploymentManager dm) {
-        InstanceProperties ip = dm.getInstanceProperties();
-        String username = ip.getProperty(InstanceProperties.USERNAME_ATTR);
-        String password = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
+    public static WebLogicConfiguration createConfiguration(@NonNull final WLDeploymentManager dm) {
+        final InstanceProperties ip = dm.getInstanceProperties();
+        
+        WebLogicConfiguration.Credentials credentials = new WebLogicConfiguration.Credentials() {
+
+            @Override
+            public String getUsername() {
+                return ip.getProperty(InstanceProperties.USERNAME_ATTR);
+            }
+
+            @Override
+            public String getPassword() {
+                return ip.getProperty(InstanceProperties.PASSWORD_ATTR);
+            }
+        };
 
         String serverHome = ip.getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
         String domainHome = ip.getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
@@ -87,24 +98,24 @@ public final class CommonBridge {
             } catch (NumberFormatException ex) {
                 realPort = 7001;
             }
-            config = WebLogicConfiguration.forRemoteDomain(new File(serverHome), host, realPort, username, password);
+            config = WebLogicConfiguration.forRemoteDomain(new File(serverHome), host, realPort, credentials);
         } else {
-            config = WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome), username, password);
+            config = WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome), credentials);
         }
-        Deployment.getDefault().addInstanceListener(new InstanceListener() {
-
-            @Override
-            public void instanceAdded(String serverInstanceID) {
-            }
-
-            @Override
-            public void instanceRemoved(String serverInstanceID) {
-                if (serverInstanceID.equals(dm.getUri())) {
-                    WebLogicRuntime.clear(config);
-                    Deployment.getDefault().removeInstanceListener(this);
-                }
-            }
-        });
+//        Deployment.getDefault().addInstanceListener(new InstanceListener() {
+//
+//            @Override
+//            public void instanceAdded(String serverInstanceID) {
+//            }
+//
+//            @Override
+//            public void instanceRemoved(String serverInstanceID) {
+//                if (serverInstanceID.equals(dm.getUri())) {
+//                    WebLogicRuntime.clear(config);
+//                    Deployment.getDefault().removeInstanceListener(this);
+//                }
+//            }
+//        });
         return config;
     }
 

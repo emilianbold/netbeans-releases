@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -104,7 +105,7 @@ public final class WebLogicRuntime {
     private static final int CHECK_TIMEOUT = 10000;
 
     //@GuardedBy(PROCESSES)
-    private static final Map<WebLogicConfiguration, Process> PROCESSES = new HashMap<WebLogicConfiguration, Process>();
+    private static final WeakHashMap<WebLogicConfiguration, Process> PROCESSES = new WeakHashMap<WebLogicConfiguration, Process>();
 
     private final WebLogicConfiguration config;
 
@@ -117,11 +118,11 @@ public final class WebLogicRuntime {
         return new WebLogicRuntime(config);
     }
 
-    public static void clear(WebLogicConfiguration config) {
-        synchronized (PROCESSES) {
-            PROCESSES.remove(config);
-        }
-    }
+//    public static void clear(WebLogicConfiguration config) {
+//        synchronized (PROCESSES) {
+//            PROCESSES.remove(config);
+//        }
+//    }
 
     public void startAndWait(@NullAllowed final BaseExecutionDescriptor.InputProcessorFactory outFactory,
             @NullAllowed final BaseExecutionDescriptor.InputProcessorFactory errFactory,
@@ -462,14 +463,14 @@ public final class WebLogicRuntime {
     }
 
     public boolean isRunning() {
-        Process proc;
-        synchronized (PROCESSES) {
-            proc = PROCESSES.get(config);
-        }
-
-        if (!isRunning(proc)) {
-            return false;
-        }
+//        Process proc;
+//        synchronized (PROCESSES) {
+//            proc = PROCESSES.get(config);
+//        }
+//
+//        if (!isRunning(proc)) {
+//            return false;
+//        }
 
         String host = config.getHost();
         int port = config.getPort();

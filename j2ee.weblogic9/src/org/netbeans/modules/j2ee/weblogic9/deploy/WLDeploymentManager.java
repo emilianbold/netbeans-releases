@@ -90,11 +90,13 @@ import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
+import org.netbeans.modules.j2ee.weblogic9.CommonBridge;
 import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
 import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
+import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -146,6 +148,9 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     /* GuardedBy("this") */
     private WLConnectionSupport connectionSupport;
+    
+    /* GuardedBy("this") */
+    private WebLogicConfiguration config;
 
     /* GuardedBy("this") */
     private Version serverVersion;
@@ -171,6 +176,12 @@ public class WLDeploymentManager implements DeploymentManager2 {
         this.mutableState = mutableState;
     }
 
+    public synchronized WebLogicConfiguration getCommonConfiguration() {
+        if (config == null) {
+            config = CommonBridge.createConfiguration(this);
+        }
+        return config;
+    }
     /**
      * Returns the stored server URI.
      */

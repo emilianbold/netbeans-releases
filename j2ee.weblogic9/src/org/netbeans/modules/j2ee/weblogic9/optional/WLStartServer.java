@@ -118,7 +118,7 @@ public final class WLStartServer extends StartServer {
 
     @Override
     public boolean isRunning() {
-        WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
+        WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
         return runtime.isRunning();
     }
 
@@ -146,7 +146,7 @@ public final class WLStartServer extends StartServer {
                 InstanceProperties.DISPLAY_NAME_ATTR);
         String uri = dm.getUri();
 
-        WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
+        WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
         runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
                 new StartListener(dm, serverName, serverProgress), getStartDebugVariables(dm), null);
 
@@ -163,7 +163,7 @@ public final class WLStartServer extends StartServer {
                 InstanceProperties.DISPLAY_NAME_ATTR);
         String uri = dm.getUri();
 
-        WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
+        WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
         runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
                 new StartListener(dm, serverName, serverProgress), getStartVariables(dm), null);
 
@@ -184,7 +184,7 @@ public final class WLStartServer extends StartServer {
 
         String uri = dm.getUri();
 
-        final WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
+        final WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
         runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
                 new StartListener(dm, serverName, serverProgress) {
 
@@ -222,7 +222,7 @@ public final class WLStartServer extends StartServer {
                 InstanceProperties.DISPLAY_NAME_ATTR);
         String uri = dm.getUri();
 
-        WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
+        WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
         runtime.stop(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
                 new StopListener(uri, serverName, serverProgress));
 
