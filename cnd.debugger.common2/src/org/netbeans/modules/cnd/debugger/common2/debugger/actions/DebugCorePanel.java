@@ -84,6 +84,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.debugger.common2.APIAccessor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ExecutableProjectPanel.ProjectCBItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
@@ -109,7 +112,12 @@ final class DebugCorePanel extends javax.swing.JPanel {
     private boolean noproject;
 
     private static Project lastSelectedProject = null;
-
+    private static EngineType lastSelectedEngine = null;
+    private static String lastSelectedCorefile = null;
+    
+    private static final DefaultPicklistModel executablePickList = new DefaultPicklistModel(6);
+    private static final DefaultPicklistModel corefilePickList = new DefaultPicklistModel(6);
+    
     private final RequestProcessor RP = new RequestProcessor();
     private volatile ValidationWorkerCheckState currentState = new ValidationWorkerCheckState(Boolean.TRUE, 
             new ValidationResult(Boolean.FALSE, "DebugCorePanel.Validating", false));//NOI18N    
@@ -118,31 +126,35 @@ final class DebugCorePanel extends javax.swing.JPanel {
     private final AtomicBoolean coreFileBrowseDialogInvoked = new AtomicBoolean(false);
     private final AtomicBoolean execFileBrowseDialogInvoked = new AtomicBoolean(false);
     
-    public DebugCorePanel(String corePath, String[] exePaths, JButton actionButton, boolean readonly, String host) {
+    public DebugCorePanel(String corePath, JButton actionButton, boolean readonly, String host) {
 	this.actionButton = actionButton;
 	this.readonly = readonly;
-	initialize(corePath, exePaths, host);
+	initialize(corePath, host);
     }
     
-    private void initialize(String corePath, String[] exePaths, String host) {
+    private void initialize(String corePath, String host) {
         initComponents();
 	if (readonly) {
-	    corefileTextField.setEditable(false);
+	    corefileComboBox.setEditable(false);
 	    corefileBrowseButton.setEnabled(false);
 	    guidanceTextArea.setText(Catalog.get("LOADCORE_GUIDANCETEXT2")); // NOI18N
 	    Catalog.setAccessibleDescription(guidanceTextArea, 
 		"LOADCORE_GUIDANCETEXT2"); // NOI18N
 	}
 	errorLabel.setForeground(javax.swing.UIManager.getColor("nb.errorForeground")); // NOI18N
-	if (corePath != null)
-	    corefileTextField.setText(corePath);
+	if (corePath == null) {
+            corePath = lastSelectedCorefile;
+        }
+        
+        corefileComboBox.getEditor().setItem(corePath);
 	initGui();
         guidanceTextArea.setBackground(getBackground());
 	setPreferredSize(new java.awt.Dimension(700, (int)getPreferredSize().getHeight()));
 
-	corefileTextField.getDocument().addDocumentListener(validationWorker);
+        corefileComboBox.setModel(new DefaultComboBoxModel(corefilePickList.getElementsDisplayName()));
+	((JTextField)corefileComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(validationWorker);
 
-	executableComboBox.setModel(new DefaultComboBoxModel(exePaths));
+	executableComboBox.setModel(new DefaultComboBoxModel(executablePickList.getElementsDisplayName()));
 	((JTextField)executableComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(validationWorker);
 
         if (host != null) {
@@ -155,6 +167,19 @@ final class DebugCorePanel extends javax.swing.JPanel {
 
         projectComboBox.addItemListener(validationWorker);
         validationWorker.actionPerformed(null);
+        
+        actionButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                lastSelectedProject = getSelectedProject();
+                lastSelectedEngine = getEngine();
+                lastSelectedCorefile = getCorefilePath();
+                
+                executablePickList.addElement(getExecutablePath());
+                corefilePickList.addElement(getCorefilePath());
+            }
+        });
     }
 
     @Override
@@ -228,6 +253,9 @@ final class DebugCorePanel extends javax.swing.JPanel {
         Collection<EngineType> engineTypes = EngineTypeManager.getEngineTypes(false);
         for (EngineType engineType : engineTypes) {
             engineComboBox.addItem(engineType.getDisplayName());
+            if (engineType.equals(lastSelectedEngine)) {
+                engineComboBox.setSelectedItem(engineType.getDisplayName());
+            }
         }
         engineComboBox.addActionListener(engineComboBoxActionListener);
     }
@@ -269,7 +297,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
     }
 
     public String getCorefilePath() {
-	return corefileTextField.getText();
+	return ((JTextField)corefileComboBox.getEditor().getEditorComponent()).getText();
     }
 
     /**
@@ -298,7 +326,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
 
         guidanceTextArea = new javax.swing.JTextArea();
         corefileLabel = new javax.swing.JLabel();
-        corefileTextField = new javax.swing.JTextField();
+        corefileComboBox = new javax.swing.JComboBox();
         corefileBrowseButton = new javax.swing.JButton();
 
         executableLabel = new javax.swing.JLabel();
@@ -410,7 +438,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         engineComboBox.addActionListener(validationWorker);
 
         corefileLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("LOADCORE_COREFILE_MN").charAt(0));
-        corefileLabel.setLabelFor(corefileTextField);
+        corefileLabel.setLabelFor(corefileComboBox);
         corefileLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("LOADCORE_COREFILE_LBL"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -420,8 +448,9 @@ final class DebugCorePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 8, 0);
         add(corefileLabel, gridBagConstraints);
 
-	Catalog.setAccessibleDescription(corefileTextField,
+	Catalog.setAccessibleDescription(corefileComboBox,
 	    "ACSD_Corefile"); // NOI18N
+        corefileComboBox.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = gridy;
@@ -429,7 +458,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 8, 0);
-        add(corefileTextField, gridBagConstraints);
+        add(corefileComboBox, gridBagConstraints);
 
 	Catalog.setAccessibleDescription(corefileBrowseButton, 
 	    "ACSD_CorefileBrowse"); // NOI18N
@@ -632,7 +661,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
                         if (ret == JFileChooser.CANCEL_OPTION) {
                             return;
                         }
-                        corefileTextField.setText(fileChooser.getSelectedFile().getPath());
+                        corefileComboBox.getEditor().setItem(fileChooser.getSelectedFile().getPath());
                     }
                 });
             }
@@ -643,7 +672,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton corefileBrowseButton;
     private javax.swing.JLabel corefileLabel;
-    private javax.swing.JTextField corefileTextField;
+    private javax.swing.JComboBox corefileComboBox;
     private javax.swing.JLabel errorLabel;
     private javax.swing.JButton executableBrowseButton;
     private javax.swing.JComboBox executableComboBox;
@@ -803,6 +832,21 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	return false;
     }
     
+    private boolean matchExecutable(Project p) {
+        ProjectInformation pi = ProjectUtils.getInformation(p);
+        String displayName = pi.getDisplayName();
+        if (displayName != null && !displayName.trim().isEmpty()) {
+            for (int i = 0; i < executableComboBox.getItemCount(); i++) {
+                if (displayName.equalsIgnoreCase(
+                        CndPathUtilities.getBaseName(executableComboBox.getItemAt(i).toString()))) {
+                    executableComboBox.setSelectedIndex(i);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     private void setError() {
         ValidationResult validationResult = this.currentState.validationResult;
         if (validationResult.isValid) {
@@ -850,10 +894,6 @@ final class DebugCorePanel extends javax.swing.JPanel {
 
     public boolean asynchronous() {
 	return false;
-    }
-
-    public void setLastSelectedProject (Project l) {
-	lastSelectedProject = l;
     }
 
     public boolean getNoProject() {
@@ -1049,14 +1089,15 @@ final class DebugCorePanel extends javax.swing.JPanel {
         }
 
         @Override
-        public void itemStateChanged(ItemEvent evt) {
+        public void itemStateChanged(ItemEvent evt) {   // project changed
             if (evt.getStateChange() == ItemEvent.SELECTED) {
+                matchExecutable(getSelectedProject());
                 updateValidationParams();
             }
         }
 
         @Override
-        protected void documentChanged(DocumentEvent e) {
+        protected void documentChanged(DocumentEvent e) {// exec changed
             String pName = CndPathUtilities.getBaseName(getExecutablePath());
             matchProject(pName);
             updateValidationParams();
