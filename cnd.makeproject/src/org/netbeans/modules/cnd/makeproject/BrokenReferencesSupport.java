@@ -106,14 +106,29 @@ public final class BrokenReferencesSupport {
         if (projectDescriptorProvider.gotDescriptor()) {
             Configuration[] confs = projectDescriptorProvider.getConfigurationDescriptor().getConfs().toArray();
             for (Configuration cf : confs) {
-                MakeConfiguration conf = (MakeConfiguration) cf;
-                if (conf.getDevelopmentHost().isLocalhost()
-                        && CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform() != conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue()) {
-                    return true;
+                if (cf.isDefault()) {
+                    cf.getName();
+                    MakeConfiguration conf = (MakeConfiguration) cf;
+                    if (conf.getDevelopmentHost().isLocalhost()
+                            && CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform() != conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue()) {
+                        return true;
+                    }
                 }
             }
         }
         return false;
+    }
+
+    public static String getActiveConfigurationName(ConfigurationDescriptorProvider projectDescriptorProvider) {
+        if (projectDescriptorProvider.gotDescriptor()) {
+            Configuration[] confs = projectDescriptorProvider.getConfigurationDescriptor().getConfs().toArray();
+            for (Configuration cf : confs) {
+                if (cf.isDefault()) {
+                    return cf.getName();
+                }
+            }
+        }
+        return "";
     }
 
     public static boolean hasTemporaryEnv(ExecutionEnvironment ee) {
@@ -151,10 +166,11 @@ public final class BrokenReferencesSupport {
     private static Set<? extends ProjectProblemsProvider.ProjectProblem> getPlatformProblems(@NonNull final MakeProject project) {
         Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<>();
         if (BrokenReferencesSupport.isIncorrectPlatform(project.getLookup().lookup(ConfigurationDescriptorProvider.class))) {
+            String name = BrokenReferencesSupport.getActiveConfigurationName(project.getLookup().lookup(ConfigurationDescriptorProvider.class));
             final ProjectProblemsProvider.ProjectProblem error =
                     ProjectProblemsProvider.ProjectProblem.createError(
                     NbBundle.getMessage(ResolveReferencePanel.class, "MSG_platform_resolve_name"), //NOI18N
-                    NbBundle.getMessage(ResolveReferencePanel.class, "MSG_platform_resolve_description"), //NOI18N
+                    NbBundle.getMessage(ResolveReferencePanel.class, "MSG_platform_resolve_description", name), //NOI18N
                     new PlatformResolverImpl(project));
             return Collections.singleton(error);
         }
@@ -241,14 +257,16 @@ public final class BrokenReferencesSupport {
         Configuration[] confs = mcd.getConfs().toArray();
         boolean save = false;
         for (Configuration cf : confs) {
-            MakeConfiguration conf = (MakeConfiguration) cf;
-            if (conf.getDevelopmentHost().isLocalhost()) {
-                final int platform1 = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform();
-                final int platform2 = conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue();
-                if (platform1 != platform2) {
-                    conf.getDevelopmentHost().getBuildPlatformConfiguration().setValue(platform1);
-                    mcd.setModified();
-                    save = true;
+            if (cf.isDefault()) {
+                MakeConfiguration conf = (MakeConfiguration) cf;
+                if (conf.getDevelopmentHost().isLocalhost()) {
+                    final int platform1 = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform();
+                    final int platform2 = conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue();
+                    if (platform1 != platform2) {
+                        conf.getDevelopmentHost().getBuildPlatformConfiguration().setValue(platform1);
+                        mcd.setModified();
+                        save = true;
+                    }
                 }
             }
         }
@@ -396,15 +414,17 @@ public final class BrokenReferencesSupport {
     }
     
     private static class PlatformResolverImpl extends BaseProjectProblemResolver {
+        private final String name;
 
         public PlatformResolverImpl(MakeProject project) {
             super(project);
+            name = BrokenReferencesSupport.getActiveConfigurationName(project.getLookup().lookup(ConfigurationDescriptorProvider.class));
         }
 
         @Override
         public Future<ProjectProblemsProvider.Result> resolve() {
             String title = NbBundle.getMessage(ResolveReferencePanel.class, "MSG_platform_fix_title"); //NOI18N
-            String message = NbBundle.getMessage(ResolveReferencePanel.class, "MSG_platform_fix"); //NOI18N
+            String message = NbBundle.getMessage(ResolveReferencePanel.class, "MSG_platform_fix", name); //NOI18N
             NotifyDescriptor nd = new NotifyDescriptor(message,
                     title, NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE,
