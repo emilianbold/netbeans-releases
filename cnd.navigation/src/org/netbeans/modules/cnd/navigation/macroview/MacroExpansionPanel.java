@@ -100,7 +100,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jCodeExpansionEditorPane.setCaretPosition(0);
         jCodeExpansionEditorPane.setContentType(mimeType);
         jCodeExpansionEditorPane.setDocument(doc);
-        jCodeExpansionEditorPane.putClientProperty("HelpID","MacroExpansionWindow");
+        jCodeExpansionEditorPane.putClientProperty("HelpID","MacroExpansionWindow"); //NOI18N
         doc.putProperty(JEditorPane.class, jCodeExpansionEditorPane);
     }
 
