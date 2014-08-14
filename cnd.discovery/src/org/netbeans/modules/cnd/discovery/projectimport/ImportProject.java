@@ -693,18 +693,12 @@ public class ImportProject implements PropertyChangeListener {
                     if (HostInfoUtils.fileExists(executionEnvironment, remoteFile)){
                         Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, executionEnvironment, file.getAbsolutePath(), null);
                         if (TRACE) {
-                            logger.log(Level.INFO, "#download file {0}", file.getAbsolutePath()); // NOI18N
+                            logger.log(Level.INFO, "#download file {0}->{1}", new Object[]{remoteFile, file.getAbsolutePath()}); // NOI18N
                         }
                         /*int rc =*/ task.get();
                     }
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
                 } catch (Throwable ex) {
-                    Exceptions.printStackTrace(ex);
+                    logger.log(Level.INFO, "Cannot download file {0}->{1}. Exception {2}", new Object[]{remoteFile, file.getAbsolutePath(), ex.getMessage()}); // NOI18N
                 }
             }
         }
@@ -908,12 +902,12 @@ public class ImportProject implements PropertyChangeListener {
                         if (HostInfoUtils.fileExists(executionEnvironment, remoteExecLog)){
                             Future<Integer> task = CommonTasksSupport.downloadFile(remoteExecLog, executionEnvironment, execLog.getAbsolutePath(), null);
                             if (TRACE) {
-                                logger.log(Level.INFO, "#download file {0}", makeLog.getAbsolutePath()); // NOI18N
+                                logger.log(Level.INFO, "#download file {0}->{1}", new Object[]{remoteExecLog, execLog.getAbsolutePath()}); // NOI18N
                             }
                             /*int rc =*/ task.get();
                         }
                     } catch (Throwable ex) {
-                        Exceptions.printStackTrace(ex);
+                        logger.log(Level.INFO, "Cannot download file {0}->{1}. Exception {2}", new Object[]{remoteExecLog, execLog.getAbsolutePath(), ex.getMessage()}); // NOI18N
                         execLog = null;
                     }
                 }
