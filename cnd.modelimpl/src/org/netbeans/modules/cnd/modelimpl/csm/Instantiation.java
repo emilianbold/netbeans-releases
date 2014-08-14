@@ -96,7 +96,12 @@ import org.openide.util.Pair;
  * @author eu155513, Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends OffsetableIdentifiableBase<CsmInstantiation> implements CsmOffsetableDeclaration, CsmInstantiation, CsmIdentifiable {
-    private static final int MAX_INHERITANCE_DEPTH = 20;
+    
+    // How much times it is possible io instantiate something using the same template
+    private static final int MAX_RECURSIVE_INSTANTIATIONS = 10;     
+    
+    private static final int MAX_INHERITANCE_DEPTH = 20;    
+    
     private static final Logger LOG = Logger.getLogger(Instantiation.class.getSimpleName());
 
     protected final T declaration;
@@ -260,14 +265,8 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
     public static CsmObject create(CsmTemplate template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
 //        System.err.println("Instantiation.create for " + template + " with mapping " + mapping);
-        Pair<Boolean, Integer> skipCheckResult = canSkipInstantiation(template, mapping);
-        if (skipCheckResult.first()) {
+        if (canSkipInstantiation(template, mapping)) {
             return template;
-        }
-        if (skipCheckResult.second() > MAX_INHERITANCE_DEPTH) {
-            if (isRecursiveInstantiation(template, mapping, MAX_INHERITANCE_DEPTH)) {
-                return template;
-            }
         }
         if (template instanceof CsmClass) {
             Class newClass = new Class((CsmClass)template, mapping);
@@ -292,7 +291,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             }
         }
         return template;
-    }
+    }    
     
     /**
      * Method ensures that instantiating template with the given mapping makes sense.
@@ -301,20 +300,14 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
      * 
      * @param template
      * @param mapping
-     * @return pair where 
-     *           first value - true if template shouldn't be instantiated, 
-     *                         false otherwise
-     *           second value - depth on which we decided that there is no 
-     *                          need to instantiate template with the given 
-     *                          mapping or depth of instantiation if template
-     *                          should be instantiated
+     * @return true if template shouldn't be instantiated, false otherwise
      */
-    private static Pair<Boolean, Integer> canSkipInstantiation(CsmObject template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {        
+    private static boolean canSkipInstantiation(CsmObject template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {        
         if (mapping == null || mapping.isEmpty()) {
-            return Pair.of(true, 0);
+            return true;
         }
         
-        CsmObject current = template;
+        CsmObject current = (template instanceof Inheritance) ? ((Inheritance) template).getAncestorType() : template;
         
         int depth = 0;
         
@@ -330,7 +323,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 origMapping = ((Type) current).getInstantiation().getMapping();
                 current = ((Type) current).originalType;
             } else {
-                return Pair.of(false, depth); // paranoia
+                break; // paranoia
             }
             
             // If instances are the same, then it is erroneous instantiation
@@ -338,11 +331,18 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE, "REFUSE TO INSTANTITATE:\n{0}\n", new Object[] {template}); //NOI18N
                 }
-                return Pair.of(true, depth);
+                return true;
+            }
+        }
+        
+        // Check if there is a recursion here
+        if (depth > MAX_RECURSIVE_INSTANTIATIONS) {
+            if (isRecursiveInstantiation(template, mapping, MAX_RECURSIVE_INSTANTIATIONS)) {
+                return true;
             }
         }
                 
-        return Pair.of(false, depth);
+        return false;
     }
     
     /**
@@ -354,7 +354,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
      * @return true if template shouldn't be instantiated, false otherwise
      */
     private static boolean isRecursiveInstantiation(CsmObject template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, final int recursionLimit) {                
-        CsmObject current = template;
+        CsmObject current = (template instanceof Inheritance) ? ((Inheritance) template).getAncestorType() : template;
         
         Map<TemplateMapKey, Integer> repeatings = new HashMap<>();
         
@@ -651,7 +651,11 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             if (inheritances == null) {
                 List<CsmInheritance> res = new ArrayList<>(1);
                 for (CsmInheritance inh : declaration.getBaseClasses()) {
-                    res.add(new Inheritance(inh, this));
+                    if (canSkipInstantiation(inh, mapping)) {
+                        res.add(inh);
+                    } else {
+                        res.add(new Inheritance(inh, this));
+                    }
                 }
                 inheritances = res.isEmpty() ? Collections.<CsmInheritance>emptyList() : res;
             }
@@ -1421,19 +1425,21 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         return createType(type, instantiation, new TemplateParameterResolver());
     }
     
+    public static CsmType unfoldType(CsmType type) {
+        CsmType result = type;
+        while (result instanceof Type) {
+            result = ((Type) result).instantiatedType;
+        }
+        return result;
+    }    
+    
     private static CsmType createType(CsmType type, CsmInstantiation instantiation, TemplateParameterResolver templateParamResolver) {
         if (type == null) {
             throw new NullPointerException("no type for " + instantiation); // NOI18N
         }
-        Pair<Boolean, Integer> skipCheckResult = canSkipInstantiation(type, instantiation.getMapping());
-        if (skipCheckResult.first()) {
+        if (canSkipInstantiation(type, instantiation.getMapping())) {
             return type;
         }
-        if (skipCheckResult.second() > MAX_INHERITANCE_DEPTH) {
-            if (isRecursiveInstantiation(type, instantiation.getMapping(), MAX_INHERITANCE_DEPTH)) {
-                return type;
-            }
-        }        
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "Instantiation.createType {0}; inst:{1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
         }
