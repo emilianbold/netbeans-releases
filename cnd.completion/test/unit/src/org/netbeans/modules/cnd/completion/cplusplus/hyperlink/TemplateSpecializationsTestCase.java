@@ -236,6 +236,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug246332_1.cpp", 52, 15, "bug246332_1.cpp", 35, 9);        
     }    
     
+    public void testBug246463() throws Exception {
+        // Bug 246463 - Click to specialization navigates to forward declaration
+        performTest("bug246463.cpp", 6, 16, "bug246463.cpp", 5, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
