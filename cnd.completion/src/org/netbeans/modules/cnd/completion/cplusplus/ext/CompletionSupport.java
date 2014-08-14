@@ -1135,18 +1135,16 @@ public final class CompletionSupport implements DocumentListener {
     }        
     
     static CsmObject createInstantiation(Context context, CsmTemplate template, CsmCompletionExpression exp, List<CsmType> typeList) {
-        if (exp != null || !typeList.isEmpty() || context.getContextInstantiations() != null) {
-            CsmObject instantiation = template;
-            
+        if (exp != null || !typeList.isEmpty() || context.getContextInstantiations() != null) {            
             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+            
             List<CsmSpecializationParameter> params = new ArrayList<CsmSpecializationParameter>();        
             params.addAll(collectInstantiationParameters(context, template, ip, exp));
             if (CsmKindUtilities.isFunction(template)) {
                 params.addAll(collectInstantiationParameters(context, ip, (CsmFunction)template, params.size(), typeList));
             }
-            if (!params.isEmpty()) {
-                instantiation = ip.instantiate(template, params);
-            }
+            
+            CsmObject instantiation = ip.instantiate(template, params);
             
             if (CsmKindUtilities.isTemplate(instantiation)) {
                 List<CsmInstantiation> contextInstantiations = context.getContextInstantiations();
