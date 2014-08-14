@@ -686,7 +686,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                         DefaultCalcTemplateTypeStrategy calcStrategy = new DefaultCalcTemplateTypeStrategy(CalcTemplateTypeStrategy.Error.MatchQualsError);
                         CsmType result = calcTemplateType(specTemplateParam, specParamType, instType, calcStrategy);
                         if (result != null) {
-                            result = Instantiation.unfoldType(result);
+                            result = Instantiation.unfoldInstantiatedType(result);
                             newMapping.put(specTemplateParam, createTypeBasedSpecializationParameter(result, specParam.getScope()));
                             break;
                         }
