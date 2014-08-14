@@ -44,8 +44,10 @@ package org.netbeans.modules.weblogic.common.api;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -55,13 +57,11 @@ public final class WebLogicConfiguration {
 
     public static final Version VERSION_10 = Version.fromJsr277NotationWithFallback("10"); // NOI18N
 
+    private static final WeakSet<WebLogicConfiguration> INSTANCES = new WeakSet<WebLogicConfiguration>();
+
     private final String id;
 
     private final File serverHome;
-
-    private final String username;
-
-    private final String password;
 
     private final File domainHome;
 
@@ -69,17 +69,20 @@ public final class WebLogicConfiguration {
 
     private final int port;
 
+    private final Credentials credentials;
+
     // @GuardedBy("this")
     private WebLogicLayout layout;
+    
+    // @GuardedBy("this")
+    private WebLogicRemote remote;
 
-    private WebLogicConfiguration(File serverHome, String username, String password,
-            File domainHome, String host, int port) {
+    private WebLogicConfiguration(File serverHome, File domainHome, String host, int port, Credentials credentials) {
         this.serverHome = serverHome;
-        this.username = username;
-        this.password = password;
         this.domainHome = domainHome;
         this.host = host;
         this.port = port;
+        this.credentials = credentials;
 
         if (domainHome != null) {
             id = serverHome + ":" + domainHome;
@@ -89,14 +92,20 @@ public final class WebLogicConfiguration {
     }
 
     public static WebLogicConfiguration forLocalDomain(File serverHome, File domainHome,
-            String username, String password) {
+            Credentials credentials) {
         // FIXME port
-        return new WebLogicConfiguration(serverHome, username, password, domainHome, "localhost", 7001);
+        WebLogicConfiguration instance = new WebLogicConfiguration(serverHome, domainHome, "localhost", 7001, credentials);
+        synchronized (INSTANCES) {
+            return INSTANCES.putIfAbsent(instance);
+        }
     }
 
     public static WebLogicConfiguration forRemoteDomain(File serverHome, String host, int port,
-            String username, String password) {
-        return new WebLogicConfiguration(serverHome, username, password, null, host, port);
+            Credentials credentials) {
+        WebLogicConfiguration instance = new WebLogicConfiguration(serverHome, null, host, port, credentials);
+        synchronized (INSTANCES) {
+            return INSTANCES.putIfAbsent(instance);
+        }
     }
 
     public String getId() {
@@ -119,12 +128,12 @@ public final class WebLogicConfiguration {
 
     @NonNull
     public String getUsername() {
-        return username;
+        return credentials.getUsername();
     }
 
     @NonNull
     public String getPassword() {
-        return password;
+        return credentials.getPassword();
     }
 
     public String getHost() {
@@ -148,6 +157,14 @@ public final class WebLogicConfiguration {
         }
         return layout;
     }
+    
+    @NonNull
+    public synchronized WebLogicRemote getRemote() {
+        if (remote == null) {
+            remote = new WebLogicRemote(this);
+        }
+        return remote;
+    }
 
     @Override
     public int hashCode() {
@@ -169,5 +186,15 @@ public final class WebLogicConfiguration {
             return false;
         }
         return true;
+    }
+
+    public static interface Credentials {
+
+        @NonNull
+        String getUsername();
+
+        @NonNull
+        String getPassword();
+
     }
 }

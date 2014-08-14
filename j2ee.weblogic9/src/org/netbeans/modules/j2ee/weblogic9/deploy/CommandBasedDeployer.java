@@ -85,7 +85,6 @@ import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.dd.api.application.Web;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.weblogic9.CommonBridge;
 import org.netbeans.modules.j2ee.weblogic9.URLWait;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
@@ -100,7 +99,6 @@ import org.netbeans.modules.weblogic.common.api.WebLogicDeployer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -133,7 +131,11 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
     public ProgressObject deploy(Target[] target, final File file, final File plan, String host, String port) {
         // TODO is this correct only first server mentioned
-        final TargetModuleID moduleId = createModuleId(target[0], file, host, port, file.getName(), null);
+        String name = file.getName();
+        if (name.endsWith(".war") || name.endsWith(".ear")) {
+            name = name.substring(0, name.length() - 4);
+        }
+        final TargetModuleID moduleId = createModuleId(target[0], file, host, port, name, null);
         return deploy(moduleId, file, null);
     }
 
@@ -212,7 +214,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                CommonBridge.getConfiguration(getDeploymentManager()), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
         deployer.undeploy(names.keySet(), listener);
 
         return progress;
@@ -294,7 +296,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                CommonBridge.getConfiguration(getDeploymentManager()), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
         deployer.start(names.keySet(), listener);
 
         return progress;
@@ -370,7 +372,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                CommonBridge.getConfiguration(getDeploymentManager()), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
         deployer.stop(names.keySet(), listener);
 
         return progress;
@@ -580,7 +582,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                CommonBridge.getConfiguration(getDeploymentManager()), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
         deployer.deploy(file, listener, name);
 
         return progress;
@@ -658,7 +660,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                CommonBridge.getConfiguration(getDeploymentManager()), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
         if (file != null) {
             deployer.redeploy(targetModuleID[0].getModuleID(), file, listener);
         } else {
