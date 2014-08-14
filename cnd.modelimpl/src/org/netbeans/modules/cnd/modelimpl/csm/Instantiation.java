@@ -301,10 +301,19 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
      * 
      * @param template
      * @param mapping
-     * @return pair where first value is true if template shouldn't be instantiated, false otherwise
-     *                     second value is depth on which duplicate was found, or depth of instantiation if there are no duplicates
+     * @return pair where 
+     *           first value - true if template shouldn't be instantiated, 
+     *                         false otherwise
+     *           second value - depth on which we decided that there is no 
+     *                          need to instantiate template with the given 
+     *                          mapping or depth of instantiation if template
+     *                          should be instantiated
      */
     private static Pair<Boolean, Integer> canSkipInstantiation(CsmObject template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {        
+        if (mapping == null || mapping.isEmpty()) {
+            return Pair.of(true, 0);
+        }
+        
         CsmObject current = template;
         
         int depth = 0;
