@@ -686,6 +686,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                         DefaultCalcTemplateTypeStrategy calcStrategy = new DefaultCalcTemplateTypeStrategy(CalcTemplateTypeStrategy.Error.MatchQualsError);
                         CsmType result = calcTemplateType(specTemplateParam, specParamType, instType, calcStrategy);
                         if (result != null) {
+                            result = Instantiation.unfoldType(result);
                             newMapping.put(specTemplateParam, createTypeBasedSpecializationParameter(result, specParam.getScope()));
                             break;
                         }
@@ -950,23 +951,31 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 if (CsmKindUtilities.isInstantiation(cls)) {
                     final Object val1;
                     final Object val2;
-                    if(p instanceof ExpressionEvaluator) {
-                         val1 = ((ExpressionEvaluator)p).eval(
-                             ((CsmTemplate) ((CsmInstantiation) cls).getTemplateDeclaration()).getTemplateParameters().get(instParamIndex).getName().toString(), 
-                             (CsmInstantiation) cls,
-                             CsmKindUtilities.isScope(cls) ? (CsmScope) cls : cls.getScope()
-                         );
-                         val2 = ((ExpressionEvaluator)p).eval(specParamText, specParam.getScope());
+                    List<CsmTemplateParameter> templateParameters = ((CsmTemplate) ((CsmInstantiation) cls).getTemplateDeclaration()).getTemplateParameters();
+                    CsmTemplateParameter templateParameter = (templateParameters != null && templateParameters.size() > instParamIndex) ? templateParameters.get(instParamIndex) : null;
+                    if (templateParameter != null) {
+                        if(p instanceof ExpressionEvaluator) {
+                             val1 = ((ExpressionEvaluator)p).eval(
+                                 templateParameter.getName().toString(), 
+                                 (CsmInstantiation) cls,
+                                 CsmKindUtilities.isScope(cls) ? (CsmScope) cls : cls.getScope()
+                             );
+                             val2 = ((ExpressionEvaluator)p).eval(specParamText, specParam.getScope());
+                        } else {
+                             val1 = p.eval(
+                                 templateParameter.getName().toString(), 
+                                 (CsmInstantiation) cls,
+                                 CsmKindUtilities.isScope(cls) ? (CsmScope) cls : cls.getScope()
+                             );
+                             val2 = p.eval(specParamText, specParam.getScope());
+                        }
+                        if (val1.equals(val2)) {
+                            return 2;
+                        }
                     } else {
-                         val1 = p.eval(
-                             ((CsmTemplate) ((CsmInstantiation) cls).getTemplateDeclaration()).getTemplateParameters().get(instParamIndex).getName().toString(), 
-                             (CsmInstantiation) cls,
-                             CsmKindUtilities.isScope(cls) ? (CsmScope) cls : cls.getScope()
-                         );
-                         val2 = p.eval(specParamText, specParam.getScope());
-                    }
-                    if (val1.equals(val2)) {
-                        return 2;
+                        LOG.log(Level.WARNING, "Not found template parameter with index {0} in {1}",  // NOI18N
+                            new Object[]{instParamIndex, ((CsmInstantiation) cls).getTemplateDeclaration().getQualifiedName()}
+                        );
                     }
                 } else {
                     final Object val1;
