@@ -73,6 +73,9 @@ public final class WebLogicConfiguration {
 
     // @GuardedBy("this")
     private WebLogicLayout layout;
+    
+    // @GuardedBy("this")
+    private WebLogicRemote remote;
 
     private WebLogicConfiguration(File serverHome, File domainHome, String host, int port, Credentials credentials) {
         this.serverHome = serverHome;
@@ -153,6 +156,14 @@ public final class WebLogicConfiguration {
             layout = new WebLogicLayout(this);
         }
         return layout;
+    }
+    
+    @NonNull
+    public synchronized WebLogicRemote getRemote() {
+        if (remote == null) {
+            remote = new WebLogicRemote(this);
+        }
+        return remote;
     }
 
     @Override

@@ -51,13 +51,23 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.PermissionCollection;
+import java.security.Permissions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.WeakHashMap;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -79,6 +89,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public final class WebLogicLayout {
+
+    private static final WeakHashMap<WebLogicConfiguration, ClassLoader> CLASSLOADERS = new WeakHashMap<WebLogicConfiguration, ClassLoader>();
 
     private static final String WEBLOGIC_JAR = "server/lib/weblogic.jar"; // NOI18N
 
@@ -398,6 +410,37 @@ public final class WebLogicLayout {
         return new File[] {weblogicJar};
     }
 
+    @NonNull
+    public ClassLoader getClassLoader() {
+        synchronized (CLASSLOADERS) {
+            ClassLoader classLoader = CLASSLOADERS.get(config);
+            if (classLoader != null) {
+                return classLoader;
+            }
+
+            // two instances may have the same classpath because of the same
+            // server root directory
+            for (Map.Entry<WebLogicConfiguration, ClassLoader> entry : CLASSLOADERS.entrySet()) {
+                // FIXME base the check on classpath - it would be more safe
+                // more expensive as well
+                String serverRootCached = entry.getKey().getServerHome().getAbsolutePath();
+                String serverRootFresh = config.getServerHome().getAbsolutePath();
+
+                if ((serverRootCached == null) ? (serverRootFresh == null) : serverRootCached.equals(serverRootFresh)) {
+                    classLoader = entry.getValue();
+                    break;
+                }
+            }
+
+            if (classLoader == null) {
+                classLoader = createClassLoader();
+            }
+
+            CLASSLOADERS.put(config, classLoader);
+            return classLoader;
+        }
+    }
+
     @CheckForNull
     public Version getServerVersion() {
         return getServerVersion(config.getServerHome());
@@ -643,6 +686,66 @@ public final class WebLogicLayout {
         return true;
     }
 
+    private WebLogicClassLoader createClassLoader() {
+        LOGGER.log(Level.FINE, "Creating classloader for {0}", config.getId());
+        try {
+            File[] classpath = getClassPath();
+            URL[] urls = new URL[classpath.length];
+            for (int i = 0; i < classpath.length; i++) {
+                urls[i] = classpath[i].toURI().toURL();
+            }
+            WebLogicClassLoader classLoader = new WebLogicClassLoader(urls, WebLogicConfiguration.class.getClassLoader());
+            LOGGER.log(Level.FINE, "Classloader for {0} created successfully", config.getId());
+            return classLoader;
+        } catch (MalformedURLException e) {
+            LOGGER.log(Level.WARNING, null, e);
+        }
+        return new WebLogicClassLoader(new URL[] {}, WebLogicConfiguration.class.getClassLoader());
+    }
+
+    private static class WebLogicClassLoader extends URLClassLoader {
+
+        public WebLogicClassLoader(URL[] urls, ClassLoader parent) {
+            super(urls, parent);
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            Class<?> clazz = super.findClass(name);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                String filename = name.replace('.', '/'); // NOI18N
+                int index = filename.indexOf('$'); // NOI18N
+                if (index > 0) {
+                    filename = filename.substring(0, index);
+                }
+                filename = filename + ".class"; // NOI18N
+
+                URL url = this.getResource(filename);
+                LOGGER.log(Level.FINEST, "WebLogic classloader asked for {0}", name);
+                if (url != null) {
+                    LOGGER.log(Level.FINEST, "WebLogic classloader found {0} at {1}",new Object[]{name, url});
+                }
+            }
+            return clazz;
+        }
+
+        @Override
+        protected PermissionCollection getPermissions(CodeSource codeSource) {
+            Permissions p = new Permissions();
+            p.add(new AllPermission());
+            return p;
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            // get rid of annoying warnings
+            if (name.contains("jndi.properties") || name.contains("i18n_user.properties")) { // NOI18N
+                return Collections.enumeration(Collections.<URL>emptyList());
+            }
+
+            return super.getResources(name);
+        }
+    }
     private static class ServerDescriptor {
 
         private final String host;
