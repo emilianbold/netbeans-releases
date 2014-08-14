@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.launchers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  *
@@ -140,4 +141,33 @@ public final class Launcher {
         }
         return false;
     }    
+
+    boolean isLauncherEquals(Launcher other) {
+        if (other == null) {
+            return false;
+        }
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.command, other.command)) {
+            return false;
+        }
+        if (!Objects.equals(this.buildCommand, other.buildCommand)) {
+            return false;
+        }
+        if (!Objects.equals(this.runDir, other.runDir)) {
+            return false;
+        }
+        if (!Objects.equals(this.env, other.env)) {
+            return false;
+        }
+        if (!Objects.equals(this.symbolFiles, other.symbolFiles)) {
+            return false;
+        }
+        if (common == null && other.common == null ||
+            common != null && other.common != null && common.isLauncherEquals(other.common)) {
+            return true;
+        }
+        return false;
+    }
 }
