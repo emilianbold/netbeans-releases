@@ -1423,14 +1423,6 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
     
     public static CsmType createType(CsmType type, CsmInstantiation instantiation) {
         return createType(type, instantiation, new TemplateParameterResolver());
-    }
-    
-    public static CsmType unfoldType(CsmType type) {
-        CsmType result = type;
-        while (result instanceof Type) {
-            result = ((Type) result).instantiatedType;
-        }
-        return result;
     }    
     
     private static CsmType createType(CsmType type, CsmInstantiation instantiation, TemplateParameterResolver templateParamResolver) {
@@ -1478,7 +1470,23 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             result = createType(result, instantiation);
         }
         return result;
-    }            
+    }         
+    
+    public static CsmType unfoldInstantiatedType(CsmType type) {
+        CsmType result = type;
+        while (result instanceof Type) {
+            result = ((Type) result).instantiatedType;
+        }
+        return result;
+    }    
+    
+    public static CsmType unfoldOriginalType(CsmType type) {
+        CsmType result = type;
+        while (result instanceof Type) {
+            result = ((Type) result).originalType;
+        }
+        return result;
+    }        
    
     private static class TemplateParameterType extends Type implements CsmTemplateParameterType {
         public TemplateParameterType(CsmType type, CsmInstantiation instantiation, TemplateParameterResolver templateParamResolver) {
