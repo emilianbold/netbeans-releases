@@ -115,21 +115,42 @@ public final class LaunchersRegistry {
         return Collections.unmodifiableCollection(launchers);
     }
 
-    void load(Properties properties) {
-        synchronized (lock) {
-            launchers.clear();
-            Launcher common = create(COMMON_TAG, properties, null);
-            for (String key : properties.stringPropertyNames()) {
-                if (key.matches(LAUNCHER_TAG + "\\d*[.]" + COMMAND_TAG)) {//NOI18N
-                    Launcher l = create(key.substring(0, key.indexOf("." + COMMAND_TAG)), properties, common);//NOI18N
-                    if (l != null) {
-                        launchers.add(l);
-                    }
+    boolean load(Properties properties) {
+        List<Launcher> newLaunchers = new ArrayList<>();
+        Launcher common = create(COMMON_TAG, properties, null);
+        for (String key : properties.stringPropertyNames()) {
+            if (key.matches(LAUNCHER_TAG + "\\d*[.]" + COMMAND_TAG)) {//NOI18N
+                Launcher l = create(key.substring(0, key.indexOf("." + COMMAND_TAG)), properties, common);//NOI18N
+                if (l != null) {
+                    newLaunchers.add(l);
                 }
             }
         }
+        boolean modified = false;
+        synchronized (lock) {
+            if (!isEqualsLauncers(newLaunchers)) {
+                launchers.clear();
+                launchers.addAll(newLaunchers);
+                modified = true;
+            }
+        }
+        return modified;
     }
 
+    private boolean isEqualsLauncers(List<Launcher> newLaunchers) {
+        if (launchers.size() != newLaunchers.size()) {
+            return false;
+        }
+        for(int i = 0; i < launchers.size(); i++) {
+            Launcher l1 = launchers.get(i);
+            Launcher l2 = newLaunchers.get(i);
+            if (!l1.isLauncherEquals(l2)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     private Launcher create(String name, Properties properties, Launcher common) {
         boolean commonLauncher = name.equals(COMMON_TAG);
         assert !commonLauncher || common == null : "common launcher can not have other common";//NOI18N
