@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
@@ -80,6 +82,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
     private ExecutionEnvironment execEnv;
     private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<>();
     private Collection<OutputStreamHandler> outputHandlers;
+    private static final Logger logger = Logger.getLogger(BuildProjectActionHandler.class.getName());
 
     /* package-local */
     BuildProjectActionHandler() {
@@ -255,9 +258,10 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
         private void downloadExecLog() {
             if (execLog != null && !downloadedExecLog.get()) {
                 if (execEnv.isRemote()) {
+                    String remoteExecLog = "?"; //NOI18N
                     try {
                         HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
-                        String remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName(); // NOI18N
+                        remoteExecLog = hostInfo.getTempDir()+"/"+execLog.getName(); // NOI18N
                         if (HostInfoUtils.fileExists(execEnv, remoteExecLog)){
                             Future<Integer> task = CommonTasksSupport.downloadFile(remoteExecLog, execEnv, execLog.getAbsolutePath(), null);
                             /*int rc =*/ task.get();
@@ -265,6 +269,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
                             execLog = null;
                         }
                     } catch (Throwable ex) {
+                        logger.log(Level.INFO, "Cannot download file {0}->{1}. Exception {2}", new Object[]{remoteExecLog, execLog.getAbsolutePath(), ex.getMessage()}); // NOI18N
                         execLog = null;
                         Exceptions.printStackTrace(ex);
                     }

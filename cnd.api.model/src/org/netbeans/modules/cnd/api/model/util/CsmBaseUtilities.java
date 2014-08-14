@@ -388,6 +388,11 @@ public class CsmBaseUtilities {
                 CsmScopeElement elem = (CsmScopeElement) csmTopLevelObject;
                 csmTopLevelObject = ((CsmScopeElement)csmTopLevelObject).getScope();
                 if (CsmKindUtilities.isDeclaration(elem) && stopOnScope((CsmScope) csmTopLevelObject)) {
+                    // Here we should filter out declarations which are in top level
+                    // scope but not top level themselves.
+                    if (CsmKindUtilities.isParameter(elem) && CsmKindUtilities.isFunction(csmTopLevelObject)) {
+                        continue;
+                    }
                     // we have top level declaration or decl with unresolved scope
                     return elem;
                 }   

@@ -120,7 +120,9 @@ public class MetaprogrammingTestCase extends HyperlinkBaseTestCase {
     
     public void testBug246068() throws Exception {
         // Bug 246068 - Unable to resolve identifier for boost::signal.connect()
-        performTest("bug246068.cpp", 211, 15, "bug246068.cpp", 4, 9); 
-        performTest("bug246068.cpp", 213, 15, "bug246068.cpp", 8, 9); 
+        performTest("bug246068.cpp", 216, 15, "bug246068.cpp", 4, 9); 
+        performTest("bug246068.cpp", 218, 15, "bug246068.cpp", 8, 9); 
+        performTest("bug246068.cpp", 220, 15, "bug246068.cpp", 4, 9); 
+        performTest("bug246068.cpp", 222, 15, "bug246068.cpp", 8, 9);         
     }
 }
