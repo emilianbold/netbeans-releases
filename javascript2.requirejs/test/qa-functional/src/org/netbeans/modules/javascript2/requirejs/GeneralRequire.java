@@ -46,6 +46,7 @@ import java.awt.Rectangle;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -65,6 +66,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.openide.util.Exceptions;
 
 /**
@@ -330,6 +332,19 @@ public class GeneralRequire extends JellyTestCase {
         return anns;
     }
 
+    protected void checkCompletionHtmlAttrItems(CompletionJListOperator jlist, String[] asIdeal) {
+        try {
+            List items = jlist.getCompletionItems();
+            HashSet<String> completion = new HashSet<>();
+            for (Object item : items) {
+                completion.add(((HtmlCompletionItem) item).getItemText());
+            }
+            checkCompletionItems(completion, asIdeal);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     protected void checkCompletionItems(CompletionJListOperator jlist, String[] asIdeal) {
         String completionList = "";
         StringBuilder sb = new StringBuilder(":");
@@ -400,6 +415,23 @@ public class GeneralRequire extends JellyTestCase {
             if (-1 != iIndex) {
                 fail("Completion list contains invalid item:" + sCode);
             }
+        }
+    }
+
+    protected void checkCompletionDoesntContainHtmlAttrItems(CompletionJListOperator jlist, String[] invalidList) {
+        try {
+            List items = jlist.getCompletionItems();
+            HashSet<String> completion = new HashSet<>();
+            for (Object item : items) {
+                completion.add(((HtmlCompletionItem) item).getItemText());
+            }
+            for (String sCode : invalidList) {
+                if (completion.contains(sCode)) {
+                    fail("Completion list contains invalid item:" + sCode);
+                }
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
