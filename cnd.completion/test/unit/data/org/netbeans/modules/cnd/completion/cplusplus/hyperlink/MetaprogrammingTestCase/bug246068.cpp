@@ -26,7 +26,7 @@ namespace bug246068 {
     };
 
     template <typename T>
-    struct add_pointer_impl246068
+    struct add_pointer_impl246068 
     {
         typedef typename remove_reference246068<T>::type no_ref_type;
         typedef no_ref_type* type;
@@ -191,28 +191,37 @@ namespace bug246068 {
     template<typename Signature>
     class real_get_signal_impl246068<0, Signature> {
     public:
-      typedef AAA246068 type;
+        typedef typename AAA246068 exact_type;
+        typedef typename function_traits246068<Signature>::result_type type;
     };  
 
     template<typename Signature>
     class real_get_signal_impl246068<1, Signature> {
     public:
-      typedef BBB246068 type;
+        typedef typename BBB246068 exact_type;
+        typedef typename function_traits246068<Signature>::result_type type;
     };  
 
     template<typename Signature>
     struct get_signal_impl246068 : public real_get_signal_impl246068<(function_traits246068<Signature>::arity), Signature> {};
 
     template<typename Signature>
-    class signal246068 : public get_signal_impl246068<Signature>::type {};
+    class signal246068_exact_type : public get_signal_impl246068<Signature>::exact_type {};
+    
+    template<typename Signature>
+    class signal246068_type : public get_signal_impl246068<Signature>::type {};    
 
     int main246068() {
-        signal246068<void ()> sig0;
+        signal246068_exact_type<AAA246068 ()> sig0;
         sig0.foo();
-        signal246068<void (int)> sig1;
+        signal246068_exact_type<BBB246068 (int)> sig1;
         sig1.boo();    
+        signal246068_type<AAA246068 ()> sig3;
+        sig3.foo();
+        signal246068_type<BBB246068 (int)> sig4;
+        sig4.boo();         
         return 0;
     }    
     
     #undef BOOST_STATIC_CONSTANT246068
-}
+} 

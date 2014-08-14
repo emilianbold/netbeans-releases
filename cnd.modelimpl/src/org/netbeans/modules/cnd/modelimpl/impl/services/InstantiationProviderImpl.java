@@ -167,27 +167,29 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     ListIterator<TypeInfoCollector.Qualificator> templateQualIter = templateTypeQuals.listIterator(templateTypeQuals.size());
                     ListIterator<TypeInfoCollector.Qualificator> targetQualIter = targetTypeQuals.listIterator(targetTypeQuals.size());                
 
-                    while (templateQualIter.hasPrevious()) {
-                        TypeInfoCollector.Qualificator paramQual = templateQualIter.previous();
-                        if (!targetQualIter.hasPrevious()) {
-                            if (TypeInfoCollector.Qualificator.REFERENCE.equals(paramQual)) {
-                                continue;
-                            } else if (TypeInfoCollector.Qualificator.RVALUE_REFERENCE.equals(paramQual)) {
-                                continue;
+                    if (templateQualIter.hasPrevious()) {
+                        // Qualificators must be changed
+                        
+                        while (templateQualIter.hasPrevious()) {
+                            TypeInfoCollector.Qualificator paramQual = templateQualIter.previous();
+                            if (!targetQualIter.hasPrevious()) {
+                                if (TypeInfoCollector.Qualificator.REFERENCE.equals(paramQual)) {
+                                    continue;
+                                } else if (TypeInfoCollector.Qualificator.RVALUE_REFERENCE.equals(paramQual)) {
+                                    continue;
+                                }
+                                return strategy.canSkipError(CalcTemplateTypeStrategy.Error.MatchQualsError) ? targetType : null;
                             }
-                            return strategy.canSkipError(CalcTemplateTypeStrategy.Error.MatchQualsError) ? targetType : null;
+                            if (!targetQualIter.previous().equals(paramQual)) {
+                                return strategy.canSkipError(CalcTemplateTypeStrategy.Error.MatchQualsError) ? targetType : null;
+                            }
                         }
-                        if (!targetQualIter.previous().equals(paramQual)) {
-                            return strategy.canSkipError(CalcTemplateTypeStrategy.Error.MatchQualsError) ? targetType : null;
+
+                        List<TypeInfoCollector.Qualificator> remainingQualifiers = new ArrayList<TypeInfoCollector.Qualificator>();
+                        while (targetQualIter.hasPrevious()) {
+                            remainingQualifiers.add(0, targetQualIter.previous());
                         }
-                    }
 
-                    List<TypeInfoCollector.Qualificator> remainingQualifiers = new ArrayList<TypeInfoCollector.Qualificator>();
-                    while (targetQualIter.hasPrevious()) {
-                        remainingQualifiers.add(0, targetQualIter.previous());
-                    }
-
-                    if (!remainingQualifiers.isEmpty()) {
                         boolean newConst = remainingQualifiers.contains(TypeInfoCollector.Qualificator.CONST);
                         int newPtrDepth = howMany(remainingQualifiers, TypeInfoCollector.Qualificator.POINTER);
                         int newArrayDepth = howMany(remainingQualifiers, TypeInfoCollector.Qualificator.ARRAY);
@@ -205,10 +207,10 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                         );
 
                         return CsmTypes.createType(targetUnderlyingType, td);
-                    }                
+                    }
 
-                    return targetType;
-                }                
+                    return targetUnderlyingType;
+                }
             }
         }
         return null;
@@ -584,6 +586,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     
     private CsmClassifier specialize(CsmClassifier classifier, CsmFile contextFile, int contextOffset) {
         List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> params = getInstantiationParams(classifier);
+        InstantiationParametersInfo paramsInfo = new InstantiationParametersInfo(classifier, params);
         CsmClassifier specialization = null;
         if (CsmKindUtilities.isTemplate(classifier) && !CsmKindUtilities.isSpecialization(classifier)) {
             List<CsmTemplateParameter> templateParams = ((CsmTemplate) classifier).getTemplateParameters();
@@ -633,7 +636,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                             }
                         }
                         
-                        specialization = findBestSpecialization(visibleSpecs, params, cls);
+                        specialization = findBestSpecialization(visibleSpecs, paramsInfo, cls);
                     }
                 }
             }
@@ -664,25 +667,9 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping((CsmInstantiation) classifier);            
             Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<>();            
             
-            List<CsmType> paramsTypes = new ArrayList<>();
-            List<String> paramsText = new ArrayList<>();
-            List<CsmSpecializationParameter> instParams = new ArrayList<>();
-            for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : params) {
-                CsmSpecializationParameter param = pair.first();
-                instParams.add(param);
-                if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
-                    CsmType paramType = ((CsmTypeBasedSpecializationParameter) param).getType();                    
-                    // TODO: think if that is necessary
-                    //if (CsmKindUtilities.isInstantiation(classifier)) {
-                    //    paramType = Instantiation.createType(paramType, pair.second());
-                    //}                    
-                    paramsTypes.add(paramType);
-                    paramsText.add(paramType.getCanonicalText().toString());
-                } else if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {
-                    paramsTypes.add(null);
-                    paramsText.add(((CsmExpressionBasedSpecializationParameter) param).getText().toString());
-                }
-            }
+            List<CsmSpecializationParameter> instParams = paramsInfo.getInstParams();
+            List<CsmType> paramsTypes = paramsInfo.getParamsTypes();
+            List<String> paramsText = paramsInfo.getParamsTexts();
             
             for (CsmTemplateParameter specTemplateParam : specTemplateParams) {
                 Iterator<CsmSpecializationParameter> specParamIter = ((ClassImplSpecialization) specialization).getSpecializationParameters().iterator();
@@ -790,31 +777,17 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return projects;
     }
 
-    private static CsmClassifier findBestSpecialization(Collection<CsmOffsetableDeclaration> specializations, List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> params, final CsmClassifier cls) {
+    private static CsmClassifier findBestSpecialization(Collection<CsmOffsetableDeclaration> specializations, InstantiationParametersInfo paramsInfo, final CsmClassifier cls) {
         // TODO : update
 
         CsmClassifier bestSpecialization = null;
 
-        boolean variadic = false;
-        
-        List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> params2 = new ArrayList<>();
-        for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : params) {
-            CsmSpecializationParameter param = pair.first();
-            if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
-                for (CsmSpecializationParameter arg : ((CsmVariadicSpecializationParameter)param).getArgs()) {
-                    params2.add(Pair.of(arg, pair.second()));
-                }
-                variadic = true;
-            } else {
-                params2.add(pair);
-            }
-        }
-        params = params2;
+        boolean variadic = paramsInfo.isVariadic();
         
         if (!specializations.isEmpty()) {
             int bestMatch = 0;
             int paramsSize = 0;
-            for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : params) {
+            for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : paramsInfo.getExpandedParams()) {
                 CsmSpecializationParameter param = pair.first();
                 if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
                     paramsSize += ((CsmVariadicSpecializationParameter)param).getArgs().size();
@@ -823,27 +796,10 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 }
             }
 
-            List<CsmSpecializationParameter> instParams = new ArrayList<>();
-            List<CharSequence> paramsText = new ArrayList<>();
-            List<CsmType> paramsType = new ArrayList<>();
-            for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : params) {
-                CsmSpecializationParameter param = pair.first();
-                if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
-                    CsmType paramType = ((CsmTypeBasedSpecializationParameter) param).getType();
-                    
-                    if (CsmKindUtilities.isInstantiation(cls)) {
-                        paramType = Instantiation.createType(paramType, pair.second());
-                    }
-                    
-                    instParams.add(param);
-                    paramsType.add(paramType);
-                    paramsText.add(paramType.getCanonicalText());
-                } else if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {
-                    instParams.add(param);
-                    paramsType.add(null);
-                    paramsText.add(((CsmExpressionBasedSpecializationParameter) param).getText());
-                }
-            }            
+            List<CsmSpecializationParameter> instParams = paramsInfo.getInstParams();
+            List<String> paramsText = paramsInfo.getParamsTexts();
+            List<CsmType> paramsType = paramsInfo.getParamsTypes();
+            
             for (CsmOffsetableDeclaration decl : specializations) {
                 if (decl instanceof ClassImplSpecialization) {
                     ClassImplSpecialization specialization = (ClassImplSpecialization) decl;
@@ -857,11 +813,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     if (specParams.size() == paramsSize) {
                         for (int i = 0; i < paramsSize - 1; i++) {
                             CsmSpecializationParameter specParam1 = specParams.get(i);
-                            CsmSpecializationParameter param1 = params.get(i).first();
+                            CsmSpecializationParameter param1 = instParams.get(i);
 //                            for (int j = i + 1; j < paramsSize; j++) {
                             int j = i + 1;
                                 CsmSpecializationParameter specParam2 = specParams.get(j);
-                                CsmSpecializationParameter param2 = params.get(j).first();
+                                CsmSpecializationParameter param2 = instParams.get(j);
                                 if (specParam1.getText().toString().equals(specParam2.getText().toString())
                                         && param1.getText().toString().equals(param2.getText().toString())) {
                                     match += 1;
@@ -882,7 +838,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                         }
                         for (int i = 0; i < paramsSize; i++) {
                             CsmSpecializationParameter specParam = specParams.get(i);
-                            CsmSpecializationParameter param = params.get(i).first();
+                            CsmSpecializationParameter param = instParams.get(i);
                             if (CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam) &&
                                     CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
                                 CsmTypeBasedSpecializationParameter instSpecParam = (CsmTypeBasedSpecializationParameter)param;                                
@@ -955,7 +911,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             }
         }
         return bestSpecialization;
-    }
+    }        
     
     private static boolean isExpressionParameter(CsmClassifier cls, CsmSpecializationParameter specParam, int specParamIndex) {
         if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(specParam)) {
@@ -973,7 +929,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return false;
     }
     
-    private static int evaluateExpression(final CsmClassifier cls, CsmSpecializationParameter specParam, int instParamIndex, List<CharSequence> instParamsText, List<CsmSpecializationParameter> instParams) {
+    private static int evaluateExpression(final CsmClassifier cls, CsmSpecializationParameter specParam, int instParamIndex, List<String> instParamsText, List<CsmSpecializationParameter> instParams) {
         String specParamText = null; 
         if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(specParam)) {
             specParamText = ((CsmExpressionBasedSpecializationParameter) specParam).getText().toString();
@@ -1016,10 +972,10 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     final Object val1;
                     final Object val2;
                     if(p instanceof ExpressionEvaluator) {
-                        val1 = ((ExpressionEvaluator)p).eval(instParamsText.get(instParamIndex).toString(), instParams.get(instParamIndex).getScope());
+                        val1 = ((ExpressionEvaluator)p).eval(instParamsText.get(instParamIndex), instParams.get(instParamIndex).getScope());
                         val2 = ((ExpressionEvaluator)p).eval(specParamText, specParam.getScope());
                     } else {
-                        val1 = p.eval(instParamsText.get(instParamIndex).toString(), instParams.get(instParamIndex).getScope());
+                        val1 = p.eval(instParamsText.get(instParamIndex), instParams.get(instParamIndex).getScope());
                         val2 = p.eval(specParamText, specParam.getScope());
                     }
                     if (val1.equals(val2)) {
@@ -1302,6 +1258,115 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         context = (contexts != null && !contexts.empty()) ? contexts.peek() : null;
         return context;
     }    
+    
+    private static final class InstantiationParametersInfo {
+        
+        private final CsmClassifier classifier;
+        
+        private final List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> originalParams;
+        
+        private final List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> expandedParams;
+        
+        private final boolean variadic;
+        
+        private List<CsmSpecializationParameter> instParams;
+        
+        private List<CsmType> paramsTypes;
+        
+        private List<String> paramsText;        
+
+        public InstantiationParametersInfo(CsmClassifier classifier, List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> originalParams) {
+            this.classifier = classifier;
+            this.originalParams = originalParams;
+            if (hasVariadicParameters(originalParams)) {
+                this.variadic = true;
+                this.expandedParams = expandVariadicParameters(originalParams);
+            } else {
+                this.variadic = false;
+                this.expandedParams = this.originalParams;
+            }
+        }
+
+        public List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> getOriginalParams() {
+            return Collections.unmodifiableList(originalParams);
+        }
+
+        public List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> getExpandedParams() {
+            return Collections.unmodifiableList(expandedParams);
+        }
+
+        public boolean isVariadic() {
+            return variadic;
+        }
+        
+        public List<CsmSpecializationParameter> getInstParams() {
+            ensureInitialized();
+            return Collections.unmodifiableList(instParams);
+        }
+
+        public List<CsmType> getParamsTypes() {
+            ensureInitialized();
+            return Collections.unmodifiableList(paramsTypes);
+        }
+
+        public List<String> getParamsTexts() {
+            ensureInitialized();
+            return Collections.unmodifiableList(paramsText);
+        }        
+        
+        private void ensureInitialized() {
+            if (instParams == null || paramsTypes == null || paramsText == null) {
+                this.instParams = new ArrayList<>();
+                this.paramsTypes = new ArrayList<>();        
+                this.paramsText = new ArrayList<>();
+                for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : expandedParams) {
+                    CsmSpecializationParameter param = pair.first();
+                    if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
+                        CsmType paramType = ((CsmTypeBasedSpecializationParameter) param).getType();
+
+                        if (CsmKindUtilities.isInstantiation(classifier)) {
+                            paramType = Instantiation.createType(paramType, pair.second());
+                        }
+
+                        this.instParams.add(param);
+                        this.paramsTypes.add(paramType);
+                        CharSequence paramText = paramType.getCanonicalText();
+                        this.paramsText.add(paramText != null ? paramText.toString() : ""); // NOI18N
+                    } else if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {
+                        this.instParams.add(param);
+                        this.paramsTypes.add(null);
+                        CharSequence paramText = ((CsmExpressionBasedSpecializationParameter) param).getText();
+                        this.paramsText.add(paramText != null ? paramText.toString() : ""); // NOI18N
+                    }
+                }
+            } 
+        }
+
+        private static boolean hasVariadicParameters(List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> params) {
+            for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : params) {
+                CsmSpecializationParameter param = pair.first();
+                if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> expandVariadicParameters(List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> params) {
+            List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> params2 = new ArrayList<>();
+            for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : params) {
+                CsmSpecializationParameter param = pair.first();
+                if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
+                    for (CsmSpecializationParameter arg : ((CsmVariadicSpecializationParameter)param).getArgs()) {
+                        params2.add(Pair.of(arg, pair.second()));
+                    }
+                } else {
+                    params2.add(pair);
+                }
+            }
+            return params2;        
+        }            
+    }
 
     private static class TypeDigger {
         
