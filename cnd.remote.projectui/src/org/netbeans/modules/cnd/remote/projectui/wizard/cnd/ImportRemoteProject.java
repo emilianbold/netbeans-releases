@@ -807,12 +807,12 @@ public class ImportRemoteProject implements PropertyChangeListener {
                         if (HostInfoUtils.fileExists(executionEnvironment, remoteExecLog)){
                             Future<Integer> task = CommonTasksSupport.downloadFile(remoteExecLog, executionEnvironment, execLog.getAbsolutePath(), null);
                             if (TRACE) {
-                                logger.log(Level.INFO, "#download file {0}", execLog.getAbsolutePath()); // NOI18N
+                                logger.log(Level.INFO, "#download file {0}->{1}", new Object[]{remoteExecLog, execLog.getAbsolutePath()}); // NOI18N
                             }
                             /*int rc =*/ task.get();
                         }
                     } catch (Throwable ex) {
-                        Exceptions.printStackTrace(ex);
+                        logger.log(Level.INFO, "Cannot download file {0}->{1}. Exception {2}", new Object[]{remoteExecLog, execLog.getAbsolutePath(), ex.getMessage()}); // NOI18N
                         execLog = null;
                     }
                 }
