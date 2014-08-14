@@ -73,7 +73,7 @@ public class RemoteLogInputReader implements InputReader {
 
     private static final int INITIAL_LOG_COUNT = 300;
 
-    private static final int POLL_INTERVAL = 5000;
+    private static final int POLL_INTERVAL = 2000;
 
     private final WebLogicConfiguration config;
 
@@ -166,53 +166,51 @@ public class RemoteLogInputReader implements InputReader {
                                     break;
                                 }
                             }
-                            if (serverName == null) {
-                                // XXX
-                                continue;
-                            }
+                            if (serverName != null) {
+                                ObjectName wldf = new ObjectName("com.bea:Name=DomainLog," // NOI18N
+                                        + "ServerRuntime=" + serverName + ",Location=" + serverName + ",Type=WLDFDataAccessRuntime,WLDFAccessRuntime=Accessor,WLDFRuntime=WLDFRuntime"); // NOI18N
+                                setColumns(con, wldf);
+                                Long lastRecordId = (Long) con.getAttribute(wldf, "LatestRecordId"); // NOI18N
 
-                            ObjectName wldf = new ObjectName("com.bea:Name=DomainLog," // NOI18N
-                                    + "ServerRuntime=" + serverName + ",Location=" + serverName + ",Type=WLDFDataAccessRuntime,WLDFAccessRuntime=Accessor,WLDFRuntime=WLDFRuntime"); // NOI18N
-                            setColumns(con, wldf);
-
-                            Long lastRecordId = (Long) con.getAttribute(wldf, "LatestRecordId"); // NOI18N
-                            Long from = recordId == null ? lastRecordId - INITIAL_LOG_COUNT : recordId + 1;
-                            if (from < 0) {
-                                from = (long) 0;
-                            }
-                            Long to = lastRecordId + 1;
-
-                            String cursorName = (String) con.invoke(wldf, "openCursor", // NOI18N
-                                    new Object[]{from, to, Long.MAX_VALUE, null},
-                                    new String[]{"java.lang.Long", "java.lang.Long", "java.lang.Long", "java.lang.String"}); // NOI18N
-                            try {
-                                while ((Boolean) con.invoke(wldf, "hasMoreData", new Object[]{cursorName}, // NOI18N
-                                        new String[]{"java.lang.String"})) { // NOI18N
-                                    Object[] data = (Object[]) con.invoke(wldf, "fetch", // NOI18N
-                                            new Object[]{cursorName}, new String[]{"java.lang.String"}); // NOI18N
-                                    synchronized (RemoteLogInputReader.this) {
-                                        for (Object item : data) {
-                                            if (item instanceof Object[]) {
-                                                Object[] values = (Object[]) item;
-                                                Long id = (Long) values[recordIdIndex];
-                                                if (recordId == null || id > recordId) {
-                                                    recordId = id;
+                                if (recordId == null || !recordId.equals(lastRecordId)) {
+                                    Long from = recordId == null ? lastRecordId - INITIAL_LOG_COUNT : recordId + 1;
+                                    if (from < 0) {
+                                        from = (long) 0;
+                                    }
+                                    Long to = lastRecordId + 1;
+                                    String cursorName = (String) con.invoke(wldf, "openCursor", // NOI18N
+                                            new Object[]{from, to, Long.MAX_VALUE, null},
+                                            new String[]{"java.lang.Long", "java.lang.Long", "java.lang.Long", "java.lang.String"}); // NOI18N
+                                    try {
+                                        while ((Boolean) con.invoke(wldf, "hasMoreData", new Object[]{cursorName}, // NOI18N
+                                                new String[]{"java.lang.String"})) { // NOI18N
+                                            Object[] data = (Object[]) con.invoke(wldf, "fetch", // NOI18N
+                                                    new Object[]{cursorName}, new String[]{"java.lang.String"}); // NOI18N
+                                            synchronized (RemoteLogInputReader.this) {
+                                                for (Object item : data) {
+                                                    if (item instanceof Object[]) {
+                                                        Object[] values = (Object[]) item;
+                                                        Long id = (Long) values[recordIdIndex];
+                                                        if (recordId == null || id > recordId) {
+                                                            recordId = id;
+                                                        }
+                                                        append(builder, values[timestampIndex]);
+                                                        append(builder, values[severityIndex]);
+                                                        append(builder, values[subsystemIndex]);
+                                                        append(builder, values[messageIdIndex]);
+                                                        append(builder, values[messageIndex]);
+                                                    } else {
+                                                        append(builder, item);
+                                                    }
+                                                    builder.append("\n"); // NOI18N
                                                 }
-                                                append(builder, values[timestampIndex]);
-                                                append(builder, values[severityIndex]);
-                                                append(builder, values[subsystemIndex]);
-                                                append(builder, values[messageIdIndex]);
-                                                append(builder, values[messageIndex]);
-                                            } else {
-                                                append(builder, item);
                                             }
-                                            builder.append("\n"); // NOI18N
                                         }
+                                    } finally {
+                                        con.invoke(wldf, "closeCursor", // NOI18N
+                                                new Object[]{cursorName}, new String[]{"java.lang.String"}); // NOI18N
                                     }
                                 }
-                            } finally {
-                                con.invoke(wldf, "closeCursor", // NOI18N
-                                        new Object[]{cursorName}, new String[]{"java.lang.String"}); // NOI18N
                             }
                         } catch (IOException ex) {
                             LOGGER.log(Level.FINE, null, ex);
@@ -237,7 +235,7 @@ public class RemoteLogInputReader implements InputReader {
                         break;
                     }
                 }
-            }finally {
+            } finally {
                 closeConnector();
                 if (interrupted) {
                     Thread.currentThread().interrupt();
