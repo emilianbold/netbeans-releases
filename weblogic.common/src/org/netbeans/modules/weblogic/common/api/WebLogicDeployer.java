@@ -503,7 +503,7 @@ public final class WebLogicDeployer {
         builder.setRedirectErrorStream(true);
         List<String> arguments = new ArrayList<String>();
         // NB supports only JDK6+ while WL 9, only JDK 5
-        Version version = config.getLayout().getDomainVersion();
+        Version version = config.getDomainVersion();
         if (version == null
                 || !version.isAboveOrEqual(WebLogicConfiguration.VERSION_10)) {
             arguments.add("-Dsun.lang.ClassLoader.allowArraySyntax=true"); // NOI18N

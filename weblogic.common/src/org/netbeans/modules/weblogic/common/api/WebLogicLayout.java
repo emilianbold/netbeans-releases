@@ -63,7 +63,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -73,19 +72,16 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileUtil;
-import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public final class WebLogicLayout {
@@ -93,8 +89,6 @@ public final class WebLogicLayout {
     private static final WeakHashMap<WebLogicConfiguration, ClassLoader> CLASSLOADERS = new WeakHashMap<WebLogicConfiguration, ClassLoader>();
 
     private static final String WEBLOGIC_JAR = "server/lib/weblogic.jar"; // NOI18N
-
-    private static final int DEFAULT_PORT = 7001;
 
     private static final Collection<String> EXPECTED_FILES = new ArrayList<>();
 
@@ -105,28 +99,6 @@ public final class WebLogicLayout {
     }
 
     private static final Logger LOGGER = Logger.getLogger(WebLogicLayout.class.getName());
-
-    private static final String DOMAIN_HOST = "host"; // NOI18N
-    private static final String DOMAIN_PORT = "port"; // NOI18N
-    private static final String ADMIN_SERVER_NAME= "adminName"; // NOI18N
-    private static final String DOMAIN_NAME = "domainName"; // NOI18N
-    private static final String PRODUCTION_MODE = "productionMode"; // NOI18N
-    private static final String DOMAIN_VERSION = "domainVersion"; // NOI18N
-
-    private static final Pattern LISTEN_ADDRESS_PATTERN =
-        Pattern.compile("(?:[a-z]+\\:)?listen-address");            // NOI18N
-
-    private static final Pattern LISTEN_PORT_PATTERN =
-        Pattern.compile("(?:[a-z]+\\:)?listen-port");               // NOI18N
-
-    private static final Pattern NAME_PATTERN =
-        Pattern.compile("(?:[a-z]+\\:)?name");                      // NOI18N
-
-    private static final  Pattern SERVER_PATTERN =
-        Pattern.compile("(?:[a-z]+\\:)?server");                    // NOI18N
-
-    private static final  Pattern ADMIN_SERVER_PATTERN =
-        Pattern.compile("(?:[a-z]+\\:)?admin-server-name");         // NOI18N
 
     private static final String DOMAIN_LIST = "common/nodemanager/nodemanager.domains"; // NOI18N
 
@@ -196,140 +168,19 @@ public final class WebLogicLayout {
         return result.toArray(new String[result.size()]);
     }
 
-    /**
-     * Returns map of server domain configuration properties red from config.xml file.
-     * Only properties required for the moment are returned.
-     * Method implementation should be extended for additional properties.
-     * return server configuration properties
-     */
-    public static Properties getDomainProperties(String domainPath) {
-        Properties properties = new Properties();
-        String configPath = domainPath + "/config/config.xml"; // NOI18N
+    @CheckForNull
+    public static DomainConfiguration getDomainConfiguration(String domainPath) {
+        String configPath = domainPath + File.separator + "config" + File.separator + "config.xml"; // NOI18N
 
-        // init the input stream for the file and the w3c document object
-        InputStream inputStream = null;
-        Document document = null;
-
-        try {
-            // open the stream from the instances config file
-            File config = new File(configPath);
-            if (!config.exists()){
-                LOGGER.log(Level.FINE, "Domain config file "
-                        + "is not found. Probably server configuration was "
-                        + "changed externally"); // NOI18N
-                return properties;
-            }
-            inputStream = new FileInputStream(config);
-
-            // parse the document
-            document = DocumentBuilderFactory.newInstance()
-                    .newDocumentBuilder().parse(inputStream);
-
-            // get the root element
-            Element root = document.getDocumentElement();
-
-            // get the child nodes
-            NodeList children = root.getChildNodes();
-
-            String adminServer = null;
-            LinkedHashMap<String, ServerDescriptor> servers = new LinkedHashMap<String, ServerDescriptor>();
-            // for each child
-            for (int j = 0; j < children.getLength(); j++) {
-                Node child = children.item(j);
-                if ("name".equals(child.getNodeName())) {
-                    String domainName = child.getFirstChild().getNodeValue();
-                    properties.put(DOMAIN_NAME, domainName);
-                } else if ("domain-version".equals(child.getNodeName())) {
-                    String domainVersion = child.getFirstChild().getNodeValue();
-                    properties.put(DOMAIN_VERSION, domainVersion);
-                } else if ("production-mode-enabled".equals(child.getNodeName())) {
-                    String isEnabled = child.getFirstChild().getNodeValue();
-                    properties.put(PRODUCTION_MODE, "true".equals(isEnabled));
-                } else if (ADMIN_SERVER_PATTERN.matcher(child.getNodeName()).matches()) {
-                    adminServer = child.getFirstChild().getNodeValue();
-                // if the child's name equals 'server' get its children
-                // and iterate over them
-                } else if (SERVER_PATTERN.matcher(child.getNodeName()).matches()) {
-                    NodeList nl = child.getChildNodes();
-
-                    // declare the server's name/host/port
-                    String name = ""; // NOI18N
-                    String port = ""; // NOI18N
-                    String host = ""; // NOI18N
-
-                    // iterate over the children
-                    for (int k = 0; k < nl.getLength(); k++) {
-                        Node ch = nl.item(k);
-
-                        // if the child's name equals 'name' fetch the
-                        // instance's name
-                        if (NAME_PATTERN.matcher(ch.getNodeName()).matches()) {
-                            name = ch.getFirstChild().getNodeValue();
-                        }
-
-                        // if the child's name equals 'listen-port' fetch the
-                        // instance's port
-                        if (LISTEN_PORT_PATTERN.matcher(ch.getNodeName())
-                                .matches()) {
-                            port = ch.getFirstChild().getNodeValue();
-                        }
-
-                        // if the child's name equals 'listen-address' fetch the
-                        // instance's host
-                        if (LISTEN_ADDRESS_PATTERN.matcher(ch.getNodeName())
-                                .matches()) {
-                            if (ch.hasChildNodes()) {
-                                host = ch.getFirstChild().getNodeValue();
-                            }
-                        }
-                    }
-
-                    if (port != null) {
-                        port = port.trim();
-                    }
-
-                    // if all the parameters were fetched successfully add
-                    // them to the result
-                    if ((name != null) && (!name.equals(""))) { // NOI18N
-                        // address and port have minOccurs=0 and are missing in
-                        // 90 examples server
-                        port = (port == null || port.equals("")) // NOI18N
-                                ? Integer.toString(DEFAULT_PORT)
-                                : port;
-                        host = (host == null || host.equals(""))
-                                ? "localhost" // NOI18N
-                                : host;
-
-                        servers.put(name, new ServerDescriptor(host, port, name));
-                    }
-                }
-            }
-            ServerDescriptor admin = null;
-            if (adminServer != null) {
-                admin = servers.get(adminServer);
-            }
-            if (admin == null && !servers.isEmpty()) {
-                admin = servers.entrySet().iterator().next().getValue();
-            }
-            if (admin != null) {
-                properties.put(DOMAIN_PORT, admin.getPort());
-                properties.put(DOMAIN_HOST, admin.getHost());
-                properties.put(ADMIN_SERVER_NAME, admin.getName());
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch (ParserConfigurationException | SAXException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } finally {
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.INFO, null, e);
-            }
+        File config = new File(configPath);
+        if (!config.exists()){
+            LOGGER.log(Level.FINE, "Domain config file "
+                    + "is not found. Probably server configuration was "
+                    + "changed externally"); // NOI18N
+            return null;
         }
-        return properties;
+
+        return DomainConfiguration.getInstance(config, false);
     }
 
     public static boolean isSupportedLayout(File candidate){
@@ -476,32 +327,6 @@ public final class WebLogicLayout {
         } catch (IOException e) {
             LOGGER.log(Level.FINE, null, e);
         }
-        return null;
-    }
-
-    @CheckForNull
-    public Version getDomainVersion() {
-        // Domain config file
-        File configFile = getDomainConfigFile();
-
-        // Check if the file exists
-        if (configFile == null || !configFile.exists()) {
-            return null;
-        }
-
-        try {
-            InputSource source = new InputSource(new FileInputStream(configFile));
-            Document d = XMLUtil.parse(source, false, false, null, null);
-
-            // Retrieve domain version
-            if (d.getElementsByTagName("domain-version").getLength() > 0) {
-                String strVersion = d.getElementsByTagName("domain-version").item(0).getTextContent();
-                return  strVersion != null ? Version.fromJsr277OrDottedNotationWithFallback(strVersion) : null;
-            }
-        } catch(IOException | SAXException e) {
-            LOGGER.log(Level.INFO, null, e);
-        }
-
         return null;
     }
 
