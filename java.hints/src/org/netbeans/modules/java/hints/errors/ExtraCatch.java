@@ -163,28 +163,41 @@ public class ExtraCatch implements ErrorRule<Void> {
             
             if (parent.getResources().isEmpty() && parent.getCatches().size() == 1) {
                 Tree parentParent = ctx.getPath().getParentPath().getParentPath().getLeaf();
+                List<StatementTree> statements;
+                BlockTree parentBlock = null;
+                CaseTree parentCase = null;
                 
                 switch (parentParent.getKind()) {
                     case BLOCK: {
-                        BlockTree parentBlock = (BlockTree) parentParent;
-                        List<StatementTree> statements = new ArrayList<>(parentBlock.getStatements());
-                        statements.addAll(statements.indexOf(parent), parent.getBlock().getStatements());
-                        statements.remove(parent);
-                        ctx.getWorkingCopy().rewrite(parentParent, make.Block(statements, parentBlock.isStatic()));
-                        return ;
+                        parentBlock = (BlockTree) parentParent;
+                        statements = new ArrayList<>(parentBlock.getStatements());
+                        break;
                     }
                     case CASE: {
-                        CaseTree parentCase = (CaseTree) parentParent;
-                        List<StatementTree> statements = new ArrayList<>(parentCase.getStatements());
-                        statements.addAll(statements.indexOf(parent), parent.getBlock().getStatements());
-                        statements.remove(parent);
-                        ctx.getWorkingCopy().rewrite(parentParent, make.Case(parentCase.getExpression(), statements));
-                        return ;
+                        parentCase = (CaseTree) parentParent;
+                        statements = new ArrayList<>(parentCase.getStatements());
+                        break;
                     }
+                    default:
+                        throw new IllegalStateException();
                 }
+                int at = statements.indexOf(parent);
+                statements.addAll(at, parent.getBlock().getStatements());
+                if (parent.getFinallyBlock() != null) {
+                    statements.addAll(at + parent.getBlock().getStatements().size(), parent.getFinallyBlock().getStatements());
+                }
+                statements.remove(parent);
+                Tree stat;
+                
+                if (parentParent.getKind() == Tree.Kind.BLOCK) {
+                    stat = make.Block(statements, parentBlock.isStatic());
+                } else {
+                    stat = make.Case(parentCase.getExpression(), statements);
+                }
+                ctx.getWorkingCopy().rewrite(parentParent, stat);
+            } else {
+                ctx.getWorkingCopy().rewrite(parent, make.removeTryCatch(parent, toRemove));
             }
-            
-            ctx.getWorkingCopy().rewrite(parent, make.removeTryCatch(parent, toRemove));
         }
         
     }
