@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -182,13 +183,6 @@ public class PHPHintsProvider implements HintsProvider {
                     adjustAndInvoke(rule, adjuster);
                 }
             }
-            boolean checkResult = false;
-            assert checkResult = true;
-            if (checkResult) {
-                for (T item : result) {
-                    assert item != null : item;
-                }
-            }
         }
 
         private void adjustAndInvoke(Rule rule, RuleAdjuster adjuster) {
@@ -201,7 +195,16 @@ public class PHPHintsProvider implements HintsProvider {
                 if (cancel) {
                     return;
                 }
-                invokableRule.invoke(ruleContext, result);
+                List<T> tempResult = new ArrayList<>();
+                invokableRule.invoke(ruleContext, tempResult);
+                boolean checkResult = false;
+                assert checkResult = true;
+                if (checkResult) {
+                    for (T item : tempResult) {
+                        assert item != null : rule;
+                    }
+                }
+                result.addAll(tempResult);
             }
         }
 
