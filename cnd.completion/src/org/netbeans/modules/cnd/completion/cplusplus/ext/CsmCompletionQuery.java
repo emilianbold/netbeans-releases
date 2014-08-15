@@ -2958,37 +2958,39 @@ abstract public class CsmCompletionQuery {
                 }
             }
 
-            if ((result == null || result.getItems().isEmpty()) && lastType != null) {
-                if (last) {
-                    if(lastType.isTemplateBased() || CsmFileReferences.isTemplateParameterInvolved(lastType)
-                            || CsmFileReferences.hasTemplateBasedAncestors(lastType)) {
-                        Collection<CsmObject> data = new ArrayList<CsmObject>();
-                        data.add(new TemplateBasedReferencedObjectImpl(lastType, ""));
-                        result = new CsmCompletionResult(component, getBaseDocument(), data, "", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
-                    }
-                }
-            }
-
-            if (last && !first && (result == null || result.getItems().isEmpty()) && lastType != null) {
-                CsmClassifier classifier = getClassifier(lastType, contextFile, endOffset);
-                if(CsmKindUtilities.isInstantiation(classifier)) {
-                    boolean instantiatedByTemplateParam = false;
-                    CsmInstantiation inst = (CsmInstantiation)classifier;
-                    Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = inst.getMapping();
-                    for (CsmSpecializationParameter specParam : mapping.values()) {
-                        if(CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
-                            CsmType type = ((CsmTypeBasedSpecializationParameter)specParam).getType();
-                            if(type != null && type.isTemplateBased()) {
-                                instantiatedByTemplateParam = true;
-                                break;
-                            }
-                        }
-                    }
-                    if(instantiatedByTemplateParam) {
-                        if(!CsmInstantiationProvider.getDefault().getSpecializations(classifier, contextFile, endOffset).isEmpty()) {
+            if (!findType) {
+                if ((result == null || result.getItems().isEmpty()) && lastType != null) {
+                    if (last) {
+                        if(lastType.isTemplateBased() || CsmFileReferences.isTemplateParameterInvolved(lastType)
+                                || CsmFileReferences.hasTemplateBasedAncestors(lastType)) {
                             Collection<CsmObject> data = new ArrayList<CsmObject>();
                             data.add(new TemplateBasedReferencedObjectImpl(lastType, ""));
                             result = new CsmCompletionResult(component, getBaseDocument(), data, "", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
+                        }
+                    }
+                }
+
+                if (last && !first && (result == null || result.getItems().isEmpty()) && lastType != null) {
+                    CsmClassifier classifier = getClassifier(lastType, contextFile, endOffset);
+                    if(CsmKindUtilities.isInstantiation(classifier)) {
+                        boolean instantiatedByTemplateParam = false;
+                        CsmInstantiation inst = (CsmInstantiation)classifier;
+                        Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = inst.getMapping();
+                        for (CsmSpecializationParameter specParam : mapping.values()) {
+                            if(CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
+                                CsmType type = ((CsmTypeBasedSpecializationParameter)specParam).getType();
+                                if(type != null && type.isTemplateBased()) {
+                                    instantiatedByTemplateParam = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(instantiatedByTemplateParam) {
+                            if(!CsmInstantiationProvider.getDefault().getSpecializations(classifier, contextFile, endOffset).isEmpty()) {
+                                Collection<CsmObject> data = new ArrayList<CsmObject>();
+                                data.add(new TemplateBasedReferencedObjectImpl(lastType, ""));
+                                result = new CsmCompletionResult(component, getBaseDocument(), data, "", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
+                            }
                         }
                     }
                 }
