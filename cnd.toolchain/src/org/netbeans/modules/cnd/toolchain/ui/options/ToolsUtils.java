@@ -72,7 +72,7 @@ public class ToolsUtils {
         String seed;
         if (env.isLocal()) {
             seed = System.getProperty("user.home"); // NOI18N
-        } else if (!HostInfoUtils.isHostInfoAvailable(env) && !ConnectionManager.getInstance().isConnectedTo(env)) {
+        } else if (!(HostInfoUtils.isHostInfoAvailable(env) && ConnectionManager.getInstance().isConnectedTo(env))) {
             seed = null;
         } else {
             try {
