@@ -193,7 +193,12 @@ final class CustomizerDocumentation extends JPanel implements ChangeListener {
     private PhpModuleCustomizer getSelectedPanel() {
         assert EventQueue.isDispatchThread();
         assert providerPanels != null;
-        return providerPanels.get((PhpDocumentationProvider) providerComboBox.getSelectedItem());
+        PhpDocumentationProvider selecteProvider = (PhpDocumentationProvider) providerComboBox.getSelectedItem();
+        if (selecteProvider == null) {
+            // #246324
+            return null;
+        }
+        return providerPanels.get(selecteProvider);
     }
 
     private List<PhpDocumentationProvider> getProviders() {
