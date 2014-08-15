@@ -86,13 +86,12 @@ public class ServerLogManager {
         if (task == null) {
             WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
             final OutputWriter writer = io.getOut();
-            try {
-                writer.reset();
-            } catch (IOException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            }
-
             if (dm.isRemote()) {
+                try {
+                    writer.reset();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                }
                 task = InputReaderTask.newTask(new RemoteLogInputReader(dm.getCommonConfiguration(), new Callable<String>() {
 
                     @Override
@@ -112,6 +111,11 @@ public class ServerLogManager {
                     File logFile = new File(dm.getCommonConfiguration().getDomainHome(),
                             "servers" + File.separator + admin + File.separator + "logs" + File.separator + name + ".log"); // NOI18N
                     final LineProcessor printing = LineProcessors.printing(writer, true);
+                    try {
+                        writer.reset();
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.FINE, null, ex);
+                    }
                     task = InputReaderTask.newTask(InputReaders.forFile(logFile, Charset.defaultCharset()),
                             InputProcessors.bridge(new LineProcessor() {
 
