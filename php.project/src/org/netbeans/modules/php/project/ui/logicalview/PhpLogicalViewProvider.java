@@ -65,6 +65,7 @@ import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
 import org.netbeans.modules.php.api.documentation.PhpDocumentations;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -688,7 +689,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         public void actionPerformed(ActionEvent e) {
             if (PhpProjectValidator.isFatallyBroken(phpProject)) {
                 // broken project
-                Utils.warnInvalidSourcesDirectory(phpProject);
+                UiUtils.warnBrokenProject(phpProject.getPhpModule());
                 return;
             }
             RP.post(new Runnable() {
