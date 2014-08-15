@@ -45,6 +45,7 @@ package org.netbeans.modules.php.phpdoc;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.phpdoc.ui.PhpDocPreferences;
 import org.netbeans.modules.php.phpdoc.ui.customizer.PhpModuleCustomizerImpl;
 import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizer;
@@ -65,6 +66,11 @@ public final class PhpDocumentorProvider extends PhpDocumentationProvider {
     }
 
     @Override
+    public boolean isInPhpModule(PhpModule phpModule) {
+        return PhpDocPreferences.isEnabled(phpModule);
+    }
+
+    @Override
     public PhpModuleCustomizer createPhpModuleCustomizer(PhpModule phpModule) {
         return new PhpModuleCustomizerImpl(phpModule);
     }
@@ -77,4 +83,10 @@ public final class PhpDocumentorProvider extends PhpDocumentationProvider {
             UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpDocScript.OPTIONS_SUB_PATH);
         }
     }
+
+    @Override
+    public void notifyEnabled(PhpModule phpModule, boolean enabled) {
+        PhpDocPreferences.setEnabled(phpModule, enabled);
+    }
+
 }
