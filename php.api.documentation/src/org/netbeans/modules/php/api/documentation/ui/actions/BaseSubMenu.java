@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,56 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.api.documentation.ui.actions;
 
-package org.netbeans.modules.php.phpdoc;
+import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import org.openide.awt.Actions;
+import org.openide.util.actions.Presenter;
 
-import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.phpdoc.ui.PhpDocPreferences;
-import org.netbeans.modules.php.phpdoc.ui.customizer.PhpModuleCustomizerImpl;
-import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizer;
-import org.openide.util.NbBundle;
+abstract class BaseSubMenu extends JMenu {
 
-public final class PhpDocumentorProvider extends PhpDocumentationProvider {
-    public static final String PHPDOC_LAST_FOLDER_SUFFIX = ".phpdoc.dir"; // NOI18N
-
-    private static final PhpDocumentorProvider INSTANCE = new PhpDocumentorProvider();
-
-    private PhpDocumentorProvider() {
-        super("phpDocumentor", NbBundle.getMessage(PhpDocumentorProvider.class, "LBL_Name")); // NOI18N
+    public BaseSubMenu(String name) {
+        super(name);
     }
 
-    @PhpDocumentationProvider.Registration(position=100)
-    public static PhpDocumentorProvider getInstance() {
-        return INSTANCE;
-    }
-
-    @Override
-    public boolean isInPhpModule(PhpModule phpModule) {
-        return PhpDocPreferences.isEnabled(phpModule);
-    }
-
-    @Override
-    public PhpModuleCustomizer createPhpModuleCustomizer(PhpModule phpModule) {
-        return new PhpModuleCustomizerImpl(phpModule);
-    }
-
-    @Override
-    public void generateDocumentation(PhpModule phpModule) {
-        try {
-            PhpDocScript.getDefault().generateDocumentation(phpModule);
-        } catch (InvalidPhpExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpDocScript.OPTIONS_SUB_PATH);
+    protected static JMenuItem toMenuItem(Action action) {
+        JMenuItem item;
+        if (action instanceof Presenter.Menu) {
+            item = ((Presenter.Menu) action).getMenuPresenter();
+        } else {
+            item = new JMenuItem();
+            Actions.connect(item, action, false);
         }
-    }
-
-    @Override
-    public void notifyEnabled(PhpModule phpModule, boolean enabled) {
-        PhpDocPreferences.setEnabled(phpModule, enabled);
+        return item;
     }
 
 }

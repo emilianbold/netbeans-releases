@@ -56,6 +56,9 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.ui.SearchPanel;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
@@ -228,6 +231,33 @@ public final class UiUtils {
             }
         }
         return base;
+    }
+
+    /**
+     * Informs user about broken PHP module.
+     * <p>
+     * This method shows a dialog with possibility to open Project Problems dialog.
+     * @param phpModule broken PHP module
+     * @since 2.45
+     */
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "UiUtils.metadata.corrupted=<html><b>Project {0} is corrupted.</b><br><br>Do you want to open Project Problems dialog?"
+    })
+    public static void warnBrokenProject(PhpModule phpModule) {
+        Parameters.notNull("phpModule", phpModule); // NOI18N
+        assert phpModule.isBroken() : "Not broken php module " + phpModule.getName();
+        String name = phpModule.getDisplayName();
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                Bundle.UiUtils_metadata_corrupted(name),
+                name,
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE);
+        if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
+            Project project = FileOwnerQuery.getOwner(phpModule.getProjectDirectory());
+            assert project != null : "Must found project for " + phpModule.getProjectDirectory();
+            ProjectProblems.showCustomizer(project);
+        }
     }
 
     static NotifyDescriptor createNotifyDescriptor(ExecutionException exc) {

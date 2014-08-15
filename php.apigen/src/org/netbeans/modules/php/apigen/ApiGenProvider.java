@@ -45,6 +45,7 @@ import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.apigen.commands.ApiGenScript;
+import org.netbeans.modules.php.apigen.ui.ApiGenPreferences;
 import org.netbeans.modules.php.apigen.ui.customizer.PhpModuleCustomizerImpl;
 import org.netbeans.modules.php.apigen.ui.options.ApiGenOptionsPanelController;
 import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
@@ -76,6 +77,11 @@ public final class ApiGenProvider extends PhpDocumentationProvider {
     }
 
     @Override
+    public boolean isInPhpModule(PhpModule phpModule) {
+        return ApiGenPreferences.isEnabled(phpModule);
+    }
+
+    @Override
     public PhpModuleCustomizer createPhpModuleCustomizer(PhpModule phpModule) {
         return new PhpModuleCustomizerImpl(phpModule);
     }
@@ -87,6 +93,11 @@ public final class ApiGenProvider extends PhpDocumentationProvider {
         } catch (InvalidPhpExecutableException ex) {
             UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), ApiGenOptionsPanelController.OPTIONS_SUBPATH);
         }
+    }
+
+    @Override
+    public void notifyEnabled(PhpModule phpModule, boolean enabled) {
+        ApiGenPreferences.setEnabled(phpModule, enabled);
     }
 
 }
