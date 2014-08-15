@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -103,8 +104,8 @@ public final class WebLogicRuntime {
 
     private static final int CHECK_TIMEOUT = 10000;
 
-    //@GuardedBy(INSTANCES)
-    private static final Map<WebLogicConfiguration, Process> INSTANCES = new HashMap<WebLogicConfiguration, Process>();
+    //@GuardedBy(PROCESSES)
+    private static final WeakHashMap<WebLogicConfiguration, Process> PROCESSES = new WeakHashMap<WebLogicConfiguration, Process>();
 
     private final WebLogicConfiguration config;
 
@@ -116,6 +117,12 @@ public final class WebLogicRuntime {
     public static WebLogicRuntime getInstance(@NonNull WebLogicConfiguration config) {
         return new WebLogicRuntime(config);
     }
+
+//    public static void clear(WebLogicConfiguration config) {
+//        synchronized (PROCESSES) {
+//            PROCESSES.remove(config);
+//        }
+//    }
 
     public void startAndWait(@NullAllowed final BaseExecutionDescriptor.InputProcessorFactory outFactory,
             @NullAllowed final BaseExecutionDescriptor.InputProcessorFactory errFactory,
@@ -208,8 +215,8 @@ public final class WebLogicRuntime {
                         }
                         return;
                     }
-                    synchronized (INSTANCES) {
-                        INSTANCES.put(config, process);
+                    synchronized (PROCESSES) {
+                        PROCESSES.put(config, process);
                     }
 
                     if (listener != null) {
@@ -362,8 +369,8 @@ public final class WebLogicRuntime {
                             startService(stopService, stopProcess, outFactory, errFactory);
                         } else {
                             Process process;
-                            synchronized (INSTANCES) {
-                                process = INSTANCES.get(config);
+                            synchronized (PROCESSES) {
+                                process = PROCESSES.get(config);
                             }
                             if (process == null) {
                                 // FIXME what to do here
@@ -445,8 +452,8 @@ public final class WebLogicRuntime {
 
     public void kill() {
         Process process;
-        synchronized (INSTANCES) {
-            process = INSTANCES.get(config);
+        synchronized (PROCESSES) {
+            process = PROCESSES.get(config);
         }
         if (process != null) {
             Map<String, String> mark = new HashMap<String, String>();
@@ -456,18 +463,27 @@ public final class WebLogicRuntime {
     }
 
     public boolean isRunning() {
-        Process proc;
-        synchronized (INSTANCES) {
-            proc = INSTANCES.get(config);
-        }
-
-        if (!isRunning(proc)) {
-            return false;
-        }
+//        Process proc;
+//        synchronized (PROCESSES) {
+//            proc = PROCESSES.get(config);
+//        }
+//
+//        if (!isRunning(proc)) {
+//            return false;
+//        }
 
         String host = config.getHost();
         int port = config.getPort();
         return ping(host, port, CHECK_TIMEOUT); // is server responding?
+    }
+
+    public boolean isProcessRunning() {
+        Process proc;
+        synchronized (PROCESSES) {
+            proc = PROCESSES.get(config);
+        }
+
+        return isRunning(proc);
     }
 
     private static void configureEnvironment(Environment environment, Map<String, String> variables) {

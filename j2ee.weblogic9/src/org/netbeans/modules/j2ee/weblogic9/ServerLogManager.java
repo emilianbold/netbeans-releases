@@ -42,57 +42,52 @@
 
 package org.netbeans.modules.j2ee.weblogic9;
 
-import java.io.File;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.j2ee.deployment.common.api.Version;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import java.util.concurrent.Callable;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.InputReaderTask;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
+import org.netbeans.modules.j2ee.weblogic9.optional.NonProxyHostsHelper;
+import org.netbeans.modules.weblogic.common.api.WebLogicRuntime;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class CommonBridge {
+public class ServerLogManager {
 
-    private CommonBridge() {
-        super();
+    private final WLDeploymentManager dm;
+
+    private InputReaderTask task;
+
+    public ServerLogManager(WLDeploymentManager dm) {
+        this.dm = dm;
     }
 
-    @NonNull
-    public static WebLogicConfiguration getConfiguration(@NonNull WLDeploymentManager dm) {
-        InstanceProperties ip = dm.getInstanceProperties();
-        String username = ip.getProperty(InstanceProperties.USERNAME_ATTR);
-        String password = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
+    public void openLog() {
+        InputOutput io = UISupport.getServerIO(dm.getUri());
+        if (io != null) {
+            io.select();
+        }
+        if (task == null) {
+            WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
+            if (dm.isRemote()) {
+                final OutputWriter writer = io.getOut();
+                task = InputReaderTask.newTask(new RemoteLogInputReader(dm.getCommonConfiguration(), new Callable<String>() {
 
-        String serverHome = ip.getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
-        String domainHome = ip.getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
-
-        if (dm.isRemote()) {
-            String uri = ip.getProperty(InstanceProperties.URL_ATTR);
-            // it is guaranteed it is WL
-            String[] parts = uri.substring(WLDeploymentFactory.URI_PREFIX.length()).split(":");
-
-            String host = parts[0];
-            String port = parts.length > 1 ? parts[1] : "";
-            int realPort;
-            try {
-                realPort = Integer.parseInt(port);
-            } catch (NumberFormatException ex) {
-                realPort = 7001;
+                    @Override
+                    public String call() throws Exception {
+                        return NonProxyHostsHelper.getNonProxyHosts();
+                    }
+                }), InputProcessors.copying(writer));
+                // FIXME processor
+                RequestProcessor.getDefault().post(task);
+            } else if (!runtime.isProcessRunning()) {
+                // XXX read local log
             }
-            return WebLogicConfiguration.forRemoteDomain(new File(serverHome), host, realPort, username, password);
         }
-        return WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome), username, password);
-    }
-
-    @CheckForNull
-    public static Version getVersion(@NullAllowed org.netbeans.modules.weblogic.common.api.Version version) {
-        if (version == null) {
-            return null;
-        }
-        return Version.fromJsr277OrDottedNotationWithFallback(version.toString());
     }
 }

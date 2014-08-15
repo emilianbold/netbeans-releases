@@ -164,7 +164,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         props.put(WLPluginProperties.DOMAIN_NAME, domainName);
         props.put(WLPluginProperties.PORT_ATTR, port);
         props.put(WLPluginProperties.HOST_ATTR, host);
-        props.put(WLPluginProperties.REMOTE_ATTR, Boolean.FALSE.toString());
+        props.put(WLPluginProperties.REMOTE_ATTR, Boolean.toString(remote));
         
         if (Utilities.isMac()) {
             props.put(WLPluginProperties.MEM_OPTS, DEFAULT_MAC_MEM_OPTS);
@@ -193,6 +193,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     private String domainName;
     private String port;
     private String host;
+    private boolean remote;
     private Version serverVersion;
 
 
@@ -315,6 +316,14 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      */
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean isRemote() {
+        return remote;
+    }
+
+    public void setRemote(boolean remote) {
+        this.remote = remote;
     }
 
     public Version getServerVersion() {
