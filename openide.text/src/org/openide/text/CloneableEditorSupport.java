@@ -57,7 +57,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 //import org.openide.util.actions.SystemAction;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.util.UserQuestionException;
@@ -82,7 +81,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
 import java.util.*;
-import java.util.concurrent.Callable;
 
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
@@ -95,7 +93,6 @@ import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
 import org.openide.util.Parameters;
 import org.openide.util.UserCancelException;
 import org.openide.util.WeakSet;
@@ -200,6 +197,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     /** The time of the last save to determine the real external modifications */
     private long lastSaveTime;
+    /** true when this document is being saved to prevent concurrent saves */
+    private transient boolean isSaving;
 
     /** Whether the reload dialog is currently opened. Prevents poping of multiple
      * reload dialogs if there is more external saves.
@@ -629,7 +628,27 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
             return;
         }
-
+        synchronized (this) {
+            while (isSaving) {
+                try {
+                    wait();
+                } catch (InterruptedException ex) {
+                    ERR.log(Level.INFO, null, ex);
+                }
+            }
+            isSaving = true;
+        }
+        try {
+            saveDocumentImpl(myDoc, log);
+        } finally {
+            synchronized (this) {
+                isSaving = false;
+                notifyAll();
+            }
+        }
+    }
+    
+    private void saveDocumentImpl(final StyledDocument myDoc, final boolean log) throws IOException {
         long prevLST = lastSaveTime;
         if (prevLST != -1) {
             final long externalMod = cesEnv().getTime().getTime();
