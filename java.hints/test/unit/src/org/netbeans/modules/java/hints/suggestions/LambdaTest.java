@@ -69,7 +69,7 @@ public class LambdaTest {
                 .assertVerbatimOutput("package test;\n" +
                                       "public class Test {\n" +
                                       "    public static void main(Runnable r) {\n" +
-                                      "        main(new Runnable() {\n\n" +
+                                      "        main(new Runnable() {\n" +
                                       "            public void run() {\n" +
                                       "                System.err.println(\"block\");\n" +
                                       "            }\n" +
@@ -96,7 +96,7 @@ public class LambdaTest {
                 .assertVerbatimOutput("package test;\n" +
                                       "public class Test {\n" +
                                       "    public void main(Runnable r) {\n" +
-                                      "        main(new Runnable() {\n\n" +
+                                      "        main(new Runnable() {\n" +
                                       "            public void run() {\n" +
                                       "                System.err.println(Test.this.toString());\n" +
                                       "            }\n" +
@@ -125,7 +125,7 @@ public class LambdaTest {
                                       "import java.util.*;\n" +
                                       "public class Test {\n" +
                                       "    public void main(List<String> list) {\n" +
-                                      "        Collections.sort(list, new Comparator<String>() {\n\n" +
+                                      "        Collections.sort(list, new Comparator<String>() {\n" +
                                       "            public int compare(String l, String r) {\n" +
                                       "                return l.compareTo(r);\n" +
                                       "            }\n" +
