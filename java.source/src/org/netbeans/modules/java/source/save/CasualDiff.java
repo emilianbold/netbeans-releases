@@ -3686,9 +3686,11 @@ public class CasualDiff {
                         break;
                     }
                     if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
-                    // PENDING: although item.element may be among oldTrees, its surrounding whitespaces are not used
-                    // at all
-                    printer.print(item.element);
+                    // specific case: the item is shuffled within the same parent. It's not expected that the printer will print it with the usual 
+                    // codestyle-defined blanklines before/after. However the blank lines are more expected when the item shifts to another scope.
+                    if (!oldList.contains(item.element) || !printer.handlePossibleOldTrees(Collections.singletonList(item.element), true)) {
+                        printer.print(item.element);
+                    }
                     if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
                     break;
                 }
