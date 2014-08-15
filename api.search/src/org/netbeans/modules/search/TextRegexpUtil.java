@@ -72,7 +72,7 @@ public final class TextRegexpUtil {
     private static final String checkNotBeforeWordChar =
             "(?!" + wordCharsExpr + ")";                                //NOI18N
     private static String MULTILINE_REGEXP_PATTERN =
-            ".*(\\\\n|\\\\r|\\\\f|\\\\u|\\\\0|\\\\x|\\(\\?[idmux]*s).*";//NOI18N
+            ".*(\\\\n|\\\\r|\\\\f|\\\\u|\\\\0|\\\\x|\\\\s|\\(\\?[idmux]*s).*";//NOI18N
     private static final Logger LOG = Logger.getLogger(
             TextRegexpUtil.class.getName());
 
