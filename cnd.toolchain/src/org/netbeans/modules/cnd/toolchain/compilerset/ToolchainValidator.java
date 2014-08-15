@@ -62,6 +62,8 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.toolchain.Installer;
 import org.netbeans.modules.cnd.toolchain.compilers.SPICompilerAccesor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -124,24 +126,31 @@ public final class ToolchainValidator {
         ProgressHandle createHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ToolchainValidator.class, "ToolCollectionValidation", env.getDisplayName())); // NOI18N
         createHandle.start();
         try {
-            Map<Tool, List<List<String>>> needReset = new HashMap<Tool, List<List<String>>>();
-            for (CompilerSet cs : csm.getCompilerSets()) {
-                for (Tool tool : cs.getTools()) {
-                    if (tool instanceof AbstractCompiler) {
-                        if (tool.getKind() == PredefinedToolKind.CCompiler || tool.getKind() == PredefinedToolKind.CCCompiler) {
-                            List<List<String>> systemIncludesAndDefines = new SPICompilerAccesor(tool).getSystemIncludesAndDefines();
-                            if (!isEqualsSystemIncludesAndDefines(systemIncludesAndDefines, (AbstractCompiler) tool)) {
-                                needReset.put(tool, systemIncludesAndDefines);
-                            } else {
-                                
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+            if (hostInfo != null) {
+                Map<Tool, List<List<String>>> needReset = new HashMap<Tool, List<List<String>>>();
+                for (CompilerSet cs : csm.getCompilerSets()) {
+                    for (Tool tool : cs.getTools()) {
+                        if (tool instanceof AbstractCompiler) {
+                            if (tool.getKind() == PredefinedToolKind.CCompiler || tool.getKind() == PredefinedToolKind.CCCompiler) {
+                                List<List<String>> systemIncludesAndDefines = new SPICompilerAccesor(tool).getSystemIncludesAndDefines();
+                                if (!isEqualsSystemIncludesAndDefines(systemIncludesAndDefines, (AbstractCompiler) tool)) {
+                                    needReset.put(tool, systemIncludesAndDefines);
+                                } else {
+
+                                }
                             }
                         }
                     }
                 }
+                if (needReset.size() > 0) {
+                    FixCodeAssistancePanel.showNotification(needReset, csm);
+                }
+            } else {
+                LOG.log(Level.INFO, "Cannot get hostinfo for {0}", env.getDisplayName()); //NOI18N
             }
-            if (needReset.size() > 0) {
-                FixCodeAssistancePanel.showNotification(needReset, csm);
-            }
+        } catch (Throwable ex) {
+            LOG.log(Level.INFO, ex.getMessage());
         } finally {
             createHandle.finish();
         }

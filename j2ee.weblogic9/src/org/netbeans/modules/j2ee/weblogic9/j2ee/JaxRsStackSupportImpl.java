@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.weblogic9.j2ee;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -83,6 +84,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryFactory;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibraryManager;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
@@ -113,6 +115,7 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
     private static final String JSON = "json"; //NOI18N
     private static final String JETTISON = "jettison"; //NOI18N
     private static final String ROME = "rome"; //NOI18N
+    private static final String WEBLOGIC_JAX_RS = "weblogic jax-rs"; // NOI18N
     
     private static final Logger LOG = Logger.getLogger( JaxRsStackSupportImpl.class.getCanonicalName());
 
@@ -136,7 +139,11 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
              *  so let's add required jar if it had been called even with JEE6 profile
              */
             FileObject core = getJarFile("com.sun.jersey.core_");   // NOI18N
-            if ( core!= null ){
+            if (core == null) {
+                // 12.1.2, 12.1.3
+                core = getJarFile("jersey-core"); // NOI18N
+            }
+            if (core != null) {
                 try {
                     return addJars(project, Collections.singleton( core.getURL() ));
                 }
@@ -156,7 +163,7 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
         if ( hasJee6Profile() ){
             try {
                 Library lib = getJerseyLibrary();
-                if ( lib==null){
+                if (lib == null) {
                     List<URL> urls = getJerseyJars();
                     return addJars(project,  urls );
                 }
@@ -203,6 +210,10 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
                 else {
                     List<URL> urls = getJerseyJars();
                     FileObject core = getJarFile("com.sun.jersey.core_"); // NOI18N
+                    if (core == null) {
+                        // 12.1.2, 12.1.3
+                        core = getJarFile("jersey-core"); // NOI18N
+                    }
                     if (core != null) {
                         urls.add(core.getURL());
                     }
@@ -485,13 +496,21 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
     
     private Library getJerseyLibrary() {
         if (jerseyLibrary == null) {
+            File modulesFolder = WLJ2eePlatformFactory.getMiddlewareModules(platformImpl.getMiddlewareHome());
             jerseyLibrary = JerseyLibraryHelper
-                    .getJerseyLibrary(serverVersion, getModulesFolder());
+                    .getJerseyLibrary(serverVersion, FileUtil.toFileObject(modulesFolder));
         }
         return jerseyLibrary;
     }
     
     private List<URL> getJerseyJars() throws FileStateInvalidException {
+        if (WLDeploymentFactory.VERSION_1212.isBelowOrEqual(serverVersion)) {
+            return getJerseyJars1212();
+        }
+        return getJerseyJars12();
+    }
+    
+    private List<URL> getJerseyJars12() throws FileStateInvalidException {
         FileObject client = getJarFile("com.sun.jersey.client_");   // NOI18N
         List<URL> urls = new LinkedList<URL>();
         if ( client != null){
@@ -526,6 +545,47 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
             urls.add( jacksonXc.toURL());
         }
         FileObject jettison = getJarFile("org.codehaus.jettison_");// NOI18N
+        if ( jettison != null){
+            urls.add( jettison.toURL());
+        }
+        return urls;
+    }
+    
+    private List<URL> getJerseyJars1212() throws FileStateInvalidException {
+        FileObject client = getJarFile("jersey-client-");   // NOI18N
+        List<URL> urls = new LinkedList<URL>();
+        if ( client != null){
+            urls.add( client.toURL());
+        }
+        FileObject json = getJarFile("jersey-json-");       // NOI18N
+        if ( json != null){
+            urls.add( json.toURL());
+        }
+        FileObject multipart = getJarFile("jersey-json-multipart");// NOI18N
+        if ( multipart != null){
+            urls.add( multipart.toURL());
+        }
+        FileObject server = getJarFile("jersey-server-");       // NOI18N
+        if ( server != null){
+            urls.add( server.toURL());
+        }
+        FileObject asl = getJarFile("jackson-core-asl-");  // NOI18N
+        if ( asl != null){
+            urls.add( asl.toURL());
+        }
+        FileObject jacksonJaxRs = getJarFile("jackson-jaxrs-");// NOI18N
+        if ( jacksonJaxRs != null){
+            urls.add( jacksonJaxRs.toURL());
+        }
+        FileObject jacksonMapper = getJarFile("jackson-mapper-asl");// NOI18N
+        if ( jacksonMapper != null){
+            urls.add( jacksonMapper.toURL());
+        }
+        FileObject jacksonXc = getJarFile("jackson-xc-");// NOI18N
+        if ( jacksonXc != null){
+            urls.add( jacksonXc.toURL());
+        }
+        FileObject jettison = getJarFile("jettison-");// NOI18N
         if ( jettison != null){
             urls.add( jettison.toURL());
         }
@@ -578,7 +638,8 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
                 continue;
             }
             title = title.toLowerCase(Locale.ENGLISH);
-            if (title.contains(JERSEY) || title.contains(JSON) || title.contains(ROME) || title.contains(JETTISON)) {
+            if (title.contains(JERSEY) || title.contains(JSON) || title.contains(ROME) 
+                    || title.contains(JETTISON) || title.contains(WEBLOGIC_JAX_RS)) {
                 result.add(library);
             }
         }
@@ -593,25 +654,24 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
         return new WLServerLibrarySupport(platformImpl.getDeploymentManager());
     }
     
-    private FileObject getModulesFolder(){
-        File middlewareHome = platformImpl.getMiddlewareHome();
-        FileObject middlware = FileUtil.toFileObject( FileUtil.normalizeFile( middlewareHome));
-        if ( middlware == null ){
+    private FileObject getJarFile(final String startName) {
+        File modulesFolder = WLJ2eePlatformFactory.getMiddlewareModules(platformImpl.getMiddlewareHome());
+        if (!modulesFolder.isDirectory()){
             return null;
         }
-        FileObject modules = middlware.getFileObject("modules");     // NOI18N
-        return modules;
-    }
-    
-    private FileObject getJarFile( String startName ){
-        FileObject modulesFolder = getModulesFolder();
-        if ( modulesFolder == null ){
-            return null;
-        }
-        FileObject[] children = modulesFolder.getChildren();
-        for (FileObject child : children) {
-            if ( child.getName().startsWith( startName) && child.hasExt( "jar")){    //  NOI18N
-                return child;
+        File[] children = modulesFolder.listFiles(new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith(startName) && name.endsWith(".jar");
+            }
+        });
+        if (children != null) {
+            for (File fileChild : children) {
+                FileObject child = FileUtil.toFileObject(fileChild);
+                if (child != null) {
+                    return child;
+                }
             }
         }
         return null;

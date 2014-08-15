@@ -397,7 +397,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void postDeleteChild(RemoteFileObject child, DirEntryList entryList) {
+    protected void postDeleteOrCreateChild(RemoteFileObject child, DirEntryList entryList) {
         RemoteLogger.getInstance().log(Level.WARNING, "postDeleteChild is called on {0}", getClass().getSimpleName());
     }
 

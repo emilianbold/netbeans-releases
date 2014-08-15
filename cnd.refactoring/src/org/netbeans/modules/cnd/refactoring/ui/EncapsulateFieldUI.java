@@ -144,7 +144,7 @@ public final class EncapsulateFieldUI implements RefactoringUI {
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(EncapsulateFieldUI.class);
+        return new HelpCtx("EncapsulateFields"); //NOI18N
     }
     
     /**

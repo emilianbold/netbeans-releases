@@ -49,10 +49,14 @@ import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex.Privileged;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -520,4 +524,65 @@ public class ChildrenSupportTest extends NbTestCase {
         assertFalse("Children must not be deleted when File.listFiles() returns null.", getChildren(fpi, fpiName, true).isEmpty());
     }
 
+    /**
+     * Test for bug 240156.
+     *
+     * @throws java.io.IOException
+     */
+    public void testRefreshAfterCaseChange() throws IOException {
+
+        if (!Utilities.isWindows()) { // TODO may be also applicable on Mac
+            return;
+        }
+
+        File dir = new File(getWorkDir(), "dir");
+        dir.mkdir();
+        FileObject dirFO = FileUtil.toFileObject(dir);
+
+        // Try to retrieve a not-existing file, it's name will be cached
+        // in ChildrenSupport.notExistingChildren.
+        File notExisting = new File(dir, "missing");
+        FileUtil.toFileObject(notExisting);
+
+        // Create the file, but with different letter-case.
+        FileObject existingFO = FileUtil.createFolder(dirFO, "MisSING");
+
+        // Refresh the directory. ChildrenSupport will check items in
+        // notExistingChildren - "missing" now exists with different letter
+        // case, but it is not detected, so the cached FileName (or FolderName)
+        // in NamingFactory is updated (method updateCase).
+        // NOTE: The refresh can be invoked from native filesystem watcher,
+        //       so the bug may appear quite randomly.
+        dirFO.refresh();
+
+        assertEquals("MisSING", existingFO.getNameExt());
+    }
+
+    /**
+     * Check that fix for bug 240156 {@link #testRefreshAfterCaseChange()}
+     * doens't break anything.
+     *
+     * @throws IOException
+     */
+    public void testChangeFileToDir() throws IOException {
+
+        File dir = new File(getWorkDir(), "dir");
+        dir.mkdir();
+        FileObject dirFO = FileUtil.toFileObject(dir);
+
+        File fileOrDir = new File(dir, "fileOrDir");
+        fileOrDir.createNewFile();
+        FileObject fileOrDirFO = FileUtil.toFileObject(fileOrDir);
+        assertTrue(fileOrDirFO.isData());
+        dirFO.refresh();
+
+        fileOrDir.delete();
+        dirFO.refresh();
+
+        fileOrDir.mkdir();
+        dirFO.refresh();
+
+        fileOrDirFO = FileUtil.toFileObject(fileOrDir);
+        assertTrue(fileOrDirFO.isFolder());
+    }
 }

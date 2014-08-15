@@ -151,7 +151,7 @@ public class ChildrenSupport {
         if (isStatus(ChildrenSupport.SOME_CHILDREN_CACHED)) {
             Set<FileNaming> existingToCheck = new HashSet<FileNaming>(e);
             for (FileNaming fnToCheck : existingToCheck) {
-                FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName(), true);
+                FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName(), true, true);
                 if (fnRescanned == null) {
                     retVal.put(fnToCheck, ChildrenCache.REMOVED_CHILD);
                 }
@@ -160,7 +160,7 @@ public class ChildrenSupport {
             Set<FileNaming> notExistingToCheck = new HashSet<FileNaming>(nE);
             for (FileNaming fnToCheck : notExistingToCheck) {
                 assert fnToCheck != null;
-                FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName(), true);
+                FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName(), true, false);
                 if (fnRescanned != null) {
                     retVal.put(fnToCheck, ChildrenCache.ADDED_CHILD);
                 }
@@ -186,13 +186,24 @@ public class ChildrenSupport {
         }
     }
 
-
-    private FileNaming rescanChild(final FileNaming folderName, final String childName, boolean ignoreCache) {
-        return rescanChild(folderName, childName, ignoreCache, null);
+    private FileNaming rescanChild(final FileNaming folderName,
+            final String childName, boolean ignoreCache, Runnable[] task) {
+        return rescanChild(folderName, childName, ignoreCache, true, task);
     }
 
-    private FileNaming rescanChild(final FileNaming folderName, final String childName,
-            final boolean ignoreCache, Runnable[] task) {
+    private FileNaming rescanChild(final FileNaming folderName,
+            final String childName, boolean ignoreCache, boolean canonicalName) {
+        return rescanChild(folderName, childName, ignoreCache, canonicalName, null);
+    }
+
+    /**
+     * @param canonicalName True if the name should be considered as canonical -
+     * it is not the case when rescanning items from
+     * {@link #notExistingChildren} list (see bug 240156).
+     */
+    private FileNaming rescanChild(final FileNaming folderName,
+            final String childName, final boolean ignoreCache,
+            final boolean canonicalName, Runnable[] task) {
 
         final File folder = folderName.getFile();
         final File child = new File(folder, childName);
@@ -206,7 +217,7 @@ public class ChildrenSupport {
             public void run() {
                 boolean convertibleToFO = fInfo.isConvertibleToFileObject();
                 this.fileNaming = convertibleToFO
-                        ? NamingFactory.fromFile(folderName, child, ignoreCache)
+                        ? NamingFactory.fromFile(folderName, child, ignoreCache, canonicalName)
                         : null;
             }
         }

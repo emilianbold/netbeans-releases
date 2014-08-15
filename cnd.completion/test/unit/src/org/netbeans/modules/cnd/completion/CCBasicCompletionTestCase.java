@@ -395,4 +395,9 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         // Bug 235102 - 5% inaccuracy in LLVM
         performTest("bug235102_cc.cpp", 15, 43);
     }           
+    
+    public void testSpecializationQualifiers_0() throws Exception {
+        // No bug
+        performTest("spec_quals_cc_0.cpp", 19, 13, "var.");
+    }
 }

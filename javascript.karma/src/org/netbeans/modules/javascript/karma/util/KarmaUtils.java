@@ -80,10 +80,16 @@ public final class KarmaUtils {
     public static List<WebBrowser> getDebugBrowsers() {
         List<WebBrowser> browsers = new ArrayList<>();
         for (WebBrowser browser : WebBrowsers.getInstance().getAll(false, false, false, true)) {
-            if (!browser.isEmbedded()
-                    && browser.hasNetBeansIntegration()) {
-                browsers.add(browser);
+            if (browser.isEmbedded()) {
+                continue;
             }
+            if (browser.getBrowserFamily().isMobile()) {
+                continue;
+            }
+            if (!browser.hasNetBeansIntegration()) {
+                continue;
+            }
+            browsers.add(browser);
         }
         return browsers;
     }

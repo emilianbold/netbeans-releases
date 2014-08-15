@@ -73,6 +73,7 @@ import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptor
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.IOHandler;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.*;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -271,7 +272,13 @@ public abstract class RemoteFileObjectBase {
      */
     protected abstract DirEntryList deleteImpl(FileLock lock) throws IOException;
 
-    protected abstract void postDeleteChild(RemoteFileObject child, DirEntryList entryList);
+    /**
+     * Called after child creation (sometimes - for now only when copying or moving) or removal.
+     * TODO: call after child creation via createData/createFolder
+     * @param child is NULL if the file was created (creation is always external => we don't know file object yet),
+     * not null if the file was deleted
+     */
+    protected abstract void postDeleteOrCreateChild(RemoteFileObject child, DirEntryList entryList);
     
     
     public final void delete(FileLock lock) throws IOException {
@@ -318,7 +325,7 @@ public abstract class RemoteFileObjectBase {
         invalidate();        
         RemoteFileObjectBase p = getParent();
         if (p != null) {
-            p.postDeleteChild(getOwnerFileObject(), entryList);
+            p.postDeleteOrCreateChild(getOwnerFileObject(), entryList);
         }
     }
     
@@ -760,13 +767,43 @@ public abstract class RemoteFileObjectBase {
             return this.getOwnerFileObject();
         } else {
             // have to do copy
-            FileObject dest = getOwnerFileObject().copy(target, name, ext);
-            delete(lock);
-            return dest;
-        }        
+            final String from = getPath();
+            final String newNameExt = composeName(name, ext);
+            final String newPath = target.getPath() + '/' + newNameExt;
+            if (target instanceof RemoteFileObject 
+                    && getExecutionEnvironment().equals(((RemoteFileObject) target).getExecutionEnvironment())
+                    && RemoteFileSystemTransport.canMove(getExecutionEnvironment(), from, newPath)) {
+                try {
+                    RemoteFileSystemTransport.MoveInfo mi = RemoteFileSystemTransport.move(getExecutionEnvironment(), from, newPath);
+                    //getParent().refreshImpl(false, null, true, RefreshMode.FROM_PARENT);
+                    getParent().postDeleteOrCreateChild(getOwnerFileObject(), mi.from);
+                    ((RemoteFileObject) target).getImplementor().postDeleteOrCreateChild(null, mi.to);
+                    FileObject movedFO = target.getFileObject(newNameExt);
+                    RemoteLogger.assertTrueInConsole(movedFO != null, "null file object after move of \n{0}\n into\n{1}\nwith name {2}", this, target, newNameExt);
+                    if (movedFO == null) {
+                        throw new IOException("Null file object after move " + getExecutionEnvironment() + ':' + newPath); //NOI18N
+                    }
+                    return movedFO;
+                } catch (InterruptedException ex) {
+                    throw new IOException(ex);
+                } catch (CancellationException ex) {
+                    throw new IOException(ex);
+                } catch (ExecutionException ex) {
+                    if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
+                        throw new FileNotFoundException(from + " or " + newPath); //NOI18N
+                    } else {
+                        throw new IOException(ex);
+                    }
+                }
+            } else {
+                FileObject dest = getOwnerFileObject().copy(target, name, ext);
+                delete(lock);
+                return dest;
+            }
+        }
     }
-            
-    
+
+
     private Map<String,Object> getAttributesMap() throws IOException {
         Map<String,Object> map = new HashMap<String,Object>();
         Enumeration<String> attributes = getAttributes();

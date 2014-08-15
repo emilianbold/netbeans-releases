@@ -250,6 +250,11 @@ public class GeneratorUtils {
     public static void generateConstructor(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, ExecutableElement inheritedConstructor, int offset) {
         ClassTree clazz = (ClassTree)path.getLeaf();
         TypeElement te = (TypeElement) wc.getTrees().getElement(path);
+        Tree c2 = wc.resolveRewriteTarget(clazz);
+        // hack in case the class was already rewritten, i.e. by create subclass generator.
+        if (c2 instanceof ClassTree && clazz != c2) {
+            clazz = (ClassTree)c2;
+        }
         wc.rewrite(clazz, insertClassMembers(wc, clazz, Collections.singletonList(GeneratorUtilities.get(wc).createConstructor(te, initFields, inheritedConstructor)), offset));
     }
     
@@ -366,31 +371,7 @@ public class GeneratorUtils {
     }
     
     public static ClassTree insertClassMember(WorkingCopy wc, ClassTree clazz, Tree member, int offset) throws IllegalStateException {
-        int idx = 0;
-        Tree prev = null;
-        Tree next = null;
-        GuardedDocument gdoc = null;
-        try {
-            Document doc = wc.getDocument();
-            if (doc != null && doc instanceof GuardedDocument)
-                gdoc = (GuardedDocument)doc;
-        } catch (IOException ioe) {}
-        for (Tree tree : clazz.getMembers()) {
-            if (wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), tree) < offset) {
-                prev = tree;
-                idx++;
-            } else {
-                next = tree;
-                break;
-            }
-        }
-        if (prev != null) {
-            moveCommentsAfterOffset(wc, prev, member, offset, gdoc);
-        }
-        if (next != null) {
-            moveCommentsBeforeOffset(wc, next, member, offset, gdoc);
-        }
-        return wc.getTreeMaker().insertClassMember(clazz, idx, member);
+        return insertClassMembers(wc, clazz, Collections.singletonList(member), offset);
     }
     
     /**

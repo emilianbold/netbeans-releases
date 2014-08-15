@@ -134,8 +134,8 @@ class NbWriter extends OutputWriter {
         boolean isClosed = isClosed();
         if (wasClosed != isClosed) {
             if (Controller.LOG) Controller.log ("Setting streamClosed on InputOutput to " + isClosed);
-            owner.setStreamClosed(isClosed);
         }
+        owner.setStreamClosed(isClosed);
     }
 
     public boolean isClosed() {

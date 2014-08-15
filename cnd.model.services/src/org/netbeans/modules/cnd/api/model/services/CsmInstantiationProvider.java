@@ -54,15 +54,20 @@
  */
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
@@ -97,6 +102,26 @@ public abstract class CsmInstantiationProvider {
         defaultProvider = Lookup.getDefault().lookup(CsmInstantiationProvider.class);
         return defaultProvider == null ? EMPTY : defaultProvider;
     }
+    
+    /**
+     * Calculates template type for the given parameter using patternType
+     * as a pattern to find template parameter and actualType as type
+     * from which template type should be calculated.
+     * 
+     * Example: 
+     *  templateParam = T
+     *  patternType = AAA<T*>
+     *  actualType = AAA<BBB**>
+     * Function will return type 'BBB*'.
+     * 
+     * @param templateParam
+     * @param patternType
+     * @param actualType
+     * @param strategy - not used yet
+     * 
+     * @return calculated type or null if type couldn't be calculated
+     */
+    public abstract CsmType calcTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, CalcTemplateTypeStrategy strategy);
 
     /**
      * Returns instantiation of template
@@ -142,29 +167,31 @@ public abstract class CsmInstantiationProvider {
      * @param type - type for parameter
      * @return specialization parameter
      */
-    public abstract CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type);
+    public abstract CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmScope scope);
     
     /**
      * Creates specialization parameter based on type.
      *
      * @param type - type for parameter
+     * @param scope - scope of expression
      * @param file - containing file
      * @param start - start offset
      * @param end - end offset* 
      * @return specialization parameter
      */
-    public abstract CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmFile file, int start, int end);    
+    public abstract CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmScope scope, CsmFile file, int start, int end);    
 
      /**
      * Creates specialization parameter based on expression.
      *
      * @param expression - string with expression
+     * @param scope - scope of expression
      * @param file - containing file
      * @param start - start offset
      * @param end - end offset
      * @return specialization parameter
       */
-    public abstract CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmFile file, int start, int end);
+    public abstract CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmScope scope, CsmFile file, int start, int end);
     /**
      * returns instantiated text if possible to resolve all instantiation mappings
      */
@@ -189,12 +216,61 @@ public abstract class CsmInstantiationProvider {
     }
     
     public abstract Collection<CsmOffsetableDeclaration> getBaseTemplate(CsmDeclaration declaration);
+    
+    public interface CalcTemplateTypeStrategy {
+        
+        /**
+         * @param error
+         * @return true to continue extracting, false to stop
+         */
+        boolean canSkipError(Error error);
+        
+        public enum Error {
+            MatchQualsError,
+            ExtractNextTypeError
+        }        
+    }
+    
+    public static final class DefaultCalcTemplateTypeStrategy implements CalcTemplateTypeStrategy {
+        
+        private final Set<Error> errors = new HashSet<Error>();
+        
+        private final Set<Error> acceptableErrors;
+        
+        public DefaultCalcTemplateTypeStrategy() {
+            this(Collections.<Error>emptySet());
+        }
+        
+        public DefaultCalcTemplateTypeStrategy(Error ... acceptableErrors) {
+            this(EnumSet.copyOf(Arrays.asList(acceptableErrors)));
+        }
+
+        public DefaultCalcTemplateTypeStrategy(Set<Error> acceptableErrors) {
+            this.acceptableErrors = acceptableErrors;
+        }
+        
+        public final Set<Error> getErrors() {
+            return Collections.unmodifiableSet(errors);
+        }        
+
+        @Override
+        public boolean canSkipError(Error error) {
+            errors.add(error);
+            return acceptableErrors.contains(error);
+        }
+    }
+    
     //
     // Implementation of the default provider
     //
     private static final class Empty extends CsmInstantiationProvider {
 
         Empty() {
+        }
+
+        @Override
+        public CsmType calcTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, CalcTemplateTypeStrategy strategy) {
+            return null;
         }
 
         @Override
@@ -218,17 +294,17 @@ public abstract class CsmInstantiationProvider {
         }
 
         @Override
-        public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type) {
+        public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmScope scope) {
             return null;
         }
         
         @Override
-        public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmFile file, int start, int end) {
+        public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmScope scope, CsmFile file, int start, int end) {
             return null;
         }        
 
         @Override
-        public CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmFile file, int start, int end) {
+        public CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmScope scope, CsmFile file, int start, int end) {
             return null;
         }
 

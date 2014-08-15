@@ -72,17 +72,18 @@ import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParame
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
-import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.VariableProvider;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.parser.generated.EvaluatorParser;
+import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
 import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider;
 
 /**
@@ -106,7 +107,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
     }
 
     @Override
-    public Object eval(String expr) {
+    public Object eval(String expr, CsmScope scope) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "\nEvaluating expression \"{0}\"\n", expr); // NOI18N
         }
@@ -122,7 +123,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         try {
             TokenStream tokens = new MyTokenStream(tb);
             EvaluatorParser parser = new EvaluatorParser(tokens);
-            parser.setVariableProvider(new VariableProvider(level + 1));
+            parser.setVariableProvider(new VariableProvider(level + 1, scope));
             result = parser.expr();
             //System.out.println(result);
         } catch (RecognitionException ex) {
@@ -131,29 +132,29 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
     }
 
     @Override
-    public Object eval(String expr, CsmInstantiation inst) {
+    public Object eval(String expr, CsmInstantiation inst, CsmScope scope) {
         if(CsmKindUtilities.isOffsetableDeclaration(inst)) {
-            return eval(expr, (CsmOffsetableDeclaration)inst, getMapping(inst));
+            return eval(expr, (CsmOffsetableDeclaration)inst, scope, getMapping(inst));
         } else {
-            return eval(expr, inst.getTemplateDeclaration(), getMapping(inst));
+            return eval(expr, inst.getTemplateDeclaration(), scope, getMapping(inst));
         }
     }
     
     @Override
-    public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
-        return eval(expr, decl, new MapHierarchy<>(mapping));
+    public Object eval(String expr, CsmOffsetableDeclaration decl, CsmScope scope,  Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        return eval(expr, decl, scope, new MapHierarchy<>(mapping));
     }
     
-    public Object eval(String expr, CsmOffsetableDeclaration decl, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
-        return eval(expr, decl, null, 0, 0, mapping);
+    public Object eval(String expr, CsmOffsetableDeclaration decl, CsmScope scope, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        return eval(expr, decl, scope, null, 0, 0, mapping);
     }    
 
     @Override
-    public Object eval(String expr, CsmOffsetableDeclaration decl, CsmFile expressionFile, int startOffset, int endOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
-        return eval(expr, decl, expressionFile, startOffset, endOffset, new MapHierarchy<>(mapping));
+    public Object eval(String expr, CsmOffsetableDeclaration decl, CsmScope scope, CsmFile expressionFile, int startOffset, int endOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        return eval(expr, decl, scope, expressionFile, startOffset, endOffset, new MapHierarchy<>(mapping));
     }
     
-    public Object eval(String expr, CsmOffsetableDeclaration decl, CsmFile expressionFile, int startOffset, int endOffset, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+    public Object eval(String expr, CsmOffsetableDeclaration decl, CsmScope scope, CsmFile expressionFile, int startOffset, int endOffset, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "\nEvaluating expression \"{0}\"\n", expr); // NOI18N
         }
@@ -169,7 +170,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         try {
             TokenStream tokens = new MyTokenStream(tb);
             EvaluatorParser parser = new EvaluatorParser(tokens);
-            parser.setVariableProvider(new VariableProvider(decl, mapping, expressionFile, startOffset, endOffset, level + 1));
+            parser.setVariableProvider(new VariableProvider(decl, scope, mapping, expressionFile, startOffset, endOffset, level + 1));
             result = parser.expr();
             //System.out.println(result);
         } catch (RecognitionException ex) {
@@ -218,13 +219,19 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
                         Object o = eval(
                                 ((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), 
                                 inst.getTemplateDeclaration(), 
+                                spec.getScope(),
                                 spec.getContainingFile(),
                                 spec.getStartOffset(),
                                 spec.getEndOffset(),
                                 mapHierarchy
                         );
-                        CsmSpecializationParameter newSpec = ExpressionBasedSpecializationParameterImpl.create(o.toString(),
-                                spec.getContainingFile(), spec.getStartOffset(), spec.getEndOffset());
+                        CsmSpecializationParameter newSpec = ExpressionBasedSpecializationParameterImpl.create(
+                            o.toString(),
+                            ((CsmExpressionBasedSpecializationParameter) spec).getScope(),
+                            spec.getContainingFile(), 
+                            spec.getStartOffset(), 
+                            spec.getEndOffset()
+                        );
                         newMapping.put(param, newSpec);
                     } else {
                         newMapping.put(param, spec);

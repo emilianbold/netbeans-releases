@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmFunctional;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -87,6 +88,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmReturnStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
@@ -95,6 +97,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
+import static org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.CalcTemplateTypeStrategy;
+import static org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.DefaultCalcTemplateTypeStrategy;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.services.CsmTypes;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -1131,18 +1135,16 @@ public final class CompletionSupport implements DocumentListener {
     }        
     
     static CsmObject createInstantiation(Context context, CsmTemplate template, CsmCompletionExpression exp, List<CsmType> typeList) {
-        if (exp != null || !typeList.isEmpty() || context.getContextInstantiations() != null) {
-            CsmObject instantiation = template;
-            
+        if (exp != null || !typeList.isEmpty() || context.getContextInstantiations() != null) {            
             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+            
             List<CsmSpecializationParameter> params = new ArrayList<CsmSpecializationParameter>();        
-            params.addAll(collectInstantiationParameters(context, ip, exp));
+            params.addAll(collectInstantiationParameters(context, template, ip, exp));
             if (CsmKindUtilities.isFunction(template)) {
-                params.addAll(collectInstantiationParameters(ip, (CsmFunction)template, params.size(), typeList));
+                params.addAll(collectInstantiationParameters(context, ip, (CsmFunction)template, params.size(), typeList));
             }
-            if (!params.isEmpty()) {
-                instantiation = ip.instantiate(template, params);
-            }
+            
+            CsmObject instantiation = ip.instantiate(template, params);
             
             if (CsmKindUtilities.isTemplate(instantiation)) {
                 List<CsmInstantiation> contextInstantiations = context.getContextInstantiations();
@@ -1159,23 +1161,41 @@ public final class CompletionSupport implements DocumentListener {
         return null;
     }   
     
-    static List<CsmSpecializationParameter> collectInstantiationParameters(Context context, CsmInstantiationProvider ip, CsmCompletionExpression exp) {
+    static List<CsmSpecializationParameter> collectInstantiationParameters(Context context, CsmTemplate template, CsmInstantiationProvider ip, CsmCompletionExpression exp) {
         if (exp != null) {
             List<CsmSpecializationParameter> params = new ArrayList<CsmSpecializationParameter>();
             if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
+                Iterator<CsmTemplateParameter> tplParamIter = template.getTemplateParameters().iterator();
                 int paramsNumber = exp.getParameterCount() - 1;
-                for (int i = 0; i < paramsNumber; i++) {
+                for (int i = 0; i < paramsNumber && tplParamIter.hasNext(); i++) {
+                    CsmTemplateParameter tplParam = tplParamIter.next();
                     CsmCompletionExpression paramInst = exp.getParameter(i + 1);
                     if (paramInst != null) {
                         switch (paramInst.getExpID()) {
                             case CsmCompletionExpression.CONSTANT:
-                                params.add(ip.createExpressionBasedSpecializationParameter(paramInst.getTokenText(0),
-                                        context.getContextFile(), paramInst.getTokenOffset(0), paramInst.getTokenOffset(0) + paramInst.getTokenLength(0)));
+                                params.add(ip.createExpressionBasedSpecializationParameter(
+                                    paramInst.getTokenText(0),
+                                    getContextScope(context),
+                                    context.getContextFile(), 
+                                    paramInst.getTokenOffset(0), 
+                                    paramInst.getTokenOffset(0) + paramInst.getTokenLength(0))
+                                );
                                 break;
                             default:
                                 CsmType type = null;
                                 
-                                if (!isExpression(paramInst)) {
+                                // Handle declaration of function types
+                                if (tplParam.isTypeBased() && canBeFunctionType(paramInst)) {
+                                    RenderedExpression renderedExpression = renderExpression(paramInst, new ExpressionBuilderImpl.Creator());
+                                    type = CsmTypes.createType(renderedExpression.text, context.getContextScope(), new CsmTypes.SequenceDescriptor(
+                                        CsmBaseUtilities.getFileLanguage(context.getContextFile()), 
+                                        CsmBaseUtilities.getFileLanguageFlavor(context.getContextFile()), 
+                                        false, 
+                                        true, 
+                                        false, 
+                                        new CsmTypes.OffsetDescriptor(context.getContextFile(), renderedExpression.startOffset, renderedExpression.endOffset)
+                                    ));
+                                } else if (!canBeExpression(paramInst)) {
                                     type = context.resolveType(paramInst);                                
                                     if (type != null) {
                                         // Check if it is variable
@@ -1193,6 +1213,7 @@ public final class CompletionSupport implements DocumentListener {
                                     RenderedExpression renderedExpression = renderExpression(paramInst, new MockExpressionBuilderImpl.Creator());
                                     params.add(ip.createTypeBasedSpecializationParameter(
                                             type, 
+                                            getContextScope(context), 
                                             context.getContextFile(), 
                                             renderedExpression.startOffset, 
                                             renderedExpression.endOffset
@@ -1201,6 +1222,7 @@ public final class CompletionSupport implements DocumentListener {
                                     RenderedExpression renderedExpression = renderExpression(paramInst, new ExpressionBuilderImpl.Creator());
                                     params.add(ip.createExpressionBasedSpecializationParameter(
                                             renderedExpression.text,
+                                            getContextScope(context), 
                                             context.getContextFile(), 
                                             renderedExpression.startOffset, 
                                             renderedExpression.endOffset
@@ -1217,7 +1239,7 @@ public final class CompletionSupport implements DocumentListener {
         return Collections.emptyList();
     }
     
-    static List<CsmSpecializationParameter> collectInstantiationParameters(CsmInstantiationProvider ip, CsmFunction function, int explicitelyMappedSize, List<CsmType> typeList) {            
+    static List<CsmSpecializationParameter> collectInstantiationParameters(Context context, CsmInstantiationProvider ip, CsmFunction function, int explicitelyMappedSize, List<CsmType> typeList) {            
         if (CsmKindUtilities.isTemplate(function)) {
             List<CsmSpecializationParameter> result = new ArrayList<CsmSpecializationParameter>();
             
@@ -1231,7 +1253,7 @@ public final class CompletionSupport implements DocumentListener {
                     CsmTemplateParameter param = templateParams.get(i);
                     CsmType mappedType = paramsMap.get(param);
                     if (mappedType != null) {
-                        result.add(ip.createTypeBasedSpecializationParameter(mappedType));
+                        result.add(ip.createTypeBasedSpecializationParameter(mappedType, getContextScope(context)));
                     } else {
                         // error
                         return result;
@@ -1257,7 +1279,8 @@ public final class CompletionSupport implements DocumentListener {
                     break;
                 }
                 CsmType paramType = param.getType();
-                CsmType calculatedType = calcTypeFromParameter(templateParam, paramType, typeList.get(paramIndex));
+                DefaultCalcTemplateTypeStrategy calcStrategy = new DefaultCalcTemplateTypeStrategy(CalcTemplateTypeStrategy.Error.MatchQualsError);
+                CsmType calculatedType = CsmInstantiationProvider.getDefault().calcTemplateType(templateParam, paramType, typeList.get(paramIndex), calcStrategy);
                 if (calculatedType != null) {
                      map.put(templateParam, calculatedType);
                 }
@@ -1266,148 +1289,13 @@ public final class CompletionSupport implements DocumentListener {
         }
         
         return map;
-    }
-    
-    static CsmType calcTypeFromParameter(CsmTemplateParameter templateParam, CsmType paramType, CsmType passedType) {
-        if (paramType != null && passedType != null) {
-//            CsmClassifir cls = paramType.getClassifier();
-            TypeDigger digger = TypeDigger.create(templateParam, paramType);
-            if (digger != null) {
-                CsmType templateType = digger.extract(paramType);
-                CsmType targetType = digger.extract(passedType);
-                if (targetType != null) {
-                    TypeInfoCollector templateTypeInfo = new CsmUtilities.TypeInfoCollector();                
-                    CsmType templateUnderlyingType = CsmUtilities.iterateTypeChain(templateType, templateTypeInfo);
-
-                    TypeInfoCollector targetTypeInfo = new CsmUtilities.TypeInfoCollector();
-                    CsmType targetUnderlyingType = CsmUtilities.iterateTypeChain(targetType, targetTypeInfo);
-
-                    List<TypeInfoCollector.Qualificator> templateTypeQuals = templateTypeInfo.qualificators;
-                    List<TypeInfoCollector.Qualificator> targetTypeQuals = targetTypeInfo.qualificators;
-
-                    ListIterator<TypeInfoCollector.Qualificator> templateQualIter = templateTypeQuals.listIterator(templateTypeQuals.size());
-                    ListIterator<TypeInfoCollector.Qualificator> targetQualIter = targetTypeQuals.listIterator(targetTypeQuals.size());                
-
-                    while (templateQualIter.hasPrevious()) {
-                        TypeInfoCollector.Qualificator paramQual = templateQualIter.previous();
-                        if (!targetQualIter.hasPrevious()) {
-                            if (TypeInfoCollector.Qualificator.REFERENCE.equals(paramQual)) {
-                                continue;
-                            } else if (TypeInfoCollector.Qualificator.RVALUE_REFERENCE.equals(paramQual)) {
-                                continue;
-                            }
-                            return null;
-                        }
-                        if (!targetQualIter.previous().equals(paramQual)) {
-                            return null;
-                        }
-                    }
-
-                    List<TypeInfoCollector.Qualificator> remainingQualifiers = new ArrayList<TypeInfoCollector.Qualificator>();
-                    while (targetQualIter.hasPrevious()) {
-                        remainingQualifiers.add(0, targetQualIter.previous());
-                    }
-
-                    if (!remainingQualifiers.isEmpty()) {
-                        boolean newConst = remainingQualifiers.contains(TypeInfoCollector.Qualificator.CONST);
-                        int newPtrDepth = howMany(remainingQualifiers, TypeInfoCollector.Qualificator.POINTER);
-                        int newArrayDepth = howMany(remainingQualifiers, TypeInfoCollector.Qualificator.ARRAY);
-                        int newReference = CsmTypes.TypeDescriptor.NON_REFERENCE; 
-                        if (remainingQualifiers.contains(TypeInfoCollector.Qualificator.REFERENCE)) {
-                            newReference =  CsmTypes.TypeDescriptor.REFERENCE;
-                        } else if (remainingQualifiers.contains(TypeInfoCollector.Qualificator.RVALUE_REFERENCE)) {
-                            newReference =  CsmTypes.TypeDescriptor.RVALUE_REFERENCE;
-                        }
-                        CsmTypes.TypeDescriptor td = new CsmTypes.TypeDescriptor(
-                                newConst, 
-                                newReference, 
-                                newPtrDepth, 
-                                newArrayDepth
-                        );
-
-                        return CsmTypes.createType(targetUnderlyingType, td);
-                    }                
-
-                    return targetType;
-                }                
-            }
-        }
-        return null;
-    }   
-    
-    private static class TypeDigger {
-        
-        private final Stack<Integer> indexes;
-        
-        public static TypeDigger create(CsmTemplateParameter templateParam, CsmType type) {
-            Stack<Integer> indexes = new Stack<Integer>();
-            if (findTemplateParam(templateParam.getQualifiedName().toString(), type, indexes)) {
-                return new TypeDigger(indexes);
-            }
-            return null;
-        }         
-        
-        public CsmType extract(CsmType target) {
-            CsmType type = target;
-            for (Integer index : indexes) {
-                List<CsmSpecializationParameter> params = type.getInstantiationParams();
-                if (params != null && index < params.size()) {
-                    CsmSpecializationParameter param = params.get(index);
-                    if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
-                        type = ((CsmTypeBasedSpecializationParameter) param).getType();
-                    } else {
-                        return null;
-                    }
-                } else {
-                    return null;
-                }
-            }
-            return type;
-        }
-        
-        private static boolean findTemplateParam(String templateParamName, CsmType type, Stack<Integer> innerIndexes) {
-            CsmClassifier cls = type.getClassifier();
-            if (CsmBaseUtilities.isValid(cls)) {
-                if (!cls.getQualifiedName().toString().equals(templateParamName)) {
-                    List<CsmSpecializationParameter> params = type.getInstantiationParams();
-                    if (params != null) {
-                        for (int i = 0; i < params.size(); i++) {
-                            CsmSpecializationParameter param = params.get(i);
-                            if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
-                                innerIndexes.push(i);
-                                if (findTemplateParam(templateParamName, ((CsmTypeBasedSpecializationParameter) param).getType(), innerIndexes)) {
-                                    return true;
-                                }
-                                innerIndexes.pop();
-                            }
-                        }
-                    }
-                } else {
-                    return true;
-                }
-            }
-            return false;
-        }
-        
-        private TypeDigger(Stack<Integer> indexes) {
-            this.indexes = indexes;
-        }              
-    }
-    
-    private static <T> int howMany(Collection<T> collection, T elem) {
-        int counter = 0;
-        for (T t : collection) {
-            if (Objects.equals(t, elem)) {
-                counter++;
-            }
-        }
-        return counter;
-    }
+    }    
     
     static RenderedExpression renderExpression(CsmCompletionExpression expr, ExpressionBuilderCreator creator) {
         if (expr == null) {
             return null;
         }            
+        boolean allowSimilarEntities = true;
         switch (expr.getExpID()) {
             case CsmCompletionExpression.GENERIC_TYPE: {
                 ExpressionBuilder eb = creator.create();
@@ -1438,7 +1326,13 @@ public final class CompletionSupport implements DocumentListener {
             
             case CsmCompletionExpression.UNARY_OPERATOR:
             case CsmCompletionExpression.OPERATOR:
-            case CsmCompletionExpression.SCOPE: {
+            case CsmCompletionExpression.SCOPE:        
+                allowSimilarEntities = false;
+                // fall through
+            
+            case CsmCompletionExpression.METHOD:
+            case CsmCompletionExpression.CONVERSION:
+            case CsmCompletionExpression.PARENTHESIS: {
                 ExpressionBuilder eb = creator.create();
                 int startExpOffset = -1;
                 int endExprOffset = -1;
@@ -1455,7 +1349,7 @@ public final class CompletionSupport implements DocumentListener {
                 
                 boolean entityChanged = true;
                 
-                while (entityChanged) {
+                while (entityChanged || allowSimilarEntities) {                    
                     entityChanged = false;
                                             
                     if (renderedParam == null && paramIndex < paramCount) {
@@ -1472,6 +1366,10 @@ public final class CompletionSupport implements DocumentListener {
                             expr.getTokenOffset(tokenIndex) + expr.getTokenLength(tokenIndex)
                         );
                         tokenIndex++;
+                    }
+                    
+                    if (renderedToken == null && renderedParam == null) {
+                        break;
                     }
                     
                     RenderedExpression chosenExpression;
@@ -1503,7 +1401,7 @@ public final class CompletionSupport implements DocumentListener {
                             lastWasParam = false;
                         }
                         
-                        if (entityChanged) {
+                        if (entityChanged || allowSimilarEntities) {
                             eb.append(chosenExpression.text);
                             if (startExpOffset == -1) {
                                 startExpOffset = chosenExpression.startOffset;
@@ -1517,13 +1415,16 @@ public final class CompletionSupport implements DocumentListener {
             }
             
             default: {
-                ExpressionBuilder eb = creator.create();
-                eb.append(expr.getTokenText(0));
-                return new RenderedExpression(
-                        eb.toString(), 
-                        expr.getTokenOffset(0), 
-                        expr.getTokenOffset(0) + expr.getTokenLength(0)
-                );
+                if (expr.getTokenCount() > 0) {
+                    ExpressionBuilder eb = creator.create();
+                    eb.append(expr.getTokenText(0));
+                    return new RenderedExpression(
+                            eb.toString(), 
+                            expr.getTokenOffset(0), 
+                            expr.getTokenOffset(0) + expr.getTokenLength(0)
+                    );
+                }
+                return new RenderedExpression("", 0, 0); // NOI18N
             }
         }
     }    
@@ -1624,7 +1525,23 @@ public final class CompletionSupport implements DocumentListener {
         return null;
     }    
     
-    private static boolean isExpression(CsmCompletionExpression expression) {
+    private static boolean canBeFunctionType(CsmCompletionExpression expression) {
+        if (expression.getExpID() == CsmCompletionExpression.METHOD) {
+            // aaa(bbb)
+            return true;
+        }
+        if (expression.getExpID() == CsmCompletionExpression.PARENTHESIS) {
+            if (expression.getParameterCount() > 0) {
+                if (expression.getParameter(0).getExpID() == CsmCompletionExpression.CONVERSION) {
+                    // int(int, int, int)
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private static boolean canBeExpression(CsmCompletionExpression expression) {
         return expression.getExpID() == CsmCompletionExpression.OPERATOR ||
                expression.getExpID() == CsmCompletionExpression.UNARY_OPERATOR ||
                expression.getExpID() == CsmCompletionExpression.CONSTANT ||
@@ -1687,6 +1604,21 @@ public final class CompletionSupport implements DocumentListener {
             }
             cursor--;
         }
+    }
+    
+    private static CsmScope getContextScope(Context context) {
+        if (context != null) {
+            if (context.getContextScope() != null) {
+                return context.getContextScope();
+            }
+            CsmOffsetableDeclaration contextElement = context.getContextElement();
+            if (CsmKindUtilities.isScope(contextElement)) {
+                return (CsmScope) contextElement;
+            } else if (CsmKindUtilities.isScopeElement(contextElement)) {
+                return contextElement.getScope();
+            }
+        }
+        return null;
     }
     
     @Override

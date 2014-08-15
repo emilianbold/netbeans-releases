@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -72,10 +73,12 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.ui.repository.RevisionInfoPanel;
 import org.netbeans.modules.git.ui.repository.RevisionInfoPanelController;
+import org.netbeans.modules.git.ui.tag.CreateTagAction.CreateTagProcess;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.git.utils.WizardStepProgressSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.QuickSearch;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -92,10 +95,11 @@ class ManageTags implements ListSelectionListener, ActionListener {
     private final ManageTagsPanel panel;
     private final RevisionInfoPanel revisionInfoPanel;
     private Dialog dialog;
+    private QuickSearch quickSearch;
 
     public ManageTags (File repository, Map<String, GitTag> tags, String preselectedTag) {
         this.repository = repository;
-        this.tags = tags;
+        this.tags = new HashMap<>(tags);
         this.revisionInfoController = new RevisionInfoPanelController(repository);
         this.revisionInfoPanel = revisionInfoController.getPanel();
         this.panel = new ManageTagsPanel(revisionInfoPanel);
@@ -115,6 +119,7 @@ class ManageTags implements ListSelectionListener, ActionListener {
     private void attachListeners () {
         panel.lstTags.addListSelectionListener(this);
         panel.btnDelete.addActionListener(this);
+        panel.btnCreate.addActionListener(this);
     }
 
     @Override
@@ -132,7 +137,7 @@ class ManageTags implements ListSelectionListener, ActionListener {
     @Override
     public void actionPerformed (ActionEvent e) {
         Object selectedTag = panel.lstTags.getSelectedValue();
-        if (selectedTag instanceof GitTag) {
+        if (e.getSource() == panel.btnDelete && selectedTag instanceof GitTag) {
             GitTag tag = ((GitTag) selectedTag);
             if (JOptionPane.showConfirmDialog(dialog, NbBundle.getMessage(ManageTags.class, "MSG_ManageTags.deleteTag.confirmation", tag.getTagName()), //NOI18N
                     NbBundle.getMessage(ManageTags.class, "LBL_ManageTags.deleteTag.confirmation"), //NOI18N
@@ -140,6 +145,17 @@ class ManageTags implements ListSelectionListener, ActionListener {
                 DeleteTagProgressSupport supp = new DeleteTagProgressSupport(panel.panelProgress, tag);
                 supp.setEnabled(false);
                 supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(ManageTags.class, "MSG_ManageTags.deleteTag.progress")); //NOI18N
+            }
+        } else if (e.getSource() == panel.btnCreate) {
+            String initialRev = "";
+            if (selectedTag instanceof GitTag) {
+                initialRev = ((GitTag) selectedTag).getTagName();
+            }
+            final CreateTag createTag = new CreateTag(repository, initialRev, initialRev);
+            if (createTag.show()) {
+                WizardStepProgressSupport supp = new CreateTagProgressSupport(panel.panelProgress, createTag);
+                supp.setEnabled(false);
+                supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction.progressName")); //NOI18N
             }
         }
     }
@@ -198,8 +214,12 @@ class ManageTags implements ListSelectionListener, ActionListener {
         if (selected != null) {
             panel.lstTags.setSelectedValue(selected, true);
         }
+        if (quickSearch != null) {
+            quickSearch.detach();
+            quickSearch = null;
+        }
         if (!model.isEmpty()) {
-            GitUtils.attachQuickSearch(Arrays.asList(tagArray), panel.tagsPanel, panel.lstTags, model, new GitUtils.SearchCallback<GitTag>() {
+            quickSearch = GitUtils.attachQuickSearch(Arrays.asList(tagArray), panel.tagsPanel, panel.lstTags, model, new GitUtils.SearchCallback<GitTag>() {
 
                 @Override
                 public boolean contains (GitTag item, String needle) {
@@ -265,7 +285,8 @@ class ManageTags implements ListSelectionListener, ActionListener {
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run () {
-                        ((DefaultListModel) panel.lstTags.getModel()).removeElement(tag);
+                        tags.remove(tag.getTagName());
+                        initTags(null);
                     }
                 });
             } catch (GitException ex) {
@@ -276,6 +297,44 @@ class ManageTags implements ListSelectionListener, ActionListener {
         @Override
         public void setEnabled (boolean editable) {
             panel.btnDelete.setEnabled(editable);
+            panel.btnCreate.setEnabled(editable);
+        }        
+    };
+    
+    private class CreateTagProgressSupport extends WizardStepProgressSupport {
+        private final CreateTag createTag;
+
+        public CreateTagProgressSupport (JPanel panel, CreateTag createTag) {
+            super(panel, false);
+            this.createTag = createTag;
+        }
+
+        @Override
+        public void perform() {
+            try {
+                final GitTag newTag = new CreateTagProcess(createTag, this, getClient()).call();
+                if (newTag != null) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            tags.put(newTag.getTagName(), newTag);
+                            String selected = null;
+                            if (panel.lstTags.getSelectedValue() instanceof GitTag) {
+                                selected = ((GitTag) panel.lstTags.getSelectedValue()).getTagName();
+                            }
+                            initTags(selected);
+                        }
+                    });
+                }
+            } catch (GitException ex) {
+                GitClientExceptionHandler.notifyException(ex, false);
+            }
+        }
+
+        @Override
+        public void setEnabled (boolean editable) {
+            panel.btnDelete.setEnabled(editable);
+            panel.btnCreate.setEnabled(editable);
         }        
     };
     

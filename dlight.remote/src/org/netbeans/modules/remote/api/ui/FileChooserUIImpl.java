@@ -3260,7 +3260,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
             ApproveSelectionThreadWorker worker = new ApproveSelectionThreadWorker(
                     e, filename, fileChooser.isMultiSelectionEnabled(),
                     fileChooser.getCurrentDirectory(), fileChooser.getFileSystemView(),
-                    selectedFiles, finisher);
+                    selectedFiles, finisher, cancelled);
             APPROVE_RP.post(worker);
         }
     }
@@ -3279,8 +3279,9 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         private final FileSystemView fs;
         private final List<File> selectedFiles;
         private final ApproveSelectionFinisher finisher;
+        private final AtomicBoolean cancelled;
 
-        public ApproveSelectionThreadWorker(ActionEvent e, String filename, boolean multySelection, File currentDir, FileSystemView fs, List<File> selectedFiles, ApproveSelectionFinisher finisher) {
+        public ApproveSelectionThreadWorker(ActionEvent e, String filename, boolean multySelection, File currentDir, FileSystemView fs, List<File> selectedFiles, ApproveSelectionFinisher finisher, AtomicBoolean cancelled) {
             this.e = e;
             this.filename = filename;
             this.multySelection = multySelection;
@@ -3288,6 +3289,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
             this.fs = fs;
             this.selectedFiles = selectedFiles;
             this.finisher = finisher;
+            this.cancelled = cancelled;
         }
 
         @Override
@@ -3305,6 +3307,9 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                     int childIndex = 0;
 
                     for (String str : files) {
+                        if (cancelled.get()) {
+                            return;
+                        }
                         File file = fs.createFileObject(str);
                         if (!file.isAbsolute()) {
                             if (children == null) {
@@ -3329,6 +3334,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                     }
                     selectedFiles.add(selectedFile);
                 }
+                finisher.init();
             } finally {
                 SwingUtilities.invokeLater(finisher);
             }
@@ -3344,12 +3350,23 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
         private final List<File> selectedFiles;
         private final ActionEvent e;
         private final AtomicBoolean cancelled;
+        private volatile boolean isSlectedFileExists;
+        private volatile boolean isSlectedFileDir;
 
         public ApproveSelectionFinisher(ActionEvent e, String filename, List<File> selectedFiles, AtomicBoolean cancelled) {
             this.e = e;
             this.selectedFiles = selectedFiles;
             this.filename = filename;
             this.cancelled = cancelled;
+        }
+        
+        //perform IO out of EDT
+        private void init() {
+            if (selectedFiles.size() == 1) {
+                File selectedFile = selectedFiles.get(0);
+                isSlectedFileExists = selectedFile.exists();
+                isSlectedFileDir = selectedFile.isDirectory();
+            }
         }
 
         @Override
@@ -3370,7 +3387,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
 
                 // check for wildcard pattern
                 FileFilter currentFilter = chooser.getFileFilter();
-                if (!selectedFile.exists() && isGlobPattern(filename)) {
+                if (!isSlectedFileExists && isGlobPattern(filename)) {
                     changeDirectory(selectedFile.getParentFile());
                     if (globFilter == null) {
                         globFilter = new GlobFilter();
@@ -3389,8 +3406,8 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                 }
 
                 // Check for directory change action
-                boolean isDir = (selectedFile != null && selectedFile.isDirectory());
-                boolean isTrav = (selectedFile != null && chooser.isTraversable(selectedFile));
+                boolean isDir = isSlectedFileDir;
+                boolean isTrav = chooser.isTraversable(selectedFile);
                 boolean isDirSelEnabled = chooser.isDirectorySelectionEnabled();
                 boolean isFileSelEnabled = chooser.isFileSelectionEnabled();
                 boolean isCtrl = (e != null && (e.getModifiers() &
@@ -3401,11 +3418,10 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                     return;
                 } else if ((isDir || !isFileSelEnabled)
                         && (!isDir || !isDirSelEnabled)
-                        && (!isDirSelEnabled || selectedFile.exists())) {
+                        && (!isDirSelEnabled || isSlectedFileExists)) {
                     selectedFiles.clear();
                 }
             }
-
 
             if (!selectedFiles.isEmpty()) {
                 if (chooser.isMultiSelectionEnabled()) {

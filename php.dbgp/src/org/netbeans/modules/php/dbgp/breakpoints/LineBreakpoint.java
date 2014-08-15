@@ -148,7 +148,9 @@ public class LineBreakpoint extends AbstractBreakpoint {
     private boolean isValid() {
         boolean result = false;
         try {
-            result = isValidFuture.get(2, TimeUnit.SECONDS);
+            if (isValidFuture != null) {
+                result = isValidFuture.get(2, TimeUnit.SECONDS);
+            }
         } catch (InterruptedException ex) {
             Thread.interrupted();
         } catch (ExecutionException | TimeoutException ex) {

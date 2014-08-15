@@ -96,8 +96,9 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
         } catch (IOException ex) {
             //Exceptions.printStackTrace(ex);
         }
-        launchersRegistry.load(properties);
-        UIGesturesSupport.submit(USG_CND_LAUNCHERS, launchersRegistry.getLaunchers().size());
+        if (launchersRegistry.load(properties)) {
+            UIGesturesSupport.submit(USG_CND_LAUNCHERS, launchersRegistry.getLaunchers().size());
+        }
     }
 
     private class FileChangeListenerImpl implements FileChangeListener {

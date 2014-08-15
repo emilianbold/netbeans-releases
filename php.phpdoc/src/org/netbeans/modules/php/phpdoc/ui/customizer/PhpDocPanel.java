@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.phpdoc.ui.customizer;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -52,6 +53,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -59,47 +61,46 @@ import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.phpdoc.PhpDocumentorProvider;
 import org.netbeans.modules.php.phpdoc.ui.PhpDocPreferences;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.HelpCtx;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
-final class PhpDocPanel extends JPanel implements HelpCtx.Provider {
-    private static final long serialVersionUID = 5643218762231L;
+final class PhpDocPanel extends JPanel {
 
-    private final Category category;
+    private static final long serialVersionUID = -4686321547613435L;
+
     private final PhpModule phpModule;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    PhpDocPanel(Category category, PhpModule phpModule) {
-        assert category != null;
+
+    PhpDocPanel(PhpModule phpModule) {
+        assert EventQueue.isDispatchThread();
         assert phpModule != null;
 
-        this.category = category;
         this.phpModule = phpModule;
-
-        this.category.setStoreListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                storeData();
-            }
-        });
 
         initComponents();
 
+        init();
+    }
+
+    private void init() {
         targetTextField.setText(PhpDocPreferences.getPhpDocTarget(phpModule, false));
         titleTextField.setText(PhpDocPreferences.getPhpDocTitle(phpModule));
 
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         targetTextField.getDocument().addDocumentListener(defaultDocumentListener);
         titleTextField.getDocument().addDocumentListener(defaultDocumentListener);
-        validateData();
     }
 
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.php.phpdoc.ui.customizer.PhpDocPanel"); // NI18N
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     private String getPhpDocTarget() {
@@ -110,36 +111,38 @@ final class PhpDocPanel extends JPanel implements HelpCtx.Provider {
         return titleTextField.getText().trim();
     }
 
-    void validateData() {
-        // errors
+    boolean isValidData() {
+        return getErrorMessage() == null;
+    }
+
+    public String getErrorMessage() {
         String phpDocTarget = getPhpDocTarget();
         if (StringUtils.hasText(phpDocTarget)) {
-            String error = FileUtils.validateDirectory(getPhpDocTarget(), true);
+            String error = FileUtils.validateDirectory(phpDocTarget, true);
             if (error != null) {
-                category.setErrorMessage(error);
-                category.setValid(false);
-                return;
+                return error;
             }
         }
         if (!StringUtils.hasText(getPhpDocTitle())) {
-            category.setErrorMessage(NbBundle.getMessage(PhpDocPanel.class, "MSG_InvalidTitle"));
-            category.setValid(false);
-            return;
+            return NbBundle.getMessage(PhpDocPanel.class, "MSG_InvalidTitle");
         }
-
-        // warnings
-        String warning = null;
-        if (!StringUtils.hasText(phpDocTarget)) {
-            warning = NbBundle.getMessage(PhpDocPanel.class, "MSG_NbWillAskForDir");
-        }
-
-        category.setErrorMessage(warning);
-        category.setValid(true);
+        return null;
     }
 
-    void storeData() {
+    public String getWarningMessage() {
+        if (!StringUtils.hasText(getPhpDocTarget())) {
+            return NbBundle.getMessage(PhpDocPanel.class, "MSG_NbWillAskForDir");
+        }
+        return null;
+    }
+
+    public void storeData() {
         PhpDocPreferences.setPhpDocTarget(phpModule, getPhpDocTarget());
         PhpDocPreferences.setPhpDocTitle(phpModule, getPhpDocTitle());
+    }
+
+    void fireChange() {
+        changeSupport.fireChange();
     }
 
     /** This method is called from within the constructor to
@@ -236,7 +239,7 @@ final class PhpDocPanel extends JPanel implements HelpCtx.Provider {
             processChange();
         }
         private void processChange() {
-            validateData();
+            fireChange();
         }
     }
 }

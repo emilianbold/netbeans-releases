@@ -442,7 +442,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         GlassFishVersion version = ServerUtils.getServerVersion(
                 ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR));
         try {
-            instance = new GlassfishInstance(ip, version, gip);
+            instance = new GlassfishInstance(ip, version, gip, updateNow);
             tagUnderConstruction(deployerUri);
             if (!instance.isPublicAccess()) {
                 instance.ic.add(instance.commonSupport);
@@ -584,7 +584,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * @throws IOException 
      */
     public static GlassfishInstance readInstanceFromFile(
-            FileObject instanceFO) throws IOException {
+            FileObject instanceFO, boolean autoregistered) throws IOException {
         GlassfishInstance instance = null;
 
         String installRoot
@@ -618,7 +618,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             }
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
             fixImportedAttributes(ip, instanceFO);
-            instance = create(ip,GlassfishInstanceProvider.getProvider(),false);
+            instance = create(ip,GlassfishInstanceProvider.getProvider(), autoregistered);
         } else {
             LOGGER.log(Level.FINER,
                     "GlassFish folder {0} is not a valid install.",
@@ -760,7 +760,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
 
     @SuppressWarnings("LeakingThisInConstructor")
     private GlassfishInstance(Map<String, String> ip, GlassFishVersion version,
-            GlassfishInstanceProvider instanceProvider) {
+            GlassfishInstanceProvider instanceProvider, boolean prepareProperties) {
         this.version = version;
         this.process = null;
         ic = new InstanceContent();
@@ -783,7 +783,11 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         } else {
             domainXMLListener = null;
         }
-        this.properties = prepareProperties(ip);
+        if (prepareProperties) {
+            this.properties = prepareProperties(ip);
+        } else {
+            this.properties = new Props(ip);
+        }
         if (!isPublicAccess()) {
             // Add this instance into local lookup (to find instance from
             // node lookup).

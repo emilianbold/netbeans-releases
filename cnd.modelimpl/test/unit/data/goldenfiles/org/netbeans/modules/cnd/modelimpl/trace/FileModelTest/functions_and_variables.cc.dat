@@ -85,7 +85,7 @@ FUNCTION DEFINITION write_five  [76:1/1007-78:2/1055] FunctionDDImpl SCOPE: func
     RETURNS void TEXT=void  [76:8/1014-76:12/1018]
     STATEMENT COMPOUND  [76:26/1032-78:2/1055] SCOPE: write_five 
         STATEMENT EXPRESSION  [77:5/1038-77:19/1052] SCOPE: Stmt  [76:26/1032-78:2/1055] text: 'global_int = 5'
-VARIABLE static_func2 [79:19/1074-79:31/1086]  TYPE: $unresolved$::function TEXT=function<void>  [79:1/1056-79:18/1073]  INIT: null  SCOPE: $Global$ 
+VARIABLE static_func2 [79:19/1074-79:31/1086]  TYPE: $unresolved$::function TEXT=function<void()()>  [79:1/1056-79:18/1073]  INIT: null  SCOPE: $Global$ 
 CLASS T (T ) [82:1/1149-86:2/1193] lcurly=1157 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
@@ -204,7 +204,7 @@ FUNCTION DEFINITION foo  [69:1/889-72:2/936] FunctionDDImpl SCOPE: $Global$
             VARIABLE c3 [70:8/908-70:13/913]  TYPE: C1 TEXT=C1  [70:5/905-70:7/907]  INIT: null  SCOPE: Stmt  [69:11/899-72:2/936]
         STATEMENT DECLARATION  [71:5/919-71:20/934] SCOPE: Stmt  [69:11/899-72:2/936]
             VARIABLE c4 [71:14/928-71:19/933]  TYPE: const C1 TEXT=const C1  [71:5/919-71:13/927]  INIT: null  SCOPE: Stmt  [69:11/899-72:2/936]
-VARIABLE static_func2 [79:19/1074-79:31/1086]  TYPE: $unresolved$::function TEXT=function<void>  [79:1/1056-79:18/1073]  INIT: null  SCOPE: $Global$ 
+VARIABLE static_func2 [79:19/1074-79:31/1086]  TYPE: $unresolved$::function TEXT=function<void()()>  [79:1/1056-79:18/1073]  INIT: null  SCOPE: $Global$ 
 CLASS T (T ) [82:1/1149-86:2/1193] lcurly=1157 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:

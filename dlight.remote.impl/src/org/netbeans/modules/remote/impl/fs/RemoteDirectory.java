@@ -171,51 +171,60 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return create(name, true, orig);
     }
 
+    /**
+     * Called after child creation (sometimes - for now only when copying or moving) or removal.
+     * TODO: call after child creation via createData/createFolder
+     * @param child is NULL if the file was created (creation is always external => we don't know file object yet),
+     * not null if the file was deleted
+     */
     @Override
-    protected void postDeleteChild(RemoteFileObject child, DirEntryList entryList) {
+    protected void postDeleteOrCreateChild(RemoteFileObject child, DirEntryList entryList) {
         // leave old implementation for a while (under a flag, by default use new impl.)
+        String childNameExt = (child == null) ? null : child.getNameExt();
         if (RemoteFileSystemUtils.getBoolean("remote.fast.delete", true)) {
             Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
             writeLock.lock();
             boolean sendEvents = true;
             try {
                 DirectoryStorage storage = getExistingDirectoryStorage();
-                if (storage == DirectoryStorage.EMPTY) {
-                    Exceptions.printStackTrace(new IllegalStateException("Update stat is called but remote directory cache does not exist")); // NOI18N
-                } else {
-                    List<DirEntry> entries;
-                    if (entryList == null) {
-                        entries = storage.listValid(child.getNameExt());
-                        DirectoryStorage newStorage = new DirectoryStorage(getStorageFile(), entries);
-                        try {
-                            newStorage.store();
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex); // what else can we do?..
-                        }
-                        synchronized (refLock) {
-                            storageRef = new SoftReference<DirectoryStorage>(newStorage);
-                        }
-                    } else {
-                        try {
-                            updateChildren(toMap(entryList), storage, true, child.getNameExt(), null, false);
-                        } catch (IOException ex) {
-                            RemoteLogger.finest(ex, this);
-                        }
-                        sendEvents = false;
+                if (child != null && storage == DirectoryStorage.EMPTY) {
+                    Exceptions.printStackTrace(new IllegalStateException("postDeleteOrCreateChild stat is called but remote directory cache does not exist")); // NOI18N
+                }
+                List<DirEntry> entries;
+                if (entryList == null) {
+                    entries = storage.listValid(childNameExt);
+                    DirectoryStorage newStorage = new DirectoryStorage(getStorageFile(), entries);
+                    try {
+                        newStorage.store();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex); // what else can we do?..
                     }
+                    synchronized (refLock) {
+                        storageRef = new SoftReference<DirectoryStorage>(newStorage);
+                    }
+                } else {
+                    try {
+                        updateChildren(toMap(entryList), storage, true, childNameExt, null, false);
+                    } catch (IOException ex) {
+                        RemoteLogger.finest(ex, this);
+                    }
+                    sendEvents = false;
                 }
             } finally {
                 writeLock.unlock();
             }
             if (sendEvents) {
-                fireDeletedEvent(this.getOwnerFileObject(), child, false, true);
+                if (child != null) {
+                    RemoteLogger.assertTrue(!child.isValid(), "Calling postDelete ob valid child " + child);
+                    fireDeletedEvent(this.getOwnerFileObject(), child, false, true);
+                }
             }
             //RemoteFileSystemTransport.scheduleRefresh(getExecutionEnvironment(), Arrays.asList(getPath()));
         } else {
             try {
-                DirectoryStorage ds = refreshDirectoryStorage(child.getNameExt(), false); // it will fire events itself
+                DirectoryStorage ds = refreshDirectoryStorage(childNameExt, false); // it will fire events itself
             } catch (ConnectException ex) {
-                RemoteLogger.getInstance().log(Level.INFO, "Error post removing child " + child, ex);
+                RemoteLogger.getInstance().log(Level.INFO, "Error post removing/creating child " + child, ex);
             } catch (IOException ex) {
                 RemoteLogger.finest(ex, this);
             } catch (ExecutionException ex) {

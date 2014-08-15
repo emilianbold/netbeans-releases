@@ -98,7 +98,7 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
             AST expressionAst = AstUtil.findSiblingOfType(ast.getFirstChild(), CPPTokenTypes.CSM_EXPRESSION);
             if (expressionAst != null) {
                 CsmExpression expr = ExpressionsFactory.create(expressionAst, file, scope);
-                value = ExpressionBasedSpecializationParameterImpl.create(expr.getText(), file, expr.getStartOffset(), expr.getEndOffset(), true);
+                value = ExpressionBasedSpecializationParameterImpl.create(expr.getText(), scope, file, expr.getStartOffset(), expr.getEndOffset(), true);
             }
         } else {
             this.typeBased = true;
@@ -118,7 +118,7 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         this(ast, name, file, scope, false, global);
         CsmType type = TypeFactory.createType(defaultValue, file, null, 0);
         if(type != null) {
-            this.defaultValue = new TypeBasedSpecializationParameterImpl(type);
+            this.defaultValue = new TypeBasedSpecializationParameterImpl(type, scope);
         }
     }
     
@@ -328,6 +328,10 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     private static final CsmSpecializationParameter VARIADIC = new CsmSpecializationParameter() {
         @Override
         public CsmFile getContainingFile() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public CsmScope getScope() {
             throw new UnsupportedOperationException();
         }
         @Override

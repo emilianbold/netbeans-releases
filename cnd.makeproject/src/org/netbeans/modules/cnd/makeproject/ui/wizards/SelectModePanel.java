@@ -317,16 +317,28 @@ public class SelectModePanel extends javax.swing.JPanel {
             PanelProjectLocationVisual.updateToolchains(toolchainComboBox, newItem);
             this.controller.fireChangeEvent(); // Notify that the panel changed
         }
-}                                             
-
-    private void sourceBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                   
-        String path = ((EditableComboBox)sourceFolder).getText();
-        if (path.isEmpty() && HostInfoUtils.isHostInfoAvailable(env)) { 
-            try {  
-                path = HostInfoUtils.getHostInfo(env).getUserDir();
+    }
+    
+    public static String getDefaultDirectory(ExecutionEnvironment env) {
+        String home;
+        if (env.isLocal()) {
+            home = System.getProperty("user.home"); // NOI18N
+        } else if (!(HostInfoUtils.isHostInfoAvailable(env) && ConnectionManager.getInstance().isConnectedTo(env))) {
+            home = null;
+        } else {
+            try {
+                home = HostInfoUtils.getHostInfo(env).getUserDir();
             } catch (IOException | ConnectionManager.CancellationException ex) {
-                // reporting doesn't has much sense here
+                home = null;
             }
+        }
+        return home == null ? "" : home; // NOI18N
+    }
+
+    private void sourceBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        String path = ((EditableComboBox)sourceFolder).getText();
+        if (path.isEmpty()) { 
+            path = SelectModePanel.getDefaultDirectory(env);
         }
         String approveButtonText = NbBundle.getMessage(SelectModePanel.class, "SOURCES_DIR_BUTTON_TXT"); // NOI18N
         String title = NbBundle.getMessage(SelectModePanel.class, "SOURCES_DIR_CHOOSER_TITLE_TXT"); //NOI18N

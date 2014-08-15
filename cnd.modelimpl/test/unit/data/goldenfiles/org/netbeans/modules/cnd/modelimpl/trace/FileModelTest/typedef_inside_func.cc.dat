@@ -30,7 +30,7 @@ FUNCTION DEFINITION aa  [5:1/51-7:2/85] FunctionDDImpl SCOPE: $Global$
     RETURNS void TEXT=void  [5:1/51-5:5/55]
     STATEMENT COMPOUND  [5:11/61-7:2/85] SCOPE: aa 
         STATEMENT DECLARATION  [6:5/67-6:21/83] SCOPE: Stmt  [5:11/61-7:2/85]
-            TYPEDEF Int  [6:5/67-6:21/83] TYPE: int TEXT=int  [6:13/75-6:16/78] SCOPE: typedef_inside_func.cc
+            TYPEDEF Int  [6:5/67-6:21/83] TYPE: int TEXT=int  [6:13/75-6:16/78] SCOPE: Stmt  [5:11/61-7:2/85]
 
 ========== Dumping model of PROJECT DummyProject
 FUNCTION DEFINITION aaa  [1:1/0-3:2/49] FunctionDDImpl SCOPE: $Global$ 
@@ -52,5 +52,5 @@ FUNCTION DEFINITION aa  [5:1/51-7:2/85] FunctionDDImpl SCOPE: $Global$
     RETURNS void TEXT=void  [5:1/51-5:5/55]
     STATEMENT COMPOUND  [5:11/61-7:2/85] SCOPE: aa 
         STATEMENT DECLARATION  [6:5/67-6:21/83] SCOPE: Stmt  [5:11/61-7:2/85]
-            TYPEDEF Int  [6:5/67-6:21/83] TYPE: int TEXT=int  [6:13/75-6:16/78] SCOPE: typedef_inside_func.cc
+            TYPEDEF Int  [6:5/67-6:21/83] TYPE: int TEXT=int  [6:13/75-6:16/78] SCOPE: Stmt  [5:11/61-7:2/85]
 

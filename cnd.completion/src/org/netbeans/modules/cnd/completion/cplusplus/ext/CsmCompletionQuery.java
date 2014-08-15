@@ -1248,6 +1248,10 @@ abstract public class CsmCompletionQuery {
             return contextScope; 
         }
         
+        CsmOffsetableDeclaration getContextElement() {
+            return contextElement;
+        }
+        
         List<CsmInstantiation> getContextInstantiations() {
             return instantiations;
         }
@@ -2209,7 +2213,16 @@ abstract public class CsmCompletionQuery {
                     if (typ != null) {
                         typ = CsmUtilities.iterateTypeChain(typ, new CsmUtilities.SearchTemplatePredicate());
                         CsmClassifier cls = typ.getClassifier();
-                        if (cls != null && CsmKindUtilities.isTemplate(cls)) {
+                        if (CsmKindUtilities.isSpecialization(cls)) {
+                            Collection<CsmOffsetableDeclaration> baseTemplateCandidates = CsmInstantiationProvider.getDefault().getBaseTemplate(cls);
+                            for (CsmOffsetableDeclaration baseTemplate : baseTemplateCandidates) {
+                                if (CsmKindUtilities.isClassifier(baseTemplate)) {
+                                    cls = (CsmClassifier) baseTemplate;
+                                    break;
+                                }
+                            }
+                        }
+                        if (cls != null && CsmKindUtilities.isTemplate(cls)) {                            
                             CsmObject obj = CompletionSupport.createInstantiation(this, (CsmTemplate)cls, item, Collections.<CsmType>emptyList());
                             
                             if (CsmKindUtilities.isClassifier(obj)) {
