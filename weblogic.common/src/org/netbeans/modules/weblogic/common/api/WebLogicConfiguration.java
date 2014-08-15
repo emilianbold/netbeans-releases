@@ -163,6 +163,14 @@ public final class WebLogicConfiguration {
     }
 
     @NullUnknown
+    public String getDomainName() {
+        if (config == null) {
+            return null;
+        }
+        return config.getName();
+    }
+
+    @NullUnknown
     public String getDomainAdminServer() {
         if (config == null) {
             return null;

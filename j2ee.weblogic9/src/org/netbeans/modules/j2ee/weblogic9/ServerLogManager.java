@@ -42,12 +42,21 @@
 
 package org.netbeans.modules.j2ee.weblogic9;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.InputReaderTask;
+import org.netbeans.api.extexecution.base.input.InputReaders;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
+import org.netbeans.api.extexecution.print.LineProcessors;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.optional.NonProxyHostsHelper;
+import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 import org.netbeans.modules.weblogic.common.api.WebLogicRuntime;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -59,6 +68,8 @@ import org.openide.windows.OutputWriter;
  */
 public class ServerLogManager {
 
+    private static final Logger LOGGER = Logger.getLogger(ServerLogManager.class.getName());
+
     private final WLDeploymentManager dm;
 
     private InputReaderTask task;
@@ -67,15 +78,21 @@ public class ServerLogManager {
         this.dm = dm;
     }
 
-    public void openLog() {
+    public synchronized void openLog() {
         InputOutput io = UISupport.getServerIO(dm.getUri());
         if (io != null) {
             io.select();
         }
         if (task == null) {
             WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
+            final OutputWriter writer = io.getOut();
+            try {
+                writer.reset();
+            } catch (IOException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+            }
+
             if (dm.isRemote()) {
-                final OutputWriter writer = io.getOut();
                 task = InputReaderTask.newTask(new RemoteLogInputReader(dm.getCommonConfiguration(), new Callable<String>() {
 
                     @Override
@@ -85,9 +102,47 @@ public class ServerLogManager {
                 }), InputProcessors.copying(writer));
                 // FIXME processor
                 RequestProcessor.getDefault().post(task);
+                
             } else if (!runtime.isProcessRunning()) {
-                // XXX read local log
+                WebLogicConfiguration config = dm.getCommonConfiguration();
+                String name = config.getDomainName();
+                String admin = config.getDomainAdminServer();
+
+                if (admin != null && name != null) {
+                    File logFile = new File(dm.getCommonConfiguration().getDomainHome(),
+                            "servers" + File.separator + admin + File.separator + "logs" + File.separator + name + ".log"); // NOI18N
+                    final LineProcessor printing = LineProcessors.printing(writer, true);
+                    task = InputReaderTask.newTask(InputReaders.forFile(logFile, Charset.defaultCharset()),
+                            InputProcessors.bridge(new LineProcessor() {
+
+                        @Override
+                        public void processLine(String line) {
+                            if (line.startsWith("####")) { // NOI18N
+                                printing.processLine(line.substring(4));
+                            }
+                        }
+
+                        @Override
+                        public void reset() {
+                            printing.reset();
+                        }
+
+                        @Override
+                        public void close() {
+                            printing.close();
+                        }
+                    }));
+                }
+                // FIXME processor
+                RequestProcessor.getDefault().post(task);
             }
+        }
+    }
+
+    public synchronized void stop() {
+        if (task != null) {
+            task.cancel();
+            task = null;
         }
     }
 }

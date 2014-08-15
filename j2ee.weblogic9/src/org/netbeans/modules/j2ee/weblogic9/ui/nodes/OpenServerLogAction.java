@@ -44,23 +44,11 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import java.io.IOException;
-import java.util.concurrent.Callable;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.base.input.InputProcessor;
-import org.netbeans.api.extexecution.base.input.InputProcessors;
-import org.netbeans.api.extexecution.base.input.InputReaderTask;
-import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
-import org.netbeans.modules.j2ee.weblogic9.RemoteLogInputReader;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.netbeans.modules.j2ee.weblogic9.optional.NonProxyHostsHelper;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 
 /**
  *

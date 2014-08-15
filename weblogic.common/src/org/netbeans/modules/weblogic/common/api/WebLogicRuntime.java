@@ -529,16 +529,17 @@ public final class WebLogicRuntime {
     }
 
     private static boolean isRunning(Process process) {
-        if (process != null) {
-            try {
-                process.exitValue();
-                // process is stopped
-                return false;
-            } catch (IllegalThreadStateException e) {
-                // process is running
-            }
+        if (process == null) {
+            return false;
         }
-        return true;
+        try {
+            process.exitValue();
+            // process is stopped
+            return false;
+        } catch (IllegalThreadStateException e) {
+            // process is running
+            return true;
+        }
     }
 
     private static boolean ping(String host, int port, int timeout) {

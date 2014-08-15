@@ -223,7 +223,7 @@ public final class WLStartServer extends StartServer {
 
         WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
         runtime.stop(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
-                new StopListener(uri, serverName, serverProgress));
+                new StopListener(dm, serverName, serverProgress));
 
         removeServerInDebug(uri);
         return serverProgress;
@@ -430,6 +430,7 @@ public final class WLStartServer extends StartServer {
                 return;
             }
 
+            dm.getLogManager().stop();
             try {
                 // as described in the api we reset just ouptut
                 io.getOut().reset();
@@ -483,14 +484,14 @@ public final class WLStartServer extends StartServer {
 
     private static class StopListener implements RuntimeListener {
 
-        private final String uri;
+        private final WLDeploymentManager dm;
 
         private final String serverName;
 
         private final WLServerProgress serverProgress;
 
-        public StopListener(String uri, String serverName, WLServerProgress serverProgress) {
-            this.uri = uri;
+        public StopListener(WLDeploymentManager dm, String serverName, WLServerProgress serverProgress) {
+            this.dm = dm;
             this.serverName = serverName;
             this.serverProgress = serverProgress;
         }
@@ -515,11 +516,12 @@ public final class WLStartServer extends StartServer {
 
         @Override
         public void onProcessStart() {
-            InputOutput io = UISupport.getServerIO(uri);
+            InputOutput io = UISupport.getServerIO(dm.getUri());
             if (io == null) {
                 return;
             }
 
+            dm.getLogManager().stop();
             try {
                 // as described in the api we reset just ouptut
                 io.getOut().reset();
@@ -532,7 +534,7 @@ public final class WLStartServer extends StartServer {
 
         @Override
         public void onProcessFinish() {
-            InputOutput io = UISupport.getServerIO(uri);
+            InputOutput io = UISupport.getServerIO(dm.getUri());
             if (io != null) {
                 io.getOut().close();
                 io.getErr().close();
