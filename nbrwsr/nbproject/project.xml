@@ -79,6 +79,7 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.ow2.asm</code-name-base>
+                    <build-prerequisite/>
                     <run-dependency/>
                 </dependency>
             </module-dependencies>
