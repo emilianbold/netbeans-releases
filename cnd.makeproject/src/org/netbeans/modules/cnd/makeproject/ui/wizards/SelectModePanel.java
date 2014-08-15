@@ -323,7 +323,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         String home;
         if (env.isLocal()) {
             home = System.getProperty("user.home"); // NOI18N
-        } else if (!HostInfoUtils.isHostInfoAvailable(env) && !ConnectionManager.getInstance().isConnectedTo(env)) {
+        } else if (!(HostInfoUtils.isHostInfoAvailable(env) && ConnectionManager.getInstance().isConnectedTo(env))) {
             home = null;
         } else {
             try {

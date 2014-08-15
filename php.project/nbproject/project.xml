@@ -284,7 +284,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>2.41</specification-version>
+                        <specification-version>2.45</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

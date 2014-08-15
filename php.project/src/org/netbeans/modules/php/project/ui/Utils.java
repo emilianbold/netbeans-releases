@@ -59,7 +59,6 @@ import javax.swing.UIManager;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -69,8 +68,6 @@ import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -97,22 +94,6 @@ public final class Utils {
     private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
 
     private Utils() {
-    }
-
-    @NbBundle.Messages({
-        "# {0} - project name",
-        "Utils.metadata.corrupted=<html><b>Project {0} is corrupted.</b><br><br>Do you want to open Project Problems dialog?"
-    })
-    public static void warnInvalidSourcesDirectory(PhpProject project) {
-        String name = project.getName();
-        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
-                Bundle.Utils_metadata_corrupted(name),
-                name,
-                NotifyDescriptor.YES_NO_OPTION,
-                NotifyDescriptor.WARNING_MESSAGE);
-        if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
-            ProjectProblems.showCustomizer(project);
-        }
     }
 
     // XXX use everywhere

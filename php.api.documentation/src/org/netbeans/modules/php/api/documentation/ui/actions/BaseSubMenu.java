@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.api.documentation.ui.actions;
 
-package org.netbeans.modules.cnd.toolchain.ui.options;
+import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import org.openide.awt.Actions;
+import org.openide.util.actions.Presenter;
 
-import java.io.IOException;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+abstract class BaseSubMenu extends JMenu {
 
-/**
- *
- * @author Alexander Simon
- */
-public class ToolsUtils {
-    private ToolsUtils() {
+    public BaseSubMenu(String name) {
+        super(name);
     }
 
-    //TODO: we should be ensured already....check
-    public static void ensureHostSetup(ExecutionEnvironment env) {
-        if (env != null) {
-            ServerList.get(env); // this will ensure the remote host is setup
-        }
-    }
-    public static boolean isDevHostValid(ExecutionEnvironment env) {
-        ServerRecord record = ServerList.get(env);
-        return record != null && record.isOnline();
-    }
-
-    public static String getDefaultDirectory(ExecutionEnvironment env) {
-        String seed;
-        if (env.isLocal()) {
-            seed = System.getProperty("user.home"); // NOI18N
-        } else if (!(HostInfoUtils.isHostInfoAvailable(env) && ConnectionManager.getInstance().isConnectedTo(env))) {
-            seed = null;
+    protected static JMenuItem toMenuItem(Action action) {
+        JMenuItem item;
+        if (action instanceof Presenter.Menu) {
+            item = ((Presenter.Menu) action).getMenuPresenter();
         } else {
-            try {
-                seed = HostInfoUtils.getHostInfo(env).getUserDir();
-            } catch (IOException ex) {
-                seed = null;
-            } catch (ConnectionManager.CancellationException ex) {
-                seed = null;
-            }
+            item = new JMenuItem();
+            Actions.connect(item, action, false);
         }
-        return seed;
+        return item;
     }
+
 }

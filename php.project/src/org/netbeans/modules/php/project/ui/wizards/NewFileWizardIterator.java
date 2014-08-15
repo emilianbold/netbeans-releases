@@ -60,11 +60,11 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.SourceRoots;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -185,7 +185,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
             return;
         }
         if (PhpProjectValidator.isFatallyBroken(phpProject)) {
-            Utils.warnInvalidSourcesDirectory(phpProject);
+            UiUtils.warnBrokenProject(phpProject.getPhpModule());
         }
     }
 
