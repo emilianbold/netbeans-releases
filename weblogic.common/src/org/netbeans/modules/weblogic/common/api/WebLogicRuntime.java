@@ -477,6 +477,15 @@ public final class WebLogicRuntime {
         return ping(host, port, CHECK_TIMEOUT); // is server responding?
     }
 
+    public boolean isProcessRunning() {
+        Process proc;
+        synchronized (PROCESSES) {
+            proc = PROCESSES.get(config);
+        }
+
+        return isRunning(proc);
+    }
+
     private static void configureEnvironment(Environment environment, Map<String, String> variables) {
         if (variables == null) {
             return;

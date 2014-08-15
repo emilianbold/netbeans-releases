@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,64 +34,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
+package org.netbeans.modules.j2ee.weblogic9;
 
-import java.io.IOException;
 import java.util.concurrent.Callable;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.InputReaderTask;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
-import org.netbeans.modules.j2ee.weblogic9.RemoteLogInputReader;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.optional.NonProxyHostsHelper;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.weblogic.common.api.WebLogicRuntime;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.NodeAction;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
  *
- * @author Libor Kotouc
+ * @author Petr Hejl
  */
-public class OpenServerLogAction extends NodeAction {
+public class ServerLogManager {
 
-    public OpenServerLogAction() {
+    private final WLDeploymentManager dm;
+
+    private InputReaderTask task;
+
+    public ServerLogManager(WLDeploymentManager dm) {
+        this.dm = dm;
     }
 
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
-    }
+    public void openLog() {
+        InputOutput io = UISupport.getServerIO(dm.getUri());
+        if (io != null) {
+            io.select();
+        }
+        if (task == null) {
+            WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
+            if (dm.isRemote()) {
+                final OutputWriter writer = io.getOut();
+                task = InputReaderTask.newTask(new RemoteLogInputReader(dm.getCommonConfiguration(), new Callable<String>() {
 
-    protected void performAction(Node[] activatedNodes) {
-        for (Node activatedNode : activatedNodes) {
-            Object node = activatedNode.getLookup().lookup(WLManagerNode.class);
-
-            if (!(node instanceof WLManagerNode)) {
-                continue;
+                    @Override
+                    public String call() throws Exception {
+                        return NonProxyHostsHelper.getNonProxyHosts();
+                    }
+                }), InputProcessors.copying(writer));
+                // FIXME processor
+                RequestProcessor.getDefault().post(task);
+            } else if (!runtime.isProcessRunning()) {
+                // XXX read local log
             }
-
-            WLDeploymentManager dm = ((WLManagerNode)node).getDeploymentManager();
-            dm.getLogManager().openLog();
         }
     }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    public String getName() {
-        return NbBundle.getMessage(OpenServerLogAction.class, "LBL_OpenServerLogAction");
-    }
-
-    public boolean asynchronous() {
-        return false;
-    }
-
 }

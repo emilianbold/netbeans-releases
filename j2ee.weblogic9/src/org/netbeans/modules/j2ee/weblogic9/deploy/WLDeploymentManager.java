@@ -91,6 +91,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
+import org.netbeans.modules.j2ee.weblogic9.ServerLogManager;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
@@ -153,6 +154,9 @@ public class WLDeploymentManager implements DeploymentManager2 {
     private WebLogicConfiguration config;
 
     /* GuardedBy("this") */
+    private ServerLogManager logManager;
+
+    /* GuardedBy("this") */
     private Version serverVersion;
 
     /* GuardedBy("this") */
@@ -182,6 +186,14 @@ public class WLDeploymentManager implements DeploymentManager2 {
         }
         return config;
     }
+
+    public synchronized ServerLogManager getLogManager() {
+        if (logManager == null) {
+            logManager = new ServerLogManager(this);
+        }
+        return logManager;
+    }
+
     /**
      * Returns the stored server URI.
      */
