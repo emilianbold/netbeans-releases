@@ -112,7 +112,8 @@ public final class GenerateDocumentationActionFactory extends AbstractAction imp
             }
         }
         if (projectDocProviders.isEmpty()) {
-            return this;
+            // no provider selected yet -> show all
+            projectDocProviders.addAll(docProviders);
         }
         if (projectDocProviders.size() == 1) {
             return new PhpDocAction(phpModule, projectDocProviders.get(0));
@@ -149,7 +150,7 @@ public final class GenerateDocumentationActionFactory extends AbstractAction imp
         public JMenuItem getPopupPresenter() {
             List<PhpDocAction> docActions = new ArrayList<>(docProviders.size());
             for (PhpDocumentationProvider docProvider : docProviders) {
-                docActions.add(new PhpDocAction(docProvider.getDisplayName(), phpModule, docProvider));
+                docActions.add(new PhpDocAction(docProvider.getDisplayName(), phpModule, docProvider, true));
             }
             return new DocumentationSubMenu(docActions);
         }
@@ -179,15 +180,17 @@ public final class GenerateDocumentationActionFactory extends AbstractAction imp
 
         private final PhpModule phpModule;
         private final PhpDocumentationProvider docProvider;
+        private final boolean remember;
 
 
         public PhpDocAction(PhpModule phpModule, PhpDocumentationProvider docProvider) {
-            this(Bundle.GenerateDocumentationActionFactory_title(), phpModule, docProvider);
+            this(Bundle.GenerateDocumentationActionFactory_title(), phpModule, docProvider, false);
         }
 
-        public PhpDocAction(String name, PhpModule phpModule, PhpDocumentationProvider docProvider) {
+        public PhpDocAction(String name, PhpModule phpModule, PhpDocumentationProvider docProvider, boolean remember) {
             this.phpModule = phpModule;
             this.docProvider = docProvider;
+            this.remember = remember;
 
             putValue(NAME, name);
             putValue(SHORT_DESCRIPTION, name);
@@ -204,6 +207,10 @@ public final class GenerateDocumentationActionFactory extends AbstractAction imp
                 @Override
                 public void run() {
                     LifecycleManager.getDefault().saveAll();
+                    if (remember) {
+                        // remember curent provider
+                        docProvider.notifyEnabled(phpModule, true);
+                    }
                     docProvider.generateDocumentation(phpModule);
                 }
 

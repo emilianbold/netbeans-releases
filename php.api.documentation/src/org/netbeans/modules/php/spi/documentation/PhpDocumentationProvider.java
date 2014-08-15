@@ -111,6 +111,7 @@ public abstract class PhpDocumentationProvider {
      *
      * @param  phpModule the PHP module; never <code>null</code>
      * @return <code>true</code> if the PHP module already contains documentation for this PHP documentation provider, <code>false</code> otherwise.
+     * @see #notifyEnabled(PhpModule, boolean)
      */
     public boolean isInPhpModule(@NonNull PhpModule phpModule) {
         return true;
@@ -135,6 +136,19 @@ public abstract class PhpDocumentationProvider {
      * @see PhpModule#getPreferences(Class, boolean)
      */
     public abstract void generateDocumentation(@NonNull PhpModule phpModule);
+
+    /**
+     * Notify when this provider is enabled or disabled. Typically, provider
+     * stores the state in its properties and returns it when {@link #isInPhpModule(PhpModule)}
+     * is called.
+     * @param phpModule PHP module, never {@code null}
+     * @param enabled {@code true} if enabled, {@code false} otherwise
+     * @see #isInPhpModule(PhpModule)
+     * @since 0.12
+     */
+    public void notifyEnabled(@NonNull PhpModule phpModule, boolean enabled) {
+        // noop
+    }
 
     /**
      * Declarative registration of a singleton PHP documentation provider provider.

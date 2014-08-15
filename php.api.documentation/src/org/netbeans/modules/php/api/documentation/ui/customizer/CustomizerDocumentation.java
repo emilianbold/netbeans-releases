@@ -76,6 +76,9 @@ final class CustomizerDocumentation extends JPanel implements ChangeListener {
     private final ProjectCustomizer.Category category;
     private final PhpModule phpModule;
     private final Map<PhpDocumentationProvider, PhpModuleCustomizer> providerPanels;
+    private final PhpDocumentationProvider originalProvider;
+
+    private volatile PhpDocumentationProvider selectedProvider;
 
 
     CustomizerDocumentation(ProjectCustomizer.Category category, PhpModule phpModule) {
@@ -85,11 +88,21 @@ final class CustomizerDocumentation extends JPanel implements ChangeListener {
 
         this.category = category;
         this.phpModule = phpModule;
+        originalProvider = getOriginalProvider();
 
         providerPanels = createProviderPanels();
 
         initComponents();
         init();
+    }
+
+    private PhpDocumentationProvider getOriginalProvider() {
+        for (PhpDocumentationProvider provider : PhpDocumentations.getDocumentations()) {
+            if (provider.isInPhpModule(phpModule)) {
+                return provider;
+            }
+        }
+        return null;
     }
 
     private Map<PhpDocumentationProvider, PhpModuleCustomizer> createProviderPanels() {
@@ -107,11 +120,11 @@ final class CustomizerDocumentation extends JPanel implements ChangeListener {
         for (PhpDocumentationProvider provider : getProviders()) {
             providerComboBox.addItem(provider);
         }
+        if (originalProvider != null) {
+            providerComboBox.setSelectedItem(originalProvider);
+        }
         providerComboBox.setRenderer(new PhpDocumentationProviderRenderer());
         // listeners
-        for (PhpModuleCustomizer customizer : getCustomizers()) {
-            customizer.addChangeListener(this);
-        }
         providerComboBox.addActionListener(new ProviderActionListener());
         category.setStoreListener(new ActionListener() {
             @Override
@@ -131,11 +144,14 @@ final class CustomizerDocumentation extends JPanel implements ChangeListener {
 
     void providerChanged() {
         assert EventQueue.isDispatchThread();
+        removeListener();
+        selectedProvider = getSelectedProvider();
         // switch panel
         providerPanel.removeAll();
         PhpModuleCustomizer selectedPanel = getSelectedPanel();
         if (selectedPanel != null) {
             providerPanel.add(selectedPanel.getComponent(), BorderLayout.CENTER);
+            selectedPanel.addChangeListener(this);
         }
         providerPanel.revalidate();
         providerPanel.repaint();
@@ -143,43 +159,53 @@ final class CustomizerDocumentation extends JPanel implements ChangeListener {
         validateData();
     }
 
-    @NbBundle.Messages({
-        "# {0} - provider name",
-        "# {1} - message",
-        "CustomizerDocumentation.message={0}: {1}",
-    })
     void validateData() {
         assert EventQueue.isDispatchThread();
-        String warning = null;
-        for (PhpModuleCustomizer customizer : getCustomizers()) {
-            String msg = customizer.getErrorMessage();
-            if (msg != null) {
-                category.setErrorMessage(Bundle.CustomizerDocumentation_message(customizer.getDisplayName(), msg));
+        PhpModuleCustomizer customizer = getSelectedPanel();
+        if (customizer != null) {
+            String error = customizer.getErrorMessage();
+            if (error != null) {
+                category.setErrorMessage(error);
                 category.setValid(false);
                 return;
             }
-            msg = customizer.getWarningMessage();
-            if (warning == null
-                    && msg != null) {
-                warning = Bundle.CustomizerDocumentation_message(customizer.getDisplayName(), msg);
+            String warning = customizer.getWarningMessage();
+            if (warning != null) {
+                category.setErrorMessage(warning);
+                category.setValid(true);
+                return;
             }
         }
-        // warning
-        category.setErrorMessage(warning);
+        // all ok
+        category.setErrorMessage(null);
         category.setValid(true);
     }
 
     void storeData() {
         assert !EventQueue.isDispatchThread();
+        if (originalProvider != selectedProvider) {
+            if (originalProvider != null) {
+                originalProvider.notifyEnabled(phpModule, false);
+            }
+            if (selectedProvider != null) {
+                selectedProvider.notifyEnabled(phpModule, true);
+            }
+        }
         for (PhpModuleCustomizer customizer : getCustomizers()) {
             customizer.save();
         }
     }
 
     void cleanup() {
+        removeListener();
+        for (PhpModuleCustomizer customizer : getCustomizers()) {
+            customizer.close();
+        }
+    }
+
+    private void removeListener() {
         for (PhpModuleCustomizer customizer : getCustomizers()) {
             customizer.removeChangeListener(this);
-            customizer.close();
         }
     }
 
@@ -190,10 +216,15 @@ final class CustomizerDocumentation extends JPanel implements ChangeListener {
     }
 
     @CheckForNull
+    private PhpDocumentationProvider getSelectedProvider() {
+        return (PhpDocumentationProvider) providerComboBox.getSelectedItem();
+    }
+
+    @CheckForNull
     private PhpModuleCustomizer getSelectedPanel() {
         assert EventQueue.isDispatchThread();
         assert providerPanels != null;
-        PhpDocumentationProvider selecteProvider = (PhpDocumentationProvider) providerComboBox.getSelectedItem();
+        PhpDocumentationProvider selecteProvider = getSelectedProvider();
         if (selecteProvider == null) {
             // #246324
             return null;
