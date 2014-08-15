@@ -48,7 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -62,16 +61,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
-import org.netbeans.modules.php.api.documentation.PhpDocumentations;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
@@ -83,13 +78,10 @@ import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
-import org.openide.LifecycleManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
-import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -99,7 +91,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -420,11 +411,14 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         private void addFrameworks(List<Action> actions) {
             // find index
-            int documentationIndex = actions.size();
+            int positionIndex = actions.size();
             for (int i = 0; i < actions.size(); i++) {
                 Action action = actions.get(i);
-                if (action instanceof DocumentationActionFactory) {
-                    documentationIndex = i;
+                if (action == null) {
+                    continue;
+                }
+                if ("org.netbeans.modules.php.composer.ui.actions.ComposerActionsFactory".equals(action.getClass().getName())) { // NOI18N
+                    positionIndex = i;
                     break;
                 }
             }
@@ -447,14 +441,14 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
                         allActions.addAll(frameworkActions);
                         if (!separatorAdded) {
                             separatorAdded = true;
-                            actions.add(++documentationIndex, null);
+                            actions.add(++positionIndex, null);
                         }
-                        actions.add(++documentationIndex, new FrameworkMenu(actionsExtender.getMenuName(), allActions));
+                        actions.add(++positionIndex, new FrameworkMenu(actionsExtender.getMenuName(), allActions));
                     }
                 }
             }
             if (separatorAdded) {
-                actions.add(++documentationIndex, null);
+                actions.add(++positionIndex, null);
             }
         }
 
@@ -558,147 +552,6 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         @Override
         public void actionPerformed(ActionEvent e) {
             PhpProjectUtils.openCustomizer(project, category);
-        }
-    }
-
-    /**
-     * Add 'Generate documentation' menu (for 1 provider) or submenu (for more providers).
-     * Do nothing if there are no providers.
-     */
-    @ActionID(id="org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider$DocumentationActionFactory", category="Project")
-    @ActionRegistration(displayName="#PhpDoc.action.generate.label", lazy=false)
-    @ActionReference(position=800, path="Projects/org-netbeans-modules-php-phpproject/Actions")
-    public static final class DocumentationActionFactory extends AbstractAction implements ContextAwareAction {
-
-        private static final long serialVersionUID = 5687856454545L;
-
-
-        public DocumentationActionFactory() {
-            setEnabled(false);
-            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            assert false;
-        }
-
-        @Override
-        public Action createContextAwareInstance(Lookup actionContext) {
-            Collection<? extends Project> projects = actionContext.lookupAll(Project.class);
-            if (projects.size() != 1) {
-                return this;
-            }
-            PhpProject phpProject = projects.iterator().next().getLookup().lookup(PhpProject.class);
-            if (phpProject == null) {
-                return this;
-            }
-            List<PhpDocumentationProvider> docProviders = PhpDocumentations.getDocumentations();
-            if (docProviders.isEmpty()) {
-                return this;
-            }
-
-            PhpModule phpModule = phpProject.getPhpModule();
-            List<PhpDocumentationProvider> projectDocProviders = new ArrayList<>(docProviders.size());
-            for (PhpDocumentationProvider docProvider : docProviders) {
-                if (docProvider.isInPhpModule(phpModule)) {
-                    projectDocProviders.add(docProvider);
-                }
-            }
-            if (projectDocProviders.isEmpty()) {
-                return this;
-            }
-            if (projectDocProviders.size() == 1) {
-                return new PhpDocAction(phpProject, projectDocProviders.get(0));
-            }
-            return new DocumentationMenu(phpProject, projectDocProviders);
-        }
-
-    }
-
-    private static class DocumentationMenu extends AbstractAction implements Presenter.Popup {
-
-        private static final long serialVersionUID = 1587896543546879L;
-
-        private final PhpProject phpProject;
-        private final List<PhpDocumentationProvider> docProviders;
-
-        public DocumentationMenu(PhpProject phpProject, List<PhpDocumentationProvider> docProviders) {
-            super(NbBundle.getMessage(DocumentationMenu.class, "PhpDoc.action.generate.label"), null);
-            assert phpProject != null;
-            assert docProviders != null;
-
-            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(DocumentationMenu.class, "PhpDoc.action.generate.label"));
-            this.phpProject = phpProject;
-            this.docProviders = docProviders;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            assert false;
-        }
-
-        @Override
-        public JMenuItem getPopupPresenter() {
-            List<PhpDocAction> docActions = new ArrayList<>(docProviders.size());
-            for (PhpDocumentationProvider docProvider : docProviders) {
-                docActions.add(new PhpDocAction(docProvider.getDisplayName(), phpProject, docProvider));
-            }
-            return new DocumentationSubMenu(docActions);
-        }
-    }
-
-    private static class DocumentationSubMenu extends BaseSubMenu {
-
-        private static final long serialVersionUID = -6764324657641L;
-
-
-        public DocumentationSubMenu(List<PhpDocAction> docActions) {
-            super(NbBundle.getMessage(DocumentationSubMenu.class, "PhpDoc.action.generate.label"));
-
-            for (PhpDocAction action : docActions) {
-                add(toMenuItem(action));
-            }
-        }
-
-    }
-
-    private static final class PhpDocAction extends AbstractAction {
-
-        private static final long serialVersionUID = 178423135454L;
-
-        private static final RequestProcessor RP = new RequestProcessor("Generating php documentation", 2); // NOI18N
-
-        private final PhpProject phpProject;
-        private final PhpDocumentationProvider docProvider;
-
-
-        public PhpDocAction(PhpProject phpProject, PhpDocumentationProvider docProvider) {
-            this(NbBundle.getMessage(PhpDocAction.class, "PhpDoc.action.generate.label"), phpProject, docProvider);
-        }
-
-        public PhpDocAction(String name, PhpProject phpProject, PhpDocumentationProvider docProvider) {
-            this.phpProject = phpProject;
-            this.docProvider = docProvider;
-
-            putValue(NAME, name);
-            putValue(SHORT_DESCRIPTION, name);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (PhpProjectValidator.isFatallyBroken(phpProject)) {
-                // broken project
-                UiUtils.warnBrokenProject(phpProject.getPhpModule());
-                return;
-            }
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    LifecycleManager.getDefault().saveAll();
-                    docProvider.generateDocumentation(phpProject.getPhpModule());
-                }
-            });
         }
     }
 
