@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -31,18 +31,22 @@
                       </Group>
                       <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="serverPort" min="-2" pref="55" max="-2" attributes="0"/>
-                          <Component id="domainFolder" pref="333" max="32767" attributes="0"/>
-                          <Component id="domainName" alignment="0" pref="333" max="32767" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                  <Component id="passwordField" alignment="0" max="32767" attributes="1"/>
-                                  <Component id="userName" alignment="0" pref="129" max="32767" attributes="1"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                          <Component id="domainFolder" max="32767" attributes="0"/>
+                          <Component id="domainName" alignment="0" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jpa2SwitchButton" min="-2" max="-2" attributes="0"/>
-                                  <Component id="showButton" min="-2" max="-2" attributes="0"/>
+                                  <Component id="serverPort" min="-2" pref="55" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                          <Component id="passwordField" alignment="0" max="32767" attributes="1"/>
+                                          <Component id="userName" alignment="0" pref="129" max="32767" attributes="1"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="jpa2SwitchButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="showButton" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
                               </Group>
                               <EmptySpace min="-2" pref="65" max="-2" attributes="0"/>
                           </Group>

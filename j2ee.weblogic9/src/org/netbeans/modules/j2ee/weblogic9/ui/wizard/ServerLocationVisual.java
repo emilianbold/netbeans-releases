@@ -62,8 +62,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.j2ee.weblogic9.VersionBridge;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.weblogic.common.api.Version;
 import org.netbeans.modules.weblogic.common.api.WebLogicLayout;
@@ -142,18 +141,10 @@ public class ServerLocationVisual extends JPanel {
 
         // set the server root in the parent instantiating iterator
         instantiatingIterator.setServerRoot(location);
-        instantiatingIterator.setServerVersion(getVersion(version));
+        instantiatingIterator.setServerVersion(VersionBridge.getVersion(version));
 
         // everything seems ok
         return true;
-    }
-
-    @CheckForNull
-    public static org.netbeans.modules.j2ee.deployment.common.api.Version getVersion(@NullAllowed org.netbeans.modules.weblogic.common.api.Version version) {
-        if (version == null) {
-            return null;
-        }
-        return org.netbeans.modules.j2ee.deployment.common.api.Version.fromJsr277OrDottedNotationWithFallback(version.toString());
     }
     
     public static File findServerLocation(File candidate, WizardDescriptor wizardDescriptor) {

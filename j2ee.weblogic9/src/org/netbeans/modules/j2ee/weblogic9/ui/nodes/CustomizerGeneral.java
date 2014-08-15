@@ -49,13 +49,13 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import java.awt.Font;
-import java.util.Properties;
 
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLJpa2SwitchSupport;
+import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -106,15 +106,15 @@ class CustomizerGeneral extends javax.swing.JPanel {
         domainFolder.setText( domainRoot );
         String domain = manager.getInstanceProperties().getProperty( WLPluginProperties.DOMAIN_NAME);
         String port = manager.getInstanceProperties().getProperty( WLPluginProperties.PORT_ATTR);
-        Properties properties = null;
+        WebLogicConfiguration config = null;
         if ( domain== null || port == null ){
-            properties = WLPluginProperties.getDomainProperties(domainRoot);
+            config = manager.getCommonConfiguration();
         }
         if ( domain == null ){
-            domain = properties.getProperty(WLPluginProperties.DOMAIN_NAME);
+            domain = config.getDomainName();
         }
         if ( port == null ){
-            port = properties.getProperty(WLPluginProperties.PORT_ATTR);
+            port = Integer.toString(config.getPort());
         }
         if ( domain!= null ) {
             domainName.setText( domain );

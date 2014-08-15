@@ -73,6 +73,8 @@ public class DomainConfiguration {
 
     private static final Logger LOGGER = Logger.getLogger(DomainConfiguration.class.getName());
 
+    private static final String DEFAULT_HOST = "localhost"; // NOI18N
+
     private static final int DEFAULT_PORT = 7001;
 
     private static final Pattern DOMAIN_NAME_PATTERN =
@@ -236,7 +238,7 @@ public class DomainConfiguration {
                     if (serverName != null && !serverName.isEmpty()) {
                         // address and port have minOccurs=0
                         if (serverHost == null || serverHost.isEmpty()) {
-                            serverHost = "localhost"; // NOI18N
+                            serverHost = DEFAULT_HOST;
                         }
                         int parsedServerPort = DEFAULT_PORT;
                         if (serverPort != null && !serverPort.isEmpty()) {
@@ -250,6 +252,9 @@ public class DomainConfiguration {
                     }
                 }
             }
+            if (name != null && name.isEmpty()) {
+                name = null;
+            }
             Server admin = null;
             if (adminServer != null) {
                 admin = servers.get(adminServer);
@@ -260,6 +265,9 @@ public class DomainConfiguration {
             if (admin != null) {
                 host = admin.getHost();
                 port = admin.getPort();
+            } else {
+                host = DEFAULT_HOST;
+                port = DEFAULT_PORT;
             }
         } catch (IOException | ParserConfigurationException | SAXException e) {
             LOGGER.log(Level.INFO, null, e);

@@ -53,7 +53,6 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
@@ -62,9 +61,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.weblogic9.VersionBridge;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLJpa2SwitchSupport;
+import org.netbeans.modules.weblogic.common.api.DomainConfiguration;
+import org.netbeans.modules.weblogic.common.api.WebLogicLayout;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -298,7 +300,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             instantiatingIterator.setDomainRoot(instance.getDomainPath());
             instantiatingIterator.setUsername(usernameField.getText());
             instantiatingIterator.setPassword(new String(passwordField.getPassword()));
-            instantiatingIterator.setPort(instance.getPort());
+            instantiatingIterator.setPort(Integer.toString(instance.getPort()));
             instantiatingIterator.setDomainName(instance.getDomainName());
             instantiatingIterator.setHost(instance.getHost());
             instantiatingIterator.setRemote(false);
@@ -388,32 +390,17 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     }
     
     private Instance getServerInstance(String domainPath) {
-        Properties properties = WLPluginProperties.getDomainProperties(domainPath);
-        if (properties.isEmpty()) {
+        DomainConfiguration config = WebLogicLayout.getDomainConfiguration(domainPath);
+        if (config == null) {
+            return null;
+        }
+        if (config.getAdminServer() == null) {
             return null;
         }
 
-        String name = properties.getProperty(WLPluginProperties.ADMIN_SERVER_NAME);
-        String port = properties.getProperty(WLPluginProperties.PORT_ATTR);
-        String host = properties.getProperty(WLPluginProperties.HOST_ATTR);
-        String domainName = properties.getProperty(WLPluginProperties.DOMAIN_NAME);
-        String versionString = properties.getProperty(WLPluginProperties.DOMAIN_VERSION);
-        Version domainVersion = versionString != null ? Version.fromJsr277OrDottedNotationWithFallback(versionString) : null;
-
-        Boolean isProductionMode = (Boolean)properties.get(
-                WLPluginProperties.PRODUCTION_MODE);
-        if ((name != null) && (!name.equals(""))) { // NOI18N
-            // address and port have minOccurs=0 and are missing in 90
-            // examples server
-            port = (port == null || port.equals("")) // NOI18N
-            ? Integer.toString(WLDeploymentFactory.DEFAULT_PORT)
-                    : port;
-            host = (host == null || host.equals("")) ? "localhost" // NOI18N
-                    : host;
-            return new Instance(name, host, port, domainPath, domainName, domainVersion,
-                    isProductionMode != null && isProductionMode);
-        }
-        return null;
+        return new Instance(config.getAdminServer(), config.getHost(), config.getPort(),
+                domainPath, config.getName(), VersionBridge.getVersion(config.getVersion()),
+                config.isProduction());
     }
 
 
@@ -728,7 +715,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         /**
          * Instance's port
          */
-        private String port;
+        private int port;
 
         /**
          * Instance's profile directory
@@ -755,7 +742,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          * @param port the instance's port
          * @param domainPath the instance's profile path
          */
-        public Instance(String name, String host, String port, String domainPath,
+        public Instance(String name, String host, int port, String domainPath,
                 String domainName, Version domainVersion, boolean isProductionModeEnabled) {
             // save the properties
             this.name = name;
@@ -775,15 +762,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         public String getName() {
             return this.name;
         }
-
-        /**
-         * Setter for the instance's name
-         *
-         * @param the new instance's name
-         */
-        public void setName(String name) {
-            this.name = name;
-        }
         
         /**
          * Getter for the domain name
@@ -792,15 +770,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          */
         public String getDomainName() {
             return this.domainName;
-        }
-
-        /**
-         * Setter for the domain name
-         *
-         * @param the new domain name
-         */
-        public void setDomainName(String name) {
-            domainName = name;
         }
 
         /**
@@ -813,30 +782,12 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         }
 
         /**
-         * Setter for the instance's host
-         *
-         * @param the new instance's host
-         */
-        public void setHost(String host) {
-            this.host = host;
-        }
-
-        /**
          * Getter for the instance's port
          *
          * @return the instance's port
          */
-        public String getPort() {
+        public int getPort() {
             return this.port;
-        }
-
-        /**
-         * Setter for the instance's port
-         *
-         * @param the new instance's port
-         */
-        public void setPort(String port) {
-            this.port = port;
         }
 
         /**
@@ -846,15 +797,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          */
         public String getDomainPath() {
             return this.domainPath;
-        }
-
-        /**
-         * Setter for the instance's profile path
-         *
-         * @param the new instance's profile path
-         */
-        public void setDomainPath(String domainPath) {
-            this.domainPath = domainPath;
         }
         
         /**
@@ -866,22 +808,9 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         public boolean isProductionModeEnabled(){
             return isProductionModeEnabled;
         }
-        
-        /**
-         * Setter for production mode property.
-         * 
-         * @param productionMode isProductionModeEnabled property value
-         */
-        public void setProductionModeEnabled( boolean productionMode ){
-            isProductionModeEnabled = productionMode;
-        }
 
         public Version getDomainVersion() {
             return domainVersion;
-        }
-
-        public void setDomainVersion(Version domainVersion) {
-            this.domainVersion = domainVersion;
         }
 
         /**
