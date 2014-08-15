@@ -2856,8 +2856,13 @@ public class JavaCompletionProvider implements CompletionProvider {
             Element e = controller.getTrees().getElement(exPath);
             TypeMirror tm = controller.getTrees().getTypeMirror(exPath);
             if (e == null) {
-                if (tm != null && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY)) {
-                    addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
+                if (tm != null) {
+                    if (tm.getKind() == TypeKind.ERROR) {
+                        tm = controller.getTrees().getOriginalType((ErrorType)tm);
+                    }
+                    if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY) {
+                        addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
+                    }
                 }
                 return;
             }

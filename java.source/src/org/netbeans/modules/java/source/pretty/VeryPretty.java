@@ -780,7 +780,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 	print('{');
         java.util.List<JCTree> members = CasualDiff.filterHidden(diffContext, tree.defs);
 	if (!members.isEmpty()) {
-	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesAfterAnonymousClassHeader() : cs.getBlankLinesAfterClassHeader());
+	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesAfterAnonymousClassHeader() : (flags & ENUM) != 0 ? cs.getBlankLinesAfterEnumHeader() : cs.getBlankLinesAfterClassHeader());
             boolean firstMember = true;
             if ((tree.mods.flags & ENUM) != 0 && members.get(0) instanceof FieldGroupTree && ((FieldGroupTree) members.get(0)).isEnum()) {
                 printEnumConstants(((FieldGroupTree) members.get(0)).getVariables(), false);
@@ -791,7 +791,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 printStat(t, true, firstMember, true, true);
                 firstMember = false;
             }
-	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace());
+	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : (flags & ENUM) != 0 ? cs.getBlankLinesBeforeEnumClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace());
         } else {
             printEmptyBlockComments(tree, false);
         }
@@ -2786,7 +2786,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 printComment(c, false, members);
             }
             if (members)
-                blankLines(enclClassName.isEmpty() ? cs.getBlankLinesAfterAnonymousClassHeader() : cs.getBlankLinesAfterClassHeader());
+                blankLines(cs.getBlankLinesAfterAnonymousClassHeader());
             else
                 newline();
 	    printStats(stats, members);
