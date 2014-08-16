@@ -19,52 +19,59 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="NoteChangesLabel" alignment="0" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="domainNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="domainFolderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="userNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="domainFolder" max="32767" attributes="0"/>
-                          <Component id="domainName" alignment="0" max="32767" attributes="0"/>
+                          <Component id="NoteChangesLabel" alignment="0" max="32767" attributes="1"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                  <Component id="serverHost" max="32767" attributes="0"/>
-                                  <Component id="passwordField" alignment="0" max="32767" attributes="1"/>
-                                  <Component id="userName" alignment="0" pref="129" max="32767" attributes="1"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jpa2SwitchButton" min="-2" max="-2" attributes="0"/>
-                                  <Component id="showButton" min="-2" max="-2" attributes="0"/>
+                                  <Component id="domainNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="domainFolderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="userNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="65" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="domainFolder" max="32767" attributes="0"/>
+                                  <Component id="domainName" alignment="0" max="32767" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                          <Component id="serverHost" max="32767" attributes="0"/>
+                                          <Component id="passwordField" alignment="0" max="32767" attributes="1"/>
+                                          <Component id="userName" alignment="0" pref="129" max="32767" attributes="1"/>
+                                      </Group>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="jpa2SwitchButton" min="-2" max="-2" attributes="0"/>
+                                          <Component id="showButton" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="65" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="serverPort" min="-2" pref="55" max="-2" attributes="0"/>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="adminInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="serverHostLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="jpa2SwitchLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
+                                      <Component id="jpa2Status" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                       </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="adminInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="serverHostLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="serverPortLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
-                              <Component id="serverPort" min="-2" pref="55" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="jpa2SwitchLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="jpa2Status" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="serverPortLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="117" max="32767" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
