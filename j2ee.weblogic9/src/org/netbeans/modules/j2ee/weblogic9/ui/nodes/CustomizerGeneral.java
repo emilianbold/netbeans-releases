@@ -133,7 +133,6 @@ class CustomizerGeneral extends javax.swing.JPanel {
         boolean statusVisible = support.isSwitchSupported();
         boolean buttonVisible = statusVisible
                 && !support.isEnabledViaSmartUpdate();
-
         
         jpa2SwitchLabel.setVisible(statusVisible);
         jpa2Status.setVisible(statusVisible);
@@ -237,7 +236,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(NoteChangesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(NoteChangesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(domainNameLabel)
@@ -267,7 +266,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
                                     .addComponent(serverHostLabel)
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jpa2SwitchLabel)
-                                        .addGap(33, 33, 33)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addComponent(jpa2Status)))
                                 .addGap(0, 0, Short.MAX_VALUE)))
                         .addContainerGap())
