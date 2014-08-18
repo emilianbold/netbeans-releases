@@ -80,8 +80,9 @@ public class TemplateAttrProviderTest extends NbTestCase {
 "    </organization>\n" +
 "</project>\n" +
 "");
-        assertEquals("{project={displayName=Test, encoding=..., license=apache20, name=testart, organization=Yoyodyne Corp.}}",
-                     ProjectManager.getDefault().findProject(d).getLookup().lookup(CreateFromTemplateAttributesProvider.class).attributesFor(null, DataFolder.findFolder(d), null).toString().replaceFirst("encoding=[^,]+", "encoding=..."));
+        String attrs = ProjectManager.getDefault().findProject(d).getLookup().lookup(CreateFromTemplateAttributesProvider.class).attributesFor(null, DataFolder.findFolder(d), null).toString();
+        assertTrue("Expected {displayName=Test, license=apache20, name=testart, organization=Yoyodyne Corp.} but was " + attrs,
+                attrs.contains("displayName=Test") && attrs.contains("license=apache20") && attrs.contains("name=testart") && attrs.contains("organization=Yoyodyne Corp."));
     }
 
 }
