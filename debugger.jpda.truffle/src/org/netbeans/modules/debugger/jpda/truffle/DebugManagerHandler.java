@@ -308,6 +308,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
     }
     
     void destroy() {
+        breakpointsHandler.destroy();
         if (accessorClass == null) {
             return ;
         }

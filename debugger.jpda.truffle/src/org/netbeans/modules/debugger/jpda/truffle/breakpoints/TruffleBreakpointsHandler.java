@@ -53,9 +53,12 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,10 +68,12 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
@@ -97,6 +102,7 @@ public class TruffleBreakpointsHandler {
     private List<JSLineBreakpoint> breakpointsToSubmit = new ArrayList<>();
     private final Object breakpointsToSubmitLock = new Object();
     private final Map<JSLineBreakpoint, ObjectReference> breakpointsMap = new HashMap<>();
+    private final JSBreakpointPropertyChangeListener breakpointsChangeListener = new JSBreakpointPropertyChangeListener();
     
     public TruffleBreakpointsHandler(JPDADebugger debugger) {
         this.debugger = debugger;
@@ -110,6 +116,14 @@ public class TruffleBreakpointsHandler {
                 if (bp instanceof JSLineBreakpoint) {
                     breakpointsToSubmit.add((JSLineBreakpoint) bp);
                 }
+            }
+        }
+    }
+    
+    public void destroy() {
+        synchronized (breakpointsMap) {
+            for (JSLineBreakpoint jsbp : breakpointsMap.keySet()) {
+                jsbp.removePropertyChangeListener(breakpointsChangeListener);
             }
         }
     }
@@ -141,6 +155,7 @@ public class TruffleBreakpointsHandler {
             }
             ObjectReference bpImpl = setLineBreakpoint(t, file.getAbsolutePath(), bp.getLineNumber());
             bpsMap.put(bp, bpImpl);
+            bp.addPropertyChangeListener(breakpointsChangeListener);
         }
         synchronized (breakpointsMap) {
             breakpointsMap.putAll(bpsMap);
@@ -221,6 +236,7 @@ public class TruffleBreakpointsHandler {
                  VMDisconnectedExceptionWrapper ex) {
         }
         if (bpRef[0] != null) {
+            bp.addPropertyChangeListener(breakpointsChangeListener);
             synchronized (breakpointsMap) {
                 breakpointsMap.put(bp, bpRef[0]);
             }
@@ -228,6 +244,7 @@ public class TruffleBreakpointsHandler {
     }
     
     private boolean removeBP(JSLineBreakpoint bp) {
+        bp.removePropertyChangeListener(breakpointsChangeListener);
         final ObjectReference bpImpl;
         synchronized (breakpointsMap) {
             bpImpl = breakpointsMap.remove(bp);
@@ -270,6 +287,48 @@ public class TruffleBreakpointsHandler {
         }
         return successPtr[0];
     }
+    
+    private boolean setBreakpointProperty(JSLineBreakpoint bp,
+                                          TruffleBPMethods method,
+                                          final List<? extends Value> args) {
+        final ObjectReference bpImpl;
+        synchronized (breakpointsMap) {
+            bpImpl = breakpointsMap.get(bp);
+        }
+        if (bpImpl == null) {
+            return false;
+        }
+        final boolean[] successPtr = new boolean[] { false };
+        try {
+            final Method setBreakpointPropertyMethod = ClassTypeWrapper.concreteMethodByName(
+                    (ClassType) ObjectReferenceWrapper.referenceType(bpImpl),
+                    method.getMethodName(),
+                    method.getMethodSignature());
+            TruffleAccess.methodCallingAccess(debugger, new TruffleAccess.MethodCallsAccess() {
+                @Override
+                public void callMethods(JPDAThread thread) {
+                    ThreadReference tr = ((JPDAThreadImpl) thread).getThreadReference();
+                    try {
+                        ObjectReferenceWrapper.invokeMethod(
+                                bpImpl,
+                                tr,
+                                setBreakpointPropertyMethod,
+                                args,
+                                ObjectReference.INVOKE_SINGLE_THREADED);
+                        successPtr[0] = true;
+                    } catch (InvalidTypeException | ClassNotLoadedException |
+                             IncompatibleThreadStateException | InvocationException |
+                             InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
+                             ObjectCollectedExceptionWrapper ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        } catch (ClassNotPreparedExceptionWrapper | InternalExceptionWrapper |
+                 ObjectCollectedExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
+        }
+        return successPtr[0];
+    }
 
     public void breakpointAdded(JSLineBreakpoint jsLineBreakpoint) {
         synchronized (breakpointsToSubmitLock) {
@@ -291,5 +350,58 @@ public class TruffleBreakpointsHandler {
         }
         // Breakpoints were submitted already, remove this.
         removeBP(jsLineBreakpoint);
+    }
+    
+    private static enum TruffleBPMethods {
+        enable,
+        disable;
+        
+        public String getMethodName() {
+            return name();
+        }
+        
+        public String getMethodSignature() {
+            switch (this) {
+                case enable:
+                case disable:
+                    return "()V";
+                default:
+                    throw new IllegalStateException(this.name());
+            }
+        }
+    }
+    
+    private class JSBreakpointPropertyChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            final JSLineBreakpoint jsbp = (JSLineBreakpoint) evt.getSource();
+            String propertyName = evt.getPropertyName();
+            final TruffleBPMethods method;
+            final List<? extends Value> args;
+            switch (propertyName) {
+                case JSLineBreakpoint.PROP_ENABLED:
+                    if (jsbp.isEnabled()) {
+                        method = TruffleBPMethods.enable;
+                        args = Collections.emptyList();
+                    } else {
+                        method = TruffleBPMethods.disable;
+                        args = Collections.emptyList();
+                    }
+                    break;
+                case JSLineBreakpoint.PROP_CONDITION:
+                    // TODO
+                    return ;
+                default:
+                    return ;
+            }
+            ((JPDADebuggerImpl) debugger).getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    setBreakpointProperty(jsbp, method, args);
+                }
+            });
+        }
+        
     }
 }
