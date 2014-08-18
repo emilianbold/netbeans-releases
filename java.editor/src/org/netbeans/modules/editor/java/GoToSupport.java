@@ -522,10 +522,12 @@ public class GoToSupport {
                     if (JavadocImports.isInsideReference(jdts, offset) || JavadocImports.isInsideParamName(jdts, offset)) {
                         jdts.move(offset);
                         jdts.moveNext();
-                        if (token != null) {
-                            token[0] = t;
+                        if (jdts.token().id() != JavadocTokenId.OTHER_TEXT) {
+                            if (token != null) {
+                                token[0] = t;
+                            }
+                            ret[0] = new int [] {jdts.offset(), jdts.offset() + jdts.token().length()};
                         }
-                        ret[0] = new int [] {jdts.offset(), jdts.offset() + jdts.token().length()};
                     }
                     return;
                 } else if (!USABLE_TOKEN_IDS.contains(t.id())) {
