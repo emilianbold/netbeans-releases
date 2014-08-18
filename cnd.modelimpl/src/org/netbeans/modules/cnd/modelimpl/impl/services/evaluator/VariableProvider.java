@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
@@ -75,6 +76,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
@@ -144,11 +146,14 @@ public class VariableProvider {
             if(variableName.equals("false")) { // NOI18N
                 return 0;
             }
-            if (decl != null) {
+            if (decl != null) { // TODO: why this condition?
                 for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : mapping.entries()) {
                     CsmTemplateParameter param = entry.getKey();
+                    String scopeQualifiedName = CsmKindUtilities.isQualified(scope) ? 
+                            ((CsmQualifiedNamedElement) scope).getQualifiedName().toString() : 
+                            decl.getQualifiedName().toString();
                     if (variableName.equals(param.getQualifiedName().toString()) ||
-                            (decl.getQualifiedName() + "::" + variableName).equals(param.getQualifiedName().toString())) { // NOI18N
+                            (scopeQualifiedName + APTUtils.SCOPE + variableName).equals(param.getQualifiedName().toString())) {
                         CsmSpecializationParameter spec = entry.getValue();
                         if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
                             CsmExpressionBasedSpecializationParameter specParam = (CsmExpressionBasedSpecializationParameter) spec;

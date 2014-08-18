@@ -25,14 +25,35 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.VariableProvid
                                         RecognitionException e) {
         // do nothing
     }
+
+    private boolean checkParams(int...params) {
+        for (int param : params) {
+            if (param == Integer.MAX_VALUE) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private int safePlus(int first, int second) {
+        return checkParams(first, second) ? first + second : Integer.MAX_VALUE;
+    }
+
+    private int safeMinus(int first, int second) {
+        return checkParams(first, second) ? first - second : Integer.MAX_VALUE;
+    }
+
+    private int safeMul(int first, int second) {
+        return checkParams(first, second) ? first * second : Integer.MAX_VALUE;
+    }
 }
 
 prog: expr;
 
 expr returns [int value]
     :   e=equalityExpr {$value = $e.value;}
-        (   PLUS e=equalityExpr {$value += $e.value;}
-        |   MINUS e=equalityExpr {$value -= $e.value;}
+        (   PLUS e=equalityExpr {$value = safePlus($value, $e.value);}
+        |   MINUS e=equalityExpr {$value = safeMinus($value, $e.value);}
         )*
     ;
 
@@ -45,7 +66,7 @@ equalityExpr returns [int value]
     ;
 
 multExpr returns [int value]
-    :   e=unaryExpr {$value = $e.value;} (STAR e=unaryExpr {$value *= $e.value;})*
+    :   e=unaryExpr {$value = $e.value;} (STAR e=unaryExpr {$value = safeMul($value, $e.value);})*
     ;
 
 unaryExpr returns [int value]

@@ -111,7 +111,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "\nEvaluating expression \"{0}\"\n", expr); // NOI18N
         }
-        
+
         org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
 
         APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
