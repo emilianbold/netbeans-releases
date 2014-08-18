@@ -153,7 +153,12 @@ public class TruffleBreakpointsHandler {
             if (file == null) {
                 continue;
             }
-            ObjectReference bpImpl = setLineBreakpoint(t, file.getAbsolutePath(), bp.getLineNumber());
+            ObjectReference bpImpl;
+            if (bp.isEnabled()) {
+                bpImpl = setLineBreakpoint(t, file.getAbsolutePath(), bp.getLineNumber());
+            } else {
+                bpImpl = null;
+            }
             bpsMap.put(bp, bpImpl);
             bp.addPropertyChangeListener(breakpointsChangeListener);
         }
@@ -204,42 +209,42 @@ public class TruffleBreakpointsHandler {
         final String path = file.getAbsolutePath();
         final int line = bp.getLineNumber();
         final ObjectReference[] bpRef = new ObjectReference[] { null };
-        try {
-            final Method setLineBreakpointMethod = ClassTypeWrapper.concreteMethodByName(
-                    accessorClass,
-                    ACCESSOR_SET_LINE_BREAKPOINT,
-                    ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT);
-            TruffleAccess.methodCallingAccess(debugger, new TruffleAccess.MethodCallsAccess() {
-                @Override
-                public void callMethods(JPDAThread thread) {
-                    ThreadReference tr = ((JPDAThreadImpl) thread).getThreadReference();
-                    StringReference pathRef = tr.virtualMachine().mirrorOf(path);
-                    IntegerValue lineRef = tr.virtualMachine().mirrorOf(line);
-                    List<? extends Value> args = Arrays.asList(new Value[] { pathRef, lineRef });
-                    try {
-                        ObjectReference ret = (ObjectReference) ClassTypeWrapper.invokeMethod(
-                                accessorClass,
-                                tr,
-                                setLineBreakpointMethod,
-                                args,
-                                ObjectReference.INVOKE_SINGLE_THREADED);
-                        bpRef[0] = ret;
-                    } catch (InvalidTypeException | ClassNotLoadedException |
-                             IncompatibleThreadStateException | InvocationException |
-                             InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
-                             ObjectCollectedExceptionWrapper ex) {
-                        Exceptions.printStackTrace(ex);
+        if (bp.isEnabled()) {
+            try {
+                final Method setLineBreakpointMethod = ClassTypeWrapper.concreteMethodByName(
+                        accessorClass,
+                        ACCESSOR_SET_LINE_BREAKPOINT,
+                        ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT);
+                TruffleAccess.methodCallingAccess(debugger, new TruffleAccess.MethodCallsAccess() {
+                    @Override
+                    public void callMethods(JPDAThread thread) {
+                        ThreadReference tr = ((JPDAThreadImpl) thread).getThreadReference();
+                        StringReference pathRef = tr.virtualMachine().mirrorOf(path);
+                        IntegerValue lineRef = tr.virtualMachine().mirrorOf(line);
+                        List<? extends Value> args = Arrays.asList(new Value[] { pathRef, lineRef });
+                        try {
+                            ObjectReference ret = (ObjectReference) ClassTypeWrapper.invokeMethod(
+                                    accessorClass,
+                                    tr,
+                                    setLineBreakpointMethod,
+                                    args,
+                                    ObjectReference.INVOKE_SINGLE_THREADED);
+                            bpRef[0] = ret;
+                        } catch (InvalidTypeException | ClassNotLoadedException |
+                                 IncompatibleThreadStateException | InvocationException |
+                                 InternalExceptionWrapper | VMDisconnectedExceptionWrapper |
+                                 ObjectCollectedExceptionWrapper ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
-                }
-            });
-        } catch (ClassNotPreparedExceptionWrapper | InternalExceptionWrapper |
-                 VMDisconnectedExceptionWrapper ex) {
-        }
-        if (bpRef[0] != null) {
-            bp.addPropertyChangeListener(breakpointsChangeListener);
-            synchronized (breakpointsMap) {
-                breakpointsMap.put(bp, bpRef[0]);
+                });
+            } catch (ClassNotPreparedExceptionWrapper | InternalExceptionWrapper |
+                     VMDisconnectedExceptionWrapper ex) {
             }
+        }
+        bp.addPropertyChangeListener(breakpointsChangeListener);
+        synchronized (breakpointsMap) {
+            breakpointsMap.put(bp, bpRef[0]);
         }
     }
     
@@ -296,7 +301,12 @@ public class TruffleBreakpointsHandler {
             bpImpl = breakpointsMap.get(bp);
         }
         if (bpImpl == null) {
-            return false;
+            if (bp.isEnabled()) {
+                submitBP(bp);
+                return true;
+            } else {
+                return false;
+            }
         }
         final boolean[] successPtr = new boolean[] { false };
         try {
