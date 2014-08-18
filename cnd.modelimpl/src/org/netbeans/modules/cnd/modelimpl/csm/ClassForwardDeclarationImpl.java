@@ -110,7 +110,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         assert qid != null;
         name = QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
-        this.templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, null, global);
+        this.templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, this, global);
     }
 
     protected ClassForwardDeclarationImpl(CharSequence name, TemplateDescriptor templateDescriptor, CsmFile file, int startOffset, int endOffset) {
@@ -335,6 +335,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         return result;
     }
 
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         // currently class forward declaration is a scope only for its template parameters,
         // but we do not return them as scope elements
