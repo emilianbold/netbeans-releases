@@ -43,41 +43,48 @@
  */
 package org.netbeans.modules.javaee.wildfly.ide.commands;
 
-import java.net.MalformedURLException;
-import java.util.MissingResourceException;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.status.ProgressEvent;
-import javax.enterprise.deploy.spi.status.ProgressListener;
-import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import org.openide.util.RequestProcessor;
-import javax.enterprise.deploy.shared.ActionType;
-import javax.enterprise.deploy.shared.CommandType;
-import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.shared.StateType;
+import javax.enterprise.deploy.spi.status.ProgressEvent;
+import javax.enterprise.deploy.spi.status.ProgressListener;
+import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.WildflyTargetModuleID;
 import org.netbeans.modules.javaee.wildfly.ide.WildflyDeploymentStatus;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Ivan Sidorkin
  */
 public class WildflyExplodedDeployer implements ProgressObject, Runnable {
+
+    static final String DEPLOYED = ".deployed";
+    static final String FAILED_DEPLOY = ".failed";
+    static final String DO_DEPLOY = ".dodeploy";
+    static final String DEPLOYING = ".isdeploying";
+    static final String UNDEPLOYING = ".isundeploying";
+    static final String UNDEPLOYED = ".undeployed";
+    static final String SKIP_DEPLOY = ".skipdeploy";
+    static final String PENDING = ".pending";
 
     /**
      * timeout for waiting for URL connection
@@ -102,13 +109,18 @@ public class WildflyExplodedDeployer implements ProgressObject, Runnable {
     }
 
     public ProgressObject deploy(Target target, J2eeModule.Type type, File file) {
-        return this.redeploy(new WildflyTargetModuleID(target, file.getName(),type), file);
+        this.file = file;
+        this.mainModuleID = new WildflyTargetModuleID(target, file.getName(), type, file.isDirectory());
+        fireHandleProgressEvent(this.mainModuleID, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE,
+                StateType.RUNNING, NbBundle.getMessage(WildflyDeploymentStatus.class, "MSG_DEPLOYING", file.getAbsolutePath())));
+        RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
+        return this;
     }
 
     public ProgressObject redeploy(TargetModuleID module_id, File file) {
         this.file = file;
         this.mainModuleID = (WildflyTargetModuleID) module_id;
-        fireHandleProgressEvent(this.mainModuleID, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, 
+        fireHandleProgressEvent(this.mainModuleID, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE,
                 StateType.RUNNING, NbBundle.getMessage(WildflyDeploymentStatus.class, "MSG_DEPLOYING", file.getAbsolutePath())));
         RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
         return this;
@@ -118,15 +130,14 @@ public class WildflyExplodedDeployer implements ProgressObject, Runnable {
     public void run() {
         try {
             final String deployDir = dm.getClient().getDeploymentDirectory();
-            String msg = NbBundle.getMessage(WildflyDeploymentStatus.class, "MSG_DEPLOYING", file.getAbsolutePath());
-            fireHandleProgressEvent(this.mainModuleID, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, msg));
+            String msg = NbBundle.getMessage(WildflyDeploymentStatus.class, "MSG_REDEPLOYING", file.getAbsolutePath());
             String message = deployFile(file, new File(deployDir));
             if (message != null) {
                 fireHandleProgressEvent(mainModuleID, new WildflyDeploymentStatus(ActionType.EXECUTE,
                         CommandType.DISTRIBUTE, StateType.FAILED, message));
                 return;
             }
-            if(this.mainModuleID.getType() == J2eeModule.Type.WAR) {
+            if (this.mainModuleID.getType() == J2eeModule.Type.WAR) {
                 this.mainModuleID.setContextURL(this.dm.getClient().getWebModuleURL(this.mainModuleID.getModuleID()));
             }
         } catch (MalformedURLException ex) {
@@ -140,16 +151,18 @@ public class WildflyExplodedDeployer implements ProgressObject, Runnable {
             fireHandleProgressEvent(this.mainModuleID, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
         }
 
-        fireHandleProgressEvent(this.mainModuleID, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, "Applicaton Deployed"));
+        fireHandleProgressEvent(this.mainModuleID, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, "Application Deployed"));
     }
 
-    public static String deployFile(File file, File deployDir) throws IOException, InterruptedException {
+    private synchronized String deployFile(File file, File deployDir) throws IOException, InterruptedException {
 
         final long deployTime = file.lastModified();
-        File statusFile = new File(deployDir, file.getName() + ".deployed"); // NOI18N
-        File failedFile = new File(deployDir, file.getName() + ".failed"); // NOI18N
-        File progressFile = new File(deployDir, file.getName() + ".isdeploying"); // NOI18N
-        new File(deployDir, file.getName() + ".dodeploy").createNewFile(); // NOI18N
+        File statusFile = new File(deployDir, file.getName() + DEPLOYED); // NOI18N
+        File failedFile = new File(deployDir, file.getName() + FAILED_DEPLOY); // NOI18N
+        File dodeployFile = new File(deployDir, file.getName() + DO_DEPLOY); // NOI18N
+        if (!dodeployFile.exists() && !isDeploymentInProgress(file, deployDir)) {
+            dodeployFile.createNewFile(); // NOI18N
+        }
         int i = 0;
         int limit = ((int) TIMEOUT / POLLING_INTERVAL);
         do {
@@ -159,7 +172,7 @@ public class WildflyExplodedDeployer implements ProgressObject, Runnable {
             // we are waiting and either there is progress file
             // or (there is not a new enough status file
             // and there is not a new enough failed file)
-        } while (i < limit && progressFile.exists()
+        } while (i < limit && isDeploymentInProgress(file, deployDir)
                 || ((!statusFile.exists() || statusFile.lastModified() < deployTime)
                 && (!failedFile.exists() || failedFile.lastModified() < deployTime)));
 
@@ -173,6 +186,13 @@ public class WildflyExplodedDeployer implements ProgressObject, Runnable {
             return NbBundle.getMessage(WildflyDeploymentStatus.class, "MSG_TIMEOUT");
         }
         return null;
+    }
+
+    private boolean isDeploymentInProgress(File file, File deployDir) {
+        File deployingFile = new File(deployDir, file.getName() + DEPLOYING); // NOI18N
+        File pendingFile = new File(deployDir, file.getName() + PENDING); // NOI18N
+        File undeployingFile = new File(deployDir, file.getName() + UNDEPLOYING); // NOI18N
+        return deployingFile.exists() || pendingFile.exists() || undeployingFile.exists();
     }
 
     // ----------  Implementation of ProgressObject interface

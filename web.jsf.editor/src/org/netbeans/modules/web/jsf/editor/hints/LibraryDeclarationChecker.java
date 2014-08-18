@@ -256,11 +256,9 @@ public class LibraryDeclarationChecker extends HintsProvider {
             final boolean[] passthroughUsage = new boolean[1];
             final Collection<OffsetRange> ranges = new ArrayList<>();
             for (Library lib : declaredLibraries) {
-                String usedNamespace = lib.getNamespace();
-                Node rootNode = result.root(usedNamespace);
+                Node rootNode = result.root(lib.getNamespace());
                 if (lib.getLegacyNamespace() != null && (rootNode == null || rootNode.children().isEmpty())) {
-                    usedNamespace = lib.getLegacyNamespace();
-                    rootNode = result.root(usedNamespace);
+                    rootNode = result.root(lib.getLegacyNamespace());
                 }
                 if (rootNode == null) {
                     continue; //no parse result for this namespace, the namespace is not declared
@@ -298,7 +296,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
                 if (usages[0] == 0) {
                     //unused declaration
-                    addUnusedLibrary(ranges, namespace2Attribute, usedNamespace, snapshot, docText);
+                    addUnusedLibrary(ranges, namespace2Attribute, lib.getNamespace(), snapshot, docText);
                 }
             }
 

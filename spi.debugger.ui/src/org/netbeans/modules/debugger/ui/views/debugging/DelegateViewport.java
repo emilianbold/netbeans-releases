@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.phpdoc.ui.customizer;
+package org.netbeans.modules.debugger.ui.views.debugging;
 
+import java.awt.Container;
+import java.awt.Rectangle;
+import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import javax.swing.JViewport;
 
-public class PhpDocCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
-
-    private static final String PHP_DOC = "PhpDoc"; // NOI18N
+/**
+ * Delegate scrolling from this viewport to the parent viewport.
+ * 
+ * @author Martin
+ */
+public class DelegateViewport extends JViewport {
 
     @Override
-    public Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                PHP_DOC,
-                NbBundle.getMessage(PhpDocCustomizer.class, "LBL_Config_PhpDoc"),
-                null,
-                (ProjectCustomizer.Category[]) null);
-    }
+    public void scrollRectToVisible(Rectangle contentRect) {
+        Container parent;
+        int dx = getX(), dy = getY();
 
-    @Override
-    public JComponent createComponent(Category category, Lookup context) {
-        PhpModule phpModule = PhpModule.Factory.lookupPhpModule(context);
-        return new PhpDocPanel(category, phpModule);
-    }
+        for (parent = getParent();
+                 !(parent == null) &&
+                 !(parent instanceof JComponent) &&
+                 !(parent instanceof CellRendererPane);
+             parent = parent.getParent()) {
+             Rectangle bounds = parent.getBounds();
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = UiUtils.CUSTOMIZER_PATH,
-        position = 360
-    )
-    public static PhpDocCustomizer createCustomizer() {
-        return new PhpDocCustomizer();
+             dx += bounds.x;
+             dy += bounds.y;
+        }
+
+        if (!(parent == null) && !(parent instanceof CellRendererPane)) {
+            contentRect.x += dx;
+            contentRect.y += dy;
+
+            ((JComponent) parent).scrollRectToVisible(contentRect);
+            contentRect.x -= dx;
+            contentRect.y -= dy;
+        }
+        
     }
+    
 }

@@ -89,7 +89,7 @@ public class RequireJsDataProvider {
 
     private static final String CACHE_FOLDER_NAME = "requirejs-doc"; //NOI18N
     private static final String API_FILE = "api.html"; //NOI18N
-    private static final String API_URL = "http://requirejs.org/docs/api.html";
+    public static final String API_URL = "http://requirejs.org/docs/api.html";
 
     private static final int URL_CONNECTION_TIMEOUT = 1000; //ms
     private static final int URL_READ_TIMEOUT = URL_CONNECTION_TIMEOUT * 3; //ms
@@ -108,6 +108,10 @@ public class RequireJsDataProvider {
         TRANSLATE_NAME.put("map-notes", ""); //NOI18N
     }
 
+    private RequireJsDataProvider() {
+        loadingStarted = false;
+    }
+    
     public static synchronized RequireJsDataProvider getDefault() {
         if (INSTANCE == null) {
             INSTANCE = new RequireJsDataProvider();
@@ -197,11 +201,16 @@ public class RequireJsDataProvider {
         return result;
     }
 
+    public static File getCachedAPIFile() {
+        String pathFile =  new StringBuilder().append(CACHE_FOLDER_NAME).append('/').append(API_FILE).toString();
+        File cacheFile = Places.getCacheSubfile(pathFile);
+        return cacheFile;
+    }
+    
     private String getContentApiFile() {
         String result = null;
         try {
-            String pathFile = new StringBuilder().append(CACHE_FOLDER_NAME).append('/').append(API_FILE).toString(); // NOI18N
-            File cacheFile = Places.getCacheSubfile(pathFile);
+            File cacheFile = getCachedAPIFile();
             if (!cacheFile.exists()) {
 
                 //if any of the files is not loaded yet, start the loading process
@@ -211,15 +220,19 @@ public class RequireJsDataProvider {
                 }
                 //load from web and cache locally
                 loadDoc(cacheFile);
-                progress.progress(1);
-                progress.finish();
-                progress = null;
+                if (progress != null) {
+                    progress.progress(1);
+                    progress.finish();
+                    progress = null;
+                }
 
                 LOG.log(Level.FINE, "Loading doc finished."); //NOI18N
             }
             result = getFileContent(cacheFile);
         } catch (URISyntaxException | IOException ex) {
+            loadingStarted = false;
             LOG.log(Level.INFO, "Cannot load RequireJS documentation from \"{0}\".", new Object[]{API_URL}); //NOI18N
+            LOG.log(Level.INFO, "", ex);
         }
         return result;
     }
@@ -239,7 +252,8 @@ public class RequireJsDataProvider {
             String tmpFileName = cacheFile.getAbsolutePath() + ".tmp";
             File tmpFile = new File(tmpFileName);
             try (Writer writer = new OutputStreamWriter(new FileOutputStream(tmpFile), "UTF-8")) { // NOI18N
-                loadURL(url, writer, null);
+                loadURL(url, writer, Charset.forName("UTF-8")); //NOI18N
+                writer.close();
                 tmpFile.renameTo(cacheFile);
             } finally {
                 if (tmpFile.exists()) {

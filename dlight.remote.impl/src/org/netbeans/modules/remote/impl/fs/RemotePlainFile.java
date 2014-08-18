@@ -332,21 +332,13 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             }
 
             RemoteFileSystemUtils.getCanonicalParent(this).ensureChildSync(this);
-            InputStream newStream = new FileInputStream(getCache());
 
             if (!checkLock) {
-                return newStream;
+                return new FileInputStream(getCache());
             } else if (rwl.tryReadLock()) {
-                return new InputStreamWrapper(newStream);
+                return new InputStreamWrapper(new FileInputStream(getCache()));
             } else {
-                newStream.close();
-                return new InputStream() {
-
-                    @Override
-                    public int read() throws IOException {
-                        throw new FileAlreadyLockedException("Cannot read from locked file: " + this);  //NOI18N
-                    }
-                };
+                throw new FileAlreadyLockedException("Cannot read from locked file: " + this);  //NOI18N
             }
 
             //getParent().ensureChildSync(this);
@@ -405,7 +397,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void postDeleteChild(RemoteFileObject child, DirEntryList entryList) {
+    protected void postDeleteOrCreateChild(RemoteFileObject child, DirEntryList entryList) {
         RemoteLogger.getInstance().log(Level.WARNING, "postDeleteChild is called on {0}", getClass().getSimpleName());
     }
 
@@ -434,13 +426,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             if (rwl.tryWriteLock()) {
                 return new DelegateOutputStream(interceptor, orig, this);
             } else {
-                return new OutputStream() {
-
-                    @Override
-                    public void write(int b) throws IOException {
-                        throw new FileAlreadyLockedException("Cannot write to locked file: " + this);  //NOI18N
-                    }
-                };
+                throw new FileAlreadyLockedException("Cannot write to locked file: " + this);  //NOI18N
             }
         } catch (InterruptedException ex) {
             throw new IOException(ex);

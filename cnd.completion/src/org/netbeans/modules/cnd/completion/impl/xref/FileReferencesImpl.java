@@ -63,10 +63,12 @@ import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmExpandedTokenProcessor;
 import org.netbeans.modules.cnd.support.Interrupter;
 
@@ -291,6 +293,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
         private CppTokenId derefToken;
         private BlockConsumer blockConsumer;
         private boolean afterParen = false;
+        private boolean afterBracket = false;
         private boolean skipReferences = false;
 
         ReferencesProcessor(CsmFile csmFile, BaseDocument doc,
@@ -313,6 +316,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
             this.contextBuilder = new ReferenceContextBuilder(p.contextBuilder);
             this.derefToken = p.derefToken;
             this.afterParen = p.afterParen;
+            this.afterBracket = p.afterBracket;
             this.skipReferences = p.skipReferences;
         }
 
@@ -371,6 +375,14 @@ public final class FileReferencesImpl extends CsmFileReferences  {
                         derefToken = null;
                         break;
                     case LBRACKET:
+                        if (afterBracket) {                            
+                            if (APTLanguageSupport.FLAVOR_CPP11.equals(CsmBaseUtilities.getFileLanguageFlavor(csmFile))) {
+                                blockConsumer = new BlockConsumer(CppTokenId.LBRACKET, CppTokenId.RBRACKET);
+                                derefToken = null;
+                                break;
+                            }
+                        }
+                        // Fall through
                     case LPAREN:
                     case LT:
                         contextBuilder.open((CppTokenId)id);
@@ -413,6 +425,9 @@ public final class FileReferencesImpl extends CsmFileReferences  {
                 // Initializing afterParen flag
                 // This flag is used for detection of compiler extensions "({...})"
                 switch ((CppTokenId)id) {
+                    case LBRACKET:
+                        afterBracket = true;
+                        break;
                     case LPAREN:
                         afterParen = true;
                         break;
@@ -423,6 +438,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
                     case DOXYGEN_LINE_COMMENT:
                         break;
                     default:
+                        afterBracket = false;
                         afterParen = false;
                 }
             }

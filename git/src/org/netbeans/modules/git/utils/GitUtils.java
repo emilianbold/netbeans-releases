@@ -1075,7 +1075,7 @@ public final class GitUtils {
         }
     }
     
-    public static <T> void attachQuickSearch (List<T> items, JPanel panel, JList listComponent,
+    public static <T> QuickSearch attachQuickSearch (List<T> items, JPanel panel, JList listComponent,
             DefaultListModel model, SearchCallback<T> searchCallback) {
         final QuickSearchCallback callback = new QuickSearchCallback<T>(items, listComponent, model, searchCallback);
         final QuickSearch qs = QuickSearch.attach(panel, BorderLayout.SOUTH, callback);
@@ -1102,6 +1102,7 @@ public final class GitUtils {
                 qs.processKeyEvent(e);
             }
         });
+        return qs;
     }
 
     public static boolean isValidRefName (String refName) {

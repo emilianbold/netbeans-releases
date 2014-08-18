@@ -1473,7 +1473,7 @@ public class AstRenderer {
                 AST next = tokType.getNextSibling();
                 AST ptrOperator = (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
                 if(inSpecializationParams) {
-                    return TypeFactory.createType(typeAST, file, ptrOperator, 0, null, null, false, true);
+                    return TypeFactory.createType(typeAST, file, ptrOperator, 0, null, null, true, false);
                 } else {
                     return TypeFactory.createType(typeAST, file, ptrOperator, 0);
                 }                
@@ -1816,16 +1816,15 @@ public class AstRenderer {
                 return true;
             }
 
-            if (functionParameter && nextToken != null &&
-                    nextToken.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
-                processVariable(nextToken, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
+            if (functionParameter && nextToken != null) {
+                if (nextToken.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                    processVariable(nextToken, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
+                } else if (nextToken.getType() == CPPTokenTypes.CSM_PARMLIST) {
+                    processVariable(null, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
+                } else if (nextToken.getType() == CPPTokenTypes.RPAREN) {
+                    processVariable(ast, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
+                }
             }
-            if (functionParameter && nextToken != null &&                    
-                    nextToken.getType() == CPPTokenTypes.RPAREN) {
-                processVariable(ast, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
-            }
-
-
         }
         return false;
     }
@@ -1837,41 +1836,43 @@ public class AstRenderer {
         int arrayDepth = 0;
         NameHolder name = NameHolder.createName(CharSequences.empty());
         AST qn = null;
-        int inParamsLevel = 0;
-        for (AST token = varAst.getFirstChild(); token != null; token = token.getNextSibling()) {
-            switch (token.getType()) {
-                case CPPTokenTypes.LPAREN:
-                    inParamsLevel++;
-                    break;
-                case CPPTokenTypes.RPAREN:
-                    inParamsLevel--;
-                    break;
-                case CPPTokenTypes.LSQUARE:
-                    if (inParamsLevel == 0) {
-                        arrayDepth++;
-                    }
-                    break;
-                case CPPTokenTypes.CSM_EXPRESSION:
-                    // TODO: TypeImpl should store expression for array definitions
-                    break;
-                case CPPTokenTypes.LITERAL_struct:
-                case CPPTokenTypes.LITERAL_union:
-                case CPPTokenTypes.LITERAL_enum:
-                case CPPTokenTypes.LITERAL_class:
-                    // skip both this and next
-                    token = token.getNextSibling();
-                    continue;
-                case CPPTokenTypes.CSM_QUALIFIED_ID:
-                    if (inParamsLevel == 0) {
-                        qn = token;
-                        name = NameHolder.createSimpleName(AstUtil.getLastChild(token));
-                    }
-                    break;
-                case CPPTokenTypes.IDENT:
-                    if (inParamsLevel == 0) {
-                        name = NameHolder.createSimpleName(token);
-                    }
-                    break;
+        if (varAst != null) {
+            int inParamsLevel = 0;
+            for (AST token = varAst.getFirstChild(); token != null; token = token.getNextSibling()) {
+                switch (token.getType()) {
+                    case CPPTokenTypes.LPAREN:
+                        inParamsLevel++;
+                        break;
+                    case CPPTokenTypes.RPAREN:
+                        inParamsLevel--;
+                        break;
+                    case CPPTokenTypes.LSQUARE:
+                        if (inParamsLevel == 0) {
+                            arrayDepth++;
+                        }
+                        break;
+                    case CPPTokenTypes.CSM_EXPRESSION:
+                        // TODO: TypeImpl should store expression for array definitions
+                        break;
+                    case CPPTokenTypes.LITERAL_struct:
+                    case CPPTokenTypes.LITERAL_union:
+                    case CPPTokenTypes.LITERAL_enum:
+                    case CPPTokenTypes.LITERAL_class:
+                        // skip both this and next
+                        token = token.getNextSibling();
+                        continue;
+                    case CPPTokenTypes.CSM_QUALIFIED_ID:
+                        if (inParamsLevel == 0) {
+                            qn = token;
+                            name = NameHolder.createSimpleName(AstUtil.getLastChild(token));
+                        }
+                        break;
+                    case CPPTokenTypes.IDENT:
+                        if (inParamsLevel == 0) {
+                            name = NameHolder.createSimpleName(token);
+                        }
+                        break;
+                }
             }
         }
         CsmType type;

@@ -72,7 +72,7 @@ implements ChangeListener {
 
     /** assignes file objects a unique instance of Item, if it has been created
      */
-    private Map<FileObject,Item> map = new DoubleHashMap();
+    private DoubleHashMap map = new DoubleHashMap();
     /** just for testing purposes
      */
     static final void fastCache(boolean fast) {
@@ -774,12 +774,13 @@ implements ChangeListener {
         
         Item doh;
         DataObject obj;
+        FileObject parent = fo.getParent();
         synchronized (this) {
             doh = map.get(fo);
             // if Item for this file has not been created yet
             if (doh == null) {
                 doh = new Item (fo);
-                map.put (fo, doh);
+                map.putWithParent(fo, parent, doh);
                 countRegistration(fo);
                 notifyAdd (doh);
 
@@ -793,7 +794,7 @@ implements ChangeListener {
             if (obj == null) {
                 // the item is to be finalize => create new
                 doh = new Item (fo);
-                map.put (fo, doh);
+                map.putWithParent(fo, parent, doh);
                 countRegistration(fo);
                 notifyAdd (doh);
 
@@ -813,7 +814,7 @@ implements ChangeListener {
                 Item doh2 = map.get(fo);
                 if (doh2 == null) {
                     doh = new Item (fo);
-                    map.put (fo, doh);
+                    map.putWithParent(fo, parent, doh);
                     countRegistration(fo);
                     notifyAdd (doh);
 
@@ -832,15 +833,13 @@ implements ChangeListener {
     * @param item the item with common information to deregister
     * @param refresh true if the parent folder should be refreshed
     */
-    private synchronized void deregister (Item item, boolean refresh) {
-        FileObject fo = item.primaryFile;
-
+    private synchronized void deregister (Item item, FileObject fo, FileObject parent, boolean refresh) {
         Item previous = map.remove(fo);
 
         if (previous != null && previous != item) {
             // ops, mistake,
             // return back the original
-            map.put (fo, previous);
+            map.putWithParent(fo, parent, previous);
             // Furthermore, item is probably in toNotify by mistake.
             // Observed in DataFolderTest.testMove: after vetoing the move
             // of a data folder, the bogus item for the temporary new folder
@@ -872,7 +871,7 @@ implements ChangeListener {
     * @param newFile new primary file to set
     */
     private synchronized Item changePrimaryFile (
-        Item item, FileObject newFile
+        Item item, FileObject newFile, FileObject newParent
     ) {
         if (item.primaryFile == newFile) {
             return item;
@@ -883,7 +882,7 @@ implements ChangeListener {
         }
         assert prev == item : "Item: " + item;
         final Item ni = new Item(item, newFile);
-        map.put (newFile, ni);
+        map.putWithParent(newFile, newParent, ni);
         countRegistration(newFile);
         return ni;
     }
@@ -998,14 +997,14 @@ implements ChangeListener {
         * @param refresh true if the parent folder should be refreshed
         */
         public void deregister (boolean refresh) {
-            getPOOL().deregister (this, refresh);
+            getPOOL().deregister (this, primaryFile, primaryFile.getParent(), refresh);
         }
 
         /** Changes the primary file to new one.
         * @param newFile new primary file to set
         */
         public Item changePrimaryFile (FileObject newFile) {
-            return getPOOL().changePrimaryFile (this, newFile);
+            return getPOOL().changePrimaryFile (this, newFile, newFile.getParent());
         }
 
         /** Is the item valid?
@@ -1327,12 +1326,15 @@ implements ChangeListener {
         
         @Override
         public Item put(FileObject obj, Item item) {
+            return putWithParent(obj, obj.getParent(), item);
+        }
+        
+        final Item putWithParent(FileObject obj, FileObject parent, Item item) {
             Item prev = super.put(obj, item);
             if (children == null) {
                 return prev;
             }
             
-            FileObject parent = obj.getParent();
             if (parent == null) {
                 return prev;
             }

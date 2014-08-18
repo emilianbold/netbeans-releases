@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.model.services;
 
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.spi.model.TypesProvider;
 import org.openide.util.Lookup;
@@ -59,6 +60,9 @@ public final class CsmTypes {
     private CsmTypes() {
     }
 
+    public static CsmType createType(CharSequence seq, CsmScope scope, SequenceDescriptor descriptor) {
+        return getProvider().createType(seq, scope, descriptor);
+    }
 
     public static CsmType createType(CsmClassifier cls, TypeDescriptor td, OffsetDescriptor offs) {
         return getProvider().createType(cls, td, offs);
@@ -96,6 +100,30 @@ public final class CsmTypes {
             arrDepth = Math.max(arrDepth - 1, 0);
         }
         return getProvider().createType(type, new TypeDescriptor(type.isConst(), TypeDescriptor.getReferenceType(type), ptrDepth, arrDepth));
+    }
+    
+    public static final class SequenceDescriptor {
+        
+        public final String lang;
+        
+        public final String langFlavour;
+        
+        public final boolean inTypedef;
+        
+        public final boolean inTemplateDescriptor;
+        
+        public final boolean inFunctionParams;
+        
+        public final OffsetDescriptor offsets;
+
+        public SequenceDescriptor(String lang, String langFlavour, boolean inTypedef, boolean inTemplateDescriptor, boolean inFunctionParams, OffsetDescriptor offsets) {
+            this.lang = lang;
+            this.langFlavour = langFlavour;
+            this.inTypedef = inTypedef;
+            this.inTemplateDescriptor = inTemplateDescriptor;
+            this.inFunctionParams = inFunctionParams;
+            this.offsets = offsets;
+        }
     }
 
     //@Immutable

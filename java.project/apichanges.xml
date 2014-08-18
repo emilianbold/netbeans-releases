@@ -109,6 +109,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="JavaTemplates-icons">
+            <api name="general"/>
+            <summary>Added more specific icons into <code>JavaTemplates</code></summary>
+            <version major="1" minor="60"/>
+            <date day="30" month="7" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added more specific icons into <code>JavaTemplates</code>
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support.ui.templates" name="JavaTemplates"/>
+        </change>
         <change id="JavadocAndSourceRootDetection-findJavadocRoots">
             <api name="general"/>
             <summary>Added <code>JavadocAndSourceRootDetection.findJavadocRoots</code> method to find out all javadoc roots under given folder</summary>

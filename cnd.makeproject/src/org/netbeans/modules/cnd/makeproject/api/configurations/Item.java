@@ -57,7 +57,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.project.CodeAssistance;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
@@ -264,33 +263,70 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("name")) { // NOI18N
-            // File has been renamed
+            // File has been renamed.
+            String newName = (String) evt.getNewValue();
             boolean nameWithoutExtension = true;
             Object o = evt.getSource();
+            // New name is unpedictable. It can contain or not contain extension.
+            // Detect true name with extension.
             if (o instanceof DataObject) {
-                String nodeName = ((DataObject) o).getName();
                 FileObject fo = ((DataObject) o).getPrimaryFile();
                 if (fo != null) {
-                    String fileName = fo.getNameExt();
-                    if (nodeName.equals(fileName)) {
-                        nameWithoutExtension = false;
-                    }
-
+                    newName = fo.getNameExt();
+                    nameWithoutExtension = false;
                 }
             }
-            rename((String) evt.getNewValue(), nameWithoutExtension);
+            rename(newName, nameWithoutExtension);
         } else if (evt.getPropertyName().equals("valid")) { // NOI18N
-            // File has been deleted
-            // Do nothing (IZ 87557, 94935)
             if (!((Boolean) evt.getNewValue())) {
-//                getFolder().removeItemAction(this);
+                // Data object invalid.
+                // It may be renaming.
+                Object o = evt.getSource();
+                if (o instanceof DataObject) {
+                    DataObject dao = ((DataObject) o);
+                    FileObject fo = dao.getPrimaryFile();
+                    if (fo != null && fo.isValid()) {
+                        // Old data object invalid and valid file object.
+                        // Rename and attach new data object.
+                        rename(fo.getNameExt(), false);
+                        DataObject dataObject;
+                        try {
+                            dataObject = DataObject.find(fo);
+                            synchronized (this) {
+                                if (dataObject != lastDataObject) {
+                                    detachFrom(lastDataObject);
+                                    attachTo(dataObject);
+                                }
+                            }
+                        } catch (DataObjectNotFoundException ex) {
+                            LOG.log(Level.FINE, "Can not find data object", ex); //NOI18N
+                        }
+                        return;
+                    }
+                }
+                // File has been deleted.
+                // Refresh folder. See also IZ 87557 and IZ 94935
                 Folder containingFolder = getFolder();
                 if (containingFolder != null) {
                     containingFolder.refresh(this);
                 }
+            } else {
+                // Data object valid.
+                // Attach new data object.
+                Object o = evt.getSource();
+                if (o instanceof DataObject) {
+                    DataObject dao = ((DataObject) o);
+                    synchronized (this) {
+                        if (lastDataObject != null) {
+                            detachFrom(lastDataObject);
+                        }
+                        lastDataObject = dao;
+                        attachTo(lastDataObject);
+                    }
+                }
             }
         } else if (evt.getPropertyName().equals("primaryFile")) { // NOI18N
-            // File has been moved
+            // File has been moved.
             if (getFolder() != null) {
                 FileObject fo = (FileObject) evt.getNewValue();
                 String newPath = fo.getPath();

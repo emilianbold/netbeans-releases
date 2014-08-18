@@ -118,15 +118,7 @@ public final class CsmContext {
     }
 
     private static Document getDocument(DataObject dataObject) {
-        if (dataObject == null) {
-            return null;
-        }
-        EditorCookie cookie = dataObject.getCookie(EditorCookie.class);
-        if (cookie == null) {
-            throw new IllegalStateException("Given file (\"" + dataObject.getName() + "\") does not have EditorCookie."); // NOI18N
-        }
-        Document doc = CsmUtilities.openDocument(cookie);
-        return doc;
+        return CsmUtilities.openDocument(dataObject);
     }
 
     public static CsmContext create(final Lookup context) {

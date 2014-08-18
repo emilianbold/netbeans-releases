@@ -153,6 +153,9 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             actions.add(exportAction);
             scene.setExportAction(exportAction);
         }
+        actions.add(null);
+        actions.add(new ExpandAction());
+        actions.add(new ExpandAllAction());        
         //add all actions from the provider
         if (graphUI != null) {
             actions.addAll(graphUI.getActions(new CallGraphActionEDTRunnable() {
@@ -164,7 +167,6 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
                 }
             }));
         }
-        actions.add(new ExpandAllAction());
         root = new AbstractNode(children){
             @Override
             public Action[] getActions(boolean context) {
@@ -749,7 +751,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         progress.start();
         try {
             List<List<Node>> list = new ArrayList<List<Node>>();
-            expandAllImpl(progress, canceled, n, list, 0);
+            expandAllImpl(progress, canceled, n, list);
             int count = 0;
             for(int i = 0; i < list.size(); i++) {
                 for(Node node : list.get(i)) {
@@ -770,11 +772,47 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
     }
     
-    private void expandAllImpl(ProgressHandle progress, AtomicBoolean canceled, Node node, List<List<Node>> list, int level) {
+    private void expandAllImpl(ProgressHandle progress, AtomicBoolean canceled, Node node, List<List<Node>> list) {
+        int level = 0;
         if (list.size() < level+1) {
             list.add(new ArrayList<Node>());
         }
         list.get(level).add(node);
+        while(true) {
+            level++;
+            if (list.size() < level+1) {
+                list.add(new ArrayList<Node>());
+            }
+            List<Node> prev = list.get(level-1);
+            if (prev.isEmpty()) {
+                return;
+            }
+            for(Node n : prev) {
+                updateProgress(progress, list);
+                Children children = n.getChildren();
+                if (canceled.get()) {
+                    return;
+                }
+                if (children != null) {
+                    if (children instanceof CallChildren) {
+                        ((CallChildren) children).init();
+                    }
+                    if (canceled.get()) {
+                        return;
+                    }
+                    for (Node subNode : children.getNodes()) {
+                        list.get(level).add(subNode);
+                        updateProgress(progress, list);
+                        if (canceled.get()) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private void updateProgress(ProgressHandle progress, List<List<Node>> list) {
         int count = 0;
         for(int i = 0; i < list.size(); i++) {
             count += list.get(i).size();
@@ -782,29 +820,31 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         if (count%100 == 0) {
             progress.progress(getMessage("ExpandedProgress", count, list.size()));  // NOI18N
         }
-        Children children = node.getChildren();
-        if (canceled.get()) {
-            return;
-        }
-        if (children != null) {
-            if (children instanceof CallChildren) {
-                ((CallChildren) children).init();
-            }
-            if (canceled.get()) {
-                return;
-            }
-            for (Node subNode : children.getNodes()) {
-                Children subChildren = subNode.getChildren();
-                if (subChildren instanceof CallChildren) {
-                    ((CallChildren) subChildren).init();
-                }
-                if (canceled.get()) {
-                    return;
-                }
-                expandAllImpl(progress, canceled, subNode, list, level+1);
+    }   
+    
+    private final class ExpandAction extends AbstractAction implements Presenter.Popup {
+        private final JMenuItem menuItem;
+        public ExpandAction() {
+            putValue(Action.NAME, getMessage("Expand"));  // NOI18N
+            menuItem = new JMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }     
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Node[] nodes = getExplorerManager().getSelectedNodes();
+            if (nodes == null || nodes.length == 0){
+                getTreeView().expandAll();                
+            } else {
+                getTreeView().expandNode(nodes[0]);
             }
         }
-    }
+
+        @Override
+        public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }    
 
     private final class ExpandAllAction extends AbstractAction implements Presenter.Popup {
         private final JMenuItem menuItem;

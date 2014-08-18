@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.debugger.jpda.js.vars;
 
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LocalVariable;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 
 /**
@@ -57,6 +59,7 @@ public class JSVariable {
     private final String key;
     private final String value;
     private final boolean expandable;
+    private final ObjectVariable valueObject;
     
     protected JSVariable(JPDADebugger debugger, Variable valueInfoDesc) {
         this.debugger = debugger;
@@ -64,6 +67,22 @@ public class JSVariable {
         value = getStringValue(debugger, valueInfoDesc);
         key = DebuggerSupport.getDescriptionKey(valueInfoDesc);
         expandable = DebuggerSupport.isDescriptionExpandable(valueInfoDesc);
+        ObjectVariable valueObject = null;
+        if (!expandable) {
+            // Check if it's a script object:
+            Variable valueObjectVar = DebuggerSupport.getDescriptionValueObject(valueInfoDesc);
+            if (valueObjectVar instanceof ObjectVariable) {
+                JPDAClassType classType = ((ObjectVariable) valueObjectVar).getClassType();
+                if (classType != null) {
+                    String className = classType.getName();
+                    if (!className.startsWith("jdk.nashorn") && !String.class.getName().equals(className)) {   // NOI18N
+                        // Not a Nashorn's script class
+                        valueObject = (ObjectVariable) valueObjectVar;
+                    }
+                }
+            }
+        }
+        this.valueObject = valueObject;
     }
     
     private static String getStringValue(JPDADebugger debugger, Variable valueInfoDesc) {
@@ -106,6 +125,13 @@ public class JSVariable {
     
     public String getValue() {
         return value;
+    }
+    
+    /**
+     * @return value object for non-JavaScript values.
+     */
+    public ObjectVariable getValueObject() {
+        return valueObject;
     }
     
     public boolean isExpandable() {

@@ -82,11 +82,12 @@ class CreateTag implements DocumentListener, ActionListener {
     private final File repository;
     private final Icon ICON_INFO = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png")); //NOI18N
 
-    CreateTag (File repository, String initialRevision) {
+    CreateTag (File repository, String initialRevision, String initialTagName) {
         this.repository = repository;
         this.branchCheckTask = Git.getInstance().getRequestProcessor(repository).create(new TagNameCheckWorker());
         revisionPicker = new RevisionDialogController(repository, new File[] { repository }, initialRevision);
         panel = new CreateTagPanel(revisionPicker.getPanel());
+        panel.tagNameField.setText(initialTagName);
     }
 
     String getRevision () {

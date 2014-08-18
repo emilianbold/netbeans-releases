@@ -176,7 +176,9 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 } else {
                     // create jboss.xml if it does not exist yet
                     jboss = generateJboss();
-                    ResourceConfigurationHelper.writeFile(jbossFile, jboss);
+                    if(jbossFile != null) {
+                        ResourceConfigurationHelper.writeFile(jbossFile, jboss);
+                    }
                 }
             } catch (ConfigurationException ce) {
                 Exceptions.printStackTrace(ce);
@@ -188,8 +190,9 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     /**
      * Listen to jboss.xml document changes.
      */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName() == DataObject.PROP_MODIFIED &&
+        if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()) &&
             evt.getNewValue() == Boolean.FALSE) {
             if (evt.getSource() == deploymentDescriptorDO) { // dataobject has been modified, jboss graph is out of sync
                 synchronized (this) {

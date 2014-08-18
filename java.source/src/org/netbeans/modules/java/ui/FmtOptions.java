@@ -216,8 +216,10 @@ public class FmtOptions {
     public static final String blankLinesAfterClass = "blankLinesAfterClass"; //NOI18N
     public static final String blankLinesAfterClassHeader = "blankLinesAfterClassHeader"; //NOI18N
     public static final String blankLinesAfterAnonymousClassHeader = "blankLinesAfterAnonymousClassHeader"; //NOI18N
+    public static final String blankLinesAfterEnumHeader = "blankLinesAfterEnumHeader"; //NOI18N
     public static final String blankLinesBeforeClassClosingBrace = "blankLinesBeforeClassClosingBrace"; //NOI18N
     public static final String blankLinesBeforeAnonymousClosingBrace = "blankLinesBeforeAnonymousClassClosingBrace"; //NOI18N
+    public static final String blankLinesBeforeEnumClosingBrace = "blankLinesBeforeEnumClosingBrace"; //NOI18N
     public static final String blankLinesBeforeFields = "blankLinesBeforeFields"; //NOI18N
     public static final String blankLinesAfterFields = "blankLinesAfterFields"; //NOI18N
     public static final String blankLinesBeforeMethods = "blankLinesBeforeMethods"; //NOI18N
@@ -501,8 +503,10 @@ public class FmtOptions {
             { blankLinesAfterClass, "0"}, //NOI18N
             { blankLinesAfterClassHeader, "1"}, //NOI18N 
             { blankLinesAfterAnonymousClassHeader, "0"}, //NOI18N 
+            { blankLinesAfterEnumHeader, "0"}, //NOI18N 
             { blankLinesBeforeClassClosingBrace, "0"}, //NOI18N 
             { blankLinesBeforeAnonymousClosingBrace, "0"}, //NOI18N 
+            { blankLinesBeforeEnumClosingBrace, "0"}, //NOI18N 
             { blankLinesBeforeFields, "0"}, //NOI18N 
             { blankLinesAfterFields, "0"}, //NOI18N
             { blankLinesBeforeMethods, "1"}, //NOI18N

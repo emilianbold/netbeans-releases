@@ -459,7 +459,9 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
                 } else {
                     btnBuilds = null;
                 }
-                updateDetailsVisible();
+                if (component != null) {
+                    updateDetailsVisible();
+                }
             }
         });
     }

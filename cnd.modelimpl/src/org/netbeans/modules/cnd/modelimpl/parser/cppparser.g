@@ -513,6 +513,8 @@ tokens {
             stopSet.add(RCURLY);
             stopSet.add(RPAREN);
             stopSet.add(LPAREN);
+            //stopSet.add(LSQUARE);
+            //stopSet.add(RSQUARE);
         }
         
         private static final int RECOVERY_LIMIT = 20;
@@ -762,16 +764,28 @@ public translation_unit:
                 /* Do not generate ambiguity warnings: we intentionally want to match everything that
                    can not be matched in external_declaration in the second alternative */
 		(options{generateAmbigWarnings = false;}:
-                    { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (literal_ident literal_ident) => pro_c_statement
-                    |
-                    {shouldProceed()}?
-                    external_declaration 
-                    |
-                    {shouldProceed()}?
-                    /* Here we match everything that can not be matched by external_declaration rule,
-                       report it as an error and not include in AST */
-                    .! { reportError(new NoViableAltException(LT(0), getFilename())); }
-                )* EOF!
+            { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (literal_ident literal_ident) => pro_c_statement
+        |
+            {shouldProceed() && !isCPlusPlus11()}? (LSQUARE) =>
+            /* This alternative fixes recovery problem happened because C++11 declaration
+               could begin with LSQAURE token (see c++11 attributes). This
+               breaks recovery for C++98 because rule external_declaration now
+               will be called when declaration starts with LSQUARE, so the last
+               alternative for recovering will not work. It seems that better solution is
+               to track that function 'recover' was called (that means an error occured) but
+               input.index() was not changed. In that case it is normal to consume one token
+               like in the last alternative.
+            */ 
+            .! { reportError(new NoViableAltException(LT(0), getFilename())); }
+        |
+            {shouldProceed()}?
+            external_declaration             
+        |
+            {shouldProceed()}?
+            /* Here we match everything that can not be matched by external_declaration rule,
+               report it as an error and not include in AST */
+            .! { reportError(new NoViableAltException(LT(0), getFilename())); }
+        )* EOF!
 		{/*exitExternalScope();*/ #translation_unit = #(#[CSM_TRANSLATION_UNIT, getFilename()], #translation_unit);}
        ;
 
@@ -2388,24 +2402,28 @@ unqualified_id returns [String q = ""]
                  LESSTHAN template_argument_list GREATERTHAN)?
         //{action.simple_template_id_or_ident(id);}
 		{qitem.append(id);}
-		|  
-		LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
-				 LESSTHAN template_argument_list GREATERTHAN)?
-		{qitem.append("operator"); qitem.append("NYI");} // TODO: understand
-		|
-		LITERAL_OPERATOR STRING_LITERAL id=literal_ident (options{warnWhenFollowAmbig = false;}:
-				 LESSTHAN template_argument_list GREATERTHAN)?
-		{qitem.append("operator"); qitem.append("NYI");} // TODO: understand
-		|
-		LITERAL_this  // DW 21/07/03 fix to pass test8.i
-		|
-		(LITERAL_true|LITERAL_false)	// DW 21/07/03 fix to pass test8.i
-                |
-                LITERAL_OPERATOR declaration_specifiers[false, false]
-                (ptr_operator)?
-                (options{warnWhenFollowAmbig = false;}:
-                    LESSTHAN template_parameter_list GREATERTHAN)?
+    |  
+        LITERAL_OPERATOR 
+        (
+            (optor) => // predicate to avoid nondeterminism between optor and declaration_specifiers
+                optor (options{warnWhenFollowAmbig = false;}: 
+                        LESSTHAN template_argument_list GREATERTHAN)?
                 {qitem.append("operator"); qitem.append("NYI");} // TODO: understand
+        |
+            STRING_LITERAL id=literal_ident (options{warnWhenFollowAmbig = false;}:
+                    LESSTHAN template_argument_list GREATERTHAN)?
+            {qitem.append("operator"); qitem.append("NYI");} // TODO: understand
+        |
+            declaration_specifiers[false, false]
+            (ptr_operator)?
+            (options{warnWhenFollowAmbig = false;}:
+                LESSTHAN template_parameter_list GREATERTHAN)?
+            {qitem.append("operator"); qitem.append("NYI");} // TODO: understand            
+        )
+    |
+		LITERAL_this  // DW 21/07/03 fix to pass test8.i
+    |
+		(LITERAL_true|LITERAL_false)	// DW 21/07/03 fix to pass test8.i
 	)
 	{q = qitem.toString(); #unqualified_id = #(#[CSM_QUALIFIED_ID, q], #unqualified_id);}
 	;
@@ -2451,11 +2469,11 @@ init_declarator[int kind]
 	:	declarator[kind, 0]
 		(	
 			ASSIGNEQUAL 
-                        (cast_array_initializer_head) => initializer
-                |	
-			LPAREN (expression_list | array_initializer) RPAREN
-                |
-                        array_initializer
+            (cast_array_initializer_head) => initializer
+        |	
+            LPAREN (expression_list | array_initializer) RPAREN
+        |
+            array_initializer
 		)?
 	;
 
@@ -2741,56 +2759,57 @@ direct_declarator[int kind, int level]
         ((ELLIPSIS)? qualified_id LPAREN ~LCURLY) => // Must be class instantiation
         (ELLIPSIS)? id = qualified_id
         {declaratorID(id, qiVar);}
+        (variable_attribute_specification)?
         LPAREN
         (expression_list)?
         RPAREN
         {#direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);}
     |
-                (options {greedy=true;} :variable_attribute_specification)?
-                (
-                    ((ELLIPSIS)? qualified_id LSQUARE)=>	// Must be array declaration
-                    (ELLIPSIS)? id = qualified_id 
-                    {
-                         if (_td==true) {
-                            declaratorID(id,qiType);
-                         } else {
-                            declaratorID(id,qiVar);
-                         }
-                         is_address = false; is_pointer = false;
-                    }
-                    (options {warnWhenFollowAmbig = false;}:
-                     LSQUARE (constant_expression)? RSQUARE)+
-                    {declaratorArray();}
-                    {
-                        if (_td==true) {
-                            // todo: build tree in this case
-                        } else  {
-                            #direct_declarator = #(#[CSM_ARRAY_DECLARATION, "CSM_ARRAY_DECLARATION"], #direct_declarator);
-                        }
-                    }
-                |
-                    (ELLIPSIS)? id = qualified_id
-                        {
-                             if (_td==true) {
-                                // todo: build tree in this case
-                                declaratorID(id,qiType);
-                             } else {
-                                #direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);
-                                declaratorID(id,qiVar);
-                             }
-                             is_address = false; is_pointer = false;
-                        }
-                )
-                (options {greedy=true;} :variable_attribute_specification)?
-                (asm_block!)?
-                (options {greedy=true;} :variable_attribute_specification)?
+        (options {greedy=true;} : variable_attribute_specification)?
+        (
+            ((ELLIPSIS)? qualified_id LSQUARE)=>	// Must be array declaration
+            (ELLIPSIS)? id = qualified_id 
+            {
+                 if (_td==true) {
+                    declaratorID(id,qiType);
+                 } else {
+                    declaratorID(id,qiVar);
+                 }
+                 is_address = false; is_pointer = false;
+            }
+            (options {warnWhenFollowAmbig = false;}:
+             LSQUARE (constant_expression)? RSQUARE)+
+            {declaratorArray();}
+            {
+                if (_td==true) {
+                    // todo: build tree in this case
+                } else  {
+                    #direct_declarator = #(#[CSM_ARRAY_DECLARATION, "CSM_ARRAY_DECLARATION"], #direct_declarator);
+                }
+            }
+        |
+            (ELLIPSIS)? id = qualified_id
+            {
+                 if (_td==true) {
+                    // todo: build tree in this case
+                    declaratorID(id,qiType);
+                 } else {
+                    #direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);
+                    declaratorID(id,qiVar);
+                 }
+                 is_address = false; is_pointer = false;
+            }
+        )
+        (options {greedy=true;} :variable_attribute_specification)?
+        (asm_block!)?
+        (options {greedy=true;} :variable_attribute_specification)?
 	|	
 		// DW 24/05/04 This block probably never entered as dtor selected out earlier
 		//	Note 1: In fact no dictionary entries for ctor or dtor	
 		//	Note 2: 2: "class" not recorded in CPPSymbol
 		TILDE id = literal_ident {declaratorID(id,qiDtor);}
 		{
-                    if( reportOddWarnings ) printf("direct_declarator[%d]: Warning direct_declarator5 entered unexpectedly with %s\n", LT(1).getLine(),(id));
+            if( reportOddWarnings ) printf("direct_declarator[%d]: Warning direct_declarator5 entered unexpectedly with %s\n", LT(1).getLine(),(id));
 		}
 		LPAREN //{declaratorParameterList(false);}
 		(parameter_list[false])?
@@ -2821,6 +2840,7 @@ function_like_var_declarator
         (options {greedy=true;} :function_attribute_specification)?
         id = idInBalanceParensHard
         {declaratorID(id, qiFun);}
+        (variable_attribute_specification)?
         LPAREN //{declaratorParameterList(false);}
         (parameter_list[false])?
         RPAREN //{declaratorEndParameterList(false);}
@@ -2939,6 +2959,7 @@ function_direct_declarator_2 [boolean definition, boolean symTabCheck]
 		)
 */
         q = idInBalanceParensHard { declaratorID(q, qiFun);}
+        (function_attribute_specification)?
         function_parameters[symTabCheck]
     ;
 
@@ -3417,8 +3438,10 @@ attribute_specification_list
 
 attribute_specification
     :
-    literal_attribute
-    LPAREN balanceParens RPAREN
+        literal_attribute
+        LPAREN balanceParens RPAREN
+    |
+        ({isCPlusPlus11()}? LSQUARE balanceSquares RSQUARE)
     ;
 
 protected
@@ -4409,27 +4432,20 @@ isGreaterthanInTheRestOfExpression[int templateLevel]
 
 protected
 balanceParensInExpression
+{/*TypeSpecifier*/int ts=0; String s;}
         : 
             LPAREN
             (options {greedy=false;}:
+                    (literal_ident)=> s=literal_ident (options {greedy=true;}: balanceSquaresInExpression)*
+                |
+                    (builtin_type[0])=> ts=builtin_type[0] (options {greedy=true;}: balanceSquaresInExpression)*
+                |
                     balanceCurlies
                 |
                     balanceParensInExpression
                 |
                     balanceSquaresInExpression
-                    (   ((balanceParensInExpression)? (LITERAL_mutable)? (trailing_type)? LCURLY) =>                    
-                        (
-                            (
-                                (LPAREN (parameter_list[false])? RPAREN)? 
-                                (LITERAL_mutable)?
-                            )
-                            (trailing_type)?
-                            compound_statement
-                            {#balanceParensInExpression = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #balanceParensInExpression);}
-                        )
-                        {#balanceParensInExpression = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #balanceParensInExpression);}
-                    |
-                    )
+                    ((lambda_expression_post_capture_predicate) => lambda_expression_post_capture)?
                 |
                     ~(SEMICOLON | RCURLY | LCURLY | LPAREN | LSQUARE | RSQUARE)
                 |
@@ -4441,25 +4457,18 @@ balanceParensInExpression
 
 protected    
 balanceSquaresInExpression
+{/*TypeSpecifier*/int ts=0; String s;}
     :
         LSQUARE 
             (options {greedy=false;}:
+                    (literal_ident)=> s=literal_ident (options {greedy=true;}: balanceSquaresInExpression)*
+                |
+                    (builtin_type[0])=> ts=builtin_type[0] (options {greedy=true;}: balanceSquaresInExpression)*
+                |
                     balanceCurlies
                 |
                     balanceSquaresInExpression
-                    (   ((balanceParensInExpression)? (LITERAL_mutable)? (trailing_type)? LCURLY) =>                    
-                        (
-                            (
-                                (LPAREN (parameter_list[false])? RPAREN)? 
-                                (LITERAL_mutable)?
-                            )
-                            (trailing_type)?
-                            compound_statement
-                            {#balanceSquaresInExpression = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #balanceSquaresInExpression);}
-                        )
-                        {#balanceSquaresInExpression = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #balanceSquaresInExpression);}
-                    |
-                    )
+                    ((lambda_expression_post_capture_predicate) => lambda_expression_post_capture)?
                 |
                     balanceParensInExpression
                 |

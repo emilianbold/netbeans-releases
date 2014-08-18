@@ -413,6 +413,7 @@ public class FormatingTest extends NbTestCase {
         final int[] counter = new int[]{0};
         Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putInt("text-limit-width", 20);
+        preferences.putInt("blankLinesAfterEnumHeader", 1);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             @Override
@@ -580,6 +581,7 @@ public class FormatingTest extends NbTestCase {
         preferences.put("wrapEnumConstants", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
         reformat(doc, content, golden);
         preferences.put("wrapEnumConstants", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putInt("blankLinesAfterEnumHeader", 0);
         preferences.putInt("text-limit-width", 80);
     }
 

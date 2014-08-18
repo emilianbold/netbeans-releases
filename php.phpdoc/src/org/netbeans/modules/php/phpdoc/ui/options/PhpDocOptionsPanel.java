@@ -87,7 +87,8 @@ public final class PhpDocOptionsPanel extends JPanel {
         initComponents();
 
         // not set in Design because of windows (panel too wide then)
-        phpDocUsageLabel.setText(NbBundle.getMessage(PhpDocOptionsPanel.class, "LBL_PhpDocUsage", PhpDocScript.SCRIPT_NAME_LONG));
+        phpDocUsageLabel.setText(NbBundle.getMessage(PhpDocOptionsPanel.class, "LBL_PhpDocUsage",
+                PhpDocScript.SCRIPT_NAME, PhpDocScript.SCRIPT_NAME_LONG, PhpDocScript.SCRIPT_NAME_PHAR));
         errorLabel.setText(" "); // NOI18N
 
         phpDocTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -162,21 +163,28 @@ public final class PhpDocOptionsPanel extends JPanel {
         installationInfoLabel = new JLabel();
         installationLearnMoreLabel = new JLabel();
         errorLabel = new JLabel();
+        versionInfoLabel = new JLabel();
+
         Mnemonics.setLocalizedText(phpDocLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.phpDocLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.searchButton.text")); // NOI18N
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 searchButtonActionPerformed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(phpDocUsageLabel, "HINT"); // NOI18N
+
         Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.installationInfoLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(installationLearnMoreLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.installationLearnMoreLabel.text")); // NOI18N
         installationLearnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
@@ -186,27 +194,54 @@ public final class PhpDocOptionsPanel extends JPanel {
                 installationLearnMoreLabelMousePressed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
+
+        Mnemonics.setLocalizedText(versionInfoLabel, NbBundle.getMessage(PhpDocOptionsPanel.class, "PhpDocOptionsPanel.versionInfoLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
-
-                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(errorLabel).addComponent(installationInfoLabel).addComponent(installationLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addContainerGap()).addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addComponent(phpDocLabel)
-
-                .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(phpDocUsageLabel)
-                        .addContainerGap()).addGroup(layout.createSequentialGroup()
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(phpDocTextField)
-
-                        .addPreferredGap(ComponentPlacement.RELATED).addComponent(browseButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(searchButton))))
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(browseButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(searchButton))))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(errorLabel)
+                    .addComponent(installationInfoLabel)
+                    .addComponent(installationLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(versionInfoLabel))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
-
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(phpDocLabel).addComponent(phpDocTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(searchButton).addComponent(browseButton)).addPreferredGap(ComponentPlacement.RELATED).addComponent(phpDocUsageLabel).addGap(18, 18, 18).addComponent(installationInfoLabel).addPreferredGap(ComponentPlacement.RELATED).addComponent(installationLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(errorLabel))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(phpDocLabel)
+                    .addComponent(phpDocTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(searchButton)
+                    .addComponent(browseButton))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(phpDocUsageLabel)
+                .addGap(18, 18, 18)
+                .addComponent(versionInfoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(installationInfoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(installationLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -275,6 +310,7 @@ public final class PhpDocOptionsPanel extends JPanel {
     private JTextField phpDocTextField;
     private JLabel phpDocUsageLabel;
     private JButton searchButton;
+    private JLabel versionInfoLabel;
     // End of variables declaration//GEN-END:variables
 
 }

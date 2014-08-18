@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.navigation.docview;
 import java.awt.BorderLayout;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -102,6 +103,11 @@ public final class DocViewTopComponent extends TopComponent {
             return (DocViewTopComponent)win;
         }
         return getDefault();
+    }
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("CppDocumentation"); //NOI18N
     }
     
     /** replaces this in object stream */

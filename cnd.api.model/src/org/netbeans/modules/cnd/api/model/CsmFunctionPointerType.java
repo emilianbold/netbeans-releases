@@ -49,12 +49,10 @@ import java.util.Collection;
  *
  * @author Alexey Vladykin
  */
-public interface CsmFunctionPointerType extends CsmScope, CsmOffsetable {
+public interface CsmFunctionPointerType extends CsmScope, CsmOffsetable, CsmScopeElement {
     
     Collection<CsmParameter> getParameters();
     
     CsmType getReturnType();
-    
-    CsmScope getScope();
     
 }

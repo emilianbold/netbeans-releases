@@ -359,7 +359,11 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         if (tc != null) {
             Integer textZoom = (Integer) tc.getClientProperty(TEXT_ZOOM_PROPERTY);
             if (textZoom != null && textZoom != 0) {
-                lineFont = new Font(lineFont.getFamily(), lineFont.getStyle(), Math.max(lineFont.getSize() + textZoom, 2));
+                if (Math.max(lineFont.getSize() + textZoom, 2) == 2) {
+                    textZoom = -(lineFont.getSize()-2);
+                    tc.putClientProperty(TEXT_ZOOM_PROPERTY, textZoom);
+                }
+                lineFont = new Font(lineFont.getFamily(), lineFont.getStyle(), textZoom);                
             }
         }
         font = lineFont;

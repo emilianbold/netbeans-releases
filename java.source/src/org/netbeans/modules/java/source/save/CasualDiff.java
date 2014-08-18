@@ -2593,12 +2593,12 @@ public class CasualDiff {
         if (localPointer < posHint)
             copyTo(localPointer, localPointer = posHint);
         if (oldT.body != null && newT.body != null) {
-            int[] bodyBounds = getBounds(oldT.body);
+            int[] bodyBounds = getCommentCorrectedBounds(oldT.body);
             copyTo(localPointer, bodyBounds[0]);
             localPointer = diffTree(oldT.body, newT.body, bodyBounds);
         }
-        copyTo(localPointer, bounds[1]);
-        return bounds[1];
+        localPointer = copyUpTo(localPointer, bounds[1]);
+        return localPointer;
     }
     
     private static final EnumSet<JavaTokenId> LAMBDA_PARAM_END_TOKENS = EnumSet.of(JavaTokenId.RPAREN, JavaTokenId.ARROW);
@@ -3686,9 +3686,11 @@ public class CasualDiff {
                         break;
                     }
                     if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
-                    // PENDING: although item.element may be among oldTrees, its surrounding whitespaces are not used
-                    // at all
-                    printer.print(item.element);
+                    // specific case: the item is shuffled within the same parent. It's not expected that the printer will print it with the usual 
+                    // codestyle-defined blanklines before/after. However the blank lines are more expected when the item shifts to another scope.
+                    if (!oldList.contains(item.element) || !printer.handlePossibleOldTrees(Collections.singletonList(item.element), true)) {
+                        printer.print(item.element);
+                    }
                     if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
                     break;
                 }
@@ -3952,7 +3954,9 @@ public class CasualDiff {
             if (!firstNewCommentPrinted && preceding) {
                 copyTo(localPointer, localPointer = oldTreeStartPos);
             }
-            printer.print((DCTree) newDoc);
+            // suppress potential margin after doc comment: there's a whitespace ready between the comment and the 
+            // JCTree. 
+            printer.print((DCTree) newDoc, firstNewCommentPrinted);
         }
         return localPointer;
     }

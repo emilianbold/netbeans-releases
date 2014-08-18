@@ -1313,5 +1313,6 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
      */
     protected void removeEditorPhaseHandler() {
         Logger.getLogger("TIMER").removeHandler(phaseHandler);
+        Logger.getLogger("TIMER").setLevel(Level.OFF);
     }
 }

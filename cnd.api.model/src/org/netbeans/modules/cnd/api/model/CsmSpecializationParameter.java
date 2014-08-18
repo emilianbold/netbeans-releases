@@ -65,5 +65,5 @@ package org.netbeans.modules.cnd.api.model;
  *
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public interface CsmSpecializationParameter extends CsmOffsetable {
+public interface CsmSpecializationParameter extends CsmOffsetable, CsmScopeElement {
 }

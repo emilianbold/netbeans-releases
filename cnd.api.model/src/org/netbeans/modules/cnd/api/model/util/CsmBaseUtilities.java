@@ -80,9 +80,17 @@ import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
  * @author Vladimir Voskresensky
  */
 public class CsmBaseUtilities {
-
+    
     /** Creates a new instance of CsmBaseUtilities */
     private CsmBaseUtilities() {
+    }
+    
+    public static String getFileLanguage(CsmFile file) {
+        return CsmBaseUtilitiesProvider.getDefault().getFileLanguage(file);
+    }
+    
+    public static String getFileLanguageFlavor(CsmFile file) {
+        return CsmBaseUtilitiesProvider.getDefault().getFileLanguageFlavor(file);
     }
 
     public static boolean isValid(CsmObject obj) {
@@ -380,6 +388,11 @@ public class CsmBaseUtilities {
                 CsmScopeElement elem = (CsmScopeElement) csmTopLevelObject;
                 csmTopLevelObject = ((CsmScopeElement)csmTopLevelObject).getScope();
                 if (CsmKindUtilities.isDeclaration(elem) && stopOnScope((CsmScope) csmTopLevelObject)) {
+                    // Here we should filter out declarations which are in top level
+                    // scope but not top level themselves.
+                    if (CsmKindUtilities.isParameter(elem) && CsmKindUtilities.isFunction(csmTopLevelObject)) {
+                        continue;
+                    }
                     // we have top level declaration or decl with unresolved scope
                     return elem;
                 }   

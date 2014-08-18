@@ -47,12 +47,17 @@ import java.util.List;
 import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariadicSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -72,6 +77,11 @@ public class VariadicSpecializationParameterImpl extends OffsetableBase implemen
         this.args.addAll(args);
     }
 
+    @Override
+    public CsmScope getScope() {
+        return null; // Always null here
+    }    
+    
     @Override
     public List<CsmSpecializationParameter> getArgs() {
         return args;

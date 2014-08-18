@@ -241,13 +241,14 @@ public class Installer extends ModuleInstall implements Runnable {
         synchronized (restored) {
             if (!restored.getAndSet(true)) {
                 restoredOnce(earlyRecords);
+            } else {
+                logEarlyRecords(earlyRecords);
             }
         }
     }
     
     private void restoredOnce(java.util.Queue<LogRecord> earlyRecords) {
         TimeToFailure.logAction();
-        deleteAnExcessiveAmountOfUIGestureHTMLFiles();
         Logger log = Logger.getLogger(UI_LOGGER_NAME);
         log.setUseParentHandlers(false);
         log.setLevel(Level.FINEST);
@@ -297,6 +298,17 @@ public class Installer extends ModuleInstall implements Runnable {
         CPUInfo.logCPUInfo();
         ScreenSize.logScreenSize();
         logIdeStartup();
+        logEarlyRecords(earlyRecords);
+        for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
+            a.activated(log);
+        }
+
+        if (logsSize >= UIHandler.MAX_LOGS) {
+            WindowManager.getDefault().invokeWhenUIReady(this);
+        }
+    }
+    
+    private void logEarlyRecords(java.util.Queue<LogRecord> earlyRecords) {
         if (earlyRecords != null) {
             List<LogRecord> allRecords;
             synchronized (earlyRecords) {
@@ -311,13 +323,6 @@ public class Installer extends ModuleInstall implements Runnable {
                 metrics.publishEarlyRecords(metricsRecords);
             }
         }
-        for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
-            a.activated(log);
-        }
-
-        if (logsSize >= UIHandler.MAX_LOGS) {
-            WindowManager.getDefault().invokeWhenUIReady(this);
-        }
     }
     
     private List<LogRecord> extractRecords(List<LogRecord> records, String logger) {
@@ -330,27 +335,6 @@ public class Installer extends ModuleInstall implements Runnable {
         return records2;
     }
     
-    private static void deleteAnExcessiveAmountOfUIGestureHTMLFiles() {
-        String tmpDirStr = System.getProperty("java.io.tmpdir");                // NOI18N
-        if (tmpDirStr == null) {
-            return ;
-        }
-        File tmpDir = new File(tmpDirStr);
-        String[] list = tmpDir.list(new FilenameFilter() {
-                            @Override
-                            public boolean accept(File dir, String name) {
-                                return name.startsWith("uigesture") && name.endsWith(".html"); // NOI18N
-                            }
-                        });
-        if (list == null || list.length < 10) {
-            // Ignore the few files.
-            return ;
-        }
-        for (String tempFile : list) {
-            new File(tmpDir, tempFile).delete();
-        }
-    }
-
     /** Accessed from tests. */
     static int getLogsSizeTest() {
         return logsSize;
@@ -481,7 +465,6 @@ public class Installer extends ModuleInstall implements Runnable {
         synchronized (restored) {
             restored.set(false);
         }
-        EarlyHandler.forgetInstallerHandle();
     }
     
     static boolean isImmediateWriteOut(LogRecord r) {
@@ -1140,10 +1123,16 @@ public class Installer extends ModuleInstall implements Runnable {
     static void parseButtons(InputStream is, final Object defaultButton, final DialogDescriptor dd)
             throws IOException, ParserConfigurationException, SAXException, InterruptedException, InvocationTargetException {
         final ButtonsHTMLParser bp = new ButtonsHTMLParser(is);
-        bp.parse();
+        final IOException[] ioExPtr = new IOException[] { null };
         Runnable buttonsCreation = new Runnable() {
             @Override
             public void run() {
+                try {
+                    bp.parse();
+                } catch (IOException ioex) {
+                    ioExPtr[0] = ioex;
+                    return ;
+                }
                 bp.createButtons();
                 List<Object> options = bp.getOptions();
                 if (!bp.containsExitButton() && (defaultButton != null)){
@@ -1161,6 +1150,9 @@ public class Installer extends ModuleInstall implements Runnable {
             buttonsCreation.run();
         }else{
             EventQueue.invokeAndWait(buttonsCreation);
+        }
+        if (ioExPtr[0] != null) {
+            throw ioExPtr[0];
         }
     }
     

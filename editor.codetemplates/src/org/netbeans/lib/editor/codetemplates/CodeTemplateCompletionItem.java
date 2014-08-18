@@ -90,8 +90,6 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         String description = codeTemplate.getDescription();
         if (description == null) {
             description = CodeTemplateApiPackageAccessor.get().getSingleLineText(codeTemplate);
-        } else {
-            description = ParametrizedTextParser.toHtmlText(description);
         }
         return description.trim();
     }
@@ -195,7 +193,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
 
             String desc = codeTemplate.getDescription();
             if (desc != null && desc.length() > 0) {
-                sb.append("<p>").append(ParametrizedTextParser.toHtmlText(desc)).append("</p>"); //NOI18N
+                sb.append("<p>").append(desc).append("</p>"); //NOI18N
             }
             
             // Append abbreviation

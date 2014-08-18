@@ -164,8 +164,9 @@ public class FreemarkerFactory implements ScriptEngineFactory {
         n.add("FreeMarker");
         n.add("freemarker");
         names = Collections.unmodifiableList(n);
-        ArrayList<String> e = new ArrayList<String>(1);
+        ArrayList<String> e = new ArrayList<String>(2);
         e.add("fm");
+        e.add("ftl");
         extensions = Collections.unmodifiableList(e);
         ArrayList<String> m = new ArrayList<String>(0);
         m.add("text/x-freemarker");

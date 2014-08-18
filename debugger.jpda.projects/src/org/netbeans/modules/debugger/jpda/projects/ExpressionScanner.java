@@ -56,6 +56,7 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.InstanceOfTree;
@@ -241,13 +242,31 @@ class ExpressionScanner extends TreeScanner<List<Tree>, ExpressionScanner.Expres
 
     @Override
     public List<Tree> visitConditionalExpression(ConditionalExpressionTree node, ExpressionScanner.ExpressionsInfo p) {
-        List<Tree> cond = scan(node.getCondition(), p);
+        ExpressionTree condition = node.getCondition();
+        List<Tree> cond = scan(condition, p);
         Tree lastCond = null;
+        Boolean resolvedCondition = null;
         if (cond != null) {
             lastCond = cond.get(cond.size() - 1);
+        } else {
+            if (condition.getKind() == Tree.Kind.BOOLEAN_LITERAL) {
+                resolvedCondition = Boolean.parseBoolean(condition.toString());
+            }
         }
-        List<Tree> rT = scan(node.getTrueExpression(), p);
-        List<Tree> rF = scan(node.getFalseExpression(), p);
+        List<Tree> rT;
+        List<Tree> rF;
+        if (resolvedCondition != null) {
+            if (resolvedCondition) {
+                rT = scan(node.getTrueExpression(), p);
+                rF = null;
+            } else {
+                rT = null;
+                rF = scan(node.getFalseExpression(), p);
+            }
+        } else {
+            rT = scan(node.getTrueExpression(), p);
+            rF = scan(node.getFalseExpression(), p);
+        }
         if (lastCond != null) {
             if (rT != null) {
                 p.addNextExpression(lastCond, rT.get(0));
@@ -550,8 +569,8 @@ class ExpressionScanner extends TreeScanner<List<Tree>, ExpressionScanner.Expres
     /** Provides further information about the expressions. */
     public static final class ExpressionsInfo extends Object {
         
-        private Map<Tree, Set<Tree>> nextExpressions = new HashMap<Tree, Set<Tree>>();
-        Stack<StatementTree> wrappingStatements = new Stack<StatementTree>();
+        private final Map<Tree, Set<Tree>> nextExpressions = new HashMap<Tree, Set<Tree>>();
+        final Stack<StatementTree> wrappingStatements = new Stack<StatementTree>();
         
         
         synchronized void addNextExpression(Tree expression, Tree next) {

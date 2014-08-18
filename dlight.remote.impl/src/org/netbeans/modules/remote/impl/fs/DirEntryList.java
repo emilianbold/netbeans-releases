@@ -64,5 +64,15 @@ public class DirEntryList {
 
     public long getTimestamp() {
         return timestamp;
-    }    
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        sb.append(' ').append(entries.size()).append(" entries"); //NOI18N
+        for (DirEntry e : entries) {
+            sb.append('\n').append(e.toString()); //NOI18N
+        }
+        return sb.toString();
+    }
 }

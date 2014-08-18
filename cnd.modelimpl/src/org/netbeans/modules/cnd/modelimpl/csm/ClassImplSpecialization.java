@@ -132,7 +132,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         }
         qualifiedNameSuffix = NameCache.getManager().getString(TemplateUtils.getSpecializationSuffix(qIdToken, getTemplateParameters()));
         initQualifiedName(scope);
-        specializationDesctiptor = SpecializationDescriptor.createIfNeeded(ast, getContainingFile(), scope, register);
+        specializationDesctiptor = SpecializationDescriptor.createIfNeeded(ast, getContainingFile(), this, register);
     }
 
     public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, String language, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {

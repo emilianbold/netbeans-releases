@@ -99,7 +99,7 @@ public class DebianPackager implements PackagerDescriptor {
                 ExecutionEnvironment env = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
                 // See #208441 - "Authentication" dialog pop-up
                 // I don't have a solution for the case of remote without currently available host info and connection
-                if (HostInfoUtils.isHostInfoAvailable(env) || env.isLocal()) {
+                if (HostInfoUtils.isHostInfoAvailable(env)) {
                     hostInfo = HostInfoUtils.getHostInfo(env);
                 }
             } catch (IOException ex) {
