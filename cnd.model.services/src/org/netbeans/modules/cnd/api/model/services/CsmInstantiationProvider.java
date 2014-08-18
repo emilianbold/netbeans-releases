@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
+import org.netbeans.modules.cnd.api.model.CsmVariadicSpecializationParameter;
 import org.openide.util.Lookup;
 
 /**
@@ -117,11 +118,11 @@ public abstract class CsmInstantiationProvider {
      * @param templateParam
      * @param patternType
      * @param actualType
-     * @param strategy - not used yet
+     * @param strategy
      * 
-     * @return calculated type or null if type couldn't be calculated
+     * @return calculated type(s) or null if type couldn't be calculated
      */
-    public abstract CsmType calcTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, CalcTemplateTypeStrategy strategy);
+    public abstract CsmType[] calcTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, CalcTemplateTypeStrategy strategy);
 
     /**
      * Returns instantiation of template
@@ -181,6 +182,17 @@ public abstract class CsmInstantiationProvider {
      */
     public abstract CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmScope scope, CsmFile file, int start, int end);    
 
+    /**
+     * Creates variadic specialization parameter (template parameter pack).
+     * 
+     * @param args
+     * @param file
+     * @param start
+     * @param end
+     * @return 
+     */
+    public abstract CsmVariadicSpecializationParameter createVariadicSpecializationParameter(List<CsmSpecializationParameter> args, CsmFile file, int start, int end);
+    
      /**
      * Creates specialization parameter based on expression.
      *
@@ -269,7 +281,7 @@ public abstract class CsmInstantiationProvider {
         }
 
         @Override
-        public CsmType calcTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, CalcTemplateTypeStrategy strategy) {
+        public CsmType[] calcTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, CalcTemplateTypeStrategy strategy) {
             return null;
         }
 
@@ -305,6 +317,11 @@ public abstract class CsmInstantiationProvider {
 
         @Override
         public CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmScope scope, CsmFile file, int start, int end) {
+            return null;
+        }
+
+        @Override
+        public CsmVariadicSpecializationParameter createVariadicSpecializationParameter(List<CsmSpecializationParameter> args, CsmFile file, int start, int end) {
             return null;
         }
 
