@@ -114,13 +114,15 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
                 while(iterator.hasNext()) {
                     CsmCompilationUnit cu = iterator.next();
                     CsmFile startFile = cu.getStartFile();
-                    Object platformProject = startFile.getProject().getPlatformProject();
-                    if (platformProject instanceof NativeProject) {
-                        NativeProject np = (NativeProject) platformProject;
-                        NativeFileItem ni = np.findFileItem(startFile.getFileObject());
-                        if (ni != null && ni != item && startFile.isSourceFile()) {
-                            langs.add(ni.getLanguage());
-                            flavors.add(ni.getLanguageFlavor());
+                    if (startFile != null) {
+                        Object platformProject = startFile.getProject().getPlatformProject();
+                        if (platformProject instanceof NativeProject) {
+                            NativeProject np = (NativeProject) platformProject;
+                            NativeFileItem ni = np.findFileItem(startFile.getFileObject());
+                            if (ni != null && ni != item && startFile.isSourceFile()) {
+                                langs.add(ni.getLanguage());
+                                flavors.add(ni.getLanguageFlavor());
+                            }
                         }
                     }
                 }
