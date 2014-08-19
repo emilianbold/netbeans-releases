@@ -192,15 +192,17 @@ public class MultiDataObject extends DataObject {
      * @return secondary object
      */
     /* package-private */ Map<FileObject,Entry> getSecondary() {
+        HashMap<FileObject,Entry> ret;
         synchronized (secondaryCreationLock) {
             if (secondary == null) {
                 secondary = new HashMap<FileObject,Entry>(4);
             }
-            if (ERR.isLoggable(Level.FINE)) {
-                ERR.fine("getSecondary for " + this + " is " + secondary); // NOI18N
-            }
-            return secondary;
+            ret = secondary;
         }
+        if (ERR.isLoggable(Level.FINE)) {
+            ERR.fine("getSecondary for " + this + " is " + secondary); // NOI18N
+        }
+        return ret;
     }
     
     /* Getter for copy action.
