@@ -508,22 +508,20 @@ public final class Source {
         this.fileObject =   fileObject;
     }
 
-    private static Source _get(String mimeType, FileObject fileObject) {
+    @NonNull
+    private static Source _get(
+            @NonNull final String mimeType,
+            @NonNull final FileObject fileObject) {
         assert mimeType != null;
         assert fileObject != null;
-        
+
         synchronized (Source.class) {
-            Reference<Source> sourceRef = instances.get(fileObject);
+            final Reference<Source> sourceRef = instances.get(fileObject);
             Source source = sourceRef == null ? null : sourceRef.get();
-
-            if (source == null) {
+            if (source == null || !mimeType.equals(source.getMimeType())) {
                 source = new Source(mimeType, null, fileObject);
-                instances.put(fileObject, new WeakReference<Source>(source));
+                instances.put(fileObject, new WeakReference<>(source));
             }
-            // XXX: we may want to update the mime type to the one from the document,
-            // but I'm not sure what would that mean for the rest of the infrastructure.
-            // It would probably need to throw everything (?) away and start from scratch.
-
             return source;
         }
     }
