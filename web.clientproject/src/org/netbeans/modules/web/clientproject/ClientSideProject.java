@@ -97,7 +97,6 @@ import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
 import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -126,7 +125,6 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.WindowManager;
 import org.openide.windows.WindowSystemEvent;
 import org.openide.windows.WindowSystemListener;
@@ -153,7 +151,7 @@ public class ClientSideProject implements Project {
     final AntProjectHelper projectHelper;
     private final ReferenceHelper referenceHelper;
     private final PropertyEvaluator eval;
-    private final DynamicProjectLookup lookup;
+    private final Lookup lookup;
     private final AntProjectListener antProjectListenerImpl = new AntProjectListenerImpl();
     volatile String name;
     private RefreshOnSaveListener refreshOnSaveListener;
@@ -218,10 +216,6 @@ public class ClientSideProject implements Project {
         referenceHelper = new ReferenceHelper(helper, configuration, eval);
         projectBrowserProvider = new ClientSideProjectBrowserProvider(this);
         lookup = createLookup(configuration);
-        ClientProjectEnhancedBrowserImplementation ebi = getEnhancedBrowserImpl();
-        if (ebi != null) {
-            lookup.setConfigurationProvider(ebi.getProjectConfigurationProvider());
-        }
         eval.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -234,10 +228,6 @@ public class ClientSideProject implements Project {
                     }
                     projectEnhancedBrowserImpl = null;
                     projectWebBrowser = null;
-                    ebi = getEnhancedBrowserImpl();
-                    if (ebi != null) {
-                        lookup.setConfigurationProvider(ebi.getProjectConfigurationProvider());
-                    }
                     projectBrowserProvider.activeBrowserHasChanged();
                 }
             }
@@ -436,7 +426,7 @@ public class ClientSideProject implements Project {
                 projectHelper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
     }
 
-    private DynamicProjectLookup createLookup(AuxiliaryConfiguration configuration) {
+    private Lookup createLookup(AuxiliaryConfiguration configuration) {
         FileEncodingQueryImplementation fileEncodingQuery =
                 new FileEncodingQueryImpl(getEvaluator(), ClientSideProjectConstants.PROJECT_ENCODING);
         Lookup base = Lookups.fixed(new Object[] {
@@ -474,8 +464,7 @@ public class ClientSideProject implements Project {
                new ProjectDirectoriesProviderImpl(),
                new CoverageProviderImpl(this),
        });
-       return new DynamicProjectLookup(this,
-               LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup"));
+       return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup");
     }
 
     void recompileSources(CssPreprocessor cssPreprocessor) {
@@ -486,25 +475,6 @@ public class ClientSideProject implements Project {
         }
         // force recompiling
         CssPreprocessors.getDefault().process(cssPreprocessor, this, siteRootFolder);
-    }
-
-    private static class DynamicProjectLookup extends ProxyLookup {
-        private Lookup base;
-        private ClientSideProject project;
-
-        private DynamicProjectLookup(ClientSideProject project, Lookup base) {
-            super(base);
-            this.project = project;
-            this.base = base;
-        }
-
-        public void setConfigurationProvider(ProjectConfigurationProvider provider) {
-            if (provider == null) {
-                setLookups(base);
-            } else {
-                setLookups(base, Lookups.fixed(provider));
-            }
-        }
     }
 
     ClassPath getSourceClassPath() {
@@ -628,7 +598,7 @@ public class ClientSideProject implements Project {
                 cordova = projectDirectory.getFileObject("hooks"); // NOI18N
             }
             FileObject testsFolder = project.getTestsFolder(false);
-            
+
             boolean hasGrunt = projectDirectory.getFileObject("Gruntfile.js") != null;
             boolean hasBower = projectDirectory.getFileObject("bower.json") !=null;
             boolean hasPackage = projectDirectory.getFileObject("package.json") !=null;
