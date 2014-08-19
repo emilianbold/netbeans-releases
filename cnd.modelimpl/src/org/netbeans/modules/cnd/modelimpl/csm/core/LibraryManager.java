@@ -107,7 +107,7 @@ public final class LibraryManager {
         this.repositoryId = repositoryId;
     }
     
-    private final Map<LibraryKey, LibraryEntry> librariesEntries = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<LibraryKey, LibraryEntry> librariesEntries = new ConcurrentHashMap<>();
     
     private static final class Lock {}
     private final Object lock = new Lock();
@@ -306,7 +306,7 @@ public final class LibraryManager {
         return path;
     }
     
-    private ProjectBase searchInProjectFiles(ProjectBase baseProject, ResolvedPath searchFor, Set<ProjectBase> set) {
+    private static ProjectBase searchInProjectFiles(ProjectBase baseProject, ResolvedPath searchFor, Set<ProjectBase> set) {
         if (set.contains(baseProject)) {
             return null;
         }
@@ -331,7 +331,7 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectFilesArtificial(List<CsmProject> libraries, ResolvedPath searchFor, Set<ProjectBase> antiLoop) {
+    private static ProjectBase searchInProjectFilesArtificial(List<CsmProject> libraries, ResolvedPath searchFor, Set<ProjectBase> antiLoop) {
         for (CsmProject prj : libraries) {
             if (prj.isArtificial()) {
                 antiLoop.clear();
@@ -344,7 +344,7 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectRoots(ProjectBase baseProject, FileSystem fs, List<CharSequence> folders, Set<ProjectBase> set) {
+    private static ProjectBase searchInProjectRoots(ProjectBase baseProject, FileSystem fs, List<CharSequence> folders, Set<ProjectBase> set) {
         if (set.contains(baseProject)) {
             return null;
         }
@@ -369,7 +369,7 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectRootsArtificial(List<CsmProject> libraries, FileSystem fs, List<CharSequence> folders, Set<ProjectBase> set) {
+    private static ProjectBase searchInProjectRootsArtificial(List<CsmProject> libraries, FileSystem fs, List<CharSequence> folders, Set<ProjectBase> set) {
         ProjectBase candidate = null;
         for (CsmProject prj : libraries) {
             if (prj.isArtificial()) {
@@ -410,13 +410,12 @@ public final class LibraryManager {
         LibraryEntry entry = librariesEntries.get(libraryKey);
         if (entry == null) {
             boolean needFire = false;
-            synchronized (lock) {
-                entry = librariesEntries.get(libraryKey);
-                if (entry == null) {                    
-                    entry = new LibraryEntry(libraryKey);
-                    librariesEntries.put(libraryKey, entry);
-                    needFire = true;
-                }
+            entry = new LibraryEntry(libraryKey);
+            LibraryEntry old = librariesEntries.putIfAbsent(libraryKey, entry);
+            if (old == null) {
+                needFire = true;
+            } else {
+                entry = old;
             }
             if (needFire) {
                 final LibraryEntry passEntry = entry;
