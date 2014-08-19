@@ -1134,6 +1134,11 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
 
         @Override
+        public Collection<CsmScopeElement> getScopeElements() {
+            return declaration.getScopeElements();
+        }
+
+        @Override
         public CsmClass getContainingClass() {
             return ((CsmMember)declaration).getContainingClass();
         }
