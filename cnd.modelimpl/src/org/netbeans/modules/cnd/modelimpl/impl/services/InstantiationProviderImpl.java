@@ -55,6 +55,7 @@
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -262,7 +263,10 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 if (contextFile == null) {
                     contextFile = ((CsmOffsetable) template).getContainingFile();
                     contextOffset = ((CsmOffsetable) template).getStartOffset();
-                }                
+                }
+                if (hasVariadicParams(params)) {
+                    params = expandVariadicParams(params);
+                }
                 List<CsmTemplateParameter> templateParams = template.getTemplateParameters();
                 Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<>();
                 Iterator<CsmSpecializationParameter> paramsIter = params.iterator();
@@ -787,6 +791,18 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 }
             }
         }
+        if (specTemplateParam.isVarArgs()) {
+            return createVariadicSpecializationParameter(
+                    Collections.<CsmSpecializationParameter>emptyList(), 
+                    specTemplateParam.getContainingFile(), 
+                    0, 
+                    0
+            );
+        } else {
+            if (specTemplateParam.getDefaultValue() != null) {
+                return specTemplateParam.getDefaultValue();
+            }
+        }
         return null;
     }
     
@@ -1230,8 +1246,30 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : sps) {
                 CsmSpecializationParameter instParam = pair.first();
                 List<CsmInstantiation> instantiations = pair.second();
-                if (CsmKindUtilities.isTypeBasedSpecalizationParameter(instParam) &&
-                        CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) instParam).getType())) {
+                if (CsmKindUtilities.isVariadicSpecalizationParameter(instParam)) {
+                    CsmVariadicSpecializationParameter variadicParam = (CsmVariadicSpecializationParameter) instParam;
+                    List<CsmSpecializationParameter> processedArgs = new ArrayList<>();
+                    VariadicRemapping remapped = getVariadicInstantiationParams(variadicParam, m, processedArgs);
+                    switch (remapped) {
+                        case ALL: 
+                            instantiations.clear();
+                            // fall through
+                        case SOME: {
+                            CsmSpecializationParameter newVariadicParam = createVariadicSpecializationParameter(
+                                    processedArgs, 
+                                    variadicParam.getContainingFile(), 
+                                    variadicParam.getStartOffset(), 
+                                    variadicParam.getEndOffset()
+                            );       
+                            res.add(Pair.of(newVariadicParam, instantiations));
+                            break;
+                        }
+                        case NONE: {
+                            res.add(pair);
+                            break;
+                        }
+                    }
+                } else if (isTemplateSpecParameter(instParam)) {
                     CsmTemplateParameterType paramType = (CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) instParam).getType();
                     CsmSpecializationParameter newTp = m.get(paramType.getParameter());
                     if (newTp != null && newTp != instParam) {
@@ -1252,6 +1290,49 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         }
         return res;
     }    
+    
+    private static enum VariadicRemapping {
+        ALL,
+        SOME,
+        NONE
+    }
+    
+    private static VariadicRemapping getVariadicInstantiationParams(CsmVariadicSpecializationParameter variadicParam, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, List<CsmSpecializationParameter> results) {
+        boolean hasRemapped = false;
+        boolean hasNotRemapped = false;
+        List<CsmSpecializationParameter> expanded = expandVariadicParams(Arrays.<CsmSpecializationParameter>asList(variadicParam));
+        for (CsmSpecializationParameter argParam : expanded) {
+            if (isTemplateSpecParameter(argParam)) {
+                CsmTemplateParameterType paramType = (CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) argParam).getType();
+                CsmSpecializationParameter newSpecParam = mapping.get(paramType.getParameter());
+                if (newSpecParam != null && newSpecParam != argParam) {
+                    if (CsmKindUtilities.isVariadicSpecalizationParameter(newSpecParam)) {
+                        // TODO: do we need to expand it?
+                        for (CsmSpecializationParameter param : ((CsmVariadicSpecializationParameter) newSpecParam).getArgs()) {
+                            results.add(param);
+                        }
+                    } else {
+                        results.add(newSpecParam);
+                    }
+                    hasRemapped = true;
+                } else {
+                    results.add(argParam);
+                    hasNotRemapped = true;
+                }
+            } else {
+                hasNotRemapped = true;
+            }
+        }
+        if (hasRemapped && hasNotRemapped) {
+            return VariadicRemapping.SOME;
+        }
+        return hasRemapped ? VariadicRemapping.ALL : VariadicRemapping.NONE;
+    } 
+    
+    private static boolean isTemplateSpecParameter(CsmSpecializationParameter param) {
+        return CsmKindUtilities.isTypeBasedSpecalizationParameter(param) && 
+               CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) param).getType());
+    }
     
     private List<CsmSpecializationParameter> getPlainParams(List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> instParams) {
         List<CsmSpecializationParameter> params = new ArrayList<>(instParams.size());
@@ -1347,6 +1428,46 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             }
         }
         return counter;
+    }    
+    
+    private static boolean hasVariadicParams(CsmTemplate template) {
+        if (template != null && template.getTemplateParameters() != null) {
+            for (CsmTemplateParameter param : template.getTemplateParameters()) {
+                if (param.isVarArgs()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private static boolean hasVariadicParams(List<CsmSpecializationParameter> params) {
+        if (params != null) {
+            for (CsmSpecializationParameter param : params) {
+                if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private static List<CsmSpecializationParameter> expandVariadicParams(List<CsmSpecializationParameter> params) {
+        List<CsmSpecializationParameter> params2 = new ArrayList<>();
+        for (CsmSpecializationParameter param : params) {
+            if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
+                for (CsmSpecializationParameter arg : ((CsmVariadicSpecializationParameter)param).getArgs()) {
+                    params2.add(arg);
+                }
+            } else {
+                params2.add(param);
+            }
+        }
+        return params2;               
+    }    
+    
+    private static CsmType[] wrapType(CsmType type) {
+        return type != null ? new CsmType[]{type} : null;
     }    
     
     private CsmResolveContext getLastResolveContext() {
@@ -1464,10 +1585,6 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             return params2;        
         }            
     }
-    
-    private static CsmType[] wrapType(CsmType type) {
-        return type != null ? new CsmType[]{type} : null;
-    }    
 
     private static class TypeDigger {
         
@@ -1594,31 +1711,6 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             });
             return (CsmFunctionPointerType) (CsmKindUtilities.isFunctionPointerType(result) ? result : null);
         }            
-        
-        private static boolean hasVariadicParams(List<CsmSpecializationParameter> params) {
-            if (params != null) {
-                for (CsmSpecializationParameter param : params) {
-                    if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-        
-        private static List<CsmSpecializationParameter> expandVariadicParams(List<CsmSpecializationParameter> params) {
-            List<CsmSpecializationParameter> params2 = new ArrayList<>();
-            for (CsmSpecializationParameter param : params) {
-                if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
-                    for (CsmSpecializationParameter arg : ((CsmVariadicSpecializationParameter)param).getArgs()) {
-                        params2.add(arg);
-                    }
-                } else {
-                    params2.add(param);
-                }
-            }
-            return params2;               
-        }
         
         private TypeDigger(List<ExtractAction> actions, CsmType templateType) {
             this.actions = actions;

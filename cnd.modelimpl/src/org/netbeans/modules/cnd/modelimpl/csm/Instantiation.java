@@ -1443,8 +1443,14 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 //        System.err.println("Instantiation.createType for " + type + " with instantiation " + instantiation);
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             CsmType instantiatedType = templateParamResolver.clone().resolveTemplateParameterType(type, instantiation);
-            if (instantiatedType == null || CsmKindUtilities.isTemplateParameterType(instantiatedType)) {
+            if (instantiatedType == null) {
                 return new TemplateParameterType(type, instantiation, templateParamResolver);
+            } else if (CsmKindUtilities.isTemplateParameterType(instantiatedType)) {
+                if (instantiatedType != type) {
+                    return new TemplateParameterType(type, instantiation, templateParamResolver);
+                } else {
+                    return type;
+                }
             } else if (instantiatedType instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
                 return new NestedTemplateParameterType(type, instantiation, templateParamResolver);
             } else if (CsmKindUtilities.isFunctionPointerType(instantiatedType)) {
