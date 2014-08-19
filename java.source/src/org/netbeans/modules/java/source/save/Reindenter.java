@@ -395,6 +395,8 @@ public class Reindenter implements IndentTask {
                                                 currentIndent += (cs.getIndentSize() / 2);
                                                 break;
                                         }
+                                    } else {
+                                        currentIndent += cs.getContinuationIndentSize();
                                     }
                                     break;
                                 default:

@@ -98,7 +98,7 @@ public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInherit
                     break;
                 case CPPTokenTypes.CSM_TYPE_DECLTYPE:
                 case CPPTokenTypes.IDENT:
-                    this.ancestorType = TemplateUtils.checkTemplateType(TypeFactory.createType(token, getContainingFile(), null, 0), scope);
+                    this.ancestorType = TemplateUtils.checkTemplateType(TypeFactory.createType(token, getContainingFile(), null, 0, scope), scope);
                     return; // it's definitely the last!; besides otherwise we get NPE in for
             }
         }

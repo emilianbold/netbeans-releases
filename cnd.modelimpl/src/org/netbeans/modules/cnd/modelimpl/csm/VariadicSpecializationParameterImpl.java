@@ -134,6 +134,11 @@ public class VariadicSpecializationParameterImpl extends OffsetableBase implemen
         }
         return CndCollectionUtils.equals(args, other.args);
     }
+
+    @Override
+    public String toString() {
+        return getText().toString();
+    }
         
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent

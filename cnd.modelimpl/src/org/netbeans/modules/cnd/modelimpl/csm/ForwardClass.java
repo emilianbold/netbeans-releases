@@ -86,7 +86,7 @@ public final class ForwardClass extends ClassImpl {
         ForwardClass fwd = new ForwardClass(NameHolder.createName(name), ast, file, start, end);
         fwd.initQualifiedName(scope);
         if (fwd.getProject().findClassifier(fwd.getQualifiedName()) == null) {
-            fwd.setTemplateDescriptor(TemplateDescriptor.createIfNeeded(ast, file, scope, registerInProject));
+            fwd.setTemplateDescriptor(TemplateDescriptor.createIfNeeded(ast, file, fwd, registerInProject));
             fwd.initScope(scope);
             if(registerInProject) {
                 fwd.register(scope, false);
