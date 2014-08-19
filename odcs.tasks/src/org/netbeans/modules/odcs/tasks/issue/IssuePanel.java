@@ -1607,7 +1607,8 @@ public class IssuePanel extends javax.swing.JPanel {
 
             @Override
             protected boolean storeValue () {
-                int value = ((Number) privateEstimateField.getValue()).intValue();
+                Object valueObj = privateEstimateField.getValue();
+                int value = valueObj instanceof Number ? ((Number) valueObj).intValue() : 0;
                 if (value != issue.getEstimate()) {
                     issue.setTaskEstimate(value, false);
                     return true;
