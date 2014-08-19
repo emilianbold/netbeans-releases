@@ -57,6 +57,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -72,6 +73,12 @@ public class SourceTest extends NbTestCase {
 
     public SourceTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        FileUtil.setMIMEType("txt", "text/plain");  //NOI18N
     }
 
     public void testCreateSnapshotEOLConversions() throws IOException {
@@ -222,6 +229,24 @@ public class SourceTest extends NbTestCase {
 
         assertSame("Inconsistent Source.create(FileObject)", source, Source.create(file));
         assertSame("Wrong FileObject", file, source.getFileObject());
+    }
+
+    public void testMimeTypeChange() throws IOException {
+        final FileObject file = createFileObject("empty.foo", "", "\n");
+        final Source source = Source.create(file);
+        assertNotNull("No Source for " + file, source);
+        assertSame("Wrong FileObject", file, source.getFileObject());
+        assertSame("Inconsistent Source.create(FileObject)", source, Source.create(file));
+        final FileLock lock = file.lock();
+        try {
+            file.rename(lock, "empty", "txt");  //NOI18N
+        } finally {
+            lock.releaseLock();
+        }
+        final Source source2 = Source.create(file);
+        assertNotNull("No Source for " + file, source2);
+        assertSame("Wrong FileObject", file, source2.getFileObject());
+        assertNotSame("Inconsistent Source.create(FileObject)", source, source2);
     }
 
     public void testConsistencySourceForFilelessDocument() {
