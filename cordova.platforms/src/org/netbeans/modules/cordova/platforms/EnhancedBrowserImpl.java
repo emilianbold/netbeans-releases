@@ -52,7 +52,6 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhanced
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 
 /**
  * @author Jan Becicka
@@ -121,11 +120,6 @@ public final class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserIm
         return p.getBoolean(PROJECT_HIGHLIGHT_SELECTION+"."+browser.getId(), browser.hasNetBeansIntegration()); //NOI18N
     }
     
-    @Override
-    public ProjectConfigurationProvider getProjectConfigurationProvider() {
-        return null;
-    }
-
     @Override
     public ActionProvider getActionProvider() {
         return actionProvider;

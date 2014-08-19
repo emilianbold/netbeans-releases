@@ -52,7 +52,6 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhanced
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.util.Exceptions;
 
 /**
@@ -126,11 +125,6 @@ public class CordovaBrowserImpl implements ClientProjectEnhancedBrowserImplement
     @Override
     public boolean isHighlightSelectionEnabled() {
         return true;
-    }
-
-    @Override
-    public ProjectConfigurationProvider getProjectConfigurationProvider() {
-        return null;
     }
 
     @Override
