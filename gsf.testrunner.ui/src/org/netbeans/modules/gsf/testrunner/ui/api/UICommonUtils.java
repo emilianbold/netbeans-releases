@@ -139,20 +139,20 @@ public class UICommonUtils {
     private static FileObject getFileObject(final Node node, boolean justLogIt) {
         final FileObject fo = getFileObjectFromNode(node);
         if (fo == null) {
-//            if(justLogIt) {
-//                LOG.info(Bundle.MSG_file_from_node_failed(node.getDisplayName()));
-//            } else {
+            if(justLogIt) {
+                LOG.info(Bundle.MSG_file_from_node_failed(node.getDisplayName()));
+            } else {
                 notifyUser(Bundle.MSG_file_from_node_failed(node.getDisplayName()));
-//            }
+            }
             return null;
         }
         Project owner = FileOwnerQuery.getOwner(fo);
         if (owner == null) {
-//            if(justLogIt) {
-//                LOG.info(Bundle.MSG_no_project(fo));
-//            } else {
+            if(justLogIt) {
+                LOG.info(Bundle.MSG_no_project(fo));
+            } else {
                 notifyUser(Bundle.MSG_no_project(fo));
-//            }
+            }
             return null;
         }
         return fo;
