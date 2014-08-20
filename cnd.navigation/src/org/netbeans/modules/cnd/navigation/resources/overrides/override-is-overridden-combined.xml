@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
           "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
 <type name="org-netbeans-modules-cnd-navigation-is_overridden_combined"
       description_key="LAB_OverridesAndIsOverriden"
-      localizing_bundle="org-netbeans-modules-cnd-navigation.resources.override.Bundle"
+      localizing_bundle="org.netbeans.modules.cnd.navigation.overrides.Bundle"
       visible="true"
       glyph="nbresloc:/org/netbeans/modules/cnd/navigation/resources/overrides/override-is-overridden-combined.png"
       priority="5">
