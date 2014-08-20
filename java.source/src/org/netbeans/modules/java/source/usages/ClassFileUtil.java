@@ -78,11 +78,10 @@ import org.netbeans.modules.classfile.Method;
  */
 public class ClassFileUtil {
     private static final Logger log = Logger.getLogger(ClassFileUtil.class.getName());
-    
-    private static final Set<ElementKind> TYPE_DECLS = EnumSet.of(ElementKind.CLASS, ElementKind.INTERFACE, ElementKind.ENUM, ElementKind.ANNOTATION_TYPE);
-    
+
     /** Creates a new instance of ClassFileUtil */
     private ClassFileUtil() {
+        throw new IllegalStateException("No instance allowed.");    //NOI18N
     }
     
     
