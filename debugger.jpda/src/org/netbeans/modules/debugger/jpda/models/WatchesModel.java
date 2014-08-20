@@ -456,6 +456,20 @@ public class WatchesModel implements TreeModel {
                 JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, e, this);
                 jwi.addPropertyChangeListener(this);
                 jw = jwi;
+            } catch (RuntimeException ex) {
+                // Any exception that occurs during evaluation - probably our bug
+                // Assure that we have some result so that we do not re-evaluate in an endless loop.
+                JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, ex, this);
+                jwi.addPropertyChangeListener(this);
+                jw = jwi;
+                throw ex;
+            } catch (Error err) {
+                // Any error that occurs during evaluation - probably our bug
+                // Assure that we have some result so that we do not re-evaluate in an endless loop.
+                JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, err, this);
+                jwi.addPropertyChangeListener(this);
+                jw = jwi;
+                throw err;
             } finally {
                 setEvaluated(jw);
                 if (watchRef != null) watchRef[0] = jw;
