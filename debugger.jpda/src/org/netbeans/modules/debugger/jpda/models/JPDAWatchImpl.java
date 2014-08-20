@@ -103,7 +103,7 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch/*, Watch.Provi
     JPDAWatchImpl (
         JPDADebuggerImpl debugger, 
         Watch watch, 
-        Exception exception,
+        Throwable exception,
         Object node
     ) {
         super (
