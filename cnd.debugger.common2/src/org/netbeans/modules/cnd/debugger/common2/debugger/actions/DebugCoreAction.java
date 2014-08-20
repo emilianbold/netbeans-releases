@@ -86,14 +86,6 @@ import org.openide.util.Lookup;
  */
 public class DebugCoreAction extends SystemAction {
 
-    // For persistance
-    private String lastCorefilePath = null;
-    private DefaultPicklistModel executablePickList = null;
-
-    public DebugCoreAction() {
-        executablePickList = new DefaultPicklistModel(6);
-    }
-
     public String getName() {
         return Catalog.get("LOADCOREDIALOGACTION_NAME"); // NOI18N
     }
@@ -134,10 +126,7 @@ public class DebugCoreAction extends SystemAction {
             ExecutionEnvironment exEnv = FileSystemProvider.getExecutionEnvironment(coreFile);
             host = ExecutionEnvironmentFactory.toUniqueID(exEnv);
             corefilePath = coreFile.getPath();
-        } else {
-            corefilePath = lastCorefilePath;
         }
-
 
         //
         // Pop up a dialog to confirm choice of corefile or get a corefile
@@ -151,7 +140,7 @@ public class DebugCoreAction extends SystemAction {
                     debugButton,
                     DialogDescriptor.CANCEL_OPTION,};
 
-        coreDialogPanel = new DebugCorePanel(corefilePath, executablePickList.getElementsDisplayName(), debugButton, ro, host);
+        coreDialogPanel = new DebugCorePanel(corefilePath, debugButton, ro, host);
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 coreDialogPanel,
                 Catalog.get("LBL_DebugCorefile"), // NOI18N
@@ -203,11 +192,6 @@ public class DebugCoreAction extends SystemAction {
                 /*envs*/ null,
                 hostName);
         ProjectSupport.getProject(seed);
-
-        // For persistance
-        coreDialogPanel.setLastSelectedProject(seed.project());
-        lastCorefilePath = seed.corefile();
-        executablePickList.addElement(seed.executable());
 
         corefile = seed.corefile();
         executable = seed.executableNoSentinel();

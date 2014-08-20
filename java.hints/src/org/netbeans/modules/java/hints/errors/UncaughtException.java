@@ -317,7 +317,11 @@ public final class UncaughtException implements ErrorRule<Void> {
 
                         for (ElementDescription ed : eds) {
                             ExecutableElement ee = (ExecutableElement) ed.getHandle().resolve(info);
-                            ExecutableType et = (ExecutableType) info.getTypes().asMemberOf((DeclaredType) enclosingType.asType(), ee);
+                            TypeMirror eType = info.getTypes().asMemberOf((DeclaredType) enclosingType.asType(), ee);
+                            if (eType.getKind() != TypeKind.EXECUTABLE) {
+                                continue;
+                            }
+                            ExecutableType et = (ExecutableType)eType;
                             List<TypeMirror> thisDeclaredThrows = new LinkedList<TypeMirror>(et.getThrownTypes());
                             
                             if (!thisDeclaredThrows.isEmpty()) {

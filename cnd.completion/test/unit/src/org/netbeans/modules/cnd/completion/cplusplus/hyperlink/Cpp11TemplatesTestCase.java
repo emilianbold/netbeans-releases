@@ -85,4 +85,23 @@ public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
         performTest("bug239901.cpp", 22, 13, "bug239901.cpp", 7, 9);
         performTest("bug239901.cpp", 25, 18, "bug239901.cpp", 3, 9);
     }            
+    
+    public void testBug246517() throws Exception {
+        // Bug 246517 - Cannot resolve elements of std::tuple
+        performTest("bug246517.cpp", 47, 22, "bug246517.cpp", 36, 9);
+        performTest("bug246517.cpp", 48, 22, "bug246517.cpp", 39, 9);
+        performTest("bug246517.cpp", 49, 22, "bug246517.cpp", 42, 9);
+    }                
+    
+    public void testBugbug246548_1() throws Exception {
+        // Bug 246548 - Cannot reach base class in case of simple variadic recursion
+        performTest("bug246548_1.cpp", 16, 37, "bug246548_1.cpp", 7, 9);
+        performTest("bug246548_1.cpp", 17, 37, "bug246548_1.cpp", 12, 9);
+    }
+    
+    public void testBugbug246548_2() throws Exception {
+        // Bug 246548 - Cannot reach base class in case of simple variadic recursion
+        performTest("bug246548_2.cpp", 16, 40, "bug246548_2.cpp", 7, 9);
+        performTest("bug246548_2.cpp", 17, 40, "bug246548_2.cpp", 12, 9);
+    }    
 }

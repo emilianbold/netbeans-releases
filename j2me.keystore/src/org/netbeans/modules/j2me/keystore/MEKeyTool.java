@@ -43,20 +43,21 @@
  */
 package org.netbeans.modules.j2me.keystore;
 
-import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
-import org.openide.util.Exceptions;
-import org.openide.xml.XMLUtil;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2me.keystore.ui.ExportPanel;
+import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
+import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -227,12 +228,20 @@ public class MEKeyTool {
     }
 
     public static KeyDetail[] listKeys(final J2MEPlatform.Device device) {
+        return listKeys(device, null);
+    }
+
+    public static KeyDetail[] listKeys(final J2MEPlatform.Device device, String client) {
         final String toolString = getMEKeyToolPath(device);
         if (toolString == null) {
             return null;
         }
         try {
-            final BufferedReader br = execute(new String[]{toolString, "-list", "-Xdevice:" + device.getName()}); // NOI18N
+            String[] commandToExecute = new String[]{toolString, "-list", "-Xdevice:" + device.getName()}; // NOI18N
+            if (client != null) {
+                commandToExecute = new String[]{toolString, "-list", "-Xdevice:" + device.getName(), "-client", client}; // NOI18N
+            }
+            final BufferedReader br = execute(commandToExecute);
             final ArrayList<KeyDetail> list = new ArrayList<>();
             KeyDetail key = null;
             for (;;) {
@@ -365,6 +374,34 @@ public class MEKeyTool {
         return null;
     }
 
+    public static String[] listClientsForDevice(J2MEPlatform.Device device) {
+        final String toolString = getMEKeyToolPath(device);
+        if (toolString == null) {
+            return null;
+        }
+        List<String> clientList = new ArrayList<>();
+        try {
+            final BufferedReader br = execute(new String[]{toolString, "-clients", "-Xdevice:" + device.getName()}); // NOI18N
+            String line = br.readLine();
+            while (line != null) {
+                if (line.startsWith("Error")) { // NOI18N
+                    // Handle error in ME 8.0
+                    return null;
+                }
+                if (!line.isEmpty()) {
+                    clientList.add(line);
+                }
+                line = br.readLine();
+            }
+        } catch (IOException ex) {
+            return null;
+        }
+        if (clientList.size() > 0) {
+            clientList.add(ExportPanel.SHARED_CLIENT);
+        }
+        return clientList.size() > 0 ? clientList.toArray(new String[0]) : null;
+    }
+
     public static class KeyDetail {
 
         final private int order;
@@ -452,7 +489,7 @@ public class MEKeyTool {
             process.destroy();
         }
         if (process.exitValue() != 0) {
-            throw new IOException("exec, exitCode != 0"); // NOI18N
+            throw new IOException(executeOutput.toString());
         }
         return new BufferedReader(new StringReader(executeOutput.toString()));
     }

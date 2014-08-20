@@ -233,6 +233,11 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("src/bug229990.cpp", 12, 35, "src/bug229990.h", 14, 1);
     }    
     
+    public void testBug244777() throws Exception {
+        // Bug 244777 - Code assistance sometimes flags valid C++11 as errors
+        performTest("src/bug244777.cpp", 15, 32, "src/bug244777.cpp", 6, 9);
+    }    
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

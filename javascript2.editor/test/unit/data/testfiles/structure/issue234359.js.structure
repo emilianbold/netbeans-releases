@@ -3,6 +3,9 @@ WidgetMilestones:CONSTRUCTOR:[PUBLIC]:ESCAPED{WidgetMilestones}ESCAPED{(}ESCAPED
   template:FIELD:[PUBLIC]:ESCAPED{template}<font color="#999999">ESCAPED{ : }String</font>:
 ChartP3:CONSTRUCTOR:[PUBLIC]:ESCAPED{ChartP3}ESCAPED{(}ESCAPED{container}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
   cloneMilestone:METHOD:[PRIVATE]:ESCAPED{cloneMilestone}ESCAPED{(}ESCAPED{milestone}ESCAPED{)}:
+    date:FIELD:[PUBLIC]:ESCAPED{date}:
+    name:FIELD:[PUBLIC]:ESCAPED{name}:
+    timestamp:FIELD:[PUBLIC]:ESCAPED{timestamp}:
   codeFreezeQC:FIELD:[PUBLIC]:ESCAPED{codeFreezeQC}<font color="#999999">ESCAPED{ : }Number</font>:
   i:VARIABLE:[PRIVATE]:ESCAPED{i}<font color="#999999">ESCAPED{ : }Number</font>:
   inArchive:METHOD:[PRIVATE]:ESCAPED{inArchive}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Boolean</font>:

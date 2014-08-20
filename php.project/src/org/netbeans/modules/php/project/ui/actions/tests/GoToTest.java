@@ -53,11 +53,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
@@ -113,7 +113,7 @@ public class GoToTest implements TestLocator {
             return null;
         }
         if (PhpProjectValidator.isFatallyBroken(project)) {
-            Utils.warnInvalidSourcesDirectory(project);
+            UiUtils.warnBrokenProject(project.getPhpModule());
             return null;
         }
 

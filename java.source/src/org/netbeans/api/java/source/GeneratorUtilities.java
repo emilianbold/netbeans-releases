@@ -632,6 +632,12 @@ public final class GeneratorUtilities {
         return make.Method(make.Modifiers(mods), setterName, make.Type(copy.getTypes().getNoType(TypeKind.VOID)), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null);
     }
     
+    private boolean isStarImport(ImportTree imp) {
+        Tree qualIdent = imp.getQualifiedIdentifier();        
+        boolean isStar = qualIdent.getKind() == Tree.Kind.MEMBER_SELECT && ((MemberSelectTree)qualIdent).getIdentifier().contentEquals("*"); // NOI18N
+        return isStar;
+    }
+    
     /**
      * Adds import statements for given elements to a compilation unit. The import section of the
      * given compilation unit is modified according to the rules specified in the {@link CodeStyle}.
@@ -673,19 +679,29 @@ public final class GeneratorUtilities {
         int staticTreshold = cs.countForUsingStaticStarImport();        
         Map<PackageElement, Integer> pkgCounts = new LinkedHashMap<PackageElement, Integer>();
         PackageElement pkg = elements.getPackageElement("java.lang"); //NOI18N
-        if (pkg != null)
+        if (pkg != null) {
             pkgCounts.put(pkg, -2);
+        }
         ExpressionTree packageName = cut.getPackageName();
         pkg = packageName != null ? (PackageElement)trees.getElement(TreePath.getPath(cut, packageName)) : null;
-        if (pkg == null && packageName != null)
+        if (pkg == null && packageName != null) {
             pkg = elements.getPackageElement(elements.getName(packageName.toString()));
-        if (pkg == null)
+        }
+        if (pkg == null) {
             pkg = elements.getPackageElement(elements.getName("")); //NOI18N
+        }
         pkgCounts.put(pkg, -2);
         Map<TypeElement, Integer> typeCounts = new LinkedHashMap<TypeElement, Integer>();
+        // initially the import scope has no symbols. We must fill it in by:
+        // existing CUT named imports, package members AND then star imports, in this specific order
+        JCCompilationUnit jcut = (JCCompilationUnit)cut;
         StarImportScope importScope = new StarImportScope((Symbol)pkg);
-        if (((JCCompilationUnit)cut).starImportScope != null)
+        if (jcut.starImportScope != null) {
             importScope.importAll(((JCCompilationUnit)cut).starImportScope);
+        }
+        if (jcut.packge != null) {
+            importScope.importAll(jcut.packge.members_field);
+        }
         for (Element e : elementsToImport) {
             boolean isStatic = false;
             Element el = null;
@@ -742,7 +758,7 @@ public final class GeneratorUtilities {
                         Element el = e;
                         while (el != null) {
                             Integer cnt = typeCounts.get((TypeElement)el);
-                            if (cnt != null) {
+                            if (cnt != null && staticTreshold == Integer.MAX_VALUE) {
                                 typeCounts.put((TypeElement)el, -2);
                             }
                             TypeMirror tm = ((TypeElement)el).getSuperclass();
@@ -767,8 +783,11 @@ public final class GeneratorUtilities {
                     if (el != null) {
                         Integer cnt = pkgCounts.get((PackageElement)el);
                         if (cnt != null) {
-                            if (el == e) {
-                                cnt = -2;
+                            if (el == e) { // this is only true for package element, that is for package-star import.
+                                if (treshold == Integer.MAX_VALUE) {
+                                    // do not touch the star import
+                                    cnt = -2;
+                                }
                             } else if (cnt >= 0) {
                                 cnt++;
                                 if (cnt >= treshold)
@@ -778,6 +797,33 @@ public final class GeneratorUtilities {
                         }
                     }
                 }
+            } else if (treshold == Integer.MAX_VALUE || staticTreshold == Integer.MAX_VALUE) {
+                // disable any manipulations (optimization) for existing star imports iff the "Count" feature is disabled.
+                int threshold = imp.isStatic() ? staticTreshold : treshold;
+                if (isStarImport(imp) && threshold == Integer.MAX_VALUE) {
+                    Map map = imp.isStatic() ? typeCounts : pkgCounts;
+                    Integer cnt = (Integer)map.get(e);
+                    if (cnt != null) {
+                        map.put(e, -2);
+                    }
+                }
+            }
+        }
+        // remove those star imports that do not satisfy the thresholds
+        for (Iterator<ImportTree> ii = imports.iterator(); ii.hasNext();) {
+            ImportTree imp = ii.next();
+            if (!isStarImport(imp)) {
+                continue;
+            }
+            Element e = getImportedElement(cut, imp);
+            Integer cnt;
+            if (imp.isStatic()) {
+                cnt = typeCounts.get(e);
+            } else {
+                cnt = pkgCounts.get(e);
+            }
+            if (cnt != null && cnt >= 0) {
+                ii.remove();
             }
         }
         
@@ -789,8 +835,9 @@ public final class GeneratorUtilities {
                     if (e.sym.getKind().isClass() || e.sym.getKind().isInterface()) {
                         if (e.sym != element) {
                             explicitNamedImports.add(element);
-                            break;
                         }
+                        // break if explicitNameImport was added, or when the symbol is correctly resolved.
+                        break;
                     }
                 }
             }
@@ -875,6 +922,11 @@ public final class GeneratorUtilities {
                 }
                 boolean isStar = currentToImportElement.getKind() == ElementKind.PACKAGE
                         || isStatic && (currentToImportElement.getKind().isClass() || currentToImportElement.getKind().isInterface());
+                ExpressionTree qualIdent = qualIdentFor(currentToImportElement);
+                if (isStar) {
+                    qualIdent = make.MemberSelect(qualIdent, elements.getName("*")); //NOI18N
+                }
+                ImportTree nImport = make.Import(qualIdent, isStatic);
                 while (currentExisting >= 0) {
                     ImportTree imp = imports.get(currentExisting);
                     Element impElement = getImportedElement(cut, imp);
@@ -883,15 +935,14 @@ public final class GeneratorUtilities {
                             : impElement.getKind() == ElementKind.PACKAGE ? impElement : (impElement.getKind().isClass() || impElement.getKind().isInterface()) && impElement.getEnclosingElement().getKind() == ElementKind.PACKAGE ? impElement.getEnclosingElement() : null;
                     if (isStatic == imp.isStatic() && (currentToImportElement == impElement || isStar && currentToImportElement == el)) {
                         imports.remove(currentExisting);                        
-                    } else if (comparator.compare(currentToImportElement, imp) > 0) {
-                        break;
+                    } else {
+                        if (comparator.compare(nImport, imp) > 0) {
+                            break;
+                        }
                     }
                     currentExisting--;
                 }
-                ExpressionTree qualIdent = qualIdentFor(currentToImportElement);
-                if (isStar)
-                    qualIdent = make.MemberSelect(qualIdent, elements.getName("*")); //NOI18N
-                imports.add(currentExisting + 1, make.Import(qualIdent, isStatic));
+                imports.add(currentExisting + 1, nImport);
                 currentToImport--;
             }
         }
@@ -1310,7 +1361,11 @@ public final class GeneratorUtilities {
                 return parent;
             }
         }
-        Element element = trees.getElement(TreePath.getPath(cut, qualIdent));
+        TreePath found = TreePath.getPath(cut, qualIdent);
+        if (found == null) {
+            found = new TreePath(new TreePath(new TreePath(cut), imp), qualIdent);
+        }
+        Element element = trees.getElement(found);
         if (element == null)
             element = getElementByFQN(qualIdent.toString());
         return element;

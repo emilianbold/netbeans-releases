@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.CastExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
@@ -529,8 +530,11 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(CatchClause node) {
-            scan(node.getVariable());
-            scan(node.getBody());
+            Block body = node.getBody();
+            if (!body.getStatements().isEmpty()) {
+                scan(node.getVariable());
+            }
+            scan(body);
         }
 
         @Override

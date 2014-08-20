@@ -1053,7 +1053,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                     case RESOURCE_VARIABLE:
                                     case EXCEPTION_PARAMETER:
                                     case PARAMETER:
-                                        return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
+                                        return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
                                                 !illegalForwardRefNames.contains(e.getSimpleName());
                                     case FIELD:
                                         if (e.getSimpleName().contentEquals("this")) //NOI18N

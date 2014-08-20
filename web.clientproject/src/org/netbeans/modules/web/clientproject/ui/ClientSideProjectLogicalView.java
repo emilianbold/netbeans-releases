@@ -46,8 +46,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.File;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -86,20 +89,25 @@ import org.openide.actions.ToolsAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
+import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -468,6 +476,19 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         public NodeList createNodes(Project p) {
             return new ClientProjectNodeList((ClientSideProject)p);
+        }
+
+    }
+
+    // #246318
+    @NodeFactory.Registration(projectType="org-netbeans-modules-web-clientproject",position=510)
+    public static final class OtherDirsNodeFactory implements NodeFactory {
+
+        @Override
+        public NodeList<?> createNodes(Project project) {
+            ClientSideProject clientSideProject = project.getLookup().lookup(ClientSideProject.class);
+            assert clientSideProject != null;
+            return NodeFactorySupport.fixedNodeList(new AllFilesNode(clientSideProject));
         }
 
     }
@@ -909,5 +930,151 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     }
 
+    private static final class AllFilesNode extends AbstractNode {
+
+        private final Node iconDelegate;
+
+
+        public AllFilesNode(ClientSideProject project) {
+            super(Children.create(AllFilesChildFactory.create(project), true));
+            iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
+        }
+
+        @NbBundle.Messages("AllFilesNode.name=All Files")
+        @Override
+        public String getDisplayName() {
+            return Bundle.AllFilesNode_name();
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return iconDelegate.getIcon(type);
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return iconDelegate.getOpenedIcon(type);
+        }
+
+    }
+
+    private static final class AllFilesChildFactory extends ChildFactory<FileObject> implements FileChangeListener {
+
+        private static final Comparator<FileObject> CHILDREN_CAMPARATOR = new FileObjectUiComparator();
+
+
+        private final ClientSideProject project;
+
+
+        private AllFilesChildFactory(ClientSideProject project) {
+            this.project = project;
+        }
+
+        public static AllFilesChildFactory create(ClientSideProject project) {
+            AllFilesChildFactory factory = new AllFilesChildFactory(project);
+            FileObject projectDirectory = project.getProjectDirectory();
+            projectDirectory.addFileChangeListener(FileUtil.weakFileChangeListener(factory, projectDirectory));
+            return factory;
+        }
+
+        @Override
+        protected boolean createKeys(List<FileObject> toPopulate) {
+            FileObject[] children = project.getProjectDirectory().getChildren();
+            for (FileObject fileObject : children) {
+                if (isVisible(fileObject)) {
+                    toPopulate.add(fileObject);
+                }
+            }
+            // sort - really there is no easy/better way?
+            Collections.sort(toPopulate, CHILDREN_CAMPARATOR);
+            return true;
+        }
+
+        @Override
+        protected Node createNodeForKey(FileObject key) {
+            try {
+                return DataObject.find(key).getNodeDelegate();
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return null;
+        }
+
+        private boolean isVisible(FileObject fileObject) {
+            if ("nbproject".equals(fileObject.getNameExt())) { // NOI18N
+                return false;
+            }
+            return VisibilityQuery.getDefault().isVisible(fileObject);
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            refresh();
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            refresh();
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            refresh();
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            refresh();
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            refresh();
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // noop
+        }
+
+        private void refresh() {
+            refresh(false);
+        }
+
+    }
+
+    private static final class FileObjectUiComparator implements Comparator<FileObject> {
+
+        private final Collator collator;
+
+
+        public FileObjectUiComparator() {
+            collator = Collator.getInstance();
+        }
+
+        @Override
+        public int compare(FileObject file1, FileObject file2) {
+            if (file1.isFolder()
+                    && file2.isData()) {
+                return -1;
+            }
+            if (file1.isData()
+                    && file2.isFolder()) {
+                return 1;
+            }
+            String name1 = file1.getNameExt();
+            String name2 = file2.getNameExt();
+            if (Character.isUpperCase(name1.charAt(0))
+                    && Character.isLowerCase(name2.charAt(0))) {
+                return -1;
+            }
+            if (Character.isLowerCase(name1.charAt(0))
+                    && Character.isUpperCase(name2.charAt(0))) {
+                return 1;
+            }
+            return collator.compare(name1, name2);
+        }
+
+    }
 
 }

@@ -152,7 +152,7 @@ import org.openide.filesystems.FileSystem;
     public File getHomeDirectory() {
         try {
             changeSupport.firePropertyChange(LOADING_STATUS, null, "${HOME}"); // NOI18N
-            if (!HostInfoUtils.isHostInfoAvailable(env) && !ConnectionManager.getInstance().isConnectedTo(env)) {
+            if (!(HostInfoUtils.isHostInfoAvailable(env) && ConnectionManager.getInstance().isConnectedTo(env))) {
                 return getDefaultDirectory();
             }
             HostInfo hostInfo = HostInfoUtils.getHostInfo(env);

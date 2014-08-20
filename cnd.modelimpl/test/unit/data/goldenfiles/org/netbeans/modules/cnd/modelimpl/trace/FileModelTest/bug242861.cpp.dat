@@ -23,7 +23,7 @@ NAMESPACE DEFINITOIN bug242861 [1:1/0-8:2/144] SCOPE: bug242861.cpp
         BASE CLASSES:
         MEMBERS:
 
-========== Dumping model of PROJECT trace_FileModelTest
+========== Dumping model of PROJECT DummyProject
 NAMESPACE DEFINITIONS for bug242861 (bug242861) 
     bug242861.cpp  [1:1/0-8:2/144]
 NAMESPACE bug242861 (bug242861) 

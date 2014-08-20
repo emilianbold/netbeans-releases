@@ -4432,27 +4432,20 @@ isGreaterthanInTheRestOfExpression[int templateLevel]
 
 protected
 balanceParensInExpression
+{/*TypeSpecifier*/int ts=0; String s;}
         : 
             LPAREN
             (options {greedy=false;}:
+                    (literal_ident)=> s=literal_ident (options {greedy=true;}: balanceSquaresInExpression)*
+                |
+                    (builtin_type[0])=> ts=builtin_type[0] (options {greedy=true;}: balanceSquaresInExpression)*
+                |
                     balanceCurlies
                 |
                     balanceParensInExpression
                 |
                     balanceSquaresInExpression
-                    (   ((balanceParensInExpression)? (LITERAL_mutable)? (trailing_type)? LCURLY) =>                    
-                        (
-                            (
-                                (LPAREN (parameter_list[false])? RPAREN)? 
-                                (LITERAL_mutable)?
-                            )
-                            (trailing_type)?
-                            compound_statement
-                            {#balanceParensInExpression = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #balanceParensInExpression);}
-                        )
-                        {#balanceParensInExpression = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #balanceParensInExpression);}
-                    |
-                    )
+                    ((lambda_expression_post_capture_predicate) => lambda_expression_post_capture)?
                 |
                     ~(SEMICOLON | RCURLY | LCURLY | LPAREN | LSQUARE | RSQUARE)
                 |
@@ -4464,25 +4457,18 @@ balanceParensInExpression
 
 protected    
 balanceSquaresInExpression
+{/*TypeSpecifier*/int ts=0; String s;}
     :
         LSQUARE 
             (options {greedy=false;}:
+                    (literal_ident)=> s=literal_ident (options {greedy=true;}: balanceSquaresInExpression)*
+                |
+                    (builtin_type[0])=> ts=builtin_type[0] (options {greedy=true;}: balanceSquaresInExpression)*
+                |
                     balanceCurlies
                 |
                     balanceSquaresInExpression
-                    (   ((balanceParensInExpression)? (LITERAL_mutable)? (trailing_type)? LCURLY) =>                    
-                        (
-                            (
-                                (LPAREN (parameter_list[false])? RPAREN)? 
-                                (LITERAL_mutable)?
-                            )
-                            (trailing_type)?
-                            compound_statement
-                            {#balanceSquaresInExpression = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #balanceSquaresInExpression);}
-                        )
-                        {#balanceSquaresInExpression = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #balanceSquaresInExpression);}
-                    |
-                    )
+                    ((lambda_expression_post_capture_predicate) => lambda_expression_post_capture)?
                 |
                     balanceParensInExpression
                 |
