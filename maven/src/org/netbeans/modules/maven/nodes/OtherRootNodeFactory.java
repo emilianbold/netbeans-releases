@@ -50,6 +50,7 @@ import java.util.List;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileAttributeEvent;
@@ -121,7 +122,9 @@ public class OtherRootNodeFactory implements NodeFactory {
                 // the content of OtherRoots can change from keys() to node(String)
                 if (fls.length > 0 && fls[0].getParentFile() != null) {
                     FileObject fo = FileUtil.toFileObject(fls[0].getParentFile());
-                    return new OthersRootNode(project, false, fo);
+                    if(VisibilityQuery.getDefault().isVisible(fo)) {
+                        return new OthersRootNode(project, false, fo);
+                    }
                 }
                 return null;
             } else if (KEY_OTHER_TEST.equals(key)) {
@@ -129,7 +132,9 @@ public class OtherRootNodeFactory implements NodeFactory {
                 // the content of OtherRoots can change from keys() to node(String)
                 if (fls.length > 0 && fls[0].getParentFile() != null) {
                     FileObject fo = FileUtil.toFileObject(fls[0].getParentFile());
-                    return new OthersRootNode(project, true, fo);
+                    if(VisibilityQuery.getDefault().isVisible(fo)) {
+                        return new OthersRootNode(project, true, fo);
+                    }
                 }
                 return null;
             }
