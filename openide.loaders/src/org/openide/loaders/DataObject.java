@@ -129,10 +129,14 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     /** sync modified data (for modification operations) */
     private static final Set<DataObject> syncModified = Collections.synchronizedSet(modified);
 
-    /** Modified flag */
+    /** Modified flag 
+     * @GuardedBy(LOCK)
+     */
     private boolean modif = false;
 
-    /** the node delegate for this data object */
+    /** the node delegate for this data object 
+     * @GuardedBy(LOCK)
+       */
     private transient Node nodeDelegate;
 
     /** item with info about this data object 
@@ -141,19 +145,21 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     private transient DataObjectPool.Item item;
 
     /** the loader for this data object */
-    private DataLoader loader;
+    private final DataLoader loader;
 
-    /** property change listener support */
+    /** property change listener support 
+        *  @GuardedBy(LOCK)
+        */
     private PropertyChangeSupport changeSupport;
+    /** vetoable property change listener support 
+        *  @GuardedBy(LOCK)
+        */
     private VetoableChangeSupport vetoableChangeSupport;
 
-    /** The synchronization lock used only for methods creating listeners 
-     * objects. It is static and shared among all DataObjects.
-     */
-    private static final Object listenersMethodLock = new Object();
-    
-    /** Lock used for ensuring there will be just one node delegate */
-    private final Object nodeCreationLock = new Object();
+    /** Lock used for ensuring there will be just one node delegate 
+       * and also to synchronize on other changed aspects inside of a single DataObject
+       */
+    private static final Object LOCK = new Object();
     
     /** Lock for copy/move/rename/etc. operations */
     private static Object synchObject = new Object ();
@@ -219,10 +225,14 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     // Item accessors
     //
     final DataObjectPool.Item item() {
-        return item;
+        synchronized (DataObjectPool.getPOOL()) {
+            return item;
+        }
     }
     private void changeItem(DataObjectPool.Item item) {
-        this.item = item;
+        synchronized (DataObjectPool.getPOOL()) {
+            this.item = item;
+        }
     }
     final void changeItemByFolder(DataObjectPool.Item item) {
         assert this instanceof DataFolder;
@@ -321,13 +331,19 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     }
     
     private final Node getNodeDelegateImpl() {
-        if (nodeDelegate == null) {
+        for (;;) {
+            synchronized (LOCK) {
+                if (nodeDelegate != null) {
+                    return nodeDelegate;
+                }
+            }
             // synchronize on something private, so only one delegate can be created
             // do not synchronize on this, because we could deadlock with
             // subclasses could synchronize too.
             Children.MUTEX.readAccess (new Runnable() {
+                @Override
                 public void run() {
-                    synchronized(nodeCreationLock) {
+                    synchronized(LOCK) {
                         if (nodeDelegate == null) {
                             nodeDelegate = createNodeDelegate();
                         }
@@ -340,7 +356,6 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
                 throw new IllegalStateException("DataObject " + this + " has null node delegate"); // NOI18N
             }
         }
-        return nodeDelegate;
     }
     
     /** This method allows DataFolder to filter its nodes.
@@ -475,7 +490,9 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * @return <code>true</code> if it is modified
     */
     public boolean isModified() {
-        return modif;
+        synchronized (LOCK) {
+            return modif;
+        }
     }
 
     /** Set whether the object is considered modified.
@@ -486,39 +503,42 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     */
     public void setModified(boolean modif) {
         boolean log = OBJ_LOG.isLoggable(Level.FINE);
-        if (log) {
-            String msg = "setModified(): modif=" + modif + ", original-modif=" + this.modif; // NOI18N
-            if (OBJ_LOG.isLoggable(Level.FINEST)) {
-                OBJ_LOG.log(Level.FINEST, msg, new Exception());
-            } else {
-                OBJ_LOG.log(Level.FINE, msg);
-            }
-        }
-        if (this.modif != modif) {
-            this.modif = modif;
-            Savable present = getLookup().lookup(AbstractSavable.class);
+        synchronized (LOCK) {
             if (log) {
-                OBJ_LOG.log(Level.FINE, "setModified(): present={0}", new Object[]{present}); // NOI18N
-            }
-            if (modif) {
-                syncModified.add (this);
-                if (present == null) {
-                    new DOSavable(this).add();
-                }
-            } else {
-                syncModified.remove (this);
-                if (present == null) {
-                    new DOSavable(this).remove();
-                } 
-                Unmodify un = getLookup().lookup(Unmodify.class);
-                if (un != null) {
-                    un.unmodify();
+                String msg = "setModified(): modif=" + modif + ", original-modif=" + this.modif; // NOI18N
+                if (OBJ_LOG.isLoggable(Level.FINEST)) {
+                    OBJ_LOG.log(Level.FINEST, msg, new Exception());
+                } else {
+                    OBJ_LOG.log(Level.FINE, msg);
                 }
             }
-            firePropertyChange(DataObject.PROP_MODIFIED,
-                               !modif ? Boolean.TRUE : Boolean.FALSE,
-                               modif ? Boolean.TRUE : Boolean.FALSE);
+            if (this.modif == modif) {
+                return;
+            }
+            this.modif = modif;
         }
+        Savable present = getLookup().lookup(AbstractSavable.class);
+        if (log) {
+            OBJ_LOG.log(Level.FINE, "setModified(): present={0}", new Object[]{present}); // NOI18N
+        }
+        if (modif) {
+            syncModified.add (this);
+            if (present == null) {
+                new DOSavable(this).add();
+            }
+        } else {
+            syncModified.remove (this);
+            if (present == null) {
+                new DOSavable(this).remove();
+            } 
+            Unmodify un = getLookup().lookup(Unmodify.class);
+            if (un != null) {
+                un.unmodify();
+            }
+        }
+        firePropertyChange(DataObject.PROP_MODIFIED,
+                           !modif ? Boolean.TRUE : Boolean.FALSE,
+                           modif ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** Get help context for this object.
@@ -1008,19 +1028,23 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      * @param l the listener to add
     */
     public void addPropertyChangeListener (PropertyChangeListener l) {
-        synchronized (listenersMethodLock) {
-            if (changeSupport == null)
+        synchronized (LOCK) {
+            if (changeSupport == null) {
                 changeSupport = new PropertyChangeSupport(this);
+            }
+            changeSupport.addPropertyChangeListener(l);
         }
-        changeSupport.addPropertyChangeListener(l);
     }
 
     /** Remove a property change listener.
      * @param l the listener to remove
     */
     public void removePropertyChangeListener (PropertyChangeListener l) {
-        if (changeSupport != null)
-            changeSupport.removePropertyChangeListener(l);
+        synchronized (LOCK) {
+            if (changeSupport != null) {
+                changeSupport.removePropertyChangeListener(l);
+            }
+        }
     }
 
     /** Fires property change notification to all listeners registered via
@@ -1031,8 +1055,14 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * @param newValue new value
     */
     protected final void firePropertyChange (String name, Object oldValue, Object newValue) {
-        if (changeSupport != null)
-            changeSupport.firePropertyChange(name, oldValue, newValue);
+        PropertyChangeSupport ch;
+        synchronized (LOCK) {
+            ch = changeSupport;
+            if (ch == null) {
+                return;
+            }
+        }
+        ch.firePropertyChange(name, oldValue, newValue);
     }
 
     //
@@ -1044,11 +1074,12 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      * @see #PROP_VALID
     */
     public void addVetoableChangeListener (VetoableChangeListener l) {
-        synchronized (listenersMethodLock) {
-            if (vetoableChangeSupport == null)
+        synchronized (LOCK) {
+            if (vetoableChangeSupport == null) {
                 vetoableChangeSupport = new VetoableChangeSupport(this);
+            }
+            vetoableChangeSupport.addVetoableChangeListener(l);
         }
-        vetoableChangeSupport.addVetoableChangeListener(l);
     }
 
     /** Add a listener to vetoable changes.
@@ -1056,8 +1087,11 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      * @see #PROP_VALID
     */
     public void removeVetoableChangeListener (VetoableChangeListener l) {
-        if (vetoableChangeSupport != null)
-            vetoableChangeSupport.removeVetoableChangeListener(l);
+        synchronized (LOCK) {
+            if (vetoableChangeSupport != null) {
+                vetoableChangeSupport.removeVetoableChangeListener(l);
+            }
+        }
     }
 
     /** Fires vetoable change notification.
@@ -1070,8 +1104,14 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     protected final void fireVetoableChange (String name, Object oldValue, Object newValue)
         throws PropertyVetoException
     {
-        if (vetoableChangeSupport != null)
-            vetoableChangeSupport.fireVetoableChange(name, oldValue, newValue);
+        VetoableChangeSupport ch;
+        synchronized (LOCK) {
+            ch = vetoableChangeSupport;
+            if (ch == null) {
+                return;
+            }
+        }
+        ch.fireVetoableChange(name, oldValue, newValue);
     }
 
     //
