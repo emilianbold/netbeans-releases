@@ -497,6 +497,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             TestSuite suite = new TestSuite(testSuite.getAttributeValue("name"));
             session.addSuite(suite);
             Manager.getInstance().displaySuiteRunning(session, suite.getName());
+            File output = new File(outputDir, runningTestClass + suffix + "-output.txt");
             
             @SuppressWarnings("unchecked")
             List<Element> testcases = testSuite.getChildren("testcase"); //NOI18N
@@ -509,7 +510,9 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 }
                 Testcase test = new Testcase(name, null, session);
                 Element stdout = testcase.getChild("system-out"); //NOI18N
-                if (stdout != null) {
+                // If *-output.txt file exists do not log standard output here to avoid logging it twice.
+                // By default surefire only reports standard output for failing testcases.
+                if (!output.isFile() && stdout != null) {
                     logText(stdout.getText(), test, false);
                 }
                 Element failure = testcase.getChild("failure"); //NOI18N
@@ -554,7 +557,8 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             float fl = NumberFormat.getNumberInstance(Locale.ENGLISH).parse(time).floatValue();
             long timeinmilis = (long)(fl * 1000);
             Manager.getInstance().displayReport(session, session.getReport(timeinmilis));
-            File output = new File(outputDir, runningTestClass + suffix + "-output.txt");
+            // If *-output.txt file exists propably maven.test.redirectTestOutputToFile=true was appended, 
+            // by the user, in the test action as by default surefire sets the parameter to false.
             if (output.isFile()) {
                 Manager.getInstance().displayOutput(session, FileUtils.fileRead(output), false);
             }
