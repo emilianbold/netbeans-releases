@@ -461,7 +461,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             method = getConcreteMethodAndReportProblems(arg0, type, methodName, null, paramTypes, argTypes);
         }
         if (isVarArgs) {
-            transformVarArgsValues(argVals, paramTypes, evaluationContext);
+            transformVarArgsValues(arg0, argVals, paramTypes, evaluationContext);
         }
         return invokeMethod(arg0, method, isStatic, cType, objectReference, argVals, evaluationContext, preferredType != null);
     }
@@ -473,7 +473,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
      * @param evaluationContext
      * @return The created array, with disabled collection, which needs to get enabled collection after it's use.
      */
-    private ArrayReference transformVarArgsValues(List<Value> argVals, List<? extends TypeMirror> paramTypes, EvaluationContext evaluationContext) {
+    private ArrayReference transformVarArgsValues(Tree arg0, List<Value> argVals, List<? extends TypeMirror> paramTypes, EvaluationContext evaluationContext) {
         int varIndex = paramTypes.size() - 1;
         TypeMirror tm = paramTypes.get(varIndex);
         if (tm.getKind() != TypeKind.ARRAY) {
@@ -486,6 +486,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         String typeName = getTypeName(((javax.lang.model.type.ArrayType) tm).getComponentType());
         int length = argVals.size() - varIndex;
         ArrayType at = (ArrayType) getOrLoadClass(vm, typeName+"[]", evaluationContext);
+        if (at == null) {
+            Assert.error(arg0, "unknownType", typeName+"[]");
+        }
         if (length == 1) {
             Value varArg = argVals.get(varIndex);
             if (varArg instanceof ArrayReference) {
@@ -2712,7 +2715,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             evaluationContext.methodToBeInvoked();
             Method constructorMethod = getConcreteMethodAndReportProblems(arg0, classType, "<init>", firstParamSignature, paramTypes, argTypes);
             if (isVarArgs) {
-                transformVarArgsValues(argVals, paramTypes, evaluationContext);
+                transformVarArgsValues(arg0, argVals, paramTypes, evaluationContext);
             }
             ObjectReference o = classType.newInstance(evaluationContext.getFrame().thread(),
                                                       constructorMethod,
