@@ -189,6 +189,7 @@ public final class PathRegistry implements Runnable {
         return sourceForBinaryQuery(binaryRoot, definingClassPath, fire, BOOLOUT);
     }
 
+    @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
     URL[] sourceForBinaryQuery (
         @NonNull final URL binaryRoot,
         @NullAllowed final ClassPath definingClassPath,
@@ -278,7 +279,7 @@ public final class PathRegistry implements Runnable {
         Request request;
         synchronized (this) {
             if (this.sourcePaths != null) {
-                return this.sourcePaths;
+                return Collections.unmodifiableCollection(this.sourcePaths);
             }
             LOGGER.fine("Computing data due to getSources"); //NOI18N
             request = new Request (
@@ -310,9 +311,8 @@ public final class PathRegistry implements Runnable {
                     this.rootPathIds = res.rootPathIds;
                     this.pathIdToRoots = res.pathIdToRoots;
                 }
-                return this.sourcePaths;
-            }
-            else {
+                return Collections.unmodifiableCollection(this.sourcePaths);
+            } else {
                 return res.sourcePath;
             }
         }
@@ -322,7 +322,7 @@ public final class PathRegistry implements Runnable {
         Request request;
         synchronized (this) {
             if (this.libraryPath != null) {
-                return this.libraryPath;
+                return Collections.unmodifiableCollection(this.libraryPath);
             }
             LOGGER.fine("Computing data due to getLibraries"); //NOI18N
             request = new Request (
@@ -354,9 +354,8 @@ public final class PathRegistry implements Runnable {
                     this.rootPathIds = res.rootPathIds;
                     this.pathIdToRoots = res.pathIdToRoots;
                 }
-                return this.libraryPath;
-            }
-            else {
+                return Collections.unmodifiableCollection(this.libraryPath);
+            } else {
                 return res.libraryPath;
             }
         }
@@ -366,7 +365,7 @@ public final class PathRegistry implements Runnable {
         Request request;
         synchronized (this) {
             if (this.binaryLibraryPath != null) {
-                return this.binaryLibraryPath;
+                return Collections.unmodifiableCollection(this.binaryLibraryPath);
             }
             LOGGER.fine("Computing data due to getBinaryLibraries"); //NOI18N
             request = new Request (
@@ -398,9 +397,8 @@ public final class PathRegistry implements Runnable {
                     this.rootPathIds = res.rootPathIds;
                     this.pathIdToRoots = res.pathIdToRoots;
                 }
-                return this.binaryLibraryPath;
-            }
-            else {
+                return Collections.unmodifiableCollection(this.binaryLibraryPath);
+            } else {
                 return res.binaryLibraryPath;
             }
         }
@@ -410,7 +408,7 @@ public final class PathRegistry implements Runnable {
         Request request;
         synchronized (this) {
             if (this.unknownSourcePath != null) {
-                return unknownSourcePath;
+                return Collections.unmodifiableCollection(unknownSourcePath);
             }
             LOGGER.fine("Computing data due to getUnknownRoots"); //NOI18N
             request = new Request (
@@ -442,9 +440,8 @@ public final class PathRegistry implements Runnable {
                     this.rootPathIds = res.rootPathIds;
                     this.pathIdToRoots = res.pathIdToRoots;
                 }
-                return this.unknownSourcePath;
-            }
-            else {
+                return Collections.unmodifiableCollection(this.unknownSourcePath);
+            } else {
                 return res.unknownSourcePath;
             }
         }
@@ -510,18 +507,9 @@ public final class PathRegistry implements Runnable {
     }
 
     @Override
-    @SuppressWarnings("UseSpecificCatch")
     public void run () {
         assert firer.isRequestProcessorThread();
-        long now = System.currentTimeMillis();
-        try {
-            LOGGER.log(Level.FINE, "resetCacheAndFire waiting for projects"); // NOI18N
-            OpenProjects.getDefault().openProjects().get();
-            LOGGER.log(Level.FINE, "resetCacheAndFire blocked for {0} ms", System.currentTimeMillis() - now); // NOI18N
-        } catch (Exception ex) {
-            LOGGER.log(Level.FINE, "resetCacheAndFire timeout", ex); // NOI18N
-        }
-
+        awaitProjectsOpen();
         Iterable<? extends PathRegistryEvent.Change> ch;
         LogContext ctx;
 
@@ -1070,6 +1058,18 @@ public final class PathRegistry implements Runnable {
         return this.timeStamp;
     }
 
+    @SuppressWarnings("UseSpecificCatch")
+    private static void awaitProjectsOpen() {
+        final long now = System.currentTimeMillis();
+        try {
+            LOGGER.log(Level.FINE, "resetCacheAndFire waiting for projects"); // NOI18N
+            OpenProjects.getDefault().openProjects().get();
+            LOGGER.log(Level.FINE, "resetCacheAndFire blocked for {0} ms", System.currentTimeMillis() - now); // NOI18N
+        } catch (Exception ex) {
+            LOGGER.log(Level.FINE, "resetCacheAndFire timeout", ex); // NOI18N
+        }
+    }
+
     private static class Request {
 
         final long timeStamp;
@@ -1240,26 +1240,33 @@ public final class PathRegistry implements Runnable {
                     LOGGER.log(Level.FINE, msg);
                 }
 
-                String propName = evt.getPropertyName();
-                if (ClassPath.PROP_ENTRIES.equals(propName) || ClassPath.PROP_FLAGS.equals(propName)) {
-                    final Object source = evt.getSource();
-                    if ((source instanceof ClassPath) &&
-                        classPathChanged((ClassPath)source)) {
-                        resetCacheAndFire (EventKind.PATHS_CHANGED, null, null, Collections.singleton((ClassPath)evt.getSource()));
-                    }
-                } else if (ClassPath.PROP_INCLUDES.equals(propName)) {
-                    final Object newPropagationId = evt.getPropagationId();
-                    boolean fire;
-                    synchronized (this) {
-                        fire = (newPropagationId == null || lastPropagationId == null || lastPropagationId.get() != newPropagationId);
-                        lastPropagationId = new WeakReference<>(newPropagationId);
-                    }
-                    if (fire) {
-                        resetCacheAndFire (EventKind.INCLUDES_CHANGED, PathKind.SOURCE, null, Collections.singleton((ClassPath)evt.getSource()));
-                    }
-                } else if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(propName)) {
-                    if (!firstProjectOpened) {
-                        openProjectChangeTask.schedule(0);
+                final String propName = evt.getPropertyName();
+                if (propName != null) {
+                    switch (propName) {
+                        case ClassPath.PROP_ENTRIES:
+                        case ClassPath.PROP_FLAGS:
+                            final Object source = evt.getSource();
+                            if ((source instanceof ClassPath) &&
+                                    classPathChanged((ClassPath)source)) {
+                                resetCacheAndFire (EventKind.PATHS_CHANGED, null, null, Collections.singleton((ClassPath)evt.getSource()));
+                            }
+                            break;
+                        case ClassPath.PROP_INCLUDES:
+                            final Object newPropagationId = evt.getPropagationId();
+                            boolean fire;
+                            synchronized (this) {
+                                fire = (newPropagationId == null || lastPropagationId == null || lastPropagationId.get() != newPropagationId);
+                                lastPropagationId = new WeakReference<>(newPropagationId);
+                            }
+                            if (fire) {
+                                resetCacheAndFire (EventKind.INCLUDES_CHANGED, PathKind.SOURCE, null, Collections.singleton((ClassPath)evt.getSource()));
+                            }
+                            break;
+                        case OpenProjects.PROPERTY_OPEN_PROJECTS:
+                            if (!firstProjectOpened) {
+                                openProjectChangeTask.schedule(0);
+                            }
+                            break;
                     }
                 }
             }
@@ -1398,6 +1405,7 @@ public final class PathRegistry implements Runnable {
         }
 
         @Override
+        @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
         protected void engineUpdate(byte input) {
             ensureSize(1);
             buffer[length++] = input;
