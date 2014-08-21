@@ -2233,6 +2233,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      */
 
     @Override
+    public void postPrettyPrint(boolean v) {
+    }
+
+
+    @Override
     public void postVerboseStack(boolean v) {
     }
 
@@ -3045,6 +3050,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     // interface NativeDebugger
     @Override
     public void setStaticMembers(boolean b) {
+	// no-op
+	// GDB TODO
+    }
+
+    // interface NativeDebugger
+    @Override
+    public boolean isPrettyPrint() {
+	return true; // always use pretty-print
+    }
+
+    // interface NativeDebugger
+    @Override
+    public void setPrettyPrint(boolean b) {
 	// no-op
 	// GDB TODO
     }
