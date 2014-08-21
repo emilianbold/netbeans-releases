@@ -267,7 +267,9 @@ public class ODCSRepository implements PropertyChangeListener {
     synchronized void resetRepository (boolean logout) {
         synchronized (QUERIES_LOCK) {
             if (logout) {
-                remoteSavedQueries.clear();
+                if(remoteSavedQueries != null) { // might be called on logout even before the reps where initiated
+                    remoteSavedQueries.clear();
+                }
             } else {
                 remoteSavedQueries = null;
             }
