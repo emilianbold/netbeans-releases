@@ -59,6 +59,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -77,6 +78,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.Hint.Kind;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -110,8 +112,8 @@ public class ExpandEnhancedForLoop {
             return null;
         }
 
-        FixImpl fix = new FixImpl(ctx.getInfo().getFileObject(), TreePathHandle.create(tp, ctx.getInfo()));
-        List<Fix> fixes = Collections.<Fix>singletonList(fix);
+        FixImpl fix = new FixImpl(TreePathHandle.create(tp, ctx.getInfo()));
+        List<Fix> fixes = Collections.<Fix>singletonList(fix.toEditorFix());
         return ErrorDescriptionFactory.createErrorDescription(ctx.getSeverity(),
                                                               NbBundle.getMessage(ExpandEnhancedForLoop.class, "ERR_ExpandEhancedForLoop"),
                                                               fixes,
@@ -137,85 +139,70 @@ public class ExpandEnhancedForLoop {
         return null;
     }
 
-    private static final class FixImpl implements Fix {
+    private static final class FixImpl extends JavaFix {
 
-        private final FileObject file;
-        private final TreePathHandle forLoop;
-
-        public FixImpl(FileObject file, TreePathHandle forLoop) {
-            this.file = file;
-            this.forLoop = forLoop;
+        public FixImpl(TreePathHandle forLoop) {
+            super(forLoop);
         }
 
         public String getText() {
             return NbBundle.getMessage(ExpandEnhancedForLoop.class, "ERR_ExpandEhancedForLoop");
         }
+        
+        protected void performRewrite(@NonNull TransformationContext ctx) throws Exception {
+            WorkingCopy copy = ctx.getWorkingCopy();
+            TreePath path = ctx.getPath();
 
-        public ChangeInfo implement() throws Exception {
-            JavaSource source = JavaSource.forFileObject(file);
-            ModificationResult mr = source.runModificationTask(new Task<WorkingCopy>() {
-                public void run(WorkingCopy copy) throws Exception {
-                    copy.toPhase(Phase.RESOLVED);
+            if (path == null) {
+                return ; //XXX: log
+            }
 
-                    TreePath path = forLoop.resolve(copy);
+            EnhancedForLoopTree efl = (EnhancedForLoopTree) path.getLeaf();
+            TypeMirror expressionType = copy.getTrees().getTypeMirror(new TreePath(path, efl.getExpression()));
 
-                    if (path == null) {
-                        return ; //XXX: log
-                    }
+            if (expressionType == null || expressionType.getKind() != TypeKind.DECLARED) {
+                return ; //XXX: log
+            }
 
-                    EnhancedForLoopTree efl = (EnhancedForLoopTree) path.getLeaf();
-                    TypeMirror expressionType = copy.getTrees().getTypeMirror(new TreePath(path, efl.getExpression()));
+            ExecutableElement getIterator = findIterable(copy);
+            ExecutableType    getIteratorType = (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) expressionType, getIterator);
+            TypeMirror        iteratorType = Utilities.resolveCapturedType(copy, getIteratorType.getReturnType());
+            TreeMaker         make = copy.getTreeMaker();
+            Tree              iteratorTypeTree = make.Type(iteratorType);
+            ExpressionTree    getIteratorTree = make.MethodInvocation(Collections.<ExpressionTree>emptyList(),
+                                                                      make.MemberSelect(efl.getExpression(), "iterator"),
+                                                                      Collections.<ExpressionTree>emptyList());
+            ExpressionTree    getNextTree = make.MethodInvocation(Collections.<ExpressionTree>emptyList(),
+                                                                  make.MemberSelect(make.Identifier("it"), "next"),
+                                                                  Collections.<ExpressionTree>emptyList());
+            ExpressionTree    hasNextTree = make.MethodInvocation(Collections.<ExpressionTree>emptyList(),
+                                                                  make.MemberSelect(make.Identifier("it"), "hasNext"),
+                                                                  Collections.<ExpressionTree>emptyList());
+            VariableTree orig = efl.getVariable();
+            VariableTree init = make.Variable(orig.getModifiers(), "it", iteratorTypeTree, getIteratorTree);
+            VariableTree value = make.Variable(orig.getModifiers(), orig.getName(), orig.getType(), getNextTree);
+            List<StatementTree> statements = new LinkedList<StatementTree>();
 
-                    if (expressionType == null || expressionType.getKind() != TypeKind.DECLARED) {
-                        return ; //XXX: log
-                    }
+            statements.add(0, value);
 
-                    ExecutableElement getIterator = findIterable(copy);
-                    ExecutableType    getIteratorType = (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) expressionType, getIterator);
-                    TypeMirror        iteratorType = Utilities.resolveCapturedType(copy, getIteratorType.getReturnType());
-                    TreeMaker         make = copy.getTreeMaker();
-                    Tree              iteratorTypeTree = make.Type(iteratorType);
-                    ExpressionTree    getIteratorTree = make.MethodInvocation(Collections.<ExpressionTree>emptyList(),
-                                                                              make.MemberSelect(efl.getExpression(), "iterator"),
-                                                                              Collections.<ExpressionTree>emptyList());
-                    ExpressionTree    getNextTree = make.MethodInvocation(Collections.<ExpressionTree>emptyList(),
-                                                                          make.MemberSelect(make.Identifier("it"), "next"),
-                                                                          Collections.<ExpressionTree>emptyList());
-                    ExpressionTree    hasNextTree = make.MethodInvocation(Collections.<ExpressionTree>emptyList(),
-                                                                          make.MemberSelect(make.Identifier("it"), "hasNext"),
-                                                                          Collections.<ExpressionTree>emptyList());
-                    VariableTree orig = efl.getVariable();
-                    VariableTree init = make.Variable(orig.getModifiers(), "it", iteratorTypeTree, getIteratorTree);
-                    VariableTree value = make.Variable(orig.getModifiers(), orig.getName(), orig.getType(), getNextTree);
-                    List<StatementTree> statements = new LinkedList<StatementTree>();
-
-                    statements.add(0, value);
-
-                    if (efl.getStatement() != null) {
-                        switch (efl.getStatement().getKind()) {
-                            case BLOCK:
-                                BlockTree oldBlock = (BlockTree) efl.getStatement();
-                                statements.addAll(oldBlock.getStatements());
-                                break;
-                            case EMPTY_STATEMENT:
-                                break;
-                            default:
-                                statements.add(efl.getStatement());
-                                break;
-                        }
-                    }
-
-                    BlockTree newBlock = make.Block(statements, false);
-                    ForLoopTree forLoop = make.ForLoop(Collections.singletonList(init), hasNextTree, Collections.<ExpressionStatementTree>emptyList(), newBlock);
-
-                    copy.rewrite(efl, forLoop);
+            if (efl.getStatement() != null) {
+                switch (efl.getStatement().getKind()) {
+                    case BLOCK:
+                        BlockTree oldBlock = (BlockTree) efl.getStatement();
+                        statements.addAll(oldBlock.getStatements());
+                        break;
+                    case EMPTY_STATEMENT:
+                        break;
+                    default:
+                        statements.add(efl.getStatement());
+                        break;
                 }
-            });
+            }
 
-            mr.commit();
+            BlockTree newBlock = make.Block(statements, false);
+            ForLoopTree forLoop = make.ForLoop(Collections.singletonList(init), hasNextTree, Collections.<ExpressionStatementTree>emptyList(), newBlock);
 
-            return null;
+            copy.rewrite(efl, forLoop);
         }
-
     }
 }
