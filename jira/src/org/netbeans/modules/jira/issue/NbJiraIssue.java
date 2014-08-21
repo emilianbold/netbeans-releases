@@ -1771,6 +1771,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
                     // fix worklog's remaining estimate time
                     fixWorkLog();
                     if (saveChanges()) {
+                        fireChanged();
                         submitCmd = MylynSupport.getInstance().getCommandFactory().createSubmitTaskCommand(getModel());
                     } else {
                         result[0] = false;
