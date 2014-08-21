@@ -130,7 +130,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     private static final Set<DataObject> syncModified = Collections.synchronizedSet(modified);
 
     /** Modified flag */
-    private boolean modif = false;
+    private volatile boolean modif = false;
 
     /** the node delegate for this data object */
     private transient Node nodeDelegate;
