@@ -80,6 +80,7 @@ import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import static org.netbeans.modules.maven.problems.Bundle.*;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -264,7 +265,8 @@ public class MavenModelProblemsProvider implements ProjectProblemsProvider {
         "TXT_Artifact_Resolution_problem=Artifact Resolution problem",
         "TXT_Artifact_Not_Found=Artifact Not Found",
         "TXT_Cannot_Load_Project=Unable to properly load project",
-        "TXT_Cannot_read_model=Error reading project model"
+        "TXT_Cannot_read_model=Error reading project model",
+        "TXT_NoMsg=Exception thrown while loading maven project at {0}. See messages.log for more information."
     })
     private Collection<ProjectProblem> reportExceptions(MavenExecutionResult res) {
         List<ProjectProblem> toRet = new ArrayList<ProjectProblem>();
@@ -296,8 +298,14 @@ public class MavenModelProblemsProvider implements ProjectProblemsProvider {
                     }
                 }
             } else {
-                LOG.log(Level.INFO, "Exception thrown while loading maven project at " + project.getProjectDirectory(), e); //NOI18N
-                toRet.add(ProjectProblem.createError(TXT_Cannot_read_model(), msg));
+                if(msg != null) {
+                    LOG.log(Level.INFO, "Exception thrown while loading maven project at " + project.getProjectDirectory(), e); //NOI18N
+                    toRet.add(ProjectProblem.createError(TXT_Cannot_read_model(), msg));
+                } else {
+                    String path = project.getProjectDirectory().getPath();
+                    toRet.add(ProjectProblem.createError(TXT_Cannot_read_model(), TXT_NoMsg(path)));
+                    LOG.log(Level.WARNING, "Exception thrown while loading maven project at " + path, e); //NOI18N
+                }
             }
         }
         return toRet;
