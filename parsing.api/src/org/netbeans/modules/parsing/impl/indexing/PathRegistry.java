@@ -77,6 +77,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -541,6 +542,52 @@ public final class PathRegistry implements Runnable {
                 url.getProtocol());
     }
 
+    static boolean isIncompleteClassPath(@NonNull final ClassPath cp) {
+        return cp.getFlags().contains(ClassPath.Flag.INCOMPLETE);
+    }
+
+    boolean isIncompleteRoot(@NonNull final FileObject root) {
+        Set<String> sourceIds;
+        Set<String> libIds;
+        Set<String> binLibIds;
+
+        if ((sourceIds = getSourceIdsFor(root.toURL())) != null && !sourceIds.isEmpty()) {
+            libIds = new HashSet<>();
+            binLibIds = new HashSet<>();
+            for(String id : sourceIds) {
+                libIds.addAll(PathRecognizerRegistry.getDefault().getLibraryIdsForSourceId(id));
+                binLibIds.addAll(PathRecognizerRegistry.getDefault().getBinaryLibraryIdsForSourceId(id));
+            }
+        } else if ((libIds = getLibraryIdsFor(root.toURL())) != null && !libIds.isEmpty()) {
+            sourceIds = Collections.emptySet();
+            binLibIds = new HashSet<>();
+            for(String id : libIds) {
+                binLibIds.addAll(PathRecognizerRegistry.getDefault().getBinaryLibraryIdsForLibraryId(id));
+            }
+        } else {
+            sourceIds = PathRecognizerRegistry.getDefault().getSourceIds();
+            libIds = new HashSet<>();
+            binLibIds = new HashSet<>();
+            for(String id : sourceIds) {
+                libIds.addAll(PathRecognizerRegistry.getDefault().getLibraryIdsForSourceId(id));
+                binLibIds.addAll(PathRecognizerRegistry.getDefault().getBinaryLibraryIdsForSourceId(id));
+            }
+        }
+        assert sourceIds != null;
+        assert libIds != null;
+        assert binLibIds != null;
+        return isIncompleteClassPath(root, binLibIds) ||
+           isIncompleteClassPath(root, libIds) ||
+           isIncompleteClassPath(root, sourceIds);
+    }
+
+    boolean isIncompleteRoot(@NonNull final URL root) {
+        final FileObject rootFo = URLMapper.findFileObject(root);
+        return rootFo == null ?
+            false :
+            isIncompleteRoot(rootFo);
+    }
+
     @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
@@ -643,14 +690,9 @@ public final class PathRegistry implements Runnable {
         if (oldHash == null) {
             return true;
         }
-        final StringBuilder newRoots = new StringBuilder();
-        for (ClassPath.Entry e : cp.entries()) {
-            newRoots.append(e.getURL().toExternalForm()).
-                append(File.pathSeparatorChar);
-        }
         return !Arrays.equals(
             oldHash,
-            toDigest(createDigest(),newRoots));
+            toDigest(cp, createDigest()));
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(
@@ -672,16 +714,13 @@ public final class PathRegistry implements Runnable {
         for (TaggedClassPath tcp : request.sourceCps) {
             ClassPath cp = tcp.getClasspath();
             boolean isNew = request.oldCps.remove(cp) == null;
-            final StringBuilder sb = new StringBuilder();
             for (ClassPath.Entry entry : cp.entries()) {
                 URL root = entry.getURL();
                 assert noHostPart(root) : root;
-                sb.append(root.toExternalForm()).
-                   append(File.pathSeparatorChar);
                 sourceResult.add(root);
                 updatePathIds(root, tcp, pathIdsResult, pathIdToRootsResult);
             }
-            boolean notContained = newCps.put (cp, toDigest(digest, sb)) == null;
+            boolean notContained = newCps.put (cp, toDigest(cp,digest)) == null;
             if (isNew && notContained) {
                cp.addPropertyChangeListener(request.propertyListener);
             }
@@ -690,16 +729,13 @@ public final class PathRegistry implements Runnable {
         for (TaggedClassPath tcp : request.libraryCps) {
             ClassPath cp = tcp.getClasspath();
             boolean isNew = request.oldCps.remove(cp) == null;
-            final StringBuilder sb = new StringBuilder();
             for (ClassPath.Entry entry : cp.entries()) {
                 URL root = entry.getURL();
                 assert noHostPart(root) : root;
-                sb.append(root.toExternalForm()).
-                   append(File.pathSeparatorChar);
                 libraryResult.add(root);
                 updatePathIds(root, tcp, pathIdsResult, pathIdToRootsResult);
             }
-            boolean notContained = newCps.put (cp, toDigest(digest, sb)) == null;
+            boolean notContained = newCps.put (cp, toDigest(cp, digest)) == null;
             if (isNew && notContained) {
                cp.addPropertyChangeListener(request.propertyListener);
             }
@@ -708,15 +744,12 @@ public final class PathRegistry implements Runnable {
         for (TaggedClassPath tcp : request.binaryLibraryCps) {
             ClassPath cp = tcp.getClasspath();
             boolean isNew = request.oldCps.remove(cp) == null;
-            final StringBuilder sb = new StringBuilder();
             for (ClassPath.Entry entry : cp.entries()) {
                 URL binRoot = entry.getURL();
                 assert noHostPart(binRoot) : binRoot;
-                sb.append(binRoot.toExternalForm()).
-                   append(File.pathSeparatorChar);
                 if (!translatedRoots.containsKey(binRoot)) {
                     updatePathIds(binRoot, tcp, pathIdsResult, pathIdToRootsResult);
-                    
+
                     SourceForBinaryQuery.Result2 sr = request.oldSR.remove (binRoot);
                     boolean isNewSR;
                     if (sr == null) {
@@ -747,7 +780,7 @@ public final class PathRegistry implements Runnable {
                     }
                 }
             }
-            boolean notContained = newCps.put (cp, toDigest(digest, sb)) == null;
+            boolean notContained = newCps.put (cp, toDigest(cp, digest)) == null;
             if (isNew && notContained) {
                 cp.addPropertyChangeListener(request.propertyListener);
             }
@@ -861,13 +894,34 @@ public final class PathRegistry implements Runnable {
 
     @NonNull
     private static byte[] toDigest(
-        @NonNull final MessageDigest md,
-        @NonNull final StringBuilder sb) {
+        @NonNull final ClassPath cp,
+        @NonNull final MessageDigest md) {
+        final StringBuilder sb = new StringBuilder();
+        for (ClassPath.Flag flag : cp.getFlags()) {
+            sb.append(flag.name()).
+                append(File.pathSeparatorChar);
+        }
+        for (ClassPath.Entry e : cp.entries()) {
+            sb.append(e.getURL().toExternalForm()).
+                append(File.pathSeparatorChar);
+        }
         try {
             return md.digest(sb.toString().getBytes());
         } finally {
             md.reset();
         }
+    }
+
+    private static boolean isIncompleteClassPath(
+        @NonNull final FileObject root,
+        @NonNull final Set<String> classPathTypes) {
+        for (String classPathType : classPathTypes) {
+            final ClassPath cp = ClassPath.getClassPath(root, classPathType);
+            if (cp != null && isIncompleteClassPath(cp)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @NonNull
@@ -1188,7 +1242,7 @@ public final class PathRegistry implements Runnable {
                 }
 
                 String propName = evt.getPropertyName();
-                if (ClassPath.PROP_ENTRIES.equals(propName)) {
+                if (ClassPath.PROP_ENTRIES.equals(propName) || ClassPath.PROP_FLAGS.equals(propName)) {
                     final Object source = evt.getSource();
                     if ((source instanceof ClassPath) &&
                         classPathChanged((ClassPath)source)) {
