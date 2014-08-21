@@ -954,6 +954,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                 SubmitTaskCommand submitCmd;
                 try {
                     if (saveChanges()) {
+                        fireChanged();
                         submitCmd = MylynSupport.getInstance().getCommandFactory().createSubmitTaskCommand(getModel());
                     } else {
                         result[0] = false;
