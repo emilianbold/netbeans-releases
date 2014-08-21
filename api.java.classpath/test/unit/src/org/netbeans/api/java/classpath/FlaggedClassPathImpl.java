@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,69 +37,75 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.classpath;
+package org.netbeans.api.java.classpath;
 
-import java.net.URI;
-import java.util.ArrayList;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.maven.artifact.Artifact;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.java.classpath.FlaggedClassPathImplementation;
-import org.openide.util.Utilities;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.openide.util.Parameters;
 
 /**
  *
- * @author  Milos Kleint 
+ * @author Tomas Zezula
  */
-class TestCompileClassPathImpl extends AbstractProjectClassPathImpl implements FlaggedClassPathImplementation {
+class FlaggedClassPathImpl implements FlaggedClassPathImplementation {
 
-    private volatile boolean incomplete;
+    private final PropertyChangeSupport support;
+    //@GuardedBy("this")
+    private Set<ClassPath.Flag> flags;
+    //@GuardedBy("this")
+    private List<PathResourceImplementation> resources;
 
-    /** Creates a new instance of SrcClassPathImpl */
-    public TestCompileClassPathImpl(NbMavenProjectImpl proj) {
-        super(proj);
-        
+    FlaggedClassPathImpl() {
+        this.support = new PropertyChangeSupport(this);
+        this.flags = EnumSet.noneOf(ClassPath.Flag.class);
+        this.resources = Collections.emptyList();
     }
-    
-    @Override
-    URI[] createPath() {
-        List<URI> lst = new ArrayList<URI>();
-        //TODO we shall add the test class output as well. how?
-        // according the current 2.1 sources this is almost the same as getCompileClasspath()
-        //except for the fact that multiproject references are not redirected to their respective
-        // output folders.. we lways retrieve stuff from local repo..
-        List<Artifact> arts = getMavenProject().getOriginalMavenProject().getTestArtifacts();
-        boolean broken = false;
-        for (Artifact art : arts) {
-            if (art.getFile() != null) {
-                lst.add(Utilities.toURI(art.getFile()));
-                broken |= !art.getFile().exists();
-            } else { //NOPMD
-                //null means dependencies were not resolved..
-                broken = true;
-            }
-        }
-        if (incomplete != broken) {
-            incomplete = broken;
-            firePropertyChange(PROP_FLAGS, null, null);
-        }
-        lst.add(0, Utilities.toURI(getMavenProject().getProjectWatcher().getOutputDirectory(false)));
-        URI[] uris = new URI[lst.size()];
-        uris = lst.toArray(uris);
-        return uris;
-    }    
 
     @Override
-    public Set<ClassPath.Flag> getFlags() {
-        return incomplete ?
-            EnumSet.of(ClassPath.Flag.INCOMPLETE) :
-            Collections.<ClassPath.Flag>emptySet();
+    public synchronized Set<ClassPath.Flag> getFlags() {
+        return flags;
+    }
+
+    @Override
+    public synchronized List<? extends PathResourceImplementation> getResources() {
+        return resources;
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        Parameters.notNull("listener", listener);   //NOI18N
+        this.support.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        Parameters.notNull("listener", listener);   //NOI18N
+        this.support.removePropertyChangeListener(listener);
+    }
+
+    void setResources(@NonNull final List<PathResourceImplementation> resources) {
+        Parameters.notNull("resources", resources); //NOI18N
+        synchronized (this) {
+            this.resources = resources;
+        }
+        support.firePropertyChange(PROP_RESOURCES, null, null);
+    }
+
+    void setFlags(@NonNull final Set<ClassPath.Flag> flags) {
+        Parameters.notNull("flags", flags); //NOI18N
+        synchronized (this) {
+            this.flags = flags;
+        }
+        support.firePropertyChange(PROP_FLAGS, null, null);
     }
 }
