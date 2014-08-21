@@ -48,6 +48,8 @@ import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.InputReaderTask;
 import org.netbeans.api.extexecution.base.input.InputReaders;
@@ -69,6 +71,10 @@ import org.openide.windows.OutputWriter;
 public class ServerLogManager {
 
     private static final Logger LOGGER = Logger.getLogger(ServerLogManager.class.getName());
+
+    private static final Pattern LOG_PARSING_PATTERN = Pattern.compile(
+            "^####(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+" // NOI18N
+                    + "(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>?)(\\s+|$)"); // NOI18N
 
     private final WLDeploymentManager dm;
 
@@ -116,13 +122,23 @@ public class ServerLogManager {
                     } catch (IOException ex) {
                         LOGGER.log(Level.FINE, null, ex);
                     }
+                    final StringBuilder sb = new StringBuilder();
                     task = InputReaderTask.newTask(InputReaders.forFile(logFile, Charset.defaultCharset()),
                             InputProcessors.bridge(new LineProcessor() {
 
                         @Override
                         public void processLine(String line) {
-                            if (line.startsWith("####")) { // NOI18N
-                                printing.processLine(line.substring(4));
+                            Matcher m = LOG_PARSING_PATTERN.matcher(line);
+                            if (m.matches()) {
+                                sb.append(m.group(1)).append(" "); // NOI18N
+                                sb.append(m.group(2)).append(" "); // NOI18N
+                                sb.append(m.group(3)).append(" "); // NOI18N
+                                sb.append(m.group(11)).append(" "); // NOI18N
+                                sb.append(m.group(12)).append(" "); // NOI18N
+                                printing.processLine(sb.toString());
+                                sb.setLength(0);
+                            } else {
+                                printing.processLine(line);
                             }
                         }
 
