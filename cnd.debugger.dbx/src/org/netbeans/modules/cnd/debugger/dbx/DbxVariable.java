@@ -757,6 +757,7 @@ class DbxVariable extends Variable {
 		VariableModel.Action_INHERITED_MEMBERS,
 		VariableModel.Action_DYNAMIC_TYPE,
 		VariableModel.Action_STATIC_MEMBERS,
+		VariableModel.Action_PRETTY_PRINT,
 		VariableModel.getOutputFormatAction(this),
 		null
 	    };
@@ -768,6 +769,7 @@ class DbxVariable extends Variable {
                     VariableModel.Action_INHERITED_MEMBERS,
                     VariableModel.Action_DYNAMIC_TYPE,
 		    VariableModel.Action_STATIC_MEMBERS,
+                    VariableModel.Action_PRETTY_PRINT,
                     VariableModel.getOutputFormatAction(this),
                     new VariableModel.BrowseArrayAction(this),
                     SystemAction.get(MaxObjectAction.class),
@@ -778,6 +780,7 @@ class DbxVariable extends Variable {
                     VariableModel.Action_INHERITED_MEMBERS,
                     VariableModel.Action_DYNAMIC_TYPE,
 		    VariableModel.Action_STATIC_MEMBERS,
+                    VariableModel.Action_PRETTY_PRINT,
                     VariableModel.getOutputFormatAction(this),
                     SystemAction.get(MaxObjectAction.class),
                     null,

@@ -420,6 +420,19 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     public void setStaticMembers(boolean b) {
 	setDbxOption("DBX_show_static_members", b);	// NOI18N
     }
+    
+    // interface NativeDebugger
+    @Override
+    public boolean isPrettyPrint() {
+        DebuggerOption option = DebuggerOption.OUTPUT_PRETTY_PRINT;
+        return option.isEnabled(optionLayers());
+    }
+
+    // interface NativeDebugger
+    @Override
+    public void setPrettyPrint(boolean b) {
+	setDbxOption("DBX_output_pretty_print", b);	// NOI18N
+    }
 
     // interface NativeDebugger
     @Override
@@ -2507,6 +2520,11 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
     public void postVerboseStack(boolean v) {
         String cmd = "dbxenv stack_verbose " + (v ? "on" : "off");// NOI18N
+        dbx.sendCommand(0, 0, cmd);
+    }
+
+    public void postPrettyPrint(boolean v) {
+        String cmd = "dbxenv output_pretty_print " + (v ? "on" : "off");// NOI18N
         dbx.sendCommand(0, 0, cmd);
     }
 

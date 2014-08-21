@@ -71,6 +71,7 @@ public final class DbxEngineCapabilityProvider implements EngineCapabilityProvid
 		case DYNAMIC_TYPE:
 		case INHERITED_MEMBERS:
 		case STATIC_MEMBERS:
+		case PRETY_PRINT:
 		case MAX_OBJECT:
                     return true;
                 default:

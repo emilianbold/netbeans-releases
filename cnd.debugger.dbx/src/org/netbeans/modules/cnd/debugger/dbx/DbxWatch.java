@@ -154,6 +154,7 @@ class DbxWatch extends DbxVariable implements WatchVariable {
 	    VariableModel.Action_INHERITED_MEMBERS,
 	    VariableModel.Action_DYNAMIC_TYPE,
 	    VariableModel.Action_STATIC_MEMBERS,
+	    VariableModel.Action_PRETTY_PRINT,
 	    VariableModel.getOutputFormatAction(this),
 	    SystemAction.get(MaxObjectAction.class),
 	    null,
