@@ -66,7 +66,18 @@ public class Main {
 //        WebLogicConfiguration config = WebLogicConfiguration.forLocalDomain(
 //                new File(serverHome), new File(domainHome), "weblogic", "welcome1");
         WebLogicConfiguration config = WebLogicConfiguration.forRemoteDomain(
-                new File(serverHome), "192.168.56.101", 7001, "weblogic", "welcome1");
+                new File(serverHome), "192.168.56.101", 7001, new WebLogicConfiguration.Credentials() {
+
+            @Override
+            public String getUsername() {
+                return "weblogic";
+            }
+
+            @Override
+            public String getPassword() {
+                return "welcome1";
+            }
+        });
 
         WebLogicRuntime runtime = WebLogicRuntime.getInstance(config);
         runtime.startAndWait(new DefaultFactory(), new DefaultFactory(), null);

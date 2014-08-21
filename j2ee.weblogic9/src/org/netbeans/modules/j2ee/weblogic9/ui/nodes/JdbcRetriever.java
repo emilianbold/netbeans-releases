@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,6 +34,10 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
@@ -54,7 +53,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -65,76 +63,67 @@ import javax.management.ReflectionException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.netbeans.modules.j2ee.weblogic9.ui.nodes.ResourceNode.ResourceNodeType;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.JdbcChildrenFactory.JDBCDataBean;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UnregisterCookie;
+import org.omg.CORBA.TIMEOUT;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.ChildFactory;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-
 /**
- * @author ads
  *
+ * @author Petr Hejl
  */
-class JdbcRetriever {
-    
-    private static final String JDBC = "jdbc";                  // NOI18N
-    
+public class JdbcRetriever implements JdbcChildrenFactory.Retriever {
+
     private static final Logger LOGGER = Logger.getLogger(JdbcRetriever.class.getName());
-    private static final int WAIT_TIME = 60000;
-    
-    private static final int TIMEOUT = 120000;
-    
-    enum JdbcNodeTypes {
-        RESOURCES,
-        POOL;
-    }
-    
-    JdbcRetriever(Lookup lookup) {
-        data = new AtomicReference<List<JDBCDataBean>>();
+
+    private static final String JDBC = "jdbc"; // NOI18N
+
+    private static final int UNREGISTER_WAIT_TIME = 60000;
+
+    private static final int UNREGISTER_TIMEOUT = 120000;
+
+    private final AtomicReference<List<JDBCDataBean>> data = new AtomicReference<List<JDBCDataBean>>();
+
+    private final Lookup lookup;
+
+    private boolean isRetrieveStarted;
+
+    public JdbcRetriever(Lookup lookup) {
         this.lookup = lookup;
     }
-    
 
-    Node createJDBCPoolsNode() {
-        JDBCResourcesChildFactory factory = new JDBCResourcesChildFactory( 
-                JdbcNodeTypes.POOL);
-        return new ResourceNode( factory, ResourceNodeType.JDBC_POOL,
-                NbBundle.getMessage(JdbcRetriever.class, "LBL_JDBCPools"));
-    }
-
-    Node createJDBCResourcesNode() {
-        JDBCResourcesChildFactory factory = new JDBCResourcesChildFactory(
-                JdbcNodeTypes.RESOURCES );
-        return new ResourceNode(factory,ResourceNodeType.JDBC_RESOURCES ,
-                NbBundle.getMessage(JdbcRetriever.class, "LBL_JDBCResources"));
-    }
-    
-    void clean() {
+    @Override
+    public void clean() {
         data.set(null);
     }
-    
-    private void retrieve(){
-        synchronized (this){
-            if ( isRetrieveStarted ){
+
+    @Override
+    public List<JDBCDataBean> get() {
+        return data.get();
+    }
+
+    @Override
+    public void retrieve() {
+        synchronized (this) {
+            if (isRetrieveStarted) {
                 return;
             }
             isRetrieveStarted = true;
         }
+
         data.set(null);
+
         WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
 
         WLConnectionSupport support = manager.getConnectionSupport();
@@ -147,18 +136,16 @@ class JdbcRetriever {
                 @Override
                 public List<JDBCDataBean> call(MBeanServerConnection con, ObjectName service) throws Exception {
                     List<JDBCDataBean> list = new LinkedList<JDBCDataBean>();
-                    
+
                     ObjectName[] adminServers = (ObjectName[]) con
-                            .getAttribute(service, "ServerRuntimes");    // NOI18N
+                            .getAttribute(service, "ServerRuntimes"); // NOI18N
                     Set<String> adminNames = new HashSet<String>();
                     for (ObjectName adminServer : adminServers) {
-                        adminNames.add(con
-                                .getAttribute(adminServer, "Name")
-                                    .toString());// NOI18N
+                        adminNames.add(con.getAttribute(adminServer, "Name").toString()); // NOI18N
                     }
 
                     ObjectName config = (ObjectName) con.getAttribute(
-                            service, "DomainConfiguration");            // NOI18N
+                            service, "DomainConfiguration"); // NOI18N
                     findSystemJdbc(con, list, adminNames, config);
                     findDeployedJdbc( con, list , adminNames, config);
                     return list;
@@ -167,21 +154,20 @@ class JdbcRetriever {
                 private void findDeployedJdbc( MBeanServerConnection con,
                         List<JDBCDataBean> list, Set<String> adminNames,
                         ObjectName config ) throws MBeanException,
-                        AttributeNotFoundException, InstanceNotFoundException,
-                        ReflectionException, IOException
-                {
+                    AttributeNotFoundException, InstanceNotFoundException,
+                    ReflectionException, IOException {
+
                     ObjectName applications[] = (ObjectName[]) con
-                        .getAttribute(config, "AppDeployments");                    // NOI18N
+                        .getAttribute(config, "AppDeployments"); // NOI18N
                     for (ObjectName application : applications) {
-                        String type = con.getAttribute( application, "ModuleType"). // NOI18N
-                            toString();
-                        if ( type.equals(JDBC)){
+                        Object objType = con.getAttribute( application, "ModuleType"); // NOI18N
+                        if (objType != null && JDBC.equals(objType.toString())) {
                             boolean foundAdminServer = false;
                             ObjectName[] targets = (ObjectName[]) con
-                                .getAttribute(application, "Targets");  // NOI18N
+                                .getAttribute(application, "Targets"); // NOI18N
                             for (ObjectName target : targets) {
                                 String targetServer = con.getAttribute(
-                                        target, "Name").toString();     // NOI18N
+                                        target, "Name").toString(); // NOI18N
                                 if (adminNames.contains(targetServer)) {
                                     foundAdminServer = true;
                                 }
@@ -189,58 +175,29 @@ class JdbcRetriever {
                             if (!foundAdminServer) {
                                 continue;
                             }
-                            String path = (String)con.getAttribute( application, 
-                                    "AbsoluteSourcePath");              // NOI18N
-                            String name = (String)con.getAttribute( application, 
-                                    "Name");                            // NOI18N
-                            if ( path != null ){
-                                addDeployedDataSource( path , list , name );
+                            String path = (String)con.getAttribute(application,
+                                    "AbsoluteSourcePath"); // NOI18N
+                            String name = (String)con.getAttribute(application,
+                                    "Name"); // NOI18N
+                            if (path != null) {
+                                loadDeployedDataSource(path, list, name);
                             }
                         }
                     }
-                    
-                }
 
-                private void addDeployedDataSource( String path,
-                        List<JDBCDataBean> list , String deplName )
-                {
-                    try {
-                        SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-                        JdbcConfigHandler handler = new JdbcConfigHandler();
-                        FileObject jdbcConfig = FileUtil.toFileObject( FileUtil.
-                                normalizeFile( new File(path)));
-                        parser.parse(new BufferedInputStream(
-                                jdbcConfig.getInputStream()), handler);
-                        List<String> jndiNames = handler.getJndiNames();
-                        list.add( new JDBCDataBean( handler.getName(), 
-                                jndiNames.toArray(new String[jndiNames.size()]), deplName));
-                    }
-                    catch (ParserConfigurationException e) {
-                        LOGGER.log(Level.INFO, null, e);
-                    }
-                    catch (SAXException e) {
-                        LOGGER.log(Level.INFO, null, e);
-                    }
-                    catch (FileNotFoundException e) {
-                        LOGGER.log(Level.INFO, null, e);
-                    }
-                    catch (IOException e) {
-                        LOGGER.log(Level.INFO, null, e);
-                    }
                 }
 
                 private void findSystemJdbc( MBeanServerConnection con,
                         List<JDBCDataBean> list, Set<String> adminNames,
                         ObjectName objectName ) throws MBeanException,
-                        AttributeNotFoundException, InstanceNotFoundException,
-                        ReflectionException, IOException
-                {
+                    AttributeNotFoundException, InstanceNotFoundException,
+                    ReflectionException, IOException {
+
                     ObjectName objectNames[] = (ObjectName[]) con
                             .getAttribute(objectName, "SystemResources"); // NOI18N
 
                     for (ObjectName resource : objectNames) {
-                        String type = con.getAttribute(resource, "Type")
-                                .toString();// NOI18N
+                        String type = con.getAttribute(resource, "Type").toString();// NOI18N
                         if ("JDBCSystemResource".equals(type)) { // NOI18N
                             ObjectName dataSource = (ObjectName) con
                                     .getAttribute(resource, "JDBCResource"); // NOI18N
@@ -273,100 +230,138 @@ class JdbcRetriever {
                         }
                     }
                 }
-
             });
         } catch (Exception e) {
             LOGGER.log(Level.INFO, null, e);
         } finally {
-            data.compareAndSet(null , list);
+            data.compareAndSet(null, list);
             synchronized (this) {
                 isRetrieveStarted = false;
                 notifyAll();
             }
         }
     }
-    
-    private class JDBCResourcesChildFactory extends ChildFactory<ResourceNode> 
-        implements RefreshModulesCookie 
-    {
-        
-        JDBCResourcesChildFactory(JdbcNodeTypes type){
-            this.type = type;
-        }
 
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesCookie#refresh()
-         */
-        @Override
-        public final void refresh() {
-            clean();
-            refresh(false);
-        }
-
-        /* (non-Javadoc)
-         * @see org.openide.nodes.ChildFactory#createKeys(java.util.List)
-         */
-        @Override
-        protected boolean createKeys( List<ResourceNode> children ) {
-            synchronized (JdbcRetriever.this) {
-                while (isRetrieveStarted) {
-                    try {
-                        JdbcRetriever.this.wait();
-                    }
-                    catch (InterruptedException e) {
-                    }
+    @Override
+    public void waitForCompletion() {
+        synchronized (this) {
+            while (isRetrieveStarted) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.FINE, null, e);
+                    Thread.currentThread().interrupt();
                 }
             }
-            List<JDBCDataBean> jdbcDataBeans = data.get();
-            if ( jdbcDataBeans != null ){
-                if (type == JdbcNodeTypes.POOL) {
-                    for (JDBCDataBean jdbcDataBean : jdbcDataBeans) {
-                        String name = jdbcDataBean.getName();
-                        if ( jdbcDataBean.isApplication() ){
-                            name = jdbcDataBean.getDeploymentName();
-                        }
-                        children.add(new ResourceNode(Children.LEAF, 
-                                ResourceNodeType.JDBC,jdbcDataBean.getName(), 
-                                new UnregisterJdbcPool( name,
-                                        this , lookup ) ));
-                    }
-                }
-                else if (type == JdbcNodeTypes.RESOURCES) {
-                    for (JDBCDataBean jdbcDataBean : jdbcDataBeans) {
-                        String[] jndiNames = jdbcDataBean.getJndiNames();
-                        boolean isApplication = jdbcDataBean.isApplication();
-                        for (String name : jndiNames) {
-                            // no "unregister" action if jdbc data source is deployed application 
-                            ResourceNode node = new ResourceNode(Children.LEAF, 
-                                    ResourceNodeType.JDBC, name, isApplication ? null :  
-                                    new UnregisterJdbcJndiName( name ,
-                                            this , lookup) );
-                            children.add( node );
-                        }
-                    }
-                }
-                return true;
-            }
-            retrieve();
-            return false;
         }
-        
-        /* (non-Javadoc)
-         * @see org.openide.nodes.ChildFactory#createNodeForKey(java.lang.Object)
-         */
-        @Override
-        protected Node createNodeForKey( ResourceNode key ) {
-            return key;
-        }
-        
-        private JdbcNodeTypes type ;
     }
-    
+
+    private void loadDeployedDataSource(String path, List<JDBCDataBean> list,
+            String deplName) {
+        try {
+            SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+            JdbcConfigHandler handler = new JdbcConfigHandler();
+            FileObject jdbcConfig = FileUtil.toFileObject( FileUtil.
+                    normalizeFile( new File(path)));
+            if (jdbcConfig == null) {
+                return;
+            }
+            parser.parse(new BufferedInputStream(
+                    jdbcConfig.getInputStream()), handler);
+            List<String> jndiNames = handler.getJndiNames();
+            list.add( new JDBCDataBean( handler.getName(),
+                    jndiNames.toArray(new String[jndiNames.size()]), deplName));
+        } catch (ParserConfigurationException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } catch (SAXException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } catch (IOException e) {
+            LOGGER.log(Level.INFO, null, e);
+        }
+    }
+
+    public static class JdbcUnregisterFactory implements JdbcChildrenFactory.UnregisterFactory {
+
+        @Override
+        public UnregisterCookie createUnregisterForPool(String name, RefreshModulesCookie refresh, Lookup lookup) {
+            return new UnregisterJdbcPool(name, refresh, lookup);
+        }
+
+        @Override
+        public UnregisterCookie createUnregisterForResource(String name, RefreshModulesCookie refresh, Lookup lookup) {
+            return new UnregisterJdbcJndiName(name, refresh, lookup);
+        }
+
+    }
+
+    private static class JdbcConfigHandler extends DefaultHandler {
+
+        private static final String DATA_SOURCE_PARAMS = "jdbc-data-source-params"; // NOI18N
+
+        private final List<String> jndiNames = new LinkedList<String>();
+
+        private String content;
+
+        private String name;
+
+        private boolean dataSourceParamsStarted;
+
+        @Override
+        public void startElement(String uri, String localName, String qName,
+                Attributes attributes) throws SAXException {
+            content = null;
+            if (DATA_SOURCE_PARAMS.equals(getUnprefixedName(qName))) {
+                dataSourceParamsStarted = true;
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName)
+                throws SAXException {
+            if (name == null && "name".equals(getUnprefixedName(qName))) { // NOI18N
+                name = content;
+            } else if (DATA_SOURCE_PARAMS.equals(getUnprefixedName(qName))) { // NOI18N
+                dataSourceParamsStarted = false;
+            } else if ( dataSourceParamsStarted
+                    && "jndi-name".equals(getUnprefixedName(qName))) { // NOI18N
+                jndiNames.add( content );
+            }
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) {
+            content = new String(ch, start, length);
+        }
+
+        String getName() {
+            return name;
+        }
+
+        List<String> getJndiNames() {
+            return jndiNames;
+        }
+
+        private String getUnprefixedName(String name) {
+            if (name.contains(":")) { // NOI18N
+                return name.substring(name.indexOf(":") + 1); // NOI18N
+            } else {
+                return name;
+            }
+        }
+    }
+
     private static class UnregisterJdbcJndiName implements UnregisterCookie {
 
-        UnregisterJdbcJndiName( String jndiName , 
-                RefreshModulesCookie cookie, Lookup lookup ) 
-        {
+        private final String jndiName;
+
+        private final RefreshModulesCookie cookie;
+
+        private final Lookup lookup;
+
+        UnregisterJdbcJndiName(String jndiName, RefreshModulesCookie cookie,
+                Lookup lookup) {
             this.jndiName = jndiName;
             this.cookie = cookie;
             this.lookup = lookup;
@@ -374,8 +369,7 @@ class JdbcRetriever {
 
         @Override
         public void unregister() {
-            WLDeploymentManager manager = lookup
-                    .lookup(WLDeploymentManager.class);
+            WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
 
             WLConnectionSupport support = manager.getConnectionSupport();
             try {
@@ -392,9 +386,9 @@ class JdbcRetriever {
                                 service, "ConfigurationManager"); // NOI18N
                         ObjectName domainConfigRoot = (ObjectName) con.invoke(
                                 manager, "startEdit", new Object[] {
-                                        WAIT_TIME, TIMEOUT }, new String[] {
+                                        UNREGISTER_WAIT_TIME, UNREGISTER_TIMEOUT }, new String[] {
                                 "java.lang.Integer", "java.lang.Integer" });
-                        if ( domainConfigRoot == null ){
+                        if (domainConfigRoot == null) {
                             // Couldn't get the lock
                             throw new UnableLockException();
                         }
@@ -418,7 +412,7 @@ class JdbcRetriever {
                         con.invoke(manager, "save", null, null); // NOI18N
                         ObjectName activationTask = (ObjectName) con
                                 .invoke(manager, "activate",
-                                        new Object[] { TIMEOUT },
+                                        new Object[] { UNREGISTER_TIMEOUT },
                                         new String[] { "java.lang.Long" }); // NOI18N
                         con.invoke(activationTask, "waitForTaskCompletion", null, null);
                         return null;
@@ -426,41 +420,37 @@ class JdbcRetriever {
 
 
                 });
-            }
-            catch (UnableLockException e ){
+            } catch (UnableLockException e) {
                 failNotify();
-            }
-            catch ( MBeanException e ){
+            } catch (MBeanException e) {
                 Exception targetException = e.getTargetException();
                 if ( targetException.getClass().getCanonicalName().equals(
-                        "weblogic.management.mbeanservers.edit.EditTimedOutException"))
-                {
+                        "weblogic.management.mbeanservers.edit.EditTimedOutException")) {
                     failNotify();
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 LOGGER.log(Level.INFO, null, e);
             }
             cookie.refresh();
         }
-        
+
         private void failNotify(){
             NotifyDescriptor notDesc = new NotifyDescriptor.Message(
                     NbBundle.getMessage(JdbcRetriever.class, "MSG_UnableUnregister"),
                     NotifyDescriptor.ERROR_MESSAGE );
             DialogDisplayer.getDefault().notify(notDesc);
         }
-        
-        private String jndiName;
-        private RefreshModulesCookie cookie;
-        private Lookup lookup;
     }
-    
+
     private static class UnregisterJdbcPool implements UnregisterCookie {
 
-        UnregisterJdbcPool( String name , 
-                RefreshModulesCookie cookie, Lookup lookup ) 
-        {
+        private final String resourceName;
+
+        private final RefreshModulesCookie cookie;
+
+        private final Lookup lookup;
+
+        UnregisterJdbcPool(String name, RefreshModulesCookie cookie, Lookup lookup) {
             this.resourceName = name;
             this.cookie = cookie;
             this.lookup = lookup;
@@ -468,8 +458,7 @@ class JdbcRetriever {
 
         @Override
         public void unregister() {
-            WLDeploymentManager manager = lookup
-                    .lookup(WLDeploymentManager.class);
+            WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
 
             WLConnectionSupport support = manager.getConnectionSupport();
             try {
@@ -487,23 +476,23 @@ class JdbcRetriever {
                         disable(con, service, dataSourceBean);
                         return null;
                     }
-                    
+
                     private void disable( MBeanServerConnection connection,
-                            ObjectName service, ObjectName dataSourceBean) 
+                            ObjectName service, ObjectName dataSourceBean)
                             throws AttributeNotFoundException,
-                            InstanceNotFoundException, MBeanException, ReflectionException,
-                            IOException, MalformedObjectNameException, UnableLockException
-                    {
-                        ObjectName manager =(ObjectName) connection.getAttribute(service, 
+                        InstanceNotFoundException, MBeanException, ReflectionException,
+                        IOException, MalformedObjectNameException, UnableLockException {
+
+                        ObjectName manager =(ObjectName) connection.getAttribute(service,
                                         "ConfigurationManager");                // NOI18N
-                        ObjectName domainConfigRoot = (ObjectName)connection.invoke(manager, 
-                                "startEdit", new Object[]{ WAIT_TIME, TIMEOUT}, 
+                        ObjectName domainConfigRoot = (ObjectName)connection.invoke(manager,
+                                "startEdit", new Object[]{ UNREGISTER_WAIT_TIME, UNREGISTER_TIMEOUT},
                                     new String[]{ "java.lang.Integer", "java.lang.Integer"});
                         if ( domainConfigRoot == null ){
                          // Couldn't get the lock
                             throw new UnableLockException();
                         }
-                        
+
                         try {
                             ObjectName targets[]  = (ObjectName[]) connection.getAttribute(
                                 dataSourceBean, "Targets"); // NOI18N
@@ -514,18 +503,17 @@ class JdbcRetriever {
                                                 new Object[] { target },
                                                 new String[] { "javax.management.ObjectName" }); // NOI18N
                             }
-                        }
-                        catch( InstanceNotFoundException e ){
+                        } catch( InstanceNotFoundException e) {
                             /*
                              *  This is not system config JDBC resource bean. This is
                              *  deployed JDBC resource  .
                              */
-                            StringBuilder deploymentCanonicalName = 
+                            StringBuilder deploymentCanonicalName =
                                 new StringBuilder("com.bea:Name=");       // NOI18N
                             deploymentCanonicalName.append( resourceName);
                             deploymentCanonicalName
                                 .append(",Type=AppDeployment");             // NOI18N
-                            ObjectName application = new ObjectName( 
+                            ObjectName application = new ObjectName(
                                     deploymentCanonicalName.toString());
                             ObjectName targets[]  = (ObjectName[]) connection.getAttribute(
                                     application, "Targets"); // NOI18N
@@ -537,25 +525,22 @@ class JdbcRetriever {
                                                 new String[] { "javax.management.ObjectName" }); // NOI18N
                             }
                         }
-                        
+
                         connection.invoke(manager, "save", null, null);                // NOI18N
-                        ObjectName  activationTask = (ObjectName)connection.invoke(manager, 
-                                "activate", new Object[]{TIMEOUT}, 
+                        ObjectName  activationTask = (ObjectName)connection.invoke(manager,
+                                "activate", new Object[]{UNREGISTER_TIMEOUT},
                                     new String[]{"java.lang.Long"});                // NOI18N
                         connection.invoke(activationTask, "waitForTaskCompletion", null, null);
                     }
-
-
                 });
             }
-            catch ( UnableLockException e ){
+            catch (UnableLockException e) {
                 failNotify();
             }
-            catch ( MBeanException e ){
+            catch (MBeanException e) {
                 Exception targetException = e.getTargetException();
                 if ( targetException.getClass().getCanonicalName().equals(
-                        "weblogic.management.mbeanservers.edit.EditTimedOutException"))
-                {
+                        "weblogic.management.mbeanservers.edit.EditTimedOutException")) {
                     failNotify();
                 }
             }
@@ -564,117 +549,18 @@ class JdbcRetriever {
             }
             cookie.refresh();
         }
-        
+
         private void failNotify(){
             NotifyDescriptor notDesc = new NotifyDescriptor.Message(
                     NbBundle.getMessage(JdbcRetriever.class, "MSG_UnableUnregister"),
                     NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(notDesc);
         }
-        
-        private String resourceName;
-        private RefreshModulesCookie cookie;
-        private Lookup lookup;
     }
-    
-    private static class JDBCDataBean {
-        JDBCDataBean( String poolName , String[] jndiNames ){
-            this( poolName , jndiNames , null);
-        }
-        
-        JDBCDataBean( String poolName , String[] jndiNames , String deploymentName){
-            name = poolName;
-            this.jndiNames = jndiNames;
-            this.deploymentName = deploymentName;
-        }
-        
-        String getName(){
-            return name;
-        }
-        
-        String[] getJndiNames(){
-            return jndiNames;
-        }
-        
-        boolean isApplication(){
-            return deploymentName != null;
-        }
-        
-        String getDeploymentName(){
-            return deploymentName; 
-        }
-        
-        private String name;
-        private String  jndiNames[];
-        private String deploymentName;
-    }
-    
+
     private static class UnableLockException extends Exception {
 
         private static final long serialVersionUID = 1491526792800773444L;
 
     }
-    
-    private static class JdbcConfigHandler extends DefaultHandler {
-        private static final String DATA_SOURCE_PARAMS = "jdbc-data-source-params";
-        
-        @Override
-        public void startElement( String uri, String localName, String qName,
-                Attributes attributes ) throws SAXException
-        {
-            content = null;
-            if ( DATA_SOURCE_PARAMS.equals(getUnprefixedName(qName))){        // NOI18N
-                dataSourceParamsStarted = true;
-            }
-        }
-        
-        @Override
-        public void endElement( String uri, String localName, String qName )
-                throws SAXException
-        {
-            if ( name == null && "name".equals(getUnprefixedName(qName))){         // NOI18N
-                name = content;
-            }
-            else if ( DATA_SOURCE_PARAMS.equals(getUnprefixedName(qName))){        // NOI18N
-                dataSourceParamsStarted = false;
-            }
-            else if ( dataSourceParamsStarted && "jndi-name".equals(//NOI18N
-                    getUnprefixedName(qName)))
-            {
-                jndiNames.add( content );
-            }
-        }
-        
-        @Override
-        public void characters(char[] ch, int start, int length) {
-            content = new String(ch, start, length);
-        }
-        
-        String getName(){
-            return name;
-        }
-        
-        List<String> getJndiNames(){
-            return jndiNames;
-        }
-        
-        private String getUnprefixedName( String name ){
-            if ( name.contains(":")){
-                return name.substring(name.indexOf(":")+1);
-            }
-            else {
-                return name;
-            }
-        }
-        
-        private String content;
-        private String name;
-        private boolean dataSourceParamsStarted;
-        private List<String> jndiNames = new LinkedList<String>();
-    }
-    
-
-    private AtomicReference<List<JDBCDataBean>> data;
-    private boolean isRetrieveStarted;
-    private Lookup lookup;
 }
