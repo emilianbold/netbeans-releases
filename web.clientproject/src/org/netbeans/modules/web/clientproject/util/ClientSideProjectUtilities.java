@@ -210,6 +210,7 @@ public final class ClientSideProjectUtilities {
         Sources sources = ProjectUtils.getSources(project);
         List<SourceGroup> res = new ArrayList<SourceGroup>();
         res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5)));
+        res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT)));
         res.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST)));
         return res.toArray(new SourceGroup[res.size()]);
     }
@@ -268,7 +269,7 @@ public final class ClientSideProjectUtilities {
         USG_LOGGER.log(logRecord);
     }
 
-    public static boolean isBroken(ClientSideProject project) {
+    public static boolean hasErrors(ClientSideProject project) {
         return !project.getLookup().lookup(ProjectProblemsProvider.class).getProblems().isEmpty();
     }
 
