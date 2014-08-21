@@ -209,7 +209,7 @@
         </folder>
     </folder>
 
-    <folder name="Actions">
+    <!--folder name="Actions">
         <folder name="Project">
             <file name="org-netbeans-modules-cnd-remote-projectui-actions-ProjectRenameAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.remote.projectui.actions.ProjectRenameAction"/>
@@ -255,6 +255,6 @@
                 </file>
             </folder>
         </folder>
-    </folder>
+    </folder-->
 
 </filesystem>
