@@ -292,4 +292,15 @@ public final class ClientSideProjectUtilities {
         return new Color(red, green, blue);
     }
 
+    public static boolean isParentOrItself(@NullAllowed FileObject folder, @NullAllowed FileObject fo) {
+        if (folder == null
+                || fo == null) {
+            return false;
+        }
+        if (folder.equals(fo)) {
+            return true;
+        }
+        return FileUtil.isParentOf(folder, fo);
+    }
+
 }
