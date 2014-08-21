@@ -845,16 +845,16 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         Pair<URL, FileObject> root = null;
 
         if (fo != null) {
-            if (source == null || source.booleanValue()) {
+            if (source == null || source) {
                 root = getOwningSourceRoot (fo);
                 if (root != null && fo.isData() && visibilitySupport.isVisible(fo, root.second())) {
-                    String relativePath = null;
+                    String relativePath;
                     try {
                     //Root may be deleted -> no root.second available
                         if (root.second() != null) {
                             relativePath = FileUtil.getRelativePath(root.second(), fo);
                         } else {
-                            relativePath = root.first().toURI().relativize(fo.getURL().toURI()).getPath();
+                            relativePath = root.first().toURI().relativize(fo.toURI()).getPath();
                         }
                         assert relativePath != null : "FileObject not under root: f=" + fo + ", root=" + root; //NOI18N
                         final Work wrk = new DeleteWork(
@@ -866,8 +866,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 addFiles(Collections.singleton(fo.toURL())));
                         eventQueue.record(FileEventLog.FileOp.DELETE, root.first(), relativePath, fe, wrk);
                         processed = true;
-                    } catch (FileStateInvalidException fse) {
-                        Exceptions.printStackTrace(fse);
                     } catch (URISyntaxException use) {
                         Exceptions.printStackTrace(use);
                     }
@@ -1440,23 +1438,19 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
             } else {
                 // an odd event, maybe we could just ignore it
-                try {
-                    FileObject f = Util.getFileObject(document);
-                    Collection<URL> c = Collections.singleton(f.getURL());
-                    addIndexingJob(
-                        root.first(),
-                        c,
-                        false,
-                        true,
-                        false,
-                        true,
-                        true,
-                        LogContext.create(LogContext.EventType.FILE, null).
-                            withRoot(root.first()).
-                            addFiles(c));
-                } catch (FileStateInvalidException ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
-                }
+                FileObject f = Util.getFileObject(document);
+                Collection<URL> c = Collections.singleton(f.toURL());
+                addIndexingJob(
+                    root.first(),
+                    c,
+                    false,
+                    true,
+                    false,
+                    true,
+                    true,
+                    LogContext.create(LogContext.EventType.FILE, null).
+                        withRoot(root.first()).
+                        addFiles(c));
             }
         }
     }
@@ -1586,31 +1580,27 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
             clone = new ArrayList<URL> (this.scannedRoots2Dependencies.keySet());
         }
-        
+
         assert file != null;
         URL owningSourceRootUrl = null;
         FileObject owningSourceRoot = null;
 
         for (URL root : clone) {
-            try {
-                FileObject rootFo = URLCache.getInstance().findFileObject(root, false);
-                if (rootFo != null) {
-                    if (rootFo.equals(file) || FileUtil.isParentOf(rootFo,file)) {
-                        owningSourceRootUrl = root;
-                        owningSourceRoot = rootFo;
-                        break;
-                    }
-                } else if (file.getURL().toExternalForm().startsWith(root.toExternalForm())) {
+            FileObject rootFo = URLCache.getInstance().findFileObject(root, false);
+            if (rootFo != null) {
+                if (rootFo.equals(file) || FileUtil.isParentOf(rootFo,file)) {
                     owningSourceRootUrl = root;
                     owningSourceRoot = rootFo;
                     break;
                 }
-            } catch (FileStateInvalidException fsi) {
-                Exceptions.printStackTrace(fsi);
+            } else if (file.toURL().toExternalForm().startsWith(root.toExternalForm())) {
+                owningSourceRootUrl = root;
+                owningSourceRoot = rootFo;
+                break;
             }
         }
 
-        synchronized (lastOwningSourceRootCacheLock) {        
+        synchronized (lastOwningSourceRootCacheLock) {
             if (owningSourceRootUrl != null) {
                 if (doc != null && file.isValid()) {
                     assert owningSourceRoot != null : "Expecting both owningSourceRootUrl=" + owningSourceRootUrl + " and owningSourceRoot=" + owningSourceRoot; //NOI18N
@@ -1631,15 +1621,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         if (fo == null) {
             return null;
         }
-        String foPath;
-        try {
-            foPath = fo.getURL().getPath();
-        } catch (FileStateInvalidException fsie) {
-            LOGGER.log(Level.WARNING, null, fsie);
-            return null;
-        }
-
-        List<URL> clone = new ArrayList<URL>(this.scannedBinaries2InvDependencies.keySet());
+        final String foPath = fo.toURL().getPath();
+        List<URL> clone = new ArrayList<>(this.scannedBinaries2InvDependencies.keySet());
         for (URL root : clone) {
             URL fileURL = FileUtil.getArchiveFile(root);
             boolean archive = true;
@@ -1663,24 +1646,22 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     value="DMI_BLOCKING_METHODS_ON_URL",
     justification="URLs have never host part")
     private static ClassPath.Entry getClassPathEntry (final FileObject root) {
-        try {
-            if (root != null) {
-                Set<String> ids = PathRegistry.getDefault().getSourceIdsFor(root.getURL());
-                if (ids != null) {
-                    for (String id : ids) {
-                        ClassPath cp = ClassPath.getClassPath(root, id);
-                        if (cp != null) {
-                            URL rootURL = root.getURL();
-                            for (ClassPath.Entry e : cp.entries()) {
-                                if (rootURL.equals(e.getURL())) {
-                                    return e;
-                                }
+        if (root != null) {
+            Set<String> ids = PathRegistry.getDefault().getSourceIdsFor(root.toURL());
+            if (ids != null) {
+                for (String id : ids) {
+                    ClassPath cp = ClassPath.getClassPath(root, id);
+                    if (cp != null) {
+                        URL rootURL = root.toURL();
+                        for (ClassPath.Entry e : cp.entries()) {
+                            if (rootURL.equals(e.getURL())) {
+                                return e;
                             }
                         }
                     }
                 }
             }
-        } catch (FileStateInvalidException fsie) {}
+        }
         return null;
     }
 
@@ -4985,14 +4966,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 final boolean upToDate;
                 final long currentLastModified;
                 if (file != null) {
-                    final Pair<Long,Map<Pair<String,Integer>,Integer>> lastState = ArchiveTimeStamps.getLastModified(file.getURL());
+                    final Pair<Long,Map<Pair<String,Integer>,Integer>> lastState = ArchiveTimeStamps.getLastModified(file.toURL());
                     final boolean indexersUpToDate = checkBinaryIndexers(lastState, contexts);
                     currentLastModified = file.lastModified().getTime();
                     upToDate = indexersUpToDate && lastState.first() ==  currentLastModified;
                 } else {
                     currentLastModified = -1L;
                     upToDate = false;
-                }                
+                }
                 try {
                     binaryScanStarted(root, upToDate, contexts, startedIndexers);
                     updateProgress(root, true);
