@@ -1759,6 +1759,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         final List<URL> deps = new LinkedList<URL>();
         final List<URL> peers = new LinkedList<URL>();
+        boolean incomplete = false;
         ctx.cycleDetector.push(rootURL);
         try {
             if (sourceIds == null || libraryIds == null || binaryLibraryIds == null) {
@@ -1815,6 +1816,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                     final ClassPath cp = ClassPath.getClassPath(rootFo, id);
                     if (cp != null) {
+                        incomplete |= PathRegistry.isIncompleteClassPath(cp);
                         for (ClassPath.Entry entry : cp.entries()) {
                             if (cancelRequest.isRaised()) {
                                 return false;
@@ -1837,6 +1839,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                         ClassPath cp = ClassPath.getClassPath(rootFo, id);
                         if (cp != null) {
+                            incomplete |= PathRegistry.isIncompleteClassPath(cp);
                             for (ClassPath.Entry entry : cp.entries()) {
                                 if (cancelRequest.isRaised()) {
                                     return false;
@@ -1875,6 +1878,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                     ClassPath cp = ClassPath.getClassPath(rootFo, id);
                     if (cp != null) {
+                        incomplete |= PathRegistry.isIncompleteClassPath(cp);
                         for (ClassPath.Entry entry : cp.entries()) {
                             if (cancelRequest.isRaised()) {
                                 return false;
@@ -1958,9 +1962,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         } finally {
             ctx.cycleDetector.pop();
         }
-
-        ctx.newRoots2Deps.put(rootURL, deps);
-        ctx.newRoots2Peers.put(rootURL,peers);
+        if (!incomplete || ctx.initialRoots2Deps.containsKey(rootURL)) {
+            ctx.newRoots2Deps.put(rootURL, deps);
+            ctx.newRoots2Peers.put(rootURL,peers);
+        }
         return true;
     }
 
@@ -3610,29 +3615,32 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         protected @Override boolean getDone() {
-            updateProgress(root, false);
-            if (scanFiles(root, files, forceRefresh, sourceForBinaryRoot)) {
-                // if we are refreshing a specific set of files, try to update
-                // their document versions
-                if (!files.isEmpty()) {
-                    Map<FileObject, Document> f2d = getEditorFiles();
-                    for(FileObject f : files) {
-                        Document d = f2d.get(f);
-                        if (d != null) {
-                            long version = DocumentUtilities.getDocumentVersion(d);
-                            d.putProperty(PROP_LAST_INDEXED_VERSION, version);
-                            d.putProperty(PROP_LAST_DIRTY_VERSION, null);
+            if (scannedRoots2Depencencies.keySet().contains(root) ||
+                !PathRegistry.getDefault().isIncompleteRoot(root)) {
+                updateProgress(root, false);
+                if (scanFiles(root, files, forceRefresh, sourceForBinaryRoot)) {
+                    // if we are refreshing a specific set of files, try to update
+                    // their document versions
+                    if (!files.isEmpty()) {
+                        Map<FileObject, Document> f2d = getEditorFiles();
+                        for(FileObject f : files) {
+                            Document d = f2d.get(f);
+                            if (d != null) {
+                                long version = DocumentUtilities.getDocumentVersion(d);
+                                d.putProperty(PROP_LAST_INDEXED_VERSION, version);
+                                d.putProperty(PROP_LAST_DIRTY_VERSION, null);
+                            }
                         }
                     }
-                }
 
-                //If the root is unknown add it into scannedRoots2Depencencies to allow listening on changes under this root
-                if (!scannedRoots2Depencencies.containsKey(root)) {
-                    scannedRoots2Depencencies.put(root, UNKNOWN_ROOT);
+                    //If the root is unknown add it into scannedRoots2Depencencies to allow listening on changes under this root
+                    if (!scannedRoots2Depencencies.containsKey(root)) {
+                        scannedRoots2Depencencies.put(root, UNKNOWN_ROOT);
+                    }
                 }
+                TEST_LOGGER.log(Level.FINEST, "filelist"); //NOI18N
+                refreshActiveDocument();
             }
-            TEST_LOGGER.log(Level.FINEST, "filelist"); //NOI18N
-            refreshActiveDocument();
             return true;
         }
 

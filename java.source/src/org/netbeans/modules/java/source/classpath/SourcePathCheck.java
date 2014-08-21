@@ -85,26 +85,30 @@ public class SourcePathCheck extends JavaParserResultTask {
         final CompilationInfo info = CompilationInfo.get(result);
         final ClasspathInfo cpInfo = info.getClasspathInfo();
         if (cpInfo != null) {
-            final ClassPath cachedSrc = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, PathKind.SOURCE);
             final ClassPath src = cpInfo.getClassPath(PathKind.SOURCE);
-            try {
-                final Set<URL> unknown = new HashSet<URL>();
-                if (cachedSrc.entries().isEmpty() && !src.entries().isEmpty()) {
-                    for (ClassPath.Entry entry : src.entries()) {
-                        final URL url = entry.getURL();
-                        if (!this.factory.firedFor.contains(url) &&
-                                !JavaIndex.hasSourceCache(url,false) &&
-                                FileOwnerQuery.getOwner(url.toURI()) != null) {
-                            unknown.add(url);
-                            this.factory.firedFor.add(url);
+            final ClassPath boot = cpInfo.getClassPath(PathKind.BOOT);
+            final ClassPath compile = cpInfo.getClassPath(PathKind.COMPILE);
+            if (!isIncomplete(src, boot, compile)) {
+                final ClassPath cachedSrc = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, PathKind.SOURCE);
+                try {
+                    final Set<URL> unknown = new HashSet<URL>();
+                    if (cachedSrc.entries().isEmpty() && !src.entries().isEmpty()) {
+                        for (ClassPath.Entry entry : src.entries()) {
+                            final URL url = entry.getURL();
+                            if (!this.factory.firedFor.contains(url) &&
+                                    !JavaIndex.hasSourceCache(url,false) &&
+                                    FileOwnerQuery.getOwner(url.toURI()) != null) {
+                                unknown.add(url);
+                                this.factory.firedFor.add(url);
+                            }
                         }
-                    }                
+                    }
+                    if (!unknown.isEmpty()) {
+                        PathRegistry.getDefault().registerUnknownSourceRoots(src, unknown);
+                    }
+                } catch (URISyntaxException e) {
+                    Exceptions.printStackTrace(e);
                 }
-                if (!unknown.isEmpty()) {
-                    PathRegistry.getDefault().registerUnknownSourceRoots(src, unknown);
-                }
-            } catch (URISyntaxException e) {
-                Exceptions.printStackTrace(e);
             }
         }
     }
@@ -121,6 +125,15 @@ public class SourcePathCheck extends JavaParserResultTask {
 
     @Override
     public void cancel() {        
+    }
+
+    private static boolean isIncomplete(ClassPath... cps) {
+        for (ClassPath cp : cps) {
+            if (cp.getFlags().contains(ClassPath.Flag.INCOMPLETE)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static final class Factory extends TaskFactory {

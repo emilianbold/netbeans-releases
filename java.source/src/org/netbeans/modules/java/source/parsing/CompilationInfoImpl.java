@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -68,18 +69,23 @@ import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
 /**
@@ -397,7 +403,7 @@ public final class CompilationInfoImpl {
      */
     public synchronized JavacTaskImpl getJavacTask() {
         if (javacTask == null) {
-            diagnosticListener = new DiagnosticListenerImpl(this.jfo);
+            diagnosticListener = new DiagnosticListenerImpl(this.root, this.jfo, this.cpInfo);
             javacTask = JavacParser.createJavacTask(this.file, this.root, this.cpInfo,
                     this.parser, diagnosticListener, null, isDetached);
         }
@@ -482,7 +488,9 @@ public final class CompilationInfoImpl {
     static class DiagnosticListenerImpl implements DiagnosticListener<JavaFileObject> {
         
         private final Map<JavaFileObject, TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>>> source2Errors;
+        private final FileObject root;
         private final JavaFileObject jfo;
+        private final ClasspathInfo cpInfo;
         private volatile List<Diagnostic<? extends JavaFileObject>> partialReparseErrors;
         /**
          * true if the partialReparseErrors contain some non-warning
@@ -491,8 +499,13 @@ public final class CompilationInfoImpl {
         private volatile List<Diagnostic<? extends JavaFileObject>> affectedErrors;
         private volatile int currentDelta;
         
-        public DiagnosticListenerImpl(final JavaFileObject jfo) {
+        public DiagnosticListenerImpl(
+                @NullAllowed final FileObject root,
+                @NullAllowed final JavaFileObject jfo,
+                @NonNull final ClasspathInfo cpInfo) {
+            this.root = root;
             this.jfo = jfo;
+            this.cpInfo = cpInfo;
             this.source2Errors = new HashMap<JavaFileObject, TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>>>();
         }
         
@@ -518,13 +531,33 @@ public final class CompilationInfoImpl {
         }
 
         private TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>> getErrors(JavaFileObject file) {
-                TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>> errors = source2Errors.get(file);
-
+            TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>> errors;
+            if (isIncompleteClassPath()) {
+                if (root != null && JavaIndex.hasSourceCache(root.toURL(), false)) {
+                    errors = source2Errors.get(file);
+                    if (errors == null) {
+                        source2Errors.put(file, errors = new TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>>());
+                        if (this.jfo != null && this.jfo == file) {
+                            errors.put(
+                                -1,
+                                Collections.<Diagnostic<? extends JavaFileObject>>singleton(new IncompleteClassPath(this.jfo)));
+                        }
+                    }
+                } else {
+                    errors = new TreeMap<>();
+                    if (this.jfo != null && this.jfo == file) {
+                        errors.put(
+                            -1,
+                            Collections.<Diagnostic<? extends JavaFileObject>>singleton(new IncompleteClassPath(this.jfo)));
+                    }
+                }
+            } else {
+                errors = source2Errors.get(file);
                 if (errors == null) {
                     source2Errors.put(file, errors = new TreeMap<Integer, Collection<Diagnostic<? extends JavaFileObject>>>());
                 }
-
-                return errors;
+            }
+            return errors;
         }
         
         final boolean hasPartialReparseErrors () {
@@ -567,8 +600,14 @@ public final class CompilationInfoImpl {
                 result.put(entry.getKey(), Arrays.asList(entry.getValue()));
             }
             return result;
-        } 
-        
+        }
+
+        private boolean isIncompleteClassPath() {
+            return cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT).getFlags().contains(ClassPath.Flag.INCOMPLETE) ||
+            cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE).getFlags().contains(ClassPath.Flag.INCOMPLETE) ||
+            cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE).getFlags().contains(ClassPath.Flag.INCOMPLETE);
+        }
+
         private final class D implements Diagnostic {
             
             private final JCDiagnostic delegate;
@@ -635,6 +674,62 @@ public final class CompilationInfoImpl {
                 return this.delegate.getMessage(locale);
             }
             
+        }
+
+        private static final class IncompleteClassPath implements Diagnostic<JavaFileObject> {
+
+            private final JavaFileObject file;
+
+            IncompleteClassPath(final JavaFileObject file) {
+                this.file = file;
+            }
+
+            @Override
+            public Kind getKind() {
+                return Kind.WARNING;
+            }
+
+            @Override
+            public JavaFileObject getSource() {
+                return file;
+            }
+
+            @Override
+            public long getPosition() {
+                return -1;
+            }
+
+            @Override
+            public long getStartPosition() {
+                return getPosition();
+            }
+
+            @Override
+            public long getEndPosition() {
+                return getPosition();
+            }
+
+            @Override
+            public long getLineNumber() {
+                return getPosition();
+            }
+
+            @Override
+            public long getColumnNumber() {
+                return getPosition();
+            }
+
+            @Override
+            public String getCode() {
+                return "nb.classpath.incomplete";   //NOI18N
+            }
+
+            @Override
+            public String getMessage(Locale locale) {
+                return NbBundle.getMessage(
+                    CompilationInfoImpl.class,
+                    "ERR_IncompleteClassPath");
+            }
         }
     }
 
