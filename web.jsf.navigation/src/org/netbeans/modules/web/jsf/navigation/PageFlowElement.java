@@ -246,7 +246,6 @@ public class PageFlowElement extends CloneableEditor implements MultiViewElement
                 //save changes
                 try {
                     getEditorSupport().saveDocument();
-                    getEditorSupport().getDataObject().setModified(false);
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, "File {0} couldn''t be saved.", context.getFacesConfigFile().getName());
                 }
