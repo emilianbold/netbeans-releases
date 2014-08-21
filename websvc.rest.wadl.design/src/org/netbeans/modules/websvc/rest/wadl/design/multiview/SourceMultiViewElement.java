@@ -281,7 +281,6 @@ public class SourceMultiViewElement extends CloneableEditor
                         //save changes
                         try {
                             wadlDataObject.getWadlEditorSupport().saveDocument();
-                            wadlDataObject.setModified(false);
                         } catch (IOException ex) {
                         }
                     }
