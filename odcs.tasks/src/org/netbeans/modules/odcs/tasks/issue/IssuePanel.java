@@ -628,6 +628,7 @@ public class IssuePanel extends javax.swing.JPanel {
         if(descriptionPanel != null) {
             descriptionPanel.setVisible(!isNew);
         }
+        privateDueDatePicker.getComponent().setEnabled(false);
         
         final String parentId = issue.getParentId();
         boolean hasParent = (parentId != null) && (parentId.trim().length() > 0);
@@ -732,7 +733,6 @@ public class IssuePanel extends javax.swing.JPanel {
             NbDateRange scheduleDate = issue.getScheduleDate();
             scheduleDatePicker.setScheduleDate(scheduleDate == null ? null : scheduleDate.toSchedulingInfo());
             privateEstimateField.setValue(issue.getEstimate());
-            privateDueDatePicker.getComponent().setEnabled(false);
         }
 
         reloadField(ownerCombo, IssueField.OWNER);
@@ -1548,6 +1548,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     Date dueDate = dueDatePicker.getDate();
                     String value = dueDate == null ? "" : Long.toString(dueDate.getTime()); //NOI18N
                     storeFieldValue(IssueField.DUEDATE, value); //NOI18N
+                    privateDueDatePicker.setDate(dueDate);
                     updateDecorations();
                 }
             }
@@ -1581,15 +1582,6 @@ public class IssuePanel extends javax.swing.JPanel {
             @Override
             protected boolean storeValue () {
                 issue.setTaskPrivateNotes(privateNotesField.getText());
-                return true;
-            }
-        });
-        privateDueDatePicker.addChangeListener(new DatePickerListener(privateDueDatePicker.getComponent(),
-                ATTRIBUTE_DUE_DATE, privateDueDateLabel) {
-
-            @Override
-            protected boolean storeValue () {
-                issue.setTaskDueDate(privateDueDatePicker.getDate(), false);
                 return true;
             }
         });
