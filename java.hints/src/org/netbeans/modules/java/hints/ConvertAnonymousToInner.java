@@ -543,7 +543,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
         
         ClassTree clazz = make.Class(classModifiers, newClassName, Collections.<TypeParameterTree>emptyList(), superTypeElement.getKind().isClass() ? superTypeTree : null, superTypeElement.getKind().isClass() ? Collections.<Tree>emptyList() : Collections.<Tree>singletonList(superTypeTree), members);
         
-        copy.rewrite(target, make.addClassMember(target, clazz));
+        copy.rewrite(target, make.addClassMember(target, copy.getTreeMaker().asReplacementOf(clazz, nct)));
 
         IdentifierTree classNameTree = make.Identifier(newClassName);
         NewClassTree nueNCT = make.NewClass(/*!!!*/null, Collections.<ExpressionTree>emptyList(), classNameTree, constrRealArguments, null);

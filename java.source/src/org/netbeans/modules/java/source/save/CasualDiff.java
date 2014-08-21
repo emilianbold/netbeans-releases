@@ -849,8 +849,9 @@ public class CasualDiff {
         Name origName = printer.enclClassName;
         printer.enclClassName = newT.getSimpleName();
         PositionEstimator est = EstimatorFactory.members(filteredOldTDefs, filteredNewTDefs, diffContext);
-        if (localPointer < insertHint)
-            copyTo(localPointer, insertHint);
+        localPointer = copyUpTo(localPointer, insertHint);
+        // diff inner comments
+        insertHint = diffInnerComments(oldT, newT, insertHint);
         if ((newT.mods.flags & Flags.ENUM) != 0 && !filteredNewTDefs.isEmpty()) {
             // also cover the case when the last const is removed for some reason, the semicolon should auto appear
             boolean constMissing = filteredOldTDefs.isEmpty();
@@ -3767,6 +3768,10 @@ public class CasualDiff {
     }
     
     protected int diffInnerComments(JCTree oldT, JCTree newT, int localPointer) {
+        if (innerCommentsProcessed) {
+            return localPointer;
+        }
+        innerCommentsProcessed = true;
         CommentSet cs = getCommentsForTree(newT, true);
         CommentSet old = getCommentsForTree(oldT, true);
         List<Comment> oldPrecedingComments = old.getComments(CommentSet.RelativePosition.INNER);
@@ -3779,7 +3784,7 @@ public class CasualDiff {
             copyTo(localPointer, newP);
             return newP;
         }
-        return diffCommentLists(-1, oldPrecedingComments, newPrecedingComments, null, null, true, false, true,
+        return diffCommentLists(getOldPos(oldT), oldPrecedingComments, newPrecedingComments, null, null, true, false, true,
                 false,
                 localPointer);
     }
@@ -3809,7 +3814,7 @@ public class CasualDiff {
                 doNotDelete,
                 localPointer);
     }
-
+    
     protected int diffTrailingComments(JCTree oldT, JCTree newT, int localPointer, int elementEndWithComments) {
         CommentSet cs = getCommentsForTree(newT, false);
         CommentSet old = getCommentsForTree(oldT, false);
@@ -4765,8 +4770,25 @@ public class CasualDiff {
         scn.scan(t, null);
         return Math.max(scn.max, end);
     }
+    
+    /**
+     * True, if inner comments have been processed by a specialized code, or they will be printed after the tree.
+     * Inner comments are used rarely, but e.g. blocks and classes use inner comments if they have empty body.
+     * The flag is valid only throughout invocation of {@link #diffTreeImpl}. It is reset at the start in a hope
+     * that custom code will properly place inner comments and sets the flag. If it is still unset at the end of the method,
+     * diffTreeImpl will print the comments. At the end, the flag is reset to the original value
+     */
+    private boolean innerCommentsProcessed;
 
     protected int diffTreeImpl(JCTree oldT, JCTree newT, JCTree parent /*used only for modifiers*/, int[] elementBounds) {
+        boolean saveInnerComments = this.innerCommentsProcessed;
+        int ret = diffTreeImpl0(oldT, newT, parent, elementBounds);
+        this.innerCommentsProcessed = saveInnerComments;
+        return ret;
+    }
+    
+    private int diffTreeImpl0(JCTree oldT, JCTree newT, JCTree parent /*used only for modifiers*/, int[] elementBounds) {
+        innerCommentsProcessed = false;
         if (oldT == null && newT != null)
             throw new IllegalArgumentException("Null is not allowed in parameters.");
 
@@ -5049,6 +5071,9 @@ public class CasualDiff {
         }
         if (handleImplicitLambda) {
             printer.print(")");
+        }
+        if (!innerCommentsProcessed) {
+            retVal = diffInnerComments(oldT, newT, retVal);
         }
         int endComment = getCommentCorrectedEndPos(oldT);
         return diffTrailingComments(oldT, newT, retVal, endComment);

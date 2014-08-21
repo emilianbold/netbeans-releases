@@ -778,6 +778,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         if (cs.spaceBeforeClassDeclLeftBrace())
             needSpace();
 	print('{');
+        printInnerCommentsAsTrailing(tree, true);
         java.util.List<JCTree> members = CasualDiff.filterHidden(diffContext, tree.defs);
 	if (!members.isEmpty()) {
 	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesAfterAnonymousClassHeader() : (flags & ENUM) != 0 ? cs.getBlankLinesAfterEnumHeader() : cs.getBlankLinesAfterClassHeader());
@@ -2780,15 +2781,16 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 	if (emptyBlock) {
             printEmptyBlockComments(tree, members);
         } else {
-            innerCommentsHandled.add(tree);
-            java.util.List<Comment> comments = commentHandler.getComments(tree).getComments(CommentSet.RelativePosition.INNER);
-            for (Comment c : comments) {
-                printComment(c, false, members);
+            if (innerCommentsHandled.add(tree)) {
+                java.util.List<Comment> comments = commentHandler.getComments(tree).getComments(CommentSet.RelativePosition.INNER);
+                for (Comment c : comments) {
+                    printComment(c, false, members);
+                }
+                if (members)
+                    blankLines(cs.getBlankLinesAfterAnonymousClassHeader());
+                else
+                    newline();
             }
-            if (members)
-                blankLines(cs.getBlankLinesAfterAnonymousClassHeader());
-            else
-                newline();
 	    printStats(stats, members);
         }
         toColExactly(bcol);
@@ -2910,7 +2912,9 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 //                }
 //            }
 //        }
-        innerCommentsHandled.add(tree);
+        if (!innerCommentsHandled.add(tree)) {
+            return;
+        }
         java.util.List<Comment> comments = commentHandler.getComments(tree).getComments(CommentSet.RelativePosition.INNER);
         for (Comment c : comments)
             printComment(c, false, printWhitespace);
