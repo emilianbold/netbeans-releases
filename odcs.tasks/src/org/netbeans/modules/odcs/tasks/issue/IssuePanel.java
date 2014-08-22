@@ -3203,7 +3203,7 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_iterationComboActionPerformed
 
     private void parentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parentButtonActionPerformed
-        findIssue(parentField, "IssuePanel.parentButton.message", "org.netbeans.modules.odcs.parentChooser", true); // NOI18N
+        findIssue(parentField, "IssuePanel.parentButton.message", "org.netbeans.modules.odcs.parentChooser", false); // NOI18N
     }//GEN-LAST:event_parentButtonActionPerformed
 
     private void subtaskButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_subtaskButtonActionPerformed
