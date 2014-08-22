@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -90,7 +91,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     private void init() {
         jProjectFolderTextField.setText(FileUtil.getFileDisplayName(project.getProjectDirectory()));
         jSiteRootFolderTextField.setText(beautifyPath(getSiteRootPath()));
-        jTestFolderTextField.setText(beautifyPath(uiProperties.getTestFolder()));
+        jTestFolderTextField.setText(beautifyPath(uiProperties.getTestFolder().get()));
         jEncodingComboBox.setModel(ProjectCustomizer.encodingModel(uiProperties.getEncoding()));
         jEncodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
     }
@@ -98,14 +99,15 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     private String getSiteRootPath() {
         String siteRootPath = null;
         File siteRoot = uiProperties.getResolvedSiteRootFolder();
-        if (siteRoot.exists()) {
+        if (siteRoot != null
+                && siteRoot.exists()) {
             FileObject siteRootFO = FileUtil.toFileObject(siteRoot);
             if (siteRootFO != null) {
                 siteRootPath = FileUtil.getRelativePath(project.getProjectDirectory(), siteRootFO);
             }
         }
         if (siteRootPath == null) {
-            siteRootPath = uiProperties.getSiteRootFolder();
+            siteRootPath = uiProperties.getSiteRootFolder().get();
         }
         return siteRootPath;
     }
@@ -129,7 +131,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void validateData() {
         ValidationResult result = new ProjectFoldersValidator()
-                .validate(FileUtil.toFile(project.getProjectDirectory()), getSiteRootFolder(), getTestFolder())
+                .validate(getSiteRootFolder(), getTestFolder())
                 .getResult();
         // errors
         if (result.hasErrors()) {
@@ -150,9 +152,9 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void storeData() {
         File siteRootFolder = getSiteRootFolder();
-        uiProperties.setSiteRootFolder(siteRootFolder.getAbsolutePath());
+        uiProperties.setSiteRootFolder(new AtomicReference<>(siteRootFolder.getAbsolutePath()));
         File testFolder = getTestFolder();
-        uiProperties.setTestFolder(testFolder != null ? testFolder.getAbsolutePath() : ""); // NOI18N
+        uiProperties.setTestFolder(new AtomicReference<>(testFolder != null ? testFolder.getAbsolutePath() : null));
         uiProperties.setEncoding(getEncoding().name());
     }
 
@@ -210,7 +212,9 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     }
 
     private String beautifyPath(String path) {
-        if (path.startsWith("../../")) { // NOI18N
+        if (path == null) {
+            return ""; // NOI18N
+        } else if (path.startsWith("../../")) { // NOI18N
             File resolved = resolveFile(path);
             assert resolved != null : path;
             return resolved.getAbsolutePath();

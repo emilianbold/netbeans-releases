@@ -69,7 +69,7 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
 
     public void testValidate() {
         ValidationResult result = new ProjectFoldersValidator()
-                .validate(projectDir, siteRootDir, testDir)
+                .validate(siteRootDir, testDir)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -79,8 +79,7 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
         ValidationResult result = new ProjectFoldersValidator()
                 .validateSiteRootFolder(null)
                 .getResult();
-        assertFalse(result.getErrors().isEmpty());
-        assertEquals(ProjectFoldersValidator.SITE_ROOT_FOLDER, result.getErrors().get(0).getSource());
+        assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
     }
 
@@ -108,7 +107,7 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
 
     public void testNoTestFolder() {
         ValidationResult result = new ProjectFoldersValidator()
-                .validateTestFolder(projectDir, null)
+                .validateTestFolder(null)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -118,7 +117,7 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
         File readme = new File(projectDir, "readme.txt");
         assertTrue(readme.createNewFile());
         ValidationResult result = new ProjectFoldersValidator()
-                .validateTestFolder(projectDir, readme)
+                .validateTestFolder(readme)
                 .getResult();
         assertFalse(result.getErrors().isEmpty());
         assertEquals(ProjectFoldersValidator.TEST_FOLDER, result.getErrors().get(0).getSource());
@@ -129,7 +128,7 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
         testDir = new File(getWorkDir(), "topLevelDir");
         assertTrue(testDir.mkdir());
         ValidationResult result = new ProjectFoldersValidator()
-                .validateTestFolder(projectDir, testDir)
+                .validateTestFolder(testDir)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
