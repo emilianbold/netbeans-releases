@@ -78,6 +78,7 @@ import org.netbeans.modules.java.classpath.SimplePathResourceImplementation;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
+import org.netbeans.spi.java.classpath.FlaggedClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileAttributeEvent;
@@ -207,7 +208,13 @@ public final class ClassPath {
      * Name of the "entries" property
      */
     public static final String PROP_ENTRIES = "entries";
-    
+
+    /**
+     * Name of the "flags" property
+     * @since 1.43
+     */
+    public static final String PROP_FLAGS = "flags";
+
     /**
      * Property to be fired when include/exclude set changes.
      * @see FilteringPathResourceImplementation
@@ -597,6 +604,25 @@ public final class ClassPath {
     }
 
     /**
+     * Returns the {@link ClassPath}'s flags.
+     * @return the {@link Flag}s
+     * @since 1.44
+     */
+    @NonNull
+    public Set<Flag> getFlags() {
+        if (impl instanceof FlaggedClassPathImplementation) {
+            final Set<Flag> res = ((FlaggedClassPathImplementation)impl).getFlags();
+            assert res != null : String.format(
+                "ClassPathImplementation %s : %s returned null flags.", //NOI18N
+                impl,
+                impl.getClass());
+            return res;
+        } else {
+            return Collections.<Flag>emptySet();
+        }
+    }
+
+    /**
      * Find the classpath of a given type, if any, defined for a given file.
      * <p>This method may return null, if:</p>
      * <ul>
@@ -681,6 +707,18 @@ public final class ClassPath {
          * @see ClassPath#toString()
          */
         PRINT,
+    }
+
+    /**
+     * ClassPath's flags.
+     * @since 1.44
+     */
+    public enum Flag {
+        /**
+         * The incomplete {@link ClassPath} is ignored by language features
+         * unless it's resolved and the {@link INCOMPLETE} flag is removed.
+         */
+        INCOMPLETE
     }
 
     /**
@@ -1168,6 +1206,8 @@ public final class ClassPath {
                 if (fire) {
                     firePropertyChange(PROP_INCLUDES, null, null, evt.getPropagationId());
                 }
+            } else if (FlaggedClassPathImplementation.PROP_FLAGS.equals(prop)) {
+                firePropertyChange(PROP_FLAGS, null, null, null);
             }
             if (ClassPathImplementation.PROP_RESOURCES.equals(prop)) {
                 final List<? extends PathResourceImplementation> resources = impl.getResources();
