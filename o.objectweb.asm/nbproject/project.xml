@@ -3,11 +3,11 @@
    <type>org.netbeans.modules.apisupport.project</type>
    <configuration>
        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-           <code-name-base>org.ow2.asm</code-name-base>
+           <code-name-base>org.objectweb.asm</code-name-base>
            <module-dependencies/>
            <public-packages/>
            <class-path-extension>
-               <runtime-relative-path>org-ow2-asm.jar</runtime-relative-path>
+               <runtime-relative-path>org-objectweb-asm.jar</runtime-relative-path>
                <binary-origin>external/org-ow2-asm.jar</binary-origin>
             </class-path-extension>
         </data>

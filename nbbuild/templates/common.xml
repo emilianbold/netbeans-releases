@@ -225,7 +225,7 @@ made subject to such option by the copyright holder.
         <copy todir="${build.classes.dir}">
             <fileset dir="${src.dir}" excludes="${jar-excludes}"/>
         </copy>
-        <processjsannotation classes="${build.classes.dir}" asm="${o.ow2.asm.dir}/modules/org-ow2-asm.jar">
+        <processjsannotation classes="${build.classes.dir}" asm="${o.objectweb.asm.dir}/modules/org-objectweb-asm.jar">
             <classpath refid="cp"/>
         </processjsannotation>
     </target>
