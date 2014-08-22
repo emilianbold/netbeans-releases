@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.junit;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -89,6 +90,7 @@ import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.modules.maven.junit.nodes.JUnitTestRunnerNodeFactory;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -109,6 +111,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     private final RunConfig config;
     private boolean surefireRunningInParallel = false;
     private ArrayList<String> runningTestClasses;
+    private ArrayList<String> runningTestClassesInParallel;
     
     public JUnitOutputListenerProvider(RunConfig config) {
         runningPattern = Pattern.compile("(?:\\[surefire\\] )?Running (.*)", Pattern.DOTALL); //NOI18N
@@ -118,6 +121,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         usedNames = new HashSet<String>();
         startTimeStamp = System.currentTimeMillis();
         runningTestClasses = new ArrayList<String>();
+        runningTestClassesInParallel = new ArrayList<String>();
         surefireRunningInParallel = isSurefireRunningInParallel();
     }
     
@@ -192,18 +196,23 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             return;
         }
         match = runningPattern.matcher(line);
-        if (match.matches() && !surefireRunningInParallel) {
-            if (runningTestClass != null && outputDir != null) {
-                // match.group(1) should be the FQN of a running test class but let's check to be on the safe side
-                // If the matcher matches it means that we have a new test class running,
-                // if not it probably means that this is user's text, e.g. "Running my cool test", so we can safely ignore it
-                if (!isFullJavaId(match.group(1))) {
-                    return;
+        if (match.matches()) {
+            if (surefireRunningInParallel) {
+                // make sure results are displayed in case of a failure
+                runningTestClassesInParallel.add(match.group(1));
+            } else {
+                if (runningTestClass != null && outputDir != null) {
+                    // match.group(1) should be the FQN of a running test class but let's check to be on the safe side
+                    // If the matcher matches it means that we have a new test class running,
+                    // if not it probably means that this is user's text, e.g. "Running my cool test", so we can safely ignore it
+                    if (!isFullJavaId(match.group(1))) {
+                        return;
+                    }
+                    // tests are running sequentially, so update Test Results Window
+                    generateTest();
                 }
-                // tests are running sequentially, so update Test Results Window
-                generateTest();
+                runningTestClass = match.group(1);
             }
-            runningTestClass = match.group(1);
         }
         match = testSuiteStatsPattern.matcher(line);
         if (match.matches() && surefireRunningInParallel) {
@@ -219,6 +228,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                     return;
                 }
                 generateTest();
+                // runningTestClass did not fail so remove it from the list
+                runningTestClassesInParallel.remove(runningTestClass);
+                // runningTestClass might be the last one so make it null to avoid appearing twice when sequenceEnd() is called
+                runningTestClass = null;
             }
         }
     }
@@ -434,6 +447,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         session = null;
         surefireRunningInParallel = false;
         runningTestClasses = null;
+        runningTestClassesInParallel = null;
     }
 
     private static final Pattern COMPARISON_PATTERN = Pattern.compile(".*expected:<(.*)> but was:<(.*)>$"); //NOI18N
@@ -468,6 +482,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     }
 
     public @Override void sequenceFail(String sequenceId, OutputVisitor visitor) {
+        // try to get the failed test class. How can this be solved if it is not the first one in the list?
+        if(surefireRunningInParallel) {
+            runningTestClass = runningTestClassesInParallel.get(0);
+        }
         sequenceEnd(sequenceId, visitor);
     }
 
@@ -483,7 +501,16 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         }
         File report = new File(outputDir, "TEST-" + runningTestClass + suffix + ".xml");
         if (!report.isFile() || report.lastModified() < startTimeStamp) { //#219097 ignore results from previous invokation.
-            return;
+            if(surefireRunningInParallel) { // try waiting a bit to give time for the result file to be created
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            if (!report.isFile() || report.lastModified() < startTimeStamp) { // and now try again
+                return;
+            }
         }
         if (report.length() > 50 * 1024 * 1024) {
             LOG.log(Level.INFO, "Skipping report file as size is too big (> 50MB): {0}", report.getPath());
@@ -491,7 +518,22 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         }
         try {
             SAXBuilder builder = new SAXBuilder();
-            Document document = builder.build(report);
+            Document document = null;
+            try {
+                document = builder.build(report);
+            } catch (Exception x) {
+                try { // maybe the report file was not created yet, try waiting a bit and then try again
+                    Thread.sleep(500);
+                    document = builder.build(report);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (JDOMException ex) {
+                    LOG.log(Level.WARNING, "parsing " + report, x);
+                }
+            }
+            if(document == null) {
+                return;
+            }
             Element testSuite = document.getRootElement();
             assert "testsuite".equals(testSuite.getName()) : "Root name " + testSuite.getName(); //NOI18N
             TestSuite suite = new TestSuite(testSuite.getAttributeValue("name"));
@@ -562,9 +604,9 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             if (output.isFile()) {
                 Manager.getInstance().displayOutput(session, FileUtils.fileRead(output), false);
             }
-        } catch (JDOMException x) {
-            LOG.log(Level.INFO, "parsing " + report, x);
-        } catch (Exception x) {
+        } catch (IOException x) {
+            LOG.log(Level.WARNING, "parsing " + report, x);
+        } catch (ParseException x) {
             LOG.log(Level.WARNING, "parsing " + report, x);
         }
     }
