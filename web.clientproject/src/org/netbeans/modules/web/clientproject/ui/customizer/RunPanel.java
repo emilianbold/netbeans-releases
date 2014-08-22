@@ -238,6 +238,8 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         }
     }
 
+    // XXX
+    @CheckForNull
     private File getSiteRoot() {
         return uiProperties.getResolvedSiteRootFolder();
     }

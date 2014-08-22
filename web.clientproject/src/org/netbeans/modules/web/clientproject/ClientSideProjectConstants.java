@@ -49,6 +49,7 @@ public class ClientSideProjectConstants {
 
     // misc persistent project properties:
     public static final String PROJECT_ENCODING = "files.encoding"; //NOI18N
+    public static final String PROJECT_SOURCE_FOLDER = "source.folder"; //NOI18N
     public static final String PROJECT_SITE_ROOT_FOLDER = "site.root.folder"; //NOI18N
     public static final String PROJECT_TEST_FOLDER = "test.folder"; //NOI18N
     public static final String PROJECT_SERVER = "server"; //NOI18N
