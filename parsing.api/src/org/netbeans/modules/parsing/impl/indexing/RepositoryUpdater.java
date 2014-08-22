@@ -2605,6 +2605,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             contexts.put(key,value);
                         }
                         final boolean cifIsChanged = indexers.changedCifs != null && indexers.changedCifs.contains(cifInfo);
+                        @SuppressWarnings({"BoxedValueEquality"})
                         final boolean forceReindex = votes.get(factory) == Boolean.FALSE && allResources != null;
                         final boolean allFiles = cifIsChanged || forceReindex || (allResources != null && allResources.size() == resources.size());
                         if (forceReindex && resources.size() != allResources.size()) {
@@ -2622,7 +2623,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     });
                         }
                         SPIAccessor.getInstance().setAllFilesJob(value.second(), allFiles);
-                        List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<Iterable<Indexable>>();
+                        List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<>();
                         ClusteredIndexables usedCi = null;
                         for(String mimeType : cifInfo.getMimeTypes()) {
                             if ((cifIsChanged || forceReindex) && allResources != null && resources.size() != allResources.size()) {
@@ -2641,7 +2642,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             }
                         }
 
-                        Iterable<Indexable> indexables = new ProxyIterable<Indexable>(indexerIndexablesList);
+                        Iterable<Indexable> indexables = new ProxyIterable<>(indexerIndexablesList);
                         allIndexblesSentToIndexers.addAll(indexerIndexablesList);
 
                         parkWhileSuspended();
@@ -2650,12 +2651,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         }
 
                         final CustomIndexer indexer = factory.createIndexer();
-                        long tm1 = -1, tm2 = -1;
                         logStartIndexer(factory.getIndexerName());
                         SPIAccessor.getInstance().putProperty(value.second(), ClusteredIndexables.INDEX, usedCi);
                         int estimate = estimateCustomIndexingTime(factory);
+                        final long tm1 = System.currentTimeMillis();
                         try {
-                            tm1 = System.currentTimeMillis();
                             SamplerInvoker.start(getLogContext(), factory.getIndexerName(), estimate, root);
                             SPIAccessor.getInstance().index(indexer, indexables, value.second());
                         } catch (ThreadDeath td) {
@@ -2665,13 +2665,18 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         } finally {
                             SamplerInvoker.stop();
                         }
-                        tm2 = System.currentTimeMillis();
+                        final long tm2 = System.currentTimeMillis();
                         logIndexerTime(factory.getIndexerName(), (int)(tm2-tm1));
                         if (LOGGER.isLoggable(Level.FINE)) {
                             StringBuilder sb = printMimeTypes(cifInfo.getMimeTypes(), new StringBuilder());
-                            LOGGER.fine("Indexing source root " + root + " using " + indexer
-                                + "; mimeTypes=" + sb.toString()
-                                + "; took " + (tm1 != -1 && tm2 != -1 ? (tm2 - tm1) + "ms" : "unknown time")); //NOI18N
+                            LOGGER.log(
+                                Level.FINE,
+                                "Indexing source root {0} using {1}; mimeTypes={2}; took {3}",
+                                new Object[]{
+                                    root,
+                                    indexer,
+                                    sb,
+                                    (tm2 - tm1) + "ms"}); //NOI18N
                         }
                         InjectedTasksSupport.execute();
                     }
@@ -2685,7 +2690,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     if (allResources != null) {
                         boolean containsNewIndexers = false;
                         boolean forceReindex = false;
-                        final Set<EmbeddingIndexerFactory> reindexVoters = new HashSet<EmbeddingIndexerFactory>();
+                        final Set<EmbeddingIndexerFactory> reindexVoters = new HashSet<>();
                         final LogContext lc = getLogContext();
                         for(Collection<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
                             for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
@@ -2696,6 +2701,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     containsNewIndexers = true;
                                 }
                                 EmbeddingIndexerFactory eif = eifInfo.getIndexerFactory();
+                                @SuppressWarnings({"BoxedValueEquality"})
                                 boolean indexerVote = votes.get(eif) == Boolean.FALSE;
                                 if (indexerVote) {
                                     if (lc != null) {
@@ -2770,8 +2776,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             return false;
                         }
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine("Indexing " + mimeType + " embeddables under " + root
-                                + "; took " + (tm2 - tm1) + "ms"); //NOI18N
+                            LOGGER.log(
+                                Level.FINE,
+                               "Indexing {0} embeddables under {1}; took {2}ms",     //NOI18N
+                               new Object[]{
+                                   mimeType,
+                                   root,
+                                   tm2 - tm1
+                               });
                         }
                     }
                     return !getCancelRequest().isRaised();
@@ -2788,12 +2800,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 if (cheapFo != null) {
                     final Source src = SourceAccessor.getINSTANCE().get(cheapFo);
                     if (src != null) {
-                        SourceAccessor.getINSTANCE().setFlags(src, EnumSet.of(SourceFlags.INVALID));    //Only invalidate not reschedule                        
+                        SourceAccessor.getINSTANCE().setFlags(src, EnumSet.of(SourceFlags.INVALID));    //Only invalidate not reschedule
                     }
                 }
             }
             final long et = System.currentTimeMillis();
-            LOGGER.fine("InvalidateSources took: " + (et-st));  //NOI18N
+            LOGGER.log(Level.FINE, "InvalidateSources took: {0}", (et-st));  //NOI18N
         }
 
         protected final void binaryScanStarted(
@@ -2830,6 +2842,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
 
+        @SuppressWarnings({
+            "ValueOfIncrementOrDecrementUsed",
+            "ThrowFromFinallyBlock"})
         protected final void binaryScanFinished(
                 @NonNull final BinaryIndexers indexers,
                 @NonNull final LinkedHashMap<BinaryIndexerFactory, Context> contexts,
@@ -2924,7 +2939,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 //Factories changed
                 return false;
             }
-            final Map<Pair<String,Integer>,Integer> copy = new HashMap<Pair<String,Integer>,Integer>(lastState.second());
+            final Map<Pair<String,Integer>,Integer> copy = new HashMap<>(lastState.second());
             for (Map.Entry<BinaryIndexerFactory,Context> e : contexts.entrySet()) {
                 final BinaryIndexerFactory bif = e.getKey();
                 final Integer state = copy.remove(Pair.<String,Integer>of(bif.getIndexerName(),bif.getIndexVersion()));
@@ -2940,7 +2955,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         protected final Pair<Long,Map<Pair<String,Integer>,Integer>> createBinaryIndexersTimeStamp (
                 final long currentTimeStamp,
                 @NonNull final Map<BinaryIndexerFactory, Context> contexts) {
-            final Map<Pair<String,Integer>,Integer> pairs = new HashMap<Pair<String, Integer>,Integer>();
+            final Map<Pair<String,Integer>,Integer> pairs = new HashMap<>();
             for (Map.Entry<BinaryIndexerFactory,Context> e : contexts.entrySet()) {
                 final BinaryIndexerFactory bf = e.getKey();
                 final Context ctx = e.getValue();
@@ -2962,9 +2977,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 return false;
             }
 
-            if (LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.fine("Using BinaryIndexerFactories: " + indexers.bifs); //NOI18N
-            }
+            LOGGER.log(
+                Level.FINER,
+                "Using BinaryIndexerFactories: {0}",     //NOI18N
+                indexers.bifs);
 
             for(BinaryIndexerFactory f : indexers.bifs) {
                 parkWhileSuspended();
@@ -2975,9 +2991,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 assert ctx != null;
 
                 final BinaryIndexer indexer = f.createIndexer();
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("Indexing binary " + root + " using " + indexer); //NOI18N
-                }
+                LOGGER.log(
+                    Level.FINE,
+                    "Indexing binary {0} using {1}",     //NOI18N
+                    new Object[]{
+                        root,
+                        indexer
+                });
                 long st = System.currentTimeMillis();
                 logStartIndexer(f.getIndexerName());
                 try {
@@ -3040,7 +3060,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                                         EmbeddingIndexerFactory indexerFactory = info.getIndexerFactory();
                                         if (LOGGER.isLoggable(Level.FINE)) {
-                                            LOGGER.fine("Indexing file " + fileObject.getPath() + " using " + indexerFactory + "; mimeType='" + mimeType + "'"); //NOI18N
+                                            LOGGER.log(
+                                                Level.FINE,
+                                                "Indexing file {0} using {1}; mimeType=''{2}''",    //NOI18N
+                                                new Object[]{
+                                                    fileObject.getPath(),
+                                                    indexerFactory,
+                                                    mimeType
+                                                });
                                         }
 
                                         final Parser.Result pr;
@@ -3144,10 +3171,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     long t = System.currentTimeMillis();
                     final List<Indexable> resources = crawler.getResources();
                     if (crawler.isFinished()) {
-                        
+
                         logCrawlerTime(crawler, t);
-                        final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
-                        final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
+                        final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<>();
+                        final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = new HashMap<>();
                         final UsedIndexables usedIterables = new UsedIndexables();
                         final SourceIndexers indexers = SourceIndexers.load(false);
                         invalidateSources(resources);
@@ -3160,11 +3187,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 crawler.storeTimestamps();
                                 return true;
                             }
-                        } finally {                           
+                        } finally {
                             scanFinished(ctxToFinish.values(), usedIterables, indexResult);
                         }
                     }
-
                     return false;
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
@@ -3212,7 +3238,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 Exceptions.printStackTrace(ex);
             }
         }
-        
+
         protected final void logCrawlerTime(Crawler crawler, long start) throws IOException {
             final LogContext lctx = getLogContext();
             if (lctx == null) {
@@ -3220,19 +3246,19 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
             Collection c = crawler.getResources();
             Collection ac = crawler.getAllResources();
-            
-            lctx.addCrawlerTime(System.currentTimeMillis() - start, 
-                    c == null ? -1 : c.size(), 
+
+            lctx.addCrawlerTime(System.currentTimeMillis() - start,
+                    c.size(),
                     ac == null ? -1 : ac.size());
         }
-        
+
         protected final void logStartIndexer(String iName) {
             final LogContext lc = getLogContext();
             if (lc != null) {
                 lc.startIndexer(iName);
             }
         }
-        
+
         protected final void logFinishIndexer(String iName) {
             final LogContext lc = getLogContext();
             if (lc != null) {
@@ -3303,7 +3329,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 latch.countDown();
             }
         }
-        
+
         public final void waitUntilDone() {
             while (latch.getCount() != 0) {
                 try {
@@ -3344,7 +3370,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         private String urlForMessage(URL currentlyScannedRoot) {
-            final File file = FileUtil.archiveOrDirForURL(currentlyScannedRoot);            
+            final File file = FileUtil.archiveOrDirForURL(currentlyScannedRoot);
             final String msg = file != null?
                 file.getAbsolutePath():
                 currentlyScannedRoot.toExternalForm();
@@ -3355,7 +3381,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) //NOI18N
                 + "[followUpJob=" + followUpJob + ", checkEditor=" + checkEditor; //NOI18N
         }
-        
+
         protected final Source getActiveSource() {
             final Source utActiveSrc = unitTestActiveSource;
             if (utActiveSrc != null) {
@@ -3370,10 +3396,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return DocumentUtilities.getMimeType(doc) == null ? null : Source.create(doc);
         }
 
-        protected void refreshActiveDocument() {            
+        protected void refreshActiveDocument() {
             final Source source = getActiveSource();
             if (source != null) {
-                LOGGER.fine ("Invalidating source: " + source + " due to RootsWork");   //NOI18N
+                LOGGER.log (Level.FINE, "Invalidating source: {0} due to RootsWork", source);   //NOI18N
                 final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
                 assert support != null;
                 support.resetState(true, false, -1, -1, false);
@@ -3482,7 +3508,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             parkWhileSuspended();
             long t = System.currentTimeMillis();
             if (indexables != null) {
-                final List<String> keysToRemove = new ArrayList<String>();
+                final List<String> keysToRemove = new ArrayList<>();
                 for (Indexable indexable : indexables) {
                     keysToRemove.add(indexable.getRelativePath());
                 }
@@ -3503,30 +3529,29 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         //@NotThreadSafe
         final class UsedIndexables {
-            
-            private final Collection<Iterable<? extends Indexable>> usedIndexables = new ArrayDeque<Iterable<? extends Indexable>>();
+            private final Collection<Iterable<? extends Indexable>> usedIndexables = new ArrayDeque<>();
             private  Iterable<? extends Indexable> cache;
 
 
             UsedIndexables() {
             }
-            
+
             void offer(@NonNull final Iterable<? extends Indexable> indexables) {
                 usedIndexables.add(indexables);
                 cache = null;
             }
-            
+
             void offerAll(@NonNull final Collection<? extends Iterable<? extends Indexable>> indexables) {
                 usedIndexables.addAll(indexables);
                 cache = null;
             }
-            
+
             Iterable<? extends Indexable> get() {
                 if (usedIndexables.isEmpty()) {
                     return null;
                 }
                 if (cache == null) {
-                    cache = new ProxyIterable<Indexable>(usedIndexables, false, true);
+                    cache = new ProxyIterable<>(usedIndexables, false, true);
                 }
                 return cache;
             }
@@ -3560,7 +3585,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     static final class FileListWork extends Work {
 
         private final URL root;
-        private final Collection<FileObject> files = new HashSet<FileObject>();
+        private final Collection<FileObject> files = new HashSet<>();
         private final boolean forceRefresh;
         private final boolean sourceForBinaryRoot;
         private final Map<URL, List<URL>> scannedRoots2Depencencies;
@@ -3610,7 +3635,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             this.sourceForBinaryRoot = sourceForBinaryRoot;
             this.scannedRoots2Depencencies = scannedRoots2Depencencies;
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("FileListWork@" + Integer.toHexString(System.identityHashCode(this)) + ": root=" + root + ", file=" + files); //NOI18N
+                LOGGER.log(
+                    Level.FINE,
+                   "FileListWork@{0}: root={1}, file={2}",   //NOI18N
+                   new Object[]{
+                       Integer.toHexString(System.identityHashCode(this)),
+                       root,
+                       files
+                   });
             }
         }
 
@@ -3654,6 +3686,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_BLOCKING_METHODS_ON_URL",
         justification="URLs have never host part")
+        @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
         public boolean absorb(Work newWork) {
             if (newWork instanceof FileListWork) {
                 FileListWork nflw = (FileListWork) newWork;
@@ -3663,7 +3696,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 ) {
                     files.addAll(nflw.files);
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(this + ", root=" + root + " absorbed: " + nflw.files); //NOI18N
+                        LOGGER.log(
+                            Level.FINE,
+                            "{0}, root={1} absorbed: {2}",   //NOI18N
+                            new Object[]{
+                                this,
+                                root,
+                                nflw.files
+                            });
                     }
                     return true;
                 }
@@ -3684,11 +3724,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 super.invalidateSources(toInvalidate);
             }
         }
-        
+
         private boolean shouldRefresh() {
             return !TransientUpdateSupport.isTransientUpdate();
         }
-        
     } // End of FileListWork class
 
 
@@ -3715,6 +3754,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_BLOCKING_METHODS_ON_URL",
         justification="URLs have never host part")
+        @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
         public boolean absorb(Work newWork) {
             if (newWork instanceof BinaryWork) {
                 return root.equals(((BinaryWork) newWork).root);
@@ -3728,7 +3768,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static final class DeleteWork extends Work {
 
         private final URL root;
-        private final Set<String> relativePaths = new HashSet<String>();
+        private final Set<String> relativePaths = new HashSet<>();
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DeleteWork (
@@ -3737,14 +3777,21 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 @NonNull final SuspendStatus suspendStatus,
                 @NullAllowed final LogContext logCtx) {
             super(false, false, false, true, suspendStatus, logCtx);
-            
+
             Parameters.notNull("root", root); //NOI18N
             Parameters.notNull("relativePath", relativePaths); //NOI18N
-            
+
             this.root = root;
             this.relativePaths.addAll(relativePaths);
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("DeleteWork@" + Integer.toHexString(System.identityHashCode(this)) + ": root=" + root + ", files=" + relativePaths); //NOI18N
+                LOGGER.log(
+                    Level.FINE,
+                    "DeleteWork@{0}: root={1}, files={2}",   //NOI18N
+                    new Object[]{
+                        Integer.toHexString(System.identityHashCode(this)),
+                        root,
+                        relativePaths
+                    });
             }
         }
 
@@ -3755,12 +3802,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 lctx.noteRootScanning(root, false);
             }
             try {
-                final List<Indexable> indexables = new ArrayList<Indexable>();
+                final List<Indexable> indexables = new ArrayList<>();
                 for(String path : relativePaths) {
                     indexables.add(SPIAccessor.getInstance().create(new DeletedIndexable (root, path)));
                 }
-                final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
-                final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
+                final Map<SourceIndexerFactory,Boolean> votes = new HashMap<>();
+                final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts = new HashMap<>();
                 final UsedIndexables usedIterables = new UsedIndexables();
                 final SourceIndexers indexers = SourceIndexers.load(false);
                 final TimeStamps ts = TimeStamps.forRoot(root, false);
@@ -3790,13 +3837,21 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_BLOCKING_METHODS_ON_URL",
         justification="URLs have never host part")
+        @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
         public boolean absorb(Work newWork) {
             if (newWork instanceof DeleteWork) {
                 DeleteWork ndw = (DeleteWork) newWork;
                 if (ndw.root.equals(root)) {
                     relativePaths.addAll(ndw.relativePaths);
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(this + ", root=" + root + " absorbed: " + ndw.relativePaths); //NOI18N
+                        LOGGER.log(
+                            Level.FINE,
+                            "{0}, root={1} absorbed: {2}",   //NOI18N
+                            new Object[]{
+                                this,
+                                root,
+                                ndw.relativePaths
+                            });
                     }
                     return true;
                 }
@@ -3828,6 +3883,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         @Override
+        @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
         public  boolean absorb(Work newWork) {
             if (newWork instanceof RefreshCifIndices && cifInfos.equals(((RefreshCifIndices)newWork).cifInfos)) {
                 LOGGER.log(Level.FINE, "Absorbing {0}", newWork); //NOI18N
@@ -3841,7 +3897,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         protected boolean isCancelledBy(final Work newWork, final Collection<? super Work> follow) {
             boolean b = (newWork instanceof RootsWork);
             if (b) {
-                follow.add(new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, getSuspendStatus(), LogContext.createAndAbsorb(getLogContext())));
+                final LogContext lctx = getLogContext();
+                follow.add(new RefreshCifIndices(
+                    cifInfos,
+                    scannedRoots2Dependencies,
+                    sourcesForBinaryRoots,
+                    getSuspendStatus(),
+                    lctx == null ? null : LogContext.createAndAbsorb(lctx)));
                 LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
             }
             return b;
@@ -3856,9 +3918,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             for(URL root : scannedRoots2Dependencies.keySet()) {
                 if (getCancelRequest().isRaised()) {
                     return false;
-                }                
+                }
                 LogContext lctx = getLogContext();
-                
                 if (lctx != null) {
                     lctx.noteRootScanning(root, false);
                 }
@@ -3867,7 +3928,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     final FileObject rootFo = URLMapper.findFileObject(root);
                     if (rootFo != null) {
                         long time = System.currentTimeMillis();
-                        
                         boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                         final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                         Crawler crawler = new FileObjectCrawler(rootFo, EnumSet.of(Crawler.TimeStampAction.UPDATE), entry, getCancelRequest(), getSuspendStatus());
@@ -3877,23 +3937,23 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         logCrawlerTime(crawler, time);
                         if (crawler.isFinished()) {
                             final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
+                            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<>();
                             final UsedIndexables usedIterables = new UsedIndexables();
-                            final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
+                            final Map<SourceIndexerFactory,Boolean> votes = new HashMap<>();
                             try {
                                 customIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, cifInfos, votes, transactionContexts);
                                 if (deleted.size() > 0) {
                                     delete(deleted, transactionContexts, usedIterables);
                                 }
-                                final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<Iterable<Indexable>>();
+                                final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<>();
                                 try {
                                     ClusteredIndexables ci = new ClusteredIndexables(resources);
                                     for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : cifInfos) {
-                                        List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<Iterable<Indexable>>();
+                                        List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<>();
                                         for(String mimeType : cifInfo.getMimeTypes()) {
                                             indexerIndexablesList.add(ci.getIndexablesFor(mimeType));
                                         }
-                                        ProxyIterable<Indexable> indexables = new ProxyIterable<Indexable>(indexerIndexablesList);
+                                        ProxyIterable<Indexable> indexables = new ProxyIterable<>(indexerIndexablesList);
                                         allIndexblesSentToIndexers.addAll(indexerIndexablesList);
 
                                         parkWhileSuspended();
@@ -3957,7 +4017,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                 }
             }
-            
             return true;
         }
 
@@ -4002,10 +4061,17 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         @Override
+        @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
         protected boolean isCancelledBy(final Work newWork, final Collection<? super Work> follow) {
             boolean b = (newWork instanceof RootsWork);
             if (b) {
-                follow.add(new RefreshEifIndices(eifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, getSuspendStatus(), LogContext.createAndAbsorb(getLogContext())));
+                final LogContext lctx = getLogContext();
+                follow.add(new RefreshEifIndices(
+                    eifInfos,
+                    scannedRoots2Dependencies,
+                    sourcesForBinaryRoots,
+                    getSuspendStatus(),
+                    lctx == null ? null : LogContext.createAndAbsorb(lctx)));
                 LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
             }
             if (newWork instanceof RefreshEifIndices) {
@@ -4019,6 +4085,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         @Override
+        @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
         public  boolean absorb(Work newWork) {
             if (newWork instanceof RefreshEifIndices && eifInfos.containsAll(((RefreshEifIndices)newWork).eifInfos)) {
                 LOGGER.log(Level.FINE, "Absorbing {0}", newWork); //NOI18N
@@ -4037,7 +4104,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             for(URL root : scannedRoots2Dependencies.keySet()) {
                 if (getCancelRequest().isRaised()) {
                     return false;
-                }                
+                }
                 LogContext lctx = getLogContext();
                 if (lctx != null) {
                     lctx.noteRootScanning(root, false);
@@ -4047,7 +4114,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     final FileObject rootFo = URLMapper.findFileObject(root);
                     if (rootFo != null) {
                         long t = System.currentTimeMillis();
-                        
                         boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                         final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                         Crawler crawler = new FileObjectCrawler(rootFo, EnumSet.of(Crawler.TimeStampAction.UPDATE), entry, getCancelRequest(), getSuspendStatus());
@@ -4057,15 +4123,15 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         logCrawlerTime(crawler, t);
                         if (crawler.isFinished()) {
                             final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
+                            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<>();
                             final UsedIndexables usedIterables = new UsedIndexables();
-                            final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
-                            final Map<String, Collection<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap = new HashMap<String, Collection<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>>();
+                            final Map<SourceIndexerFactory,Boolean> votes = new HashMap<>();
+                            final Map<String, Collection<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap = new HashMap<>();
                             for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
                                 for (String mimeType : eifInfo.getMimeTypes()) {
                                     Collection<IndexerInfo<EmbeddingIndexerFactory>> infos = eifInfosMap.get(mimeType);
                                     if (infos == null) {
-                                        infos = new HashSet<IndexerInfo<EmbeddingIndexerFactory>>();
+                                        infos = new HashSet<>();
                                         eifInfosMap.put(mimeType, infos);
                                     }
                                     infos.add(eifInfo);
@@ -4077,7 +4143,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 if (deleted.size() > 0) {
                                     delete(deleted, transactionContexts, usedIterables);
                                 }
-                                final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<Iterable<Indexable>>();
+                                final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<>();
                                 try {
                                     ClusteredIndexables ci = new ClusteredIndexables(resources);
                                     for(String mimeType : Util.getAllMimeTypes()) {
@@ -4099,8 +4165,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                             return false;
                                         }
                                         if (LOGGER.isLoggable(Level.FINE)) {
-                                            LOGGER.fine("Indexing " + mimeType + " embeddables under " + root
-                                                + "; took " + (tm2 - tm1) + "ms"); //NOI18N
+                                            LOGGER.log(
+                                                Level.FINE,
+                                                "Indexing {0} embeddables under {1}; took {2}ms",   //NOI18N
+                                                new Object[]{
+                                                    mimeType,
+                                                    root,
+                                                    tm2 - tm1
+                                                });
                                         }
                                     }
                                 } finally {
@@ -4116,7 +4188,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 } finally {
                                     SourceAccessor.getINSTANCE().suppressListening(false, false);
                                 }
-                            }                            
+                            }
                         }
                     }
                 } catch (IOException ioe) {
@@ -4147,7 +4219,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
     } // End of RefreshEifIndices class
 
-    /* test */ static final class RefreshWork extends AbstractRootsWork {
+    /* test */ @SuppressWarnings("PackageVisibleInnerClass")
+    static final class RefreshWork extends AbstractRootsWork {
 
         private final Map<URL, List<URL>> scannedRoots2Dependencies;
         private final Map<URL, List<URL>> scannedBinaries2InvDependencies;
@@ -4187,17 +4260,19 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             this.scannedBinaries2InvDependencies = scannedBinaries2InvDependencies;
             this.scannedRoots2Peers = scannedRoots2Peers;
             this.sourcesForBinaryRoots = sourcesForBinaryRoots;
-            this.suspectFilesOrFileObjects = new HashSet<Pair<Object, Boolean>>();
+            this.suspectFilesOrFileObjects = new HashSet<>();
             if (suspectFilesOrFileObjects != null) {
                 addSuspects(suspectFilesOrFileObjects, fullRescan);
             }
             this.interceptor = interceptor;
         }
 
+        @Override
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
-        protected @Override boolean getDone() {
+        @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
+        protected boolean getDone() {
             if (depCtx == null) {
                 depCtx = new DependenciesContext(
                         scannedRoots2Dependencies,
@@ -4218,7 +4293,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                     Collections.reverse(depCtx.newRootsToScan);
                 } else {
-                    Set<Pair<FileObject, Boolean>> suspects = new HashSet<Pair<FileObject, Boolean>>();
+                    Set<Pair<FileObject, Boolean>> suspects = new HashSet<>();
 
                     for(Pair<Object, Boolean> fileOrFileObject : suspectFilesOrFileObjects) {
                         Pair<FileObject, Boolean> fileObject = null;
@@ -4245,7 +4320,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         } else if (fileOrFileObject.first() instanceof FileObject) {
                             fileObject = Pair.<FileObject, Boolean>of((FileObject) fileOrFileObject.first(), fileOrFileObject.second());
                         } else {
-                            LOGGER.fine("Not File or FileObject, ignoring: " + fileOrFileObject); //NOI18N
+                            LOGGER.log(Level.FINE, "Not File or FileObject, ignoring: {0}", fileOrFileObject); //NOI18N
                         }
 
                         if (fileObject != null) {
@@ -4282,8 +4357,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
 
                     { // <editor-fold defaultstate="collapsed" desc="process source roots">
-                        Set<Pair<FileObject, Boolean>> containers = new HashSet<Pair<FileObject, Boolean>>();
-                        Map<URL, Pair<FileObject, Boolean>> sourceRootsToScan = new HashMap<URL, Pair<FileObject, Boolean>>();
+                        Set<Pair<FileObject, Boolean>> containers = new HashSet<>();
+                        Map<URL, Pair<FileObject, Boolean>> sourceRootsToScan = new HashMap<>();
                         for(URL root : scannedRoots2Dependencies.keySet()) {
                             FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
                             if (rootFo != null) {
@@ -4323,8 +4398,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
 
                     { // <editor-fold defaultstate="collapsed" desc="process single files and folder">
-                        fullRescanFiles = new HashMap<URL, Set<FileObject>>();
-                        checkTimestampFiles = new HashMap<URL, Set<FileObject>>();
+                        fullRescanFiles = new HashMap<>();
+                        checkTimestampFiles = new HashMap<>();
                         for(Pair<FileObject, Boolean> f : suspects) {
                             for(URL root : scannedRoots2Dependencies.keySet()) {
                                 FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
@@ -4332,7 +4407,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     Map<URL, Set<FileObject>> map = f.second() ? fullRescanFiles : checkTimestampFiles;
                                     Set<FileObject> files = map.get(root);
                                     if (files == null) {
-                                        files = new HashSet<FileObject>();
+                                        files = new HashSet<>();
                                         map.put(root, files);
                                     }
                                     files.add(f.first());
@@ -4383,10 +4458,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
             final Level logLevel = Level.FINE;
             if (LOGGER.isLoggable(logLevel)) {
-                LOGGER.log(logLevel, this + " " + (getCancelRequest().isRaised() ? "cancelled" : "finished") + ": {"); //NOI18N
-                LOGGER.log(logLevel, "  scannedRoots2Dependencies(" + scannedRoots2Dependencies.size() + ")="); //NOI18N
+                LOGGER.log(logLevel, "{0} {1}: '{'", new Object[]{this, getCancelRequest().isRaised() ? "cancelled" : "finished"}); //NOI18N
+                LOGGER.log(logLevel, "  scannedRoots2Dependencies({0})=", scannedRoots2Dependencies.size()); //NOI18N
                 printMap(scannedRoots2Dependencies, logLevel);
-                LOGGER.log(logLevel, "  scannedBinaries(" + scannedBinaries2InvDependencies.size() + ")="); //NOI18N
+                LOGGER.log(logLevel, "  scannedBinaries({0})=", scannedBinaries2InvDependencies.size()); //NOI18N
                 printCollection(scannedBinaries2InvDependencies.keySet(), logLevel);
                 LOGGER.log(logLevel, "} ===="); //NOI18N
             }
@@ -4395,7 +4470,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return finished;
         }
 
-        public @Override boolean absorb(Work newWork) {
+        @Override
+        @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
+        public boolean absorb(Work newWork) {
             if (newWork instanceof RefreshWork) {
                 suspectFilesOrFileObjects.addAll(((RefreshWork) newWork).suspectFilesOrFileObjects);
                 return true;
@@ -4455,7 +4532,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         private DependenciesContext depCtx;
         protected SourceIndexers indexers = null; // is only ever filled by InitialRootsWork
-        
+
         // flag that no projects are opened, and no real scanning work is expected
         private boolean shouldDoNothing;
         private Level   previousLevel;
@@ -4486,7 +4563,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         public @Override String toString() {
             return super.toString() + ", useInitialState=" + useInitialState; //NOI18N
         }
-        
+
         private void dumpGlobalRegistry(String n, Collection<String> pathIds) {
             boolean printed = false;
             for (String pathId : pathIds) {
@@ -4499,7 +4576,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 LOGGER.log(Level.FINE, "Paths ID {0}: {1}", new Object[] { pathId, paths});
             }
         }
-        
+
         private void checkRootCollection(Collection<? extends URL> roots) {
             if (!shouldDoNothing || roots.isEmpty() || getCancelRequest().isRaised()) {
                 return;
@@ -4519,10 +4596,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
                 // !/ is a root inside archive, get the archive which encapsulates it -> normal FS
                 FileObject archive = FileUtil.getArchiveFile(f);
-                File archiveFile;
                 // quick check - if the archive is not on OS FS, bail out.
-                if (archive == null || 
-                    ((archiveFile = FileUtil.toFile(archive)) == null)) {
+                if (archive == null) {
+                    break;
+                }
+                final File archiveFile = FileUtil.toFile(archive);
+                if (archiveFile == null) {
                     break;
                 }
                 // 1 level up = dir-in-cluster. 2 levels up = cluster dir
@@ -4556,10 +4635,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                 LOGGER.setLevel(toSet);
                 LOGGER.warning("Non-empty roots encountered while no projects are opened; loglevel increased");
-                
+
                 Collection<? extends PathRecognizer> recogs = Lookup.getDefault().lookupAll(PathRecognizer.class);
                 PathRecognizerRegistry reg = PathRecognizerRegistry.getDefault();
-                
+
                 dumpGlobalRegistry("Binary Libraries", reg.getBinaryLibraryIds());
                 dumpGlobalRegistry("Libraries", reg.getLibraryIds());
                 dumpGlobalRegistry("Sources", reg.getSourceIds());
@@ -4577,9 +4656,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
 
             Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
-            
+
             shouldDoNothing = openProjects.length == 0;
-            
+
             try {
             updateProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies")); //NOI18N
             long tm1 = System.currentTimeMillis();
@@ -4593,7 +4672,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     sourcesForBinaryRoots,
                     useInitialState,
                     refreshNonExistentDeps);
-                final Collection<URL> newRoots = new HashSet<URL>();
+                final Collection<URL> newRoots = new HashSet<>();
                 Collection<? extends URL> c = PathRegistry.getDefault().getSources();
                 checkRootCollection(c);
                 LOGGER.log(Level.FINE, "PathRegistry.sources="); printCollection(c, Level.FINE); //NOI18N
@@ -4605,10 +4684,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 newRoots.addAll(c);
 
                 checkRootCollection(PathRegistry.getDefault().getBinaryLibraries());
-                depCtx.newBinariesToScan.addAll(PathRegistry.getDefault().getBinaryLibraries());                
+                depCtx.newBinariesToScan.addAll(PathRegistry.getDefault().getBinaryLibraries());
 
                 if (useInitialState) {
-                    c = PathRegistry.getDefault().getUnknownRoots();                    
+                    c = PathRegistry.getDefault().getUnknownRoots();
                     LOGGER.log(Level.FINE, "PathRegistry.unknown="); printCollection(c, Level.FINE); //NOI18N
                     depCtx.unknownRoots.addAll(c);
                     depCtx.preInversedDeps = Util.findTransitiveReverseDependencies(
@@ -4617,7 +4696,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     newRoots.addAll(c);
                 } // else computing the deps from scratch and so will find the 'unknown' roots
                 // by following the dependencies (#166715)
-                
+
                 for (URL url : newRoots) {
                     if (!findDependencies(
                             url,
@@ -4642,17 +4721,17 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                 Controller controller = (Controller)IndexingController.getDefault();
                 synchronized (controller) {
-                    Map<URL, List<URL>> nextRoots2Deps = new HashMap<URL, List<URL>>();
+                    Map<URL, List<URL>> nextRoots2Deps = new HashMap<>();
                     nextRoots2Deps.putAll(depCtx.initialRoots2Deps);
                     nextRoots2Deps.keySet().removeAll(depCtx.oldRoots);
                     nextRoots2Deps.putAll(depCtx.newRoots2Deps);
                     controller.roots2Dependencies = Collections.unmodifiableMap(nextRoots2Deps);
-                    Map<URL, List<URL>> nextBinRoots2Deps = new HashMap<URL, List<URL>>();
+                    Map<URL, List<URL>> nextBinRoots2Deps = new HashMap<>();
                     nextBinRoots2Deps.putAll(depCtx.initialBinaries2InvDeps);
                     nextBinRoots2Deps.keySet().removeAll(depCtx.oldBinaries);
                     nextBinRoots2Deps.putAll(depCtx.newBinaries2InvDeps);
                     controller.binRoots2Dependencies = Collections.unmodifiableMap(nextBinRoots2Deps);
-                    Map<URL, List<URL>> nextRoots2Peers = new HashMap<URL, List<URL>>();
+                    Map<URL, List<URL>> nextRoots2Peers = new HashMap<>();
                     nextRoots2Peers.putAll(depCtx.initialRoots2Peers);
                     nextRoots2Peers.keySet().removeAll(depCtx.oldRoots);
                     nextRoots2Peers.putAll(depCtx.newRoots2Peers);
@@ -4670,10 +4749,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                 if (!useInitialState) {
                     // check for differencies from the initialState
-                    final Map<URL,List<URL>> removed = new HashMap<URL,List<URL>>();
-                    final Map<URL,List<URL>> addedOrChanged = new HashMap<URL,List<URL>>();
-                    final Map<URL,List<URL>> removedPeers = new HashMap<URL,List<URL>>();
-                    final Map<URL,List<URL>> addedOrChangedPeers = new HashMap<URL,List<URL>>();
+                    final Map<URL,List<URL>> removed = new HashMap<>();
+                    final Map<URL,List<URL>> addedOrChanged = new HashMap<>();
+                    final Map<URL,List<URL>> removedPeers = new HashMap<>();
+                    final Map<URL,List<URL>> addedOrChangedPeers = new HashMap<>();
                     diff(depCtx.initialRoots2Deps, depCtx.newRoots2Deps, addedOrChanged, removed);
                     diff(depCtx.initialRoots2Peers, depCtx.newRoots2Peers, addedOrChangedPeers, removedPeers);
 
@@ -4693,7 +4772,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                     depCtx.oldRoots.clear();
                     depCtx.oldRoots.addAll(removed.keySet());
-                    final Set<URL> toScan = new HashSet<URL>(addedOrChanged.keySet());
+                    final Set<URL> toScan = new HashSet<>(addedOrChanged.keySet());
                     toScan.addAll(addedOrChangedPeers.keySet());
                     depCtx.newRootsToScan.retainAll(toScan);
                 }
@@ -4705,21 +4784,22 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 depCtx.scannedBinaries.clear();
                 depCtx.oldBinaries.clear();
                 depCtx.oldRoots.clear();
-                
                 if (shouldDoNothing) {
-                    LOGGER.warning("restarted while no projects are opened. Roots = " + depCtx.newRootsToScan + " binaries = " + 
-                            depCtx.newBinariesToScan);
-                    
+                    LOGGER.log(
+                        Level.WARNING,
+                        "restarted while no projects are opened. Roots = {0} binaries = {1}",   //NOI18N
+                        new Object[]{
+                            depCtx.newRootsToScan,
+                            depCtx.newBinariesToScan
+                        });
                 }
             }
-            
             if (LOGGER.isLoggable(Level.INFO)) {
                 LOGGER.log(Level.INFO, "Resolving dependencies took: {0} ms", System.currentTimeMillis() - tm1); //NOI18N
             }
 
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Running " + this + " on \n" + depCtx.toString()); //NOI18N
-                
+                LOGGER.log(Level.FINE, "Running {0} on \n{1}", new Object[]{this, depCtx}); //NOI18N
                 if (previousLevel != null && getCancelRequest().isRaised()) {
                     LOGGER.fine("Note: the Work was canceled during dependency-resolve, disregard preceding logs on non-empty paths");
                     LOGGER.setLevel(previousLevel == Level.ALL ? null : previousLevel);
@@ -4733,7 +4813,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
 
             if (!finished) {
-                final Queue<URL> toUnregister = new ArrayDeque<URL>();
+                final Queue<URL> toUnregister = new ArrayDeque<>();
                 for (URL translatedRoot : depCtx.newlySFBTranslated) {
                     if (depCtx.newRootsToScan.contains(translatedRoot) &&
                         !depCtx.scannedRoots.contains(translatedRoot)) {
@@ -4743,9 +4823,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 PathRegistry.getDefault().unregisterUnknownSourceRoots(toUnregister);
             }
 
-            final List<URL> missingRoots = new LinkedList<URL>();
+            final List<URL> missingRoots = new LinkedList<>();
             scannedRoots2Dependencies.keySet().removeAll(depCtx.oldRoots);
-            scannedRoots2Peers.keySet().removeAll(depCtx.oldRoots);            
+            scannedRoots2Peers.keySet().removeAll(depCtx.oldRoots);
             for(URL root : depCtx.scannedRoots) {
                 List<URL> deps = depCtx.newRoots2Deps.get(root);
                 if (deps == null) {
@@ -4758,7 +4838,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 deps = depCtx.newRoots2Peers.get(root);
                 scannedRoots2Peers.put(root,deps);
             }
-            final Collection<URL> unknownToRemove = new HashSet<URL>();
+            final Collection<URL> unknownToRemove = new HashSet<>();
             if (!depCtx.unknownRoots.isEmpty()) {
                 final Map<URL,Collection<URL>> postInversedDeps =
                     Util.findTransitiveReverseDependencies(scannedRoots2Dependencies, scannedRoots2Peers);
@@ -4807,21 +4887,21 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             //as it was set to optimistic value (supposed that all is scanned).
             Controller controller = (Controller)IndexingController.getDefault();
             synchronized (controller) {
-                controller.roots2Dependencies = Collections.unmodifiableMap(new HashMap<URL, List<URL>>(scannedRoots2Dependencies));
-                controller.binRoots2Dependencies = Collections.unmodifiableMap(new HashMap<URL, List<URL>>(scannedBinaries2InvDependencies));
-                controller.roots2Peers = Collections.unmodifiableMap(new HashMap<URL, List<URL>>(scannedRoots2Peers));
+                controller.roots2Dependencies = Collections.unmodifiableMap(new HashMap<>(scannedRoots2Dependencies));
+                controller.binRoots2Dependencies = Collections.unmodifiableMap(new HashMap<>(scannedBinaries2InvDependencies));
+                controller.roots2Peers = Collections.unmodifiableMap(new HashMap<>(scannedRoots2Peers));
             }
 
             notifyRootsRemoved (depCtx.oldBinaries, depCtx.oldRoots, unknownToRemove);
 
             final Level logLevel = Level.FINE;
             if (LOGGER.isLoggable(logLevel)) {
-                LOGGER.log(logLevel, this + " " + (getCancelRequest().isRaised() ? "cancelled" : "finished") + ": {"); //NOI18N
-                LOGGER.log(logLevel, "  scannedRoots2Dependencies(" + scannedRoots2Dependencies.size() + ")="); //NOI18N
+                LOGGER.log(logLevel, "{0} {1}: '{'", new Object[]{this, getCancelRequest().isRaised() ? "cancelled" : "finished"}); //NOI18N
+                LOGGER.log(logLevel, "  scannedRoots2Dependencies({0})=", scannedRoots2Dependencies.size()); //NOI18N
                 printMap(scannedRoots2Dependencies, logLevel);
-                LOGGER.log(logLevel, "  scannedBinaries(" + scannedBinaries2InvDependencies.size() + ")="); //NOI18N
+                LOGGER.log(logLevel, "  scannedBinaries({0})=", scannedBinaries2InvDependencies.size()); //NOI18N
                 printCollection(scannedBinaries2InvDependencies.keySet(), logLevel);
-                LOGGER.log(logLevel, "  scannedRoots2Peers(" + scannedRoots2Peers.size() + ")="); //NOI18N
+                LOGGER.log(logLevel, "  scannedRoots2Peers({0})=", scannedRoots2Peers.size()); //NOI18N
                 printMap(scannedRoots2Peers, logLevel);
                 LOGGER.log(logLevel, "} ===="); //NOI18N
             }
@@ -4839,7 +4919,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         protected @Override boolean isCancelledBy(final Work newWork, final Collection<? super Work> follow) {
             boolean b = (newWork instanceof RootsWork) && useInitialState;
             if (b && LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Cancelling " + this + ", because of " + newWork); //NOI18N
+                LOGGER.log(
+                    Level.FINE,
+                    "Cancelling {0}, because of {1}",    //NOI18N
+                    new Object[]{
+                        this,
+                        newWork
+                    });
             }
             return b;
         }
@@ -4884,7 +4970,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
 
             if (!sources.isEmpty() || !unknown.isEmpty()) {
-                final Iterable<? extends URL> roots = new ProxyIterable<URL>(Arrays.asList(sources, unknown));
+                final Iterable<? extends URL> roots = new ProxyIterable<>(Arrays.asList(sources, unknown));
                 final Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> customIndexers = IndexerCache.getCifCache().getIndexers(null);
                 for (IndexerCache.IndexerInfo<CustomIndexerFactory> customIndexer : customIndexers) {
                     customIndexer.getIndexerFactory().rootsRemoved(roots);
@@ -4930,11 +5016,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             this.logStatistics = logStatistics;
         }
 
-//        protected AbstractRootsWork(boolean followUpJob, boolean checkEditor, String progressTitle, boolean logStatistics) {
-//            super(followUpJob, checkEditor, progressTitle, true);
-//            this.logStatistics = logStatistics;
-//        }
-
         protected final boolean scanBinaries(final DependenciesContext ctx) {
             assert ctx != null;
             final AtomicInteger scannedRootsCnt = new AtomicInteger(0);
@@ -4978,7 +5059,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         protected final boolean scanBinary(URL root, BinaryIndexers binaryIndexers, AtomicInteger scannedRootsCnt) {
             boolean success = false;
             final long tmStart = System.currentTimeMillis();
-            final LinkedHashMap<BinaryIndexerFactory, Context> contexts = new LinkedHashMap<BinaryIndexerFactory, Context>();
+            final LinkedHashMap<BinaryIndexerFactory, Context> contexts = new LinkedHashMap<>();
             final BitSet startedIndexers = new BitSet(contexts.size());
             LogContext lctx = getLogContext();
             if (lctx != null) {
@@ -5037,6 +5118,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
+        @SuppressWarnings("AssignmentToMethodParameter")
         protected final boolean scanSources(DependenciesContext ctx, SourceIndexers indexers, Map<URL, List<URL>> preregisterIn) {
             assert ctx != null;
             long scannedRootsCnt = 0;
@@ -5167,19 +5249,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         @CheckForNull
         private File download (
                 @NonNull final URL indexURL,
-                @NonNull final File into) throws IOException {
+                @NonNull final File into) {
             try {
                 final File packedIndex = new File (into,getSimpleName(indexURL));       //NOI18N
-                final InputStream in = new BufferedInputStream(indexURL.openStream());
-                try {
-                    final OutputStream out = new BufferedOutputStream(new FileOutputStream(packedIndex));
-                    try {
-                        FileUtil.copy(in, out);
-                    } finally {
-                        out.close();
-                    }
-                } finally {
-                    in.close();
+                try (final InputStream in = new BufferedInputStream(indexURL.openStream());
+                     final OutputStream out = new BufferedOutputStream(new FileOutputStream(packedIndex))) {
+                     FileUtil.copy(in, out);
                 }
                 return packedIndex;
             } catch (IOException ioe) {
@@ -5199,16 +5274,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     } else {
                         //Some zip files don't have zip entries for folders
                         target.getParentFile().mkdirs();
-                        final InputStream in = zf.getInputStream(entry);
-                        try {
-                            final FileOutputStream out = new FileOutputStream(target);
-                            try {
+                        try (final InputStream in = zf.getInputStream(entry);
+                            final FileOutputStream out = new FileOutputStream(target)) {
                                 FileUtil.copy(in, out);
-                            } finally {
-                                out.close();
-                            }
-                        } finally {
-                            in.close();
                         }
                     }
                 }
@@ -5234,9 +5302,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             @NonNull final SourceIndexers indexers,
             final boolean sourceForBinaryRoot) throws IOException {
             final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
+            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<>();
             final UsedIndexables usedIndexables = new UsedIndexables();
-            final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
+            final Map<SourceIndexerFactory,Boolean> votes = new HashMap<>();
             boolean indexResult = false;
             try {
                 customIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, indexers.cifInfos, votes, transactionContexts);
@@ -5248,7 +5316,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     final CustomIndexer indexer = factory.createIndexer();
 
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Fake indexing: indexer=" + indexer); //NOI18N
+                        LOGGER.log(Level.FINE, "Fake indexing: indexer={0}", indexer); //NOI18N
                     }
                     long start = System.currentTimeMillis();
                     logStartIndexer(info.getIndexerName());
@@ -5276,7 +5344,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
             return indexResult;
         }
-        
+
+        @SuppressWarnings("NestedAssignment")
         private boolean scanSource (URL root, boolean fullRescan, boolean sourceForBinaryRoot, SourceIndexers indexers, int [] outOfDateFiles, int [] deletedFiles, long [] recursiveListenersTime) throws IOException {
             LOGGER.log(Level.FINE, "Scanning sources root: {0}", root); //NOI18N
             final boolean rootSeen = TimeStamps.existForRoot(root);
@@ -5344,14 +5413,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     final List<Indexable> resources = crawler.getResources();
                     final List<Indexable> allResources = crawler.getAllResources();
                     final List<Indexable> deleted = crawler.getDeletedResources();
-                    
+
                     this.modifiedResourceCount = resources.size();
-                    this.allResourceCount = allResources.size();
+                    this.allResourceCount = allResources == null ? 0 : allResources.size();
 
                     logCrawlerTime(crawler, t);
                     if (crawler.isFinished()) {
-                        final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
-                        final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
+                        final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<>();
+                        final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = new HashMap<>();
                         final UsedIndexables usedIterables = new UsedIndexables();
                         boolean indexResult = false;
                         try {
@@ -5373,7 +5442,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                         logStatistics = false;
                                         if (SFEC_LOGGER.isLoggable(Level.INFO)) {
                                             LogRecord r = new LogRecord(Level.INFO, "STATS_SCAN_SOURCES"); //NOI18N
-                                            r.setParameters(new Object [] { Boolean.valueOf(outOfDateFiles[0] > 0 || deletedFiles[0] > 0)});
+                                            r.setParameters(new Object [] {outOfDateFiles[0] > 0 || deletedFiles[0] > 0});
                                             r.setResourceBundle(NbBundle.getBundle(RepositoryUpdater.class));
                                             r.setResourceBundleName(RepositoryUpdater.class.getPackage().getName() + ".Bundle"); //NOI18N
                                             r.setLoggerName(SFEC_LOGGER.getName());
@@ -5394,7 +5463,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
             }
         }
-        
+
         private static void reportRootScan(URL root, long duration) {
             if (PERF_LOGGER.isLoggable(Level.FINE)) {
                 PERF_LOGGER.log (
@@ -5435,9 +5504,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 logCtx);
             this.waitForProjects = waitForProjects;
         }
-        
-        public @Override boolean getDone() {
-            try {                
+
+        @Override
+        @SuppressWarnings("UseSpecificCatch")
+        public boolean getDone() {
+            try {
                 if (waitForProjects) {
                     boolean retry = true;
                     suspendProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_OpeningProjects"));
@@ -5455,7 +5526,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         }
                     }
                 }
-                
+
                 if (indexers == null) {
                     indexers = SourceIndexers.load(true);
                 }
@@ -5496,7 +5567,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 assert work != null;
                 if (!allCancelled) {
                     boolean canceled = false;
-                    final List<Work> follow = new ArrayList<Work>(1);
+                    final List<Work> follow = new ArrayList<>(1);
                     if (workInProgress != null) {
                         if (workInProgress.cancelBy(work,follow)) {
                             // make the WiP absorbed by this follow-up work:
@@ -5579,6 +5650,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
 
+        @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
         public void cancelAll(@NullAllowed final Runnable postCleanTask) throws TimeoutException {
             synchronized (todo) {
                 if (!allCancelled) {
@@ -5646,7 +5718,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 // stash the followup task, we will run all of them when exiting the protected mode
                 if (followupTask != null) {
                     if (followupTasks == null) {
-                        followupTasks = new LinkedList<Runnable>();
+                        followupTasks = new LinkedList<>();
                     }
                     followupTasks.add(followupTask);
                 }
@@ -5760,12 +5832,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         // private implementation
         // -------------------------------------------------------------------
 
-        private final List<Work> todo = new LinkedList<Work>();
+        private final List<Work> todo = new LinkedList<>();
         private boolean followUpWorksSorted = true;
         private Work workInProgress = null;
         private boolean scheduled = false;
         private boolean allCancelled = false;
-        private List<Long> protectedOwners = new LinkedList<Long>();
+        private List<Long> protectedOwners = new LinkedList<>();
         private List<Runnable> followupTasks = null;
 
         private void _run() {
@@ -5829,13 +5901,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             } finally {
                 if (progressHandle != null) {
                     progressHandle.finish();
-                    progressHandle = null;
                 }
             }
         }
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
+        @SuppressWarnings("NestedAssignment")
         private Work getWork () {
             synchronized (todo) {
                 Work w;
@@ -5843,10 +5915,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     w = todo.remove(0);
 
                     if (w instanceof FileListWork && ((FileListWork) w).isFollowUpJob() && !followUpWorksSorted) {
-                        Map<URL, List<FileListWork>> toSort = new HashMap<URL, List<FileListWork>>();
-
-                        toSort.put(((FileListWork) w).root, new LinkedList<FileListWork>(Arrays.asList((FileListWork) w)));
-                        
+                        Map<URL, List<FileListWork>> toSort = new HashMap<>();
+                        toSort.put(((FileListWork) w).root, new LinkedList<>(Arrays.asList((FileListWork) w)));
                         for (Iterator<Work> it = todo.iterator(); it.hasNext(); ) {
                             Work current = it.next();
 
@@ -5854,7 +5924,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 List<FileListWork> currentWorks = toSort.get(((FileListWork) current).root);
 
                                 if (currentWorks == null) {
-                                    toSort.put(((FileListWork) current).root, currentWorks = new LinkedList<FileListWork>());
+                                    toSort.put(((FileListWork) current).root, currentWorks = new LinkedList<>());
 
                                 }
 
@@ -5866,11 +5936,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         List<URL> sortedRoots;
 
                         try {
-                            sortedRoots = new ArrayList<URL>(org.openide.util.Utilities.topologicalSort(toSort.keySet(), getDefault().scannedRoots2Dependencies));
+                            sortedRoots = new ArrayList<>(org.openide.util.Utilities.topologicalSort(toSort.keySet(), getDefault().scannedRoots2Dependencies));
                         } catch (TopologicalSortException tse) {
                             LOGGER.log(Level.INFO, "Cycles detected in classpath roots dependencies, using partial ordering", tse); //NOI18N
                             @SuppressWarnings("unchecked") List<URL> partialSort = tse.partialSort(); //NOI18N
-                            sortedRoots = new ArrayList<URL>(partialSort);
+                            sortedRoots = new ArrayList<>(partialSort);
                         }
 
                         Collections.reverse(sortedRoots);
@@ -5953,31 +6023,31 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 final boolean refreshNonExistentDeps) {
             assert scannedRoots2Deps != null;
             assert scannedBinaries2InvDependencies != null;
-            
+
             this.initialRoots2Deps = Collections.unmodifiableMap(scannedRoots2Deps);
             this.initialBinaries2InvDeps = Collections.unmodifiableMap(scannedBinaries2InvDependencies);
             this.initialRoots2Peers = Collections.unmodifiableMap(scannedRoots2Peers);
 
-            this.oldRoots = new HashSet<URL> (scannedRoots2Deps.keySet());
-            this.oldBinaries = new HashSet<URL> (scannedBinaries2InvDependencies.keySet());
+            this.oldRoots = new HashSet<> (scannedRoots2Deps.keySet());
+            this.oldBinaries = new HashSet<> (scannedBinaries2InvDependencies.keySet());
 
-            this.newRoots2Deps = new HashMap<URL,List<URL>>();
-            this.newBinaries2InvDeps = new HashMap<URL, List<URL>>();
-            this.newRoots2Peers = new HashMap<URL, List<URL>>();
-            this.newRootsToScan = new ArrayList<URL>();
-            this.newBinariesToScan = new HashSet<URL>();            
+            this.newRoots2Deps = new HashMap<>();
+            this.newBinaries2InvDeps = new HashMap<>();
+            this.newRoots2Peers = new HashMap<>();
+            this.newRootsToScan = new ArrayList<>();
+            this.newBinariesToScan = new HashSet<>();
 
-            this.scannedRoots = new HashSet<URL>();
-            this.scannedBinaries = new HashSet<URL>();
+            this.scannedRoots = new HashSet<>();
+            this.scannedBinaries = new HashSet<>();
 
             this.sourcesForBinaryRoots = sourcesForBinaryRoots;
-            this.fullRescanSourceRoots = new HashSet<URL>();
+            this.fullRescanSourceRoots = new HashSet<>();
 
             this.useInitialState = useInitialState;
             this.refreshNonExistentDeps = refreshNonExistentDeps;
-            this.cycleDetector = new Stack<URL>();
-            this.unknownRoots = new HashSet<URL>();
-            this.newlySFBTranslated = new HashSet<URL>();
+            this.cycleDetector = new Stack<>();
+            this.unknownRoots = new HashSet<>();
+            this.newlySFBTranslated = new HashSet<>();
         }
 
         public @Override String toString() {
@@ -6029,8 +6099,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private SourceIndexers(boolean detectChanges) {
             final long start = System.currentTimeMillis();
             if (detectChanges) {
-                changedCifs = new HashSet<IndexerCache.IndexerInfo<CustomIndexerFactory>>();
-                changedEifs = new HashSet<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>();
+                changedCifs = new HashSet<>();
+                changedEifs = new HashSet<>();
             } else {
                 changedCifs = null;
                 changedEifs = null;
@@ -6085,6 +6155,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
+        @SuppressWarnings("ReturnOfCollectionOrArrayField") //Collection already unmodifiable
         public synchronized Map<URL, List<URL>> getRootDependencies() {
             return roots2Dependencies;
         }
@@ -6093,6 +6164,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
+        @SuppressWarnings("ReturnOfCollectionOrArrayField") //Collection already unmodifiable
         public synchronized Map<URL, List<URL>> getBinaryRootDependencies() {
             return binRoots2Dependencies;
         }
@@ -6101,6 +6173,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
+        @SuppressWarnings("ReturnOfCollectionOrArrayField") //Collection already unmodifiable
         public Map<URL, List<URL>> getRootPeers() {
             return roots2Peers;
         }
@@ -6113,6 +6186,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     } // End of Controller class
 
     @ServiceProvider(service=IndexingActivityInterceptor.class)
+    @SuppressWarnings("PublicInnerClass")
     public static final class FSRefreshInterceptor implements IndexingActivityInterceptor {
 
         private FileSystem.AtomicAction activeAA = null;
@@ -6158,7 +6232,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
     } // End of FSRefreshInterceptor class
 
-    /* test */ static final class LexicographicComparator implements Comparator<URL> {
+    /* test */ @SuppressWarnings("PackageVisibleInnerClass")
+    static final class LexicographicComparator implements Comparator<URL> {
         private final boolean reverse;
 
         public LexicographicComparator(boolean reverse) {
@@ -6172,12 +6247,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
     } // End of LexicographicComparator class
 
-    /* test */ static final class RootsListeners {
+    /* test */ @SuppressWarnings("PackageVisibleInnerClass")
+    static final class RootsListeners {
 
         private FileChangeListener sourcesListener = null;
         private FileChangeListener binariesListener = null;
-        private final Map<URL, File> sourceRoots = new HashMap<URL, File>();
-        private final Map<URL, Pair<File, Boolean>> binaryRoots = new HashMap<URL, Pair<File, Boolean>>();
+        private final Map<URL, File> sourceRoots = new HashMap<>();
+        private final Map<URL, Pair<File, Boolean>> binaryRoots = new HashMap<>();
         private volatile boolean listens;
 
         public RootsListeners() {
@@ -6407,9 +6483,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
     private static class WorkCancel implements Cancellable {
 
-        private final AtomicReference<Work> work = new AtomicReference<Work>();
+        private final AtomicReference<Work> work = new AtomicReference<>();
 
-        public void setWork(@NonNull final Work theWork) {
+        public void setWork(@NullAllowed final Work theWork) {
             work.set(theWork);
         }
 
@@ -6444,6 +6520,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     /* test */ Set<URL> getScannedBinaries () {
         return this.scannedBinaries2InvDependencies.keySet();
     }
@@ -6452,6 +6529,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     /* test */ Set<URL> getScannedSources () {
         return this.scannedRoots2Dependencies.keySet();
     }
@@ -6460,6 +6538,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     /* test */ Map<URL,List<URL>> getScannedRoots2Dependencies() {
         return this.scannedRoots2Dependencies;
     }
@@ -6468,6 +6547,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     /* test */ Set<URL> getScannedUnknowns () {
         return this.scannedUnknown;
     }
@@ -6489,15 +6569,16 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private volatile Sampler sampler;
         private final String indexerName;
         private RequestProcessor.Task scheduled;
-        private URL root;
-        private int estimate;
-        
+        private final URL root;
+        private final int estimate;
+
        public SamplerInvoker(String indexerName, int delay, URL root) {
             this.estimate = delay;
             this.indexerName = indexerName;
             this.root = root;
         }
-        
+
+        @SuppressWarnings("AssignmentToMethodParameter")
         public static void start(LogContext ctx, String indexerName, int delay, URL root) {
             if (delay <= 0) {
                 return;
@@ -6519,16 +6600,15 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             LOGGER.log(Level.FINE, "Sampler scheduled after {0} + {3} for indexer {1} on {2}", // NOI18N
                     new Object[] { new Date(), indexerName, root, delay });
         }
-        
+
         @Override
         public synchronized void run() {
-            Sampler sampler = Sampler.createManualSampler("repoupdater"); // NOI18N
-            if (sampler != null && currentSampler == this) {
-                sampler.start();
-                this.sampler = sampler;
+            Sampler newSampler = Sampler.createManualSampler("repoupdater"); // NOI18N
+            if (newSampler != null && currentSampler == this) {
+                newSampler.start();
+                this.sampler = newSampler;
                 LOGGER.log(Level.FINE, "Updater profiling started at {0} because of {1} runnint on {2} more than {3})",  // NOI18N
                         new Object[] { new Date(), indexerName, root, estimate });
-            
             }
         }
 
@@ -6538,21 +6618,21 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 return null;
             }
             LOGGER.log(Level.FINE, "Dumping snapshot for {0}", indexerName); // NOI18N
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            DataOutputStream dos = new DataOutputStream(out);
-            sampler.stopAndWriteTo(dos);
-            dos.close();
+            final ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try (DataOutputStream dos = new DataOutputStream(out)) {
+                sampler.stopAndWriteTo(dos);
+            }
             sampler = null;
             return out.toByteArray();
         }
-             
+
         public boolean _stop(boolean release) {
             LOGGER.log(Level.FINE, "Sampler cancelled at {0} for indexer {1} on {2}", new Object[] { // NOI18N
                 new Date(), indexerName, root
             });
             if (scheduled != null) {
                 if (!scheduled.cancel()) {
-                    LOGGER.log(Level.FINE, "Sampling has already started, release = " + release); // NOI18N
+                    LOGGER.log(Level.FINE, "Sampling has already started, release = {0}", release); // NOI18N
                     if (release) {
                         synchronized (this) {
                             if (sampler != null) {
@@ -6563,18 +6643,18 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                        return true;
                     }
                     return false;
-                }                                    
+                }
             }
             return true;
         }
-        
+
         public static void release() {
             if (currentSampler != null) {
                 currentSampler._stop(true);
                 currentSampler = null;
             }
         }
-        
+
         public static boolean stop() {
             if (currentSampler == null) {
                 return true;
