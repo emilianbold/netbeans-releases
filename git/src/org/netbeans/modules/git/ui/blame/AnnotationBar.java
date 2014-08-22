@@ -67,6 +67,7 @@ import java.util.logging.Level;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.logging.Logger;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.editor.fold.FoldHierarchy;
@@ -76,6 +77,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
@@ -84,6 +86,7 @@ import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.netbeans.spi.diff.DiffProvider;
+import org.openide.awt.Actions;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -98,6 +101,7 @@ import org.openide.util.actions.SystemAction;
  * @author Petr Kuzel
  */
 final class AnnotationBar extends JComponent implements Accessible, PropertyChangeListener, DocumentListener, ChangeListener, ActionListener, Runnable, ComponentListener {
+    private static boolean fieldsInitialized;
 
     /**
      * Target text component for which the annotation bar is aiming.
@@ -202,11 +206,57 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private FileObject referencedFileObject;
     static final Logger LOG = Logger.getLogger(AnnotationBar.class.getName());
     private String annotatedRevision;
+    private static final DateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd");
     
     /**
      * Rendering hints for annotations sidebar inherited from editor settings.
      */
     private final Map renderingHints;
+    
+    @NbBundle.Messages({
+        "LBL_Blame.menu.show.commitId=Revision",
+        "LBL_Blame.menu.show.date=Date",
+        "LBL_Blame.menu.show.author=Author"
+    })
+    private static enum DisplayField {
+        
+        COMMIT_ID(1, Bundle.LBL_Blame_menu_show_commitId(), true) {
+
+            @Override
+            String format (AnnotateLine line) {
+                return line.getRevisionInfo().getRevision().substring(0, 7);
+            }
+            
+        },
+        DATE(1 << 1, Bundle.LBL_Blame_menu_show_date(), false) {
+
+            @Override
+            String format (AnnotateLine line) {
+                return dateFormat.format(new Date(line.getRevisionInfo().getCommitTime()));
+            }
+            
+        },
+        AUTHOR(1 << 2, Bundle.LBL_Blame_menu_show_author(), true) {
+
+            @Override
+            String format (AnnotateLine line) {
+                return line.getAuthorShort();
+            }
+            
+        };
+        
+        private final int value;
+        private final String label;
+        private boolean visible;
+        
+        private DisplayField (int val, String label, boolean visibleByDefault) {
+            this.value = val;
+            this.label = label;
+            this.visible = visibleByDefault;
+        }
+
+        abstract String format (AnnotateLine line);
+    };
 
     /**
      * Creates new instance initializing final fields.
@@ -686,6 +736,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 }
             }
         }
+        JMenu showMenu = createShowSubmenu();
+        popupMenu.add(showMenu);
+        popupMenu.add(new JPopupMenu.Separator());
+        
         JMenuItem closeMenu;
         closeMenu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations")); // NOI18N
         closeMenu.addActionListener(new ActionListener() {
@@ -697,6 +751,42 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         popupMenu.add(closeMenu);
 
         return popupMenu;
+    }
+
+    @NbBundle.Messages({
+        "LBL_Blame.menu.show=Show"
+    })
+    private JMenu createShowSubmenu () {
+        JMenu showMenu = new JMenu(Bundle.LBL_Blame_menu_show());
+        for (final DisplayField field : DisplayField.values()) {
+            final JMenuItem mItem = new JCheckBoxMenuItem(Bundle.LBL_Blame_menu_show_commitId(), field.visible);
+            Actions.connect(mItem, new AbstractAction(field.label) {
+
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    field.visible = mItem.isSelected();
+                    int toStore = 0;
+                    for (DisplayField field : DisplayField.values()) {
+                        if (field.visible) {
+                            toStore += field.value;
+                        }
+                    }
+                    final int toStoreFinal = toStore;
+                    Utils.post(new Runnable() {
+
+                        @Override
+                        public void run () {
+                            GitModuleConfig.getDefault().setAnnotationDisplayedFields(toStoreFinal);
+                        }
+                    });
+                    revalidate();
+                    repaint();
+                }
+                
+            }, annotated);
+            showMenu.add(mItem);
+        }
+        return showMenu;
     }
 
     void setAnnotatedRevision (String revision) {
@@ -962,12 +1052,22 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         return w + 4 + (isKenai() ? 18 : 0);
     }
 
+    @NbBundle.Messages({
+        "MSG_Blame.noDisplayField=Select item to show"
+    })
     private String getDisplayName(AnnotateLine line) {
-        if (line.getRevisionInfo() == null) {
-            return ""; //NOI18N
-        } else {
-            return line.getRevisionInfo().getRevision().substring(0, 7) + " " + line.getAuthorShort(); // NOI18N
+        StringBuilder sb = new StringBuilder(20);
+        if (line.getRevisionInfo() != null) {
+            for (DisplayField field : getDisplayedFields()) {
+                sb.append(field.format(line)).append(" ");
+            }
+            if (sb.length() == 0) {
+                sb.append(Bundle.MSG_Blame_noDisplayField());
+            } else {
+                sb.delete(sb.length() - 1, sb.length());
+            }
         }
+        return sb.toString();
     }
 
     /**
@@ -1345,6 +1445,24 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     void setReferencedFile(File file) {
         this.referencedFile = FileUtil.normalizeFile(file);
         this.referencedFileObject = FileUtil.toFileObject(file);
+    }
+
+    private static Set<DisplayField> getDisplayedFields () {
+        assert EventQueue.isDispatchThread();
+        EnumSet<DisplayField> fields = EnumSet.noneOf(DisplayField.class);
+        if (!fieldsInitialized) {
+            fieldsInitialized = true;
+            int stored = GitModuleConfig.getDefault().getAnnotationDisplayedFields(DisplayField.COMMIT_ID.value + DisplayField.AUTHOR.value);
+            for (DisplayField field : DisplayField.values()) {
+                field.visible = (stored & field.value) != 0;
+            }
+        }
+        for (DisplayField field : DisplayField.values()) {
+            if (field.visible) {
+                fields.add(field);
+            }
+        }
+        return fields;
     }
 }
 

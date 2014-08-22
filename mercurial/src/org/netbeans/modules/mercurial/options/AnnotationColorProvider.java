@@ -97,6 +97,8 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     public final AnnotationFormat ADDED_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("addedLocallyTT", NbBundle.getMessage(MercurialAnnotator.class, "CTL_FileInfoStatus_AddedLocally"), ADDED_COLOR, true); //NOI18N
     public final AnnotationFormat COPIED_LOCALLY_FILE = createAnnotationFormat("copiedLocally", NbBundle.getMessage(MercurialAnnotator.class, "CTL_FileInfoStatus_AddedLocallyCopied"), ADDED_COLOR, false); //NOI18N
     public final AnnotationFormat COPIED_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("copiedLocallyTT", NbBundle.getMessage(MercurialAnnotator.class, "CTL_FileInfoStatus_AddedLocallyCopied"), ADDED_COLOR, true); //NOI18N
+    public final AnnotationFormat MOVED_LOCALY_FILE = createAnnotationFormat("movedLocally", NbBundle.getMessage(MercurialAnnotator.class, "CTL_FileInfoStatus_AddedLocallyMoved"), ADDED_COLOR, false); //NOI18N
+    public final AnnotationFormat MOVED_LOCALY_FILE_TOOLTIP = createAnnotationFormat("movedLocallyTT", NbBundle.getMessage(MercurialAnnotator.class, "CTL_FileInfoStatus_AddedLocallyMoved"), ADDED_COLOR, true); //NOI18N
     public final AnnotationFormat MODIFIED_LOCALLY_FILE = createAnnotationFormat("modifiedLocally", NbBundle.getMessage(MercurialAnnotator.class, "CTL_FileInfoStatus_ModifiedLocally"), MODIFIED_COLOR, false); //NOI18N
     public final AnnotationFormat MODIFIED_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("modifiedLocallyTT", NbBundle.getMessage(MercurialAnnotator.class, "CTL_FileInfoStatus_ModifiedLocally"), MODIFIED_COLOR, true); //NOI18N
     public final AnnotationFormat REMOVED_LOCALLY_FILE = createAnnotationFormat("removedLocally", NbBundle.getMessage(MercurialAnnotator.class, "CTL_FileInfoStatus_RemovedLocally"), DELETED_COLOR, false); //NOI18N
@@ -168,6 +170,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
         putColor(ADDED_LOCALLY_FILE);
         putColor(CONFLICT_FILE);
         putColor(COPIED_LOCALLY_FILE);
+        putColor(MOVED_LOCALY_FILE);
         putColor(DELETED_LOCALLY_FILE);
         putColor(EXCLUDED_FILE);
         putColor(MODIFIED_LOCALLY_FILE);

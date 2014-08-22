@@ -327,7 +327,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         final Map<String, String> colors = new HashMap<String, String>();
         colors.put("A", HgUtils.getColorString(AnnotationColorProvider.getInstance().ADDED_LOCALLY_FILE.getActualColor()));
         colors.put("C", HgUtils.getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
-        colors.put("R", HgUtils.getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("R", HgUtils.getColorString(AnnotationColorProvider.getInstance().MOVED_LOCALY_FILE.getActualColor()));
         colors.put("M", HgUtils.getColorString(AnnotationColorProvider.getInstance().MODIFIED_LOCALLY_FILE.getActualColor()));
         colors.put("D", HgUtils.getColorString(AnnotationColorProvider.getInstance().REMOVED_LOCALLY_FILE.getActualColor()));
 

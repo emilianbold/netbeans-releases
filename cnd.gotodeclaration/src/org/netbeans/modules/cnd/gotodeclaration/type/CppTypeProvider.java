@@ -47,6 +47,7 @@ import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.ENUM;
 import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.STRUCT;
 import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.TYPEDEF;
 import static org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind.UNION;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmVisibilityQuery;
@@ -237,30 +238,34 @@ public class CppTypeProvider implements TypeProvider {
                 Project project = context.getProject();
                 String text = context.getText();
                 SearchType type = context.getSearchType();
-
-                CsmSelect.CsmFilter filter = CsmSelect.CLASSIFIER_KIND_FILTER;
-                NameMatcher matcher = NameMatcherFactory.createNameMatcher(text, type);
-                if (project == null) {
-                    Collection<CsmProject> csmProjects = CsmModelAccessor.getModel().projects();
-                    if (!csmProjects.isEmpty()) {
-                        for (CsmProject csmProject : csmProjects) {
-                            checkCancelled();
-                            processProject(csmProject, filter, matcher);
-                        }
-                        if (PROCESS_LIBRARIES) {
+                CsmCacheManager.enter();
+                try {
+                    CsmSelect.CsmFilter filter = CsmSelect.CLASSIFIER_KIND_FILTER;
+                    NameMatcher matcher = NameMatcherFactory.createNameMatcher(text, type);
+                    if (project == null) {
+                        Collection<CsmProject> csmProjects = CsmModelAccessor.getModel().projects();
+                        if (!csmProjects.isEmpty()) {
                             for (CsmProject csmProject : csmProjects) {
                                 checkCancelled();
-                                Set<CsmProject> processedLibs = new HashSet<CsmProject>();
-                                processProjectLibs(csmProject, filter, processedLibs, matcher);
+                                processProject(csmProject, filter, matcher);
+                            }
+                            if (PROCESS_LIBRARIES) {
+                                for (CsmProject csmProject : csmProjects) {
+                                    checkCancelled();
+                                    Set<CsmProject> processedLibs = new HashSet<CsmProject>();
+                                    processProjectLibs(csmProject, filter, processedLibs, matcher);
+                                }
                             }
                         }
+                    } else {
+                        CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
+                        processProject(csmProject, filter, matcher);
+                        if (PROCESS_LIBRARIES) {
+                            processProjectLibs(csmProject, filter, new HashSet<CsmProject>(), matcher);
+                        }
                     }
-                } else {
-                    CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
-                    processProject(csmProject, filter, matcher);
-                    if (PROCESS_LIBRARIES) {
-                        processProjectLibs(csmProject, filter, new HashSet<CsmProject>(), matcher);
-                    }
+                } finally {
+                    CsmCacheManager.leave();
                 }
             } catch (CancellationException ex) {
                 if (TRACE) {

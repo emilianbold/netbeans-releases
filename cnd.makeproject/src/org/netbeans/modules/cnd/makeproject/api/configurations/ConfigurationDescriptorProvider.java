@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
@@ -496,6 +497,11 @@ public abstract class ConfigurationDescriptorProvider {
             if (projectDescriptor.isModified()) {
                 if (interrupter.cancelled()) {
                     return;
+                }
+                if (project instanceof MakeProject) {
+                    if (((MakeProject)project).isDeleted()) {
+                        return;
+                    }
                 }
                 // Ask user if descriptor is modified in memory.
                 String txt = NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationText", project.getProjectDirectory().getPath()); //NOI18N
