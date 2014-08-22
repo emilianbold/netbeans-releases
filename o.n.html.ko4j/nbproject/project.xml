@@ -3,11 +3,11 @@
    <type>org.netbeans.modules.apisupport.project</type>
    <configuration>
        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-           <code-name-base>ko4j</code-name-base>
+           <code-name-base>org.netbeans.html.ko4j</code-name-base>
            <module-dependencies/>
            <public-packages/>
            <class-path-extension>
-               <runtime-relative-path>ko4j.jar</runtime-relative-path>
+               <runtime-relative-path>org-netbeans-html-ko4j.jar</runtime-relative-path>
                <binary-origin>external/ko4j.jar</binary-origin>
             </class-path-extension>
         </data>
