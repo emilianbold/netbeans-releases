@@ -55,7 +55,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -68,7 +67,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -1492,6 +1490,10 @@ public final class MakeProject implements Project, MakeProjectListener {
         }
     }
 
+    public boolean isDeleted() {
+        return isDeleted.get() || isDeleting.get();
+    }
+    
     void setDeleted() {
         LOGGER.log(Level.FINE, "set deleted MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
         isDeleted.set(true);
@@ -1530,7 +1532,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                     synchronized (openStateAndLock) {
                         if (!openStateAndLock.get()) {
                             if (nativeProject instanceof NativeProjectProvider) {
-                                NativeProjectRegistry.getDefault().unregister(nativeProject);
+                                NativeProjectRegistry.getDefault().unregister(nativeProject, isDeleted());
                             }
                             registerClassPath(false);
                             projectDescriptorProvider.closed();

@@ -48,7 +48,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -208,13 +207,9 @@ public final class MakeProjectLayerDescriptorProvider implements NativeProjectLa
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (NativeProjectRegistry.PROPERTY_OPEN_NATIVE_PROJECTS.equals(evt.getPropertyName())) {
-                Collection<NativeProject> newList = (Collection<NativeProject>) evt.getNewValue();
-                Collection<NativeProject> oldList = new ArrayList<>((Collection<NativeProject>) evt.getOldValue());
-                oldList.removeAll(newList);
-                for (NativeProject p : oldList) {
-                    cache.remove(p);
-                }
+            if (NativeProjectRegistry.PROPERTY_CLOSE_NATIVE_PROJECT.equals(evt.getPropertyName()) || 
+                NativeProjectRegistry.PROPERTY_DELETE_NATIVE_PROJECT.equals(evt.getPropertyName())) {
+                cache.remove((NativeProject)evt.getSource());
             }
         }
     }
