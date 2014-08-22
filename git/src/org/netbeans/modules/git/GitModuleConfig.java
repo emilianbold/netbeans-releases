@@ -95,6 +95,7 @@ public final class GitModuleConfig {
     private static final String KEY_SHOW_FILE_INFO = "showFileInfo"; //NOI18N
     private static final String KEY_SEARCH_ON_BRANCH = "searchOnBranch.enabled"; //NOI18N
     private static final String PROP_ANNOTATIONFORMAT_PROJECT = "annotationFormat.project"; //NOI18N
+    private static final String KEY_ANNOTATION_DISPLAYED_FIELDS = "annotate.displayedFields"; //NOI18N
     
     private String lastCanceledCommitMessage;
     private static final String DEFAULT_ANNOTATION_PROJECT = Annotator.DEFAULT_ANNOTATION_PROJECT;
@@ -494,6 +495,14 @@ public final class GitModuleConfig {
 
     public void setSearchOnlyCurrentBranchEnabled (boolean enabled) {
         getPreferences().putBoolean(KEY_SEARCH_ON_BRANCH, enabled);
+    }
+    
+    public void setAnnotationDisplayedFields (int value) {
+        getPreferences().putInt(KEY_ANNOTATION_DISPLAYED_FIELDS, value);
+    }
+    
+    public int getAnnotationDisplayedFields (int defaultValue) {
+        return getPreferences().getInt(KEY_ANNOTATION_DISPLAYED_FIELDS, defaultValue);
     }
     
     private static class GitConnectionSettingsEntry {
