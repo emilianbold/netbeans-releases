@@ -56,6 +56,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -64,14 +66,21 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
 import org.netbeans.api.extexecution.base.Environment;
 import org.netbeans.api.extexecution.base.Processes;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.InputReader;
 import org.netbeans.api.extexecution.base.input.InputReaderTask;
 import org.netbeans.api.extexecution.base.input.InputReaders;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
+import org.netbeans.modules.weblogic.common.RemoteLogInputReader;
 import org.openide.util.BaseUtilities;
 import org.openide.util.RequestProcessor;
 
@@ -84,6 +93,10 @@ public final class WebLogicRuntime {
     private static final Logger LOGGER = Logger.getLogger(WebLogicRuntime.class.getName());
 
     private static final RequestProcessor RUNTIME_RP = new RequestProcessor(WebLogicRuntime.class.getName(), 2);
+
+    private static final Pattern LOG_PARSING_PATTERN = Pattern.compile(
+            "^####(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+" // NOI18N
+                    + "(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>?)(\\s+|$)"); // NOI18N
 
     private static final String STARTUP_SH = "startWebLogic.sh";   // NOI18N
 
@@ -103,8 +116,8 @@ public final class WebLogicRuntime {
 
     private static final int CHECK_TIMEOUT = 10000;
 
-    //@GuardedBy(INSTANCES)
-    private static final Map<WebLogicConfiguration, Process> INSTANCES = new HashMap<WebLogicConfiguration, Process>();
+    //@GuardedBy(PROCESSES)
+    private static final WeakHashMap<WebLogicConfiguration, Process> PROCESSES = new WeakHashMap<WebLogicConfiguration, Process>();
 
     private final WebLogicConfiguration config;
 
@@ -116,6 +129,12 @@ public final class WebLogicRuntime {
     public static WebLogicRuntime getInstance(@NonNull WebLogicConfiguration config) {
         return new WebLogicRuntime(config);
     }
+
+//    public static void clear(WebLogicConfiguration config) {
+//        synchronized (PROCESSES) {
+//            PROCESSES.remove(config);
+//        }
+//    }
 
     public void startAndWait(@NullAllowed final BaseExecutionDescriptor.InputProcessorFactory outFactory,
             @NullAllowed final BaseExecutionDescriptor.InputProcessorFactory errFactory,
@@ -208,8 +227,8 @@ public final class WebLogicRuntime {
                         }
                         return;
                     }
-                    synchronized (INSTANCES) {
-                        INSTANCES.put(config, process);
+                    synchronized (PROCESSES) {
+                        PROCESSES.put(config, process);
                     }
 
                     if (listener != null) {
@@ -362,8 +381,8 @@ public final class WebLogicRuntime {
                             startService(stopService, stopProcess, outFactory, errFactory);
                         } else {
                             Process process;
-                            synchronized (INSTANCES) {
-                                process = INSTANCES.get(config);
+                            synchronized (PROCESSES) {
+                                process = PROCESSES.get(config);
                             }
                             if (process == null) {
                                 // FIXME what to do here
@@ -445,8 +464,8 @@ public final class WebLogicRuntime {
 
     public void kill() {
         Process process;
-        synchronized (INSTANCES) {
-            process = INSTANCES.get(config);
+        synchronized (PROCESSES) {
+            process = PROCESSES.get(config);
         }
         if (process != null) {
             Map<String, String> mark = new HashMap<String, String>();
@@ -456,18 +475,78 @@ public final class WebLogicRuntime {
     }
 
     public boolean isRunning() {
-        Process proc;
-        synchronized (INSTANCES) {
-            proc = INSTANCES.get(config);
-        }
-
-        if (!isRunning(proc)) {
-            return false;
-        }
+//        Process proc;
+//        synchronized (PROCESSES) {
+//            proc = PROCESSES.get(config);
+//        }
+//
+//        if (!isRunning(proc)) {
+//            return false;
+//        }
 
         String host = config.getHost();
         int port = config.getPort();
         return ping(host, port, CHECK_TIMEOUT); // is server responding?
+    }
+
+    public boolean isProcessRunning() {
+        if (config.isRemote()) {
+            return false;
+        }
+        Process proc;
+        synchronized (PROCESSES) {
+            proc = PROCESSES.get(config);
+        }
+
+        return isRunning(proc);
+    }
+
+    @CheckForNull
+    public InputReaderTask createLogReaderTask(@NonNull final LineProcessor processor,
+            @NullAllowed Callable<String> nonProxy) {
+
+        if (config.isRemote()) {
+            return InputReaderTask.newTask(new RemoteLogInputReader(config, nonProxy), InputProcessors.bridge(processor));
+        }
+
+        String name = config.getDomainName();
+        String admin = config.getDomainAdminServer();
+
+        if (admin != null && name != null) {
+            File logFile = new File(config.getDomainHome(),
+                    "servers" + File.separator + admin + File.separator + "logs" + File.separator + name + ".log"); // NOI18N
+            final StringBuilder sb = new StringBuilder();
+            return InputReaderTask.newTask(InputReaders.forFile(logFile, Charset.defaultCharset()),
+                    InputProcessors.bridge(new LineProcessor() {
+
+                        @Override
+                        public void processLine(String line) {
+                            Matcher m = LOG_PARSING_PATTERN.matcher(line);
+                            if (m.matches()) {
+                                sb.append(m.group(1)).append(" "); // NOI18N
+                                sb.append(m.group(2)).append(" "); // NOI18N
+                                sb.append(m.group(3)).append(" "); // NOI18N
+                                sb.append(m.group(11)).append(" "); // NOI18N
+                                sb.append(m.group(12)).append(" "); // NOI18N
+                                processor.processLine(sb.toString());
+                                sb.setLength(0);
+                            } else {
+                                processor.processLine(line);
+                            }
+                        }
+
+                        @Override
+                        public void reset() {
+                            processor.reset();
+                        }
+
+                        @Override
+                        public void close() {
+                            processor.close();
+                        }
+                    }));
+        }
+        return null;
     }
 
     private static void configureEnvironment(Environment environment, Map<String, String> variables) {
@@ -513,16 +592,17 @@ public final class WebLogicRuntime {
     }
 
     private static boolean isRunning(Process process) {
-        if (process != null) {
-            try {
-                process.exitValue();
-                // process is stopped
-                return false;
-            } catch (IllegalThreadStateException e) {
-                // process is running
-            }
+        if (process == null) {
+            return false;
         }
-        return true;
+        try {
+            process.exitValue();
+            // process is stopped
+            return false;
+        } catch (IllegalThreadStateException e) {
+            // process is running
+            return true;
+        }
     }
 
     private static boolean ping(String host, int port, int timeout) {

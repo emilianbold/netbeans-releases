@@ -42,57 +42,24 @@
 
 package org.netbeans.modules.j2ee.weblogic9;
 
-import java.io.File;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.j2ee.deployment.common.api.Version;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class CommonBridge {
+public final class VersionBridge {
 
-    private CommonBridge() {
+    private VersionBridge() {
         super();
     }
 
-    @NonNull
-    public static WebLogicConfiguration getConfiguration(@NonNull WLDeploymentManager dm) {
-        InstanceProperties ip = dm.getInstanceProperties();
-        String username = ip.getProperty(InstanceProperties.USERNAME_ATTR);
-        String password = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
-
-        String serverHome = ip.getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
-        String domainHome = ip.getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
-
-        if (dm.isRemote()) {
-            String uri = ip.getProperty(InstanceProperties.URL_ATTR);
-            // it is guaranteed it is WL
-            String[] parts = uri.substring(WLDeploymentFactory.URI_PREFIX.length()).split(":");
-
-            String host = parts[0];
-            String port = parts.length > 1 ? parts[1] : "";
-            int realPort;
-            try {
-                realPort = Integer.parseInt(port);
-            } catch (NumberFormatException ex) {
-                realPort = 7001;
-            }
-            return WebLogicConfiguration.forRemoteDomain(new File(serverHome), host, realPort, username, password);
-        }
-        return WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome), username, password);
-    }
-
     @CheckForNull
-    public static Version getVersion(@NullAllowed org.netbeans.modules.weblogic.common.api.Version version) {
+    public static org.netbeans.modules.j2ee.deployment.common.api.Version getVersion(@NullAllowed org.netbeans.modules.weblogic.common.api.Version version) {
         if (version == null) {
             return null;
         }
-        return Version.fromJsr277OrDottedNotationWithFallback(version.toString());
+        return org.netbeans.modules.j2ee.deployment.common.api.Version.fromJsr277OrDottedNotationWithFallback(version.toString());
     }
 }

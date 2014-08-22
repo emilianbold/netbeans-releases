@@ -145,10 +145,14 @@ public final class WebLogicDeployer {
     public Future<Void> redeploy(@NonNull String name, @NonNull File file,
             @NullAllowed BatchDeployListener listener) {
         List<String> params = new ArrayList<>();
-//        if (file.isDirectory()) {
-            params.add("-source"); // NOI18N
-            params.add(file.getAbsolutePath());
-//        }
+        params.add("-source"); // NOI18N
+        params.add(file.getAbsolutePath());
+
+        if (config.isRemote()) {
+            params.add("-upload");
+            // we must use remote otherwise it will fail
+            params.add("-remote");
+        }
         return redeploy(Collections.singletonList(name), listener, params.toArray(new String[params.size()]));
     }
 
@@ -363,11 +367,12 @@ public final class WebLogicDeployer {
 
             @Override
             public Void call() throws Exception {
-                int length = config.isRemote() ? parameters.length + 2 : parameters.length + 1;
+                int length = config.isRemote() ? parameters.length + 3 : parameters.length + 1;
                 String[] execParams = new String[length];
                 execParams[execParams.length - 1] = file.getAbsolutePath();
                 if (config.isRemote()) {
                     execParams[execParams.length - 2] = "-upload"; // NOI18N
+                    execParams[execParams.length - 3] = "-remote"; // NOI18N
                 }
                 if (parameters.length > 0) {
                     System.arraycopy(parameters, 0, execParams, 0, parameters.length);
@@ -498,7 +503,7 @@ public final class WebLogicDeployer {
         builder.setRedirectErrorStream(true);
         List<String> arguments = new ArrayList<String>();
         // NB supports only JDK6+ while WL 9, only JDK 5
-        Version version = config.getLayout().getDomainVersion();
+        Version version = config.getDomainVersion();
         if (version == null
                 || !version.isAboveOrEqual(WebLogicConfiguration.VERSION_10)) {
             arguments.add("-Dsun.lang.ClassLoader.allowArraySyntax=true"); // NOI18N

@@ -44,8 +44,10 @@ package org.netbeans.modules.weblogic.common.api;
 
 import java.io.File;
 import java.util.Objects;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -55,48 +57,59 @@ public final class WebLogicConfiguration {
 
     public static final Version VERSION_10 = Version.fromJsr277NotationWithFallback("10"); // NOI18N
 
+    private static final WeakSet<WebLogicConfiguration> INSTANCES = new WeakSet<WebLogicConfiguration>();
+
     private final String id;
 
     private final File serverHome;
-
-    private final String username;
-
-    private final String password;
 
     private final File domainHome;
 
     private final String host;
 
-    private final int port;
+    private final Integer port;
+
+    private final DomainConfiguration config;
+
+    private final Credentials credentials;
 
     // @GuardedBy("this")
     private WebLogicLayout layout;
 
-    private WebLogicConfiguration(File serverHome, String username, String password,
-            File domainHome, String host, int port) {
+    // @GuardedBy("this")
+    private WebLogicRemote remote;
+
+    private WebLogicConfiguration(File serverHome, File domainHome, String host, Integer port, Credentials credentials) {
         this.serverHome = serverHome;
-        this.username = username;
-        this.password = password;
         this.domainHome = domainHome;
         this.host = host;
         this.port = port;
+        this.credentials = credentials;
 
         if (domainHome != null) {
             id = serverHome + ":" + domainHome;
+            // FIXME file
+            config = DomainConfiguration.getInstance(new File(domainHome, "config" + File.separator + "config.xml"), true);
         } else {
             id = host + ":" + port;
+            config = null;
         }
     }
 
     public static WebLogicConfiguration forLocalDomain(File serverHome, File domainHome,
-            String username, String password) {
-        // FIXME port
-        return new WebLogicConfiguration(serverHome, username, password, domainHome, "localhost", 7001);
+            Credentials credentials) {
+        WebLogicConfiguration instance = new WebLogicConfiguration(serverHome, domainHome, null, null, credentials);
+        synchronized (INSTANCES) {
+            return INSTANCES.putIfAbsent(instance);
+        }
     }
 
     public static WebLogicConfiguration forRemoteDomain(File serverHome, String host, int port,
-            String username, String password) {
-        return new WebLogicConfiguration(serverHome, username, password, null, host, port);
+            Credentials credentials) {
+        WebLogicConfiguration instance = new WebLogicConfiguration(serverHome, null, host, port, credentials);
+        synchronized (INSTANCES) {
+            return INSTANCES.putIfAbsent(instance);
+        }
     }
 
     public String getId() {
@@ -112,33 +125,65 @@ public final class WebLogicConfiguration {
         return serverHome;
     }
 
+    @NonNull
+    public String getUsername() {
+        return credentials.getUsername();
+    }
+
+    @NonNull
+    public String getPassword() {
+        return credentials.getPassword();
+    }
+
+    public String getHost() {
+        if (host != null) {
+            return host;
+        }
+        return config.getHost();
+    }
+
+    public int getPort() {
+        if (port != null) {
+            return port;
+        }
+        return config.getPort();
+    }
+
+    @NonNull
+    public String getAdminURL() {
+        if (config == null) {
+            return "t3://" + host + ":" + port;
+        }
+        return config.getAdminURL();
+    }
+
     @NullUnknown
     public File getDomainHome() {
         return domainHome;
     }
 
-    @NonNull
-    public String getUsername() {
-        return username;
+    @NullUnknown
+    public String getDomainName() {
+        if (config == null) {
+            return null;
+        }
+        return config.getName();
     }
 
-    @NonNull
-    public String getPassword() {
-        return password;
+    @NullUnknown
+    public String getDomainAdminServer() {
+        if (config == null) {
+            return null;
+        }
+        return config.getAdminServer();
     }
 
-    public String getHost() {
-        return host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    @NonNull
-    public String getAdminURL() {
-        // XXX
-        return "t3://" + host + ":" + port;
+    @CheckForNull
+    public Version getDomainVersion() {
+        if (config == null) {
+            return null;
+        }
+        return config.getVersion();
     }
 
     @NonNull
@@ -147,6 +192,14 @@ public final class WebLogicConfiguration {
             layout = new WebLogicLayout(this);
         }
         return layout;
+    }
+
+    @NonNull
+    public synchronized WebLogicRemote getRemote() {
+        if (remote == null) {
+            remote = new WebLogicRemote(this);
+        }
+        return remote;
     }
 
     @Override
@@ -169,5 +222,15 @@ public final class WebLogicConfiguration {
             return false;
         }
         return true;
+    }
+
+    public static interface Credentials {
+
+        @NonNull
+        String getUsername();
+
+        @NonNull
+        String getPassword();
+
     }
 }
