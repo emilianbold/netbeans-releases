@@ -44,6 +44,7 @@
 package org.netbeans.modules.mercurial;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import org.openide.util.NbBundle;
 
 import java.io.Serializable;
@@ -196,6 +197,10 @@ public class FileInformation extends VCSFileInformation implements Serializable 
             FileInformation.STATUS_VERSIONED_NEWINREPOSITORY |
             FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY;
     
+    private static final int STATUS_VERSIONED_REMOVED =
+            FileInformation.STATUS_VERSIONED_DELETEDLOCALLY |
+            FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
+    
     /**
      * Status constant.
      */ 
@@ -290,7 +295,13 @@ public class FileInformation extends VCSFileInformation implements Serializable 
             return loc.getString("CTL_FileInfoStatus_NewLocally"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             if (entry != null && entry.isCopied()) {
-                return loc.getString("CTL_FileInfoStatus_AddedLocallyCopied"); // NOI18N
+                if (!EventQueue.isDispatchThread() && !entry.getOriginalFile().exists()
+                        || (Mercurial.getInstance().getFileStatusCache().getStatus(entry.getOriginalFile()).getStatus()
+                        & FileInformation.STATUS_VERSIONED_REMOVED) != 0) {
+                    return loc.getString("CTL_FileInfoStatus_AddedLocallyMoved"); // NOI18N   
+                } else {
+                    return loc.getString("CTL_FileInfoStatus_AddedLocallyCopied"); // NOI18N
+                }
             }
             return loc.getString("CTL_FileInfoStatus_AddedLocally"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_UPTODATE)) {
@@ -329,7 +340,13 @@ public class FileInformation extends VCSFileInformation implements Serializable 
             return loc.getString("CTL_FileInfoStatus_NewLocally_Short"); // NOI18N
         } else if (FileInformation.match(status, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             if (entry != null && entry.isCopied()) {
-                return loc.getString("CTL_FileInfoStatus_AddedLocallyCopied_Short"); // NOI18N
+                if (!EventQueue.isDispatchThread() && !entry.getOriginalFile().exists()
+                        || (Mercurial.getInstance().getFileStatusCache().getStatus(entry.getOriginalFile()).getStatus()
+                        & FileInformation.STATUS_VERSIONED_REMOVED) != 0) {
+                    return loc.getString("CTL_FileInfoStatus_AddedLocallyMoved_Short"); //NOI18N
+                } else {
+                    return loc.getString("CTL_FileInfoStatus_AddedLocallyCopied_Short"); //NOI18N
+                }
             }
             return loc.getString("CTL_FileInfoStatus_AddedLocally_Short"); // NOI18N
         } else if (status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
