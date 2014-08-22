@@ -76,7 +76,6 @@ import org.netbeans.api.extexecution.base.Environment;
 import org.netbeans.api.extexecution.base.Processes;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
-import org.netbeans.api.extexecution.base.input.InputReader;
 import org.netbeans.api.extexecution.base.input.InputReaderTask;
 import org.netbeans.api.extexecution.base.input.InputReaders;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
