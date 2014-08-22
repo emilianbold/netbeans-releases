@@ -251,13 +251,15 @@ public class ModelSupport implements PropertyChangeListener {
             if (TRACE_STARTUP) {
                 System.out.println("Model support event:" + evt.getPropertyName() + " postponeParse=" + postponeParse);
             }
-            if (evt.getPropertyName().equals(NativeProjectRegistry.PROPERTY_OPEN_NATIVE_PROJECTS)) {
+            if (evt.getPropertyName().equals(NativeProjectRegistry.PROPERTY_OPEN_NATIVE_PROJECT)||
+                evt.getPropertyName().equals(NativeProjectRegistry.PROPERTY_CLOSE_NATIVE_PROJECT)||
+                evt.getPropertyName().equals(NativeProjectRegistry.PROPERTY_DELETE_NATIVE_PROJECT)) {
                 if (!postponeParse) {
                     if (TRACE_STARTUP) {
                         System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS"); // NOI18N
                     }
                     openProjectsTask.schedule(0);
-                    closeProjectsIfNeeded();
+                    closeProjectsIfNeeded(evt);
                 }
             }
         } catch (Exception e) {
@@ -283,7 +285,7 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
-    private void closeProjectsIfNeeded() {
+    private void closeProjectsIfNeeded(PropertyChangeEvent evt) {
         synchronized (openedProjects) {
             Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
             if (TRACE_STARTUP) {
@@ -306,7 +308,11 @@ public class ModelSupport implements PropertyChangeListener {
             }
 
             for (Lookup.Provider project : toClose) {
-                closeProject(project);
+                if (evt.getPropertyName().equals(NativeProjectRegistry.PROPERTY_DELETE_NATIVE_PROJECT)) {
+                    closeProject(project, true);
+                } else {
+                    closeProject(project, false);
+                }
             }
             hasOpenedProjects.set(!openedProjects.isEmpty());
             openedProjects.notifyAll();
@@ -471,7 +477,7 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
-    private void closeProject(Lookup.Provider project) {
+    private void closeProject(Lookup.Provider project, boolean isDeleted) {
         assert Thread.holdsLock(openedProjects);
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("### ModelSupport.closeProject: " + toString(project)); // NOI18N
@@ -482,7 +488,7 @@ public class ModelSupport implements PropertyChangeListener {
         }
         NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
         if (nativeProject != null) {
-            model.closeProject(nativeProject);
+            model.closeProject(nativeProject, isDeleted);
         }
         openedProjects.remove(project);
     }
