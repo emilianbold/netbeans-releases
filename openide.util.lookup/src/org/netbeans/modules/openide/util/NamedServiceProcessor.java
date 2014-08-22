@@ -91,6 +91,9 @@ public final class NamedServiceProcessor extends AbstractServiceProviderProcesso
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (Element e : roundEnv.getElementsAnnotatedWith(NamedServiceDefinition.class)) {
             NamedServiceDefinition nsd = e.getAnnotation(NamedServiceDefinition.class);
+            if (nsd == null) {
+                continue;
+            }
             Matcher m = reference.matcher(nsd.path());
             while (m.find()) {
                 final ExecutableElement attr = findAttribute(e, m.group(1));
@@ -175,6 +178,9 @@ public final class NamedServiceProcessor extends AbstractServiceProviderProcesso
             }
             for (Element e : roundEnv.getElementsAnnotatedWith(c)) {
                 Annotation a = e.getAnnotation(c);
+                if (a == null) {
+                    continue;
+                }
                 NamedServiceDefinition nsd = c.getAnnotation(NamedServiceDefinition.class);
                 int cnt = 0;
                 for (Class<?> type : nsd.serviceType()) {

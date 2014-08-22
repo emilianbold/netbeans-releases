@@ -68,6 +68,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -112,6 +113,8 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.search.SearchInfoDefinition;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileChooserBuilder;
@@ -286,16 +289,45 @@ public class ClientSideProject implements Project {
         return !ClientSideProjectProperties.ProjectServer.EXTERNAL.name().equalsIgnoreCase(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER));
     }
 
-    @CheckForNull
-    public FileObject getSiteRootFolder() {
-        String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
-        if (s == null) {
-            s = ""; //NOI18N
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "ClientSideProject.error.broken=<html>Project <b>{0}</b> is broken, resolve project problems first."
+    })
+    public boolean isBroken(boolean showCustomizer) {
+        boolean broken = getSourcesFolder() == null
+                && getSiteRootFolder() == null;
+        if (broken
+                && showCustomizer) {
+            NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                    Bundle.ClientSideProject_error_broken(getName()), NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(descriptor);
+            ProjectProblems.showCustomizer(this);
         }
-        if (s.length() == 0) {
+        return broken;
+    }
+
+    @CheckForNull
+    public FileObject getSourcesFolder() {
+        String sourceFolder = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SOURCE_FOLDER);
+        if (sourceFolder == null) {
+            return null;
+        }
+        if (sourceFolder.isEmpty()) {
             return getProjectDirectory();
         }
-        return projectHelper.resolveFileObject(s);
+        return projectHelper.resolveFileObject(sourceFolder);
+    }
+
+    @CheckForNull
+    public FileObject getSiteRootFolder() {
+        String siteRootFolder = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
+        if (siteRootFolder == null) {
+            return null;
+        }
+        if (siteRootFolder.isEmpty()) {
+            return getProjectDirectory();
+        }
+        return projectHelper.resolveFileObject(siteRootFolder);
     }
 
     @NbBundle.Messages({
@@ -634,7 +666,6 @@ public class ClientSideProject implements Project {
             assert siteRootFolder == null : "Should not be listening to " + siteRootFolder;
             FileObject siteRoot = project.getSiteRootFolder();
             if (siteRoot == null) {
-                // broken project
                 return;
             }
             siteRootFolder = FileUtil.toFile(siteRoot);
