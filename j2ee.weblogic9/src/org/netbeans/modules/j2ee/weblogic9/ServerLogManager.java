@@ -42,23 +42,15 @@
 
 package org.netbeans.modules.j2ee.weblogic9;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.InputReaderTask;
-import org.netbeans.api.extexecution.base.input.InputReaders;
-import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.extexecution.print.LineProcessors;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.optional.NonProxyHostsHelper;
-import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 import org.netbeans.modules.weblogic.common.api.WebLogicRuntime;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -71,10 +63,6 @@ import org.openide.windows.OutputWriter;
 public class ServerLogManager {
 
     private static final Logger LOGGER = Logger.getLogger(ServerLogManager.class.getName());
-
-    private static final Pattern LOG_PARSING_PATTERN = Pattern.compile(
-            "^####(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+" // NOI18N
-                    + "(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>)\\s+(<.*>?)(\\s+|$)"); // NOI18N
 
     private final WLDeploymentManager dm;
 
@@ -92,67 +80,21 @@ public class ServerLogManager {
         if (task == null) {
             WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
             final OutputWriter writer = io.getOut();
-            if (dm.isRemote()) {
+            if (dm.isRemote() || !runtime.isProcessRunning()) {
                 try {
                     writer.reset();
                 } catch (IOException ex) {
                     LOGGER.log(Level.FINE, null, ex);
                 }
-                task = InputReaderTask.newTask(new RemoteLogInputReader(dm.getCommonConfiguration(), new Callable<String>() {
+            }
+            if (!runtime.isProcessRunning()) {
+                task = runtime.createLogReaderTask(LineProcessors.printing(writer, true), new Callable<String>() {
 
                     @Override
                     public String call() throws Exception {
                         return NonProxyHostsHelper.getNonProxyHosts();
                     }
-                }), InputProcessors.copying(writer));
-                // FIXME processor
-                RequestProcessor.getDefault().post(task);
-                
-            } else if (!runtime.isProcessRunning()) {
-                WebLogicConfiguration config = dm.getCommonConfiguration();
-                String name = config.getDomainName();
-                String admin = config.getDomainAdminServer();
-
-                if (admin != null && name != null) {
-                    File logFile = new File(dm.getCommonConfiguration().getDomainHome(),
-                            "servers" + File.separator + admin + File.separator + "logs" + File.separator + name + ".log"); // NOI18N
-                    final LineProcessor printing = LineProcessors.printing(writer, true);
-                    try {
-                        writer.reset();
-                    } catch (IOException ex) {
-                        LOGGER.log(Level.FINE, null, ex);
-                    }
-                    final StringBuilder sb = new StringBuilder();
-                    task = InputReaderTask.newTask(InputReaders.forFile(logFile, Charset.defaultCharset()),
-                            InputProcessors.bridge(new LineProcessor() {
-
-                        @Override
-                        public void processLine(String line) {
-                            Matcher m = LOG_PARSING_PATTERN.matcher(line);
-                            if (m.matches()) {
-                                sb.append(m.group(1)).append(" "); // NOI18N
-                                sb.append(m.group(2)).append(" "); // NOI18N
-                                sb.append(m.group(3)).append(" "); // NOI18N
-                                sb.append(m.group(11)).append(" "); // NOI18N
-                                sb.append(m.group(12)).append(" "); // NOI18N
-                                printing.processLine(sb.toString());
-                                sb.setLength(0);
-                            } else {
-                                printing.processLine(line);
-                            }
-                        }
-
-                        @Override
-                        public void reset() {
-                            printing.reset();
-                        }
-
-                        @Override
-                        public void close() {
-                            printing.close();
-                        }
-                    }));
-                }
+                });
                 // FIXME processor
                 RequestProcessor.getDefault().post(task);
             }

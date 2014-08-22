@@ -40,7 +40,7 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.weblogic9;
+package org.netbeans.modules.weblogic.common;
 
 import java.io.IOException;
 import java.util.HashMap;
