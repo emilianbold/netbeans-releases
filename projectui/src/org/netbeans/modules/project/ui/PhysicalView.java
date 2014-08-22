@@ -66,6 +66,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
 import static org.netbeans.modules.project.ui.Bundle.*;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -73,7 +74,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.FilterNode;
@@ -183,6 +183,7 @@ public class PhysicalView {
         private SourceGroup group;
         private boolean isProjectDir;
         private Boolean initialized;
+        private final Node projectDelegateNode;
 
         public GroupNode(Project project, SourceGroup group, boolean isProjectDir, DataFolder dataFolder ) {
             super( dataFolder.getNodeDelegate(),
@@ -192,6 +193,16 @@ public class PhysicalView {
             this.pi = ProjectUtils.getInformation( project );
             this.group = group;
             this.isProjectDir = isProjectDir;
+            
+            if(isProjectDir) {
+                LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
+                // used to retrieve e.g. actions in case of a folder representing a project,
+                // so that a projects context menu is the same is in a logical view
+                this.projectDelegateNode = lvp != null ? lvp.createLogicalView() : null;
+            } else {
+                this.projectDelegateNode = null;
+            }
+            
             pi.addPropertyChangeListener(WeakListeners.propertyChange(this, pi));
             group.addPropertyChangeListener( WeakListeners.propertyChange( this, group ) );
         }
@@ -281,15 +292,20 @@ public class PhysicalView {
                 Action[] projectActions;
                 
                 if ( isProjectDir ) {
-                    // If this is project dir then the properties action 
-                    // has to be replaced to invoke project customizer
-                    projectActions = new Action[ folderActions.length ]; 
-                    for ( int i = 0; i < folderActions.length; i++ ) {
-                        if ( folderActions[i] instanceof org.openide.actions.PropertiesAction ) {
-                            projectActions[i] = CommonProjectActions.customizeProjectAction();
-                        }
-                        else {
-                            projectActions[i] = folderActions[i];
+                    if( projectDelegateNode != null ) {
+                        projectActions = projectDelegateNode.getActions( false );
+                    }
+                    else {
+                        // If this is project dir then the properties action 
+                        // has to be replaced to invoke project customizer
+                        projectActions = new Action[ folderActions.length ]; 
+                        for ( int i = 0; i < folderActions.length; i++ ) {
+                            if ( folderActions[i] instanceof org.openide.actions.PropertiesAction ) {
+                                projectActions[i] = CommonProjectActions.customizeProjectAction();
+                            }
+                            else {
+                                projectActions[i] = folderActions[i];
+                            }
                         }
                     }
                 }
