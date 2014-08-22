@@ -989,9 +989,16 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         List<String> instParamsText = paramsInfo.getParamsTexts(); 
         List<CsmSpecializationParameter> instParams = paramsInfo.getInstParams();
         
+        // Below is a workaround to calculate specializaton parameter properly in at least simplest cases,
+        // because we haven't mapped specialization template parameters yet (that should be changed).
+        //
+        // Code below demonstarates problem: if we instantiate AAA with A = 1,
+        // evaluation of specialization parameter 'B' also should be 1.
+        // <code>
+        //   template <int A, typename T> struct AAA {};
+        //   template <int B> struct AAA<B, int> {};
+        // </code>
         String specParamText = null; 
-        // try to find specialization template parameter with the same name
-        // ant at the same time initialize specParamText
         CsmTemplateParameter relatedSpecTemplateParam = null;
         if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(specParam)) {
             specParamText = specParam.getText().toString();
@@ -1021,6 +1028,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     paramsInfo
             );
             if (deducedSpecParameter != null) {
+                // TODO: scope passed to evaluator should be the scope of deducedSpecParameter, probably
                 if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(deducedSpecParameter)) {
                     specParamText = deducedSpecParameter.getText().toString();
                 } else if (CsmKindUtilities.isTypeBasedSpecalizationParameter(deducedSpecParameter)) {
