@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.remote.projectui.actions;
+package org.netbeans.modules.cnd.makeproject.actions;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -59,7 +59,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.remote.projectui.actions.DefaultProjectOperationsImplementation.InvalidablePanel;
+import org.netbeans.modules.cnd.makeproject.actions.DefaultProjectOperationsImplementation.InvalidablePanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -69,7 +69,7 @@ import org.openide.util.ChangeSupport;
  * Intention is to contribute it back as soon as it is adapted to remote environment.
  * Since we are planning to contribute it back,
  * NEVER use any remote or cnd stuff directly, but only via a well defined SPI
- * Vladimir Kvashin <vkvashin@netbeans,org>
+ * Vladimir Kvashin <vkvashin@netbeans.org>
  *
  * @author Jan Lahoda
  */
@@ -220,7 +220,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel3, gridBagConstraints);
 
-        errorMessage.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
+        errorMessage.setForeground(UIManager.getColor("nb.errorForeground"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -232,7 +232,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         add(errorMessage, gridBagConstraints);
 
         progress.setLayout(new java.awt.CardLayout());
-        progress.add(jPanel4, "not-progress"); // NOI18N
+        progress.add(jPanel4, "not-progress");
 
         progressImpl.add(progressComponent = ProgressHandleFactory.createProgressComponent(handle));
         progressImpl.setMinimumSize(new java.awt.Dimension(121, 17));
@@ -247,7 +247,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.weightx = 1.0;
         progressImpl.add(jLabel5, gridBagConstraints);
 
-        progress.add(progressImpl, "progress"); // NOI18N
+        progress.add(progressImpl, "progress");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
