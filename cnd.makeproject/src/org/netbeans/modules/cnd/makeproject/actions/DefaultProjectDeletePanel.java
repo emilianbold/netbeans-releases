@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.remote.projectui.actions;
+package org.netbeans.modules.cnd.makeproject.actions;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -54,14 +54,14 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.remote.projectui.actions.DefaultProjectOperationsImplementation.InvalidablePanel;
+import org.netbeans.modules.cnd.makeproject.actions.DefaultProjectOperationsImplementation.InvalidablePanel;
 
 /**
  * Copy-pasted from org.netbeans.modules.project.uiapi
  * Intention is to contribute it back as soon as it is adapted to remote environment.
  * Since we are planning to contribute it back,
  * NEVER use any remote or cnd stuff directly, but only via a well defined SPI
- * Vladimir Kvashin <vkvashin@netbeans,org>
+ * Vladimir Kvashin <vkvashin@netbeans.org>
  *
  * @author Jan Lahoda
  */
@@ -123,11 +123,11 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         setLayout(new java.awt.GridBagLayout());
 
         warningText.setEditable(false);
-        warningText.setFont(javax.swing.UIManager.getFont("Label.font")); // NOI18N
+        warningText.setFont(javax.swing.UIManager.getFont("Label.font"));
         warningText.setLineWrap(true);
         warningText.setText(org.openide.util.NbBundle.getMessage(DefaultProjectDeletePanel.class, "LBL_Pre_Delete_Warning", new Object[] {projectDisplaName})); // NOI18N
         warningText.setWrapStyleWord(true);
-        warningText.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground")); // NOI18N
+        warningText.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
         warningText.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -150,7 +150,7 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         deleteSourcesCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DefaultProjectDeletePanel.class, "ACSD_Delete_Also_Sources", new Object[] {})); // NOI18N
 
         progress.setLayout(new java.awt.CardLayout());
-        progress.add(jPanel4, "not-progress"); // NOI18N
+        progress.add(jPanel4, "not-progress");
 
         progressImpl.add(progressComponent = ProgressHandleFactory.createProgressComponent(handle));
         progressImpl.setLayout(new java.awt.GridBagLayout());
@@ -163,7 +163,7 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         gridBagConstraints.weightx = 1.0;
         progressImpl.add(jLabel5, gridBagConstraints);
 
-        progress.add(progressImpl, "progress"); // NOI18N
+        progress.add(progressImpl, "progress");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
