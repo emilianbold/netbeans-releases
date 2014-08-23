@@ -31,6 +31,10 @@ namespace bug246517 {
         typename tuple_element246517<Ind, tuple246517<Elements...>>::type
     >::type 
     get(tuple246517<Elements...> &tpl);
+    
+    template<typename... _Elements>
+    constexpr tuple246517<_Elements...>
+      simple_make_tuple246517(_Elements&&... __args);
 
     struct AAA246517 {
         int aaa();
@@ -47,5 +51,9 @@ namespace bug246517 {
         get<0>(tpl).aaa();
         get<1>(tpl).bbb();
         get<2>(tpl).ccc();
+        auto tpl2 = simple_make_tuple246517(AAA246517(), BBB246517(), CCC246517());
+        get<0>(tpl2).aaa();
+        get<1>(tpl2).bbb();
+        get<2>(tpl2).ccc();
     } 
 }

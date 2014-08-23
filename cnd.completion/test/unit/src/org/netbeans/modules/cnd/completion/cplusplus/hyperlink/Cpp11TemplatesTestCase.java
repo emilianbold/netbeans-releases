@@ -88,9 +88,12 @@ public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
     
     public void testBug246517() throws Exception {
         // Bug 246517 - Cannot resolve elements of std::tuple
-        performTest("bug246517.cpp", 47, 22, "bug246517.cpp", 36, 9);
-        performTest("bug246517.cpp", 48, 22, "bug246517.cpp", 39, 9);
-        performTest("bug246517.cpp", 49, 22, "bug246517.cpp", 42, 9);
+        performTest("bug246517.cpp", 51, 22, "bug246517.cpp", 40, 9);
+        performTest("bug246517.cpp", 52, 22, "bug246517.cpp", 43, 9);
+        performTest("bug246517.cpp", 53, 22, "bug246517.cpp", 46, 9);
+        performTest("bug246517.cpp", 55, 23, "bug246517.cpp", 40, 9);
+        performTest("bug246517.cpp", 56, 23, "bug246517.cpp", 43, 9);
+        performTest("bug246517.cpp", 57, 23, "bug246517.cpp", 46, 9);        
     }                
     
     public void testBugbug246548_1() throws Exception {
