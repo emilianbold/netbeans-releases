@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.remote.projectui.actions;
+package org.netbeans.modules.cnd.makeproject.actions;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -106,7 +106,7 @@ import org.openide.util.RequestProcessor;
  * Intention is to contribute it back as soon as it is adapted to remote environment.
  * Since we are planning to contribute it back,
  * NEVER use any remote or cnd stuff directly, but only via a well defined SPI
- * Vladimir Kvashin <vkvashin@netbeans,org>
+ * Vladimir Kvashin <vkvashin@netbeans.org>
  *
  * @author Jan Lahoda
  */
@@ -262,7 +262,7 @@ public final class DefaultProjectOperationsImplementation {
     //<editor-fold defaultstate="collapsed" desc="Copy Operation">
     public static void copyProject(final Project project) {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Copy_Project_Handle"));
-        final ProjectCopyPanel panel = new ProjectCopyPanel(handle, project, false);
+        final DefaultProjectCopyPanel panel = new DefaultProjectCopyPanel(handle, project, false);
         //#76559
         handle.start(MAX_WORK);
         
@@ -359,7 +359,7 @@ public final class DefaultProjectOperationsImplementation {
     //<editor-fold defaultstate="collapsed" desc="Move Operation">
     public static void moveProject(final Project project) {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Move_Project_Handle"));
-        final ProjectCopyPanel panel = new ProjectCopyPanel(handle, project, true);
+        final DefaultProjectCopyPanel panel = new DefaultProjectCopyPanel(handle, project, true);
         //#76559
         handle.start(MAX_WORK);
         
