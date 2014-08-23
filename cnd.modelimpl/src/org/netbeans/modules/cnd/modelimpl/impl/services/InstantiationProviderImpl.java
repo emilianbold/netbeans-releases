@@ -145,9 +145,9 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     
     private static final int MAX_DEPTH = 20;
     
-    private static final String LT = "<"; // NOI18N
+    private static final char LT = '<'; // NOI18N
     
-    private static final String GT = ">"; // NOI18N    
+    private static final char GT = '>'; // NOI18N    
 
     @Override
     public CsmType[] calcTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, CalcTemplateTypeStrategy strategy) {
@@ -861,10 +861,16 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     ClassImplSpecialization specialization = (ClassImplSpecialization) decl;
                     List<CsmSpecializationParameter> specParams = specialization.getSpecializationParameters();
                     int match = 0;
-                    if (specParams.size() - 1  <= paramsSize) {
-                        if(variadic) {
-                            match += specParams.size();
-                        }
+                    if (variadic) {
+                        if (hasVariadicParams(specialization)) {
+                            if (specParams.size() - 1  <= paramsSize) {
+                                match += specParams.size();
+                            }
+                        } else {
+                            if (specParams.size() == paramsSize) {
+                                match += specParams.size();
+                            }
+                        }        
                     }
                     if (specParams.size() == paramsSize) {
                         for (int i = 0; i < paramsSize - 1; i++) {
@@ -918,9 +924,13 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                                     return false;
                                                 }
                                             });  
-
-                                            if (nestedQualifiedNames.contains(declClsQualifiedName)) {
-                                                match += 2;
+                                            
+                                            for (String nestedQualifiedName : nestedQualifiedNames) {
+                                                int matchValue = getQualifiedNamesMatchValue(nestedQualifiedName, declClsQualifiedName);
+                                                if (matchValue > 0) {
+                                                    match += matchValue;
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
@@ -968,6 +978,23 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         }
         return bestSpecialization;
     }        
+    
+    private static int getQualifiedNamesMatchValue(String qn1, String qn2) {
+        if (qn1 != null && qn2 != null) {
+            if (qn1.equals(qn2)) {
+                return 2;
+            } else if (qn1.length() > qn2.length() && qn1.startsWith(qn2)) {
+                final boolean isLastQualifiedPart = qn1.indexOf(APTUtils.SCOPE, qn2.length()) == -1;
+                final boolean isSpecialization = (LT == qn1.charAt(qn2.length()));
+                return isLastQualifiedPart && isSpecialization ? 1 : 0;
+            } else if (qn2.length() > qn1.length() && qn2.startsWith(qn1)) {
+                final boolean isLastQualifiedPart = qn2.indexOf(APTUtils.SCOPE, qn1.length()) == -1;
+                final boolean isSpecialization = (LT == qn2.charAt(qn1.length()));
+                return isLastQualifiedPart && isSpecialization ? 1 : 0;
+            }
+        }
+        return 0;
+    }
     
     private static boolean isExpressionParameter(CsmClassifier cls, CsmSpecializationParameter specParam, int specParamIndex) {
         if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(specParam)) {
@@ -1805,6 +1832,9 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     List<CsmSpecializationParameter> params = new ArrayList<>();
                     for (CsmTemplateParameter templateParam : templateParams) {
                         CsmSpecializationParameter mappedParam = mapping.get(templateParam);
+                        if (mappedParam != null) {
+                            params.add(mappedParam);
+                        }
                     }
                     if (hasVariadicParams(params)) {
                         params = expandVariadicParams(params);
