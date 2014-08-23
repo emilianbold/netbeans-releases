@@ -88,12 +88,18 @@ public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
     
     public void testBug246517() throws Exception {
         // Bug 246517 - Cannot resolve elements of std::tuple
-        performTest("bug246517.cpp", 51, 22, "bug246517.cpp", 40, 9);
-        performTest("bug246517.cpp", 52, 22, "bug246517.cpp", 43, 9);
-        performTest("bug246517.cpp", 53, 22, "bug246517.cpp", 46, 9);
-        performTest("bug246517.cpp", 55, 23, "bug246517.cpp", 40, 9);
-        performTest("bug246517.cpp", 56, 23, "bug246517.cpp", 43, 9);
-        performTest("bug246517.cpp", 57, 23, "bug246517.cpp", 46, 9);        
+        performTest("bug246517.cpp", 88, 22, "bug246517.cpp", 77, 9);
+        performTest("bug246517.cpp", 89, 22, "bug246517.cpp", 80, 9);
+        performTest("bug246517.cpp", 90, 22, "bug246517.cpp", 83, 9);
+        performTest("bug246517.cpp", 92, 23, "bug246517.cpp", 77, 9);
+        performTest("bug246517.cpp", 93, 23, "bug246517.cpp", 80, 9);
+        performTest("bug246517.cpp", 94, 23, "bug246517.cpp", 83, 9);        
+        performTest("bug246517.cpp", 96, 23, "bug246517.cpp", 77, 9);
+        performTest("bug246517.cpp", 97, 23, "bug246517.cpp", 80, 9);
+        performTest("bug246517.cpp", 98, 23, "bug246517.cpp", 83, 9); 
+        performTest("bug246517.cpp", 100, 23, "bug246517.cpp", 77, 9);
+        performTest("bug246517.cpp", 101, 23, "bug246517.cpp", 80, 9);
+        performTest("bug246517.cpp", 102, 23, "bug246517.cpp", 83, 9);           
     }                
     
     public void testBugbug246548_1() throws Exception {

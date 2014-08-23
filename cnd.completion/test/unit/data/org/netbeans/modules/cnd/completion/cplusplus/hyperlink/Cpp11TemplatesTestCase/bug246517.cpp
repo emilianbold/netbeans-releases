@@ -1,4 +1,4 @@
-namespace bug246517 {
+namespace bug246517 {    
     template <typename T> 
     struct add_reference246517 {
         typedef T& type;
@@ -8,7 +8,36 @@ namespace bug246517 {
     struct add_reference246517<T&> {
         typedef T& type;
     };
+    
+    template <typename T>
+    struct remove_reference246517 {
+        typedef T type;
+    };
 
+    template <typename T>
+    struct remove_reference246517<T&> {
+        typedef T type;
+    };
+    
+    template <typename T>
+    struct remove_const246517 {
+        typedef T type;
+    };
+
+    template <typename T>
+    struct remove_const246517<const T> {
+        typedef T type;
+    };    
+    
+    template <typename T>
+    struct decay246517 {
+        typedef typename remove_reference246517<T>::type no_ref;
+        typedef typename remove_const246517<no_ref>::type type;
+    };
+    
+    template <typename _Tp>
+    using decay246517_t = typename decay246517<_Tp>::type;
+    
     template <typename...Elements>
     struct tuple246517 {};
 
@@ -35,6 +64,14 @@ namespace bug246517 {
     template<typename... _Elements>
     constexpr tuple246517<_Elements...>
       simple_make_tuple246517(_Elements&&... __args);
+    
+    template<typename... _Elements>
+    constexpr tuple246517<typename decay246517<_Elements>::type...>
+      complex_make_tuple246517(_Elements&&... __args);    
+    
+    template<typename... _Elements>
+    constexpr tuple246517<decay246517_t<_Elements>...>
+      very_complex_make_tuple246517(_Elements&&... __args);    
 
     struct AAA246517 {
         int aaa();
@@ -55,5 +92,13 @@ namespace bug246517 {
         get<0>(tpl2).aaa();
         get<1>(tpl2).bbb();
         get<2>(tpl2).ccc();
+        auto tpl3 = complex_make_tuple246517(AAA246517(), BBB246517(), CCC246517());
+        get<0>(tpl3).aaa();
+        get<1>(tpl3).bbb();
+        get<2>(tpl3).ccc();        
+        auto tpl4 = very_complex_make_tuple246517(AAA246517(), BBB246517(), CCC246517());
+        get<0>(tpl4).aaa();
+        get<1>(tpl4).bbb();
+        get<2>(tpl4).ccc();        
     } 
 }
