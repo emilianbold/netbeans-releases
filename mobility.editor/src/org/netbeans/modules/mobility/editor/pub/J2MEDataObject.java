@@ -264,7 +264,6 @@ public class J2MEDataObject extends MultiDataObject {
                 @Override
                 public void save() throws java.io.IOException {
                     ((J2MEEditorSupport) findCloneableOpenSupport()).saveDocument();
-                    getDataObject().setModified(false);
                 }
             }
 

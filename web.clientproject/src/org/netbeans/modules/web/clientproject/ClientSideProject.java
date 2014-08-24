@@ -68,6 +68,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -97,7 +98,6 @@ import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
 import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -113,6 +113,8 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.search.SearchInfoDefinition;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileChooserBuilder;
@@ -126,7 +128,6 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.WindowManager;
 import org.openide.windows.WindowSystemEvent;
 import org.openide.windows.WindowSystemListener;
@@ -153,7 +154,7 @@ public class ClientSideProject implements Project {
     final AntProjectHelper projectHelper;
     private final ReferenceHelper referenceHelper;
     private final PropertyEvaluator eval;
-    private final DynamicProjectLookup lookup;
+    private final Lookup lookup;
     private final AntProjectListener antProjectListenerImpl = new AntProjectListenerImpl();
     volatile String name;
     private RefreshOnSaveListener refreshOnSaveListener;
@@ -218,10 +219,6 @@ public class ClientSideProject implements Project {
         referenceHelper = new ReferenceHelper(helper, configuration, eval);
         projectBrowserProvider = new ClientSideProjectBrowserProvider(this);
         lookup = createLookup(configuration);
-        ClientProjectEnhancedBrowserImplementation ebi = getEnhancedBrowserImpl();
-        if (ebi != null) {
-            lookup.setConfigurationProvider(ebi.getProjectConfigurationProvider());
-        }
         eval.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -234,10 +231,6 @@ public class ClientSideProject implements Project {
                     }
                     projectEnhancedBrowserImpl = null;
                     projectWebBrowser = null;
-                    ebi = getEnhancedBrowserImpl();
-                    if (ebi != null) {
-                        lookup.setConfigurationProvider(ebi.getProjectConfigurationProvider());
-                    }
                     projectBrowserProvider.activeBrowserHasChanged();
                 }
             }
@@ -296,16 +289,45 @@ public class ClientSideProject implements Project {
         return !ClientSideProjectProperties.ProjectServer.EXTERNAL.name().equalsIgnoreCase(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER));
     }
 
-    @CheckForNull
-    public FileObject getSiteRootFolder() {
-        String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
-        if (s == null) {
-            s = ""; //NOI18N
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "ClientSideProject.error.broken=<html>Project <b>{0}</b> is broken, resolve project problems first."
+    })
+    public boolean isBroken(boolean showCustomizer) {
+        boolean broken = getSourcesFolder() == null
+                && getSiteRootFolder() == null;
+        if (broken
+                && showCustomizer) {
+            NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                    Bundle.ClientSideProject_error_broken(getName()), NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(descriptor);
+            ProjectProblems.showCustomizer(this);
         }
-        if (s.length() == 0) {
+        return broken;
+    }
+
+    @CheckForNull
+    public FileObject getSourcesFolder() {
+        String sourceFolder = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SOURCE_FOLDER);
+        if (sourceFolder == null) {
+            return null;
+        }
+        if (sourceFolder.isEmpty()) {
             return getProjectDirectory();
         }
-        return projectHelper.resolveFileObject(s);
+        return projectHelper.resolveFileObject(sourceFolder);
+    }
+
+    @CheckForNull
+    public FileObject getSiteRootFolder() {
+        String siteRootFolder = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
+        if (siteRootFolder == null) {
+            return null;
+        }
+        if (siteRootFolder.isEmpty()) {
+            return getProjectDirectory();
+        }
+        return projectHelper.resolveFileObject(siteRootFolder);
     }
 
     @NbBundle.Messages({
@@ -436,7 +458,7 @@ public class ClientSideProject implements Project {
                 projectHelper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
     }
 
-    private DynamicProjectLookup createLookup(AuxiliaryConfiguration configuration) {
+    private Lookup createLookup(AuxiliaryConfiguration configuration) {
         FileEncodingQueryImplementation fileEncodingQuery =
                 new FileEncodingQueryImpl(getEvaluator(), ClientSideProjectConstants.PROJECT_ENCODING);
         Lookup base = Lookups.fixed(new Object[] {
@@ -474,8 +496,7 @@ public class ClientSideProject implements Project {
                new ProjectDirectoriesProviderImpl(),
                new CoverageProviderImpl(this),
        });
-       return new DynamicProjectLookup(this,
-               LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup"));
+       return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup");
     }
 
     void recompileSources(CssPreprocessor cssPreprocessor) {
@@ -486,25 +507,6 @@ public class ClientSideProject implements Project {
         }
         // force recompiling
         CssPreprocessors.getDefault().process(cssPreprocessor, this, siteRootFolder);
-    }
-
-    private static class DynamicProjectLookup extends ProxyLookup {
-        private Lookup base;
-        private ClientSideProject project;
-
-        private DynamicProjectLookup(ClientSideProject project, Lookup base) {
-            super(base);
-            this.project = project;
-            this.base = base;
-        }
-
-        public void setConfigurationProvider(ProjectConfigurationProvider provider) {
-            if (provider == null) {
-                setLookups(base);
-            } else {
-                setLookups(base, Lookups.fixed(provider));
-            }
-        }
     }
 
     ClassPath getSourceClassPath() {
@@ -628,7 +630,7 @@ public class ClientSideProject implements Project {
                 cordova = projectDirectory.getFileObject("hooks"); // NOI18N
             }
             FileObject testsFolder = project.getTestsFolder(false);
-            
+
             boolean hasGrunt = projectDirectory.getFileObject("Gruntfile.js") != null;
             boolean hasBower = projectDirectory.getFileObject("bower.json") !=null;
             boolean hasPackage = projectDirectory.getFileObject("package.json") !=null;
@@ -664,7 +666,6 @@ public class ClientSideProject implements Project {
             assert siteRootFolder == null : "Should not be listening to " + siteRootFolder;
             FileObject siteRoot = project.getSiteRootFolder();
             if (siteRoot == null) {
-                // broken project
                 return;
             }
             siteRootFolder = FileUtil.toFile(siteRoot);

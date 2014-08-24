@@ -189,7 +189,8 @@ public class ODCSServerProviderImpl implements TeamServerProvider {
     
     @Override
     @Messages({"ERR_UrlNotValid=This url does not seem to be valid",
-        "ERR_NotHttp=Only http and https are supported protocols"})
+               "ERR_UrlNotValidHash=This url does not seem to be valid - ending with '#'",
+               "ERR_NotHttp=Only http and https are supported protocols"})
     public String validate (String s) {
         if(Boolean.getBoolean("team.c2c.mockClient")) {
             // for mock accept whatever is provided
@@ -201,6 +202,10 @@ public class ODCSServerProviderImpl implements TeamServerProvider {
 
         if (s.equals("http://") || s.equals("https://")) { //NOI18N
             return Bundle.ERR_UrlNotValid();
+        }
+        
+        if (s.endsWith("#")) { //NOI18N
+            return Bundle.ERR_UrlNotValidHash();
         }
         return null;
     }

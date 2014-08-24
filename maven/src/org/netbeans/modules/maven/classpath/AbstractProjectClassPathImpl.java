@@ -141,6 +141,10 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
     protected final NbMavenProjectImpl getMavenProject() {
         return project;
     }
+
+    protected final void firePropertyChange(String propName, Object oldValue, Object newValue) {
+        support.firePropertyChange(propName, oldValue, newValue);
+    }
     
     @Override
     public synchronized List<PathResourceImplementation> getResources() {

@@ -312,8 +312,14 @@ final class CustomizerDocumentation extends JPanel implements ChangeListener {
         public Component getListCellRendererComponent(JList<? extends Object> list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
             assert EventQueue.isDispatchThread();
-            assert value instanceof PhpDocumentationProvider : value.getClass().getName();
-            String label = ((PhpDocumentationProvider) value).getDisplayName();
+            String label;
+            if (value == null) {
+                // #246324
+                label = ""; // NOI18N
+            } else {
+                assert value instanceof PhpDocumentationProvider : value.getClass().getName();
+                label = ((PhpDocumentationProvider) value).getDisplayName();
+            }
             return defaultRenderer.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus);
         }
 

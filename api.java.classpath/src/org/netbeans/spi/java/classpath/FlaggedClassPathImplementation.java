@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject;
+package org.netbeans.spi.java.classpath;
+
+import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 
 /**
- *
+ * The ClassPathImplementation with {@link ClassPath.Flag}s.
+ * @author Tomas Zezula
+ * @since 1.44
  */
-public class ClientSideProjectConstants {
+public interface FlaggedClassPathImplementation extends ClassPathImplementation {
 
-    // misc persistent project properties:
-    public static final String PROJECT_ENCODING = "files.encoding"; //NOI18N
-    public static final String PROJECT_SOURCE_FOLDER = "source.folder"; //NOI18N
-    public static final String PROJECT_SITE_ROOT_FOLDER = "site.root.folder"; //NOI18N
-    public static final String PROJECT_TEST_FOLDER = "test.folder"; //NOI18N
-    public static final String PROJECT_SERVER = "server"; //NOI18N
-    public static final String PROJECT_START_FILE = "start.file"; //NOI18N
-    public static final String PROJECT_WEB_ROOT = "web.context.root"; //NOI18N
-    public static final String PROJECT_PROJECT_URL = "external.project.url"; //NOI18N
-    public static final String PROJECT_AUTO_REFRESH = "browser.autorefresh"; //NOI18N
-    public static final String PROJECT_HIGHLIGHT_SELECTION = "browser.highlightselection"; //NOI18N
-    public static final String PROJECT_SELECTED_BROWSER = "browser"; //NOI18N
+    /**
+     * Name of the "flags" property.
+     */
+    public static final String PROP_FLAGS = "flags";    //NOI18N
 
-    // default paths:
-    public static final String DEFAULT_SITE_ROOT_FOLDER = "public_html"; //NOI18N
-    public static final String DEFAULT_TEST_FOLDER = "test"; //NOI18N
-    
-    // template's descriptor file
-    public static final String TEMPLATE_DESCRIPTOR = "netbeans-project.properties"; //NOI18N
+    /**
+     * Returns the {@link ClassPath}'s flags.
+     * @return the {@link Flag}s
+     */
+    @NonNull
+    Set<ClassPath.Flag> getFlags();
 }

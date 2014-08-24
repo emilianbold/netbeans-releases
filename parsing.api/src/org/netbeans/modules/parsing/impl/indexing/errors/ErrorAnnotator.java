@@ -206,25 +206,21 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         Set<FileObject> toRefresh = new HashSet<FileObject>();
         for (Iterator<FileObject> it = knownFiles2Error.keySet().iterator(); it.hasNext(); ) {
             FileObject f = it.next();
-            try {
-                final URL furl = f.getURL();
-                assert PathRegistry.noHostPart(furl) : furl;
-                if (urls.contains(furl)) {
-                    toRefresh.add(f);
-                    Integer i = knownFiles2Error.get(f);
-                    
-                    if (i != null) {
-                        knownFiles2Error.put(f, i | INVALID);
-                        
-                        enqueue(f);
-                    }
+            final URL furl = f.toURL();
+            assert PathRegistry.noHostPart(furl) : furl;
+            if (urls.contains(furl)) {
+                toRefresh.add(f);
+                Integer i = knownFiles2Error.get(f);
+
+                if (i != null) {
+                    knownFiles2Error.put(f, i | INVALID);
+
+                    enqueue(f);
                 }
-            } catch (IOException e) {
-                LOG.log(Level.INFO, e.getMessage(), e);
             }
         }
     }
-    
+
     public void fireFileStatusChanged(Set<FileObject> fos) {
         if (fos.isEmpty())
             return ;
@@ -394,11 +390,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
             final RepositoryUpdater ru = RepositoryUpdater.getDefault();
             final FileObject fo = fe.getFile();
             if (!ru.isCacheFile(fo) && ru.getOwningSourceRoot(fo) == null) {
-                try {
-                    update(fe.getFile().getURL());
-                } catch (FileStateInvalidException ex) {
-                    LOG.log(Level.FINE, null, ex);
-                }
+                update(fe.getFile().toURL());
             }
         }
 

@@ -279,7 +279,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
     
     static FileObject getRootFolder(Project project){
         SourceGroup[] groups =  ProjectUtils.getSources(project).getSourceGroups(
-                WebClientProjectConstants.SOURCES_TYPE_HTML5);
+                WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT);
         if ( groups!= null && groups.length >0 ){
             return groups[0].getRootFolder();
         }

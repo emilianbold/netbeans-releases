@@ -274,6 +274,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         _closeProject(null, platformProject, !TraceFlags.PERSISTENT_REPOSITORY);
     }
 
+    public void closeProject(NativeProject platformProject, boolean cleanRepository) {
+        _closeProject(null, platformProject, cleanRepository);
+    }
+
     public void closeProject(Object platformProject, boolean cleanRepository) {
         _closeProject(null, platformProject, cleanRepository);
     }

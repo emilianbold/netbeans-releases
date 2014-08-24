@@ -321,7 +321,6 @@ public class SourceMultiViewElement extends CloneableEditor
                         //save changes
                         try {
                             getEditorSupport().saveDocument();
-                            getEditorSupport().getDataObject().setModified(false);
                         } catch (IOException ex) {
                         }
                     }

@@ -670,6 +670,46 @@ public abstract class VariableModel extends ModelListenerSupport
 	}
     }
     
+    public static final PrettyPrintAction Action_PRETTY_PRINT = new PrettyPrintAction();
+    
+    private static class PrettyPrintAction  extends BooleanStateAction {
+	PrettyPrintAction() {
+	}
+
+	// override BooleanStateAction
+        @Override
+	public boolean getBooleanState() {
+	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
+	    if (debugger instanceof NativeDebugger) {
+		setEnabled(true);
+		return debugger.isPrettyPrint();
+	    }
+
+	    setEnabled(false);
+	    return false;
+
+	}
+
+	// interface SystemAction
+        @Override
+	public String getName() {
+	    return Catalog.get("ACT_Pretty_Print"); // NOI18N
+	}
+
+	// interface SystemAction
+        @Override
+	public HelpCtx getHelpCtx() {
+	    return new HelpCtx("pretty_print");
+	}
+
+        @Override
+	public void actionPerformed(ActionEvent e) {
+	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
+            final boolean newState = !getBooleanState();
+	    debugger.setPrettyPrint(newState);
+            debugger.postPrettyPrint(newState);
+        }
+    }
         
     public static class ShowMoreMessage {
         private final Variable v;
