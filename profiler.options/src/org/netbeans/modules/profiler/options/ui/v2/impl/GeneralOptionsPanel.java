@@ -93,7 +93,7 @@ public final class GeneralOptionsPanel extends ProfilerOptionsPanel {
         int hgap = 10;
         int vgap = 5;
         
-        Separator dataTransferSeparator = new Separator("Appearance");
+        Separator dataTransferSeparator = new Separator("Profiler Window");
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = y++;
@@ -121,6 +121,16 @@ public final class GeneralOptionsPanel extends ProfilerOptionsPanel {
         c.fill = GridBagConstraints.NONE;
         c.insets = new Insets(0, htab, vgap, 0);
         add(actionNamesChoice, c);
+        
+//        JCheckBox expertConfigChoice = new JCheckBox("Enable expert configuration");
+//        c = new GridBagConstraints();
+//        c.gridx = 0;
+//        c.gridy = y++;
+//        c.gridwidth = GridBagConstraints.REMAINDER;
+//        c.anchor = GridBagConstraints.WEST;
+//        c.fill = GridBagConstraints.NONE;
+//        c.insets = new Insets(vgap * 3, htab, vgap, 0);
+//        add(expertConfigChoice, c);
         
         Separator profilingSeparator = new Separator("Profiling");
         c = new GridBagConstraints();
