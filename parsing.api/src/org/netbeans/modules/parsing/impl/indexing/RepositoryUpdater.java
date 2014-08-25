@@ -1964,11 +1964,52 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         } finally {
             ctx.cycleDetector.pop();
         }
-        if (!incomplete || ctx.initialRoots2Deps.containsKey(rootURL)) {
+        final IncompleteStatus incompleteStatus = IncompleteStatus.get(incomplete, rootURL, ctx);
+        if (incompleteStatus.active()) {
             ctx.newRoots2Deps.put(rootURL, deps);
             ctx.newRoots2Peers.put(rootURL,peers);
         }
         return true;
+    }
+
+    private enum IncompleteStatus {
+        COMPLETE(true, true),
+        INCOMPLETE_SEEN(true,false),
+        INCOMPLETE_UNSEEN(false,false);
+
+        private final boolean active;
+        private final boolean shouldScan;
+
+        private IncompleteStatus(
+            final boolean active,
+            final boolean shouldScan) {
+            this.active = active;
+            this.shouldScan = shouldScan;
+        }
+
+        boolean active() {
+            return active;
+        }
+
+        boolean shouldScan() {
+            return shouldScan;
+        }
+
+        @NonNull
+        static IncompleteStatus get(
+            final boolean incomplete,
+            @NonNull final URL rootURL,
+            @NonNull final DependenciesContext depCtx) {
+            if (incomplete) {
+                if (depCtx.initialRoots2Deps.containsKey(rootURL)) {
+                    return INCOMPLETE_SEEN;
+                } else {
+                    return INCOMPLETE_UNSEEN;
+                }
+            } else {
+                return COMPLETE;
+            }
+        }
     }
 
     // XXX: this should ideally be available directly from EditorRegistry
