@@ -322,13 +322,15 @@ public final class SemanticHighlighter extends HighlighterBase {
             interrupter.cancel();
             latch.countDown();
             
-            lastParserResult = result;
             interrupter = new InterrupterImpl();
             latch = new CountDownLatch(1);
-        }
-        if (cancel.isCancelled()) {
-            LOG.log(Level.FINE, "SemanticHighlighter have been canceled before start, Task={0}, Result={1}", new Object[]{System.identityHashCode(this), System.identityHashCode(result)}); //NOI18N
-            return;
+            if (cancel.isCancelled()) {
+                lastParserResult = null;
+                LOG.log(Level.FINE, "SemanticHighlighter have been canceled before start, Task={0}, Result={1}", new Object[]{System.identityHashCode(this), System.identityHashCode(result)}); //NOI18N
+                return;
+            } else {
+                lastParserResult = result;
+            }
         }
         long time = 0;
         if (LOG.isLoggable(Level.FINE)) {
