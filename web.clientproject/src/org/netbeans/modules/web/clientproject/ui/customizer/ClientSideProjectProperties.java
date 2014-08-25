@@ -77,6 +77,7 @@ public final class ClientSideProjectProperties {
     final ClientSideProject project;
     private final List<JavaScriptLibrarySelectionPanel.SelectedLibrary> newJsLibraries = new CopyOnWriteArrayList<JavaScriptLibrarySelectionPanel.SelectedLibrary>();
 
+    private volatile AtomicReference<String> sourceFolder = null;
     private volatile AtomicReference<String> siteRootFolder = null;
     private volatile AtomicReference<String> testFolder = null;
     private volatile String jsLibFolder = null;
@@ -156,12 +157,21 @@ public final class ClientSideProjectProperties {
 
     void saveProperties() {
         // first, create possible foreign file references
+        String sourceFolderReference = createForeignFileReference(sourceFolder, true);
         String siteRootFolderReference = createForeignFileReference(siteRootFolder, true);
         String testFolderReference = createForeignFileReference(testFolder, false);
         // save properties
         EditableProperties privateProperties = project.getProjectHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties projectProperties = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
+        if (sourceFolder != null) {
+            if (sourceFolderReference != null) {
+                putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SOURCE_FOLDER, sourceFolderReference);
+            } else {
+                // source dir removed
+                projectProperties.remove(ClientSideProjectConstants.PROJECT_SOURCE_FOLDER);
+            }
+        }
         if (siteRootFolder != null) {
             if (siteRootFolderReference != null) {
                 putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRootFolderReference);
@@ -214,6 +224,17 @@ public final class ClientSideProjectProperties {
         return project;
     }
 
+    public AtomicReference<String> getSourceFolder() {
+        if (sourceFolder == null) {
+            sourceFolder = new AtomicReference<>(getProjectProperty(ClientSideProjectConstants.PROJECT_SOURCE_FOLDER, null));
+        }
+        return sourceFolder;
+    }
+
+    public void setSourceFolder(String sourceFolder) {
+        this.sourceFolder = new AtomicReference<>(sourceFolder);
+    }
+
     public AtomicReference<String> getSiteRootFolder() {
         if (siteRootFolder == null) {
             siteRootFolder = new AtomicReference<>(getProjectProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, null));
@@ -222,12 +243,7 @@ public final class ClientSideProjectProperties {
     }
 
     public void setSiteRootFolder(String siteRootFolder) {
-        setSiteRootFolder(new AtomicReference<>(siteRootFolder));
-    }
-
-    public void setSiteRootFolder(AtomicReference<String> siteRootFolder) {
-        assert siteRootFolder != null;
-        this.siteRootFolder = siteRootFolder;
+        this.siteRootFolder = new AtomicReference<>(siteRootFolder);
     }
 
     public AtomicReference<String> getTestFolder() {
@@ -238,12 +254,7 @@ public final class ClientSideProjectProperties {
     }
 
     public void setTestFolder(String testFolder) {
-        setTestFolder(new AtomicReference<>(testFolder));
-    }
-
-    public void setTestFolder(AtomicReference<String> testFolder) {
-        assert testFolder != null;
-        this.testFolder = testFolder;
+        this.testFolder = new AtomicReference<>(testFolder);
     }
 
     public String getEncoding() {
