@@ -2786,11 +2786,11 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 for (Comment c : comments) {
                     printComment(c, false, members);
                 }
-                if (members)
-                    blankLines(cs.getBlankLinesAfterAnonymousClassHeader());
-                else
-                    newline();
             }
+            if (members)
+                blankLines(cs.getBlankLinesAfterAnonymousClassHeader());
+            else
+                newline();
 	    printStats(stats, members);
         }
         toColExactly(bcol);
