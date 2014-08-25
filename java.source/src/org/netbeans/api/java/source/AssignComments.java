@@ -32,6 +32,7 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
@@ -51,6 +52,7 @@ import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
+
 import static org.netbeans.modules.java.source.save.PositionEstimator.NOPOS;
 
 /**
@@ -153,11 +155,28 @@ class AssignComments extends TreeScanner<Void, Void> {
             if (pos >= 0) {
                 seq.move(pos);
                 lookForPreceedings(seq, tree);
-                if (tree instanceof BlockTree) {
-                    BlockTree blockTree = (BlockTree) tree;
-                    if (blockTree.getStatements().isEmpty()) {
-                        lookWithinEmptyBlock(seq, blockTree);
+            } else {
+                pos = ((JCTree)tree).pos;
+                seq.move(pos);
+                seq.moveNext();
+            }
+            if (tree instanceof BlockTree) {
+                BlockTree blockTree = (BlockTree) tree;
+                if (blockTree.getStatements().isEmpty()) {
+                    lookWithinEmptyBlock(seq, blockTree);
+                }
+            } else if (tree instanceof ClassTree) {
+                ClassTree clazz = (ClassTree)tree;
+                int cnt = clazz.getMembers().size();
+                if (cnt == 1) {
+                    Tree mt = clazz.getMembers().get(0);
+                    if (mt.getKind() == Tree.Kind.METHOD && info.getTreeUtilities().isSynthetic(new TreePath(new TreePath(unit), mt))) {
+                        cnt--;
                     }
+                }
+                if (cnt == 0) {
+                    // look within empty class/interface decls, too
+                    lookWithinEmptyBlock(seq, clazz);
                 }
             }
         } else {
@@ -322,7 +341,7 @@ class AssignComments extends TreeScanner<Void, Void> {
         }
     }
 
-    private void lookWithinEmptyBlock(TokenSequence<JavaTokenId> seq, BlockTree tree) {
+    private void lookWithinEmptyBlock(TokenSequence<JavaTokenId> seq, Tree tree) {
         // moving into opening brace.
         if (moveTo(seq, JavaTokenId.LBRACE, true)) {
             int idx = -1;
