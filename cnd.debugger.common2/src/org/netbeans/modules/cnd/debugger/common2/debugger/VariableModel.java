@@ -670,7 +670,7 @@ public abstract class VariableModel extends ModelListenerSupport
 	}
     }
     
-    public static final PrettyPrintAction Action_PRETTY_PRINT = new PrettyPrintAction();
+    public static final Action Action_PRETTY_PRINT = new PrettyPrintAction();
     
     private static class PrettyPrintAction  extends BooleanStateAction {
 	PrettyPrintAction() {

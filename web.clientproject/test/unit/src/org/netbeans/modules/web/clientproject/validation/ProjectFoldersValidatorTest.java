@@ -42,12 +42,14 @@
 package org.netbeans.modules.web.clientproject.validation;
 
 import java.io.File;
+import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 
 public class ProjectFoldersValidatorTest extends NbTestCase {
 
     private File projectDir;
+    private File sourceDir;
     private File siteRootDir;
     private File testDir;
 
@@ -61,6 +63,8 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
         clearWorkDir();
         projectDir = new File(getWorkDir(), "project123");
         assertTrue(projectDir.mkdir());
+        sourceDir = new File(projectDir, "src");
+        assertTrue(sourceDir.mkdir());
         siteRootDir = new File(projectDir, "public_html");
         assertTrue(siteRootDir.mkdir());
         testDir = new File(projectDir, "tests");
@@ -69,7 +73,15 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
 
     public void testValidate() {
         ValidationResult result = new ProjectFoldersValidator()
-                .validate(siteRootDir, testDir)
+                .validate(sourceDir, siteRootDir, testDir)
+                .getResult();
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    public void testNoSourceFolder() {
+        ValidationResult result = new ProjectFoldersValidator()
+                .validateSourceFolder(null)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -80,6 +92,27 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
                 .validateSiteRootFolder(null)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    public void testNoFolders() {
+        ValidationResult result = new ProjectFoldersValidator()
+                .validate(null, null, null)
+                .getResult();
+        List<ValidationResult.Message> errors = result.getErrors();
+        assertFalse(errors.isEmpty());
+        assertEquals(ProjectFoldersValidator.SOURCE_OR_SITE_ROOT_FOLDER, errors.get(0).getSource());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    public void testInvalidSourceFolder() throws Exception {
+        File readme = new File(projectDir, "readme.txt");
+        assertTrue(readme.createNewFile());
+        ValidationResult result = new ProjectFoldersValidator()
+                .validateSourceFolder(readme)
+                .getResult();
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals(ProjectFoldersValidator.SOURCE_FOLDER, result.getErrors().get(0).getSource());
         assertTrue(result.getWarnings().isEmpty());
     }
 
@@ -94,7 +127,18 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
         assertTrue(result.getWarnings().isEmpty());
     }
 
-    public void testNonExistingFolder() throws Exception {
+    public void testNonExistingSourceFolder() throws Exception {
+        File subdir = new File(projectDir, "subdir");
+        assertFalse(subdir.exists());
+        ValidationResult result = new ProjectFoldersValidator()
+                .validateSourceFolder(subdir)
+                .getResult();
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals(ProjectFoldersValidator.SOURCE_FOLDER, result.getErrors().get(0).getSource());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    public void testNonExistingSiteRootFolder() throws Exception {
         File subdir = new File(projectDir, "subdir");
         assertFalse(subdir.exists());
         ValidationResult result = new ProjectFoldersValidator()
@@ -113,7 +157,7 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
         assertTrue(result.getWarnings().isEmpty());
     }
 
-    public void testFileTestFolder() throws Exception {
+    public void testInvalidTestFolder() throws Exception {
         File readme = new File(projectDir, "readme.txt");
         assertTrue(readme.createNewFile());
         ValidationResult result = new ProjectFoldersValidator()
@@ -132,6 +176,37 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
+    }
+
+    public void testSiteRootFolderUnderneathSourceFolder() throws Exception {
+        File newSiteRootDir = new File(sourceDir, "public");
+        assertTrue(newSiteRootDir.mkdirs());
+        ValidationResult result = new ProjectFoldersValidator()
+                .validate(sourceDir, newSiteRootDir, null)
+                .getResult();
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+
+    }
+
+    public void testSourceFolderEqualsSiteRootFolder() throws Exception {
+        ValidationResult result = new ProjectFoldersValidator()
+                .validate(siteRootDir, siteRootDir, null)
+                .getResult();
+        assertTrue(result.getErrors().isEmpty());
+        assertFalse(result.getWarnings().isEmpty());
+        assertEquals(ProjectFoldersValidator.SOURCE_FOLDER, result.getWarnings().get(0).getSource());
+    }
+
+    public void testSourceFolderUnderneathSiteRootFolder() throws Exception {
+        File newSourceDir = new File(siteRootDir, "src");
+        assertTrue(newSourceDir.mkdirs());
+        ValidationResult result = new ProjectFoldersValidator()
+                .validate(newSourceDir, siteRootDir, null)
+                .getResult();
+        assertTrue(result.getErrors().isEmpty());
+        assertFalse(result.getWarnings().isEmpty());
+        assertEquals(ProjectFoldersValidator.SOURCE_FOLDER, result.getWarnings().get(0).getSource());
     }
 
 }
