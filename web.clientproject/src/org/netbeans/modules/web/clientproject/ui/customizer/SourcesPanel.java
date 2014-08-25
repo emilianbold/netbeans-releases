@@ -98,9 +98,9 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void init() {
         projectFolderTextField.setText(FileUtil.getFileDisplayName(project.getProjectDirectory()));
-        setSiteRootFolder(beautifyPath(uiProperties.getSiteRootFolder().get()));
-        setSourceFolder(beautifyPath(uiProperties.getSourceFolder().get()));
-        setTestFolder(beautifyPath(uiProperties.getTestFolder().get()));
+        setSiteRootFolder(beautifyPath(uiProperties.getSiteRootFolder().get()), false);
+        setSourceFolder(beautifyPath(uiProperties.getSourceFolder().get()), false);
+        setTestFolder(beautifyPath(uiProperties.getTestFolder().get()), false);
         encodingComboBox.setModel(ProjectCustomizer.encodingModel(uiProperties.getEncoding()));
         encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
     }
@@ -155,21 +155,42 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     }
 
     void setSiteRootFolder(String siteRoot) {
-        siteRootFolderTextField.setEnabled(siteRoot != null);
+        setSiteRootFolder(siteRoot, true);
+    }
+
+    void setSiteRootFolder(String siteRoot, boolean validate) {
         siteRootFolderTextField.setText(siteRoot);
+        siteRootFolderTextField.setEnabled(siteRoot != null);
         siteRootFolderRemoveButton.setEnabled(siteRoot != null);
+        if (validate) {
+            validateAndStore();
+        }
     }
 
     void setSourceFolder(String sources) {
-        sourceFolderTextField.setEnabled(sources != null);
+        setSourceFolder(sources, true);
+    }
+
+    void setSourceFolder(String sources, boolean validate) {
         sourceFolderTextField.setText(sources);
+        sourceFolderTextField.setEnabled(sources != null);
         sourceFolderRemoveButton.setEnabled(sources != null);
+        if (validate) {
+            validateAndStore();
+        }
     }
 
     void setTestFolder(String tests) {
-        testFolderTextField.setEnabled(tests != null);
+        setTestFolder(tests, true);
+    }
+
+    void setTestFolder(String tests, boolean validate) {
         testFolderTextField.setText(tests);
+        testFolderTextField.setEnabled(tests != null);
         testFolderRemoveButton.setEnabled(tests != null);
+        if (validate) {
+            validateAndStore();
+        }
     }
 
     @CheckForNull
@@ -215,10 +236,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     }
 
     private String browseFolder(String title, File currentPath) {
-        File workDir = null;
-        if (currentPath != null) {
-            workDir = currentPath.getParentFile();
-        }
+        File workDir = currentPath;
         if (workDir == null || !workDir.exists()) {
             workDir = FileUtil.toFile(project.getProjectDirectory());
         }
@@ -236,9 +254,6 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         if (filePath == null) {
             // path cannot be relativized
             filePath = folder.getAbsolutePath();
-        } else if (".".equals(filePath)) { // NOI18N
-            // project directory
-            return null;
         }
         return beautifyPath(filePath);
     }
