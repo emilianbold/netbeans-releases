@@ -41,28 +41,36 @@
  */
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 import org.netbeans.modules.web.clientproject.validation.ProjectFoldersValidator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
-    private static final long serialVersionUID = -49835154831321L;
+    private static final long serialVersionUID = -6576834165786545L;
 
     private final ProjectCustomizer.Category category;
     private final ClientSideProjectProperties uiProperties;
@@ -89,34 +97,20 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     }
 
     private void init() {
-        jProjectFolderTextField.setText(FileUtil.getFileDisplayName(project.getProjectDirectory()));
-        jSiteRootFolderTextField.setText(beautifyPath(getSiteRootPath()));
-        jTestFolderTextField.setText(beautifyPath(uiProperties.getTestFolder().get()));
-        jEncodingComboBox.setModel(ProjectCustomizer.encodingModel(uiProperties.getEncoding()));
-        jEncodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
-    }
-
-    private String getSiteRootPath() {
-        String siteRootPath = null;
-        File siteRoot = uiProperties.getResolvedSiteRootFolder();
-        if (siteRoot != null
-                && siteRoot.exists()) {
-            FileObject siteRootFO = FileUtil.toFileObject(siteRoot);
-            if (siteRootFO != null) {
-                siteRootPath = FileUtil.getRelativePath(project.getProjectDirectory(), siteRootFO);
-            }
-        }
-        if (siteRootPath == null) {
-            siteRootPath = uiProperties.getSiteRootFolder().get();
-        }
-        return siteRootPath;
+        projectFolderTextField.setText(FileUtil.getFileDisplayName(project.getProjectDirectory()));
+        setSiteRootFolder(beautifyPath(uiProperties.getSiteRootFolder().get()));
+        setSourceFolder(beautifyPath(uiProperties.getSourceFolder().get()));
+        setTestFolder(beautifyPath(uiProperties.getTestFolder().get()));
+        encodingComboBox.setModel(ProjectCustomizer.encodingModel(uiProperties.getEncoding()));
+        encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
     }
 
     private void initListeners() {
         DocumentListener documentListener = new DefaultDocumentListener();
-        jSiteRootFolderTextField.getDocument().addDocumentListener(documentListener);
-        jTestFolderTextField.getDocument().addDocumentListener(documentListener);
-        jEncodingComboBox.addActionListener(new ActionListener() {
+        siteRootFolderTextField.getDocument().addDocumentListener(documentListener);
+        sourceFolderTextField.getDocument().addDocumentListener(documentListener);
+        testFolderTextField.getDocument().addDocumentListener(documentListener);
+        encodingComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 validateAndStore();
@@ -152,14 +146,48 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void storeData() {
         File siteRootFolder = getSiteRootFolder();
-        uiProperties.setSiteRootFolder(new AtomicReference<>(siteRootFolder.getAbsolutePath()));
+        uiProperties.setSiteRootFolder(siteRootFolder != null ? siteRootFolder.getAbsolutePath() : null);
+        File sourceFolder = getSourceFolder();
+        uiProperties.setSourceFolder(sourceFolder != null ? sourceFolder.getAbsolutePath() : null);
         File testFolder = getTestFolder();
-        uiProperties.setTestFolder(new AtomicReference<>(testFolder != null ? testFolder.getAbsolutePath() : null));
+        uiProperties.setTestFolder(testFolder != null ? testFolder.getAbsolutePath() : null);
         uiProperties.setEncoding(getEncoding().name());
     }
 
+    void setSiteRootFolder(String siteRoot) {
+        siteRootFolderTextField.setEnabled(siteRoot != null);
+        siteRootFolderTextField.setText(siteRoot);
+        siteRootFolderRemoveButton.setEnabled(siteRoot != null);
+    }
+
+    void setSourceFolder(String sources) {
+        sourceFolderTextField.setEnabled(sources != null);
+        sourceFolderTextField.setText(sources);
+        sourceFolderRemoveButton.setEnabled(sources != null);
+    }
+
+    void setTestFolder(String tests) {
+        testFolderTextField.setEnabled(tests != null);
+        testFolderTextField.setText(tests);
+        testFolderRemoveButton.setEnabled(tests != null);
+    }
+
+    @CheckForNull
     private File getSiteRootFolder() {
-        File resolved = resolveFile(jSiteRootFolderTextField.getText());
+        return getFolder(siteRootFolderTextField);
+    }
+
+    @CheckForNull
+    private File getSourceFolder() {
+        return getFolder(sourceFolderTextField);
+    }
+
+    @CheckForNull
+    private File getFolder(JTextField textField) {
+        if (!textField.isEnabled()) {
+            return null;
+        }
+        File resolved = resolveFile(textField.getText(), true);
         if (resolved != null) {
             return resolved;
         }
@@ -168,15 +196,19 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     }
 
     private File getTestFolder() {
-        return resolveFile(jTestFolderTextField.getText());
+        return resolveFile(testFolderTextField.getText(), false);
     }
 
     private Charset getEncoding() {
-        return (Charset) jEncodingComboBox.getSelectedItem();
+        return (Charset) encodingComboBox.getSelectedItem();
     }
 
-    private File resolveFile(String path) {
-        if (path == null || path.isEmpty()) {
+    private File resolveFile(String path, boolean emptyIsProject) {
+        if (path == null) {
+            return null;
+        }
+        if (!emptyIsProject
+                && path.isEmpty()) {
             return null;
         }
         return FileUtil.normalizeFile(project.getProjectHelper().resolveFile(path));
@@ -213,9 +245,11 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private String beautifyPath(String path) {
         if (path == null) {
+            return null;
+        } else if (path.equals(".")) { // NOI18N
             return ""; // NOI18N
         } else if (path.startsWith("../../")) { // NOI18N
-            File resolved = resolveFile(path);
+            File resolved = resolveFile(path, false);
             assert resolved != null : path;
             return resolved.getAbsolutePath();
         }
@@ -231,140 +265,229 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jProjectFolderTextField = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
-        jSiteRootFolderTextField = new javax.swing.JTextField();
-        jBrowseSiteRootButton = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
-        jTestFolderTextField = new javax.swing.JTextField();
-        jBrowseTestButton = new javax.swing.JButton();
-        jLabel4 = new javax.swing.JLabel();
-        jEncodingComboBox = new javax.swing.JComboBox();
-        siteRootInfoLabel5 = new javax.swing.JLabel();
-        testInfoLabel = new javax.swing.JLabel();
+        projectFolderLabel = new JLabel();
+        projectFolderTextField = new JTextField();
+        siteRootLabel = new JLabel();
+        siteRootFolderTextField = new JTextField();
+        siteRootFolderBrowseButton = new JButton();
+        siteRootFolderRemoveButton = new JButton();
+        siteRootFolderInfoLabel = new JLabel();
+        sourceFolderLabel = new JLabel();
+        sourceFolderTextField = new JTextField();
+        sourceFolderBrowseButton = new JButton();
+        sourceFolderRemoveButton = new JButton();
+        sourceFolderInfoLabel = new JLabel();
+        testFolderLabel = new JLabel();
+        testFolderTextField = new JTextField();
+        testFolderBrowseButton = new JButton();
+        testFolderInfoLabel = new JLabel();
+        testFolderRemoveButton = new JButton();
+        encodingLabel = new JLabel();
+        encodingComboBox = new JComboBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jLabel1.text")); // NOI18N
+        projectFolderLabel.setLabelFor(projectFolderTextField);
+        Mnemonics.setLocalizedText(projectFolderLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.projectFolderLabel.text")); // NOI18N
 
-        jProjectFolderTextField.setEditable(false);
-        jProjectFolderTextField.setText(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jProjectFolderTextField.text")); // NOI18N
+        projectFolderTextField.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jLabel2.text")); // NOI18N
+        siteRootLabel.setLabelFor(siteRootFolderTextField);
+        Mnemonics.setLocalizedText(siteRootLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.siteRootLabel.text")); // NOI18N
 
-        jSiteRootFolderTextField.setText(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jSiteRootFolderTextField.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jBrowseSiteRootButton, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jBrowseSiteRootButton.text")); // NOI18N
-        jBrowseSiteRootButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jBrowseSiteRootButtonActionPerformed(evt);
+        Mnemonics.setLocalizedText(siteRootFolderBrowseButton, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.siteRootFolderBrowseButton.text")); // NOI18N
+        siteRootFolderBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                siteRootFolderBrowseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jLabel3.text")); // NOI18N
-
-        jTestFolderTextField.setText(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jTestFolderTextField.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jBrowseTestButton, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jBrowseTestButton.text")); // NOI18N
-        jBrowseTestButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jBrowseTestButtonActionPerformed(evt);
+        Mnemonics.setLocalizedText(siteRootFolderRemoveButton, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.siteRootFolderRemoveButton.text")); // NOI18N
+        siteRootFolderRemoveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                siteRootFolderRemoveButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jLabel4.text")); // NOI18N
+        Mnemonics.setLocalizedText(siteRootFolderInfoLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.siteRootFolderInfoLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(siteRootInfoLabel5, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.siteRootInfoLabel5.text")); // NOI18N
+        sourceFolderLabel.setLabelFor(sourceFolderTextField);
+        Mnemonics.setLocalizedText(sourceFolderLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.sourceFolderLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(testInfoLabel, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.testInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(sourceFolderBrowseButton, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.sourceFolderBrowseButton.text")); // NOI18N
+        sourceFolderBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                sourceFolderBrowseButtonActionPerformed(evt);
+            }
+        });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        Mnemonics.setLocalizedText(sourceFolderRemoveButton, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.sourceFolderRemoveButton.text")); // NOI18N
+        sourceFolderRemoveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                sourceFolderRemoveButtonActionPerformed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(sourceFolderInfoLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.sourceFolderInfoLabel.text")); // NOI18N
+
+        testFolderLabel.setLabelFor(testFolderTextField);
+        Mnemonics.setLocalizedText(testFolderLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.testFolderLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(testFolderBrowseButton, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.testFolderBrowseButton.text")); // NOI18N
+        testFolderBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                testFolderBrowseButtonActionPerformed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(testFolderInfoLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.testFolderInfoLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(testFolderRemoveButton, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.testFolderRemoveButton.text")); // NOI18N
+        testFolderRemoveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                testFolderRemoveButtonActionPerformed(evt);
+            }
+        });
+
+        encodingLabel.setLabelFor(encodingComboBox);
+        Mnemonics.setLocalizedText(encodingLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.encodingLabel.text")); // NOI18N
+
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jProjectFolderTextField)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jEncodingComboBox, 0, 185, Short.MAX_VALUE)
-                            .addComponent(jTestFolderTextField, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jSiteRootFolderTextField, javax.swing.GroupLayout.Alignment.TRAILING))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jBrowseSiteRootButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jBrowseTestButton, javax.swing.GroupLayout.Alignment.TRAILING)))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(siteRootLabel)
+                    .addComponent(projectFolderLabel)
+                    .addComponent(testFolderLabel)
+                    .addComponent(encodingLabel)
+                    .addComponent(sourceFolderLabel))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(projectFolderTextField)
+                    .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(encodingComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(95, 95, 95))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(testInfoLabel)
-                            .addComponent(siteRootInfoLabel5))
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                        .addComponent(sourceFolderTextField)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sourceFolderBrowseButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sourceFolderRemoveButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(siteRootFolderTextField)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(siteRootFolderBrowseButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(siteRootFolderRemoveButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addComponent(sourceFolderInfoLabel)
+                            .addComponent(siteRootFolderInfoLabel)
+                            .addComponent(testFolderInfoLabel))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(testFolderTextField)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(testFolderBrowseButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(testFolderRemoveButton))))
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jBrowseSiteRootButton, jBrowseTestButton});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {siteRootFolderBrowseButton, testFolderBrowseButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jProjectFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(projectFolderLabel)
+                    .addComponent(projectFolderTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(jSiteRootFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jBrowseSiteRootButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(siteRootInfoLabel5)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(jTestFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jBrowseTestButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(testInfoLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(jEncodingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(siteRootLabel)
+                    .addComponent(siteRootFolderTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(siteRootFolderBrowseButton)
+                    .addComponent(siteRootFolderRemoveButton))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(siteRootFolderInfoLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(sourceFolderLabel)
+                    .addComponent(sourceFolderTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sourceFolderBrowseButton)
+                    .addComponent(sourceFolderRemoveButton))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(sourceFolderInfoLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(testFolderLabel)
+                    .addComponent(testFolderTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(testFolderBrowseButton)
+                    .addComponent(testFolderRemoveButton))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(testFolderInfoLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(encodingLabel)
+                    .addComponent(encodingComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     @NbBundle.Messages("SourcesPanel.browse.siteRootFolder=Select Site Root")
-    private void jBrowseSiteRootButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowseSiteRootButtonActionPerformed
+    private void siteRootFolderBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_siteRootFolderBrowseButtonActionPerformed
         String filePath = browseFolder(Bundle.SourcesPanel_browse_siteRootFolder(), getSiteRootFolder());
         if (filePath != null) {
-            jSiteRootFolderTextField.setText(filePath);
+            setSiteRootFolder(filePath);
         }
-    }//GEN-LAST:event_jBrowseSiteRootButtonActionPerformed
+    }//GEN-LAST:event_siteRootFolderBrowseButtonActionPerformed
 
     @NbBundle.Messages("SourcesPanel.browse.testFolder=Select Unit Tests")
-    private void jBrowseTestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowseTestButtonActionPerformed
+    private void testFolderBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_testFolderBrowseButtonActionPerformed
         String filePath = browseFolder(Bundle.SourcesPanel_browse_testFolder(), getTestFolder());
         if (filePath != null) {
-            jTestFolderTextField.setText(filePath);
+            setTestFolder(filePath);
         }
-    }//GEN-LAST:event_jBrowseTestButtonActionPerformed
+    }//GEN-LAST:event_testFolderBrowseButtonActionPerformed
+
+    private void siteRootFolderRemoveButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_siteRootFolderRemoveButtonActionPerformed
+        setSiteRootFolder(null);
+    }//GEN-LAST:event_siteRootFolderRemoveButtonActionPerformed
+
+    private void sourceFolderRemoveButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sourceFolderRemoveButtonActionPerformed
+        setSourceFolder(null);
+    }//GEN-LAST:event_sourceFolderRemoveButtonActionPerformed
+
+    private void testFolderRemoveButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_testFolderRemoveButtonActionPerformed
+        setTestFolder(null);
+    }//GEN-LAST:event_testFolderRemoveButtonActionPerformed
+
+    @NbBundle.Messages("SourcesPanel.browse.sourceFolder=Select Sources")
+    private void sourceFolderBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sourceFolderBrowseButtonActionPerformed
+        String filePath = browseFolder(Bundle.SourcesPanel_browse_sourceFolder(), getSourceFolder());
+        if (filePath != null) {
+            setSourceFolder(filePath);
+        }
+    }//GEN-LAST:event_sourceFolderBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jBrowseSiteRootButton;
-    private javax.swing.JButton jBrowseTestButton;
-    private javax.swing.JComboBox jEncodingComboBox;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JTextField jProjectFolderTextField;
-    private javax.swing.JTextField jSiteRootFolderTextField;
-    private javax.swing.JTextField jTestFolderTextField;
-    private javax.swing.JLabel siteRootInfoLabel5;
-    private javax.swing.JLabel testInfoLabel;
+    private JComboBox encodingComboBox;
+    private JLabel encodingLabel;
+    private JLabel projectFolderLabel;
+    private JTextField projectFolderTextField;
+    private JButton siteRootFolderBrowseButton;
+    private JLabel siteRootFolderInfoLabel;
+    private JButton siteRootFolderRemoveButton;
+    private JTextField siteRootFolderTextField;
+    private JLabel siteRootLabel;
+    private JButton sourceFolderBrowseButton;
+    private JLabel sourceFolderInfoLabel;
+    private JLabel sourceFolderLabel;
+    private JButton sourceFolderRemoveButton;
+    private JTextField sourceFolderTextField;
+    private JButton testFolderBrowseButton;
+    private JLabel testFolderInfoLabel;
+    private JLabel testFolderLabel;
+    private JButton testFolderRemoveButton;
+    private JTextField testFolderTextField;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
