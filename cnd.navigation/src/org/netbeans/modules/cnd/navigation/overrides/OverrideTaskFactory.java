@@ -98,11 +98,13 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<Parser.Re
                 return;
             }
             canceled.set(true);
-            lastParserResult = result;
             canceled = new AtomicBoolean(false);
-        }
-        if (cancel.isCancelled()) {
-            return;
+            if (cancel.isCancelled()) {
+                lastParserResult = null;
+                return;
+            } else {
+                lastParserResult = result;
+            }
         }
         FileObject fo = result.getSnapshot().getSource().getFileObject();
         if (fo == null) {

@@ -204,7 +204,7 @@ public final class LocalModel extends VariableModel
 	boolean canDoDy = desp.hasCapability(EngineCapability.DYNAMIC_TYPE);
 	boolean canDoIn = desp.hasCapability(EngineCapability.INHERITED_MEMBERS);
 	boolean canDoSt = desp.hasCapability(EngineCapability.STATIC_MEMBERS);
-	boolean canDoPP = desp.hasCapability(EngineCapability.PRETY_PRINT);
+	boolean canDoPP = desp.hasCapability(EngineCapability.PRETTY_PRINT);
 
 	if (node == ROOT) {
 	    return new Action[] {
