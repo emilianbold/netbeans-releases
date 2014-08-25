@@ -135,6 +135,9 @@ import org.openide.util.TopologicalSortException;
 import org.openide.util.Union2;
 import org.openide.util.lookup.ServiceProvider;
 
+import static org.netbeans.modules.parsing.impl.indexing.Debug.printCollection;
+import static org.netbeans.modules.parsing.impl.indexing.Debug.printMap;
+import static org.netbeans.modules.parsing.impl.indexing.Debug.printMimeTypes;
 /**
  *
  * @author Tomas Zezula
@@ -2070,71 +2073,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
     }
-
-    @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS",
-        justification="URLs have never host part")
-    private static void printMap(Map<URL, List<URL>> deps, Level level) {
-        Set<URL> sortedRoots = new TreeSet<>(C);
-        sortedRoots.addAll(deps.keySet());
-        for(URL url : sortedRoots) {
-            LOGGER.log(level, "  {0}:\n", url); //NOI18N
-//            for(URL depUrl : deps.get(url)) {
-//                LOGGER.log(level, "  -> {0}\n", depUrl); //NOI18N
-//            }
-        }
-    }
-
-    @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS",
-        justification="URLs have never host part")
-    private static StringBuilder printMap(Map<URL, List<URL>> deps, StringBuilder sb) {
-        Set<URL> sortedRoots = new TreeSet<>(C);
-        sortedRoots.addAll(deps.keySet());
-        for(URL url : sortedRoots) {
-            sb.append("  ").append(url).append(":\n"); //NOI18N
-//            for(URL depUrl : deps.get(url)) {
-//                sb.append("  -> ").append(depUrl).append("\n"); //NOI18N
-//            }
-        }
-        return sb;
-    }
-
-    private static void printCollection(Collection<? extends URL> collection, Level level) {
-        Set<URL> sortedRoots = new TreeSet<>(C);
-        sortedRoots.addAll(collection);
-        for(URL url : sortedRoots) {
-            LOGGER.log(level, "  {0}\n", url); //NOI18N
-        }
-    }
-
-    private static StringBuilder printCollection(Collection<? extends URL> collection, StringBuilder sb) {
-        Set<URL> sortedRoots = new TreeSet<>(C);
-        sortedRoots.addAll(collection);
-        for(URL url : sortedRoots) {
-            sb.append("  ").append(url).append("\n"); //NOI18N
-        }
-        return sb;
-    }
-
-    private static StringBuilder printMimeTypes(Collection<? extends String> collection, StringBuilder sb) {
-        for(Iterator<? extends String> i = collection.iterator(); i.hasNext(); ) {
-            String mimeType = i.next();
-            sb.append("'").append(mimeType).append("'"); //NOI18N
-            if (i.hasNext()) {
-                sb.append(", "); //NOI18N
-            }
-        }
-        return sb;
-    }
-
-
-    private static final Comparator<URL> C = new Comparator<URL>() {
-        public @Override int compare(URL o1, URL o2) {
-            return o1.toString().compareTo(o2.toString());
-        }
-    };
-
 
     enum State {CREATED, STARTED, INITIAL_SCAN_RUNNING, ACTIVE, STOPPED};
 
@@ -4503,9 +4441,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             if (LOGGER.isLoggable(logLevel)) {
                 LOGGER.log(logLevel, "{0} {1}: '{'", new Object[]{this, getCancelRequest().isRaised() ? "cancelled" : "finished"}); //NOI18N
                 LOGGER.log(logLevel, "  scannedRoots2Dependencies({0})=", scannedRoots2Dependencies.size()); //NOI18N
-                printMap(scannedRoots2Dependencies, logLevel);
+                LOGGER.log(logLevel, printMap(scannedRoots2Dependencies, new StringBuilder()).toString());
                 LOGGER.log(logLevel, "  scannedBinaries({0})=", scannedBinaries2InvDependencies.size()); //NOI18N
-                printCollection(scannedBinaries2InvDependencies.keySet(), logLevel);
+                LOGGER.log(logLevel, printCollection(scannedBinaries2InvDependencies.keySet(), new StringBuilder()).toString());
                 LOGGER.log(logLevel, "} ===="); //NOI18N
             }
 
@@ -4718,12 +4656,22 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 final Collection<URL> newRoots = new HashSet<>();
                 Collection<? extends URL> c = PathRegistry.getDefault().getSources();
                 checkRootCollection(c);
-                LOGGER.log(Level.FINE, "PathRegistry.sources="); printCollection(c, Level.FINE); //NOI18N
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(
+                        Level.FINE,
+                        "PathRegistry.sources={0}", //NOI18N
+                        printCollection(c, new StringBuilder()));
+                }
                 newRoots.addAll(c);
 
                 c = PathRegistry.getDefault().getLibraries();
                 checkRootCollection(c);
-                LOGGER.log(Level.FINE, "PathRegistry.libraries="); printCollection(c, Level.FINE); //NOI18N
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(
+                        Level.FINE,
+                        "PathRegistry.libraries={0}",   //NOI18N
+                        printCollection(c, new StringBuilder()));
+                }
                 newRoots.addAll(c);
 
                 checkRootCollection(PathRegistry.getDefault().getBinaryLibraries());
@@ -4731,7 +4679,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                 if (useInitialState) {
                     c = PathRegistry.getDefault().getUnknownRoots();
-                    LOGGER.log(Level.FINE, "PathRegistry.unknown="); printCollection(c, Level.FINE); //NOI18N
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(
+                            Level.FINE,
+                            "PathRegistry.unknown={0}",  //NOI18N
+                            printCollection(c, new StringBuilder()));
+                    }
                     depCtx.unknownRoots.addAll(c);
                     depCtx.preInversedDeps = Util.findTransitiveReverseDependencies(
                         depCtx.initialRoots2Deps,
@@ -4804,13 +4757,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     if (LOGGER.isLoggable(logLevel) && (addedOrChanged.size() > 0 || removed.size() > 0)) {
                         LOGGER.log(logLevel, "Changes in dependencies detected:"); //NOI18N
                         LOGGER.log(logLevel, "initialRoots2Deps({0})=", depCtx.initialRoots2Deps.size()); //NOI18N
-                        printMap(depCtx.initialRoots2Deps, logLevel);
+                        LOGGER.log(logLevel, printMap(depCtx.initialRoots2Deps, new StringBuilder()).toString());
                         LOGGER.log(logLevel, "newRoots2Deps({0})=", depCtx.newRoots2Deps.size()); //NOI18N
-                        printMap(depCtx.newRoots2Deps, logLevel);
+                        LOGGER.log(logLevel, printMap(depCtx.newRoots2Deps, new StringBuilder()).toString());
                         LOGGER.log(logLevel, "addedOrChanged({0})=", addedOrChanged.size()); //NOI18N
-                        printMap(addedOrChanged, logLevel);
+                        LOGGER.log(logLevel, printMap(addedOrChanged, new StringBuilder()).toString());
                         LOGGER.log(logLevel, "removed({0})=", removed.size()); //NOI18N
-                        printMap(removed, logLevel);
+                        LOGGER.log(logLevel, printMap(removed, new StringBuilder()).toString());
                     }
 
                     depCtx.oldRoots.clear();
@@ -4941,11 +4894,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             if (LOGGER.isLoggable(logLevel)) {
                 LOGGER.log(logLevel, "{0} {1}: '{'", new Object[]{this, getCancelRequest().isRaised() ? "cancelled" : "finished"}); //NOI18N
                 LOGGER.log(logLevel, "  scannedRoots2Dependencies({0})=", scannedRoots2Dependencies.size()); //NOI18N
-                printMap(scannedRoots2Dependencies, logLevel);
+                LOGGER.log(logLevel, printMap(scannedRoots2Dependencies, new StringBuilder()).toString());
                 LOGGER.log(logLevel, "  scannedBinaries({0})=", scannedBinaries2InvDependencies.size()); //NOI18N
-                printCollection(scannedBinaries2InvDependencies.keySet(), logLevel);
+                LOGGER.log(logLevel, printCollection(scannedBinaries2InvDependencies.keySet(), new StringBuilder()).toString());
                 LOGGER.log(logLevel, "  scannedRoots2Peers({0})=", scannedRoots2Peers.size()); //NOI18N
-                printMap(scannedRoots2Peers, logLevel);
+                LOGGER.log(logLevel, printMap(scannedRoots2Peers, new StringBuilder()).toString());
                 LOGGER.log(logLevel, "} ===="); //NOI18N
             }
             TEST_LOGGER.log(Level.FINEST, "RootsWork-finished");       //NOI18N
