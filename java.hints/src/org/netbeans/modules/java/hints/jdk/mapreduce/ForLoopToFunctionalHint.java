@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.java.hints.jdk.mapreduce;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import javax.lang.model.SourceVersion;
@@ -72,6 +74,17 @@ public class ForLoopToFunctionalHint {
         
         PreconditionsChecker pc = new PreconditionsChecker(ctx.getPath().getLeaf(), ctx.getInfo());
         if (pc.isSafeToRefactor()) {
+            EnhancedForLoopTree eflt = (EnhancedForLoopTree)ctx.getPath().getLeaf();
+            StatementTree stmt = eflt.getStatement();
+            if (stmt == null) {
+                return null;
+            }
+            if (stmt.getKind() == Tree.Kind.BLOCK) {
+                BlockTree bt = (BlockTree)stmt;
+                if (bt.getStatements() == null || bt.getStatements().isEmpty()) {
+                    return null;
+                }
+            }
             Fix fix = new FixImpl(ctx.getInfo(), ctx.getPath(), null).toEditorFix();
             return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_ForLoopToFunctionalHint(), fix);
         }
@@ -102,8 +115,6 @@ public class ForLoopToFunctionalHint {
             if (pc.isSafeToRefactor() && refactorer.isRefactorable()) {
                 ctx.getWorkingCopy().rewrite(ctx.getPath().getLeaf(), refactorer.refactor(ctx.getWorkingCopy().getTreeMaker()));
             }
-
-
         }
     }
 }

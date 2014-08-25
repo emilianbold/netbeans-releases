@@ -4205,6 +4205,7 @@ public class Reformatter implements ReformatTask {
             int lastNewLinePos = -1;
             Diff pendingDiff = null;
             int start = javadocTokens != null ? 3 : 2;
+            int end = text.length() - 2;
             col += start;
             boolean preserveNewLines = true;
             boolean firstLine = true;
@@ -4391,10 +4392,17 @@ public class Reformatter implements ReformatTask {
                                     pendingDiff = null;
                                 }
                             } else {
-                                String s = NEWLINE + indentString + SPACE;
-                                String subs = text.substring(lastNewLinePos, i);
-                                if (!s.equals(subs))
-                                    pendingDiff = new Diff(offset + lastNewLinePos, offset + i, s);
+                                // do format last line with only whitespaces and end-comment marker, even though
+                                // comment formatting is disabled. Do properly indent javadoc, if the line nonblank text
+                                // starts with * (as javadoc should)
+                                if (enableCommentFormatting || i == end || (javadocTokens != null && c == '*')) {
+                                    String s = NEWLINE + indentString + SPACE;
+                                    String subs = text.substring(lastNewLinePos, i);
+                                    if (!s.equals(subs))
+                                        pendingDiff = new Diff(offset + lastNewLinePos, offset + i, s);
+                                } else {
+                                    
+                                }
                             }
                             lastWSPos = currWSPos = -1;
                             col = getCol(indentString + SPACE);
