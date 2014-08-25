@@ -659,6 +659,9 @@ public class CasualDiff {
         switch (change) {
             // packages are the same or not available, i.e. both are null
             case NOCHANGE:
+                if (oldT.pid != null) {
+                    localPointer = copyUpTo(localPointer, endPos(oldT.pid));
+                }
                 break;
 
             // package statement is new, print the keyword and semicolon
@@ -3780,7 +3783,12 @@ public class CasualDiff {
             if (oldPrecedingComments.isEmpty()) {
                 return localPointer;
             }
-            int newP = oldPrecedingComments.get(oldPrecedingComments.size() - 1).endPos();
+            // WHITESPACE comments have pos == -1, and no real useful data
+            Comment c = oldPrecedingComments.get(oldPrecedingComments.size() - 1);
+            if (c.pos() == -1) {
+                return localPointer;
+            }
+            int newP = c.endPos();
             copyTo(localPointer, newP);
             return newP;
         }
