@@ -154,44 +154,51 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         uiProperties.setEncoding(getEncoding().name());
     }
 
-    void setSiteRootFolder(String siteRoot) {
+    private void setSiteRootFolder(String siteRoot) {
         setSiteRootFolder(siteRoot, true);
     }
 
-    void setSiteRootFolder(String siteRoot, boolean validate) {
-        siteRootFolderTextField.setText(siteRoot);
-        siteRootFolderTextField.setEnabled(siteRoot != null);
-        siteRootFolderRemoveButton.setEnabled(siteRoot != null);
-        if (validate) {
-            validateAndStore();
-        }
+    @NbBundle.Messages({
+        "SourcesPanel.siteRoot.info.empty=Empty value means project directory",
+        "SourcesPanel.siteRoot.info.none=Site Root folder will not be used",
+    })
+    private void setSiteRootFolder(String siteRoot, boolean validate) {
+        setFolder(siteRoot, siteRootFolderTextField, siteRootFolderRemoveButton, validate);
+        siteRootFolderInfoLabel.setText(siteRoot != null ? Bundle.SourcesPanel_siteRoot_info_empty() : Bundle.SourcesPanel_siteRoot_info_none());
     }
 
-    void setSourceFolder(String sources) {
+    private void setSourceFolder(String sources) {
         setSourceFolder(sources, true);
     }
 
-    void setSourceFolder(String sources, boolean validate) {
-        sourceFolderTextField.setText(sources);
-        sourceFolderTextField.setEnabled(sources != null);
-        sourceFolderRemoveButton.setEnabled(sources != null);
-        if (validate) {
-            validateAndStore();
-        }
+    @NbBundle.Messages({
+        "SourcesPanel.sources.info.empty=Empty value means project directory",
+        "SourcesPanel.sources.info.none=Source folder will not be used",
+    })
+    private void setSourceFolder(String sources, boolean validate) {
+        setFolder(sources, sourceFolderTextField, sourceFolderRemoveButton, validate);
+        sourceFolderInfoLabel.setText(sources != null ? Bundle.SourcesPanel_sources_info_empty() : Bundle.SourcesPanel_sources_info_none());
     }
 
-    void setTestFolder(String tests) {
+    private void setTestFolder(String tests) {
         setTestFolder(tests, true);
     }
 
-    void setTestFolder(String tests, boolean validate) {
-        testFolderTextField.setText(tests);
-        testFolderTextField.setEnabled(tests != null);
-        testFolderRemoveButton.setEnabled(tests != null);
+    @NbBundle.Messages("SourcesPanel.tests.info=Empty value means no Unit Tests folder")
+    private void setTestFolder(String tests, boolean validate) {
+        setFolder(tests, testFolderTextField, testFolderRemoveButton, validate);
+        testFolderInfoLabel.setText(Bundle.SourcesPanel_tests_info());
+    }
+
+    private void setFolder(String folder, JTextField textField, JButton removeButton, boolean validate) {
+        textField.setText(folder);
+        textField.setEnabled(folder != null);
+        removeButton.setEnabled(folder != null);
         if (validate) {
             validateAndStore();
         }
     }
+
 
     @CheckForNull
     private File getSiteRootFolder() {
@@ -322,7 +329,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
             }
         });
 
-        Mnemonics.setLocalizedText(siteRootFolderInfoLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.siteRootFolderInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(siteRootFolderInfoLabel, "HINT"); // NOI18N
 
         sourceFolderLabel.setLabelFor(sourceFolderTextField);
         Mnemonics.setLocalizedText(sourceFolderLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.sourceFolderLabel.text")); // NOI18N
@@ -341,7 +348,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
             }
         });
 
-        Mnemonics.setLocalizedText(sourceFolderInfoLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.sourceFolderInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(sourceFolderInfoLabel, "HINT"); // NOI18N
 
         testFolderLabel.setLabelFor(testFolderTextField);
         Mnemonics.setLocalizedText(testFolderLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.testFolderLabel.text")); // NOI18N
@@ -353,7 +360,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
             }
         });
 
-        Mnemonics.setLocalizedText(testFolderInfoLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.testFolderInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(testFolderInfoLabel, "HINT"); // NOI18N
 
         Mnemonics.setLocalizedText(testFolderRemoveButton, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.testFolderRemoveButton.text")); // NOI18N
         testFolderRemoveButton.addActionListener(new ActionListener() {
