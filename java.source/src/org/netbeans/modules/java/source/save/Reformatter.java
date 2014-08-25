@@ -4393,12 +4393,15 @@ public class Reformatter implements ReformatTask {
                                 }
                             } else {
                                 // do format last line with only whitespaces and end-comment marker, even though
-                                // comment formatting is disabled.
-                                if (enableCommentFormatting || i == end) {
+                                // comment formatting is disabled. Do properly indent javadoc, if the line nonblank text
+                                // starts with * (as javadoc should)
+                                if (enableCommentFormatting || i == end || (javadocTokens != null && c == '*')) {
                                     String s = NEWLINE + indentString + SPACE;
                                     String subs = text.substring(lastNewLinePos, i);
                                     if (!s.equals(subs))
                                         pendingDiff = new Diff(offset + lastNewLinePos, offset + i, s);
+                                } else {
+                                    
                                 }
                             }
                             lastWSPos = currWSPos = -1;
