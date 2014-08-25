@@ -83,6 +83,7 @@ public final class ProjectFoldersValidator {
 
     @NbBundle.Messages({
         "ProjectFoldersValidator.error.noSourcesOrSiteRoot=Sources or Site Root directory must be specified.",
+        "ProjectFoldersValidator.error.sourcesEqualsSiteRoot=Sources directory and Site Root directory are the same.",
         "ProjectFoldersValidator.error.sourcesUnderneathSiteRoot=Sources directory is underneath Site Root directory.",
     })
     public ProjectFoldersValidator validateSourceAndSiteRootFolders(File sourceFolder, File siteRootFolder) {
@@ -91,7 +92,9 @@ public final class ProjectFoldersValidator {
             result.addError(new ValidationResult.Message(SOURCE_OR_SITE_ROOT_FOLDER, Bundle.ProjectFoldersValidator_error_noSourcesOrSiteRoot()));
         } else if (sourceFolder != null
                 && siteRootFolder != null) {
-            if (!siteRootFolder.equals(sourceFolder)) {
+            if (siteRootFolder.equals(sourceFolder)) {
+                result.addWarning(new ValidationResult.Message(SOURCE_FOLDER, Bundle.ProjectFoldersValidator_error_sourcesEqualsSiteRoot()));
+            } else {
                 File parent = sourceFolder.getParentFile();
                 while (parent != null) {
                     if (parent.equals(siteRootFolder)) {

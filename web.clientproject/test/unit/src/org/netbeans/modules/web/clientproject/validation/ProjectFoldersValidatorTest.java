@@ -189,6 +189,15 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
 
     }
 
+    public void testSourceFolderEqualsSiteRootFolder() throws Exception {
+        ValidationResult result = new ProjectFoldersValidator()
+                .validate(siteRootDir, siteRootDir, null)
+                .getResult();
+        assertTrue(result.getErrors().isEmpty());
+        assertFalse(result.getWarnings().isEmpty());
+        assertEquals(ProjectFoldersValidator.SOURCE_FOLDER, result.getWarnings().get(0).getSource());
+    }
+
     public void testSourceFolderUnderneathSiteRootFolder() throws Exception {
         File newSourceDir = new File(siteRootDir, "src");
         assertTrue(newSourceDir.mkdirs());
