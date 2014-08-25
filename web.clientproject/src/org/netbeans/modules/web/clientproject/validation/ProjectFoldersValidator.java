@@ -82,9 +82,9 @@ public final class ProjectFoldersValidator {
     }
 
     @NbBundle.Messages({
-        "ProjectFoldersValidator.error.noSourcesOrSiteRoot=Sources or Site Root directory must be specified.",
-        "ProjectFoldersValidator.error.sourcesEqualsSiteRoot=Sources directory and Site Root directory are the same.",
-        "ProjectFoldersValidator.error.sourcesUnderneathSiteRoot=Sources directory is underneath Site Root directory.",
+        "ProjectFoldersValidator.error.noSourcesOrSiteRoot=Source or Site Root directory must be specified.",
+        "ProjectFoldersValidator.error.sourcesEqualsSiteRoot=Source directory and Site Root directory are the same.",
+        "ProjectFoldersValidator.error.sourcesUnderneathSiteRoot=Source directory is underneath Site Root directory.",
     })
     public ProjectFoldersValidator validateSourceAndSiteRootFolders(File sourceFolder, File siteRootFolder) {
         if (sourceFolder == null
