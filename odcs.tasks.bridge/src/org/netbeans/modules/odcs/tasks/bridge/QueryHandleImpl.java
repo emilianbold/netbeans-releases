@@ -126,7 +126,7 @@ public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, Act
     }
 
     List<QueryResultHandle> getQueryResults() {
-        List<QueryResultHandle> ret = new ArrayList<QueryResultHandle>();
+        List<QueryResultHandle> ret = new ArrayList<>();
         QueryResultHandle qh = QueryResultHandleImpl.forAllStatus(query);
         if(qh != null) {
             ret.add(qh);

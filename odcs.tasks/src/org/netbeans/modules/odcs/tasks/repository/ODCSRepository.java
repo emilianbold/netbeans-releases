@@ -345,7 +345,7 @@ public class ODCSRepository implements PropertyChangeListener {
 
         String[] keywords = criteria.split(" ");                                // NOI18N
 
-        final List<ODCSIssue> issues = new ArrayList<ODCSIssue>();
+        final List<ODCSIssue> issues = new ArrayList<>();
         
         if(keywords.length == 1 && isInteger(keywords[0])) {
             ODCSIssue issue = getIssueForTask(ODCSUtil.getRepositoryTask(this, keywords[0], false));
