@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.remote.projectui.actions;
+package org.netbeans.modules.cnd.makeproject.actions;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -54,14 +54,14 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.remote.projectui.actions.DefaultProjectOperationsImplementation.InvalidablePanel;
+import org.netbeans.modules.cnd.makeproject.actions.DefaultProjectOperationsImplementation.InvalidablePanel;
 
 /**
  * Copy-pasted from org.netbeans.modules.project.uiapi
  * Intention is to contribute it back as soon as it is adapted to remote environment.
  * Since we are planning to contribute it back,
  * NEVER use any remote or cnd stuff directly, but only via a well defined SPI
- * Vladimir Kvashin <vkvashin@netbeans,org>
+ * Vladimir Kvashin <vkvashin@netbeans.org>
  *
  * @author Jan Lahoda
  */
