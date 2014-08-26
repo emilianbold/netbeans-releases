@@ -226,15 +226,27 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                         WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_NON_NUMERIC_PORT"))); // NOI18N
                 return false;
             }
+            if (!debugPortTextField.getText().isEmpty()) {
+                try {
+                    Integer.parseInt(debugPortTextField.getText());
+                } catch (NumberFormatException ex) {
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                            WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_NON_NUMERIC_PORT"))); // NOI18N
+                    return false;
+                }
+            }
             
             if (InstanceProperties.getInstanceProperties(getUrl(host, port)) != null) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_ALREADY_REGISTERED"))); // NOI18N
                 return false;
+            } else if (passwordField.getPassword().length <= 0) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
+            } else {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "MSG_RegisterRemote"))); // NOI18N
             }
-            
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "MSG_RegisterRemote"))); // NOI18N
 
             // save the data to the parent instantiating iterator
             instantiatingIterator.setUrl(getUrl(host, port));
@@ -296,15 +308,16 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             }
 
             // show a hint for sample domain
-            if (instance.getName().startsWith("examples")) { // NOI18N
-                if (passwordField.getPassword().length <= 0) {
-                    wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
-                            WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
-                }
+            if (instance.getName().startsWith("examples") && passwordField.getPassword().length <= 0) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_EMPTY_SAMPLE_PASSWORD"))); // NOI18N
+            } else if (passwordField.getPassword().length <= 0) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
+            } else {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting", instance.getDomainName()))); // NOI18N
             }
-
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting", instance.getDomainName()))); // NOI18N
 
             // save the data to the parent instantiating iterator
             instantiatingIterator.setUrl(getUrl(instance));
