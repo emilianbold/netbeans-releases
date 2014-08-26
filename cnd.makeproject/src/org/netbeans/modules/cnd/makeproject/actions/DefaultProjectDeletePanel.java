@@ -123,11 +123,11 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         setLayout(new java.awt.GridBagLayout());
 
         warningText.setEditable(false);
-        warningText.setFont(javax.swing.UIManager.getFont("Label.font"));
+        warningText.setFont(javax.swing.UIManager.getFont("Label.font")); // NOI18N
         warningText.setLineWrap(true);
         warningText.setText(org.openide.util.NbBundle.getMessage(DefaultProjectDeletePanel.class, "LBL_Pre_Delete_Warning", new Object[] {projectDisplaName})); // NOI18N
         warningText.setWrapStyleWord(true);
-        warningText.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
+        warningText.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground")); // NOI18N
         warningText.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -150,7 +150,7 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         deleteSourcesCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DefaultProjectDeletePanel.class, "ACSD_Delete_Also_Sources", new Object[] {})); // NOI18N
 
         progress.setLayout(new java.awt.CardLayout());
-        progress.add(jPanel4, "not-progress");
+        progress.add(jPanel4, "not-progress"); // NOI18N
 
         progressImpl.add(progressComponent = ProgressHandleFactory.createProgressComponent(handle));
         progressImpl.setLayout(new java.awt.GridBagLayout());
@@ -163,7 +163,7 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         gridBagConstraints.weightx = 1.0;
         progressImpl.add(jLabel5, gridBagConstraints);
 
-        progress.add(progressImpl, "progress");
+        progress.add(progressImpl, "progress"); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

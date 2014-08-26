@@ -220,7 +220,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel3, gridBagConstraints);
 
-        errorMessage.setForeground(UIManager.getColor("nb.errorForeground"));
+        errorMessage.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -232,7 +232,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         add(errorMessage, gridBagConstraints);
 
         progress.setLayout(new java.awt.CardLayout());
-        progress.add(jPanel4, "not-progress");
+        progress.add(jPanel4, "not-progress"); // NOI18N
 
         progressImpl.add(progressComponent = ProgressHandleFactory.createProgressComponent(handle));
         progressImpl.setMinimumSize(new java.awt.Dimension(121, 17));
@@ -247,7 +247,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.weightx = 1.0;
         progressImpl.add(jLabel5, gridBagConstraints);
 
-        progress.add(progressImpl, "progress");
+        progress.add(progressImpl, "progress"); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
