@@ -63,7 +63,7 @@ public class EjbCategoryMarkTest extends CategoryMarkTestBase {
     public EjbCategoryMarkTest( String name ) {
         super(name);
     }
-    
+/*    
     public void testLifeCycle(){
         resetMarkMappings();
         
@@ -288,7 +288,7 @@ public class EjbCategoryMarkTest extends CategoryMarkTestBase {
         checkMarks(status, markedIds, plainIds, methodMarks, 
                 ejbContainer.getAssignedMark(), ejbContainer);
     }
-    
+*/    
     /*
      * This test performs checks of presence Persistence category with all 
      * its subcategories for EjbProject type.
@@ -297,7 +297,7 @@ public class EjbCategoryMarkTest extends CategoryMarkTestBase {
      * No need to duplicate these checks for Ejb project.
      * One just need to be sure that all required categories present.  
      */
-    public void testCategoriesPresence(){
+/*    public void testCategoriesPresence(){
         Category root = getCategorization().getRoot();
         boolean persistence = false;
         boolean hibernate = false;
@@ -340,7 +340,7 @@ public class EjbCategoryMarkTest extends CategoryMarkTestBase {
         assertTrue(jpa);
         assertTrue(statements);
     }
-
+*/
     @Override
     protected String getProjectName() {
         return EjbMarkTest.APP_NAME;

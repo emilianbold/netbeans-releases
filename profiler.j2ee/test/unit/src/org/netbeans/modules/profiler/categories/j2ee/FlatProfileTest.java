@@ -68,7 +68,7 @@ public class FlatProfileTest extends TestBase {
     public FlatProfileTest( String name ) {
         super(name);
     }
-    
+/*    
     public void testHibernate(){
         resetMarkMappings();
         
@@ -903,6 +903,7 @@ public class FlatProfileTest extends TestBase {
                     +categoryName,copyIds.size(), 0 );
         }
     }
+*/    
     
     
     @Override

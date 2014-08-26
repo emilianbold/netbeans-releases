@@ -62,7 +62,7 @@ public class EjbMarkTest extends TestBase {
     public EjbMarkTest( String name ) {
         super(name);
     }
-    
+/*    
     public void testLifecycleCategory(){
         MarkMapping[] mappings = getCategorization().getMappings();
         Category lifecycle = getCategory("Lifecycle");
@@ -230,7 +230,7 @@ public class EjbMarkTest extends TestBase {
         assertTrue( "No found pack.NewMessageBean.ejbStore() method", messageBeanStore);
     }
     
-
+*/
     private Set<String> getMethods( Class<?> clazz ){
         Method[] methods = clazz.getDeclaredMethods();
         Set<String> allMethods = new HashSet<String>();

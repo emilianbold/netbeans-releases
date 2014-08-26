@@ -67,7 +67,7 @@ public class WebFlatProfileTest extends FlatProfileTestBase {
     public WebFlatProfileTest( String name ) {
         super(name);
     }
-    
+/*    
     public void testJsps(){
         resetMarkMappings();
         
@@ -200,7 +200,7 @@ public class WebFlatProfileTest extends FlatProfileTestBase {
         
         doTestStreaming( jaxWs, streaming);
     }
-    
+*/    
     public void testMixedCategories(){
         // temporarily ignoring; need evaluation from T.Zezula about javasource, synthetic sources and user tasks
 //        resetMarkMappings();

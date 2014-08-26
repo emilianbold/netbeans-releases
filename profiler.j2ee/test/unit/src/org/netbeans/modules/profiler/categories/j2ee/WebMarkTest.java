@@ -56,7 +56,7 @@ public class WebMarkTest extends TestBase {
     public WebMarkTest( String name ) {
         super(name);
     }
-    
+/*    
     public void testJspCustomMark(){
         MarkMapping[] mappings = getCategorization().getMappings();
         Category jsps = getCategory("JSPs");
@@ -78,7 +78,8 @@ public class WebMarkTest extends TestBase {
         }
         
     }
-    
+*/    
+
 
     @Override
     protected String getProjectName() {

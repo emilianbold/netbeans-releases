@@ -64,7 +64,7 @@ public class CategoryMarkTest extends CategoryMarkTestBase {
     public CategoryMarkTest( String name ) {
         super(name);
     }
-    
+/*    
     public void testHibernate(){
         resetMarkMappings();
         
@@ -804,7 +804,7 @@ public class CategoryMarkTest extends CategoryMarkTestBase {
         }
     }
     
-
+*/
     @Override
     protected String getProjectName() {
         return TestBase.APP_NAME;

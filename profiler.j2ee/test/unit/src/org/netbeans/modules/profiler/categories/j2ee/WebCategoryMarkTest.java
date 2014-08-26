@@ -65,7 +65,7 @@ public class WebCategoryMarkTest extends CategoryMarkTestBase {
         super(name);
     }
     
-    
+/*    
     public void testJsps(){
         resetMarkMappings();
         
@@ -169,7 +169,7 @@ public class WebCategoryMarkTest extends CategoryMarkTestBase {
         
         doTestStreaming( streaming);
     }
-    
+*/    
     public void testMixedCategories(){
         // temporarily ignoring; need evaluation from T.Zezula about javasource, synthetic sources and user tasks
 //        resetMarkMappings();

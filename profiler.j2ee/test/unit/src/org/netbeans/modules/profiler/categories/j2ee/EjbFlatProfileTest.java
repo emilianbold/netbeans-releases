@@ -68,7 +68,7 @@ public class EjbFlatProfileTest extends FlatProfileTestBase {
     public EjbFlatProfileTest( String name ) {
         super(name);
     }
-    
+/*    
     public void testLifeCycle(){
         resetMarkMappings();
         
@@ -362,7 +362,7 @@ public class EjbFlatProfileTest extends FlatProfileTestBase {
         checkCategory(status, flatProfile, "Enterprise Beans", markedIds);
         
     }
-    
+ */   
     @Override
     protected String getProjectName() {
         return EjbMarkTest.APP_NAME;

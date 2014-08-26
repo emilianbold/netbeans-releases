@@ -71,7 +71,7 @@ public class FlatProfileTest extends TestBase {
     public FlatProfileTest( String name ) {
         super(name);
     }
-    
+/*    
     public void testJava2D(){
         resetMarkMappings();
         
@@ -717,7 +717,7 @@ public class FlatProfileTest extends TestBase {
                 "paintImmediately", "(IIII)V");
         builder.methodEntry( 8, 1, 1, 0, 0);
         paintersIds.add(8);*/
-
+/*
         SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
         
         DrillDown drillDown = (DrillDown)factory.getEvaluators().iterator().next();
@@ -1300,6 +1300,7 @@ public class FlatProfileTest extends TestBase {
         checkCategory(status, flatProfile, "Socket", socketIds);
         
     }
+*/    
     
     
     private void checkCategory( ProfilingSessionStatus status,
