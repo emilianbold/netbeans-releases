@@ -40,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.api.nbrwsr;
+package org.netbeans.api.html4j;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -58,7 +58,7 @@ public class HTMLViewProcessorTest {
         String html = "<html><body>"
                 + "</body></html>";
         String code = "package x.y.z;\n"
-                + "import org.netbeans.api.nbrwsr.OpenHTMLRegistration;\n"
+                + "import org.netbeans.api.html4j.OpenHTMLRegistration;\n"
                 + "public class X {\n"
                 + "  @OpenHTMLRegistration(url=\"empty.html\", displayName=\"X\")\n"
                 + "  public static void someMethod() {\n"
@@ -85,7 +85,7 @@ public class HTMLViewProcessorTest {
         String html = "<html><body>"
                 + "</body></html>";
         String code = "package x.y.z;\n"
-                + "import org.netbeans.api.nbrwsr.OpenHTMLRegistration;\n"
+                + "import org.netbeans.api.html4j.OpenHTMLRegistration;\n"
                 + "import org.openide.awt.ActionID;\n"
                 + "class X {\n"
                 + "  @ActionID(category=\"test\", id=\"test.id.at.x\")\n"
@@ -114,7 +114,7 @@ public class HTMLViewProcessorTest {
         String html = "<html><body>"
                 + "</body></html>";
         String code = "package x.y.z;\n"
-                + "import org.netbeans.api.nbrwsr.OpenHTMLRegistration;\n"
+                + "import org.netbeans.api.html4j.OpenHTMLRegistration;\n"
                 + "import org.openide.awt.ActionID;\n"
                 + "public final class X {\n"
                 + "  @ActionID(category=\"test\", id=\"test.id.at.x\")\n"
@@ -143,7 +143,7 @@ public class HTMLViewProcessorTest {
         String html = "<html><body>"
                 + "</body></html>";
         String code = "package x.y.z;\n"
-                + "import org.netbeans.api.nbrwsr.OpenHTMLRegistration;\n"
+                + "import org.netbeans.api.html4j.OpenHTMLRegistration;\n"
                 + "import org.openide.awt.ActionID;\n"
                 + "public class X {\n"
                 + "  @ActionID(category=\"test\", id=\"test.id.at.x\")\n"
@@ -172,7 +172,7 @@ public class HTMLViewProcessorTest {
         String html = "<html><body>"
                 + "</body></html>";
         String code = "package x.y.z;\n"
-                + "import org.netbeans.api.nbrwsr.OpenHTMLRegistration;\n"
+                + "import org.netbeans.api.html4j.OpenHTMLRegistration;\n"
                 + "import org.openide.awt.ActionID;\n"
                 + "final class X {\n"
                 + "  @ActionID(category=\"test\", id=\"test.id.at.x\")\n"
@@ -201,7 +201,7 @@ public class HTMLViewProcessorTest {
         String html = "<html><body>"
                 + "</body></html>";
         String code = "package x.y.z;\n"
-                + "import org.netbeans.api.nbrwsr.OpenHTMLRegistration;\n"
+                + "import org.netbeans.api.html4j.OpenHTMLRegistration;\n"
                 + "import org.openide.awt.ActionID;\n"
                 + "public class X {\n"
                 + "  @ActionID(category=\"test\", id=\"test.id.at.x\")\n"

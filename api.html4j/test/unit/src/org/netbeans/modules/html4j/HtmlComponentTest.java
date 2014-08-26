@@ -40,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.nbrwsr;
+package org.netbeans.modules.html4j;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -72,7 +72,7 @@ public class HtmlComponentTest {
 
     @BeforeClass public static void initializeContext() throws Exception {
         final HtmlComponent tc = new HtmlComponent();
-        final URL u = HtmlComponent.class.getResource("/org/netbeans/api/nbrwsr/empty.html");
+        final URL u = HtmlComponent.class.getResource("/org/netbeans/api/html4j/empty.html");
         Platform.runLater(new Runnable() {
             @Override
             public void run() {

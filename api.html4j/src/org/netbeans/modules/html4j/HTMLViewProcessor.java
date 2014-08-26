@@ -40,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.nbrwsr;
+package org.netbeans.modules.html4j;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -54,7 +54,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
-import org.netbeans.api.nbrwsr.OpenHTMLRegistration;
+import org.netbeans.api.html4j.OpenHTMLRegistration;
 import org.openide.awt.ActionID;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
@@ -100,7 +100,7 @@ public class HTMLViewProcessor extends LayerGeneratingProcessor {
                 final LayerBuilder builder = layer(e);
                 LayerBuilder.File actionFile = builder.
                         file("Actions/" + aid.category() + "/" + aid.id().replace('.', '-') + ".instance").
-                        methodvalue("instanceCreate", "org.netbeans.modules.nbrwsr.Pages", "openAction");
+                        methodvalue("instanceCreate", "org.netbeans.modules.html4j.Pages", "openAction");
                 String abs = LayerBuilder.absolutizeResource(e, reg.url());
                 try {
                     builder.validateResource(abs, e, reg, null, true);

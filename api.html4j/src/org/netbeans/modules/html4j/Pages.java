@@ -40,36 +40,67 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.html4j;
 
-package org.netbeans.api.nbrwsr;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.URL;
+import java.util.Map;
+import javafx.application.Platform;
+import javax.swing.Action;
+import org.openide.awt.Actions;
+import org.openide.util.Lookup;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-/** Registers an action to open an HTML (possibly with
- * <em>DukeScript</em> integration). Typical usage
- * is shown and described
- * <a href="http://hg.netbeans.org/html4j/nb/file/b60f695fc6f8/demo/html-test/src/main/java/org/netbeans/demo/html/test/HelloModel.java">here</a>.
+/** API for controlling HTML like UI from Java language.
  *
- * @author Jaroslav Tulach
- * @since 0.7.6
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.METHOD)
-public @interface OpenHTMLRegistration {
-    /** URL to the HTML page to display in the view.
-     * @return relative or absolute URL to page to display
-     */
-    String url();
-    /* Display name for the action that shows the view.
-    */
-    String displayName();
+public final class Pages {
+    private Pages() {
+    }
     
-    /** Icon base for the action (and also the view) that shows
-     * the HTML page.
-     * @return the path to the base 16x16 icon
-     */
-    String iconBase() default "";
+    public static Action openAction(final Map<?,?> map) {
+        class R implements ActionListener, Runnable {
+            private String m;
+            private Class<?> clazz;
+            private HtmlComponent tc;
+            private URL pageUrl;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    String u = (String) map.get("url");
+                    String c = (String) map.get("class");
+                    m = (String) map.get("method");
+
+                    clazz = HtmlComponent.loadClass(c);
+                    URL url = clazz.getResource("/" + u);
+                    if (url == null) {
+                        url = new URL(u);
+                    }
+                    pageUrl = url;
+                    
+                    tc = new HtmlComponent();
+                    tc.open();
+                    tc.requestActive();
+
+                    Platform.runLater(this);
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+
+            @Override
+            public void run() {
+                tc.loadFX(pageUrl, clazz, m);
+            }
+        }
+        
+        R r = new R();
+        return Actions.alwaysEnabled(
+                r,
+                (String) map.get("displayName"), // NOI18N
+                (String) map.get("iconBase"), // NOI18N
+                Boolean.TRUE.equals(map.get("noIconInMenu")) // NOI18N
+        );
+    }
 }

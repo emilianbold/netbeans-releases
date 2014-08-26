@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.nbrwsr</code-name-base>
+            <code-name-base>org.netbeans.api.html4j</code-name-base>
             <module-dependencies>
                 <dependency>
                     <code-name-base>net.java.html</code-name-base>
@@ -101,7 +101,7 @@
                 </test-type>
             </test-dependencies>
             <public-packages>
-                <package>org.netbeans.api.nbrwsr</package>
+                <package>org.netbeans.api.html4j</package>
             </public-packages>
         </data>
     </configuration>

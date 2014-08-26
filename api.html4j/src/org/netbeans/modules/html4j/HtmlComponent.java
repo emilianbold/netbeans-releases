@@ -40,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.nbrwsr;
+package org.netbeans.modules.html4j;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -209,9 +209,9 @@ public final class HtmlComponent extends TopComponent  {
         + "if (typeof data === 'undefined') return;\n"
         + "if (typeof data.context === 'undefined') return;\n"
         + "data.context.subscribe(function(value) {\n"
-        + "  onChange.@org.netbeans.modules.nbrwsr.HtmlComponent::onChange([Ljava/lang/Object;)(value);\n"
+        + "  onChange.@org.netbeans.modules.html4j.HtmlComponent::onChange([Ljava/lang/Object;)(value);\n"
         + "});\n"
-        + "onChange.@org.netbeans.modules.nbrwsr.HtmlComponent::onChange([Ljava/lang/Object;)(data.context());\n"
+        + "onChange.@org.netbeans.modules.html4j.HtmlComponent::onChange([Ljava/lang/Object;)(data.context());\n"
     )
     private static native void listenOnContext(HtmlComponent onChange);
 
