@@ -127,7 +127,8 @@ public class RefreshWorkTest  extends NbTestCase {
             scannedRoots2Dependencies,
             Collections.<URL,List<URL>>emptyMap(), // scannedBinaries
             Collections.<URL,List<URL>>emptyMap(), // scannedRoots2Peers
-            Collections.<URL>emptySet(), // sourceForBinaryRoots            
+            Collections.<URL>emptySet(),    //incompleteSeenRoots
+            Collections.<URL>emptySet(), // sourceForBinaryRoots
             false, // fullRescan
             false, // logStatistics
             Collections.singleton(outerFolder1), // suspectFilesOrFolders
@@ -153,6 +154,7 @@ public class RefreshWorkTest  extends NbTestCase {
             scannedRoots2Dependencies,
             Collections.<URL,List<URL>>emptyMap(), // scannedBinaries
             Collections.<URL,List<URL>>emptyMap(), // scannedRoots2Peers
+            Collections.<URL>emptySet(),    //incompleteSeenRoots
             Collections.<URL>emptySet(), // sourceForBinaryRoots
             false, // fullRescan
             false, // logStatistics
@@ -175,6 +177,7 @@ public class RefreshWorkTest  extends NbTestCase {
             scannedRoots2Dependencies,
             Collections.<URL,List<URL>>emptyMap(), // scannedBinaries
             Collections.<URL,List<URL>>emptyMap(), // scannedRoots2Peers
+            Collections.<URL>emptySet(),    //incompleteSeenRoots
             Collections.<URL>emptySet(), // sourceForBinaryRoots
             false, // fullRescan
             false, // logStatistics
@@ -206,6 +209,7 @@ public class RefreshWorkTest  extends NbTestCase {
             scannedRoots2Dependencies,
             Collections.<URL,List<URL>>emptyMap(), // scannedBinaries
             Collections.<URL,List<URL>>emptyMap(), // scannedRoots2Peers
+            Collections.<URL>emptySet(),    //incompleteSeenRoots
             Collections.<URL>emptySet(), // sourceForBinaryRoots
             false, // fullRescan
             false, // logStatistics
