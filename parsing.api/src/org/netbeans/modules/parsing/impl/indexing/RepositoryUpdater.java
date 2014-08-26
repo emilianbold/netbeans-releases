@@ -1749,7 +1749,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static boolean findDependencies(
             final URL rootURL,
             final DependenciesContext ctx,
-            final SourceIndexers indexers,
             Set<String> sourceIds,
             Set<String> libraryIds,
             Set<String> binaryLibraryIds,
@@ -1884,7 +1883,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     if (!findDependencies(
                                             sourceRoot,
                                             ctx,
-                                            indexers,
                                             sourceIds,
                                             libraryIds,
                                             binaryLibraryIds,
@@ -1932,7 +1930,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                         if (!findDependencies(
                                                 sourceRoot,
                                                 ctx,
-                                                indexers,
                                                 sourceIds,
                                                 libraryIds,
                                                 binaryLibraryIds,
@@ -1990,7 +1987,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         } finally {
             ctx.cycleDetector.pop();
         }
-        final IncompleteStatus incompleteStatus = IncompleteStatus.get(incomplete, rootURL, ctx, indexers);
+        final IncompleteStatus incompleteStatus = IncompleteStatus.get(incomplete, rootURL, ctx);
         if (incompleteStatus.active()) {
             ctx.newRoots2Deps.put(rootURL, deps);
             ctx.newRoots2Peers.put(rootURL,peers);
@@ -2028,10 +2025,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         static IncompleteStatus get(
             final boolean incomplete,
             @NonNull final URL rootURL,
-            @NonNull final DependenciesContext depCtx,
-            @NonNull final SourceIndexers indexers) {
+            @NonNull final DependenciesContext depCtx) {
             if (incomplete) {
-                if (depCtx.initialRoots2Deps.containsKey(rootURL) || hasIndex(rootURL, indexers)) {
+                if (depCtx.initialRoots2Deps.containsKey(rootURL) || hasIndex(rootURL, depCtx)) {
                     return INCOMPLETE_SEEN;
                 } else {
                     return INCOMPLETE_UNSEEN;
@@ -2043,19 +2039,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         private static boolean hasIndex(
             @NonNull final URL root,
-            @NonNull final SourceIndexers indexers) {
+            @NonNull final DependenciesContext depCtx) {
             try {
                 final FileObject dataFolder = CacheFolder.getDataFolder(root, true);
                 if (dataFolder != null) {
-                    final Set<String> names = new HashSet<>();
-                    for (IndexerInfo<CustomIndexerFactory> indexer : indexers.cifInfos) {
-                        names.add(indexer.getIndexerName());
-                    }
-                    for (Collection<IndexerInfo<EmbeddingIndexerFactory>> indexersPerMimeType : indexers.eifInfosMap.values()) {
-                        for (IndexerInfo<EmbeddingIndexerFactory> indexer : indexersPerMimeType) {
-                            names.add(indexer.getIndexerName());
-                        }
-                    }
+                    final Set<String> names = depCtx.getIndexerNames();
                     for (FileObject child : dataFolder.getChildren()) {
                         if (names.contains(child.getName())) {
                             return true;
@@ -4340,7 +4328,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         scannedRoots2Peers,
                         sourcesForBinaryRoots,
                         false,
-                        false);
+                        false,
+                        new Callable<SourceIndexers>(){
+                            @Override
+                            public SourceIndexers call() throws Exception {
+                                return getSourceIndexers(false);
+                            }
+                        });
                 depCtx.newIncompleteSeenRoots.addAll(this.incompleteSeenRoots);
 
                 if (suspectFilesOrFileObjects.isEmpty()) {
@@ -4737,7 +4731,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     scannedRoots2Peers,
                     sourcesForBinaryRoots,
                     useInitialState,
-                    refreshNonExistentDeps);
+                    refreshNonExistentDeps,
+                    new Callable<SourceIndexers>(){
+                        @Override
+                        public SourceIndexers call() throws Exception {
+                            return getSourceIndexers(false);
+                        }
+                    });
                 final Collection<URL> newRoots = new HashSet<>();
                 Collection<? extends URL> c = PathRegistry.getDefault().getSources();
                 checkRootCollection(c);
@@ -4782,7 +4782,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     if (!findDependencies(
                             url,
                             depCtx,
-                            getSourceIndexers(false),
                             null,
                             null,
                             null,
@@ -6096,17 +6095,20 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         final Stack<URL> cycleDetector;
         final boolean useInitialState;
         final boolean refreshNonExistentDeps;
+        private final Callable<SourceIndexers> indexersProvider;
+        private Set<String> indexerNames;
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
         public DependenciesContext (
-                final Map<URL, List<URL>> scannedRoots2Deps,
-                final Map<URL,List<URL>>  scannedBinaries2InvDependencies,
-                final Map<URL,List<URL>>  scannedRoots2Peers,
-                final Set<URL> sourcesForBinaryRoots,
+                @NonNull final Map<URL, List<URL>> scannedRoots2Deps,
+                @NonNull final Map<URL,List<URL>>  scannedBinaries2InvDependencies,
+                @NonNull final Map<URL,List<URL>>  scannedRoots2Peers,
+                @NonNull final Set<URL> sourcesForBinaryRoots,
                 final boolean useInitialState,
-                final boolean refreshNonExistentDeps) {
+                final boolean refreshNonExistentDeps,
+                @NonNull final Callable<SourceIndexers> indexersProvider) {
             assert scannedRoots2Deps != null;
             assert scannedBinaries2InvDependencies != null;
 
@@ -6135,6 +6137,28 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             this.unknownRoots = new HashSet<>();
             this.newlySFBTranslated = new HashSet<>();
             this.newIncompleteSeenRoots = new HashSet<>();
+            this.indexersProvider = indexersProvider;
+        }
+
+        @NonNull
+        Set<String> getIndexerNames() {
+            if (indexerNames == null) {
+                indexerNames = new HashSet<>();
+                try {
+                    final SourceIndexers indexers = indexersProvider.call();
+                    for (IndexerInfo<CustomIndexerFactory> indexer : indexers.cifInfos) {
+                        indexerNames.add(indexer.getIndexerName());
+                    }
+                    for (Collection<IndexerInfo<EmbeddingIndexerFactory>> indexersPerMimeType : indexers.eifInfosMap.values()) {
+                        for (IndexerInfo<EmbeddingIndexerFactory> indexer : indexersPerMimeType) {
+                            indexerNames.add(indexer.getIndexerName());
+                        }
+                    }
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, e.getMessage(), e);
+                }
+            }
+            return Collections.unmodifiableSet(indexerNames);
         }
 
         public @Override String toString() {
