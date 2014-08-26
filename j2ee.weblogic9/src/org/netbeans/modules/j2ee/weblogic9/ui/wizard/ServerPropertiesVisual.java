@@ -144,6 +144,15 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                 }
             }
         });
+        debugPortTextField.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (remoteDomainRadioButton.isSelected()) {
+                    fireChangeEvent();
+                }
+            }
+        });
         usernameField.addKeyListener(new KeyAdapter() {
 
             @Override
@@ -180,9 +189,11 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     hostNameTextField.setEnabled(true);
                     adminPortTextField.setEnabled(true);
+                    debugPortTextField.setEnabled(true);
                 } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                     hostNameTextField.setEnabled(false);
                     adminPortTextField.setEnabled(false);
+                    debugPortTextField.setEnabled(false);
                 }
                 updateJpa2Button();
                 fireChangeEvent();
@@ -489,6 +500,8 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         hostNameTextField = new javax.swing.JTextField();
         adminPortLabel = new javax.swing.JLabel();
         adminPortTextField = new javax.swing.JTextField();
+        debugPortLabel = new javax.swing.JLabel();
+        debugPortTextField = new javax.swing.JTextField();
 
         localInstancesLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         localInstancesLabel.setLabelFor(localInstancesCombo);
@@ -549,33 +562,26 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         adminPortTextField.setText(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.adminPortTextField.text")); // NOI18N
         adminPortTextField.setEnabled(false);
 
+        debugPortLabel.setLabelFor(debugPortTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(debugPortLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.debugPortLabel.text")); // NOI18N
+
+        debugPortTextField.setColumns(5);
+        debugPortTextField.setEnabled(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(explanationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(localInstancesLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(localInstancesCombo, 0, 290, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(hostNameLabel)
-                            .addComponent(adminPortLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(adminPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(hostNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap())))
-            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(localDomainRadioButton)
                     .addComponent(remoteDomainRadioButton)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jpa2SwitchLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jpa2Status)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jpa2SwitchButton))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(passwordLabel)
@@ -583,14 +589,33 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jpa2SwitchLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jpa2Status)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jpa2SwitchButton)))
+                            .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(explanationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(hostNameLabel)
+                                    .addComponent(adminPortLabel)
+                                    .addComponent(debugPortLabel))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(hostNameTextField)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(debugPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(adminPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGap(0, 0, Short.MAX_VALUE))))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(localInstancesLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(localInstancesCombo, 0, 241, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseButton))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -613,7 +638,11 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(adminPortLabel)
                     .addComponent(adminPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(debugPortLabel)
+                    .addComponent(debugPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(usernameLabel)
                     .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -621,7 +650,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(passwordLabel)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jpa2SwitchLabel)
                     .addComponent(jpa2Status)
@@ -663,6 +692,8 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     private javax.swing.JLabel adminPortLabel;
     private javax.swing.JTextField adminPortTextField;
     private javax.swing.JButton browseButton;
+    private javax.swing.JLabel debugPortLabel;
+    private javax.swing.JTextField debugPortTextField;
     private javax.swing.ButtonGroup domainButtonGroup;
     private javax.swing.JLabel explanationLabel;
     private javax.swing.JLabel hostNameLabel;
