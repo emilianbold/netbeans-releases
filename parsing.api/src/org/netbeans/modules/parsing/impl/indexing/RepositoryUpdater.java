@@ -1749,6 +1749,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static boolean findDependencies(
             final URL rootURL,
             final DependenciesContext ctx,
+            final SourceIndexers indexers,
             Set<String> sourceIds,
             Set<String> libraryIds,
             Set<String> binaryLibraryIds,
@@ -1883,6 +1884,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     if (!findDependencies(
                                             sourceRoot,
                                             ctx,
+                                            indexers,
                                             sourceIds,
                                             libraryIds,
                                             binaryLibraryIds,
@@ -1930,6 +1932,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                         if (!findDependencies(
                                                 sourceRoot,
                                                 ctx,
+                                                indexers,
                                                 sourceIds,
                                                 libraryIds,
                                                 binaryLibraryIds,
@@ -1987,7 +1990,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         } finally {
             ctx.cycleDetector.pop();
         }
-        final IncompleteStatus incompleteStatus = IncompleteStatus.get(incomplete, rootURL, ctx);
+        final IncompleteStatus incompleteStatus = IncompleteStatus.get(incomplete, rootURL, ctx, indexers);
         if (incompleteStatus.active()) {
             ctx.newRoots2Deps.put(rootURL, deps);
             ctx.newRoots2Peers.put(rootURL,peers);
@@ -2025,9 +2028,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         static IncompleteStatus get(
             final boolean incomplete,
             @NonNull final URL rootURL,
-            @NonNull final DependenciesContext depCtx) {
+            @NonNull final DependenciesContext depCtx,
+            @NonNull final SourceIndexers indexers) {
             if (incomplete) {
-                if (depCtx.initialRoots2Deps.containsKey(rootURL)) {
+                if (depCtx.initialRoots2Deps.containsKey(rootURL) || hasIndex(rootURL, indexers)) {
                     return INCOMPLETE_SEEN;
                 } else {
                     return INCOMPLETE_UNSEEN;
@@ -2035,6 +2039,33 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             } else {
                 return COMPLETE;
             }
+        }
+
+        private static boolean hasIndex(
+            @NonNull final URL root,
+            @NonNull final SourceIndexers indexers) {
+            try {
+                final FileObject dataFolder = CacheFolder.getDataFolder(root, true);
+                if (dataFolder != null) {
+                    final Set<String> names = new HashSet<>();
+                    for (IndexerInfo<CustomIndexerFactory> indexer : indexers.cifInfos) {
+                        names.add(indexer.getIndexerName());
+                    }
+                    for (Collection<IndexerInfo<EmbeddingIndexerFactory>> indexersPerMimeType : indexers.eifInfosMap.values()) {
+                        for (IndexerInfo<EmbeddingIndexerFactory> indexer : indexersPerMimeType) {
+                            names.add(indexer.getIndexerName());
+                        }
+                    }
+                    for (FileObject child : dataFolder.getChildren()) {
+                        if (names.contains(child.getName())) {
+                            return true;
+                        }
+                    }
+                }
+            } catch (IOException ioe) {
+                //pass
+            }
+            return false;
         }
     }
 
@@ -2127,6 +2158,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         //visibility. The Work.scanBinaries modifies the map from multiple threads.
         private final Map<String,int[]> indexerStatistics = Collections.<String, int[]>synchronizedMap(new HashMap<String, int[]>());
         private volatile boolean reportIndexerStatistics;
+        private SourceIndexers sourceIndexers;
 
         protected Work(
                 final boolean followUpJob,
@@ -2159,6 +2191,15 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             this.steady = steady;
             this.suspendStatus = suspendStatus;
             this.logCtx = logCtx;
+        }
+
+        @NonNull
+        protected final SourceIndexers getSourceIndexers(final boolean initialRootsWork) {
+            assert !initialRootsWork || sourceIndexers == null;
+            if (sourceIndexers == null) {
+                sourceIndexers = SourceIndexers.load(initialRootsWork);
+            }
+            return sourceIndexers;
         }
 
         @CheckForNull
@@ -3181,7 +3222,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<>();
                         final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = new HashMap<>();
                         final UsedIndexables usedIterables = new UsedIndexables();
-                        final SourceIndexers indexers = SourceIndexers.load(false);
+                        final SourceIndexers indexers = getSourceIndexers(false);
                         invalidateSources(resources);
                         boolean indexResult=false;
                         try {
@@ -3814,7 +3855,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 final Map<SourceIndexerFactory,Boolean> votes = new HashMap<>();
                 final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts = new HashMap<>();
                 final UsedIndexables usedIterables = new UsedIndexables();
-                final SourceIndexers indexers = SourceIndexers.load(false);
+                final SourceIndexers indexers = getSourceIndexers(false);
                 final TimeStamps ts = TimeStamps.forRoot(root, false);
                 try {
                     scanStarted(root, false, indexers, votes, contexts);
@@ -4467,7 +4508,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
             boolean finished = scanBinaries(depCtx);
             if (finished) {
-                finished = scanSources(depCtx, null,null);
+                finished = scanSources(depCtx, null);
                 if (finished) {
                     finished = scanRootFiles(fullRescanFiles, depCtx.newIncompleteSeenRoots);
                     if (finished) {
@@ -4555,7 +4596,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private boolean refreshNonExistentDeps;
 
         private DependenciesContext depCtx;
-        protected SourceIndexers indexers = null; // is only ever filled by InitialRootsWork
 
         // flag that no projects are opened, and no real scanning work is expected
         private boolean shouldDoNothing;
@@ -4742,6 +4782,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     if (!findDependencies(
                             url,
                             depCtx,
+                            getSourceIndexers(false),
                             null,
                             null,
                             null,
@@ -4849,9 +4890,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             switchProgressToDeterminate(depCtx.newBinariesToScan.size() + depCtx.newRootsToScan.size());
             boolean finished = scanBinaries(depCtx);
             if (finished) {
-                finished = scanSources(depCtx, indexers, scannedRoots2Dependencies);
+                finished = scanSources(depCtx, scannedRoots2Dependencies);
             }
-
 
             if (!finished) {
                 final Queue<URL> toUnregister = new ArrayDeque<>();
@@ -5165,7 +5205,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
-        protected final boolean scanSources(DependenciesContext ctx, SourceIndexers indexers, Map<URL, List<URL>> preregisterIn) {
+        protected final boolean scanSources(DependenciesContext ctx, Map<URL, List<URL>> preregisterIn) {
             assert ctx != null;
             long scannedRootsCnt = 0;
             long completeTime = 0;
@@ -5173,10 +5213,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             int totalDeletedFiles = 0;
             long totalRecursiveListenersTime = 0;
             boolean finished = true;
-
-            if (indexers == null) {
-                indexers = SourceIndexers.load(false);
-            }
 
             for (URL source : ctx.newRootsToScan) {
                 if (getCancelRequest().isRaised()) {
@@ -5202,7 +5238,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             lctx.noteRootScanning(source, false);
                         }
                         if (ctx.newIncompleteSeenRoots.contains(source) ||
-                            scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), indexers, outOfDateFiles, deletedFiles, recursiveListenersTime)) {
+                            scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), outOfDateFiles, deletedFiles, recursiveListenersTime)) {
                             ctx.scannedRoots.add(source);
                             success = true;
                         } else {
@@ -5392,9 +5428,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return indexResult;
         }
 
-        private boolean scanSource (URL root, boolean fullRescan, boolean sourceForBinaryRoot, SourceIndexers indexers, int [] outOfDateFiles, int [] deletedFiles, long [] recursiveListenersTime) throws IOException {
+        private boolean scanSource (URL root, boolean fullRescan, boolean sourceForBinaryRoot, int [] outOfDateFiles, int [] deletedFiles, long [] recursiveListenersTime) throws IOException {
             LOGGER.log(Level.FINE, "Scanning sources root: {0}", root); //NOI18N
             final boolean rootSeen = TimeStamps.existForRoot(root);
+            final SourceIndexers indexers = getSourceIndexers(false);
             if (isNoRootsScan() && !fullRescan && rootSeen) {
                 // We've already seen the root at least once and roots scanning is forcibly turned off
                 // so just call indexers with no files to let them know about the root, but perform
@@ -5574,11 +5611,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         }
                     }
                 }
-
-                if (indexers == null) {
-                    indexers = SourceIndexers.load(true);
-                }
-
+                getSourceIndexers(true);
                 return super.getDone();
             } finally {
                 if (state == State.INITIAL_SCAN_RUNNING) {
