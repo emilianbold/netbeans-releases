@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -180,9 +181,13 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      * Helper method for decorating error message as HTML. Workaround for line wrap.
      */
     /*package*/ static String decorateMessage(String message) {
-        return message == null
-            ? null
-            : "<html>" + message.replaceAll("<",  "&lt;").replaceAll(">",  "&gt;") + "</html>"; // NIO18N
+        if (message == null) {
+            return null;
+        }
+        if (message.toUpperCase(Locale.ENGLISH).startsWith("<HTML>")) {
+            return message;
+        }
+        return "<html>" + message.replaceAll("<",  "&lt;").replaceAll(">",  "&gt;") + "</html>"; // NIO18N
     }
     // the main and additional instance properties
     private String serverRoot;

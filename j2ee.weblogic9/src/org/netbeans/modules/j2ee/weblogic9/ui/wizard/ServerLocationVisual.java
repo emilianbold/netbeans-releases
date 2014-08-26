@@ -51,6 +51,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JButton;
@@ -78,6 +79,14 @@ import org.openide.util.NbBundle;
  * @author Kirill Sorokin
  */
 public class ServerLocationVisual extends JPanel {
+
+    private static final FilenameFilter SERVER_FILTER = new FilenameFilter() {
+
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.startsWith("wlserver"); // NOI18N
+        }
+    };
 
     private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
 
@@ -146,21 +155,20 @@ public class ServerLocationVisual extends JPanel {
         // everything seems ok
         return true;
     }
-    
+
     public static File findServerLocation(File candidate, WizardDescriptor wizardDescriptor) {
         if (WebLogicLayout.isSupportedLayout(candidate)) {
             return candidate;
-        }
-        else {
-            File[] files = candidate.listFiles();
+        } else {
+            File[] files = candidate.listFiles(SERVER_FILTER);
             if (files != null) {
-                for (File file : files) {
-                    String fileName = file.getName();
-                    if (fileName.startsWith("wlserver")) { // NOI18N
-                        if (WebLogicLayout.isSupportedLayout(file)){
+                if (files.length == 1) {
+                    return files[0];
+                } else {
+                    for (File file : files) {
+                        if (WebLogicLayout.isSupportedLayout(file)) {
                             String msg = NbBundle.getMessage(ServerLocationVisual.class,
-                                    "WARN_CHILD_SERVER_ROOT", candidate.getPath(), // NOI18N
-                                    file.getPath());
+                                    "WARN_CHILD_SERVER_ROOT", file.getPath());
                             wizardDescriptor.putProperty(
                                     WizardDescriptor.PROP_WARNING_MESSAGE,
                                     WLInstantiatingIterator.decorateMessage(msg));
