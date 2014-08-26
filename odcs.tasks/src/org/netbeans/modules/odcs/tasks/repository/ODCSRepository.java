@@ -61,6 +61,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -95,6 +96,7 @@ import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -111,7 +113,7 @@ public class ODCSRepository implements PropertyChangeListener {
     private Cache cache;
     private ODCSExecutor executor;
     private Map<PredefinedTaskQuery, ODCSQuery> predefinedQueries;
-    private Collection<ODCSQuery> remoteSavedQueries;
+    private Collection<ODCSQuery> queries;
     private static final String ICON_PATH = "org/netbeans/modules/odcs/tasks/resources/repository.png"; //NOI18N
     private final Image icon;
     
@@ -166,37 +168,62 @@ public class ODCSRepository implements PropertyChangeListener {
 
             String user;
             char[] psswd;
-            PasswordAuthentication pa =
-                    TeamAccessorUtils.getPasswordAuthentication(project.getWebLocation().toString(), false); // do not force login
+            PasswordAuthentication pa = getAuthentication(); 
             if (pa != null) {
                 user = pa.getUserName();
                 psswd = pa.getPassword();
             } else {
                 user = ""; //NOI18N
                 psswd = new char[0];
+                
+                cancelQueries();
             }
-
+            
             setCredentials(user, psswd, null, null);
         }
     }
-    
 
-    public boolean authenticate (String errroMsg) {
-        PasswordAuthentication pa = TeamAccessorUtils.getPasswordAuthentication(project.getWebLocation().toString(), true);
+    private void cancelQueries() {
+        final List<ODCSQuery> tmpQueries = new LinkedList<>();
+        synchronized (QUERIES_LOCK) {
+            if(queries == null) {
+                return;
+            }
+            
+            tmpQueries.addAll(queries);
+            queries = null;
+            predefinedQueries = null;
+        }
+        
+        new RequestProcessor("ODCS Tasks - cancel queries", 1).post(new Runnable() {
+            @Override
+            public void run() {
+                for (ODCSQuery q : tmpQueries) {
+                    ODCS.LOG.log(Level.FINE, "Cancelling query: {0}", q.getDisplayName());
+                    q.getController().cancel();
+                }
+            }
+        });
+    }
+
+    public boolean isLoggedIn() {
+        return getAuthentication() != null;
+    }
+    
+    private PasswordAuthentication getAuthentication() {
+        return TeamAccessorUtils.getPasswordAuthentication(project.getWebLocation().toString(), false); // do not force login
+    }
+
+    public void ensureCredentials() {
+        PasswordAuthentication pa = TeamAccessorUtils.getPasswordAuthentication(project.getWebLocation().toString(), false);
         if(pa == null) {
-            return false;
+            return;
         }
         
         String user = pa.getUserName();
         char[] password = pa.getPassword();
 
         setCredentials(user, password, null, null);
-
-        return true;
-    }
-    
-    public void ensureCredentials() {
-        authenticate(null);
     }
     
     public synchronized void setCredentials(String user, char[] password, String httpUser, char[] httpPassword) {
@@ -206,9 +233,6 @@ public class ODCSRepository implements PropertyChangeListener {
         String oldUser = taskRepository.getUserName();
         if (oldUser == null) {
             oldUser = ""; //NOI18N
-        }
-        if (!oldUser.equals(user)) {
-            resetRepository(user.isEmpty());
         }
         setupProperties(taskRepository, taskRepository.getRepositoryLabel(), user, password, httpUser, httpPassword);
     }
@@ -224,9 +248,7 @@ public class ODCSRepository implements PropertyChangeListener {
         String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
         taskRepository = setupTaskRepository(name, oldUrl.equals(url) ? null : oldUrl,
                 url, user, password, httpUser, httpPassword);
-        resetRepository(false); 
     }    
-    
     
     /**
      * If oldUrl is not null, gets the repository for the oldUrl and rewrites it
@@ -264,18 +286,6 @@ public class ODCSRepository implements PropertyChangeListener {
         MylynUtils.setCredentials(repository, user, password, httpUser, httpPassword);
     }
     
-    synchronized void resetRepository (boolean logout) {
-        synchronized (QUERIES_LOCK) {
-            if (logout) {
-                if(remoteSavedQueries != null) { // might be called on logout even before the reps where initiated
-                    remoteSavedQueries.clear();
-                }
-            } else {
-                remoteSavedQueries = null;
-            }
-        }
-    }
-
     public TaskRepository getTaskRepository() {
         return taskRepository;
     }
@@ -299,7 +309,7 @@ public class ODCSRepository implements PropertyChangeListener {
     }
 
     public void remove() {
-        resetRepository(true);
+        cancelQueries();
     }
 
     public ODCSIssue getIssue(final String id) {
@@ -392,48 +402,45 @@ public class ODCSRepository implements PropertyChangeListener {
     public Collection<ODCSQuery> getQueries() {
         List<ODCSQuery> ret = new ArrayList<>();
         synchronized (QUERIES_LOCK) {
-            initializePredefinedQueries();
-            ret.addAll(predefinedQueries.values());
-            if (remoteSavedQueries == null) {
-                // do not query saved queries again until really needed
-                remoteSavedQueries = new HashSet<>();
+            
+            if (queries == null && isLoggedIn()) {
+                queries = new HashSet<>();
+                initializePredefinedQueries();
+                queries.addAll(predefinedQueries.values());
                 ODCS.getInstance().getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
                         requestRemoteSavedQueries();
                     }
                 });
-            } else {
-                ret.addAll(remoteSavedQueries);
+            } 
+            
+            if(queries != null) {
+                ret.addAll(queries);
             }
         }
+        
         return ret;
     }
     
     private void requestRemoteSavedQueries () {
-        List<ODCSQuery> queries = new ArrayList<>();
+        List<ODCSQuery> remoteQueries = new ArrayList<>();
         ensureCredentials();
         RepositoryConfiguration conf = getRepositoryConfiguration(false);
         if (conf != null) {
             List<SavedTaskQuery> savedQueries = conf.getSavedTaskQueries();
             for (SavedTaskQuery sq : savedQueries) {
                 ODCSQuery q = ODCSQuery.createSaved(this, sq);
-                queries.add(q);
+                remoteQueries.add(q);
 
                 ODCS.LOG.log(Level.FINER, "added remote query {0} to repository {1}", new Object[]{sq.getName(), getDisplayName()});
             }
         }
-        synchronized (QUERIES_LOCK) {
-            if (remoteSavedQueries == null) {
-                // this can still be null, when user logins
-                remoteSavedQueries = new HashSet<>();
-            } else {
-                remoteSavedQueries.clear();
-            }
-            remoteSavedQueries.addAll(queries);
-        }
         
-        if(!queries.isEmpty()) {
+        if(!remoteQueries.isEmpty() && isLoggedIn()) {
+            synchronized (QUERIES_LOCK) {
+                queries.addAll(remoteQueries);
+            }
             fireQueryListChanged();
         }
     }
@@ -543,14 +550,14 @@ public class ODCSRepository implements PropertyChangeListener {
 
     public void removeQuery(ODCSQuery query) {
         synchronized (QUERIES_LOCK) {
-            remoteSavedQueries.remove(query);
+            queries.remove(query);
         }
         fireQueryListChanged();
     }
 
     public void saveQuery(ODCSQuery query) {
         synchronized (QUERIES_LOCK) {
-            remoteSavedQueries.add(query);
+            queries.add(query);
         }
         fireQueryListChanged();
     }
@@ -661,7 +668,7 @@ public class ODCSRepository implements PropertyChangeListener {
     public boolean needsAndHasNoLogin(ODCSQuery q) {
         return (q != getPredefinedQuery(PredefinedTaskQuery.ALL)
                || q != getPredefinedQuery(PredefinedTaskQuery.RECENT))
-            && !TeamAccessorUtils.isLoggedIn(project.getWebLocation());
+            && !isLoggedIn();
     }
     
     public class Cache {
