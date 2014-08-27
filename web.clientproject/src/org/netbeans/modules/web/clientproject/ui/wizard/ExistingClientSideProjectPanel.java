@@ -78,8 +78,8 @@ public class ExistingClientSideProjectPanel implements WizardDescriptor.Panel<Wi
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
-        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingProjectWizard.SITE_ROOT, getNormalizedFile(getComponent().getSiteRoot()));
-        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingProjectWizard.TEST_ROOT, getNormalizedFile(getComponent().getTestDir()));
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingHtml5ProjectWizard.SITE_ROOT, getNormalizedFile(getComponent().getSiteRoot()));
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingHtml5ProjectWizard.TEST_ROOT, getNormalizedFile(getComponent().getTestDir()));
         wizardDescriptor.putProperty(ClientSideProjectWizardIterator.Wizard.PROJECT_DIRECTORY, getNormalizedFile(getComponent().getProjectDirectory()));
         wizardDescriptor.putProperty(ClientSideProjectWizardIterator.Wizard.NAME, getComponent().getProjectName());
     }

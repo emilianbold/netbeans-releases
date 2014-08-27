@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.templates.TemplateRegistration;
@@ -116,7 +117,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             position=100)
     @NbBundle.Messages("ClientSideProjectWizardIterator.newProject.displayName=HTML5 Application")
     public static ClientSideProjectWizardIterator newProject() {
-        return new ClientSideProjectWizardIterator(new NewProjectWizard());
+        return new ClientSideProjectWizardIterator(new NewHtml5ProjectWizard());
     }
 
     @TemplateRegistration(folder="Project/ClientSide",
@@ -126,11 +127,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             position=200)
     @NbBundle.Messages("ClientSideProjectWizardIterator.existingProject.displayName=HTML5 Application with Existing Sources")
     public static ClientSideProjectWizardIterator existingProject() {
-        return new ClientSideProjectWizardIterator(new ExistingProjectWizard());
+        return new ClientSideProjectWizardIterator(new ExistingHtml5ProjectWizard());
     }
 
     public static ClientSideProjectWizardIterator newProjectWithExtender() {
-        return new ClientSideProjectWizardIterator(new NewProjectWizard(true), true);
+        return new ClientSideProjectWizardIterator(new NewHtml5ProjectWizard(true), true);
     }
 
     @NbBundle.Messages({
@@ -173,15 +174,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         handle.finish();
 
-        SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(NewProjectWizard.SITE_TEMPLATE);
-        String libraryNames = (String)wizardDescriptor.getProperty(NewProjectWizard.LIBRARY_NAMES);
-        boolean newProjWizard = wizard instanceof NewProjectWizard;
-        ClientSideProjectUtilities.logUsage(ClientSideProjectWizardIterator.class, "USG_PROJECT_HTML5_CREATE", // NOI18N
-                new Object[] { newProjWizard ? "NEW" : "EXISTING", // NOI18N
-                siteTemplate != null ? siteTemplate.getId() : "NONE", // NOI18N
-                libraryNames == null ? "" : libraryNames,
-                !newProjWizard && siteRoot != null ? (FileUtil.isParentOf(dir, siteRoot) ? "YES" : "NO") : "" // NOI18N
-                });
+        wizard.logUsage(wizardDescriptor, dir, siteRoot);
 
         return files;
     }
@@ -351,17 +344,9 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     private void setTitle() {
         if (wizardDescriptor != null) {
             // wizard title
-            String title = null;
-            if (wizard instanceof NewProjectWizard) {
-                title = Bundle.ClientSideProjectWizardIterator_newProject_displayName();
-            } else if (wizard instanceof ExistingProjectWizard) {
-                title = Bundle.ClientSideProjectWizardIterator_existingProject_displayName();
-            } else {
-                assert false : "Unknown project wizard type: " + wizard.getClass().getName();
-            }
-            if (title != null) {
-                wizardDescriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
-            }
+            String title = wizard.getTitle();
+            assert title != null : "Title expected for wizard type: " + wizard;
+            wizardDescriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
         }
     }
 
@@ -386,14 +371,16 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         String PROJECT_DIRECTORY = "PROJECT_DIRECTORY"; // NOI18N
         String NAME = "NAME"; // NOI18N
 
+        String getTitle();
         WizardDescriptor.Panel<WizardDescriptor>[] createPanels();
         String[] createSteps();
         /** @return site root */
         FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException;
         void uninitialize(WizardDescriptor wizardDescriptor);
+        void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir, @NullAllowed FileObject siteRoot);
     }
 
-    public static final class NewProjectWizard implements Wizard {
+    public static final class NewHtml5ProjectWizard implements Wizard {
 
         public static final String SITE_TEMPLATE = "SITE_TEMPLATE"; // NOI18N
         public static final String LIBRARIES_FOLDER = "LIBRARIES_FOLDER"; // NOI18N
@@ -403,12 +390,17 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         private boolean withExtenders;
 
-        public NewProjectWizard(boolean withExtenders) {
+        public NewHtml5ProjectWizard(boolean withExtenders) {
             this.withExtenders = withExtenders;
         }
 
-        public NewProjectWizard() {
+        public NewHtml5ProjectWizard() {
             this(false);
+        }
+
+        @Override
+        public String getTitle() {
+            return Bundle.ClientSideProjectWizardIterator_newProject_displayName();
         }
 
         @Override
@@ -494,6 +486,15 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         }
 
         @Override
+        public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir, FileObject siteRoot) {
+            SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(SITE_TEMPLATE);
+            String libraryNames = (String) wizardDescriptor.getProperty(LIBRARY_NAMES);
+            ClientSideProjectUtilities.logUsage(ClientSideProjectWizardIterator.class, "USG_PROJECT_HTML5_CREATE", // NOI18N
+                    new Object[] {"NEW", siteTemplate != null ? siteTemplate.getId() : "NONE", // NOI18N
+                        libraryNames == null ? "" : libraryNames, ""}); // NOI18N
+        }
+
+        @Override
         public void uninitialize(WizardDescriptor wizardDescriptor) {
             // cleanup js libs
             FileObject jsLibs = (FileObject) wizardDescriptor.getProperty(LIBRARIES_FOLDER);
@@ -548,7 +549,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     }
 
-    public static final class ExistingProjectWizard implements Wizard {
+    public static final class ExistingHtml5ProjectWizard implements Wizard {
 
         public static final String SITE_ROOT = "SITE_ROOT"; // NOI18N
         public static final String TEST_ROOT = "TEST_ROOT"; // NOI18N
@@ -560,6 +561,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 new ExistingClientSideProjectPanel(),
             };
             return panels;
+        }
+
+        @Override
+        public String getTitle() {
+            return Bundle.ClientSideProjectWizardIterator_existingProject_displayName();
         }
 
         @NbBundle.Messages("ExistingProjectWizard.step.createProject=Name and Location")
@@ -583,6 +589,13 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             }
             ClientSideProjectUtilities.initializeProject(project, siteRoot.getAbsolutePath(), testFolder);
             return FileUtil.toFileObject(siteRoot);
+        }
+
+        @Override
+        public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir, FileObject siteRoot) {
+            ClientSideProjectUtilities.logUsage(ClientSideProjectWizardIterator.class, "USG_PROJECT_HTML5_CREATE", // NOI18N
+                    new Object[] {"EXISTING", "NONE", "", siteRoot != null // NOI18N
+                            ? (ClientSideProjectUtilities.isParentOrItself(projectDir, siteRoot) ? "YES" : "NO") : ""}); // NOI18N
         }
 
         @Override
