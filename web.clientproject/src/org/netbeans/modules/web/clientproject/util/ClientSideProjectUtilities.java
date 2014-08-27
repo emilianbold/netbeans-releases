@@ -144,17 +144,25 @@ public final class ClientSideProjectUtilities {
         return projectHelper;
     }
 
-    public static void initializeProject(@NonNull ClientSideProject project, @NonNull String siteRoot, @NullAllowed String test) throws IOException {
+    public static void initializeProject(@NonNull ClientSideProject project, @NullAllowed String sources, @NullAllowed String siteRoot,
+            @NullAllowed String test) throws IOException {
+        assert sources != null || siteRoot != null : "Sources and/or Site Root must be set";
         File projectDirectory = FileUtil.toFile(project.getProjectDirectory());
         assert projectDirectory != null;
         assert projectDirectory.isDirectory();
         // ensure directories exists
-        ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, siteRoot));
+        if (sources != null) {
+            ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, sources));
+        }
+        if (siteRoot != null) {
+            ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, siteRoot));
+        }
         if (test != null) {
             ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, test));
         }
         // save project
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
+        projectProperties.setSourceFolder(sources);
         projectProperties.setSiteRootFolder(siteRoot);
         projectProperties.setTestFolder(test);
         projectProperties.setSelectedBrowser(project.getProjectWebBrowser().getId());
