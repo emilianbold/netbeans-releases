@@ -42,11 +42,18 @@
 
 package org.netbeans.spi.project.support.ant.ui;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryChooser;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
  * set of factory methods to create customizer panels
@@ -66,8 +73,43 @@ public final class CustomizerUtilities {
     public static JComponent createLicenseHeaderCustomizerPanel(ProjectCustomizer.Category category, LicensePanelContentHandler handler) {
         return new LicenseHeadersPanel(category, handler);
     }
-            
-    
+
+    /**
+     * Returns library import handler which imports global library to sharable
+     * one. See {@link LibraryChooser#showDialog} for usage of this handler.
+     * @param refHelper the {@link ReferenceHelper}
+     * @return copy handler
+     * @since 1.62
+     */
+    @NonNull
+    public static LibraryChooser.LibraryImportHandler getLibraryChooserImportHandler(@NonNull final ReferenceHelper refHelper) {
+        Parameters.notNull("refHelper", refHelper); //NOI18N
+        return new LibraryChooser.LibraryImportHandler() {
+            @Override
+            public Library importLibrary(Library library) throws IOException {
+                return refHelper.copyLibrary(library);
+            }
+        };
+    }
+
+    /**
+     * Returns library import handler which imports global library to sharable
+     * one. See {@link LibraryChooser#showDialog} for usage of this handler.
+     * @param librariesLocation the location of the libraries definition file to import the library into
+     * @return copy handler
+     * @since 1.62
+     */
+    @NonNull
+    public static LibraryChooser.LibraryImportHandler getLibraryChooserImportHandler(
+            @NonNull final File librariesLocation) {
+        Parameters.notNull("librariesLocation", librariesLocation); //NOI18N
+        return new LibraryChooser.LibraryImportHandler() {
+            @Override
+            public Library importLibrary(final @NonNull Library library) throws IOException {
+                return ReferenceHelper.copyLibrary(library, librariesLocation);
+            }
+        };
+    }
     /**
      * handle data inputs and outputs in the license headers customizer panel.
      * @since 1.53

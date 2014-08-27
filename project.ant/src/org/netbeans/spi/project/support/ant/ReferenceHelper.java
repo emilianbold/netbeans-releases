@@ -71,7 +71,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
@@ -1559,37 +1558,27 @@ public final class ReferenceHelper {
             return lib;
         }
         File mainPropertiesFile = h.resolveFile(h.getLibrariesLocation());
-        return copyLibrary(lib, BaseUtilities.toURI(mainPropertiesFile).toURL());
-    }
-        
-    /**
-     * Returns library import handler which imports global library to sharable
-     * one. See {@link LibraryChooser#showDialog} for usage of this handler.
-     * @return copy handler
-     * @since org.netbeans.modules.project.ant/1 1.19
-     */
-    public LibraryChooser.LibraryImportHandler getLibraryChooserImportHandler() {
-        return new LibraryChooser.LibraryImportHandler() {
-            public Library importLibrary(Library library) throws IOException {
-                return copyLibrary(library);
-            }
-        };        
+        return copyLibrary(lib, mainPropertiesFile);
     }
 
     /**
-     * Returns library import handler which imports global library to sharable
-     * one. See {@link LibraryChooser#showDialog} for usage of this handler.
-     * @param the URL of the libraries definition file to import the library into
-     * @return copy handler
-     * @since org.netbeans.modules.project.ant/1 1.41
+     * Copy global IDE library to given folder.
+     * When a library with same name already exists in sharable location, the new one
+     * is copied with generated unique name.
+     *
+     * <p>Library creation is done under write access of ProjectManager.mutex().
+     *
+     * @param lib global library; cannot be null
+     * @param librariesLocation the location of the libraries definition file to import the library into
+     * @return newly created sharable version of library in case of sharable
+     *  project or given global library in case of non-sharable project
+     * @throws java.io.IOException if there was problem copying files
+     * @since 1.62
      */
-    public LibraryChooser.LibraryImportHandler getLibraryChooserImportHandler(final @NonNull URL librariesLocation) {
-        return new LibraryChooser.LibraryImportHandler() {
-            @Override
-            public Library importLibrary(final @NonNull Library library) throws IOException {
-                return copyLibrary(library, librariesLocation);
-            }
-        };
+    public static Library copyLibrary(final @NonNull Library lib, final @NonNull File librariesLocation) throws IOException {
+        Parameters.notNull("lib", lib); //NOI18N
+        Parameters.notNull("librariesLocation", librariesLocation); //NOI18N
+        return ProjectLibraryProvider.copyLibrary(lib, BaseUtilities.toURI(librariesLocation).toURL(), true);
     }
 
     /**
@@ -1961,11 +1950,5 @@ public final class ReferenceHelper {
                 "," + targetName + "," + cleanTargetName + "," + artifactID + ">"; // NOI18N
         }
         
-    }
-
-    private static Library copyLibrary(final @NonNull Library lib, final @NonNull URL librariesLocation) throws IOException {
-        Parameters.notNull("lib", lib); //NOI18N
-        Parameters.notNull("librariesLocation", librariesLocation); //NOI18N
-        return ProjectLibraryProvider.copyLibrary(lib, librariesLocation, true);
     }
 }

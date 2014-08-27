@@ -112,6 +112,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -994,8 +995,9 @@ public final class LibrariesNode extends AbstractNode {
         @Override
         public void actionPerformed(ActionEvent e) {
             Set<Library> added = LibraryChooser.showDialog(
-                    refHelper.getProjectLibraryManager(), filter,
-                    refHelper.getLibraryChooserImportHandler());
+                    refHelper.getProjectLibraryManager(),
+                    filter,
+                    CustomizerUtilities.getLibraryChooserImportHandler(refHelper));
             if (added != null) {
                 addLibraries(added.toArray(new Library[added.size()]));
             }
