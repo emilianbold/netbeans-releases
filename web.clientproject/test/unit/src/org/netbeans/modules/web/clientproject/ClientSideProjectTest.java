@@ -86,6 +86,7 @@ public class ClientSideProjectTest extends NbTestCase {
         AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(wd, "Project1");
         ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
         ClientSideProjectUtilities.initializeProject(project,
+                null,
                 "public_html_XX",
                 "test");
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
@@ -120,6 +121,7 @@ public class ClientSideProjectTest extends NbTestCase {
         SiteTemplateImplementation.ProjectProperties pp = new SiteTemplateImplementation.ProjectProperties();
         sz.configure(pp);
         ClientSideProjectUtilities.initializeProject(project,
+                null,
                 pp.getSiteRootFolder(),
                 pp.getTestFolder());
         sz.apply(projectHelper.getProjectDirectory(), pp, ProgressHandleFactory.createHandle("somename"));

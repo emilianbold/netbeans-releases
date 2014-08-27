@@ -51,6 +51,7 @@ import org.openide.util.Parameters;
 /**
  * Project properties. It contains usually relative paths of:
  * <ul>
+ * <li>Source folder</li>
  * <li>Site Root folder</li>
  * <li>Unit Tests folder</li>
  * <li>Config folder</li>
@@ -71,6 +72,7 @@ public final class CreateProjectProperties {
 
     private FileObject projectDir;
     private String projectName;
+    private String sourceFolder;
     private String siteRootFolder;
     private String testFolder;
     private String jsTestingProvider;
@@ -132,26 +134,49 @@ public final class CreateProjectProperties {
     }
 
     /**
-     * Get Site Root folder, usually relative path.
+     * Get Source folder, usually relative path.
      *
-     * @return Site Root folder, usually relative path; never returns {@code null} or empty string
-     * @since 1.37
+     * @return Source folder, usually relative path; can be {@code null} if no Source folder is present
+     * @since 1.61
+     */
+    @CheckForNull
+    public String getSourceFolder() {
+        return sourceFolder;
+    }
+
+    /**
+     * Set Source folder, usually relative path or empty string.
+     *
+     * @param sourceFolder Source folder, can be {@code null} if no Source folder is present
+     * @return itself
+     * @since 1.61
      */
     @NonNull
+    public CreateProjectProperties setSourceFolder(@NullAllowed String sourceFolder) {
+        this.sourceFolder = sourceFolder;
+        return this;
+    }
+
+    /**
+     * Get Site Root folder, usually relative path.
+     *
+     * @return Site Root folder, usually relative path; can be {@code null} if no Site Root is present
+     * @since 1.37
+     */
+    @CheckForNull
     public String getSiteRootFolder() {
         return siteRootFolder;
     }
 
     /**
-     * Set Site Root folder, never {@code null} or empty string.
+     * Set Site Root folder, usually relative path or empty string.
      *
-     * @param siteRootFolder Site Root folder, never {@code null} or empty string
+     * @param siteRootFolder Site Root folder, can be {@code null} if no Site Root is present
      * @return itself
      * @since 1.37
      */
     @NonNull
-    public CreateProjectProperties setSiteRootFolder(@NonNull String siteRootFolder) {
-        Parameters.notEmpty("siteRootFolder", siteRootFolder); // NOI18N
+    public CreateProjectProperties setSiteRootFolder(@NullAllowed String siteRootFolder) {
         this.siteRootFolder = siteRootFolder;
         return this;
     }
@@ -176,7 +201,6 @@ public final class CreateProjectProperties {
      */
     @NonNull
     public CreateProjectProperties setTestFolder(@NullAllowed String testFolder) {
-        Parameters.notEmpty("testFolder", testFolder); // NOI18N
         this.testFolder = testFolder;
         return this;
     }

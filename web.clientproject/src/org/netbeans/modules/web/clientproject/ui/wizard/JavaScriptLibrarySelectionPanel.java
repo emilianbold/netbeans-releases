@@ -104,7 +104,7 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Extende
     @Override
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
-        SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE);
+        SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(ClientSideProjectWizardIterator.NewHtml5ProjectWizard.SITE_TEMPLATE);
         // default libraries
         Collection<String> supportedLibraries = siteTemplate.supportedLibraries();
         getComponent().updateDefaultLibraries(supportedLibraries);
@@ -115,9 +115,9 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Extende
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
-        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARIES_FOLDER, librariesFolder);
-        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARIES_PATH, javaScriptLibrarySelection.getLibrariesFolder());
-        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARY_NAMES,
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewHtml5ProjectWizard.LIBRARIES_FOLDER, librariesFolder);
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewHtml5ProjectWizard.LIBRARIES_PATH, javaScriptLibrarySelection.getLibrariesFolder());
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewHtml5ProjectWizard.LIBRARY_NAMES,
                 ClientSideProjectProperties.createListOfJsLibraries(getComponent().getSelectedLibraries()));
     }
 
