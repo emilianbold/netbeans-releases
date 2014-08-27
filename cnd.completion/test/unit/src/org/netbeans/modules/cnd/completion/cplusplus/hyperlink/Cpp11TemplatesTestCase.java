@@ -113,4 +113,11 @@ public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
         performTest("bug246548_2.cpp", 16, 40, "bug246548_2.cpp", 7, 9);
         performTest("bug246548_2.cpp", 17, 40, "bug246548_2.cpp", 12, 9);
     }    
+    
+    public void testBug246683() throws Exception {
+        // Bug 246683 - C++11: variadic template and partial specialization
+        performTest("bug246683.cpp", 20, 32, "bug246683.cpp", 4, 9);
+        performTest("bug246683.cpp", 21, 26, "bug246683.cpp", 11, 9);
+        performTest("bug246683.cpp", 22, 25, "bug246683.cpp", 14, 9);
+    }    
 }
