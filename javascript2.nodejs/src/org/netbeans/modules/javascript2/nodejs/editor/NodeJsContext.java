@@ -40,40 +40,21 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript2.nodejs.model;
+package org.netbeans.modules.javascript2.nodejs.editor;
 
-import java.util.Collection;
-import java.util.regex.Pattern;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
-import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 
 /**
  *
  * @author Petr Pisl
  */
-@FunctionInterceptor.Registration(priority = 200)
-public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
-
-    private static Pattern METHOD_NAME = Pattern.compile("require");
+public enum NodeJsContext {
     
-    @Override
-    public Pattern getNamePattern() {
-        return METHOD_NAME;
-    }
-
-    @Override
-    public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
-//        System.out.println("NodeJs require: " + name);
-        if (args.size() == 1) {
-            FunctionArgument theFirst = args.iterator().next();
-            if (theFirst.getKind() == FunctionArgument.Kind.STRING) {
-//                System.out.println("   loading : " + theFirst.getValue());
-                
-            }
-        }
-    }
+    MODULE_NAME,
+    UNKNOWN;
     
+    public static NodeJsContext findContext(TokenSequence<? extends JsTokenId> ts, final int offset) {
+        return UNKNOWN;
+    }
 }
