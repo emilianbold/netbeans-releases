@@ -117,9 +117,11 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         ValidationResult result = new ProjectFoldersValidator()
                 .validateSiteRootFolder(siteRoot)
                 .getResult();
-        boolean siteRootValid = !result.hasErrors();
+        boolean siteRootValid = siteRoot != null
+                && !result.hasErrors();
         String info;
         if (siteRootValid) {
+            assert siteRoot != null;
             info = NbBundle.getMessage(RunPanel.class, "URL_DESCRIPTION", siteRoot.getAbsolutePath());
         } else {
             info = " "; // NOI18N
@@ -238,7 +240,6 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         }
     }
 
-    // XXX
     @CheckForNull
     private File getSiteRoot() {
         return uiProperties.getResolvedSiteRootFolder();
@@ -268,11 +269,15 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         if (directFile.isAbsolute()) {
             return directFile;
         }
-        FileObject siteRoot = FileUtil.toFileObject(getSiteRoot());
+        File siteRoot = getSiteRoot();
         if (siteRoot == null) {
             return null;
         }
-        FileObject fo = siteRoot.getFileObject(startFile);
+        FileObject siteRootFo = FileUtil.toFileObject(siteRoot);
+        if (siteRootFo == null) {
+            return null;
+        }
+        FileObject fo = siteRootFo.getFileObject(startFile);
         if (fo == null) {
             return null;
         }
