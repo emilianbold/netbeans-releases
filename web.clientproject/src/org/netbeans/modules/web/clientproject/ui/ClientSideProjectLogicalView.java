@@ -331,7 +331,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.loadImage(ClientSideProject.PROJECT_ICON);
+            return ImageUtilities.icon2Image(projectInfo.getIcon());
         }
 
         @Override
@@ -360,11 +360,17 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @NbBundle.Messages({
             "# {0} - project directory",
-            "ClientSideProjectNode.description=HTML5 application in {0}"
+            "ClientSideProjectNode.project.description=HTML5 application in {0}",
+            "# {0} - project directory",
+            "ClientSideProjectNode.library.description=JS library in {0}",
         })
         @Override
         public String getShortDescription() {
-            return Bundle.ClientSideProjectNode_description(FileUtil.getFileDisplayName(project.getProjectDirectory()));
+            String projectDirName = FileUtil.getFileDisplayName(project.getProjectDirectory());
+            if (project.isJsLibrary()) {
+                return Bundle.ClientSideProjectNode_library_description(projectDirName);
+            }
+            return Bundle.ClientSideProjectNode_project_description(projectDirName);
         }
 
         @Override
@@ -404,6 +410,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    fireIconChange();
                     fireNameChange(null, null);
                     fireDisplayNameChange(null, null);
                 }
