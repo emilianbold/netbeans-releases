@@ -42,8 +42,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
@@ -158,8 +160,9 @@ public final class QueryImpl<Q, I>  {
     public static final String EVENT_QUERY_REFRESH_FINISHED = "bugtracking.query.refresh.finished";
     public static final String EVENT_QUERY_RESTORE_STARTED = "bugtracking.query.restore.started";
     public static final String EVENT_QUERY_RESTORE_FINISHED = "bugtracking.query.restore.finished";
+
     private class IssueContainerIntern implements IssueContainerImpl<I> {
-        private final Set<IssueImpl> issueImpls = new HashSet<IssueImpl>();
+        private final Set<IssueImpl> issueImpls = new ConcurrentSkipListSet<IssueImpl>(new IssueImplComparator());
         private  boolean isRunning = false;
         
         @Override
@@ -231,5 +234,19 @@ public final class QueryImpl<Q, I>  {
             support.removePropertyChangeListener(listener);                   
         }
     
+    }
+    
+    private static class IssueImplComparator implements Comparator<IssueImpl> {
+        @Override
+        public int compare(IssueImpl o1, IssueImpl o2) {
+            if(o1 == null || o2 == null) {
+                return o1 != null ? 1 : (o2 == null ? 0 : -1); 
+            }   
+            String id1 = o1.getID();
+            String id2 = o2.getID();
+            return id1 == null ? 
+                    (id2 == null ? 0 : -1) : 
+                    (id2 == null ? 1 : id1.compareTo(id2));
+        };
     }
 }
