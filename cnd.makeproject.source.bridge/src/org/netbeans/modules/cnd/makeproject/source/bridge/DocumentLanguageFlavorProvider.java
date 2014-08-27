@@ -71,6 +71,7 @@ import org.netbeans.spi.lexer.TokenHierarchyControl;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -105,6 +106,10 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         if (primaryFile == null) {
             return;
         }
+        if (setLanguage(primaryFile, doc)) {
+            rebuildTH(doc);
+            return;
+        }
         Project owner = FileOwnerQuery.getOwner(primaryFile);
         if (owner == null) {
             return;
@@ -126,9 +131,17 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         rebuildTH(doc);
     }
     
-    private static void setLanguage(NativeFileItem nfi, StyledDocument doc) {
-        Language<?> language = null;
-        Filter<?> filter = null;
+    private static boolean setLanguage(FileObject fo, StyledDocument doc) {
+        CodeAssistance CAProvider = Lookup.getDefault().lookup(CodeAssistance.class);
+        if (CAProvider != null) {
+            Pair<NativeFileItem.Language, LanguageFlavor> pair = CAProvider.getHeaderLanguageFlavour(fo);
+            return tryToSetDocumentLanguage(pair.first(), pair.second(), null, doc);
+        } else {
+            return false;
+        }
+    }
+    
+    private static boolean setLanguage(NativeFileItem nfi, StyledDocument doc) {
         final NativeProject nativeProject = nfi.getNativeProject();
         if (nativeProject != null) {
             final Lookup.Provider project = nativeProject.getProject();
@@ -140,15 +153,27 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 }
             }
         }
-        switch (nfi.getLanguage()) {
+        return tryToSetDocumentLanguage(null, null, nfi, doc);
+    }
+
+    private static boolean tryToSetDocumentLanguage(NativeFileItem.Language itemLang, LanguageFlavor flavor, NativeFileItem nfi, StyledDocument doc) {
+        if (itemLang == null) {
+            itemLang = nfi.getLanguage();
+        }
+        Filter<?> filter = null;
+        Language<?> language = null;
+        switch (itemLang) {
             case C:
                 language = CppTokenId.languageC();
                 filter = CndLexerUtilities.getGccCFilter();
                 break;
             case C_HEADER:
                 language = CppTokenId.languageHeader();
-                if (getLanguageFlavor(nfi) == NativeFileItem.LanguageFlavor.CPP11 ||
-                    getLanguageFlavor(nfi) == NativeFileItem.LanguageFlavor.CPP14) {
+                if (flavor == null) {
+                    flavor = getLanguageFlavor(nfi);
+                }
+                if (flavor == NativeFileItem.LanguageFlavor.CPP11 ||
+                        flavor == NativeFileItem.LanguageFlavor.CPP14) {
                     filter = CndLexerUtilities.getHeaderCpp11Filter();
                 } else {
                     filter = CndLexerUtilities.getHeaderCppFilter();
@@ -156,8 +181,11 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 break;
             case CPP:
                 language = CppTokenId.languageCpp();
-                if (getLanguageFlavor(nfi) == NativeFileItem.LanguageFlavor.CPP11 ||
-                    getLanguageFlavor(nfi) == NativeFileItem.LanguageFlavor.CPP14) {
+                if (flavor == null) {
+                    flavor = getLanguageFlavor(nfi);
+                }                
+                if (flavor == NativeFileItem.LanguageFlavor.CPP11 ||
+                        flavor == NativeFileItem.LanguageFlavor.CPP14) {
                     filter = CndLexerUtilities.getGccCpp11Filter();
                 } else {
                     filter = CndLexerUtilities.getGccCppFilter();
@@ -165,13 +193,14 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 break;
             case FORTRAN:
             case OTHER:
-                return;
+                return false;
         }
         assert language != null;
         assert filter != null;
         doc.putProperty(Language.class, language);
         InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
-        lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
+        lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);
+        return true;
     }
 
     private static LanguageFlavor getLanguageFlavor(NativeFileItem nfi) {
