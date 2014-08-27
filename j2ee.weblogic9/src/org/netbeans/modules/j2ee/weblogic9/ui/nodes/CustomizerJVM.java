@@ -48,6 +48,7 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
+import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
@@ -56,6 +57,11 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties.JvmVendor;
@@ -69,7 +75,7 @@ class CustomizerJVM extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 3411155308004602121L;
 
-    private WLDeploymentManager manager;
+    private final WLDeploymentManager manager;
     
     CustomizerJVM(WLDeploymentManager manager) {
         this.manager = manager;
@@ -160,7 +166,25 @@ class CustomizerJVM extends javax.swing.JPanel {
         memoryOptions.getDocument().addDocumentListener( 
                 new PropertyDocumentListener(manager, WLPluginProperties.MEM_OPTS, 
                         memoryOptions));
-        
+
+        final SpinnerNumberModel debugPortModel = new SpinnerNumberModel(
+                Integer.parseInt(manager.getInstanceProperties().getProperty(WLPluginProperties.DEBUGGER_PORT_ATTR)), 0, 65535, 1);
+        debugPortModel.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                manager.getInstanceProperties().setProperty(WLPluginProperties.DEBUGGER_PORT_ATTR,
+                        ((Integer) debugPortModel.getValue()).toString());
+            }
+        });
+        portSpinner.setModel(debugPortModel);
+        portSpinner.setEditor(new javax.swing.JSpinner.NumberEditor(portSpinner, "#"));
+
+        JTextField portSpinnerTextField = ((JSpinner.NumberEditor) portSpinner.getEditor()).getTextField();
+        // work-around for jspinner incorrect fonts
+        Font font = portSpinnerTextField.getFont();
+        portSpinner.setFont(font);
+
         vendorName.setEnabled(!manager.isRemote());
         vmOptions.setEnabled(!manager.isRemote());
         memoryOptions.setEnabled(!manager.isRemote());
@@ -186,6 +210,9 @@ class CustomizerJVM extends javax.swing.JPanel {
         memoryOptions = new javax.swing.JTextField();
         memoryOptionsLabel = new javax.swing.JLabel();
         memoryOptionsCommentLabel = new javax.swing.JLabel();
+        debuggerLabel = new javax.swing.JLabel();
+        portLabel = new javax.swing.JLabel();
+        portSpinner = new javax.swing.JSpinner();
 
         javaHomeLabel.setLabelFor(javaHome);
         org.openide.awt.Mnemonics.setLocalizedText(javaHomeLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_JavaHome")); // NOI18N
@@ -207,6 +234,10 @@ class CustomizerJVM extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(memoryOptionsCommentLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_VmMemoryOptionsComment")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(debuggerLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "CustomizerJVM.debuggerLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "CustomizerJVM.portLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -215,9 +246,6 @@ class CustomizerJVM extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(noteChangesLabel)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(vendorLabel)
                             .addComponent(javaHomeLabel)
@@ -225,16 +253,26 @@ class CustomizerJVM extends javax.swing.JPanel {
                             .addComponent(memoryOptionsLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(vmOptions)
+                            .addComponent(javaHome)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(vendorName, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(memoryOptionsCommentLabel)
-                                    .addComponent(vmOptionsSampleLabel))
+                                    .addComponent(vmOptionsSampleLabel)
+                                    .addComponent(vendorName, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(javaHome)
+                            .addComponent(vmOptions)
                             .addComponent(memoryOptions))
-                        .addGap(12, 12, 12))))
+                        .addGap(12, 12, 12))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(noteChangesLabel)
+                            .addComponent(debuggerLabel)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(12, 12, 12)
+                                .addComponent(portLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(portSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -259,6 +297,12 @@ class CustomizerJVM extends javax.swing.JPanel {
                     .addComponent(memoryOptions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(memoryOptionsCommentLabel)
+                .addGap(17, 17, 17)
+                .addComponent(debuggerLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(portLabel)
+                    .addComponent(portSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(noteChangesLabel)
                 .addContainerGap())
@@ -286,12 +330,15 @@ class CustomizerJVM extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel debuggerLabel;
     private javax.swing.JTextField javaHome;
     private javax.swing.JLabel javaHomeLabel;
     private javax.swing.JTextField memoryOptions;
     private javax.swing.JLabel memoryOptionsCommentLabel;
     private javax.swing.JLabel memoryOptionsLabel;
     private javax.swing.JLabel noteChangesLabel;
+    private javax.swing.JLabel portLabel;
+    private javax.swing.JSpinner portSpinner;
     private javax.swing.JLabel vendorLabel;
     private javax.swing.JComboBox vendorName;
     private javax.swing.JTextField vmOptions;
