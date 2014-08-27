@@ -306,6 +306,14 @@ public class ClientSideProject implements Project {
         return broken;
     }
 
+    public boolean isJsLibrary() {
+        return getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER) == null;
+    }
+
+    public boolean isHtml5Project() {
+        return !isJsLibrary();
+    }
+
     @CheckForNull
     public FileObject getSourcesFolder() {
         String sourceFolder = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SOURCE_FOLDER);
