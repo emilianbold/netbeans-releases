@@ -39,65 +39,87 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.hints.project;
 
-package org.netbeans.modules.jumpto.common;
-
-import java.awt.Toolkit;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
+import com.sun.source.util.TreePath;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.openide.awt.StatusDisplayer;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.ProjectProblems;
+import org.netbeans.modules.java.hints.spi.ErrorRule;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Tomas Zezula
  */
-public final class UiUtils {
-    private UiUtils() {
-        throw new IllegalStateException("No instance allowed.");    //NOI18N
-    }
+public class IncompleteClassPath implements ErrorRule<Void> {
 
+    private static final String CODE = "nb.classpath.incomplete";      //NOI18N
+    private static final Set<String> CODES = Collections.singleton(CODE);
+
+    @Override
     @NonNull
-    public static DocumentFilter newUserInputFilter() {
-        return new UserInputFilter();
+    public Set<String> getCodes() {
+        return CODES;
     }
 
+    @Override
+    @NonNull
+    public String getId() {
+        return IncompleteClassPath.class.getName();
+    }
 
-    private static final class UserInputFilter extends DocumentFilter {
+    @Override
+    @NonNull
+    public String getDisplayName() {
+        return NbBundle.getMessage(IncompleteClassPath.class, "TXT_IncompleteClassPath");
+    }
 
-        @Override
-        public void insertString(
-                @NonNull final FilterBypass fb,
-                final int offset,
-                @NonNull final String string,
-                @NullAllowed final AttributeSet attr) throws BadLocationException {
-            if (Utils.isValidInput(string)) {
-                super.insertString(fb, offset, string, attr);
-            } else {
-                handleWrongInput();
+    @Override
+    @NonNull
+    public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
+        final FileObject file = compilationInfo.getFileObject();
+        if (file != null) {
+            final Project prj = FileOwnerQuery.getOwner(file);
+            if (prj != null) {
+                return Collections.<Fix>singletonList (new ResolveFix(prj));
             }
+        }
+        return Collections.<Fix>emptyList();
+    }
+
+    @Override
+    public void cancel() {
+    }
+
+    private static final class ResolveFix implements Fix {
+
+        private final Project prj;
+
+        ResolveFix(@NonNull final Project prj) {
+            Parameters.notNull("prj", prj); //NOI18N
+            this.prj = prj;
         }
 
         @Override
-        public void replace(
-                @NonNull final FilterBypass fb,
-                final int offset,
-                final int length,
-                @NullAllowed final String text,
-                @NullAllowed final AttributeSet attrs) throws BadLocationException {
-            if (text == null || Utils.isValidInput(text)) {
-                super.replace(fb, offset, length, text, attrs);
-            } else {
-                handleWrongInput();
-            }
+        public String getText() {
+            return NbBundle.getMessage(IncompleteClassPath.class, "TXT_ResolveProjectProblems");
         }
 
-        private static void handleWrongInput() {
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(UiUtils.class, "TXT_IllegalContent"));
-            Toolkit.getDefaultToolkit().beep();
+        @Override
+        public ChangeInfo implement() throws Exception {
+            ProjectProblems.showCustomizer(prj);
+            return null;
         }
     }
+
 }
