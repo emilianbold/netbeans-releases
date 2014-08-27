@@ -47,13 +47,16 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 import org.netbeans.lib.profiler.ui.components.JExtendedSpinner;
+import org.netbeans.modules.profiler.actions.RunCalibrationAction;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.options.ui.v2.ProfilerOptionsPanel;
 import org.openide.util.lookup.ServiceProvider;
@@ -167,7 +170,13 @@ public final class GeneralOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(0, htab, vgap, 0);
         add(manageCalibrationLabel, c);
         
-        JButton manageCalibrationButton = new JButton("Manage");
+        JButton manageCalibrationButton = new JButton("Manage") {
+            protected void fireActionPerformed(final ActionEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() { new RunCalibrationAction().actionPerformed(e); }
+                });
+            }
+        };
         c = new GridBagConstraints();
         c.gridx = 1;
         c.gridy = y++;
