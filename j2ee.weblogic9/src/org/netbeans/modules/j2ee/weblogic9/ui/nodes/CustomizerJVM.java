@@ -160,6 +160,10 @@ class CustomizerJVM extends javax.swing.JPanel {
         memoryOptions.getDocument().addDocumentListener( 
                 new PropertyDocumentListener(manager, WLPluginProperties.MEM_OPTS, 
                         memoryOptions));
+        
+        vendorName.setEnabled(!manager.isRemote());
+        vmOptions.setEnabled(!manager.isRemote());
+        memoryOptions.setEnabled(!manager.isRemote());
     }
 
     /** This method is called from within the constructor to
@@ -210,22 +214,27 @@ class CustomizerJVM extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(noteChangesLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(noteChangesLabel)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(vendorLabel)
-                            .addComponent(vmOptionsLabel)
                             .addComponent(javaHomeLabel)
+                            .addComponent(vmOptionsLabel)
                             .addComponent(memoryOptionsLabel))
-                        .addGap(8, 8, 8)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(javaHome, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
-                            .addComponent(vmOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
-                            .addComponent(memoryOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
-                            .addComponent(vmOptionsSampleLabel)
-                            .addComponent(memoryOptionsCommentLabel)
-                            .addComponent(vendorName, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap())
+                            .addComponent(vmOptions)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(vendorName, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(memoryOptionsCommentLabel)
+                                    .addComponent(vmOptionsSampleLabel))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(javaHome)
+                            .addComponent(memoryOptions))
+                        .addGap(12, 12, 12))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -246,11 +255,11 @@ class CustomizerJVM extends javax.swing.JPanel {
                 .addComponent(vmOptionsSampleLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(memoryOptions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(memoryOptionsLabel))
+                    .addComponent(memoryOptionsLabel)
+                    .addComponent(memoryOptions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(memoryOptionsCommentLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 164, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(noteChangesLabel)
                 .addContainerGap())
         );

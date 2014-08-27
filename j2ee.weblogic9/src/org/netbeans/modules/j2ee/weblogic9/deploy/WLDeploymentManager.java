@@ -91,10 +91,13 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
+import org.netbeans.modules.j2ee.weblogic9.ServerLogManager;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
 import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
+import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -146,6 +149,12 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     /* GuardedBy("this") */
     private WLConnectionSupport connectionSupport;
+    
+    /* GuardedBy("this") */
+    private WebLogicConfiguration config;
+
+    /* GuardedBy("this") */
+    private ServerLogManager logManager;
 
     /* GuardedBy("this") */
     private Version serverVersion;
@@ -159,6 +168,9 @@ public class WLDeploymentManager implements DeploymentManager2 {
     /* GuardedBy("this") */
     private boolean proxyMisconfigured;
 
+    /* GuardedBy("this") */
+    private Boolean remote;
+
     public WLDeploymentManager(String uri, String host, String port,
             boolean disconnected, WLSharedState mutableState) {
         this.uri = uri;
@@ -166,6 +178,20 @@ public class WLDeploymentManager implements DeploymentManager2 {
         this.port = port;
         this.disconnected = disconnected;
         this.mutableState = mutableState;
+    }
+
+    public synchronized WebLogicConfiguration getCommonConfiguration() {
+        if (config == null) {
+            config = createConfiguration();
+        }
+        return config;
+    }
+
+    public synchronized ServerLogManager getLogManager() {
+        if (logManager == null) {
+            logManager = new ServerLogManager(this);
+        }
+        return logManager;
     }
 
     /**
@@ -189,9 +215,11 @@ public class WLDeploymentManager implements DeploymentManager2 {
         return port;
     }
 
-    public boolean isRemote() {
-        // TODO optimize
-        return Boolean.parseBoolean(getInstanceProperties().getProperty(WLPluginProperties.REMOTE_ATTR));
+    public synchronized boolean isRemote() {
+        if (remote == null) {
+            remote = Boolean.valueOf(getInstanceProperties().getProperty(WLPluginProperties.REMOTE_ATTR));
+        }
+        return remote;
     }
     
     @CheckForNull
@@ -650,6 +678,61 @@ public class WLDeploymentManager implements DeploymentManager2 {
         }
     }
 
+    @NonNull
+    private WebLogicConfiguration createConfiguration() {
+        final InstanceProperties ip = getInstanceProperties();
+
+        WebLogicConfiguration.Credentials credentials = new WebLogicConfiguration.Credentials() {
+
+            @Override
+            public String getUsername() {
+                return ip.getProperty(InstanceProperties.USERNAME_ATTR);
+            }
+
+            @Override
+            public String getPassword() {
+                return ip.getProperty(InstanceProperties.PASSWORD_ATTR);
+            }
+        };
+
+        String serverHome = ip.getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
+        String domainHome = ip.getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
+
+        final WebLogicConfiguration config;
+        if (isRemote()) {
+            String uri = ip.getProperty(InstanceProperties.URL_ATTR);
+            // it is guaranteed it is WL
+            String[] parts = uri.substring(WLDeploymentFactory.URI_PREFIX.length()).split(":");
+
+            String host = parts[0];
+            String port = parts.length > 1 ? parts[1] : "";
+            int realPort;
+            try {
+                realPort = Integer.parseInt(port);
+            } catch (NumberFormatException ex) {
+                realPort = 7001;
+            }
+            config = WebLogicConfiguration.forRemoteDomain(new File(serverHome), host, realPort, credentials);
+        } else {
+            config = WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome), credentials);
+        }
+//        Deployment.getDefault().addInstanceListener(new InstanceListener() {
+//
+//            @Override
+//            public void instanceAdded(String serverInstanceID) {
+//            }
+//
+//            @Override
+//            public void instanceRemoved(String serverInstanceID) {
+//                if (serverInstanceID.equals(dm.getUri())) {
+//                    WebLogicRuntime.clear(config);
+//                    Deployment.getDefault().removeInstanceListener(this);
+//                }
+//            }
+//        });
+        return config;
+    }
+
     // XXX these are just temporary methods - should be replaced once we will
     // use our own TargetModuleID populated via JMX
     private TargetModuleID[] translateTargetModuleIDsToPlugin(TargetModuleID[] ids) {
@@ -715,7 +798,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
         }
         return po;
     }
-
+    
     private static interface Action<T> {
 
          T execute(DeploymentManager manager) throws ExecutionException;
