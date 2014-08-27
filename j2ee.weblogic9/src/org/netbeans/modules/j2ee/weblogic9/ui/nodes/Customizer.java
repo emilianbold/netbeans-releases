@@ -108,10 +108,8 @@ public class Customizer extends JTabbedPane {
         });
         addTab(NbBundle.getMessage(Customizer.class,"TXT_General"), 
                 new CustomizerGeneral( manager ));
-        if (!manager.isRemote()) {
-            addTab(NbBundle.getMessage(Customizer.class,"TXT_Jvm"), 
-                    new CustomizerJVM( manager ));
-        }
+        addTab(NbBundle.getMessage(Customizer.class,"TXT_Jvm"), 
+                new CustomizerJVM( manager ));
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Classes"), createPathTab(CLASSPATH)); // NOI18N
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Sources"), createPathTab(SOURCES)); // NOI18N
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Javadoc"), createPathTab(JAVADOC)); // NOI18N
