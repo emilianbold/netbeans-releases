@@ -129,7 +129,9 @@ public abstract class OnlineSites implements SiteTemplateImplementation {
 
     protected FileObject getTargetDir(FileObject projectDir, ProjectProperties projectProperties) {
         // by default, extract template to site root
-        return projectDir.getFileObject(projectProperties.getSiteRootFolder());
+        String siteRootFolder = projectProperties.getSiteRootFolder();
+        assert siteRootFolder != null;
+        return projectDir.getFileObject(siteRootFolder);
     }
 
     @Override
