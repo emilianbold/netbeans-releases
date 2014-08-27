@@ -55,6 +55,7 @@ import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
@@ -212,23 +213,25 @@ public final class JUnitAntLogger extends AntLogger {
         JUnitOutputReader outputReader = sessionInfo.outputReader;
         if (outputReader == null) {
             String projectDir = null;
-            Project project = null;
-            try{
-                projectDir = event.getProperty("work.dir"); //NOI18N
-            }catch(Exception e){}// Maven throws exception for this property
-            try{
-                if (projectDir == null){
-                    projectDir = event.getProperty("basedir"); // NOI18N
-                }
-                if ((projectDir != null) && (projectDir.length() != 0)) {
-                    File pd = new File(projectDir);
-                    File f = FileUtil.normalizeFile(pd); // #182715
-                    project = FileOwnerQuery.getOwner(FileUtil.toFileObject(f));
-                    if (project == null) {
-                        LOGGER.log(Level.INFO, "Project was null for project dir: " + f.getPath()); //NOI18N
+            Project project = getProjectFromTaskStructure(event);
+            if (project == null) { // that did not work for some reason, try the old hacky way
+                try {
+                    projectDir = event.getProperty("work.dir"); //NOI18N
+                } catch (Exception e) {}// Maven throws exception for this property
+                try {
+                    if (projectDir == null) {
+                        projectDir = event.getProperty("basedir"); // NOI18N
                     }
-                }
-            }catch(Exception e){}
+                    if ((projectDir != null) && (projectDir.length() != 0)) {
+                        File pd = new File(projectDir);
+                        File f = FileUtil.normalizeFile(pd); // #182715
+                        project = FileOwnerQuery.getOwner(FileUtil.toFileObject(f));
+                        if (project == null) {
+                            LOGGER.log(Level.INFO, "Project was null for project dir: {0}", f.getPath()); //NOI18N
+                        }
+                    }
+                } catch (Exception e) {}
+            }
             Properties props = new Properties();
             //Passing only really used properties
             //as some others may highlight build script errors
@@ -240,12 +243,12 @@ public final class JUnitAntLogger extends AntLogger {
                     props.setProperty(prop, val);
                 }
             }
-            if(project == null) {
+            if(project == null) { // still cannot locate the project
                 File antScript = FileUtil.normalizeFile(session.getOriginatingScript());
                 FileObject fileObj = FileUtil.toFileObject(antScript);
                 project = FileOwnerQuery.getOwner(fileObj);
                 if (project == null) {
-                    LOGGER.log(Level.WARNING, "Project was null for ant script: " + antScript.getPath()); //NOI18N
+                    LOGGER.log(Level.WARNING, "Project was null for ant script: {0}", antScript.getPath()); //NOI18N
                 }
             }
             outputReader = new JUnitOutputReader(
@@ -256,6 +259,67 @@ public final class JUnitAntLogger extends AntLogger {
             sessionInfo.outputReader = outputReader;
         }
         return outputReader;
+    }
+    
+    private Project getProjectFromTaskStructure(AntEvent event) {
+        Project project = null;
+        TaskStructure taskStructure = event.getTaskStructure();
+        if (taskStructure != null) { // http://ant.apache.org/manual/Tasks/junit.html
+            String attribute = taskStructure.getAttribute("dir"); //NOI18N
+            if (attribute == null) {
+                attribute = taskStructure.getAttribute("tempdir"); //NOI18N
+            }
+            if (taskStructure.getName().equals(AntLoggerUtils.TASK_JUNIT) && attribute != null) {
+                String dir = event.evaluate(attribute);
+                FileObject dirFO = FileUtil.toFileObject(FileUtil.normalizeFile(new File(dir)));
+                if (dirFO != null) {
+                    project = FileOwnerQuery.getOwner(dirFO);
+                }
+            }
+            if (project == null) { // probably custom or modified Netbeans build script
+                project = getProjectFromNestedElements(event, taskStructure);
+            }
+        }
+        return project;
+    }
+    
+    private Project getProjectFromNestedElements(AntEvent event, TaskStructure taskStructure) {
+        for (TaskStructure nestedElement : taskStructure.getChildren()) {
+            if (nestedElement.getName().equals("batchtest")) { //NOI18N
+                return getProjectFromNestedElements(event, nestedElement);
+            } else if (nestedElement.getName().equals("test") || nestedElement.getName().equals("fileset")) { //NOI18N
+                return getProjectFromAttributes(event, nestedElement);
+            }
+        }
+        return null;
+    }
+    
+    private Project getProjectFromAttributes(AntEvent event, TaskStructure taskStructure) {
+        if (taskStructure.getName().equals("test")) { //NOI18N
+            String attribute = taskStructure.getAttribute("name"); //NOI18N
+            if (attribute != null) {
+                String name = event.evaluate(attribute);
+                String fileName = name.replace(".", "/").concat(".java"); //NOI18N
+                FileObject fo = GlobalPathRegistry.getDefault().findResource(fileName);
+                if (fo != null) {
+                    return FileOwnerQuery.getOwner(fo);
+                }
+            }
+        }
+        if (taskStructure.getName().equals("fileset")) { //NOI18N
+            String attribute = taskStructure.getAttribute("dir"); //NOI18N
+            if (attribute == null) {
+                attribute = taskStructure.getAttribute("file"); //NOI18N
+            }
+            if (attribute != null) {
+                String dir = event.evaluate(attribute);
+                FileObject fo = FileUtil.toFileObject(new File(FileUtil.normalizePath(dir)));
+                if (fo != null) {
+                    return FileOwnerQuery.getOwner(fo);
+                }
+            }
+        }
+        return null;
     }
     
     /**

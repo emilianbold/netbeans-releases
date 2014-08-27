@@ -768,13 +768,21 @@ public class HintsInvoker {
             Document doc = info.getDocument();
 
             if (doc instanceof GuardedDocument) {
-                int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tree.getLeaf());
-                int end = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tree.getLeaf());
-                GuardedDocument gdoc = (GuardedDocument) doc;
-                MarkBlockChain guardedBlockChain = gdoc.getGuardedBlockChain();
-                if (guardedBlockChain.compareBlock(start, end) == MarkBlock.INNER) {
-                    return true;
-                }
+                final int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tree.getLeaf());
+                final int end = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tree.getLeaf());
+                final GuardedDocument gdoc = (GuardedDocument) doc;
+                final boolean[] ret = { false };
+                gdoc.render(new Runnable() {
+                    @Override
+                    public void run() {
+                        // MarkBlockChain should only be accessed under doc's readlock to guarantee a stability of the offsets.
+                        MarkBlockChain guardedBlockChain = gdoc.getGuardedBlockChain();
+                        if (guardedBlockChain.compareBlock(start, end) == MarkBlock.INNER) {
+                            ret[0] = true;
+                        }
+                    }
+                });
+                return ret[0];
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

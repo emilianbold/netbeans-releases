@@ -65,6 +65,7 @@ public class HtmlPanel extends javax.swing.JPanel {
     void setHtml(final String baseUrl, String html, String label) {
         pane.setText(html);
         pane.addHyperlinkListener(new HyperlinkListener() {
+            @Override
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) return;
                 String desc = e.getDescription();
@@ -77,17 +78,21 @@ public class HtmlPanel extends javax.swing.JPanel {
                     return;
                 }
                 HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
-                assert displayer != null : NbBundle.getMessage(HtmlPanel.class, "HTMLBROWSER.URLDISPLAYER_FOUND.");   // NOI18N
+                assert displayer != null : NbBundle.getMessage(HtmlPanel.class, "HTMLBROWSER.URLDISPLAYER_FOUND");   // NOI18N
                 if (displayer != null) {
                     displayer.showURL(url);
                 } else {
-                    Jira.LOG.info(NbBundle.getMessage(HtmlPanel.class, "NO_URLDISPLAYER_FOUND."));                // NOI18N
+                    Jira.LOG.info(NbBundle.getMessage(HtmlPanel.class, "NO_URLDISPLAYER_FOUND"));                // NOI18N
                 }
             }
         });
         this.label.setText(label);
     }
 
+    void setSameColor() {
+        pane.setBackground(this.getBackground());
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

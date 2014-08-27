@@ -94,6 +94,22 @@ import org.openide.util.*;
  */
 class OpenProjectFastIndex implements ClassIndexManagerListener {
     private static final Logger LOG = Logger.getLogger(OpenProjectFastIndex.class.getName());
+    private static final Strategy  STRATEGY;
+    static {
+        Strategy s = Strategy.NBFS;
+        final String propValue = System.getProperty("OpenProjectFastIndex.impl");   //NOI18N
+        if (propValue != null) {
+            try {
+                s = Strategy.valueOf(propValue);
+            } catch (IllegalArgumentException iae) {
+                LOG.log(
+                    Level.WARNING,
+                    "Wrong impl: {0}",  //NNOI18N
+                    propValue);
+            }
+        }
+        STRATEGY = s;
+    }
 
     /**
      * The default instance, used from TypeProvider and registered in GPR on startup.
@@ -192,30 +208,33 @@ class OpenProjectFastIndex implements ClassIndexManagerListener {
                 globalL = new GlobalPathRegistryListener() {
             @Override
             public void pathsAdded(GlobalPathRegistryEvent event) {
-                Future<Project[]> projects = OpenProjects.getDefault().openProjects();
-                if (!sourcePathIds.contains(event.getId())) {
-                    LOG.log(Level.FINE, "Non-source paths added: {0}", event.getId());
-                    return;
+                if (STRATEGY.isEnabled()) {
+                    Future<Project[]> projects = OpenProjects.getDefault().openProjects();
+                    if (!sourcePathIds.contains(event.getId())) {
+                        LOG.log(Level.FINE, "Non-source paths added: {0}", event.getId());
+                        return;
+                    }
+                    if (projects.isDone()) {
+                        LOG.log(Level.FINE, "Paths added, no project open in progress: {0}", event.getChangedPaths());
+                        return;
+                    }
+                    getWatcher(projects).addChangedPaths(event.getChangedPaths());
                 }
-                if (projects.isDone()) {
-                    LOG.log(Level.FINE, "Paths added, no project open in progress: {0}", event.getChangedPaths());
-                    return;
-                }
-                getWatcher(projects).addChangedPaths(event.getChangedPaths());
             }
 
             @Override
             public void pathsRemoved(GlobalPathRegistryEvent event) {
-                if (!sourcePathIds.contains(event.getId())) {
-                    LOG.log(Level.FINE, "Non-source removed: {0}", event.getId());
-                    return;
+                if (STRATEGY.isEnabled()) {
+                    if (!sourcePathIds.contains(event.getId())) {
+                        LOG.log(Level.FINE, "Non-source removed: {0}", event.getId());
+                        return;
+                    }
+                    Collection<FileObject> roots = getRoots(event.getChangedPaths());
+                    LOG.log(Level.FINE, "Paths removed: {0}", roots);
+                    removeRoots(roots);
                 }
-                Collection<FileObject> roots = getRoots(event.getChangedPaths());
-                LOG.log(Level.FINE, "Paths removed: {0}", roots);
-                removeRoots(roots);
             }
         }, globalRegistry);
-        
     }
     
     /**
@@ -684,5 +703,21 @@ class OpenProjectFastIndex implements ClassIndexManagerListener {
             }
         }
     }
-    
+
+    private enum Strategy {
+        NONE {
+            @Override
+            boolean isEnabled() {
+                return false;
+            }
+        },
+        NBFS {
+            @Override
+            boolean isEnabled() {
+                return true;
+            }
+        };
+
+        abstract boolean isEnabled();
+    }
 }

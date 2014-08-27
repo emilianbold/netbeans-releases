@@ -67,14 +67,14 @@ FUNCTION genxGetAlloc [18:1/310-18:51/360] FunctionImpl SCOPE: $Global$
     UNIQUE NAME F:genxGetAlloc(genxWriter)
     PARAMETERS:
          [18:22/331-18:32/341]  TYPE: $unresolved$::genxWriter TEXT=genxWriter  [18:22/331-18:32/341]  INIT: null  SCOPE: genxGetAlloc 
-    RETURNS *int(void*,int) TEXT=int*(*)(void*,int)  [18:1/310-18:50/359]
+    RETURNS int*(void*,int) TEXT=int*(*)(void*,int)  [18:1/310-18:50/359]
 FUNCTION DEFINITION genxGetAlloc  [20:1/362-23:2/448] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE genxGetAlloc(genxWriter)
     UNIQUE NAME f:genxGetAlloc(genxWriter)
     DECLARATION: genxGetAlloc  [18:1/310-18:51/360]
     PARAMETERS:
         w [20:22/383-20:34/395]  TYPE: $unresolved$::genxWriter TEXT=genxWriter  [20:22/383-20:32/393]  INIT: null  SCOPE: genxGetAlloc 
-    RETURNS *int(void*,int) TEXT=int*(*)(void*,int)  [20:1/362-20:64/425]
+    RETURNS int*(void*,int) TEXT=int*(*)(void*,int)  [20:1/362-20:64/425]
     STATEMENT COMPOUND  [21:1/426-23:2/448] SCOPE: genxGetAlloc 
         STATEMENT RETURN  [22:3/430-22:19/446] SCOPE: Stmt  [21:1/426-23:2/448] text: 'return w->alloc;'
 
@@ -126,14 +126,14 @@ FUNCTION genxGetAlloc [18:1/310-18:51/360] FunctionImpl SCOPE: $Global$
     UNIQUE NAME F:genxGetAlloc(genxWriter)
     PARAMETERS:
          [18:22/331-18:32/341]  TYPE: $unresolved$::genxWriter TEXT=genxWriter  [18:22/331-18:32/341]  INIT: null  SCOPE: genxGetAlloc 
-    RETURNS *int(void*,int) TEXT=int*(*)(void*,int)  [18:1/310-18:50/359]
+    RETURNS int*(void*,int) TEXT=int*(*)(void*,int)  [18:1/310-18:50/359]
 FUNCTION DEFINITION genxGetAlloc  [20:1/362-23:2/448] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE genxGetAlloc(genxWriter)
     UNIQUE NAME f:genxGetAlloc(genxWriter)
     DECLARATION: genxGetAlloc  [18:1/310-18:51/360]
     PARAMETERS:
         w [20:22/383-20:34/395]  TYPE: $unresolved$::genxWriter TEXT=genxWriter  [20:22/383-20:32/393]  INIT: null  SCOPE: genxGetAlloc 
-    RETURNS *int(void*,int) TEXT=int*(*)(void*,int)  [20:1/362-20:64/425]
+    RETURNS int*(void*,int) TEXT=int*(*)(void*,int)  [20:1/362-20:64/425]
     STATEMENT COMPOUND  [21:1/426-23:2/448] SCOPE: genxGetAlloc 
         STATEMENT RETURN  [22:3/430-22:19/446] SCOPE: Stmt  [21:1/426-23:2/448] text: 'return w->alloc;'
 

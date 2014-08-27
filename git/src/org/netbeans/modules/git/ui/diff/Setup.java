@@ -52,7 +52,6 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.GitFileNode;
-import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
 import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.diff.AbstractDiffSetup;
@@ -77,7 +76,7 @@ public final class Setup extends AbstractDiffSetup {
 
     private String    title;
 
-    public Setup (GitLocalFileNode node, Mode mode, Revision revision) {
+    public Setup (GitFileNode<FileInformation> node, Mode mode, Revision revision) {
         this.baseFile = node.getFile();
 
         ResourceBundle loc = NbBundle.getBundle(Setup.class);
@@ -154,8 +153,8 @@ public final class Setup extends AbstractDiffSetup {
                 throw new IllegalArgumentException("Unknown diff type: " + mode); // NOI18N
         }// </editor-fold>
 
-        firstSource = new DiffStreamSource(originalFile == null || mode == Mode.INDEX_VS_WORKING_TREE ? baseFile : originalFile, firstRevision, firstTitle);
-        secondSource = new DiffStreamSource(baseFile, secondRevision, secondTitle);
+        firstSource = new DiffStreamSource(originalFile == null || mode == Mode.INDEX_VS_WORKING_TREE ? baseFile : originalFile, baseFile, firstRevision, firstTitle);
+        secondSource = new DiffStreamSource(baseFile, baseFile, secondRevision, secondTitle);
         title = "<html>" + info.annotateNameHtml(baseFile.getName()); // NOI18N
     }
 
@@ -177,9 +176,9 @@ public final class Setup extends AbstractDiffSetup {
             default:
                 throw new IllegalStateException();
         }
-        firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision);
+        firstSource = new DiffStreamSource(baseFile, baseFile, firstRevision, firstRevision);
         // XXX delete when UndoAction works correctly
-        secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision) {
+        secondSource = new DiffStreamSource(baseFile, baseFile, secondRevision, secondRevision) {
             @Override
             public boolean isEditable() {
                 return !forceNonEditable && super.isEditable();
@@ -192,11 +191,13 @@ public final class Setup extends AbstractDiffSetup {
         firstRevision = rev1.getCommitId();
         secondRevision = rev2.getCommitId();
         StringBuilder sb = new StringBuilder(rev1.toString(true));
+        File firstSourceBaseFile = baseFile;
         if (fileInfo != null && fileInfo.getOldPath() != null) {
             sb.append(" (").append(fileInfo.getOldPath()).append(")");
+            firstSourceBaseFile = fileInfo.getOldFile();
         }
-        firstSource = new DiffStreamSource(baseFile, firstRevision, sb.toString());
-        secondSource = new DiffStreamSource(baseFile, secondRevision, rev2.toString(true));
+        firstSource = new DiffStreamSource(firstSourceBaseFile, baseFile, firstRevision, sb.toString());
+        secondSource = new DiffStreamSource(baseFile, baseFile, secondRevision, rev2.toString(true));
     }
 
     public File getBaseFile() {

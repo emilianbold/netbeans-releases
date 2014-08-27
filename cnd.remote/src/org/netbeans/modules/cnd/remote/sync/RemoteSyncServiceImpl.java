@@ -49,7 +49,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
@@ -59,8 +58,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Parameters;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -79,7 +77,7 @@ public class RemoteSyncServiceImpl implements RemoteSyncService {
         private final Set<String> checkedDirs = new HashSet<String>();
         private UploadStatus uploadStatus;
 
-        public Uploader(Project project, ExecutionEnvironment execEnv) throws IOException {
+        public Uploader(Lookup.Provider project, ExecutionEnvironment execEnv) throws IOException {
             this.execEnv = execEnv;
             pathMap = HostInfoProvider.getMapper(this.execEnv);
             if (project == null) {
@@ -137,7 +135,7 @@ public class RemoteSyncServiceImpl implements RemoteSyncService {
     }
 
     @Override
-    public RemoteSyncSupport.Worker getUploader(Project project, ExecutionEnvironment execEnv) throws IOException {
+    public RemoteSyncSupport.Worker getUploader(Lookup.Provider project, ExecutionEnvironment execEnv) throws IOException {
         return new Uploader(project, execEnv);
     }
 

@@ -876,6 +876,70 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "}\n"));
     }
     
+    public void test245211a() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public static void testMethod(int x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(2);\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = new ParameterInfo[] {new ParameterInfo(-1, "x", "String", "\"\"")};
+        performChangeParameters(null, "testMethod", "String", paramTable, Javadoc.GENERATE, 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param x the value of x\n"
+                + "     * @return the String\n"
+                + "     */\n"
+                + "    public static String testMethod(String x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(\"\");\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
+    public void test245211b() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param x the value of x\n"
+                + "     */\n"
+                + "    public static void testMethod(int x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(2);\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = new ParameterInfo[] {new ParameterInfo(-1, "x", "String", "\"\"")};
+        performChangeParameters(null, "testMethod", "String", paramTable, Javadoc.UPDATE, 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    /**\n"
+                + "     * \n"
+                + "     * @param x the value of x\n"
+                + "     * @return the String\n"
+                + "     */\n"
+                + "    public static String testMethod(String x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(\"\");\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void test54688() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A {\n"

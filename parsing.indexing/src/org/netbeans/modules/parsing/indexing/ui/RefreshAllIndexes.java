@@ -73,13 +73,9 @@ public final class RefreshAllIndexes implements ActionListener {
         final Collection<? extends URL> sources = PathRegistry.getDefault().getSources();
         final Set<FileObject> roots = new HashSet<FileObject>();
         for (DataObject dobj : context) {
-            try {
-                FileObject root = findRoot(dobj.getPrimaryFile(), sources);
-                if (root != null) {
-                    roots.add(root);
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            FileObject root = findRoot(dobj.getPrimaryFile(), sources);
+            if (root != null) {
+                roots.add(root);
             }
         }
         if (LOG.isLoggable(Level.FINE)) {
@@ -94,10 +90,11 @@ public final class RefreshAllIndexes implements ActionListener {
         }
         IndexingManager.getDefault().refreshAllIndices(roots.toArray(new FileObject[roots.size()]));
     }
-    
-    private FileObject findRoot(FileObject fobj, final Collection<? extends URL> roots) throws IOException {
+
+    @SuppressWarnings("AssignmentToMethodParameter")
+    private FileObject findRoot(FileObject fobj, final Collection<? extends URL> roots) {
         while (fobj != null) {
-            URL url = fobj.getURL();
+            final URL url = fobj.toURL();
             if (roots.contains(url)) {
                 return fobj;
             }

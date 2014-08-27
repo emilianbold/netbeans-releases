@@ -137,6 +137,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private Object currentBranchFilter = ALL_BRANCHES_FILTER;
     private final RepositoryInfo info;
     private static final String ALL_BRANCHES_FILTER = Bundle.SearchHistoryPanel_filter_allbranches();
+    private final PropertyChangeListener list;
 
     enum FilterKind {
         ALL(null, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.All")), //NOI18N
@@ -174,7 +175,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         filterTimer.setRepeats(false);
         filterTimer.stop();
         setupComponents();
-        info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+        info.addPropertyChangeListener(list = WeakListeners.propertyChange(this, info));
         aquaBackgroundWorkaround();
         refreshComponents(true);
     }
@@ -322,7 +323,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 } else if (searchInProgress) {
                     resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_Searching"))); // NOI18N
                 } else {
-                    resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_NoResults"))); // NOI18N
+                    String errMessage = currentSearch.getErrorMessage();
+                    resultsPanel.add(new NoContentPanel(errMessage == null
+                            ? NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_NoResults") //NOI18N
+                            : errMessage));
                 }
             } else {
                 if (tbSummary.isSelected()) {
@@ -656,7 +660,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
         boolean refresh = filter != currentBranchFilter;
         if (refresh) {
             currentBranchFilter = filter;
-            if (currentBranchFilter == ALL_BRANCHES_FILTER && criteria.getBranch() != null) {
+            if (currentBranchFilter == ALL_BRANCHES_FILTER && criteria.getBranch() != null && criteria.tfBranch.isEnabled()) {
                 if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this,
                         Bundle.MSG_SearchHistoryPanel_searchAllBranches_text(criteria.getBranch()),
                         Bundle.LBL_SearchHistoryPanel_searchAllBranches_title(),
@@ -694,16 +698,10 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     }
     
     private void validateUserInput() {
-        String from = criteria.getFrom();
-        if(from == null && criteria.tfFrom.getText().trim().length() > 0) {
+        if (!criteria.validateUserInput()) {
             bSearch.setEnabled(false);
             return;
         }
-        String to = criteria.getTo();
-        if(to == null && criteria.tfTo.getText().trim().length() > 0) {
-            bSearch.setEnabled(false);
-            return;
-        }        
         bSearch.setEnabled(true);
     }  
 
@@ -752,13 +750,17 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
         return repository;
     }
 
-    void releaseDiff () {
+    void release () {
+        info.removePropertyChangeListener(list);
+        releaseDiff();
+    }
+    
+    private void releaseDiff () {
         if (diffView != null) {
             diffView.cancelBackgroundTasks();
         }
         cancelBackgroundTasks();
     }
-    
     
     List<RepositoryRevision> getResults () {
         return results;
@@ -963,7 +965,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
 
     private void updateBranchFilter (String branch) {
         currentBranchFilter = ALL_BRANCHES_FILTER;
-        if (branch != null) {
+        if (branch != null && criteria.getMode() != SearchExecutor.Mode.REMOTE_IN) {
             ComboBoxModel model = cmbBranch.getModel();
             for (int i = 0; i < model.getSize(); ++i) {
                 Object filter = model.getElementAt(i);

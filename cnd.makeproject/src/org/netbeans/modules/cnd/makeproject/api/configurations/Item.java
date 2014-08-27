@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -99,7 +98,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
 
     private final String path;
     private Folder folder;
-    private File file = null;
+    private FileObject file = null;
     private final FileSystem fileSystem;
     private final String normalizedPath;
     private DataObject lastDataObject = null;
@@ -264,33 +263,70 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("name")) { // NOI18N
-            // File has been renamed
+            // File has been renamed.
+            String newName = (String) evt.getNewValue();
             boolean nameWithoutExtension = true;
             Object o = evt.getSource();
+            // New name is unpedictable. It can contain or not contain extension.
+            // Detect true name with extension.
             if (o instanceof DataObject) {
-                String nodeName = ((DataObject) o).getName();
                 FileObject fo = ((DataObject) o).getPrimaryFile();
                 if (fo != null) {
-                    String fileName = fo.getNameExt();
-                    if (nodeName.equals(fileName)) {
-                        nameWithoutExtension = false;
-                    }
-
+                    newName = fo.getNameExt();
+                    nameWithoutExtension = false;
                 }
             }
-            rename((String) evt.getNewValue(), nameWithoutExtension);
+            rename(newName, nameWithoutExtension);
         } else if (evt.getPropertyName().equals("valid")) { // NOI18N
-            // File has been deleted
-            // Do nothing (IZ 87557, 94935)
             if (!((Boolean) evt.getNewValue())) {
-//                getFolder().removeItemAction(this);
+                // Data object invalid.
+                // It may be renaming.
+                Object o = evt.getSource();
+                if (o instanceof DataObject) {
+                    DataObject dao = ((DataObject) o);
+                    FileObject fo = dao.getPrimaryFile();
+                    if (fo != null && fo.isValid()) {
+                        // Old data object invalid and valid file object.
+                        // Rename and attach new data object.
+                        rename(fo.getNameExt(), false);
+                        DataObject dataObject;
+                        try {
+                            dataObject = DataObject.find(fo);
+                            synchronized (this) {
+                                if (dataObject != lastDataObject) {
+                                    detachFrom(lastDataObject);
+                                    attachTo(dataObject);
+                                }
+                            }
+                        } catch (DataObjectNotFoundException ex) {
+                            LOG.log(Level.FINE, "Can not find data object", ex); //NOI18N
+                        }
+                        return;
+                    }
+                }
+                // File has been deleted.
+                // Refresh folder. See also IZ 87557 and IZ 94935
                 Folder containingFolder = getFolder();
                 if (containingFolder != null) {
                     containingFolder.refresh(this);
                 }
+            } else {
+                // Data object valid.
+                // Attach new data object.
+                Object o = evt.getSource();
+                if (o instanceof DataObject) {
+                    DataObject dao = ((DataObject) o);
+                    synchronized (this) {
+                        if (lastDataObject != null) {
+                            detachFrom(lastDataObject);
+                        }
+                        lastDataObject = dao;
+                        attachTo(lastDataObject);
+                    }
+                }
             }
         } else if (evt.getPropertyName().equals("primaryFile")) { // NOI18N
-            // File has been moved
+            // File has been moved.
             if (getFolder() != null) {
                 FileObject fo = (FileObject) evt.getNewValue();
                 String newPath = fo.getPath();
@@ -321,25 +357,20 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return FileSystemProvider.normalizeAbsolutePath(absPath, fileSystem);
     }
     
-    public File getNormalizedFile() {
-        String aPath = getAbsPath();
-        if (aPath != null) {
-            return CndFileUtils.normalizeFile(new File(aPath));
-        }
-        ensureFileNotNull();
-        return file;
-    }
-
     public String getCanonicalPath() {
-        return getCanonicalFile().getAbsolutePath();
+        final FileObject canonicalFile = getCanonicalFile();
+        if (canonicalFile != null) {
+            return canonicalFile.getPath();
+        }
+        return getNormalizedPath();
     }
 
     private void ensureFileNotNull() {
         if (file == null) {
             try {
-                file = new File(getAbsPath()).getCanonicalFile();
+                file = CndFileUtils.getCanonicalFileObject(getFileObject());
             } catch (IOException ioe) {
-                file = CndFileUtils.normalizeFile(new File(getAbsPath()));
+                file = getFSPath().getFileObject();
             }
         }
         if (file == null) {
@@ -347,7 +378,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         }
     }
 
-    public File getCanonicalFile() {
+    public FileObject getCanonicalFile() {
         ensureFileNotNull();
         return file;
     }
@@ -690,9 +721,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     result.add(new FSPath(projectFS, absPath));
                 }
             }
-            List<String> vec3 = new ArrayList<>();
+            List<FSPath> vec3 = new ArrayList<>();
             vec3 = SPI_ACCESSOR.getItemUserIncludePaths(vec3, cccCompilerConfiguration, compiler, makeConfiguration);
-            result.addAll(CndFileUtils.toFSPathList(compilerFS, vec3));
+            result.addAll(vec3);
             return SPI_ACCESSOR.expandIncludePaths(result, cccCompilerConfiguration, compiler, makeConfiguration);
         }
         return Collections.<FSPath>emptyList();
@@ -981,6 +1012,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     switch (itemConfiguration.getCCCompilerConfiguration().getInheritedCppStandard()) {
                         case CCCompilerConfiguration.STANDARD_CPP11:
                             return LanguageFlavor.CPP11;
+                        //case CCCompilerConfiguration.STANDARD_CPP14:
+                        //    return LanguageFlavor.CPP14;
                         case CCCompilerConfiguration.STANDARD_CPP98:
                         case CCCompilerConfiguration.STANDARD_DEFAULT:
                             return LanguageFlavor.CPP;
@@ -992,11 +1025,13 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         if (flavor == LanguageFlavor.UNKNOWN) {
             if (makeConfiguration != null) {
                 CCCompilerConfiguration ccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
-                    if(ccCompilerConfiguration != null) {
-                        switch (ccCompilerConfiguration.getInheritedCppStandard()) {
-                            case CCCompilerConfiguration.STANDARD_CPP11:
-                                return LanguageFlavor.CPP11;
-                    }
+                if(ccCompilerConfiguration != null) {
+                    switch (ccCompilerConfiguration.getInheritedCppStandard()) {
+                        case CCCompilerConfiguration.STANDARD_CPP11:
+                            return LanguageFlavor.CPP11;
+                        //case CCCompilerConfiguration.STANDARD_CPP14:
+                        //    return LanguageFlavor.CPP14;
+                }
                 }
             }
         }
@@ -1088,9 +1123,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         private SpiAccessor() {
         }
 
-        private List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
+        private List<FSPath> getItemUserIncludePaths(List<FSPath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             if(!getUserOptionsProviders().isEmpty()) {
-                List<String> res = new ArrayList<>(includes);
+                List<FSPath> res = new ArrayList<>(includes);
                 for (UserOptionsProvider provider : getUserOptionsProviders()) {
                     res.addAll(provider.getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration));
                 }

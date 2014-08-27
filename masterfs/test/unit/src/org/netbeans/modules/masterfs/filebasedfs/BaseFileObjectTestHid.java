@@ -314,6 +314,49 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         }
     }
     
+    public void testMoveKeepsLastModifiedDate() throws Exception {
+        FileObjectFactory fs = FileObjectFactory.getInstance(getWorkDir());
+        assertNotNull(fs);
+        FileObject root1 = fs.getValidFileObject(getWorkDir(),
+                FileObjectFactory.Caller.Others);
+
+        FileObject where = root1.createFolder("else").createFolder("sub").createFolder(
+                "subsub");
+        FileObject fo = root1.createFolder("something");
+        FileObject nestedTxt = fo.createData("nested.txt");
+        FileObject simpleTxt = root1.createData("simple.txt");
+        File nestedTxtFile = FileUtil.toFile(nestedTxt);
+        File simpleTxtFile = FileUtil.toFile(simpleTxt);
+
+        long origLastModifiedNested = nestedTxtFile.lastModified();
+        long origLastModifiedSimple = simpleTxtFile.lastModified();
+
+        Thread.sleep(1100);
+
+        FileLock folderLock = fo.lock();
+        try {
+            fo.move(folderLock, where, fo.getNameExt(), null);
+        } finally {
+            folderLock.releaseLock();
+        }
+        FileLock simpleLock = simpleTxt.lock();
+        try {
+            simpleTxt.move(simpleLock, where, simpleTxt.getNameExt(), null);
+        } finally {
+            simpleLock.releaseLock();
+        }
+
+        FileObject nestedTarget = root1.getFileObject(
+                "else/sub/subsub/something/nested.txt");
+        FileObject simpleTarget = root1.getFileObject(
+                "else/sub/subsub/simple.txt");
+
+        assertEquals("LastModified date should be kept", origLastModifiedNested,
+                FileUtil.toFile(nestedTarget).lastModified());
+        assertEquals("LastModified date should be kept", origLastModifiedSimple,
+                FileUtil.toFile(simpleTarget).lastModified());
+    }
+
     public void testReadRecreatedFile() throws Exception {
         FileObject fo = root.getFileObject("testdir/mountdir4/file.ext");
         assertNotNull("File found properly", fo);

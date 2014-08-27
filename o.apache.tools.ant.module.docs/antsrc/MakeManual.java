@@ -167,7 +167,7 @@ public class MakeManual extends Task {
                 id += "." + anchor;
             }
         }
-        String title = linktext != null ? linktext : "Ant 1.9.2 Manual";
+        String title = linktext != null ? linktext : "Ant 1.9.4 Manual";
         String log = "";
         for (int i = 0; i < depth; i++) {
             log += "\t";

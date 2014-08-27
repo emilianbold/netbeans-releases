@@ -2,46 +2,46 @@ Code completion result for source line:
 ko.|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CLASS      bindingCache                    [PUBLIC]   Knockout
-CLASS      bindingHandlers                 [PUBLIC]   Knockout
-CLASS      expressionRewriting             [PUBLIC]   Knockout
-CLASS      extenders                       [PUBLIC]   Knockout
-CLASS      jsonExpressionRewriting         [PUBLIC]   Knockout
-CLASS      memoization                     [PUBLIC]   Knockout
-CLASS      selectExtensions                [PUBLIC]   Knockout
-CLASS      templateSources                 [PUBLIC]   Knockout
-CLASS      utils                           [PUBLIC]   Knockout
-CLASS      virtualElements                 [PUBLIC]   Knockout
-METHOD     applyBindingAccessorsToNode(no  [PUBLIC]   Knockout
-METHOD     applyBindings(viewModelOrBindi  [PUBLIC]   Knockout
-METHOD     applyBindingsToDescendants(vie  [PUBLIC]   Knockout
-METHOD     applyBindingsToNode(node, bind  [PUBLIC]   Knockout
-METHOD     bindingContext(dataItemOrAcces  [PUBLIC]   Knockout
-METHOD     bindingProvider(): undefined    [PUBLIC]   Knockout
-METHOD     cleanNode(param)                [PUBLIC]   Knockout
-METHOD     computed(evaluatorFunctionOrOp  [PUBLIC]   Knockout
-METHOD     contextFor(node)                [PUBLIC]   Knockout
-METHOD     dataFor(node)                   [PUBLIC]   Knockout
-METHOD     dependentObservable(evaluatorF  [PUBLIC]   Knockout
-METHOD     isComputed(instance): Boolean   [PUBLIC]   Knockout
-METHOD     isObservable(instance): Boolea  [PUBLIC]   Knockout
-METHOD     isSubscribable(instance): Bool  [PUBLIC]   Knockout
-METHOD     isWriteableObservable(instance  [PUBLIC]   Knockout
-METHOD     jqueryTmplTemplateEngine(): un  [PUBLIC]   Knockout
-METHOD     nativeTemplateEngine(): undefi  [PUBLIC]   Knockout
-METHOD     observable(initialValue): ko.o  [PUBLIC]   Knockout
-METHOD     observableArray(initialValues)  [PUBLIC]   Knockout
-METHOD     removeNode(param)               [PUBLIC]   Knockout
-METHOD     renderTemplate(template, dataO  [PUBLIC]   Knockout
-METHOD     renderTemplateForEach(template  [PUBLIC]   Knockout
-METHOD     setTemplateEngine(templateEngi  [PUBLIC]   Knockout
-METHOD     storedBindingContextForNode(no  [PUBLIC]   Knockout
-METHOD     subscribable(): undefined       [PUBLIC]   Knockout
-METHOD     templateEngine(): undefined     [PUBLIC]   Knockout
-METHOD     toJS(rootObject): Array         [PUBLIC]   Knockout
-METHOD     toJSON(rootObject, replacer, s  [PUBLIC]   Knockout
-METHOD     unwrap(param)                   [PUBLIC]   Knockout
-FIELD      _subscribable                   [PUBLIC]   Knockout
-FIELD      getBindingHandler               [PUBLIC]   Knockout
-FIELD      jQueryTmplVersion               [PUBLIC]   Knockout
-FIELD      version                         [PUBLIC]   Knockout
+CLASS      bindingCache                    [PUBLIC]   <font color=#999999>Knockout</font>
+CLASS      bindingHandlers                 [PUBLIC]   <font color=#999999>Knockout</font>
+CLASS      expressionRewriting             [PUBLIC]   <font color=#999999>Knockout</font>
+CLASS      extenders                       [PUBLIC]   <font color=#999999>Knockout</font>
+CLASS      jsonExpressionRewriting         [PUBLIC]   <font color=#999999>Knockout</font>
+CLASS      memoization                     [PUBLIC]   <font color=#999999>Knockout</font>
+CLASS      selectExtensions                [PUBLIC]   <font color=#999999>Knockout</font>
+CLASS      templateSources                 [PUBLIC]   <font color=#999999>Knockout</font>
+CLASS      utils                           [PUBLIC]   <font color=#999999>Knockout</font>
+CLASS      virtualElements                 [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     applyBindingAccessorsToNode(no  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     applyBindings(viewModelOrBindi  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     applyBindingsToDescendants(vie  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     applyBindingsToNode(node, bind  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     bindingContext(dataItemOrAcces  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     bindingProvider(): undefined    [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     cleanNode(param)                [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     computed(evaluatorFunctionOrOp  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     contextFor(node)                [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     dataFor(node)                   [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     dependentObservable(evaluatorF  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     isComputed(instance): Boolean   [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     isObservable(instance): Boolea  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     isSubscribable(instance): Bool  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     isWriteableObservable(instance  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     jqueryTmplTemplateEngine(): un  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     nativeTemplateEngine(): undefi  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     observable(initialValue): ko.o  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     observableArray(initialValues)  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     removeNode(param)               [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     renderTemplate(template, dataO  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     renderTemplateForEach(template  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     setTemplateEngine(templateEngi  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     storedBindingContextForNode(no  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     subscribable(): undefined       [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     templateEngine(): undefined     [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     toJS(rootObject): Array         [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     toJSON(rootObject, replacer, s  [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     unwrap(param)                   [PUBLIC]   <font color=#999999>Knockout</font>
+FIELD      _subscribable                   [PUBLIC]   <font color=#999999>Knockout</font>
+FIELD      getBindingHandler               [PUBLIC]   <font color=#999999>Knockout</font>
+FIELD      jQueryTmplVersion               [PUBLIC]   <font color=#999999>Knockout</font>
+FIELD      version                         [PUBLIC]   <font color=#999999>Knockout</font>

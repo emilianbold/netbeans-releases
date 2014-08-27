@@ -169,7 +169,9 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (JPDADebugger.STATE_DISCONNECTED == ((Integer) evt.getNewValue()).intValue()) {
+            int state = ((Integer) evt.getNewValue()).intValue();
+            if (JPDADebugger.STATE_DISCONNECTED == state ||
+                JPDADebugger.STATE_RUNNING == state) {
                 SwingUtilities.invokeLater(this);
             }
         }
@@ -258,7 +260,9 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
                 // Be big enough initially.
                 return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
             }
-            return super.getPreferredSize();
+            Dimension preferredSize = super.getPreferredSize();
+            // Let the width be as long as it can be
+            return new Dimension(Integer.MAX_VALUE, preferredSize.height);
         }
         
         @Override

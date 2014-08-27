@@ -127,6 +127,7 @@ public class CssCompletion implements CodeCompletionHandler {
     static String[] TEST_USED_COLORS;
     static String[] TEST_CLASSES;
     static String[] TEST_IDS;
+    public static String testFileObjectMimetype;
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
@@ -204,9 +205,16 @@ public class CssCompletion implements CodeCompletionHandler {
 
         //if the caret points to a token node then determine its type
         Node tokenNode = NodeUtil.findNodeAtOffset(root, astCaretOffset);
-        CssTokenId tokenNodeTokenId = tokenNode.type() == NodeType.token ? NodeUtil.getTokenNodeTokenId(tokenNode) : null;
-
+        CssTokenId tokenNodeTokenId = null;
+        if (tokenNode != null && tokenNode.type() == NodeType.token) {
+            tokenNodeTokenId = NodeUtil.getTokenNodeTokenId(tokenNode);
+        }
+        
         Node node = NodeUtil.findNonTokenNodeAtOffset(root, astCaretOffset);
+        if(node == null) {
+            return CodeCompletionResult.NONE; //can happen if the parsed source is too big to parse -> see the CssParser parsing limit
+        }
+        
         if (node.type() == NodeType.ws) {
             node = node.parent();
         }
@@ -235,7 +243,8 @@ public class CssCompletion implements CodeCompletionHandler {
                 offset,
                 astCaretOffset,
                 astOffset,
-                prefix);
+                prefix,
+                file != null ? file.getMIMEType() : testFileObjectMimetype);
 
         List<CompletionProposal> cssModulesCompletionProposals = CssModuleSupport.getCompletionProposals(completionContext);
         completionProposals.addAll(cssModulesCompletionProposals);
@@ -507,6 +516,9 @@ public class CssCompletion implements CodeCompletionHandler {
             return null;
         }
         Node leaf = NodeUtil.findNonTokenNodeAtOffset(result.getParseTree(), embeddedCaretOffset);
+        if(leaf == null) {
+            return null;
+        }
         boolean inPropertyDeclaration = NodeUtil.getAncestorByType(leaf, NodeType.propertyDeclaration) != null;
 
         //really ugly handling of class or id selector prefix:
@@ -624,20 +636,22 @@ public class CssCompletion implements CodeCompletionHandler {
                         String value = m.group(groupIndex);
                         int valueStart = m.start(groupIndex);
                     
-                        //cut off everyhing after caret: fold|er/file.css
-                        int cutIndex = diff - valueStart;
-                        value = value.substring(0, cutIndex); 
+                        if(diff >= valueStart) {
+                            //cut off everyhing after caret: fold|er/file.css
+                            int cutIndex = diff - valueStart;
+                            value = value.substring(0, cutIndex); 
 
-                        int lastSeparatorIndex = value.lastIndexOf(Css3Utils.FILE_SEPARATOR); 
-                        if(lastSeparatorIndex != -1) {
-                            //url(folder/xxx|)
-                            skipPrefixChars = valueStart + lastSeparatorIndex + 1;
-                        } else {
-                            //url(xx|)
-                            skipPrefixChars = valueStart;
-                             //is the value quoted?
-                            if(!value.isEmpty() && (value.charAt(0) == '"' || value.charAt(0) == '\'')) {
-                                skipPrefixChars++;
+                            int lastSeparatorIndex = value.lastIndexOf(Css3Utils.FILE_SEPARATOR); 
+                            if(lastSeparatorIndex != -1) {
+                                //url(folder/xxx|)
+                                skipPrefixChars = valueStart + lastSeparatorIndex + 1;
+                            } else {
+                                //url(xx|)
+                                skipPrefixChars = valueStart;
+                                 //is the value quoted?
+                                if(!value.isEmpty() && (value.charAt(0) == '"' || value.charAt(0) == '\'')) {
+                                    skipPrefixChars++;
+                                }
                             }
                         }
                     }
@@ -727,10 +741,10 @@ public class CssCompletion implements CodeCompletionHandler {
                 case WS: //@import |
                 case NL:
                     if (addSemicolon) {
-                    Token semicolon = LexerUtils.followsToken(ts, CssTokenId.SEMI, false, true, CssTokenId.WS, CssTokenId.NL);
+                    Token semicolon = LexerUtils.followsToken(ts, CssTokenId.SEMI, false, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT);
                     addSemicolon = (semicolon == null);
                 }
-                    if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, false, CssTokenId.WS, CssTokenId.NL)) {
+                if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, false, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT)) {
                         List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file, caretOffset, "", true, addSemicolon);
                         int moveBack = (addSemicolon ? 1 : 0) + 1; //+1 means the added quotation mark length
                         return new CssFileCompletionResult(imports, moveBack);
@@ -739,7 +753,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 case STRING: //@import "|"; or @import "fil|";
                     Token<CssTokenId> originalToken = ts.token();
                     addSemicolon = false;
-                    if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                    if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT)) {
                         //strip off the leading quote and the rest of token after caret
                         String valuePrefix = originalToken.text().toString().substring(1, tokenDiff);
                         List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file,
@@ -760,7 +774,7 @@ public class CssCompletion implements CodeCompletionHandler {
                         String value = m.group(groupIndex);
                         int valueStart = m.start(groupIndex);
                     
-                        if(tokenDiff > 0) {
+                        if(tokenDiff >= valueStart) {
                             int cutIndex = tokenDiff - valueStart;
                             value = value.substring(0, cutIndex); //cut off everyhing after caret: fold|er/file.css
                         }
@@ -1010,7 +1024,7 @@ public class CssCompletion implements CodeCompletionHandler {
         switch (node.type()) {
             case media:
                 //check if we are in the mediaQuery section and not in the media body
-                if (null == LexerUtils.followsToken(completionContext.getTokenSequence(), CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                if (null == LexerUtils.followsToken(completionContext.getTokenSequence(), CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT)) {
                 //@media | { div {} }
                 break;
             }
@@ -1022,7 +1036,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 //2. @media screen { @include x; | }
                 if (null != LexerUtils.followsToken(completionContext.getTokenSequence(),
                         EnumSet.of(CssTokenId.SEMI, CssTokenId.LBRACE, CssTokenId.RBRACE),
-                        true, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                        true, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT)) {
                 completionProposals.addAll(completeHtmlSelectors(completionContext, completionContext.getPrefix(), completionContext.getCaretOffset()));
             }
                 break;
@@ -1050,13 +1064,20 @@ public class CssCompletion implements CodeCompletionHandler {
                     // div { | color: red;} or div { | }
                     //in this case the caret position falls to the rule node as the declarations node
                     //doesn't contain the whitespace before first declaration
+                    //
+                    //note: in css preprocessor source we want the selectors to be offered even in this filtered out situation
+                    //
                     TokenSequence<CssTokenId> tokenSequence = completionContext.getTokenSequence();
-                    if (null == LexerUtils.followsToken(tokenSequence, CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                    if (completionContext.isCssPreprocessorSource() || null == LexerUtils.followsToken(tokenSequence, CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT)) {
                         completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                     }
                 }
                 break;
             case declarations:
+                if(completionContext.isCssPreprocessorSource()) {
+                    completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
+                    break;
+                }
                 //@mixin mymixin() { div {} | }
                 if (NodeUtil.getAncestorByType(node, NodeType.cp_mixin_block) == null) {
                 break; //do not complete
@@ -1324,7 +1345,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 //we should go on and offer property values for "color" property
                 //div { color: red | }
                 if (context.getActiveTokenId() == CssTokenId.SEMI
-                        || LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.SEMI, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
+                        || LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.SEMI, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT) != null) {
                 //semicolon found when searching backward - we are not going to
                 //complete property values
                 break;
@@ -1385,7 +1406,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     //}
                     //
                     //the "font-size" becomes a propertyValue node and the following COLON causes error outside of the propertyValue node (correctly)
-                    if (LexerUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.COLON), true, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
+                    if (LexerUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.COLON), true, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT) != null) {
                         //we are just after the colon
                         expressionText = "";
                     } else {

@@ -807,7 +807,14 @@ public final class ELTypeUtilities {
                 srcPath);
     }
 
-    private static boolean isSubtypeOf(CompilationContext info, TypeMirror tm, CharSequence typeName) {
+    /**
+     * Gets information whether given type is inherits particular type specified by FQN.
+     * @param info compilation context
+     * @param tm type to be check for inheritance from typeName
+     * @param typeName parent class to be inherited from
+     * @return {@code true} if tm inherits the given typeName, {@code false} otherwise
+     */
+    public static boolean isSubtypeOf(CompilationContext info, TypeMirror tm, CharSequence typeName) {
         Element element = info.info().getElements().getTypeElement(typeName);
         if (element == null) {
             return false;
@@ -909,6 +916,14 @@ public final class ELTypeUtilities {
                                 // stream method
                                 if (ELTypeUtilities.isIterableElement(info, enclosing)) {
                                     propertyType = enclosing = info.info().getElements().getTypeElement(STREAM_CLASS);
+                                }
+                            } else {
+                                // issue #244065 - in case of JDK8 and Collection, return the EL's Stream class
+                                if (propertyType instanceof ExecutableElement) {
+                                    String returnType = ((ExecutableElement) propertyType).getReturnType().toString();
+                                    if ("java.util.stream.Stream<E>".equals(returnType)) {  //NOI18N
+                                        propertyType = info.info().getElements().getTypeElement(STREAM_CLASS);
+                                    }
                                 }
                             }
                             if (propertyType == null) {

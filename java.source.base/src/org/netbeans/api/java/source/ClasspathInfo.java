@@ -54,11 +54,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.tools.JavaFileManager;
-
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -185,7 +183,7 @@ public final class ClasspathInfo {
             pgTx = txCtx.get(ProcessorGenerated.class);
         } else {
             //No real transaction, read-only mode.
-            fmTx = FileManagerTransaction.nullWrite();
+            fmTx = FileManagerTransaction.treeLoaderOnly();
             pgTx = ProcessorGenerated.nullWrite();
         }
         assert fmTx != null : "No file manager transaction.";   //NOI18N

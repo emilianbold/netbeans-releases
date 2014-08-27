@@ -131,37 +131,57 @@ public final class FoldingScanner {
         final Map<String, List<OffsetRange>> folds = new HashMap<>();
         Program program = Utils.getRoot(info);
         if (program != null) {
+            assert info instanceof PHPParseResult;
+            PHPParseResult phpParseResult = (PHPParseResult) info;
             if (program.getStatements().size() == 1) {
                 // check whether the ast is broken.
                 if (program.getStatements().get(0) instanceof ASTError) {
-                    final Document document = info.getSnapshot().getSource().getDocument(false);
+                    final Document document = phpParseResult.getSnapshot().getSource().getDocument(false);
                     @SuppressWarnings("unchecked") //NOI18N
                     Map<String, List<OffsetRange>> lastCorrect = document != null
                             ? ((Map<String, List<OffsetRange>>) document.getProperty(LAST_CORRECT_FOLDING_PROPERTY))
                             : null;
                     if (lastCorrect != null) {
-                        return lastCorrect;
+                        Map<String, List<OffsetRange>> modifiedFolds = filterErrorFold(lastCorrect, phpParseResult.getErrorRange());
+                        setFoldingProperty(document, modifiedFolds);
+                        return modifiedFolds;
                     } else {
                         return Collections.emptyMap();
                     }
                 }
             }
             processComments(folds, program.getComments());
-            PHPParseResult result = (PHPParseResult) info;
-            final Model model = result.getModel(Model.Type.COMMON);
+            final Model model = phpParseResult.getModel(Model.Type.COMMON);
             FileScope fileScope = model.getFileScope();
             processScopes(folds, getEmbededScopes(fileScope, null));
             program.accept(new FoldingVisitor(folds));
-            Source source = info.getSnapshot().getSource();
+            Source source = phpParseResult.getSnapshot().getSource();
             assert source != null : "source was null";
             Document doc = source.getDocument(false);
-
-            if (doc != null) {
-                doc.putProperty(LAST_CORRECT_FOLDING_PROPERTY, folds);
-            }
+            setFoldingProperty(doc, folds);
             return folds;
         }
         return Collections.emptyMap();
+    }
+
+    private static Map<String, List<OffsetRange>> filterErrorFold(Map<String, List<OffsetRange>> lastCorrect, OffsetRange errorRange) {
+        Map<String, List<OffsetRange>> result = new HashMap<>();
+        for (Map.Entry<String, List<OffsetRange>> entry : lastCorrect.entrySet()) {
+            ArrayList<OffsetRange> modifiedRanges = new ArrayList<>();
+            result.put(entry.getKey(), modifiedRanges);
+            for (OffsetRange foldRange : entry.getValue()) {
+                if (!foldRange.overlaps(errorRange)) {
+                    modifiedRanges.add(foldRange);
+                }
+            }
+        }
+        return result;
+    }
+
+    private static void setFoldingProperty(Document document, Map<String, List<OffsetRange>> folds) {
+        if (document != null) {
+            document.putProperty(LAST_CORRECT_FOLDING_PROPERTY, folds);
+        }
     }
 
     private void processComments(Map<String, List<OffsetRange>> folds, List<Comment> comments) {

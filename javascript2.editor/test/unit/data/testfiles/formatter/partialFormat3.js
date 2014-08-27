@@ -3,7 +3,7 @@ switch (tagName) {
        case 'THEAD':
     case 'TBODY':
         
-     /*FORMAT_START*/       {
+    /*FORMAT_START*/        {
      div.innerHTML = '<table><tbody>' +  html.stripScripts() + '</tbody></table>';
             depth = 2;
             break;

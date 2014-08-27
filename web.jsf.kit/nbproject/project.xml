@@ -49,7 +49,7 @@
                     <code-name-base>org.netbeans.modules.web.jsf20</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.22</specification-version>
+                        <specification-version>1.32</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

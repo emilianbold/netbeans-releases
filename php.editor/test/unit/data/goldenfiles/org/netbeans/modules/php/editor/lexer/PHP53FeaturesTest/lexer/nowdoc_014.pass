@@ -5,10 +5,10 @@ token #3 PHP_VARIABLE $code
 token #4 WHITESPACE  
 token #5 PHP_TOKEN =
 token #6 WHITESPACE  
-token #7 PHP_NOWDOC_TAG <<<'EOF'\n
+token #7 PHP_NOWDOC_TAG_START <<<'EOF'\n
 token #8 PHP_CONSTANT_ENCAPSED_STRING <?php\n  $x = <<<'EOT'\nEOT
 token #9 PHP_CONSTANT_ENCAPSED_STRING \n  $y = 2;\n?>\n
-token #10 PHP_NOWDOC_TAG EOF
+token #10 PHP_NOWDOC_TAG_END EOF
 token #11 PHP_SEMICOLON ;
 token #12 WHITESPACE \n
 token #13 PHP_STRING highlight_string

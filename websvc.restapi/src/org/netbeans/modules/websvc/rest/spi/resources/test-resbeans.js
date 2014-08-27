@@ -240,6 +240,9 @@ TestSupport.prototype = {
         for(var j=0;j<methods.length;j++) {
             var m = methods[j];                            
             var mName = m.attributes.getNamedItem("name").nodeValue;
+            if ('OPTIONS' === mName) {
+                continue;
+            }
             var mediaType = this.wdr.getMediaType(m);
             if(mediaType == null)
                 mediaType = this.wdr.getDefaultMime();
@@ -259,6 +262,7 @@ TestSupport.prototype = {
     
     doShowContent : function (uri) {
         this.clearInput();
+        document.getElementById("req_headers").style.visibility="visible";
         var r = this.wdr.findResource(uri);
         this.currentResource = r;
         if(r != null) {
@@ -271,11 +275,12 @@ TestSupport.prototype = {
 
     doShowContentForId : function (ndx) {
         this.clearInput();
+        document.getElementById("req_headers").style.visibility="visible";
         var cat = ts.allcat[ndx];
         var r = cat.r;
         var uri = cat.uri;
         this.currentResource = r;
-        if(r != null && !ts.wdr.isTemplateResource(r)) {
+        if(r != null) {
             var app1 = this.wadlDoc.documentElement;     
             this.doShowStaticResource(uri, r);
         } else {
@@ -485,6 +490,7 @@ TestSupport.prototype = {
 
     clearAll : function() {
         this.clearOutput();
+        document.getElementById('req_headers').style.visibility="hidden";
         this.updatepage('request', 'MSG_TEST_RESBEANS_INFO');
         this.updatepage('testaction', '');
         this.updatepage('testinput', '');
@@ -578,6 +584,11 @@ TestSupport.prototype = {
     
     testResource : function () {
         this.updatepage('result', 'MSG_TEST_RESBEANS_Loading');
+        
+        if (document.getElementById('req_hdr_1')) {
+            ts.storeRequestHeaders();
+        }
+        
         var testInput = document.getElementById('testinput');
         testInput.className = 'ConMgn_sun4 fxdHeight';
         var mimetype = this.getFormMimeType();
@@ -1250,6 +1261,66 @@ TestSupport.prototype = {
             dbgComp.style.display = "none";
             dbgComp.innerHTML = '';
         }
+    },
+    
+    storeRequestHeaders: function() {
+        if (localStorage) {
+            ts._storeHeader('req_hdr_1');
+            ts._storeHeader('req_hdr_2');
+            ts._storeHeader('req_hdr_3');
+            ts._storeHeader('req_hdr_4');
+            ts._storeHeader('req_hdr_5');
+            ts._storeHeader('req_hdr_val_1');
+            ts._storeHeader('req_hdr_val_2');
+            ts._storeHeader('req_hdr_val_3');
+            ts._storeHeader('req_hdr_val_4');
+            ts._storeHeader('req_hdr_val_5');
+        }
+    },
+    
+    _storeHeader: function(header) {
+        var hdr = document.getElementById(header).value.trim();
+        if (hdr.length === 0) {
+            localStorage.removeItem(header);
+        } else {
+            localStorage.setItem(header, hdr);
+        }
+    },
+
+    restoreRequestHeaders: function() {
+        if (localStorage) {
+            ts._restoreHeader('req_hdr_1');
+            ts._restoreHeader('req_hdr_2');
+            ts._restoreHeader('req_hdr_3');
+            ts._restoreHeader('req_hdr_4');
+            ts._restoreHeader('req_hdr_5');
+            ts._restoreHeader('req_hdr_val_1');
+            ts._restoreHeader('req_hdr_val_2');
+            ts._restoreHeader('req_hdr_val_3');
+            ts._restoreHeader('req_hdr_val_4');
+            ts._restoreHeader('req_hdr_val_5');
+        }
+    },
+
+    _restoreHeader: function(header) {
+        var value = localStorage.getItem(header);
+        if (value) {
+            document.getElementById(header).value = value;
+        }
+    },
+
+    getRequestHeader: function(header) {
+        var hdrEl = document.getElementById(header);
+        if (hdrEl) {
+            return hdrEl.value.trim();
+        } else {
+            if (localStorage) {
+                var value = localStorage.getItem(header);
+                return value ? value : '';
+            } else {
+                return '';
+            }
+        }
     }
 }
 
@@ -1357,7 +1428,7 @@ WADLParser.prototype = {
        if(node.childNodes != null && node.childNodes.length > 0) {
           for (var i = 0; i < node.childNodes.length; ++i) {
             var n = node.childNodes[i];
-            if(ts.wdr.isResource(n) /*&& !isTemplateResource(ch)*/) {
+            if(ts.wdr.isResource(n)) {
                 var pathVal = unescape(ts.wdr.getNormailizedPath(n));
                 n.attributes.getNamedItem('path').nodeValue = pathVal;
                 ts.topUrls.push(pathVal);
@@ -1371,7 +1442,7 @@ WADLParser.prototype = {
              if(node.childNodes != null && node.childNodes.length > 0) {
                  for (var i = 0; i < node.childNodes.length; ++i) {
                     var ch = node.childNodes[i];
-                    if(ts.wdr.isResource(ch) /*&& !isTemplateResource(ch)*/) {
+                    if(ts.wdr.isResource(ch)) {
                         var n = createNode(ch, parentCat);
                         if(n != null) {
                           parentCat.add(n);
@@ -1438,20 +1509,12 @@ WADLParser.prototype = {
         return false;
    },
 
-   isTemplateResource : function (/*Node*/ n) {
-        if (this.getNormailizedPath(n).indexOf('{') > -1) {
-            return true;
-        }
-        return false;
-   },
-
    hasResource : function (/*Node*/ node) {
      if(node.nodeValue == null){
          if(node.childNodes != null && node.childNodes.length > 0) {
              for (var i = 0; i < node.childNodes.length; ++i) {
                 var ch = node.childNodes[i];
-                if(this.isResource(ch) /*&& !isTemplateResource(ch)*/ && 
-                      this.hasMethod(ch)) {
+                if(this.isResource(ch) && this.hasMethod(ch)) {
                     return true;
                 }
              } 
@@ -1678,11 +1741,16 @@ WADLParser.prototype = {
     },
     
     getMethodNameForDisplay : function (mName, mediaType) {
+        if ('DELETE' === mName) {
+            return mName;
+        }
         var m = mName;
-        if(mediaType == null && (mName == 'PUT' || mName == 'POST'))
+        if(!mediaType && (mName === 'PUT' || mName === 'POST')) {
             mediaType = getDefaultMime();
-        if(mediaType != null)
-            m += '(' + mediaType + ')';    
+        }
+        if(mediaType) {
+            m += '(' + mediaType + ')';
+        }
         return m;
     },
     
@@ -1931,10 +1999,35 @@ XHR.prototype = {
             }
         }
         
+        if (toggleHeadersBlock.cache) {
+            var req_hdr = ts.getRequestHeader('req_hdr_1');
+            if (req_hdr.length > 0) {
+                xmlHttpReq.setRequestHeader(req_hdr, ts.getRequestHeader('req_hdr_val_1'));
+            }
+            req_hdr = ts.getRequestHeader('req_hdr_2');
+            if (req_hdr.length > 0) {
+                xmlHttpReq.setRequestHeader(req_hdr, ts.getRequestHeader('req_hdr_val_2'));
+            }
+            req_hdr = ts.getRequestHeader('req_hdr_3');
+            if (req_hdr.length > 0) {
+                xmlHttpReq.setRequestHeader(req_hdr, ts.getRequestHeader('req_hdr_val_3'));
+            }
+            req_hdr = ts.getRequestHeader('req_hdr_4');
+            if (req_hdr.length > 0) {
+                xmlHttpReq.setRequestHeader(req_hdr, ts.getRequestHeader('req_hdr_val_4'));
+            }
+            req_hdr = ts.getRequestHeader('req_hdr_5');
+            if (req_hdr.length > 0) {
+                xmlHttpReq.setRequestHeader(req_hdr, ts.getRequestHeader('req_hdr_val_5'));
+            }
+        }
+        
         //For cache control on IE7
-        xmlHttpReq.setRequestHeader("Cache-Control", "no-cache");
-        xmlHttpReq.setRequestHeader("Pragma", "no-cache");
-        xmlHttpReq.setRequestHeader("Expires", "-1");
+        if (navigator.userAgent.toLowerCase().indexOf('msie') >= 0) {
+            xmlHttpReq.setRequestHeader("Cache-Control", "no-cache");
+            xmlHttpReq.setRequestHeader("Pragma", "no-cache");
+            xmlHttpReq.setRequestHeader("Expires", "-1");
+        }
         
         ts.currentValidUrl = url;
         return xmlHttpReq;

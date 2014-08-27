@@ -73,6 +73,9 @@ import java.util.regex.Pattern;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.eclipse.jgit.lib.Repository;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
@@ -112,7 +115,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.Line;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -133,11 +135,13 @@ public final class GitUtils {
     public static final String INDEX = "INDEX"; //NOI18N
     public static final String CURRENT = "CURRENT"; //NOI18N
     public static final String PREFIX_R_HEADS = "refs/heads/"; //NOI18N
+    public static final String PREFIX_R_TAGS = "refs/tags/"; //NOI18N
     public static final String PREFIX_R_REMOTES = "refs/remotes/"; //NOI18N
     public static final ProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor();
     public static final String MASTER = "master"; //NOI18N
     private static final Set<File> loggedRepositories = new HashSet<File>();
     public static final String REMOTE_ORIGIN = "origin"; //NOI18N
+    public static final String ORIGIN = "origin"; //NOI18N
 
     /**
      * Checks file location to see if it is part of git metadata
@@ -257,6 +261,13 @@ public final class GitUtils {
         return false;
     }
     
+    /**
+     * Returns the remote tracked branch for the current branch.
+     * 
+     * @param info
+     * @param errorLabel if not null a warning dialog will also be displayed.
+     * @return 
+     */
     @NbBundle.Messages({
         "# {0} - branch name", "MSG_Err.noTrackedBranch=No tracked remote branch specified for local {0}",
         "# {0} - branch name", "MSG_Err.trackedBranchLocal=Tracked branch {0} is not a remote branch"
@@ -268,11 +279,15 @@ public final class GitUtils {
         }
         GitBranch trackedBranch = activeBranch.getTrackedBranch();
         if (trackedBranch == null) {
-            notifyError(errorLabel, Bundle.MSG_Err_noTrackedBranch(activeBranch.getName()));
+            if (errorLabel != null) {
+                notifyError(errorLabel, Bundle.MSG_Err_noTrackedBranch(activeBranch.getName()));
+            }
             return null;
         }
         if (!trackedBranch.isRemote()) {
-            notifyError(errorLabel, Bundle.MSG_Err_trackedBranchLocal(trackedBranch.getName()));
+            if (errorLabel != null) {
+                notifyError(errorLabel, Bundle.MSG_Err_trackedBranchLocal(trackedBranch.getName()));
+            }
             return null;
         }
         return trackedBranch;
@@ -1060,7 +1075,7 @@ public final class GitUtils {
         }
     }
     
-    public static <T> void attachQuickSearch (List<T> items, JPanel panel, JList listComponent,
+    public static <T> QuickSearch attachQuickSearch (List<T> items, JPanel panel, JList listComponent,
             DefaultListModel model, SearchCallback<T> searchCallback) {
         final QuickSearchCallback callback = new QuickSearchCallback<T>(items, listComponent, model, searchCallback);
         final QuickSearch qs = QuickSearch.attach(panel, BorderLayout.SOUTH, callback);
@@ -1087,6 +1102,19 @@ public final class GitUtils {
                 qs.processKeyEvent(e);
             }
         });
+        return qs;
+    }
+
+    public static boolean isValidRefName (String refName) {
+        return Repository.isValidRefName(refName);
+    }
+
+    public static boolean isValidTagName (String tagName) {
+        return isValidRefName(PREFIX_R_TAGS + tagName);
+    }
+
+    public static boolean isValidBranchName (String branchName) {
+        return isValidRefName(PREFIX_R_HEADS + branchName);
     }
 
     public static interface SearchCallback<T> {
@@ -1095,15 +1123,16 @@ public final class GitUtils {
         
     }
     
-    private static class QuickSearchCallback<T> implements QuickSearch.Callback {
+    private static class QuickSearchCallback<T> implements QuickSearch.Callback, ListSelectionListener {
             
         private boolean quickSearchActive;
-        private int currentPosition = 0;
+        private int currentPosition;
         private final List<T> results;
         private final List<T> items;
         private final JList component;
         private final DefaultListModel model;
         private final SearchCallback<T> callback;
+        private boolean internal;
 
         public QuickSearchCallback (List<T> items, JList component, DefaultListModel model, SearchCallback<T> callback) {
             this.items = new ArrayList<T>(items);
@@ -1111,6 +1140,8 @@ public final class GitUtils {
             this.component = component;
             this.model = model;
             this.callback = callback;
+            this.currentPosition = component.getSelectedIndex();
+            component.addListSelectionListener(this);
         }
         
         @Override
@@ -1178,17 +1209,35 @@ public final class GitUtils {
         }
 
         private void updateView () {
-            model.removeAllElements();
-            for (T r : results) {
-                model.addElement(r);
+            internal = true;
+            try {
+                model.removeAllElements();
+                for (T r : results) {
+                    model.addElement(r);
+                }
+                updateSelection();
+            } finally {
+                internal = false;
             }
-            updateSelection();
         }
 
         private void updateSelection () {
             if (currentPosition > -1 && currentPosition < results.size()) {
                 T rev = results.get(currentPosition);
-                component.setSelectedValue(rev, true);
+                boolean oldInternal = internal;
+                internal = true;
+                try {
+                    component.setSelectedValue(rev, true);
+                } finally {
+                    internal = oldInternal;
+                }
+            }
+        }
+
+        @Override
+        public void valueChanged (ListSelectionEvent e) {
+            if (!internal && !e.getValueIsAdjusting()) {
+                currentPosition = component.getSelectedIndex();
             }
         }
     }

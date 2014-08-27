@@ -142,8 +142,8 @@
             </Component>
             <Component class="javax.swing.JTextField" name="platformName">
               <Properties>
-                <Property name="columns" type="int" value="25"/>
                 <Property name="editable" type="boolean" value="false"/>
+                <Property name="columns" type="int" value="25"/>
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -176,8 +176,8 @@
             </Component>
             <Component class="javax.swing.JTextField" name="platformHome">
               <Properties>
-                <Property name="columns" type="int" value="25"/>
                 <Property name="editable" type="boolean" value="false"/>
+                <Property name="columns" type="int" value="25"/>
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">

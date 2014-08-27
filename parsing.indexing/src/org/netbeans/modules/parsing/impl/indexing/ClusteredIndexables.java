@@ -84,7 +84,7 @@ import org.openide.util.BaseUtilities;
  */
 //@NotThreadSafe
 public final class ClusteredIndexables {
-
+    public static final String FIELD_PRIMARY_KEY = "_sn";  //NOI18N
     public static final String DELETE = "ci-delete-set";    //NOI18N
     public static final String INDEX = "ci-index-set";      //NOI18N    
     
@@ -741,7 +741,6 @@ public final class ClusteredIndexables {
     private static final class MemIndexDocument implements IndexDocument {
 
         private static final String[] EMPTY = new String[0];
-        static final String FIELD_PRIMARY_KEY = "_sn";  //NOI18N
 
         private final List<Fieldable> fields = new ArrayList<Fieldable>();
         boolean consumed;
@@ -817,7 +816,7 @@ public final class ClusteredIndexables {
 
         @Override
         public String getPrimaryKey() {
-            return doc.get(MemIndexDocument.FIELD_PRIMARY_KEY);
+            return doc.get(FIELD_PRIMARY_KEY);
         }
 
         @Override

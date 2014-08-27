@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.cnd.remote.actions;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.Action;
 import org.netbeans.modules.cnd.remote.actions.base.RemoteActionPerformer;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.lookup.ServiceProvider;
@@ -54,10 +56,15 @@ import org.openide.util.lookup.ServiceProvider;
 public class OpenRemoteFilePerformer extends RemoteActionPerformer {
 
     @Override
-    protected void actionPerformedRemote(ExecutionEnvironment env) {
+    protected void actionPerformedRemote(ExecutionEnvironment env, ActionEvent e) {
         if (env.isLocal()) {
-            return;
+            Action delegate = findAction("Actions/System", "Actions/System/org-netbeans-modules-openfile-OpenFileAction"); //NOI18N
+            if (delegate != null) {
+                delegate.actionPerformed(e);
+                return;
+            }
         }
+        
         RemoteOpenHelper.openFile(env);
     }
 }

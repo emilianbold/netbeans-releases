@@ -47,9 +47,9 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.jstesting.JsTestingProviderAccessor;
+import org.netbeans.modules.web.clientproject.spi.jstesting.CustomizerPanelImplementation;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
 import org.netbeans.spi.project.ui.support.NodeList;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Parameters;
@@ -71,38 +71,8 @@ public final class JsTestingProvider {
             }
 
             @Override
-            public String getIdentifier(JsTestingProvider jsTestingProvider) {
-                return jsTestingProvider.getIdentifier();
-            }
-
-            @Override
-            public String getDisplayName(JsTestingProvider jsTestingProvider) {
-                return jsTestingProvider.getDisplayName();
-            }
-
-            @Override
             public boolean isEnabled(JsTestingProvider jsTestingProvider, Project project) {
                 return jsTestingProvider.isEnabled(project);
-            }
-
-            @Override
-            public void runTests(JsTestingProvider jsTestingProvider, Project project, TestRunInfo runInfo) {
-                jsTestingProvider.runTests(project, runInfo);
-            }
-
-            @Override
-            public FileObject fromServer(JsTestingProvider jsTestingProvider, Project project, URL serverUrl) {
-                return jsTestingProvider.fromServer(project, serverUrl);
-            }
-
-            @Override
-            public URL toServer(JsTestingProvider jsTestingProvider, Project project, FileObject projectFile) {
-                return jsTestingProvider.toServer(project, projectFile);
-            }
-
-            @Override
-            public ProjectCustomizer.CompositeCategoryProvider createCustomizer(JsTestingProvider jsTestingProvider, Project project) {
-                return jsTestingProvider.createCustomizer(project);
             }
 
             @Override
@@ -111,18 +81,13 @@ public final class JsTestingProvider {
             }
 
             @Override
-            public void projectOpened(JsTestingProvider jsTestingProvider, Project project) {
-                jsTestingProvider.projectOpened(project);
-            }
-
-            @Override
-            public void projectClosed(JsTestingProvider jsTestingProvider, Project project) {
-                jsTestingProvider.projectClosed(project);
-            }
-
-            @Override
             public NodeList<Node> createNodeList(JsTestingProvider jsTestingProvider, Project project) {
                 return jsTestingProvider.createNodeList(project);
+            }
+
+            @Override
+            public CustomizerPanelImplementation createCustomizerPanel(JsTestingProvider jsTestingProvider, Project project) {
+                return jsTestingProvider.createCustomizerPanel(project);
             }
 
         });
@@ -151,6 +116,17 @@ public final class JsTestingProvider {
     @NonNull
     public String getDisplayName() {
         return delegate.getDisplayName();
+    }
+
+    /**
+     * Checks whether this JS testing provider supports code coverage.
+     * @param project target project
+     * @return {@code true} if this provider supports code coverage, {@code false} otherwise
+     * @since 1.58
+     */
+    public boolean isCoverageSupported(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
+        return delegate.isCoverageSupported(project);
     }
 
     /**
@@ -192,17 +168,6 @@ public final class JsTestingProvider {
     }
 
     /**
-     * Create project customizer for the given project.
-     * @param project  the project; never {@code null}
-     * @return project customizer, can be {@code null} if not supported
-     */
-    @CheckForNull
-    public ProjectCustomizer.CompositeCategoryProvider createCustomizer(@NonNull Project project) {
-        Parameters.notNull("project", project); // NOI18N
-        return delegate.createCustomizer(project);
-    }
-
-    /**
      * Notify JS testing provider that the given project is being opened.
      * @param project project being opened
      */
@@ -234,6 +199,12 @@ public final class JsTestingProvider {
     boolean isEnabled(@NonNull Project project) {
         Parameters.notNull("project", project); // NOI18N
         return delegate.isEnabled(project);
+    }
+
+    @CheckForNull
+    CustomizerPanelImplementation createCustomizerPanel(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
+        return delegate.createCustomizerPanel(project);
     }
 
     @Override

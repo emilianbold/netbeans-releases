@@ -16,14 +16,6 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="installationInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="installationLearnMoreLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-          </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="phpDocLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -41,6 +33,15 @@
                   </Group>
               </Group>
           </Group>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="installationInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="installationLearnMoreLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="versionInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="32767" attributes="0"/>
+          </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -54,7 +55,9 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="phpDocUsageLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+              <Component id="versionInfoLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="installationInfoLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="installationLearnMoreLabel" min="-2" max="-2" attributes="0"/>
@@ -120,6 +123,13 @@
     <Component class="javax.swing.JLabel" name="errorLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value="ERROR" noResource="true"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="versionInfoLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/phpdoc/ui/options/Bundle.properties" key="PhpDocOptionsPanel.versionInfoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
   </SubComponents>

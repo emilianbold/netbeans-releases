@@ -41,86 +41,98 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
 import java.awt.event.KeyEvent;
-
+import javax.swing.KeyStroke;
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
-
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 
 /**
  * Test of Page Up and Page Down in opened source editor.
  *
- * @author  anebuzelsky@netbeans.org
+ * @author anebuzelsky@netbeans.org
  */
 public class PageUpPageDownInEditorTest extends PerformanceTestCase {
-    
+
     private boolean pgup;
     private EditorOperator editorOperator;
-    
-    
-    /** Creates a new instance of PageUpPageDownInEditor */
+
+    /**
+     * Creates a new instance of PageUpPageDownInEditor
+     *
+     * @param testName test name
+     */
     public PageUpPageDownInEditorTest(String testName) {
         super(testName);
-        expectedTime = UI_RESPONSE;
-        WAIT_AFTER_OPEN = 200;
+        expectedTime = 200;
+        WAIT_AFTER_OPEN = 400;
         pgup = true;
     }
-    
-    /** Creates a new instance of PageUpPageDownInEditor */
+
+    /**
+     * Creates a new instance of PageUpPageDownInEditor
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public PageUpPageDownInEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = UI_RESPONSE;
-        WAIT_AFTER_OPEN = 200;
+        expectedTime = 200;
+        WAIT_AFTER_OPEN = 400;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(PageUpPageDownInEditorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(PageUpPageDownInEditorTest.class)
+                .suite();
     }
 
-    public void testPageUp(){
+    public void testPageUp() {
         pgup = true;
         doMeasurement();
     }
-    
-    public void testPageDown(){
+
+    public void testPageDown() {
         pgup = false;
         doMeasurement();
     }
-    
+
     @Override
     public void initialize() {
         EditorOperator.closeDiscardAll();
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main20kB.java"));
         editorOperator = EditorWindowOperator.getEditor("Main20kB.java");
     }
-    
+
+    @Override
     public void prepare() {
-        if (pgup) new Action(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator);
-        else  editorOperator.setCaretPositionToLine(1);
-   }
-    
-    public ComponentOperator open(){
-        if (pgup) new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_PAGE_UP)).perform(editorOperator);
-        else new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_PAGE_DOWN)).perform(editorOperator);
+        if (pgup) {
+            new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator);
+        } else {
+            editorOperator.setCaretPositionToLine(1);
+        }
+    }
+
+    @Override
+    public ComponentOperator open() {
+        if (pgup) {
+            new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0)).perform(editorOperator);
+        } else {
+            new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0)).perform(editorOperator);
+        }
         return null;
     }
 
@@ -129,5 +141,4 @@ public class PageUpPageDownInEditorTest extends PerformanceTestCase {
         super.shutdown();
         repaintManager().resetRegionFilters();
     }
-    
 }

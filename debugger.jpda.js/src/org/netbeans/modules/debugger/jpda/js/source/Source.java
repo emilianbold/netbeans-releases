@@ -49,11 +49,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.js.vars.DebuggerSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -64,6 +68,8 @@ import org.openide.util.Exceptions;
  */
 public final class Source {
     
+    private static final Logger LOG = Logger.getLogger(Source.class.getName());
+    
     public static final String URL_PROTOCOL = "js-scripts"; // NOI18N
     
     private static final String SOURCE_CLASS = "jdk.nashorn.internal.runtime.Source";   // NOI18N
@@ -73,6 +79,8 @@ public final class Source {
     private static final String SOURCE_VAR_CONTENT = "content"; // NOI18N
     private static final String SOURCE_VAR_HASH = "hash";   // NOI18N
     private static final String SOURCE_VAR_URL = "url";     // NOI18N
+    private static final String SOURCE_VAR_DATA = "data";   // NOI18N
+    private static final String SOURCE_VAR_DATA_ARRAY = "array";    // NOI18N
     
     private static final Map<JPDADebugger, Map<Long, Source>> knownSources = new WeakHashMap<>();
 
@@ -87,9 +95,13 @@ public final class Source {
     private Source(String name, JPDAClassType classType, URL url, boolean compareContent, int hash, String content) {
         this.name = name;
         this.classType = classType;
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("new Source("+name+", "+classType.getName()+", "+url+")");
+        }
         URL rURL = null;
         int lineShift = 0;
-        if (url == null || !"file".equalsIgnoreCase(url.getProtocol())) {
+        if (url == null || !("file".equalsIgnoreCase(url.getProtocol()) ||
+                             "jar".equalsIgnoreCase(url.getProtocol()))) {
             try {
                 url = SourceFilesCache.getDefault().getSourceFile(name, hash, content);
             } catch (IOException ex) {
@@ -97,7 +109,7 @@ public final class Source {
             }
         } else if (compareContent) {
             lineShift = getContentLineShift(url, content);
-            if (lineShift >= 0) {
+            if (lineShift > 0) {
                 try {
                     rURL = SourceFilesCache.getDefault().getSourceFile(name, hash, content);
                 } catch (IOException ex) {
@@ -150,23 +162,43 @@ public final class Source {
                 }
             }
         }
-        ObjectVariable sourceVar = getSourceVar(debugger, classType);
-        if (sourceVar == null) {
-            return null;
+        
+        ObjectVariable sourceVar = null;
+        if (DebuggerSupport.hasSourceInfo(debugger)) {
+            sourceVar = (ObjectVariable) DebuggerSupport.getSourceInfo(debugger, classType);
+            LOG.log(Level.FINE, "Source info for class {0} is {1}", new Object[]{classType, sourceVar});
         }
+        if (sourceVar == null) {
+            sourceVar = getSourceVar(debugger, classType);
+            LOG.log(Level.FINE, "Source var for class {0} is {1}", new Object[]{classType, sourceVar});
+            if (sourceVar == null) {
+                return null;
+            }
+        }
+        return getSource(debugger, classType, sourceVar);
+    }
+    
+    public static Source getSource(JPDADebugger debugger, JPDAClassType classType, ObjectVariable sourceVar) {
+        long uniqueClassID = classType.classObject().getUniqueID();
         Field fieldName = sourceVar.getField(SOURCE_VAR_NAME);
         Field fieldContent = sourceVar.getField(SOURCE_VAR_CONTENT);
         Field fieldHash = sourceVar.getField(SOURCE_VAR_HASH);
         Field fieldURL = sourceVar.getField(SOURCE_VAR_URL);
-        if (fieldName == null || fieldContent == null ||
-            fieldHash == null || fieldURL == null) {
-            
+        if (fieldContent == null && fieldURL == null) {
+            // There is a Data inner class instead:
+            Field fieldData = sourceVar.getField(SOURCE_VAR_DATA);
+            if (fieldData != null && fieldData instanceof ObjectVariable) {
+                fieldURL = ((ObjectVariable) fieldData).getField(SOURCE_VAR_URL);
+                fieldContent = ((ObjectVariable) fieldData).getField(SOURCE_VAR_DATA_ARRAY);
+            }
+        }
+        if (fieldName == null || fieldContent == null || fieldHash == null) {
             return null;
         }
-        Object urlObj = fieldURL.createMirrorObject();
+        Object urlObj = fieldURL != null ? fieldURL.createMirrorObject() : null;
         URL url;
         boolean compareContent = false;
-        if (urlObj == null) {
+        if (urlObj == null && fieldURL != null) {
             // Check if there's a special URL handler. In that case we have to count with content shifting.
             url = readURLFromFields(fieldURL);
             compareContent = true;
@@ -291,7 +323,7 @@ public final class Source {
      * @return a non-negative line shift of content of 'url' in 'content', or -1
      *         when content of 'url' is not a subset of 'content'.
      */
-    private static int getContentLineShift(URL url, String content) {
+    static int getContentLineShift(URL url, String content) {
         String origContent;
         FileObject fo = URLMapper.findFileObject(url);
         if (fo != null) {

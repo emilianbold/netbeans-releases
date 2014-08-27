@@ -174,7 +174,7 @@ public class Utilities {
     }
     
     public static String guessName(CompilationInfo info, TreePath tp, TreePath scope, String prefix, String suffix) {
-        return guessName(info, getName(tp.getLeaf()), scope, prefix, suffix, false);
+        return guessName(info, org.netbeans.modules.editor.java.Utilities.varNameSuggestion(tp.getLeaf()), scope, prefix, suffix, false);
     }
     
     public static String guessName(CompilationInfo info, String name, TreePath scope, String prefix, String suffix, boolean acceptExistingPrefixes) {
@@ -407,68 +407,6 @@ public class Utilities {
                 return getName(((ArrayType) tm).getComponentType());
             default:
                 return DEFAULT_NAME;
-        }
-    }
-    
-    public static String getName(ExpressionTree et) {
-        return getName((Tree) et);
-    }
-    
-    public static String getName(Tree et) {
-        return adjustName(getNameRaw(et));
-    }
-    
-    private static String getNameRaw(Tree et) {
-        if (et == null)
-            return null;
-
-        switch (et.getKind()) {
-        case IDENTIFIER:
-            return ((IdentifierTree) et).getName().toString();
-        case METHOD_INVOCATION:
-            return getNameRaw(((MethodInvocationTree) et).getMethodSelect());
-        case MEMBER_SELECT:
-            return ((MemberSelectTree) et).getIdentifier().toString();
-        case NEW_CLASS:
-            return firstToLower(getNameRaw(((NewClassTree) et).getIdentifier()));
-        case PARAMETERIZED_TYPE:
-            return firstToLower(getNameRaw(((ParameterizedTypeTree) et).getType()));
-        case STRING_LITERAL:
-            String name = guessLiteralName((String) ((LiteralTree) et).getValue());
-            if(name == null) {
-                return firstToLower(String.class.getSimpleName());
-            } else {
-                return firstToLower(name);
-            }
-        case VARIABLE:
-            return ((VariableTree) et).getName().toString();
-        default:
-            return null;
-        }
-    }
-    
-    static String adjustName(String name) {
-        if (name == null)
-            return null;
-        
-        String shortName = null;
-        
-        if (name.startsWith("get") && name.length() > 3) {
-            shortName = name.substring(3);
-        }
-        
-        if (name.startsWith("is") && name.length() > 2) {
-            shortName = name.substring(2);
-        }
-        
-        if (shortName != null) {
-            return firstToLower(shortName);
-        }
-        
-        if (SourceVersion.isKeyword(name)) {
-            return "a" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
-        } else {
-            return name;
         }
     }
     
@@ -1125,7 +1063,7 @@ public class Utilities {
             }
 
             if (proposedName == null) {
-                proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(arg);
+                proposedName = org.netbeans.modules.editor.java.Utilities.varNameSuggestion(arg);
             }
 
             if (proposedName == null) {
@@ -1967,5 +1905,24 @@ public class Utilities {
         }
         return ll;
     }
-    
+
+    /**
+     * Determines if assignment looses precision.
+     * Works only for primitive types, false for references.
+     * 
+     * @param from the assigned value type
+     * @param to the target type
+     * @return true, if precision is lost
+     */
+    public static boolean loosesPrecision(TypeMirror from, TypeMirror to) {
+        if (!from.getKind().isPrimitive() || !to.getKind().isPrimitive()) {
+            return false;
+        }
+        if (to.getKind() == TypeKind.CHAR) {
+            return true;
+        } else if (from.getKind() == TypeKind.CHAR) {
+            return to.getKind() == TypeKind.BYTE || to.getKind() == TypeKind.SHORT;
+        }
+        return to.getKind().ordinal() < from.getKind().ordinal();
+    }
 }

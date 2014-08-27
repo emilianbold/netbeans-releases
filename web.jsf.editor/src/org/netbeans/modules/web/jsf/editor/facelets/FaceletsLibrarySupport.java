@@ -411,7 +411,8 @@ public class FaceletsLibrarySupport {
         });
 
         //parse the libraries
-        DocumentInfo[] documents = ConfigManager.getConfigDocuments(null, faceletTaglibProviders, null, true);
+        ServletContext sc = new EmptyServletContext();
+        DocumentInfo[] documents = ConfigManager.getConfigDocuments(sc, faceletTaglibProviders, null, true);
         if (documents == null) {
             return null; //error????
         }

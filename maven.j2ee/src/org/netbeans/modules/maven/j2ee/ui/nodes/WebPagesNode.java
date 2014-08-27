@@ -65,6 +65,7 @@ import static org.netbeans.modules.maven.j2ee.ui.nodes.Bundle.*;
 @NbBundle.Messages("LBL_Web_Pages=Web Pages")
 class WebPagesNode extends FilterNode {
     private boolean isTopLevelNode = false;
+    private Project project;
     private FileObject file;
     
     WebPagesNode(Project proj, Node orig, File root) {
@@ -74,6 +75,7 @@ class WebPagesNode extends FilterNode {
     private WebPagesNode(Project proj, Node orig, File root, boolean isTopLevel) {
         //#142744 if orig child is leaf, put leave as well.
         super(orig, orig.getChildren() == Children.LEAF ? Children.LEAF : new WebAppFilterChildren(proj, orig, root));
+        this.project = proj;
         isTopLevelNode = isTopLevel;
         if (isTopLevel) {
             file = FileUtil.toFileObject(root);
@@ -83,14 +85,18 @@ class WebPagesNode extends FilterNode {
     @Override
     public String getDisplayName() {
         if (isTopLevelNode) {
-            String webRootName = file.getName();
+            String webRootPath = file.getPath();
             String displayName;
 
             // To preserve current behavior, don't show web root name in the node name for default "webapp"
-            if ("webapp".equals(webRootName)) { // NOI18N
+            if (webRootPath.endsWith("src/main/webapp")) { // NOI18N
                 displayName = LBL_Web_Pages();
             } else {
-                displayName = LBL_Web_Pages() + " (" + file.getName() + ")"; // NOI18N
+                // Remove project path from the display name --> In case of
+                // /tmp/something/projectName/src/main/resources/deployment
+                // we will have only src/main/resources/deployment
+                String projectPath = project.getProjectDirectory().getPath();
+                displayName = LBL_Web_Pages() + " (" + webRootPath.replaceAll(projectPath, "") + ")"; // NOI18N
             }
 
             try {

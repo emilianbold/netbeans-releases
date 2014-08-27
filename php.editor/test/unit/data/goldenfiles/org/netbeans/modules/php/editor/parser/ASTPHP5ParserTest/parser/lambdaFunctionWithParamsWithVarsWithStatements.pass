@@ -83,7 +83,7 @@
                         <Identifier start='7' end='13' name='lambda'/>
                     </Variable>
                     <LambdaFunctionDeclaration start='16' end='79' isReference='false'>
-                        <FormalParameter start='26' end='33' isMandatory='false'>
+                        <FormalParameter start='26' end='33' isMandatory='true' isVariadic='false'>
                             <ParametrType>
                             </ParametrType>
                             <ParametrName>
@@ -94,7 +94,7 @@
                             <DefaultValue>
                             </DefaultValue>
                         </FormalParameter>
-                        <FormalParameter start='35' end='43' isMandatory='false'>
+                        <FormalParameter start='35' end='43' isMandatory='true' isVariadic='false'>
                             <ParametrType>
                             </ParametrType>
                             <ParametrName>
@@ -117,7 +117,9 @@
                         </Reference>
                         <Block start='65' end='79' isCurly='true'>
                             <EchoStatement start='67' end='77'>
-                                <Scalar start='72' end='76' type='STRING' value='TEST'/>
+                                <NamespaceName start='72' end='76' isCurrent='false' isGlobal='false'>
+                                    <Identifier start='72' end='76' name='TEST'/>
+                                </NamespaceName>
                             </EchoStatement>
                         </Block>
                     </LambdaFunctionDeclaration>

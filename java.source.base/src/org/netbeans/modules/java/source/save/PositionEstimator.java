@@ -974,6 +974,7 @@ public abstract class PositionEstimator {
                 // localResult will receive start of non-whitespace part of the statment (either statement, or comment)
                 int localResult = -1;
                 int insertPos = -1;
+                boolean nlBefore = item.getKind() != Tree.Kind.EMPTY_STATEMENT;
                 while (nonRelevant.contains((token = seq.token()).id())) {
                     switch (token.id()) {
                         case WHITESPACE:
@@ -984,6 +985,7 @@ public abstract class PositionEstimator {
                                 // whitespaces when deleting the element.
                                 insertPos = seq.offset() + (token.text().toString().indexOf('\n')) + 1;
                                 localResult = seq.offset() + indexOf + 1;
+                                nlBefore = true;
                             } else if (first || previousEnd == 0) {
                                 wsOnlyStart = previousEnd;
                             } else if (token.length() > 1) {
@@ -1033,7 +1035,7 @@ public abstract class PositionEstimator {
                                 int indexOf = t.text().toString().indexOf('\n');
                                 if (indexOf > -1) {
                                     if (commentEndPos.isEmpty()) {
-                                        wideEnd = seq.offset() + indexOf + 1;
+                                        wideEnd = seq.offset() + indexOf + (nlBefore ? 1 : 0);
                                     } else {
                                         commentEndPos.add(Pair.of(commentEndPos.getLast().first(), seq.offset() + indexOf + 1));
                                     }
@@ -1153,25 +1155,42 @@ public abstract class PositionEstimator {
             }
             seq.move(sectionEnd);
             seq.movePrevious();
+            
+            // PENDING: comment conditional removal (if mapped) should be replicated into other Estimators.
             boolean moreWhitespaces = false;
+            int lastNewline = -1;
             while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
                 if (JavaTokenId.LINE_COMMENT == token.id()) {
                     sectionEnd = seq.offset();
+                    boolean mapped = diffContext.usedComments.get(sectionEnd) != null;
                     // only remove 1st line of line comment if there's a whitespace between the removed
                     // content and the comment
-                    if (!moreWhitespaces && seq.moveNext()) {
-                        sectionEnd = seq.offset();
+                    if (!mapped) {
+                        if (!moreWhitespaces && seq.moveNext()) {
+                            sectionEnd = seq.offset();
+                        }
+                        break;
+                    } else {
+                        sectionEnd = seq.offset() + seq.token().length();
+                        lastNewline = sectionEnd;
                     }
-                    break;
                 } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
-                    break;
+                    boolean mapped = diffContext.usedComments.get(sectionEnd) != null;
+                    if (!mapped) {
+                        break;
+                    }
+                    // comments from removed statements are colleted elsewhere
+                    lastNewline = -1;
+                    continue;
                 } else if (JavaTokenId.WHITESPACE == token.id()) {
                     int indexOf = token.text().toString().lastIndexOf('\n');
+                    int after = seq.offset() + token.text().length();
                     if (indexOf > -1) {
                         sectionEnd = seq.offset() + indexOf + 1;
                         moreWhitespaces |= token.text().toString().indexOf('\n') != indexOf;
-                    } else {
-                        sectionEnd = seq.offset() + token.text().length();
+                        lastNewline = sectionEnd;
+                    } else if (lastNewline == -1) {
+                        sectionEnd = after;
                     }
                 }
             }
@@ -1664,6 +1683,58 @@ public abstract class PositionEstimator {
         return moveToDifferentThan(seq, dir, nonRelevant);
     }
     
+    /**
+     * 
+     * @param seq the token sequence
+     * @param dir direction
+     * @return 
+     */
+    public static int offsetToSrcWiteOnLine(TokenSequence<JavaTokenId> seq,
+                                                 Direction dir)
+    {
+        boolean notBound = false;
+        seq.moveNext();
+        int savePos = seq.offset();
+        switch (dir) {
+            case BACKWARD:
+                while ((notBound = seq.movePrevious())) {
+                    JavaTokenId tid = seq.token().id();
+                    if (tid == WHITESPACE) {
+                        int nl = seq.token().text().toString().indexOf('\n');
+                        if (nl > -1) {
+                            // return the position after newline:
+                            return seq.offset() + nl + 1;
+                        }
+                    } else if (!nonRelevant.contains(tid)) {
+                        break;
+                    } else {
+                        savePos = seq.offset();
+                    }
+                }
+                break;
+            case FORWARD:
+                while ((notBound = seq.moveNext())) {
+                    JavaTokenId tid = seq.token().id();
+                    if (tid == WHITESPACE) {
+                        int nl = seq.token().text().toString().indexOf('\n');
+                        if (nl > -1) {
+                            // return the position after newline:
+                            return seq.offset() + nl;
+                        }
+                    } else if (!nonRelevant.contains(tid)) {
+                        break;
+                    } else {
+                        savePos = seq.offset() + seq.token().length();
+                    }
+                }
+                break;
+        }
+        if (!notBound) {
+            return -1;
+        }
+        return savePos;
+    }
+
     @SuppressWarnings("empty-statement")
     public static JavaTokenId moveToDifferentThan(
         TokenSequence<JavaTokenId> seq,

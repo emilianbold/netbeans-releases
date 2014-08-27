@@ -251,10 +251,15 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                 JMenuItem item = new JMenuItem(Bundle.LBL_PopupMenu_Initializing());
                 item.setEnabled(false);
                 add(item);
+                final Node[] nodes = this.nodes;
+                final VersioningSystem owner = this.owner;
                 Utils.postParallel(new Runnable() {
                     @Override
                     public void run () {
                         final Action[] actions;
+                        if (nodes == null) {
+                            return;
+                        }
                         if (owner == null) {
                             // default Versioning menu (Import into...)
                             List<VersioningSystem> vcs = new ArrayList<VersioningSystem>(Arrays.asList(VersioningManager.getInstance().getVersioningSystems()));

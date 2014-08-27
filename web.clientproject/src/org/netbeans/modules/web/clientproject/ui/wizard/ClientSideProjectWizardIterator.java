@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.templates.TemplateRegistration;
@@ -80,6 +81,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 public final class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
@@ -190,9 +192,20 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public void initialize(WizardDescriptor wiz) {
         this.wizardDescriptor = wiz;
+        // #245975
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                initializeInternal();
+            }
+        });
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void initializeInternal() {
+        assert EventQueue.isDispatchThread();
         index = 0;
         if (withExtenders) {
             extenders = Lookup.getDefault().lookupAll(ClientProjectExtender.class);
@@ -431,8 +444,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(SITE_TEMPLATE);
             ProjectProperties projectProperties = new ProjectProperties()
                     .setSiteRootFolder(customSiteRoot!=null?customSiteRoot:ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER)
-                    .setTestFolder(ClientSideProjectConstants.DEFAULT_TEST_FOLDER)
-                    .setConfigFolder(ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
+                    .setTestFolder(ClientSideProjectConstants.DEFAULT_TEST_FOLDER);
             if (siteTemplate != null) {
                 // configure
                 siteTemplate.configure(projectProperties);
@@ -499,8 +511,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         private void initProject(ClientSideProject project, ProjectProperties properties, WizardDescriptor wizardDescriptor) throws IOException {
             ClientSideProjectUtilities.initializeProject(project,
                     properties.getSiteRootFolder(),
-                    properties.getTestFolder(),
-                    properties.getConfigFolder());
+                    properties.getTestFolder());
             // #231326
             String librariesPath = (String) wizardDescriptor.getProperty(LIBRARIES_PATH);
             if (librariesPath != null) {
@@ -540,7 +551,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public static final class ExistingProjectWizard implements Wizard {
 
         public static final String SITE_ROOT = "SITE_ROOT"; // NOI18N
-        public static final String CONFIG_ROOT = "CONFIG_ROOT"; // NOI18N
         public static final String TEST_ROOT = "TEST_ROOT"; // NOI18N
 
         @Override
@@ -566,32 +576,29 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             File siteRoot = (File) wizardDescriptor.getProperty(SITE_ROOT);
             // #218736
             String testFolder;
-            String configFolder;
             if (projectDir.equals(siteRoot)) {
                 testFolder = null;
-                configFolder = null;
             } else {
-                testFolder = getExistingDir(wizardDescriptor, TEST_ROOT, ClientSideProjectConstants.DEFAULT_TEST_FOLDER);
-                configFolder = getExistingDir(wizardDescriptor, CONFIG_ROOT, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
+                testFolder = getExistingDir(wizardDescriptor, TEST_ROOT);
             }
-            ClientSideProjectUtilities.initializeProject(project, siteRoot.getAbsolutePath(), testFolder, configFolder);
+            ClientSideProjectUtilities.initializeProject(project, siteRoot.getAbsolutePath(), testFolder);
             return FileUtil.toFileObject(siteRoot);
         }
 
         @Override
         public void uninitialize(WizardDescriptor wizardDescriptor) {
             wizardDescriptor.putProperty(SITE_ROOT, null);
-            wizardDescriptor.putProperty(CONFIG_ROOT, null);
             wizardDescriptor.putProperty(TEST_ROOT, null);
         }
 
-        private String getExistingDir(WizardDescriptor wizardDescriptor, String property, String defaultDir) throws IOException {
+        @CheckForNull
+        private String getExistingDir(WizardDescriptor wizardDescriptor, String property) {
             File dir = (File) wizardDescriptor.getProperty(property);
             if (dir != null) {
                 // dir set
                 return dir.getAbsolutePath();
             }
-            return defaultDir;
+            return null;
         }
 
     }

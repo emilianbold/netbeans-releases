@@ -41,11 +41,16 @@
  */
 package org.netbeans.modules.cnd.makeproject.launchers;
 
+import org.netbeans.modules.cnd.makeproject.LaunchersRegistryAccessor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -63,7 +68,21 @@ public final class LaunchersRegistry {
     private static final String DIRECTORY_TAG = "runDir";   // NOI18N
     private static final String SYMFILES_TAG = "symbolFiles";// NOI18N    
     private static final String ENV_TAG = "env";// NOI18N
+    
+    private Object privateLaucnhersListener = null;  //for debugging purposes only
+    
+    static {  //for debugging purposes only
+        LaunchersRegistryAccessor.setDefault(new LaunchersRegistryAccessorImpl());
+    }
 
+    /*package*/ void setPrivateLaucnhersListener(Object privateLaucnhersListener) {  //for debugging purposes only
+        this.privateLaucnhersListener = privateLaucnhersListener;
+    }
+
+    private Object getPrivateLaucnhersListener() {
+        return privateLaucnhersListener;
+    }
+    
     LaunchersRegistry() {
         launchers = new ArrayList<>();
     }
@@ -96,21 +115,42 @@ public final class LaunchersRegistry {
         return Collections.unmodifiableCollection(launchers);
     }
 
-    void load(Properties properties) {
-        synchronized (lock) {
-            launchers.clear();
-            Launcher common = create(COMMON_TAG, properties, null);
-            for (String key : properties.stringPropertyNames()) {
-                if (key.matches(LAUNCHER_TAG + "\\d*[.]" + COMMAND_TAG)) {//NOI18N
-                    Launcher l = create(key.substring(0, key.indexOf("." + COMMAND_TAG)), properties, common);//NOI18N
-                    if (l != null) {
-                        launchers.add(l);
-                    }
+    boolean load(Properties properties) {
+        List<Launcher> newLaunchers = new ArrayList<>();
+        Launcher common = create(COMMON_TAG, properties, null);
+        for (String key : properties.stringPropertyNames()) {
+            if (key.matches(LAUNCHER_TAG + "\\d*[.]" + COMMAND_TAG)) {//NOI18N
+                Launcher l = create(key.substring(0, key.indexOf("." + COMMAND_TAG)), properties, common);//NOI18N
+                if (l != null) {
+                    newLaunchers.add(l);
                 }
             }
         }
+        boolean modified = false;
+        synchronized (lock) {
+            if (!isEqualsLauncers(newLaunchers)) {
+                launchers.clear();
+                launchers.addAll(newLaunchers);
+                modified = true;
+            }
+        }
+        return modified;
     }
 
+    private boolean isEqualsLauncers(List<Launcher> newLaunchers) {
+        if (launchers.size() != newLaunchers.size()) {
+            return false;
+        }
+        for(int i = 0; i < launchers.size(); i++) {
+            Launcher l1 = launchers.get(i);
+            Launcher l2 = newLaunchers.get(i);
+            if (!l1.isLauncherEquals(l2)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     private Launcher create(String name, Properties properties, Launcher common) {
         boolean commonLauncher = name.equals(COMMON_TAG);
         assert !commonLauncher || common == null : "common launcher can not have other common";//NOI18N
@@ -139,5 +179,22 @@ public final class LaunchersRegistry {
         }
         
         return launcher;
+    }
+    
+
+    private static final class LaunchersRegistryAccessorImpl extends LaunchersRegistryAccessor {  //for debugging purposes only
+
+        @Override
+        public void assertPrivateListenerNotNull(FileObject dir) {
+            if (LaunchersRegistryFactory.getInstance(dir).getPrivateLaucnhersListener() == null) {
+                LaunchersProjectMetadataFactory factoryInstance = Lookups.forPath("Projects/org-netbeans-modules-cnd-makeproject/"//NOI18N
+                        + ProjectMetadataFactory.LAYER_PATH)
+                        .lookup(LaunchersProjectMetadataFactory.class);
+                factoryInstance.read(dir);
+                
+                CndUtils.assertNotNull(null, "Private launchers listener is null for " + dir);//NOI18N
+            }
+        }
+        
     }
 }

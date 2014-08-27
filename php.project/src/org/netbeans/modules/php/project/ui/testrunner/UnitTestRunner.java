@@ -52,6 +52,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.project.util.UsageLogging;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
@@ -102,6 +103,7 @@ public final class UnitTestRunner {
         if (!checkTestingProviders()) {
             return;
         }
+        UsageLogging.logPhpTestRun(project, testingProviders);
         try {
             rerunHandler.disable();
             MANAGER.testStarted(testSession);

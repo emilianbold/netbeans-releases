@@ -95,21 +95,18 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
 
     private static final RequestProcessor RP = new RequestProcessor("Maven Copy on Save", 5);
     private static final Logger LOG = Logger.getLogger(WebCopyOnSave.class.getName());
-    private static final List<String> staticResources = new ArrayList<>();
+    private static final List<String> nonStaticResources = new ArrayList<>();
     private final Project project;
     private final FileChangeListener listener;
-    
+
     private FileObject docBase;
     private FileObject webInf;
     private boolean active;
 
 
     static {
-        staticResources.add("html");  //NOI18N
-        staticResources.add("jsp");   //NOI18N
-        staticResources.add("xhtml"); //NOI18N
-        staticResources.add("js");    //NOI18N
-        staticResources.add("css");   //NOI18N
+        nonStaticResources.add("java");  //NOI18N
+        nonStaticResources.add("groovy");   //NOI18N
     };
 
     public WebCopyOnSave(Project project) {
@@ -135,7 +132,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
             active = true;
         }
     }
-    
+
     private void initializeListeners() {
         WebModule webModule = getWebModule();
         if (webModule != null) {
@@ -164,7 +161,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
             active = false;
         }
     }
-    
+
     private void cleanUpListeners() {
         if (docBase != null) {
             docBase.removeRecursiveListener(listener);
@@ -194,7 +191,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
     @Override
     public void deployed(Iterable<ArtifactListener.Artifact> artifacts) {
         ClientSideDevelopmentSupport easelSupport = project.getLookup().lookup(ClientSideDevelopmentSupport.class);
-        
+
         if (easelSupport == null || !easelSupport.canReload()) {
             return;
         }
@@ -205,7 +202,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
             }
         }
     }
-    
+
     private FileObject getReloadFileObject(ArtifactListener.Artifact artifact) {
         File file = artifact.getFile();
         FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
@@ -220,7 +217,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
         if (j2eeModule != null) {
             try {
                 FileObject webBuildBase = j2eeModule.getContentDirectory();
-                
+
                 if (docBase != null && webBuildBase != null) {
                     if (!FileUtil.isParentOf(webBuildBase, artifact)) {
                         return null;
@@ -263,7 +260,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
             }
             try {
                 checkPreprocessors(fe.getFile());
-                
+
                 if (!isInPlace()) {
                     handleFileCopying(fe.getFile());
                 }
@@ -285,7 +282,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
             }
             try {
                 checkPreprocessors(fe.getFile());
-                
+
                 if (!isInPlace()) {
                     handleFileCopying(fe.getFile());
                 }
@@ -307,7 +304,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
             }
             try {
                 checkPreprocessors(fe.getFile(), fe.getName(), fe.getExt());
-                
+
                 if (isInPlace()) {
                     return;
                 }
@@ -347,7 +344,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
             }
             try {
                 checkPreprocessors(fe.getFile());
-                
+
                 if (!isInPlace()) {
                     handleFileDeletion(fe.getFile(), null);
                 }
@@ -433,10 +430,10 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
         }
 
         private boolean isStaticResource(String fileExt) {
-            if (staticResources.contains(fileExt)) {
-                return true;
+            if (nonStaticResources.contains(fileExt)) {
+                return false;
             }
-            return false;
+            return true;
         }
 
         private void deleteFileToDestDir(FileObject fo, String path) throws IOException {

@@ -56,8 +56,8 @@ import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.QtInfoProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
@@ -66,12 +66,15 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
 /**
@@ -87,18 +90,22 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     }
 
     @Override
-    public List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-        List<String> res =new ArrayList<>();
+    public List<FSPath> getItemUserIncludePaths(List<FSPath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
+        List<FSPath> res =new ArrayList<>();
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
+            ExecutionEnvironment env = getExecutionEnvironment(makeConfiguration);
+            FileSystem fs = FileSystemProvider.getFileSystem(env);
             for(PackageConfiguration pc : getPackages(compilerOptions.getAllOptions(compiler), makeConfiguration)) {
                 for (String path : pc.getIncludePaths()) {
-                    res.add(path);
-                    
+                    res.add(new FSPath(fs, path));
                 }
             }
         }
         if (makeConfiguration.isQmakeConfiguration()) {
-            res.addAll(QtInfoProvider.getDefault().getQtIncludeDirectories(makeConfiguration));
+            ExecutionEnvironment env = getExecutionEnvironment(makeConfiguration);
+            FileSystem fs = FileSystemProvider.getFileSystem(env);
+            List<FSPath> qtIncludeDirs = QtInfoProvider.getDefault().getQtIncludeDirectories(makeConfiguration);
+            res.addAll(qtIncludeDirs);
         }
         return res;
     }
@@ -160,26 +167,21 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             String options = compilerOptions.getAllOptions(compiler);
             if (compiler.getKind() == PredefinedToolKind.CCompiler) {
-                if (options.contains("-xc99")) { // NOI18N
-                    return LanguageFlavor.C99;
-                } else if (options.contains("-std=c89")) { // NOI18N
-                    return LanguageFlavor.C89;
-                } else if (options.contains("-std=c99")) { // NOI18N
-                    return LanguageFlavor.C99;
-                } else if (options.contains("-std=c11")) { // NOI18N
-                    return LanguageFlavor.C11;
+                DiscoveryUtils.Artifacts artifacts = new DiscoveryUtils.Artifacts();
+                DiscoveryUtils.gatherCompilerLine("gcc "+options, DiscoveryUtils.LogOrigin.BuildLog, artifacts, null, false); //NOI18N
+                ItemProperties.LanguageStandard languageStandard = artifacts.getLanguageStandard(ItemProperties.LanguageStandard.Unknown);
+                switch (languageStandard) {
+                    case C89: return LanguageFlavor.C89;
+                    case C99: return LanguageFlavor.C99;
+                    case C11: return LanguageFlavor.C11;
                 }
             } else if (compiler.getKind() == PredefinedToolKind.CCCompiler) {
-                if (options.contains("-std=c++0x") || // NOI18N
-                                                // NOI18N
-                        options.contains("-std=c++11") || // NOI18N
-                                                // NOI18N
-                        options.contains("-std=gnu++0x") || // NOI18N
-                                                // NOI18N
-                        options.contains("-std=gnu++11")) { // NOI18N
-                    return LanguageFlavor.CPP11;
-                //} else {
-                //    return LanguageFlavor.CPP;
+                DiscoveryUtils.Artifacts artifacts = new DiscoveryUtils.Artifacts();
+                DiscoveryUtils.gatherCompilerLine("g++ "+options, DiscoveryUtils.LogOrigin.BuildLog, artifacts, null, true); //NOI18N
+                ItemProperties.LanguageStandard languageStandard = artifacts.getLanguageStandard(ItemProperties.LanguageStandard.Unknown);
+                switch (languageStandard) {
+                    case CPP11: return LanguageFlavor.CPP11;
+                    case CPP14: return LanguageFlavor.CPP14;
                 }
             } else if (compiler.getKind() == PredefinedToolKind.FortranCompiler) {
                 // TODO

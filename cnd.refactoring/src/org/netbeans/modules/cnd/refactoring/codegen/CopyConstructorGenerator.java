@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -114,7 +115,7 @@ public class CopyConstructorGenerator implements CodeGenerator {
                         List<CsmConstructor> list = new ArrayList<>();
                         for (CsmMember member : baseClass.getMembers()) {
                             if (CsmKindUtilities.isConstructor(member) &&
-                                CsmInheritanceUtilities.matchVisibility(member, csmInheritance.getVisibility()) &&
+                                CsmInheritanceUtilities.matchVisibility(member, CsmVisibility.PROTECTED) &&
                                 isCopyConstructor(baseClass, (CsmConstructor) member)) {
                                 inheritedConstructors.put(baseClass, (CsmConstructor)member);
                                 break;

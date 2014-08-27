@@ -80,6 +80,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -356,6 +357,7 @@ public final class GeneratorUtilities {
      */
     public MethodTree createMethod(DeclaredType asMemberOf, ExecutableElement method) {
         TreeMaker make = copy.getTreeMaker();
+        CodeStyle cs = DiffContext.getCodeStyle(copy);
         Set<Modifier> mods = method.getModifiers();
         Set<Modifier> flags = mods.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(mods);
         flags.remove(Modifier.ABSTRACT);
@@ -405,7 +407,8 @@ public final class GeneratorUtilities {
                 parameterModifiers = make.Modifiers(1L << 34,
                         Collections.<AnnotationTree>emptyList());
             }
-            params.add(make.Variable(parameterModifiers, formArgName.getSimpleName(), resolveWildcard(formArgType), null));
+            String paramName = addParamPrefixSuffix(removeParamPrefixSuffix(formArgName, cs), cs);
+            params.add(make.Variable(parameterModifiers, paramName, resolveWildcard(formArgType), null));
         }
 
         List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
@@ -448,6 +451,7 @@ public final class GeneratorUtilities {
     private MethodTree createConstructor(TypeElement clazz, Iterable<? extends VariableElement> fields, ExecutableElement constructor, boolean isDefault) {
         assert clazz != null && fields != null;
         TreeMaker make = copy.getTreeMaker();
+        CodeStyle cs = DiffContext.getCodeStyle(copy);
         Set<Modifier> mods = EnumSet.of(clazz.getKind() == ElementKind.ENUM ? Modifier.PRIVATE : Modifier.PUBLIC);
         List<VariableTree> parameters = new ArrayList<VariableTree>();
         LinkedList<StatementTree> statements = new LinkedList<StatementTree>();
@@ -459,8 +463,9 @@ public final class GeneratorUtilities {
             if (isDefault) {
                 statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Literal(defaultValue(type))))); //NOI18N
             } else {
-                parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(type), null));
-                statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
+                String paramName = addParamPrefixSuffix(removeFieldPrefixSuffix(ve, cs), cs);
+                parameters.add(make.Variable(parameterModifiers, paramName, make.Type(type), null));
+                statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(paramName)))); //NOI18N
             }
         }
         if (constructor != null) {
@@ -471,13 +476,13 @@ public final class GeneratorUtilities {
                 Iterator<? extends TypeMirror> parameterTypes = constructorType != null ? constructorType.getParameterTypes().iterator() : null;
                 while (parameterElements.hasNext()) {
                     VariableElement ve = parameterElements.next();
-                    Name simpleName = ve.getSimpleName();
                     TypeMirror type = parameterTypes != null ? parameterTypes.next() : ve.asType();
                     if (isDefault) {
                         arguments.add(make.Literal(defaultValue(type)));
                     } else {
-                        parameters.add(make.Variable(parameterModifiers, simpleName, make.Type(type), null));
-                        arguments.add(make.Identifier(simpleName));
+                        String paramName = addParamPrefixSuffix(removeParamPrefixSuffix(ve, cs), cs);
+                        parameters.add(make.Variable(parameterModifiers, paramName, make.Type(type), null));
+                        arguments.add(make.Identifier(paramName));
                     }
                 }
                 statements.addFirst(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), arguments))); //NOI18N
@@ -623,6 +628,12 @@ public final class GeneratorUtilities {
         return make.Method(make.Modifiers(mods), setterName, make.Type(copy.getTypes().getNoType(TypeKind.VOID)), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null);
     }
     
+    private boolean isStarImport(ImportTree imp) {
+        Tree qualIdent = imp.getQualifiedIdentifier();        
+        boolean isStar = qualIdent.getKind() == Tree.Kind.MEMBER_SELECT && ((MemberSelectTree)qualIdent).getIdentifier().contentEquals("*"); // NOI18N
+        return isStar;
+    }
+    
     /**
      * Adds import statements for given elements to a compilation unit. The import section of the
      * given compilation unit is modified according to the rules specified in the {@link CodeStyle}.
@@ -664,19 +675,29 @@ public final class GeneratorUtilities {
         int staticTreshold = cs.countForUsingStaticStarImport();        
         Map<PackageElement, Integer> pkgCounts = new LinkedHashMap<PackageElement, Integer>();
         PackageElement pkg = elements.getPackageElement("java.lang"); //NOI18N
-        if (pkg != null)
+        if (pkg != null) {
             pkgCounts.put(pkg, -2);
+        }
         ExpressionTree packageName = cut.getPackageName();
         pkg = packageName != null ? (PackageElement)trees.getElement(TreePath.getPath(cut, packageName)) : null;
-        if (pkg == null && packageName != null)
+        if (pkg == null && packageName != null) {
             pkg = elements.getPackageElement(elements.getName(packageName.toString()));
-        if (pkg == null)
+        }
+        if (pkg == null) {
             pkg = elements.getPackageElement(elements.getName("")); //NOI18N
+        }
         pkgCounts.put(pkg, -2);
         Map<TypeElement, Integer> typeCounts = new LinkedHashMap<TypeElement, Integer>();
+        // initially the import scope has no symbols. We must fill it in by:
+        // existing CUT named imports, package members AND then star imports, in this specific order
+        JCCompilationUnit jcut = (JCCompilationUnit)cut;
         StarImportScope importScope = new StarImportScope((Symbol)pkg);
-        if (((JCCompilationUnit)cut).starImportScope != null)
+        if (jcut.starImportScope != null) {
             importScope.importAll(((JCCompilationUnit)cut).starImportScope);
+        }
+        if (jcut.packge != null) {
+            importScope.importAll(jcut.packge.members_field);
+        }
         for (Element e : elementsToImport) {
             boolean isStatic = false;
             Element el = null;
@@ -733,7 +754,7 @@ public final class GeneratorUtilities {
                         Element el = e;
                         while (el != null) {
                             Integer cnt = typeCounts.get((TypeElement)el);
-                            if (cnt != null) {
+                            if (cnt != null && staticTreshold == Integer.MAX_VALUE) {
                                 typeCounts.put((TypeElement)el, -2);
                             }
                             TypeMirror tm = ((TypeElement)el).getSuperclass();
@@ -758,8 +779,11 @@ public final class GeneratorUtilities {
                     if (el != null) {
                         Integer cnt = pkgCounts.get((PackageElement)el);
                         if (cnt != null) {
-                            if (el == e) {
-                                cnt = -2;
+                            if (el == e) { // this is only true for package element, that is for package-star import.
+                                if (treshold == Integer.MAX_VALUE) {
+                                    // do not touch the star import
+                                    cnt = -2;
+                                }
                             } else if (cnt >= 0) {
                                 cnt++;
                                 if (cnt >= treshold)
@@ -769,6 +793,33 @@ public final class GeneratorUtilities {
                         }
                     }
                 }
+            } else if (treshold == Integer.MAX_VALUE || staticTreshold == Integer.MAX_VALUE) {
+                // disable any manipulations (optimization) for existing star imports iff the "Count" feature is disabled.
+                int threshold = imp.isStatic() ? staticTreshold : treshold;
+                if (isStarImport(imp) && threshold == Integer.MAX_VALUE) {
+                    Map map = imp.isStatic() ? typeCounts : pkgCounts;
+                    Integer cnt = (Integer)map.get(e);
+                    if (cnt != null) {
+                        map.put(e, -2);
+                    }
+                }
+            }
+        }
+        // remove those star imports that do not satisfy the thresholds
+        for (Iterator<ImportTree> ii = imports.iterator(); ii.hasNext();) {
+            ImportTree imp = ii.next();
+            if (!isStarImport(imp)) {
+                continue;
+            }
+            Element e = getImportedElement(cut, imp);
+            Integer cnt;
+            if (imp.isStatic()) {
+                cnt = typeCounts.get(e);
+            } else {
+                cnt = pkgCounts.get(e);
+            }
+            if (cnt != null && cnt >= 0) {
+                ii.remove();
             }
         }
         
@@ -780,8 +831,9 @@ public final class GeneratorUtilities {
                     if (e.sym.getKind().isClass() || e.sym.getKind().isInterface()) {
                         if (e.sym != element) {
                             explicitNamedImports.add(element);
-                            break;
                         }
+                        // break if explicitNameImport was added, or when the symbol is correctly resolved.
+                        break;
                     }
                 }
             }
@@ -866,6 +918,11 @@ public final class GeneratorUtilities {
                 }
                 boolean isStar = currentToImportElement.getKind() == ElementKind.PACKAGE
                         || isStatic && (currentToImportElement.getKind().isClass() || currentToImportElement.getKind().isInterface());
+                ExpressionTree qualIdent = qualIdentFor(currentToImportElement);
+                if (isStar) {
+                    qualIdent = make.MemberSelect(qualIdent, elements.getName("*")); //NOI18N
+                }
+                ImportTree nImport = make.Import(qualIdent, isStatic);
                 while (currentExisting >= 0) {
                     ImportTree imp = imports.get(currentExisting);
                     Element impElement = getImportedElement(cut, imp);
@@ -874,15 +931,14 @@ public final class GeneratorUtilities {
                             : impElement.getKind() == ElementKind.PACKAGE ? impElement : (impElement.getKind().isClass() || impElement.getKind().isInterface()) && impElement.getEnclosingElement().getKind() == ElementKind.PACKAGE ? impElement.getEnclosingElement() : null;
                     if (isStatic == imp.isStatic() && (currentToImportElement == impElement || isStar && currentToImportElement == el)) {
                         imports.remove(currentExisting);                        
-                    } else if (comparator.compare(currentToImportElement, imp) > 0) {
-                        break;
+                    } else {
+                        if (comparator.compare(nImport, imp) > 0) {
+                            break;
+                        }
                     }
                     currentExisting--;
                 }
-                ExpressionTree qualIdent = qualIdentFor(currentToImportElement);
-                if (isStar)
-                    qualIdent = make.MemberSelect(qualIdent, elements.getName("*")); //NOI18N
-                imports.add(currentExisting + 1, make.Import(qualIdent, isStatic));
+                imports.add(currentExisting + 1, nImport);
                 currentToImport--;
             }
         }
@@ -952,11 +1008,11 @@ public final class GeneratorUtilities {
         CommentSetImpl t = handler.getComments(target);
 
         if (preceding) {
-            t.addComments(RelativePosition.PRECEDING, s.getComments(RelativePosition.PRECEDING));
-            t.addComments(RelativePosition.INNER, s.getComments(RelativePosition.INNER));
+            t.addComments(RelativePosition.PRECEDING, copy.useComments(s.getComments(RelativePosition.PRECEDING)));
+            t.addComments(RelativePosition.INNER, copy.useComments(s.getComments(RelativePosition.INNER)));
         } else {
-            t.addComments(RelativePosition.INLINE, s.getComments(RelativePosition.INLINE));
-            t.addComments(RelativePosition.TRAILING, s.getComments(RelativePosition.TRAILING));
+            t.addComments(RelativePosition.INLINE, copy.useComments(s.getComments(RelativePosition.INLINE)));
+            t.addComments(RelativePosition.TRAILING, copy.useComments(s.getComments(RelativePosition.TRAILING)));
         }
     }
 
@@ -1301,7 +1357,11 @@ public final class GeneratorUtilities {
                 return parent;
             }
         }
-        Element element = trees.getElement(TreePath.getPath(cut, qualIdent));
+        TreePath found = TreePath.getPath(cut, qualIdent);
+        if (found == null) {
+            found = new TreePath(new TreePath(new TreePath(cut), imp), qualIdent);
+        }
+        Element element = trees.getElement(found);
         if (element == null)
             element = getElementByFQN(qualIdent.toString());
         return element;
@@ -1370,6 +1430,7 @@ public final class GeneratorUtilities {
     }
 
     private Map<String, Object> createBindings(TypeElement clazz, ExecutableElement element) {
+        CodeStyle cs = DiffContext.getCodeStyle(copy);       
         Map<String, Object> bindings = new HashMap<String, Object>();
         bindings.put(CLASS_NAME, clazz.getQualifiedName().toString());
         bindings.put(SIMPLE_CLASS_NAME, clazz.getSimpleName().toString());
@@ -1409,7 +1470,7 @@ public final class GeneratorUtilities {
         sb.append("super.").append(element.getSimpleName()).append('('); //NOI18N
         for (Iterator<? extends VariableElement> it = element.getParameters().iterator(); it.hasNext();) {
             VariableElement ve = it.next();
-            sb.append(ve.getSimpleName());
+            sb.append(addParamPrefixSuffix(removeParamPrefixSuffix(ve, cs), cs));
             if (it.hasNext())
                 sb.append(","); //NOI18N
         }
@@ -1494,6 +1555,10 @@ public final class GeneratorUtilities {
         return CodeStyleUtils.addPrefixSuffix(name,
                 cs.getParameterNamePrefix(),
                 cs.getParameterNameSuffix());
+    }
+
+    private static String removeParamPrefixSuffix(VariableElement var, CodeStyle cs) {
+        return CodeStyleUtils.removePrefixSuffix(var.getSimpleName(), cs.getParameterNamePrefix(), cs.getParameterNameSuffix());
     }
 
     private static class ClassMemberComparator implements Comparator<Tree> {

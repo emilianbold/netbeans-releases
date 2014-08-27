@@ -1,0 +1,17 @@
+var |>GLOBAL:myLib<| = new MyLib();
+
+function |>METHOD:MyLib<|() {
+    /**
+     * This is dummy JsDoc
+     */
+    |>GLOBAL:this<|.|>METHOD:myMethod<| = function |>METHOD,UNUSED:MyLib_myMethod<|(array) {
+        var r = "";
+        for( var i = 0; i < array.length; i++ ) {
+            r = r + array[i];
+        }
+        return r;
+    };
+}
+
+|>GLOBAL:myLib<|.|>FIELD:myMethod<|([1, 2, 3, 4]);
+     

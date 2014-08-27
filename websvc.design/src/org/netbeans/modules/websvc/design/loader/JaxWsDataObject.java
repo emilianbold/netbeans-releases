@@ -194,7 +194,6 @@ public final class JaxWsDataObject extends MultiDataObject {
             private final class SaveSupport implements SaveCookie {
                 public void save() throws java.io.IOException {
                     ((JaxWsJavaEditorSupport)findCloneableOpenSupport()).saveDocument();
-                    getDataObject().setModified(false);
                 }
             }
             

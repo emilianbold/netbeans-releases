@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
@@ -73,8 +74,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.SnapShot;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -146,6 +150,12 @@ public final class DiscoveryProjectGenerator {
             boolean isChanged = false;
             Set<String> needCheck = new HashSet<>();
             Set<String> needAdd = new HashSet<>();
+            ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(pdp.getConfigurationDescriptor().getBaseDirFileSystem());
+            boolean resolveLinks = false;
+            MakeConfiguration activeConfiguration = pdp.getConfigurationDescriptor().getActiveConfiguration();
+            if (activeConfiguration != null) {
+                resolveLinks = activeConfiguration.getCodeAssistanceConfiguration().getResolveSymbolicLinks().getValue();
+            }
             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DiscoveryProjectGenerator.class, "FixInclude.Progress.AnalyzeRoot")); // NOI18N
             handle.start();
             try {
@@ -182,7 +192,17 @@ public final class DiscoveryProjectGenerator {
                             // It should be in project?
                             if (impl.isHeaderFile()) {
                                 String path = impl.getAbsolutePath().toString();
-                                needAdd.add(path);
+                                boolean added = false;
+                                if (resolveLinks && env.isLocal()) {
+                                    String resolvedSymbolicLink = DiscoveryUtils.resolveSymbolicLink(path);
+                                    if (resolvedSymbolicLink != null) {
+                                        needAdd.add(resolvedSymbolicLink);
+                                        added = true;
+                                    }
+                                }
+                                if (!added) {
+                                    needAdd.add(path);
+                                }
                             }
                         }
                     }
@@ -192,6 +212,7 @@ public final class DiscoveryProjectGenerator {
                         return false;
                     }
                     ProjectBridge bridge = new ProjectBridge(makeProject);
+                    bridge.getBaseFolderFileSystem();
                     if (bridge.isValid()) {
                         if (needAdd.size() > 0) {
                             Map<String, Folder> prefferedFolders = bridge.prefferedFolders();
@@ -246,7 +267,7 @@ public final class DiscoveryProjectGenerator {
                                             if (!MIMENames.isCppOrCOrFortran(item.getMIMEType())) {
                                                 needCheck.add(path);
                                             }
-                                            isChanged |= ProjectBridge.setExclude((Item) item, prefferedFolder.isDiskFolder());
+                                            isChanged |= ProjectBridge.setExclude((Item) item, true);
                                             isChanged |= ProjectBridge.excludeItemFromOtherConfigurations(item);
                                         }
                                     }

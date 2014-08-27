@@ -299,11 +299,11 @@ public class CallStackFrameImpl implements CallStackFrame {
                     as = Collections.singletonList(extension);
                     s = extension;
                 }
-            } else if ("<eval>".equals(sourceName)) {                           // NOI18N
+            } else {
                 // Check Nashorn:
                 String sourcePath = getSourcePath(null);
-                if ("jdk/nashorn/internal/scripts/<eval>".equals(sourcePath) ||
-                    "jdk\\nashorn\\internal\\scripts\\<eval>".equals(sourcePath)) {    // NOI18N
+                if (sourcePath.startsWith("jdk/nashorn/internal/scripts/") ||       // NOI18N
+                    sourcePath.startsWith("jdk\\nashorn\\internal\\scripts\\")) {   // NOI18N
                     s = "JS";                                                   // NOI18N
                     as = Collections.singletonList(s);
                 }

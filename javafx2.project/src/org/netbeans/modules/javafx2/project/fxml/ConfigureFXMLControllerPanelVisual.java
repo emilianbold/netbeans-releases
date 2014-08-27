@@ -71,15 +71,18 @@ import org.openide.util.Utilities;
  *
  * @author Anton Chechel
  * @author Petr Somol
+ * @author Roman Svitanic
  */
 public class ConfigureFXMLControllerPanelVisual extends JPanel implements ActionListener, DocumentListener {
     
+    private static final String SPACE_CHAR = " "; //NOI18N
     private Panel observer;
     private boolean ignoreRootCombo;
     private RequestProcessor.Task updatePackagesTask;
     private static final ComboBoxModel WAIT_MODEL = SourceGroupSupport.getWaitModel();
     private final boolean isMaven;
     SourceGroupSupport support;
+    private String previousControllerName;
 
     private ConfigureFXMLControllerPanelVisual(Panel observer, SourceGroupSupport support, boolean isMaven) {
         this.support = support;
@@ -483,6 +486,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Action
     // End of variables declaration//GEN-END:variables
 
     // ActionListener implementation -------------------------------------------
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (createdLocationComboBox == e.getSource()) {
             if (!ignoreRootCombo) {
@@ -505,7 +509,6 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Action
     // DocumentListener implementation -----------------------------------------
     @Override
     public void changedUpdate(DocumentEvent e) {
-        updateText();
         updateResult();
         fireChange();
     }
@@ -550,12 +553,23 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Action
     
     private void updateText() {
         String controllerName = getNewControllerName();
-        if (controllerName == null) {
+        if (controllerName == null  || controllerName.equals(previousControllerName)) {
             controllerName = support.getParent().getCurrentFileName();
-            String firstChar = String.valueOf(controllerName.charAt(0)).toUpperCase();
-            String otherChars = controllerName.substring(1);
-            controllerName = firstChar + otherChars + NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "TXT_FileNameControllerPostfix"); // NOI18N
+            if (controllerName.contains(SPACE_CHAR)) {
+                String[] splittedName = controllerName.trim().split(SPACE_CHAR);
+                StringBuilder sb = new StringBuilder();
+                for (String part : splittedName) {
+                    sb.append(String.valueOf(part.charAt(0)).toUpperCase());
+                    sb.append(part.substring(1));
+                }
+                controllerName = sb.toString() + NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "TXT_FileNameControllerPostfix"); // NOI18N;
+            } else {
+                String firstChar = String.valueOf(controllerName.charAt(0)).toUpperCase();
+                String otherChars = controllerName.substring(1);
+                controllerName = firstChar + otherChars + NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "TXT_FileNameControllerPostfix"); // NOI18N
+            }
             createdNameTextField.setText(controllerName);
+            previousControllerName = controllerName;
         }
     }
     
@@ -618,10 +632,6 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Action
         return FXMLTemplateWizardIterator.fileExist(getPathForExistingController(getExistingControllerName()));
     }
 
-    boolean shouldUseController() {
-        return controllerCheckBox.isSelected();
-    }
-
     boolean shouldCreateController() {
         return controllerCheckBox.isSelected() && createNewRadioButton.isSelected();
     }
@@ -671,7 +681,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Action
                 return;
             }
             if (isValid()) {
-                settings.putProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_ENABLED, component.shouldUseController());
+                settings.putProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_ENABLED, component.isControllerEnabled());
                 settings.putProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_NAME_PROPERTY, 
                     component.shouldCreateController() ? component.getNewControllerName() : null);
                 settings.putProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_EXISTING_PROPERTY, 

@@ -70,7 +70,7 @@ import org.openide.modules.InstalledFileLocator;
  */
 public class DefaultFaceletLibraries {
 
-    public static DefaultFaceletLibraries INSTANCE;
+    private static DefaultFaceletLibraries INSTANCE;
     private Collection<FileObject> libraryDescriptorsFiles;
     private Map<String, FaceletsLibraryDescriptor> librariesDescriptors;
     private static Map<String, Library> jsf22FaceletPseudoLibraries;

@@ -193,6 +193,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private JPDAThreadImpl              currentThread;
     private CallStackFrame              currentCallStackFrame;
     private final Object                currentThreadAndFrameLock = new Object();
+    private volatile JPDAThreadImpl     currentSuspendedNoFireThread;   // Used during initial event processing only
     private int                         suspend = (SINGLE_THREAD_STEPPING) ? SUSPEND_EVENT_THREAD : SUSPEND_ALL;
     public final ReentrantReadWriteLock accessLock = new DebuggerReentrantReadWriteLock(true);
     private final Object                LOCK2 = new Object ();
@@ -1060,8 +1061,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
     ) throws InvalidExpressionException {
         synchronized (currentThreadAndFrameLock) {
             if (thread == null && currentThread == null) {
-                throw new InvalidExpressionException
-                        (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContext"));
+                thread = currentSuspendedNoFireThread;
+                if (thread == null) {
+                    throw new InvalidExpressionException
+                            (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContext"));
+                }
             }
             if (thread == null) {
                 thread = currentThread;
@@ -1293,10 +1297,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
 //            }
 //        }
 
+        ThreadsCache tc;
         synchronized (threadsCollectorLock) {
-            if (threadsCache != null) {
-                threadsCache.setVirtualMachine(vm);
-            }
+            tc = threadsCache;
+        }
+        if (tc != null) {
+            tc.setVirtualMachine(vm);
         }
 
         setState (STATE_RUNNING);
@@ -1863,6 +1869,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
             }
         }
+    }
+    
+    public void setCurrentSuspendedNoFireThread(JPDAThreadImpl thread) {
+        this.currentSuspendedNoFireThread = thread;
     }
 
     private Set<JPDAThreadGroup> interestedThreadGroups = new WeakSet<JPDAThreadGroup>();

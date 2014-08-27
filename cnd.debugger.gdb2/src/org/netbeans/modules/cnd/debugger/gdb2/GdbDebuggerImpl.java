@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -63,6 +64,7 @@ import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.*;
@@ -116,8 +118,10 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -415,6 +419,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         if (!preventRunPathConvertion) {
             runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
+        }
+        
+        if (!CndFileUtils.isExistingDirectory(FileSystemProvider.getFileSystem(executor.getExecutionEnvironment()), runDir)) {
+            NativeDebuggerManager.error(Catalog.format("MSG_NonExistentWorkDir", runDir)); // NOI18N
+            kill();
+            return;
         }
 
 	factory = new Gdb.Factory(executor, additionalArgv,
@@ -774,11 +784,39 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     @Override
-    public final void stepTo(String function) {     //FIXUP null function case!
-        if (function != null) {
-            send("-break-insert -t " + function);    //NOI18N
-            go();
-        }
+    public final void stepTo(final String selectedText) {     //FIXUP null function case!
+        String expandedExpr = MacroSupport.expandMacro(this, selectedText);
+        String cmdString = "-data-evaluate-expression " + "\"" + expandedExpr + "\""; // NOI18N
+        
+        MiCommandImpl cmd = new MiCommandImpl(cmdString) {    //NOI18N
+
+            @Override
+            protected void onDone(MIRecord record) {
+                MITList results = record.results();
+                String value = results.getConstValue("value"); // NOI18N
+                value = value.substring(value.indexOf("<") + 1); // NOI18N
+                value = value.substring(0, value.indexOf(">")).trim(); // NOI18N
+                
+                if (value == null || value.isEmpty()) {
+                    value = selectedText;       // fallback
+                }
+
+                if (selectedText != null) {
+                    MiCommandImpl cmd2 = new MiCommandImpl("-break-insert -t " + value) {    //NOI18N
+
+                        @Override
+                        protected void onDone(MIRecord record) {
+                            go();
+                            finish();
+                        }
+
+                    };
+                    gdb.sendCommand(cmd2);
+                }
+                finish();
+            }
+        };
+        gdb.sendCommand(cmd);
     }
 
     @Override
@@ -938,8 +976,27 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public void terminate() {
         int pid = (int) session().getPid();
-	if (pid > 0) {
-	    CommonTasksSupport.sendSignal(getHost().executionEnvironment(), pid, Signal.SIGKILL, null);
+        if (pid > 0) {
+//            CommonTasksSupport.sendSignal(getHost().executionEnvironment(), pid, Signal.SIGKILL, null);
+            MICommand command = new MiCommandImpl("kill") { // NOI18N
+
+                @Override
+                protected void onDone(MIRecord record) {
+                    resetCurrentLine();
+                    
+                    state().isRunning = false;
+                    state().isProcess = false;
+                    updateActions();
+                    
+                    session().setSessionState(state());
+                    session().setPid(-1);
+                    session().update();
+                    
+                    super.onDone(record);
+                }
+                
+            };
+            sendCommandInt(command);
         }
     }
 
@@ -2176,6 +2233,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      */
 
     @Override
+    public void postPrettyPrint(boolean v) {
+    }
+
+
+    @Override
     public void postVerboseStack(boolean v) {
     }
 
@@ -2994,6 +3056,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     // interface NativeDebugger
     @Override
+    public boolean isPrettyPrint() {
+	return true; // always use pretty-print
+    }
+
+    // interface NativeDebugger
+    @Override
+    public void setPrettyPrint(boolean b) {
+	// no-op
+	// GDB TODO
+    }
+
+    // interface NativeDebugger
+    @Override
     public boolean isInheritedMembers() {
 	return true; // always show inherited members
     }
@@ -3618,7 +3693,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    MITList props = b.value().asTuple();
 	    // System.out.printf("props %s\n", props.toString());
 
-	    int hid = Integer.parseInt(props.getConstValue(MI_NUMBER));
+            int hid = -1;
+            try {
+                hid = Integer.parseInt(props.getConstValue(MI_NUMBER));
+            } catch (NumberFormatException ex) {
+                /* Handling sub-breakpoints with <number>.<sub-number> IDs.
+                   As hid was set to -1 there will be no handler for such a breakpoint.
+                
+                   This is a temporary solution until CND supports multiple breakpoints in full
+                */
+            }
 	    Handler h = bm().findHandler(hid);
 
 	    if (h != null && h.breakpoint().hasCountLimit()) {
@@ -3648,6 +3732,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         };
         gdb.sendCommand(cmd);
          */
+        if (session.coreSession() != DebuggerManager.getDebuggerManager().getCurrentSession()) {
+            DebuggerManager.getDebuggerManager().setCurrentSession(session.coreSession());
+        }
         
         final MITList results = stopRecord.results();
         
@@ -3837,6 +3924,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         } else if (reason.equals("function-finished")) { // NOI18N
             stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else if (reason.equals("breakpoint-hit")) {		// NOI18N
+            stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
+        } else if (reason.equals("location-reached")) {	// NOI18N
             stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else if (reason.equals(MI_WATCHPOINT_TRIGGER)) {
             String expValue = "";
@@ -4343,6 +4432,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 if (MemoryWindow.getDefault().isShowing()) {
                     
                     MemoryWindow.getDefault().updateData(parseMem(record));
+                }
+                finish();
+            }
+
+            @Override
+            protected void onError(MIRecord record) {
+                if (MemoryWindow.getDefault().isShowing()) {
+                    MemoryWindow.getDefault().updateData(Collections.EMPTY_LIST);
                 }
                 finish();
             }

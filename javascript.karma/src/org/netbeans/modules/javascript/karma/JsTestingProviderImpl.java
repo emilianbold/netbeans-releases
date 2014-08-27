@@ -43,16 +43,18 @@
 package org.netbeans.modules.javascript.karma;
 
 import java.net.URL;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.exec.KarmaServers;
+import org.netbeans.modules.javascript.karma.mapping.ServerMapping;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
-import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
+import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizerPanel;
 import org.netbeans.modules.javascript.karma.ui.logicalview.KarmaChildrenList;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
+import org.netbeans.modules.web.clientproject.spi.jstesting.CustomizerPanelImplementation;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
 import org.netbeans.spi.project.ui.support.NodeList;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -60,6 +62,9 @@ import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = JsTestingProviderImplementation.class, path = JsTestingProviders.JS_TESTING_PATH, position = 100)
 public class JsTestingProviderImpl implements JsTestingProviderImplementation {
+
+    private static final Logger LOGGER = Logger.getLogger(JsTestingProviderImpl.class.getName());
+
 
     @Override
     public String getIdentifier() {
@@ -78,25 +83,28 @@ public class JsTestingProviderImpl implements JsTestingProviderImplementation {
     }
 
     @Override
+    public boolean isCoverageSupported(Project project) {
+        return true;
+    }
+
+    @Override
     public void runTests(Project project, TestRunInfo runInfo) {
         KarmaServers.getInstance().runTests(project);
     }
 
     @Override
     public FileObject fromServer(Project project, URL serverUrl) {
-        // XXX
-        return null;
+        return new ServerMapping().fromServer(project, serverUrl);
     }
 
     @Override
     public URL toServer(Project project, FileObject projectFile) {
-        // XXX
-        return null;
+        return new ServerMapping().toServer(project, projectFile);
     }
 
     @Override
-    public ProjectCustomizer.CompositeCategoryProvider createCustomizer(Project project) {
-        return new KarmaCustomizer();
+    public CustomizerPanelImplementation createCustomizerPanel(Project project) {
+        return new KarmaCustomizerPanel(project);
     }
 
     @Override

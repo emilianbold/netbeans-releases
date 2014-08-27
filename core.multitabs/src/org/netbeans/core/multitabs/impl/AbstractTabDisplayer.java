@@ -95,6 +95,7 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
     private final ScrollAction scrollRight;
 
     private final ChangeListener fullPathListener;
+    private final ChangeListener projectsListener;
 
     public AbstractTabDisplayer( final TabDataModel tabModel, int tabsLocation ) {
         super( tabModel );
@@ -142,13 +143,12 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
         controls.add( ButtonFactory.createScrollRightButton( scrollRight ) );
         addMouseWheelListener( this );
 
-        ProjectSupport.getDefault().addPropertyChangeListener( new PropertyChangeListener() {
+        projectsListener = new ChangeListener() {
             @Override
-            public void propertyChange( PropertyChangeEvent evt ) {
+            public void stateChanged(ChangeEvent e) {
                 repaint();
-                ProjectSupport.getDefault().removePropertyChangeListener( this );
             }
-        });
+        };
 
         fullPathListener = new ChangeListener() {
             @Override
@@ -205,6 +205,10 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
     @Override
     public void addNotify() {
         super.addNotify();
+        ProjectSupport projects = ProjectSupport.getDefault();
+        if( projects.isEnabled() ) {
+            projects.addChangeListener(projectsListener);
+        }
         if( null != controller )
             controller.addSelectionChangeListener( fullPathListener );
         updateFullPath();
@@ -212,6 +216,7 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
 
     @Override
     public void removeNotify() {
+        ProjectSupport.getDefault().removeChangeListener(projectsListener);
         super.removeNotify();
         if( null != controller )
             controller.removeSelectionChangeListener( fullPathListener );

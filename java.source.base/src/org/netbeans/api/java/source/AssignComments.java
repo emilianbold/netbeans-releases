@@ -32,6 +32,7 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
@@ -51,6 +52,7 @@ import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
+
 import static org.netbeans.modules.java.source.save.PositionEstimator.NOPOS;
 
 /**
@@ -153,11 +155,28 @@ class AssignComments extends TreeScanner<Void, Void> {
             if (pos >= 0) {
                 seq.move(pos);
                 lookForPreceedings(seq, tree);
-                if (tree instanceof BlockTree) {
-                    BlockTree blockTree = (BlockTree) tree;
-                    if (blockTree.getStatements().isEmpty()) {
-                        lookWithinEmptyBlock(seq, blockTree);
+            } else {
+                pos = ((JCTree)tree).pos;
+                seq.move(pos);
+                seq.moveNext();
+            }
+            if (tree instanceof BlockTree) {
+                BlockTree blockTree = (BlockTree) tree;
+                if (blockTree.getStatements().isEmpty()) {
+                    lookWithinEmptyBlock(seq, blockTree);
+                }
+            } else if (tree instanceof ClassTree) {
+                ClassTree clazz = (ClassTree)tree;
+                int cnt = clazz.getMembers().size();
+                if (cnt == 1) {
+                    Tree mt = clazz.getMembers().get(0);
+                    if (mt.getKind() == Tree.Kind.METHOD && info.getTreeUtilities().isSynthetic(new TreePath(new TreePath(unit), mt))) {
+                        cnt--;
                     }
+                }
+                if (cnt == 0) {
+                    // look within empty class/interface decls, too
+                    lookWithinEmptyBlock(seq, clazz);
                 }
             }
         } else {
@@ -218,6 +237,46 @@ class AssignComments extends TreeScanner<Void, Void> {
             default: return false;
         }
     }
+    
+    private boolean parentEatsTralingComment(TokenSequence<JavaTokenId> seq, Tree t) {
+        if (parent == null || lastWhiteNewline == -1) {
+            return false;
+        }
+        int commentIndent = seq.offset() - lastWhiteNewline;
+        Tree.Kind k = parent.getKind();
+        boolean ok =  k == Tree.Kind.WHILE_LOOP || k == Tree.Kind.DO_WHILE_LOOP || k == Tree.Kind.IF;
+        if (!ok) {
+            return false;
+        }
+        // check indentation:
+        int treeIndent = countIndent(seq, t);
+        return (treeIndent < commentIndent);
+    }
+    
+    private int countIndent(TokenSequence<JavaTokenId> seq, Tree tree) {
+        int st = (int)positions.getStartPosition(unit, tree);
+        int save = seq.offset();
+        int nl = -1;
+        seq.move(st);
+        while (seq.movePrevious()) {
+            Token<JavaTokenId> tukac = seq.token();
+            if (tukac.id() != JavaTokenId.WHITESPACE) {
+                if (tukac.id() == JavaTokenId.LINE_COMMENT) {
+                    nl = seq.offset() + tukac.length();
+                }
+                break;
+            }
+            nl = tukac.text().toString().lastIndexOf('\n');
+            if (nl != -1) {
+                break;
+            }
+        }
+        seq.move(save);
+        if (!seq.moveNext()) {
+            seq.movePrevious();
+        }
+        return nl == -1 ? -1 : st - nl;
+    }
 
     private void lookForTrailing(TokenSequence<JavaTokenId> seq, Tree tree) {
         //TODO: [RKo] This does not work correctly... need improvemetns.
@@ -230,15 +289,22 @@ class AssignComments extends TreeScanner<Void, Void> {
             if (lastIndex == (-1)) lastIndex = seq.index();
             Token<JavaTokenId> t = seq.token();
             if (t.id() == JavaTokenId.WHITESPACE) {
-                newlines += numberOfNL(t);
+                int nls = numberOfNL(t, seq.offset());
+                newlines += nls;
+                // do not map trailing comments for statements enclosed in do/while/if
             } else if (isComment(t.id())) {
-                if (seq.index() > tokenIndexAlreadyAdded)
+                if (newlines > 0 && parentEatsTralingComment(seq, tree)) {
+                    return;
+                }
+                if (seq.index() > tokenIndexAlreadyAdded) 
                     comments.add(new TrailingCommentsDataHolder(newlines, t, lastIndex));
                 maxLines = Math.max(maxLines, newlines);
                 if (t.id() == JavaTokenId.LINE_COMMENT) {
                     newlines = 1;
+                    lastWhiteNewline = seq.offset() + t.length();
                 } else {
                     newlines = 0;
+                    lastWhiteNewline = -1;
                 }
                 lastIndex = -1;
             } else {
@@ -275,7 +341,7 @@ class AssignComments extends TreeScanner<Void, Void> {
         }
     }
 
-    private void lookWithinEmptyBlock(TokenSequence<JavaTokenId> seq, BlockTree tree) {
+    private void lookWithinEmptyBlock(TokenSequence<JavaTokenId> seq, Tree tree) {
         // moving into opening brace.
         if (moveTo(seq, JavaTokenId.LBRACE, true)) {
             int idx = -1;
@@ -401,15 +467,25 @@ class AssignComments extends TreeScanner<Void, Void> {
                 return Comment.Style.WHITESPACE;
         }
     }
+    
+    private int lastWhiteNewline;
 
     private int numberOfNL(Token<JavaTokenId> t) {
+        return numberOfNL(t, -1);
+    }
+    
+    private int numberOfNL(Token<JavaTokenId> t, int offset) {
         int count = 0;
         CharSequence charSequence = t.text();
         for (int i = 0; i < charSequence.length(); i++) {
             char a = charSequence.charAt(i);
             if ('\n' == a) {
+                lastWhiteNewline = offset + i;
                 count++;
             }
+        }
+        if (offset == -1) {
+            lastWhiteNewline = -1;
         }
         return count;
     }

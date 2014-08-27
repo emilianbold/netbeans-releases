@@ -145,7 +145,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     protected static final ImageIcon KEYWORD_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_KEYWORD_ICON));
     final CompletionRequest request;
     private final ElementHandle element;
-    protected QualifiedNameKind generateAs;
+    private QualifiedNameKind generateAs;
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
     private static final Cache<FileObject, PhpLanguageProperties> PROPERTIES_CACHE
             = new Cache<>(new WeakHashMap<FileObject, PhpLanguageProperties>());
@@ -546,7 +546,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                             param.getTypes(),
                             param.isMandatory(),
                             param.hasDeclaredType(),
-                            param.isReference());
+                            param.isReference(),
+                            param.isVariadic());
                 }
             }
             return param;
@@ -790,13 +791,19 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     static class FieldItem extends BasicFieldItem {
+        private final boolean forceDollared;
 
         public static FieldItem getItem(FieldElement field, CompletionRequest request) {
-            return new FieldItem(field, request);
+            return getItem(field, request, false);
         }
 
-        private FieldItem(FieldElement field, CompletionRequest request) {
+        public static FieldItem getItem(FieldElement field, CompletionRequest request, boolean forceDollared) {
+            return new FieldItem(field, request, forceDollared);
+        }
+
+        private FieldItem(FieldElement field, CompletionRequest request, boolean forceDollared) {
             super(field, null, request);
+            this.forceDollared = forceDollared;
         }
 
         FieldElement getField() {
@@ -806,7 +813,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public String getName() {
             final FieldElement field = getField();
-            return field.getName(field.isStatic());
+            return field.getName(forceDollared || field.isStatic());
         }
 
         @Override
@@ -933,7 +940,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public boolean isSmart() {
-            return isMagic() ? false : true;
+            return !isMagic();
         }
 
         @Override
@@ -1281,7 +1288,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
     static class NamespaceItem extends PHPCompletionItem {
 
-        Boolean isSmart;
+        private Boolean isSmart;
 
         NamespaceItem(NamespaceElement namespace, CompletionRequest request, QualifiedNameKind generateAs) {
             super(namespace, request, generateAs);
@@ -1493,7 +1500,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         private static final String PHP_INTERFACE_ICON = "org/netbeans/modules/php/editor/resources/interface.png"; //NOI18N
         private static ImageIcon interfaceIcon = null;
-        private boolean endWithDoubleColon;
+        private final boolean endWithDoubleColon;
 
         InterfaceItem(InterfaceElement iface, CompletionRequest request, boolean endWithDoubleColon) {
             super(iface, request);
@@ -1748,7 +1755,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         private final WeakReference<FileObject> fileObjectReference;
 
         public PhpVersionChangeListener(FileObject fileObject) {
-            this.fileObjectReference = new WeakReference<FileObject>(fileObject);
+            this.fileObjectReference = new WeakReference<>(fileObject);
         }
 
         @Override

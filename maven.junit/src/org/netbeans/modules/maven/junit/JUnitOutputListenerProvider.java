@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.junit;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -91,6 +92,7 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -112,6 +114,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     private final RunConfig config;
     private boolean surefireRunningInParallel = false;
     private ArrayList<String> runningTestClasses;
+    private ArrayList<String> runningTestClassesInParallel;
     
     public JUnitOutputListenerProvider(RunConfig config) {
         runningPattern = Pattern.compile("(?:\\[surefire\\] )?Running (.*)", Pattern.DOTALL); //NOI18N
@@ -121,6 +124,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         usedNames = new HashSet<String>();
         startTimeStamp = System.currentTimeMillis();
         runningTestClasses = new ArrayList<String>();
+        runningTestClassesInParallel = new ArrayList<String>();
         surefireRunningInParallel = isSurefireRunningInParallel();
     }
     
@@ -196,19 +200,66 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         }
         match = runningPattern.matcher(line);
         if (match.matches()) {
-            if (runningTestClass != null && outputDir != null) {
-                if(!surefireRunningInParallel) {
+            if (surefireRunningInParallel) {
+                // make sure results are displayed in case of a failure
+                runningTestClassesInParallel.add(match.group(1));
+            } else {
+                if (runningTestClass != null && outputDir != null) {
+                    // match.group(1) should be the FQN of a running test class but let's check to be on the safe side
+                    // If the matcher matches it means that we have a new test class running,
+                    // if not it probably means that this is user's text, e.g. "Running my cool test", so we can safely ignore it
+                    if (!isFullJavaId(match.group(1))) {
+                        return;
+                    }
                     // tests are running sequentially, so update Test Results Window
                     generateTest();
                 }
-            }
-            runningTestClass = match.group(1);
-            if (surefireRunningInParallel) {
-                // tests are running in parallel, so keep track of the tests that are running
-                // and update Test Results Window when all are finished
-                runningTestClasses.add(runningTestClass);
+                runningTestClass = match.group(1);
             }
         }
+        match = testSuiteStatsPattern.matcher(line);
+        if (match.matches() && surefireRunningInParallel) {
+            runningTestClass = match.group(6);
+            if (runningTestClass != null && outputDir != null && !runningTestClasses.contains(runningTestClass)) {
+                // When using reuseForks=true and a forkCount value larger than one,
+                // the same output is produced many times, so show it only once in Test Results window
+                runningTestClasses.add(runningTestClass);
+                // runningTestClass should be the FQN of a running test class but let's check to be on the safe side
+                // If the matcher matches it means that we have a new test class running,
+                // if not it probably means that this is user's text, e.g. "Running my cool test", so we can safely ignore it
+                if (!isFullJavaId(runningTestClass)) {
+                    return;
+                }
+                generateTest();
+                // runningTestClass did not fail so remove it from the list
+                runningTestClassesInParallel.remove(runningTestClass);
+                // runningTestClass might be the last one so make it null to avoid appearing twice when sequenceEnd() is called
+                runningTestClass = null;
+            }
+        }
+    }
+    
+    private static final String SECONDS_REGEX = "s(?:ec(?:ond)?(?:s|\\(s\\))?)?"; //NOI18N
+    private static final String TESTSUITE_STATS_REGEX = "Tests run: +([0-9]+), +Failures: +([0-9]+), +Errors: +([0-9]+), +Skipped: +([0-9]+), +Time elapsed: +(.+)" + SECONDS_REGEX + " - in (.*)";
+    private static final Pattern testSuiteStatsPattern = Pattern.compile(TESTSUITE_STATS_REGEX);
+    
+    static boolean isTestSuiteStats(String line) {
+        return testSuiteStatsPattern.matcher(line).matches();
+    }
+    
+    static String getTestSuiteFromStats(String line) {
+        Matcher matcher = testSuiteStatsPattern.matcher(line);
+        return matcher.matches() ? matcher.group(6) : null;
+    }
+    
+    private static final String JAVA_ID_START_REGEX = "\\p{javaJavaIdentifierStart}"; //NOI18N
+    private static final String JAVA_ID_PART_REGEX = "\\p{javaJavaIdentifierPart}"; //NOI18N
+    private static final String JAVA_ID_REGEX = "(?:" + JAVA_ID_START_REGEX + ')' + "(?:" + JAVA_ID_PART_REGEX + ")*"; //NOI18N
+    private static final String JAVA_ID_REGEX_FULL = JAVA_ID_REGEX + "(?:\\." + JAVA_ID_REGEX + ")*"; //NOI18N
+    private static final Pattern fullJavaIdPattern = Pattern.compile(JAVA_ID_REGEX_FULL);
+    
+    static boolean isFullJavaId(String possibleNewRunningTestClass) {
+        return fullJavaIdPattern.matcher(possibleNewRunningTestClass).matches();
     }
 
     public @Override void sequenceStart(String sequenceId, OutputVisitor visitor) {
@@ -322,8 +373,8 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
 
 			public @Override
 			boolean enabled(RerunType type) {
-			    //TODO debug doesn't property update debug port in runconfig..
-			    if (fType.equals(TestSession.SessionType.TEST)) {
+			    //debug should now properly update debug port in runconfig...
+			    if (fType.equals(TestSession.SessionType.TEST) || fType.equals(TestSession.SessionType.DEBUG)) {
 				if (RerunType.ALL.equals(type)) {
 				    return true;
 				}
@@ -406,16 +457,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             return;
         }
         if (runningTestClass != null && outputDir != null) {
-            if(surefireRunningInParallel) {
-                // tests are running in parallel, so now that all are finished 
-                // and the result files are created update Test Results Window
-                for(String testClass : runningTestClasses) {
-                    runningTestClass = testClass;
-                    generateTest();
-                }
-            } else {
-                generateTest();
-            }
+            generateTest();
         }
         CoreManager junitManager = getManagerProvider();
         if (junitManager != null) {
@@ -426,6 +468,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         session = null;
         surefireRunningInParallel = false;
         runningTestClasses = null;
+        runningTestClassesInParallel = null;
     }
 
     private static final Pattern COMPARISON_PATTERN = Pattern.compile(".*expected:<(.*)> but was:<(.*)>$"); //NOI18N
@@ -460,6 +503,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     }
 
     public @Override void sequenceFail(String sequenceId, OutputVisitor visitor) {
+        // try to get the failed test class. How can this be solved if it is not the first one in the list?
+        if(surefireRunningInParallel) {
+            runningTestClass = runningTestClassesInParallel.get(0);
+        }
         sequenceEnd(sequenceId, visitor);
     }
 
@@ -475,7 +522,16 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         }
         File report = new File(outputDir, "TEST-" + runningTestClass + suffix + ".xml");
         if (!report.isFile() || report.lastModified() < startTimeStamp) { //#219097 ignore results from previous invokation.
-            return;
+            if(surefireRunningInParallel) { // try waiting a bit to give time for the result file to be created
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            if (!report.isFile() || report.lastModified() < startTimeStamp) { // and now try again
+                return;
+            }
         }
         if (report.length() > 50 * 1024 * 1024) {
             LOG.log(Level.INFO, "Skipping report file as size is too big (> 50MB): {0}", report.getPath());
@@ -483,7 +539,22 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         }
         try {
             SAXBuilder builder = new SAXBuilder();
-            Document document = builder.build(report);
+            Document document = null;
+            try {
+                document = builder.build(report);
+            } catch (Exception x) {
+                try { // maybe the report file was not created yet, try waiting a bit and then try again
+                    Thread.sleep(500);
+                    document = builder.build(report);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (JDOMException ex) {
+                    LOG.log(Level.WARNING, "parsing " + report, x);
+                }
+            }
+            if(document == null) {
+                return;
+            }
             Element testSuite = document.getRootElement();
             assert "testsuite".equals(testSuite.getName()) : "Root name " + testSuite.getName(); //NOI18N
             TestSuite suite = new JUnitTestSuite(testSuite.getAttributeValue("name"), session);
@@ -492,6 +563,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             if (junitManager != null) {
                 junitManager.displaySuiteRunning(session, suite.getName());
             }
+            File output = new File(outputDir, runningTestClass + suffix + "-output.txt");
             
             @SuppressWarnings("unchecked")
             List<Element> testcases = testSuite.getChildren("testcase"); //NOI18N
@@ -504,7 +576,9 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 }
                 Testcase test = new JUnitTestcase(name, null, session);
                 Element stdout = testcase.getChild("system-out"); //NOI18N
-                if (stdout != null) {
+                // If *-output.txt file exists do not log standard output here to avoid logging it twice.
+                // By default surefire only reports standard output for failing testcases.
+                if (!output.isFile() && stdout != null) {
                     logText(stdout.getText(), test, false);
                 }
                 Element failure = testcase.getChild("failure"); //NOI18N
@@ -553,15 +627,14 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             } else { // update report status as a minimum
                 session.getReport(timeinmilis).setCompleted(true);
             }
-            File output = new File(outputDir, runningTestClass + suffix + "-output.txt");
             if (output.isFile()) {
                 if (junitManager != null) {
                     junitManager.displayOutput(session, FileUtils.fileRead(output), false);
                 }
             }
-        } catch (JDOMException x) {
-            LOG.log(Level.INFO, "parsing " + report, x);
-        } catch (Exception x) {
+        } catch (IOException x) {
+            LOG.log(Level.WARNING, "parsing " + report, x);
+        } catch (ParseException x) {
             LOG.log(Level.WARNING, "parsing " + report, x);
         }
     }

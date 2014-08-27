@@ -314,7 +314,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
             try {
                 methods = ReferenceTypeWrapper.methods0(referenceType).iterator();
             } catch (ClassNotPreparedExceptionWrapper ex) {
-                Exceptions.printStackTrace(ex);
+                // Ignore not prepared classes
                 continue ;
             }
             MethodEntryRequest entryReq = null;

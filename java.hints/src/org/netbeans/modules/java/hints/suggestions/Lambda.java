@@ -48,7 +48,9 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree.BodyKind;
+
 import static com.sun.source.tree.LambdaExpressionTree.BodyKind.STATEMENT;
+
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -333,12 +335,20 @@ public class Lambda {
                     throw new IllegalStateException();
             }
             
+            List<ExpressionTree> thrownTypes = new ArrayList<>(abstractMethod.getThrownTypes().size());
+            for (TypeMirror tm : abstractMethod.getThrownTypes()) {
+                // ErrorTypes are somehow handled, too, by make.Type
+                thrownTypes.add((ExpressionTree)make.Type(tm));
+            }
+            
             MethodTree newMethod = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
                                                abstractMethod.getSimpleName(),
                                                make.Type(descriptorType.getReturnType()),
                                                Collections.<TypeParameterTree>emptyList(), //XXX: type parameters
                                                methodParams,
-                                               Collections.<ExpressionTree>emptyList(), //XXX: throws types
+                                               // TODO: possibly filter out those exceptions, which are handled/never thrown 
+                                               // from the body
+                                               thrownTypes,
                                                newMethodBody,
                                                null);
             ClassTree innerClass = make.Class(make.Modifiers(EnumSet.noneOf(Modifier.class)),

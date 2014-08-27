@@ -104,4 +104,8 @@ public class TwigIndenterTest extends TwigIndenterTestBase {
         indent("testIssue243317");
     }
 
+    public void testIssue244434() throws Exception {
+        indent("testIssue244434");
+    }
+
 }

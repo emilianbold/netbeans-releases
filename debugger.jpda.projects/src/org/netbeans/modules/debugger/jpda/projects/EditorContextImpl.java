@@ -2532,7 +2532,8 @@ public class EditorContextImpl extends EditorContext {
                                     break;
                                 }
                                 tree = tp.getLeaf();
-                                if (tree.getKind() == Tree.Kind.METHOD) {
+                                if (tree.getKind() == Tree.Kind.METHOD ||
+                                    tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
                                     break; // We're inside a method, do not search for fields here.
                                 }
                             }

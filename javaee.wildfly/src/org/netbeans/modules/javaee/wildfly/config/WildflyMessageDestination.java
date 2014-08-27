@@ -49,7 +49,7 @@ import java.util.Set;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
 /**
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  * @author Libor Kotouc
  */
 public class WildflyMessageDestination implements MessageDestination {

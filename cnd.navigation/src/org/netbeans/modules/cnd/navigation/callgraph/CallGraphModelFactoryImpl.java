@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.cnd.navigation.callgraph;
 
+import java.util.Collection;
+import java.util.Collections;
+import javax.swing.Action;
+import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -49,9 +53,13 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphAction;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphModelFactory;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
+import org.netbeans.modules.cnd.callgraph.api.ui.Catalog;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphActionEDTRunnable;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.nodes.Node;
@@ -60,7 +68,7 @@ import org.openide.nodes.Node;
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.callgraph.api.ui.CallGraphModelFactory.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.callgraph.api.ui.CallGraphModelFactory.class, position = 100)
 public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
 
     @Override
@@ -104,6 +112,21 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
                 @Override
                 public boolean showGraph() {
                     return CndUtils.getBoolean("cnd.callgraph.showgraph", true); // NOI18N
+                }
+
+                @Override
+                public Catalog getCatalog() {
+                    return null;
+                }
+
+                @Override
+                public JPanel getContextPanel(Call call) {
+                    return null;
+                }
+
+                @Override
+                public Collection<CallGraphAction> getActions(CallGraphActionEDTRunnable runnable) {
+                    return Collections.EMPTY_LIST;
                 }
             };
         }

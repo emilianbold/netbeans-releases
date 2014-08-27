@@ -86,7 +86,8 @@ import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
-import org.netbeans.modules.cnd.api.model.services.CsmEntityResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
@@ -160,7 +161,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         final Document doc = result.getSnapshot().getSource().getDocument(false);
         final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
         final CsmFile file = CsmFileInfoQuery.getDefault().getCsmFile(result);
-        if (file != null && doc != null) {
+        if (file != null && doc != null && doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) == null) {
             if (event instanceof CursorMovedSchedulerEvent) {
                 process(audits, doc, fileObject, (CursorMovedSchedulerEvent)event, file, canceled);
             }
@@ -539,7 +540,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
         if (isSingleID.get()) {
             return false;
         }
-        CsmType resolveType = CsmEntityResolver.resolveType(expression, null);
+        CsmType resolveType = CsmExpressionResolver.resolveType(expression, null);
         if (resolveType == null) {
             return false;
         }
@@ -732,7 +733,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<Parser.Result
             CsmCacheManager.enter();
             try {
                 CharSequence typeText;
-                CsmType resolveType = CsmEntityResolver.resolveType(expression, null);
+                CsmType resolveType = CsmExpressionResolver.resolveType(expression, null);
                 if (resolveType == null) {
                     return null;
                 }

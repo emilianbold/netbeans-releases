@@ -440,34 +440,62 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
         }        
     }
     
-    void openDiff (VCSFileNode[] nodes) {
+    @NbBundle.Messages({
+        "VCSCommitPanel.DiffTab.name=Diff"
+    })
+    void openDiff (F[] nodes, List<F> allNodes) {
         if(diffProvider == null) {
             return;
         }
         boolean newDiff = false;
-        for (VCSFileNode node : nodes) {
-            if (tabbedPane == null) {
-                tabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
-                tabbedPane.addPropertyChangeListener(this);
-                 tabbedPane.addTab(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.TABS_MAIN_NAME), basePanel);
-                 tabbedPane.setPreferredSize(basePanel.getPreferredSize());
-                 add(tabbedPane);
-                 tabbedPane.addChangeListener(this);                
-            }
-            File file = node.getFile();
-            JComponent component = diffProvider.getDiffComponent(file); 
-            if (component != null) {
-                if (tabbedPane.indexOfComponent(component) == -1) {
-                    tabbedPane.addTab(file.getName(), component);
+        
+        F[] nodeArray = allNodes.toArray((F[]) java.lang.reflect.Array.newInstance((Class<F>) nodes.getClass().getComponentType(), allNodes.size()));
+        JComponent component = diffProvider.getDiffComponent(nodeArray); 
+        if (component == null) {
+            // fallback to old behavior (one by one tabs)
+            for (VCSFileNode node : nodes) {
+                initializeCommitPane();
+                File file = node.getFile();
+                component = diffProvider.getDiffComponent(file); 
+                if (component != null) {
+                    if (tabbedPane.indexOfComponent(component) == -1) {
+                        tabbedPane.addTab(file.getName(), component);
+                    }
+                    tabbedPane.setSelectedComponent(component);
+                    tabbedPane.requestFocusInWindow();
+                    newDiff = true;
                 }
-                tabbedPane.setSelectedComponent(component);
-                tabbedPane.requestFocusInWindow();
-                newDiff = true;
             }
+        } else {
+            initializeCommitPane();
+            if (nodes.length > 0) {
+                diffProvider.selectFile(nodes[0].getFile());
+            }
+            if (tabbedPane.indexOfComponent(component) == -1) {
+                int existingTab = tabbedPane.indexOfTab(Bundle.VCSCommitPanel_DiffTab_name());
+                if (existingTab != -1) {
+                    tabbedPane.remove(existingTab);
+                }
+                tabbedPane.addTab(Bundle.VCSCommitPanel_DiffTab_name(), component);
+            }
+            tabbedPane.setSelectedComponent(component);
+            tabbedPane.requestFocusInWindow();
+            newDiff = true;
         }
         if(newDiff) {
             revalidate();
             repaint();
+        }
+    }
+
+    private void initializeCommitPane () {
+        if (tabbedPane == null) {
+            tabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
+            tabbedPane.addPropertyChangeListener(this);
+            tabbedPane.addTab(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.TABS_MAIN_NAME), basePanel);
+            tabbedPane.setPreferredSize(basePanel.getPreferredSize());
+            add(tabbedPane);
+            tabbedPane.addChangeListener(this);
         }
     }
 

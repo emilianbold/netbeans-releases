@@ -51,6 +51,7 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.html.editor.spi.HintFixProvider;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.util.Lookup;
 
@@ -120,14 +121,31 @@ public class Nesting extends PatternRule {
         if (matcher.matches()) {
             String unknownElement = WebUtils.unquotedValue(matcher.group(1).trim());
             String contextElement = WebUtils.unquotedValue(matcher.group(2).trim());
-
-            Map<String, Object> meta = new HashMap<>();
-            meta.put(HintFixProvider.UNKNOWN_ELEMENT_FOUND, unknownElement);
-            meta.put(HintFixProvider.UNKNOWN_ELEMENT_CONTEXT, contextElement);
             
-            HintFixProvider.Context ctx = new HintFixProvider.Context(context.getSnapshot(), context.getHtmlParserResult(), meta);
-            for (HintFixProvider provider : Lookup.getDefault().lookupAll(HintFixProvider.class)) {
-                fixes.addAll(provider.getHintFixes(ctx));
+            //the nu.validator converts the names of the unknown elements to lowercase
+            //so we need to try to find out the original case by a little heuristic
+            int embeddedStart = context.getSnapshot().getEmbeddedOffset(e.getStartPosition());
+            int embeddedEnd = context.getSnapshot().getEmbeddedOffset(e.getEndPosition());
+            if(embeddedEnd != -1 && embeddedEnd != -1) {
+                CharSequence errorCode = context.getSnapshot().getText().subSequence(embeddedStart, embeddedEnd);
+                //the error contains the whole element including the delimiters and attributes
+                //example: <myDirective myAttr='value'>
+                int expectedElementNameEnd = 1 + unknownElement.length();
+                if(errorCode.length() > expectedElementNameEnd) {
+                    CharSequence elementName = errorCode.subSequence(1, expectedElementNameEnd);
+                    if(LexerUtils.equals(unknownElement, elementName, true, false)) {
+                        unknownElement = elementName.toString(); //get the correct case from the document
+                    }
+                }
+
+                Map<String, Object> meta = new HashMap<>();
+                meta.put(HintFixProvider.UNKNOWN_ELEMENT_FOUND, unknownElement);
+                meta.put(HintFixProvider.UNKNOWN_ELEMENT_CONTEXT, contextElement);
+
+                HintFixProvider.Context ctx = new HintFixProvider.Context(context.getSnapshot(), context.getHtmlParserResult(), meta);
+                for (HintFixProvider provider : Lookup.getDefault().lookupAll(HintFixProvider.class)) {
+                    fixes.addAll(provider.getHintFixes(ctx));
+                }
             }
         }
         return fixes;

@@ -83,7 +83,7 @@ public class UnbufferSupport {
         try {
             hinfo = HostInfoUtils.getHostInfo(execEnv);
         } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex); // TODO:CancellationException error processing
+            // TODO:CancellationException error processing
             return;
         }
 

@@ -64,6 +64,7 @@ import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.UseStatementPartInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -96,7 +97,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         ConstantElementImpl retval = new ConstantElementImpl(this, node);
         return retval;
     }
-    UseScopeImpl createUseStatementPart(ASTNodeInfo<UseStatementPart> node) {
+    UseScopeImpl createUseStatementPart(UseStatementPartInfo node) {
         UseScopeImpl retval = new UseScopeImpl(this, node);
         return retval;
     }

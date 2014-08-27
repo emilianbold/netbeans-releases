@@ -65,7 +65,7 @@ import org.openide.filesystems.FileObject;
 public final class ClientProjectUtilities {
     public static FileObject getSiteRoot(Project project) {
         Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5);
+        SourceGroup[] sourceGroups = sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT);
         if (sourceGroups.length == 0 ) {
             return project.getProjectDirectory().getFileObject("www");
         }

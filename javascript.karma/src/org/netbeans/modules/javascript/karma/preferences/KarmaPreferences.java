@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.StringUtils;
+import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 
@@ -60,10 +61,13 @@ import org.openide.filesystems.FileUtil;
  */
 public final class KarmaPreferences {
 
+
     private static final String ENABLED = "enabled"; // NOI18N
     private static final String KARMA = "karma"; // NOI18N
     private static final String CONFIG = "config"; // NOI18N
     private static final String AUTOWATCH = "autowatch"; // NOI18N
+    private static final String DEBUG = "debug"; // NOI18N
+    private static final String DEBUG_BROWSER_ID = "debug.browser.id"; // NOI18N
 
     private static final ConcurrentMap<Project, Preferences> CACHE = new ConcurrentHashMap<>();
 
@@ -103,6 +107,35 @@ public final class KarmaPreferences {
 
     public static void setAutowatch(Project project, boolean autowatch) {
         getPreferences(project).putBoolean(AUTOWATCH, autowatch);
+    }
+
+    public static boolean isDebug(Project project) {
+        return getPreferences(project).getBoolean(DEBUG, false);
+    }
+
+    public static void setDebug(Project project, boolean debug) {
+        getPreferences(project).putBoolean(DEBUG, debug);
+    }
+
+    public static boolean isDebugBrowserIdSet(Project project) {
+        return getPreferences(project).get(DEBUG_BROWSER_ID, null) != null;
+    }
+
+    @CheckForNull
+    public static String getDebugBrowserId(Project project) {
+        String browserId = getPreferences(project).get(DEBUG_BROWSER_ID, null);
+        if (browserId != null) {
+            return browserId;
+        }
+        WebBrowser preferredBrowser = KarmaUtils.getPreferredDebugBrowser();
+        if (preferredBrowser != null) {
+            return preferredBrowser.getId();
+        }
+        return null;
+    }
+
+    public static void setDebugBrowserId(Project project, String browserId) {
+        getPreferences(project).put(DEBUG_BROWSER_ID, browserId);
     }
 
     public static void addPreferenceChangeListener(Project project, PreferenceChangeListener listener) {
@@ -149,7 +182,7 @@ public final class KarmaPreferences {
         if (getConfig(project) != null) {
             return;
         }
-        File config = KarmaUtils.findKarmaConfig(KarmaUtils.getConfigDir(project));
+        File config = KarmaUtils.findKarmaConfig(KarmaUtils.getKarmaConfigDir(project));
         if (config != null) {
             setConfig(project, config.getAbsolutePath());
         }

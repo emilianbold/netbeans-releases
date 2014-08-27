@@ -45,19 +45,27 @@ package org.netbeans.modules.maven.configurations;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.MavenConfiguration;
 import static org.netbeans.modules.maven.configurations.Bundle.*;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.execute.model.NetbeansActionProfile;
+import org.netbeans.modules.maven.execute.model.NetbeansActionReader;
+import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Writer;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -72,6 +80,7 @@ import org.openide.util.NbBundle.Messages;
  * @author mkleint
  */
 public class M2Configuration extends AbstractMavenActionsProvider implements MavenConfiguration, Comparable<M2Configuration> {
+    private static final Logger LOG = Logger.getLogger(M2Configuration.class.getName());
 
     public static final String DEFAULT = "%%DEFAULT%%"; //NOI18N
     
@@ -157,15 +166,17 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
     }
 
     public @Override InputStream getActionDefinitionStream() {
-
+        return getActionDefinitionStream(id);
+    }
+    final InputStream getActionDefinitionStream(String forId) {
         checkListener();
-        FileObject fo = projectDirectory.getFileObject(getFileNameExt(id));
+        FileObject fo = projectDirectory.getFileObject(getFileNameExt(forId));
         resetCache.set(false);
         if (fo != null) {
             try {
                 return fo.getInputStream();
             } catch (FileNotFoundException ex) {
-                ex.printStackTrace();
+                LOG.log(Level.WARNING, "Cannot read " + fo, ex); // NOI18N
             }
         }
        return null;
@@ -235,9 +246,9 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
             }
             return toRet.toArray(new NetbeansActionMapping[toRet.size()]);
         } catch (XmlPullParserException ex) {
-            ex.printStackTrace();
+            LOG.log(Level.WARNING, null, ex);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            LOG.log(Level.WARNING, null, ex);
         }
         return fallbackActions;
     }
@@ -245,6 +256,117 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
     @Override
     protected boolean reloadStream() {
         return resetCache.get();
+    }
+
+    @Override
+    public ActionToGoalMapping getRawMappings() {
+        if (originalMappings == null || reloadStream()) {
+            Reader rdr = null;
+            InputStream in = getActionDefinitionStream();
+            try {
+                if (in == null) {
+                    in = getActionDefinitionStream(DEFAULT);
+                    if (in != null) {
+                        rdr = new InputStreamReader(in);
+                        ActionToGoalMapping def = reader.read(rdr);
+                        for (NetbeansActionProfile p : def.getProfiles()) {
+                            if (id.equals(p.getId())) {
+                                ActionToGoalMapping m = new ActionToGoalMapping();
+                                m.setActions(m.getActions());
+                                m.setModelEncoding(m.getModelEncoding());
+                                originalMappings = m;
+                                break;
+                            }
+                        }
+
+                    } else {
+                        originalMappings = new ActionToGoalMapping();
+                    }
+                } else {
+                    rdr = new InputStreamReader(in);
+                    originalMappings = reader.read(rdr);
+                }
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "Loading raw mappings", ex);
+            } catch (XmlPullParserException ex) {
+                LOG.log(Level.INFO, "Loading raw mappings", ex);
+            } finally {
+                if (rdr != null) {
+                    try {
+                        rdr.close();
+                    } catch (IOException ex) {
+                    }
+                }
+            }
+            if (originalMappings == null) {
+                originalMappings = new ActionToGoalMapping();
+            }
+        }
+        return originalMappings;
+    }
+
+    public NetbeansActionMapping getProfileMappingForAction(
+        String action, Project project, 
+        Map<String,String> replaceMap, boolean[] fallback
+    ) {
+        NetbeansActionReader parsed = new NetbeansActionReader() {
+            @Override
+            protected String getRawMappingsAsString() {
+                NetbeansBuildActionXpp3Writer writer = new NetbeansBuildActionXpp3Writer();
+                StringWriter str = new StringWriter();
+                try {
+                    InputStream in = getActionDefinitionStream(DEFAULT);
+                    if (in == null) {
+                        return null;
+                    }
+                    InputStreamReader rdr = new InputStreamReader(in);
+                    ActionToGoalMapping map = reader.read(rdr);
+                    writer.write(str, map);
+                } catch (IOException ex) {
+                    LOG.log(Level.WARNING, "Loading raw mappings", ex);
+                } catch (XmlPullParserException ex) {
+                    LOG.log(Level.WARNING, "Loading raw mappings", ex);
+                }
+                return str.toString();
+            }
+
+            @Override
+            protected Reader performDynamicSubstitutions(Map<String, String> replaceMap, String in) throws IOException {
+                return M2Configuration.this.performDynamicSubstitutions(replaceMap, in);
+            }
+        };
+        NetbeansActionMapping ret = parsed.getMappingForAction(reader, LOG, action, null, project, id, replaceMap);
+        if (ret == null) {
+            boolean[] hasProfiles = { false };
+            ret = parsed.getMappingForAction(reader, LOG, action, hasProfiles, project, null, replaceMap);
+            if (fallback != null && ret != null && hasProfiles[0]) {
+                fallback[0] = true;
+            }
+        }
+        return ret;
+    }
+
+    public NetbeansActionMapping findMappingFor(
+        Map<String, String> replaceMap, Project project, String actionName,
+        boolean[] fallback
+    ) {
+        NetbeansActionMapping action = getProfileMappingForAction(
+            actionName, project, replaceMap, fallback
+        );
+        if (action != null) {
+            return action;
+        }
+        return new NetbeansActionReader() {
+            @Override
+            protected String getRawMappingsAsString() {
+                return M2Configuration.this.getRawMappingsAsString();
+            }
+
+            @Override
+            protected Reader performDynamicSubstitutions(Map<String, String> replaceMap, String in) throws IOException {
+                return M2Configuration.this.performDynamicSubstitutions(replaceMap, in);
+            }
+        }.getMappingForAction(reader, LOG, actionName, null, project, null, replaceMap);
     }
 
 }

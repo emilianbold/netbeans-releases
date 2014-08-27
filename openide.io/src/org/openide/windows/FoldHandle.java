@@ -153,7 +153,11 @@ public final class FoldHandle {
             if (currentChild != null && !currentChild.finished) {
                 currentChild.silentFinish();
             }
-            finish();
+            try {
+                finish();
+            } catch (IllegalStateException ex) {
+                LOG.log(Level.FINE, "Cannot finish fold", ex);          //NOI18N
+            }
         }
     }
 
@@ -174,7 +178,12 @@ public final class FoldHandle {
             if (currentChild != null && !currentChild.finished) {
                 currentChild.silentFinish();
             }
-            return startFold(expanded);
+            try {
+                return startFold(expanded);
+            } catch (IllegalStateException ex) {
+                LOG.log(Level.FINE, "Cannot start fold", ex);           //NOI18N
+                return null;
+            }
         } else {
             LOG.log(Level.FINE, "silentStartFold - already finished");  //NOI18N
             return null;

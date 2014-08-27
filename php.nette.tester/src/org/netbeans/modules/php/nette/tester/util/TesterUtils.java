@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.php.nette.tester.util;
 
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
@@ -50,7 +52,7 @@ import org.openide.util.NbBundle;
 
 public final class TesterUtils {
 
-    public static final String[] BINARY_EXECUTABLES = new String[] {null, "php-cgi", "php"}; // NOI18N
+    public static final List<String> BINARY_EXECUTABLES = Arrays.asList(null, "php-cgi", "php"); // NOI18N
 
 
     private TesterUtils() {

@@ -152,7 +152,7 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
         for (TreePathHandle tph : refactoring.getRefactoringSource().lookupAll(TreePathHandle.class)) {
             ElementHandle elementHandle = tph.getElementHandle();
             if (elementHandle == null
-                    || (!elementHandle.getKind().isClass() && !elementHandle.getKind().isClass())) {
+                    || (!elementHandle.getKind().isClass() && !elementHandle.getKind().isInterface())) {
                 preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(
                         MoveFileRefactoringPlugin.class,
                         "ERR_NotClass"));
@@ -632,8 +632,10 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
                 FileObject folder = refactoring.getRefactoringSource().lookup(FileObject.class);
                 ClassPath cp = ClassPath.getClassPath(folder, ClassPath.SOURCE);
                 FileObject root = cp.findOwnerRoot(folder);
-                String prefix = FileUtil.getRelativePath(root, folder.getParent()).replace('/','.');
-                String postfix = FileUtil.getRelativePath(folder, fo.isFolder() ? fo : fo.getParent()).replace('/', '.');
+                String relativePath = FileUtil.getRelativePath(root, folder.getParent());
+                String prefix = relativePath == null? "" : relativePath.replace('/','.');
+                String relativePath1 = FileUtil.getRelativePath(folder, fo.isFolder() ? fo : fo.getParent());
+                String postfix = relativePath1 == null? "" : relativePath1.replace('/', '.');
                 String t = concat(prefix, getNewPackageName(), postfix);
                 return t;
             }

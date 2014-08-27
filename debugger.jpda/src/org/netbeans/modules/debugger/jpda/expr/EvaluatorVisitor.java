@@ -184,8 +184,13 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.ScriptVariable;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
 import org.netbeans.modules.debugger.jpda.jdi.ArrayTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InterfaceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
@@ -456,7 +461,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             method = getConcreteMethodAndReportProblems(arg0, type, methodName, null, paramTypes, argTypes);
         }
         if (isVarArgs) {
-            transformVarArgsValues(argVals, paramTypes, evaluationContext);
+            transformVarArgsValues(arg0, argVals, paramTypes, evaluationContext);
         }
         return invokeMethod(arg0, method, isStatic, cType, objectReference, argVals, evaluationContext, preferredType != null);
     }
@@ -468,7 +473,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
      * @param evaluationContext
      * @return The created array, with disabled collection, which needs to get enabled collection after it's use.
      */
-    private ArrayReference transformVarArgsValues(List<Value> argVals, List<? extends TypeMirror> paramTypes, EvaluationContext evaluationContext) {
+    private ArrayReference transformVarArgsValues(Tree arg0, List<Value> argVals, List<? extends TypeMirror> paramTypes, EvaluationContext evaluationContext) {
         int varIndex = paramTypes.size() - 1;
         TypeMirror tm = paramTypes.get(varIndex);
         if (tm.getKind() != TypeKind.ARRAY) {
@@ -481,6 +486,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         String typeName = getTypeName(((javax.lang.model.type.ArrayType) tm).getComponentType());
         int length = argVals.size() - varIndex;
         ArrayType at = (ArrayType) getOrLoadClass(vm, typeName+"[]", evaluationContext);
+        if (at == null) {
+            Assert.error(arg0, "unknownType", typeName+"[]");
+        }
         if (length == 1) {
             Value varArg = argVals.get(varIndex);
             if (varArg instanceof ArrayReference) {
@@ -2707,7 +2715,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             evaluationContext.methodToBeInvoked();
             Method constructorMethod = getConcreteMethodAndReportProblems(arg0, classType, "<init>", firstParamSignature, paramTypes, argTypes);
             if (isVarArgs) {
-                transformVarArgsValues(argVals, paramTypes, evaluationContext);
+                transformVarArgsValues(arg0, argVals, paramTypes, evaluationContext);
             }
             ObjectReference o = classType.newInstance(evaluationContext.getFrame().thread(),
                                                       constructorMethod,
@@ -2955,7 +2963,16 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     if (type == null) {
                         type = ((ObjectReference) expr).referenceType();
                     }
-                    Field f = type.fieldByName(fieldName);
+                    TypeMirror classType = ve.getEnclosingElement().asType(); // Class type of the object we retrieve the field on.
+                    // Find the sub-type that is declared in the source code
+                    ReferenceType preferredType = findPreferedType(type, classType.toString());
+                    Field f = null;
+                    if (preferredType != null) {
+                        f = preferredType.fieldByName(fieldName);
+                    }
+                    if (f == null) {
+                        f = type.fieldByName(fieldName);
+                    }
                     if (f != null) {
                         evaluationContext.putField(arg0, f, (ObjectReference) expr);
                         Value v = ((ObjectReference) expr).getValue(f);
@@ -4393,6 +4410,43 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
 
     private void reportCannotApplyOperator(BinaryTree binaryTree) {
         Assert.error(binaryTree, "cannotApplyOperator", binaryTree.toString());
+    }
+
+    private ReferenceType findPreferedType(ReferenceType type, String className) {
+        ReferenceType t = type;
+        try {
+            do {
+                String name = ReferenceTypeWrapper.name(t);
+                name = name.replace('$', '.');
+                if (name.equals(className)) {
+                    return t;
+                }
+                if (t instanceof ClassType) {
+                    t = ClassTypeWrapper.superclass((ClassType) t);
+                } else
+                if (t instanceof InterfaceType) {
+                    List<InterfaceType> superinterfaces = InterfaceTypeWrapper.superinterfaces((InterfaceType) t);
+                    if (superinterfaces.isEmpty()) {
+                        t = null;
+                    } else {
+                        t = superinterfaces.get(0);
+                        for (int i = 1; i < superinterfaces.size(); i++) {
+                            ReferenceType pt = findPreferedType(superinterfaces.get(i), className);
+                            if (pt != null) {
+                                return pt;
+                            }
+                        }
+                    }
+                } else {
+                    t = null;
+                }
+            } while (t != null);
+        } catch (InternalExceptionWrapper iew) {
+        } catch (VMDisconnectedExceptionWrapper vmdew) {
+        } catch (ObjectCollectedExceptionWrapper ocew) {
+        } catch (ClassNotPreparedExceptionWrapper cnpew) {
+        }
+        return null;
     }
 
     // *************************************************************************

@@ -66,6 +66,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.modules.Places;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
@@ -99,8 +100,8 @@ public class AvatarJSProjectGenerator {
                                                  final String mainFile,
                                                  final String port,
                                                  @NonNull final JavaPlatform platform,
-                                                 final String avatarLibsFolder,
-                                                 final File avatar_jsJAR) throws IOException {
+                                                 String avatarLibsFolder,
+                                                 File avatar_jsJAR) throws IOException {
         final String platformAntName = platform.getProperties().get(PROP_PLATFORM_ANT_NAME);
         if (platformAntName == null) {
             throw new IllegalArgumentException("Invalid platform, the platform has no platform.ant.name");  //NOI18N
@@ -108,6 +109,18 @@ public class AvatarJSProjectGenerator {
         final SpecificationVersion sourceLevel = platform.getSpecification().getVersion();
         final FileObject dirFO = FileUtil.createFolder(prjDir);
         final AntProjectHelper[] h = new AntProjectHelper[1];
+        if (avatarLibsFolder == null) {
+            String installationDir = System.getProperty("netbeans.home");         // NOI18N
+            avatarLibsFolder = installationDir+File.separator+".."+File.separator+"extra"+File.separator+"avatar";
+        }
+        final File avatar_jsJARFile;
+        if (avatar_jsJAR == null) {
+            String installationDir = System.getProperty("netbeans.home");         // NOI18N
+            avatar_jsJARFile = new File(installationDir+File.separator+".."+File.separator+"extra"+File.separator+"avatar",
+                                        "avatar-js.jar");
+        } else {
+            avatar_jsJARFile = avatar_jsJAR;
+        }
         final String jvmArgs = (avatarLibsFolder != null) ? JAVA_LIBRARY_PATH+avatarLibsFolder : "";
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
@@ -123,7 +136,7 @@ public class AvatarJSProjectGenerator {
                         jvmArgs,
                         new String[]{},
                         new String[] {},
-                        avatar_jsJAR,
+                        avatar_jsJARFile,
                         platformAntName
                        );
                 AvatarJSProject ap = (AvatarJSProject) ProjectManager.getDefault().findProject(dirFO);

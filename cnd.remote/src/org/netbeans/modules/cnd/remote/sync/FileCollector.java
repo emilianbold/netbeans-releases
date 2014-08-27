@@ -109,7 +109,7 @@ import org.openide.util.Utilities;
      * to the absolute remote path local controller uses
      */
     private final Map<String, String> canonicalToAbsolute = new HashMap<String, String>();
-    private final List<FileInfo> filesToFeed = new ArrayList<FileInfo>(512);
+    private final List<FileCollectorInfo> filesToFeed = new ArrayList<FileCollectorInfo>(512);
     private String timeStampFile;
 
     private static final RequestProcessor RP = new RequestProcessor("RfsLocalController", 1); // NOI18N
@@ -127,7 +127,7 @@ import org.openide.util.Utilities;
         this.err = err;
     }
 
-    public List<FileInfo> getFiles() {
+    public List<FileCollectorInfo> getFiles() {
         return filesToFeed;
     }
 
@@ -187,13 +187,13 @@ import org.openide.util.Utilities;
         }
         logger.log(Level.FINE, "gathered %d files in %d ms", filesToFeed.size(), System.currentTimeMillis() - time);
         time = System.currentTimeMillis();
-        checkLinks(filesToFeed);
+        checkLinks();
         logger.log(Level.FINE, "checking links took %d ms", System.currentTimeMillis() - time);
 
         time = System.currentTimeMillis();
-        Collections.sort(filesToFeed, new Comparator<FileInfo>() {
+        Collections.sort(filesToFeed, new Comparator<FileCollectorInfo>() {
             @Override
-            public int compare(FileInfo f1, FileInfo f2) {
+            public int compare(FileCollectorInfo f1, FileCollectorInfo f2) {
                 if (f1.file.isDirectory() || f2.file.isDirectory()) {
                     if (f1.file.isDirectory() && f2.file.isDirectory()) {
                         return f1.remotePath.compareTo(f2.remotePath);
@@ -209,11 +209,11 @@ import org.openide.util.Utilities;
         logger.log(Level.FINE, "sorting file list took %d ms", System.currentTimeMillis() - time);
     }
 
-    private static void gatherFiles(File file, String base, FileFilter filter, List<FileInfo> files, DupsPreventer<File> dupsPreventer) {
+    private static void gatherFiles(File file, String base, FileFilter filter, List<FileCollectorInfo> files, DupsPreventer<File> dupsPreventer) {
         if (dupsPreventer.check(file)) {
             // it is assumed that the file itself was already filtered
             String remotePath = isEmpty(base) ? file.getName() : base + '/' + file.getName();
-            files.add(new FileInfo(file, remotePath));
+            files.add(new FileCollectorInfo(file, remotePath));
             if (file.isDirectory()) {
                 File[] children = file.listFiles(filter);
                 if (children != null) {
@@ -226,8 +226,8 @@ import org.openide.util.Utilities;
         }
     }
 
-    private static FileInfo addFileGatheringInfo(List<FileInfo> filesToFeed, final File file, String remoteFilePathName) {
-        FileInfo info = new FileInfo(file, remoteFilePathName);
+    private static FileCollectorInfo addFileGatheringInfo(List<FileCollectorInfo> filesToFeed, final File file, String remoteFilePathName) {
+        FileCollectorInfo info = new FileCollectorInfo(file, remoteFilePathName);
         filesToFeed.add(info);
         return info;
     }
@@ -250,7 +250,7 @@ import org.openide.util.Utilities;
         }
     }
 
-    private void checkLinks(final List<FileInfo> filesToFeed) {
+    private void checkLinks() {
         if (Utilities.isWindows()) {
             return; // this is for Unixes only
         }
@@ -258,7 +258,7 @@ import org.openide.util.Utilities;
         // the real cycling check is inside checkLinks(List,List) logic
         int cnt = 0;
         final int max = 16;
-        Collection<FileInfo> filesToCheck = new ArrayList<FileInfo>(filesToFeed);
+        Collection<FileCollectorInfo> filesToCheck = new ArrayList<FileCollectorInfo>(filesToFeed);
         do {
             filesToCheck = checkLinks(filesToCheck, filesToFeed);
         } while (!filesToCheck.isEmpty() && cnt++ < max);
@@ -268,8 +268,8 @@ import org.openide.util.Utilities;
         }
     }
 
-    private Collection<FileInfo> checkLinks(final Collection<FileInfo> filesToCheck, final List<FileInfo> filesToAdd) {
-        Set<FileInfo> addedInfos = new HashSet<FileInfo>();
+    private Collection<FileCollectorInfo> checkLinks(final Collection<FileCollectorInfo> filesToCheck, final List<FileCollectorInfo> filesToAdd) {
+        Set<FileCollectorInfo> addedInfos = new HashSet<FileCollectorInfo>();
         NativeProcessBuilder pb = NativeProcessBuilder.newLocalProcessBuilder();
         pb.setExecutable("sh"); //NOI18N
         pb.setArguments("-c", "xargs ls -ld | grep '^l'"); //NOI18N
@@ -286,7 +286,7 @@ import org.openide.util.Utilities;
             public void run() {
                 BufferedWriter requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
                 try {
-                    for (FileInfo info : filesToCheck) {
+                    for (FileCollectorInfo info : filesToCheck) {
                         String path = "\"" + info.file.getAbsolutePath() + "\""; // NOI18N
                         requestWriter.append(path);
                         requestWriter.newLine();
@@ -323,8 +323,8 @@ import org.openide.util.Utilities;
             }
         });
 
-        Map<String, FileInfo> map = new HashMap<String, FileInfo>(filesToCheck.size());
-        for (FileInfo info : filesToCheck) {
+        Map<String, FileCollectorInfo> map = new HashMap<String, FileCollectorInfo>(filesToCheck.size());
+        for (FileCollectorInfo info : filesToCheck) {
             map.put(info.file.getAbsolutePath(), info);
         }
 
@@ -346,7 +346,7 @@ import org.openide.util.Utilities;
                     localLinkTarget = localLinkTarget.substring(0, localLinkTarget.length() - 1);
                 }
                 String linkPath = parts[parts.length - 3];
-                FileInfo info = map.get(linkPath);
+                FileCollectorInfo info = map.get(linkPath);
                 CndUtils.assertNotNull(info, "Null FileGatheringInfo for " + linkPath); //NOI18N
                 if (info != null) {
                     logger.log(Level.FINEST, "\tcheckLinks: %s -> %s", linkPath, localLinkTarget);
@@ -363,7 +363,7 @@ import org.openide.util.Utilities;
                         localLinkTargetFile = CndFileUtils.createLocalFile(linkParentFile, localLinkTarget);
                     }
                     localLinkTargetFile = CndFileUtils.normalizeFile(localLinkTargetFile);
-                    FileInfo targetInfo;
+                    FileCollectorInfo targetInfo;
                     targetInfo = map.get(localLinkTargetFile.getAbsolutePath());
                     // TODO: try finding in newly added infos. Probably replace List to Map in filesToAdd
                     if (targetInfo == null) {
@@ -573,14 +573,14 @@ import org.openide.util.Utilities;
         return s == null || s.length() == 0;
     }
 
-    public static class FileInfo {
+    public static class FileCollectorInfo {
 
         public final File file;
         public final String remotePath;
         private String linkTarget;
-        private FileInfo linkTargetInfo;
+        private FileCollectorInfo linkTargetInfo;
 
-        public FileInfo(File file, String remotePath) {
+        public FileCollectorInfo(File file, String remotePath) {
             this.file = file;
             this.remotePath = remotePath;
             CndUtils.assertTrue(remotePath.startsWith("/"), "Non-absolute remote path: ", remotePath);
@@ -604,11 +604,11 @@ import org.openide.util.Utilities;
             this.linkTarget = link;
         }
 
-        public FileInfo getLinkTargetInfo() {
+        public FileCollectorInfo getLinkTargetInfo() {
             return linkTargetInfo;
         }
 
-        public void setLinkTargetInfo(FileInfo linkTargetInfo) {
+        public void setLinkTargetInfo(FileCollectorInfo linkTargetInfo) {
             this.linkTargetInfo = linkTargetInfo;
         }
     }

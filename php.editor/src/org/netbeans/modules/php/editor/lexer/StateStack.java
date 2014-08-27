@@ -41,7 +41,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.lexer;
 
 import java.util.logging.Level;
@@ -103,7 +102,7 @@ public class StateStack {
         return rv;
     }
 
-        @Override
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -127,15 +126,15 @@ public class StateStack {
         return true;
     }
 
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 31 * hash + lastIn;
-            for (int i = lastIn; i >= 0; i--) {
-        hash = 31 * hash + this.stack[i];
-            }
-            return hash;
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 31 * hash + lastIn;
+        for (int i = lastIn; i >= 0; i--) {
+            hash = 31 * hash + this.stack[i];
         }
+        return hash;
+    }
 
     public void copyFrom(StateStack s) {
         while (s.lastIn >= this.stack.length) {

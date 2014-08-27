@@ -410,6 +410,20 @@ public abstract class FileSystem implements Serializable {
         throw new IOException("Unsupported operation"); // NOI18N
     }
         
+    /** Finds various extensions for set of file objects coming from
+     * this file system.
+     * For example actions should be obtainable as:<pre>
+     * actions = fs.{@link #findExtrasFor(java.util.Set) findExtrasFor}(foSet).{@link Lookup#lookupAll(java.lang.Class) lookupAll}({@link javax.swing.Action});
+     * </pre>
+     * @param objects the set of objects
+     * @return the lookup providing various extensions (usually visual) 
+     * for these objects
+     * @since 8.12
+     */
+    public Lookup findExtrasFor(Set<FileObject> objects) {
+        return new FileExtrasLkp(this, objects);
+    }
+
     /** Reads object from stream and creates listeners.
     * @param in the input stream to read from
     * @exception IOException error during read
@@ -926,6 +940,35 @@ public abstract class FileSystem implements Serializable {
         }
 
         private Image annotateIcon(FileObject fo, int type) {
+        /*
+            String attr = null;
+            if (type == BeanInfo.ICON_COLOR_16x16) {
+                attr = "SystemFileSystem.icon"; // NOI18N
+            } else if (type == BeanInfo.ICON_COLOR_32x32) {
+                attr = "SystemFileSystem.icon32"; // NOI18N
+            }
+            if (attr != null) {
+                Object value = fo.getAttribute(attr);
+                if (value != null) {
+                    if (value instanceof URL) {
+                        return Toolkit.getDefaultToolkit().getImage((URL) value);
+                    } else if (value instanceof Image) {
+                        // #18832
+                        return (Image) value;
+                    } else {
+                        LOG.warning("Attribute " + attr + " on " + fo + " expected to be a URL or Image; was: " + value);
+                    }
+                }
+            }
+            String base = (String) fo.getAttribute("iconBase"); // NOI18N
+            if (base != null) {
+                if (type == BeanInfo.ICON_COLOR_16x16) {
+                    return ImageUtilities.loadImage(base, true);
+                } else if (type == BeanInfo.ICON_COLOR_32x32) {
+                    return ImageUtilities.loadImage(insertBeforeSuffix(base, "_32"), true); // NOI18N
+                }
+            }
+            */
             return null;
         }
 

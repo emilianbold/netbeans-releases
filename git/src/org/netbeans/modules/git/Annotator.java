@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git;
 
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.git.options.AnnotationColorProvider;
 import java.awt.Image;
@@ -79,6 +80,7 @@ import org.netbeans.modules.git.ui.menu.DiffMenu;
 import org.netbeans.modules.git.ui.menu.PatchesMenu;
 import org.netbeans.modules.git.ui.menu.IgnoreMenu;
 import org.netbeans.modules.git.ui.menu.RemoteMenu;
+import org.netbeans.modules.git.ui.menu.RepositoryMenu;
 import org.netbeans.modules.git.ui.menu.RevertMenu;
 import org.netbeans.modules.git.ui.repository.RepositoryBrowserAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
@@ -103,8 +105,9 @@ import org.openide.util.lookup.Lookups;
  */
 public class Annotator extends VCSAnnotator implements PropertyChangeListener {
     private static final EnumSet<FileInformation.Status> STATUS_IS_IMPORTANT = EnumSet.noneOf(Status.class);
-    private static final EnumSet<FileInformation.Status> STATUS_BADGEABLE = EnumSet.of(Status.UPTODATE, Status.NEW_INDEX_WORKING_TREE,
-            Status.MODIFIED_HEAD_WORKING_TREE);
+    private static final EnumSet<FileInformation.Status> STATUS_BADGEABLE = EnumSet.complementOf(
+            EnumSet.of(Status.NOTVERSIONED_EXCLUDED, Status.NOTVERSIONED_NOTMANAGED, Status.UNKNOWN)
+    );
     private static String projectFormat;
     static {
         STATUS_IS_IMPORTANT.addAll(FileInformation.STATUS_LOCAL_CHANGES);
@@ -113,6 +116,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
     private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
     private static final String badgeModified = "org/netbeans/modules/git/resources/icons/modified-badge.png";
     private static final String badgeConflicts = "org/netbeans/modules/git/resources/icons/conflicts-badge.png";
+    private static final String tooltipBranch = "<img src=\"" + Annotator.class.getClassLoader().getResource("org/netbeans/modules/git/resources/icons/branch-badge.png") + "\">&nbsp;";
     private static final String toolTipModified = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
             + NbBundle.getMessage(Annotator.class, "MSG_Contains_Modified");
     private static final String toolTipConflict = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
@@ -167,7 +171,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(new RevertMenu(ActionDestination.MainMenu, null));
                 actions.add(null);
 
-                actions.add(SystemAction.get(RepositoryBrowserAction.class));
+                actions.add(new RepositoryMenu(ActionDestination.MainMenu, null));
             }
             Utils.setAcceleratorBindings(ACTIONS_PATH_PREFIX, actions.toArray(new Action[actions.size()]));
         } else {
@@ -198,8 +202,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(new RevertMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(null);
                 
-                actions.add(SystemActionBridge.createAction(SystemAction.get(RepositoryBrowserAction.class),
-                        NbBundle.getMessage(RepositoryBrowserAction.class, "LBL_RepositoryBrowserAction_PopupName"), lkp)); //NOI18N
+                actions.add(new RepositoryMenu(ActionDestination.PopupMenu, lkp));
             }
         }
 
@@ -341,8 +344,12 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         return tooltip != null ? ImageUtilities.addToolTipToImage(icon, tooltip) : null;
     }
 
+    @NbBundle.Messages({
+        "# {0} - branch name", "MSG_Annotator.tooltip.branch=On branch \"{0}\".",
+        "MSG_Annotator.tooltip.nobranch=Not on a branch (detached HEAD state)."
+    })
     private Image annotateFolderIcon(VCSContext context, Image icon) {
-        boolean isVersioned = false;
+        File root = null;
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = (File) i.next();
             // There is an assumption here that annotateName was already
@@ -350,12 +357,35 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             // FileStatusCache.getCachedStatus returned null.
             FileInformation info = cache.getStatus(file);
             if (info.containsStatus(STATUS_BADGEABLE)) {
-                isVersioned = true;
+                root = file;
                 break;
             }
         }
-        if (!isVersioned) {
+        if (root == null) {
             return null;
+        }
+        String branchLabel = null;
+        Set<File> roots = context.getRootFiles();
+        Set<File> repositories = GitUtils.getRepositoryRoots(roots);
+        File repository = repositories.isEmpty() ? null : repositories.iterator().next();
+        if (repository != null && (roots.size() > 1 || root.equals(repository))) {
+            // project node or repository root
+            RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            addFileWithRepositoryAnnotation(info, root);
+            GitBranch branch = info.getActiveBranch();
+            if (branch != null) {
+                String branchName = branch.getName();
+                branchLabel = tooltipBranch;
+                if (branchName == GitBranch.NO_BRANCH) { // do not use equals
+                    branchLabel += Bundle.MSG_Annotator_tooltip_nobranch();
+                } else {
+                    branchLabel += Bundle.MSG_Annotator_tooltip_branch(branchName);
+                }
+            }
+        }
+        Image retval = icon;
+        if (branchLabel != null) {
+            retval = ImageUtilities.addToolTipToImage(retval, branchLabel);
         }
         Image badge = null;
         if (cache.containsFiles(context, EnumSet.of(Status.IN_CONFLICT), false)) {
@@ -364,10 +394,9 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeModified, true), toolTipModified);
         }
         if (badge != null) {
-            return ImageUtilities.mergeImages(icon, badge, 16, 9);
-        } else {
-            return icon;
+            retval = ImageUtilities.mergeImages(retval, badge, 16, 9);
         }
+        return retval;
     }
 
     private final Map<RepositoryInfo, Set<File>> filesWithRepositoryAnnotations = new WeakHashMap<RepositoryInfo, Set<File>>(3);
@@ -516,6 +545,42 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             return name;
         } else {
             throw new IllegalStateException("Unknown status: " + mostImportantInfo.getStatus()); //NOI18N
+        }
+    }
+
+    public Color getAnnotatedColor (FileInformation info) {
+        if (info.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
+            // IGNORED
+            return getAnnotationProvider().EXCLUDED_FILE.getActualColor();
+        } else if (info.getStatus().equals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.REMOVED_INDEX_WORKING_TREE))) {
+            // ADDED to index but REMOVED in WT
+            return getAnnotationProvider().UP_TO_DATE_FILE.getActualColor();
+        } else if (info.getStatus().equals(EnumSet.of(Status.MODIFIED_HEAD_INDEX, Status.MODIFIED_INDEX_WORKING_TREE))) {
+            // MODIFIED in index, MODIFIED in WT, but in WT same as HEAD
+            return getAnnotationProvider().UP_TO_DATE_FILE.getActualColor();
+        } else if (info.containsStatus(Status.REMOVED_HEAD_WORKING_TREE)) {
+            // DELETED in WT
+            return getAnnotationProvider().REMOVED_FILE.getActualColor();
+        } else if (info.getStatus().equals(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.REMOVED_HEAD_INDEX))) {
+            // recreated in WT
+            return getAnnotationProvider().UP_TO_DATE_FILE.getActualColor();
+        } else if (info.getStatus().equals(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.REMOVED_HEAD_INDEX, Status.MODIFIED_HEAD_WORKING_TREE))) {
+            // recreated in WT and modified
+            return getAnnotationProvider().MODIFIED_FILE.getActualColor();
+        } else if (info.containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
+            // NEW in WT and unversioned
+            return getAnnotationProvider().NEW_FILE.getActualColor();
+        } else if (info.containsStatus(Status.NEW_HEAD_INDEX)) {
+            // ADDED to index
+            return getAnnotationProvider().ADDED_FILE.getActualColor();
+        } else if (info.containsStatus(Status.MODIFIED_HEAD_WORKING_TREE)) {
+            return getAnnotationProvider().MODIFIED_FILE.getActualColor();
+        } else if (info.containsStatus(Status.UPTODATE)) {
+            return getAnnotationProvider().UP_TO_DATE_FILE.getActualColor();
+        } else if (info.containsStatus(Status.IN_CONFLICT)) {
+            return getAnnotationProvider().CONFLICT_FILE.getActualColor();
+        } else {
+            return null;
         }
     }
 

@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
-import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
@@ -65,6 +64,7 @@ import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.ErrorManager;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 
@@ -137,7 +137,7 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
                     p.getLookup ()
                 );
         } else {
-            Toolkit.getDefaultToolkit().beep();
+            Utilities.disabledActionBeep();
             setEnabled (
                 ActionsManager.ACTION_STEP_INTO,
                 false

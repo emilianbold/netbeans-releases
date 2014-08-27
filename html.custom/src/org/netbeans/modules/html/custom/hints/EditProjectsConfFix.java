@@ -46,6 +46,7 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.html.custom.conf.Configuration;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
@@ -69,9 +70,12 @@ public final class EditProjectsConfFix implements HintFix {
     @Override
     public void implement() throws Exception {
         Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
-        DataObject dobj = DataObject.find(conf.getProjectsConfigurationFile());
-        OpenCookie oc = dobj.getLookup().lookup(OpenCookie.class);
-        oc.open();
+        FileObject projectsConfigurationFile = conf.getProjectsConfigurationFile();
+        if(projectsConfigurationFile != null) {
+            DataObject dobj = DataObject.find(projectsConfigurationFile);
+            OpenCookie oc = dobj.getLookup().lookup(OpenCookie.class);
+            oc.open();
+        }
     }
 
     @Override

@@ -50,7 +50,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -60,7 +59,6 @@ import org.openide.util.RequestProcessor;
 public final class EarlyHandler extends Handler {
     
     final Queue<LogRecord> earlyRecords = new ArrayDeque<>();
-    private final Runnable installerRestore = new InstallerRestore();
     private volatile boolean isOn = true;
     
     public EarlyHandler() {
@@ -77,14 +75,11 @@ public final class EarlyHandler extends Handler {
     public void publish(LogRecord record) {
         if (isOn && record.getLoggerName() != null) {
             synchronized (earlyRecords) {
-                if (earlyRecords.isEmpty()) {
-                    restoreLoggerInstaller();
-                }
                 earlyRecords.add(record);
             }
         }
     }
-
+    
     @Override
     public void flush() {
     }
@@ -93,16 +88,4 @@ public final class EarlyHandler extends Handler {
     public void close() throws SecurityException {
     }
     
-    private void restoreLoggerInstaller() {
-        new RequestProcessor(EarlyHandler.class).post(installerRestore);
-    }
-    
-    private class InstallerRestore implements Runnable {
-        
-        @Override
-        public void run() {
-            Installer installer = Installer.findObject(Installer.class, true);
-            installer.restored(earlyRecords);
-        }
-    }
 }

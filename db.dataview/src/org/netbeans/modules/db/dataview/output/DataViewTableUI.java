@@ -54,6 +54,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -230,13 +232,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                     return;
                 }
 
-                int modelColumn = convertColumnIndexToModel(col);
-                DBColumn dbcol = getModel().getColumn(modelColumn);
-                if (dbcol.isGenerated() || !dbcol.isNullable()) {
-                    Toolkit.getDefaultToolkit().beep();
-                } else {
-                    setValueAt("<NULL>", row, col);
-                }
+                setCellToNull(row, col);
                 setRowSelectionInterval(row, row);
                 e.consume();
             } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_1) {
@@ -245,17 +241,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                 if (row == -1) {
                     return;
                 }
-
-                int modelColumn = convertColumnIndexToModel(col);
-                DBColumn dbcol = getModel().getColumn(modelColumn);
-                Object val = getValueAt(row, col);
-                if (dbcol.isGenerated() || !dbcol.hasDefault()) {
-                    Toolkit.getDefaultToolkit().beep();
-                } else if (val != null && val instanceof String && ((String) val).equals("<DEFAULT>")) {
-                    setValueAt(null, row, col);
-                } else {
-                    setValueAt("<DEFAULT>", row, col);
-                }
+                setCellToDefault(row, col);
                 setRowSelectionInterval(row, row);
                 e.consume();
             }
@@ -265,6 +251,37 @@ final class DataViewTableUI extends ResultSetJXTable {
         public void keyReleased(KeyEvent e) {
         }
     }
+
+    private void setCellToNull(int row, int col) {
+        int modelColumn = convertColumnIndexToModel(col);
+        DBColumn dbcol = getModel().getColumn(modelColumn);
+        if ( dbcol.isGenerated() || !dbcol.isNullable()) {
+            Toolkit.getDefaultToolkit().beep();
+        } else {
+            Class modelClass = getModel().getColumnClass(modelColumn);
+            if (Blob.class.isAssignableFrom(modelClass)
+                    || Clob.class.isAssignableFrom(modelClass)) {
+                setValueAt(null, row, col);
+            } else {
+                setValueAt("<NULL>", row, col);
+            }
+        }
+    }
+
+    private void setCellToDefault(int row, int col) {
+        int modelColumn = convertColumnIndexToModel(col);
+        DBColumn dbcol = getModel().getColumn(modelColumn);
+                Object val = getValueAt(row, col);
+                if (dbcol.isGenerated() || !dbcol.hasDefault()) {
+                    Toolkit.getDefaultToolkit().beep();
+        } else if (val != null && val instanceof String
+                && ((String) val).equals("<DEFAULT>")) {
+                    setValueAt(null, row, col);
+                } else {
+                    setValueAt("<DEFAULT>", row, col);
+                }
+                setRowSelectionInterval(row, row);
+            }
 
     private class TableSelectionListener implements ListSelectionListener {
 
@@ -515,6 +532,44 @@ final class DataViewTableUI extends ResultSetJXTable {
         });
         tablePopupMenu.add(miRefreshAction);
 
+        tablePopupMenu.addSeparator();
+
+        final JMenuItem miSetNull = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_set_cell_to_null"));
+        miSetNull.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for (int col : getSelectedColumns()) {
+                    int modelColumn = convertColumnIndexToModel(col);
+                    DBColumn dbcol = getModel().getColumn(modelColumn);
+                    for (int row : getSelectedRows()) {
+                        if((!dbcol.isGenerated()) && dbcol.isNullable()) {
+                            setCellToNull(row, col);
+                        }
+                    }
+                }
+            }
+        });
+        tablePopupMenu.add(miSetNull);
+        
+        final JMenuItem miSetDefault = new JMenuItem(NbBundle.getMessage(DataViewTableUI.class, "TOOLTIP_set_cell_to_default"));
+        miSetDefault.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for (int col : getSelectedColumns()) {
+                    int modelColumn = convertColumnIndexToModel(col);
+                    DBColumn dbcol = getModel().getColumn(modelColumn);
+                    for (int row : getSelectedRows()) {
+                        if((!dbcol.isGenerated()) && dbcol.hasDefault()) {
+                            setCellToDefault(row, col);
+                        }
+                    }
+                }
+            }
+        });
+        tablePopupMenu.add(miSetDefault);
+        
         addMouseListener(new MouseAdapter() {
 
             @Override
@@ -567,12 +622,30 @@ final class DataViewTableUI extends ResultSetJXTable {
                         miInsertSQLScript.setEnabled(true);
                         miDeleteSQLScript.setEnabled(true);
                         miDeleteAction.setEnabled(true);
+                        boolean enableSetToNull = false;
+                        boolean enableSetToDefault = false;
+                        for(int col: getSelectedColumns()) {
+                            int modelColumn = convertColumnIndexToModel(col);
+                            DBColumn dbcol = getModel().getColumn(modelColumn);
+                            if(!dbcol.isGenerated()) {
+                                if(dbcol.isNullable()) {
+                                    enableSetToNull = true;
+                                }
+                                if(dbcol.hasDefault()) {
+                                    enableSetToDefault = true;
+                                }
+                            }
+                        }
+                        miSetDefault.setEnabled(enableSetToDefault);
+                        miSetNull.setEnabled(enableSetToNull);
                     } else {
                         miCopyRowValues.setEnabled(false);
                         miCopyRowValuesH.setEnabled(false);
                         miInsertSQLScript.setEnabled(false);
                         miDeleteSQLScript.setEnabled(false);
                         miDeleteAction.setEnabled(false);
+                        miSetDefault.setEnabled(false);
+                        miSetNull.setEnabled(false);
                     }
                     if(selectedColumn >= 0 && selectedRow >= 0) {
                         miCopyValue.setEnabled(true);

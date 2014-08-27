@@ -48,6 +48,7 @@ import org.netbeans.modules.php.api.editor.PhpClass.Method;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.atoum.commands.Atoum;
+import org.netbeans.modules.php.atoum.coverage.CoverageProvider;
 import org.netbeans.modules.php.atoum.create.TestCreator;
 import org.netbeans.modules.php.atoum.locate.AtoumTestLocator;
 import org.netbeans.modules.php.atoum.run.TestRunner;
@@ -112,6 +113,9 @@ public class AtoumTestingProvider implements PhpTestingProvider {
     @Override
     public void runTests(PhpModule phpModule, TestRunInfo runInfo, TestSession testSession) throws TestRunException {
         new TestRunner(phpModule).runTests(runInfo, testSession);
+        if (runInfo.isCoverageEnabled()) {
+            testSession.setCoverage(new CoverageProvider(phpModule).getCoverage(runInfo));
+        }
     }
 
     @Override
@@ -126,7 +130,7 @@ public class AtoumTestingProvider implements PhpTestingProvider {
 
     @Override
     public boolean isCoverageSupported(PhpModule phpModule) {
-        return false;
+        return true;
     }
 
     @Override

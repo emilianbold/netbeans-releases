@@ -89,7 +89,7 @@ public final class IOConnector {
                 try {
                     IONotifier.addPropertyChangeListener(io, new ResizeListener(process.getExecutionEnvironment(), tty));
                 } catch (CancellationException ex) {
-                    Exceptions.printStackTrace(ex); // TODO:CancellationException error processing
+                    // TODO:CancellationException error processing
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -119,7 +119,7 @@ public final class IOConnector {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (CancellationException ex) {
-                Exceptions.printStackTrace(ex); // TODO:CancellationException error processing
+                // TODO:CancellationException error processing
             }
         }
 

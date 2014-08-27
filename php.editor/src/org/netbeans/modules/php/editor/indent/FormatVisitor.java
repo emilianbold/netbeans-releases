@@ -92,6 +92,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
@@ -131,6 +132,7 @@ public class FormatVisitor extends DefaultVisitor {
     private boolean isMethodInvocationShifted; // is continual indentation already included ?
     private boolean isFirstUseStatementPart;
     private boolean isFirstUseTraitStatementPart;
+    private boolean inArray;
 
     public FormatVisitor(BaseDocument document, DocumentOptions documentOptions, final int caretOffset, final int startOffset, final int endOffset) {
         this.document = document;
@@ -253,6 +255,7 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(ArrayCreation node) {
+        inArray = true;
         int delta = options.indentArrayItems - options.continualIndentSize;
         if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex <= ts.index() // it's possible that the expression starts with array
                 && !ts.token().text().toString().equals("[")) {  //NOI18N
@@ -301,6 +304,7 @@ public class FormatVisitor extends DefaultVisitor {
         formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * delta));
         addAllUntilOffset(node.getEndOffset());
         resetGroupAlignment();
+        inArray = false;
     }
 
     private int modifyDeltaForEnclosingFunctionInvocations(int delta) {
@@ -378,7 +382,7 @@ public class FormatVisitor extends DefaultVisitor {
                     }
                 } else if (path.size() > 1 && !(parent instanceof ForStatement)) {
                     VariableBase leftHandSide = node.getLeftHandSide();
-                    if (leftHandSide instanceof Variable || leftHandSide instanceof FieldAccess) {
+                    if (leftHandSide instanceof Variable || leftHandSide instanceof FieldAccess || leftHandSide instanceof StaticFieldAccess) {
                         handleGroupAlignment(leftHandSide);
                     }
                 }
@@ -975,9 +979,13 @@ public class FormatVisitor extends DefaultVisitor {
         Block body = node.getBody();
         if (body != null) {
             addAllUntilOffset(body.getStartOffset());
-            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), -1 * options.continualIndentSize));
+            if (!inArray) {
+                formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), -1 * options.continualIndentSize));
+            }
             scan(body);
-            formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), options.continualIndentSize));
+            if (!inArray) {
+                formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), options.continualIndentSize));
+            }
         }
     }
 

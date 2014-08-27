@@ -41,14 +41,21 @@
  */
 package org.netbeans.modules.options.export;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.SyncFailedException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,12 +71,14 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import org.openide.filesystems.*;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Model for export/import options. It reads {@code OptionsExport/<category>/<item>}
@@ -104,6 +113,7 @@ public final class OptionsExportModel {
     private static final List<String> IGNORED_FOLDERS = Arrays.asList("var/cache");  // NOI18N
     private final String PASSWORDS_PATTERN = "config/Preferences/org/netbeans/modules/keyring.*";  // NOI18N
     static final String ENABLED_ITEMS_INFO = "enabledItems.info";  // NOI18N
+    static final String BUILD_INFO = "build.info";  // NOI18N
 
     /** Returns instance of export options model.
      * @param source source of export/import. It is either zip file or userdir
@@ -111,6 +121,111 @@ public final class OptionsExportModel {
      */
     public OptionsExportModel(File source) {
         this.source = source;
+    }
+    
+    ArrayList<String> getEnabledItemsDuringExport(File importSource) {
+        ArrayList<String> enabledItems = null;
+        if (importSource.isFile()) { // importing from .zip file
+            try {
+                ZipFile zipFile = new ZipFile(importSource);
+                // Enumerate each entry
+                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry zipEntry = (ZipEntry) entries.nextElement();
+                    if(zipEntry.getName().equals(OptionsExportModel.ENABLED_ITEMS_INFO)) {
+                        enabledItems = new ArrayList<String>();
+                        InputStream stream = zipFile.getInputStream(zipEntry);
+                        BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+                        String strLine;
+                        while ((strLine = br.readLine()) != null) {
+                            enabledItems.add(strLine);
+                        }
+                    }
+                }
+            } catch (ZipException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else if(importSource.isDirectory()) { // importing from directory
+            File[] children = importSource.listFiles(new java.io.FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return pathname.getName().equals(OptionsExportModel.ENABLED_ITEMS_INFO);
+                }
+            });
+            if(children.length == 1) {
+                enabledItems = new ArrayList<String>();
+                BufferedReader br;
+                try {
+                    br = Files.newBufferedReader(Paths.get(Utilities.toURI(children[0])), StandardCharsets.UTF_8);
+                    String strLine;
+                    while ((strLine = br.readLine()) != null) {
+                        enabledItems.add(strLine);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return enabledItems;
+    }
+    
+    double getBuildNumberDuringExport(File importSource) {
+        String buildNumber = null;
+        if (importSource.isFile()) { // importing from .zip file
+            try {
+                ZipFile zipFile = new ZipFile(importSource);
+                // Enumerate each entry
+                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry zipEntry = (ZipEntry) entries.nextElement();
+                    if(zipEntry.getName().equals(OptionsExportModel.BUILD_INFO)) {
+                        InputStream stream = zipFile.getInputStream(zipEntry);
+                        BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+                        String strLine;
+                        while ((strLine = br.readLine()) != null) {
+                            if(strLine.startsWith("ProductVersion=")) {  // NOI18N
+                                buildNumber = getBuildNumber(strLine.substring(strLine.indexOf(" (Build ") + 8, strLine.length() - 1));  // NOI18N
+                            }
+                        }
+                    }
+                }
+            } catch (ZipException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else if(importSource.isDirectory()) { // importing from directory
+            File[] children = importSource.listFiles(new java.io.FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return pathname.getName().equals(OptionsExportModel.BUILD_INFO);
+                }
+            });
+            if (children.length == 1) {
+                BufferedReader br;
+                try {
+                    br = Files.newBufferedReader(Paths.get(Utilities.toURI(children[0])), StandardCharsets.UTF_8);
+                    String strLine;
+                    while ((strLine = br.readLine()) != null) {
+                        if (strLine.startsWith("ProductVersion=")) {  // NOI18N
+                            buildNumber = getBuildNumber(strLine.substring(strLine.indexOf(" (Build ") + 8, strLine.length() - 1));  // NOI18N
+                        }
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return buildNumber == null ? -1 : Double.parseDouble(buildNumber);
+    }
+    
+    String getBuildNumber(String build) {
+        if (build.contains("-")) { // dev build e.g. 20140606-ab7b8979c660
+            build = build.substring(0, build.indexOf("-")).concat("2359");  // NOI18N
+        }
+        return build;
     }
 
     /**
@@ -211,9 +326,9 @@ public final class OptionsExportModel {
     private void createEnabledItemsInfo(ZipOutputStream out, ArrayList<String> enabledItems) throws IOException {
         out.putNextEntry(new ZipEntry(ENABLED_ITEMS_INFO));
         if (!enabledItems.isEmpty()) {
-            PrintWriter writer = new PrintWriter(out);
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
             for (String item : enabledItems) {
-                writer.println(item);
+                writer.append(item).append('\n');
             }
             writer.flush();
         }
@@ -544,6 +659,9 @@ public final class OptionsExportModel {
         }
 
         public boolean isApplicable() {
+            if(items == null) {
+                return false;
+            }
             synchronized (items) {
                 Iterator<Item> iterator = items.iterator();
                 while (iterator.hasNext()) {

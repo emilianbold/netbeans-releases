@@ -145,6 +145,19 @@ public final class UsageLogger {
                 .create();
     }
 
+    /**
+     * Create usage logger for JS test run.
+     * @param loggerName name of usage logger name, e.g. &quot;org.netbeans.ui.metrics.php"
+     * @return unrepeated usage logger for JS test run.
+     * @since 1.70
+     */
+    public static UsageLogger jsTestRunUsageLogger(String loggerName) {
+        return new Builder(loggerName)
+                .message(UsageLogger.class, "USG_TEST_RUN_JS") // NOI18N
+                .unrepeated(true)
+                .create();
+    }
+
     //~ Inner classes
 
     /**

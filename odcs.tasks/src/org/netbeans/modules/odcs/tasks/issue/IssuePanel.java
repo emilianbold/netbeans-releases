@@ -628,6 +628,7 @@ public class IssuePanel extends javax.swing.JPanel {
         if(descriptionPanel != null) {
             descriptionPanel.setVisible(!isNew);
         }
+        privateDueDatePicker.getComponent().setEnabled(false);
         
         final String parentId = issue.getParentId();
         boolean hasParent = (parentId != null) && (parentId.trim().length() > 0);
@@ -732,7 +733,6 @@ public class IssuePanel extends javax.swing.JPanel {
             NbDateRange scheduleDate = issue.getScheduleDate();
             scheduleDatePicker.setScheduleDate(scheduleDate == null ? null : scheduleDate.toSchedulingInfo());
             privateEstimateField.setValue(issue.getEstimate());
-            privateDueDatePicker.getComponent().setEnabled(false);
         }
 
         reloadField(ownerCombo, IssueField.OWNER);
@@ -803,10 +803,10 @@ public class IssuePanel extends javax.swing.JPanel {
                 @Override
                 public void run() {
                     final SubtaskTableModel tableModel = new SubtaskTableModel(issue);
-                    subtasksSection.setLabel(NbBundle.getMessage(IssuePanel.class, "IssuePanel.subtasksLabel.text", tableModel.getRowCount())); //NOI18N
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
+                            subtasksSection.setLabel(NbBundle.getMessage(IssuePanel.class, "IssuePanel.subtasksLabel.text", tableModel.getRowCount())); //NOI18N
                             TableSorter sorter = new TableSorter(tableModel);
                             subTaskTable.setModel(sorter);
                             sorter.setTableHeader(subTaskTable.getTableHeader());
@@ -1410,7 +1410,9 @@ public class IssuePanel extends javax.swing.JPanel {
             return ((com.tasktop.c2c.server.tasks.domain.Component) item).getName();
         } else if (item instanceof Milestone) {
             return ((Milestone) item).getValue();
-        } else {
+        } else if (item == null) {
+            return ""; // NOI18N
+        } else { 
             assert item instanceof String : "Wrong value type : " + item.getClass().getName(); // NOI18N
         }
         return item.toString();
@@ -1546,6 +1548,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     Date dueDate = dueDatePicker.getDate();
                     String value = dueDate == null ? "" : Long.toString(dueDate.getTime()); //NOI18N
                     storeFieldValue(IssueField.DUEDATE, value); //NOI18N
+                    privateDueDatePicker.setDate(dueDate);
                     updateDecorations();
                 }
             }
@@ -1582,15 +1585,6 @@ public class IssuePanel extends javax.swing.JPanel {
                 return true;
             }
         });
-        privateDueDatePicker.addChangeListener(new DatePickerListener(privateDueDatePicker.getComponent(),
-                ATTRIBUTE_DUE_DATE, privateDueDateLabel) {
-
-            @Override
-            protected boolean storeValue () {
-                issue.setTaskDueDate(privateDueDatePicker.getDate(), false);
-                return true;
-            }
-        });
         scheduleDatePicker.addChangeListener(new DatePickerListener(scheduleDatePicker.getComponent(),
                 ATTRIBUTE_SCHEDULE_DATE, scheduleDateLabel) {
 
@@ -1605,7 +1599,8 @@ public class IssuePanel extends javax.swing.JPanel {
 
             @Override
             protected boolean storeValue () {
-                int value = ((Number) privateEstimateField.getValue()).intValue();
+                Object valueObj = privateEstimateField.getValue();
+                int value = valueObj instanceof Number ? ((Number) valueObj).intValue() : 0;
                 if (value != issue.getEstimate()) {
                     issue.setTaskEstimate(value, false);
                     return true;
@@ -3208,7 +3203,7 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_iterationComboActionPerformed
 
     private void parentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parentButtonActionPerformed
-        findIssue(parentField, "IssuePanel.parentButton.message", "org.netbeans.modules.odcs.parentChooser", true); // NOI18N
+        findIssue(parentField, "IssuePanel.parentButton.message", "org.netbeans.modules.odcs.parentChooser", false); // NOI18N
     }//GEN-LAST:event_parentButtonActionPerformed
 
     private void subtaskButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_subtaskButtonActionPerformed

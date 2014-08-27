@@ -74,6 +74,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.impl.RunWhenScanFinishedSupport;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.netbeans.modules.parsing.impl.indexing.ClusteredIndexables;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexingModule;
 import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
@@ -92,7 +93,7 @@ import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
@@ -123,47 +124,38 @@ public final class QuerySupport {
      * 
      * @since 1.6
      */
+    @NonNull
     public static Collection<FileObject> findRoots(
             FileObject f,
             Collection<String> sourcePathIds,
             Collection<String> libraryPathIds,
             Collection<String> binaryLibraryPathIds)
     {
-        Collection<FileObject> roots = new HashSet<FileObject>();
-
-        if (sourcePathIds == null) {
-            sourcePathIds = PathRecognizerRegistry.getDefault().getSourceIds();
-        }
-
-        if (libraryPathIds == null) {
-            libraryPathIds = PathRecognizerRegistry.getDefault().getLibraryIds();
-        }
-
-        if (binaryLibraryPathIds == null) {
-            binaryLibraryPathIds = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
-        }
-
-        collectClasspathRoots(f, sourcePathIds, false, roots);
-        collectClasspathRoots(f, libraryPathIds, false, roots);
-        collectClasspathRoots(f, binaryLibraryPathIds, true, roots);
-
+        final Set<FileObject> roots = collectClasspathRoots(
+            f,
+            sourcePathIds,
+            libraryPathIds,
+            binaryLibraryPathIds);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Roots for file " + f //NOI18N
-                    + ", sourcePathIds=" + sourcePathIds //NOI18N
-                    + ", libraryPathIds=" + libraryPathIds //NOI18N
-                    + ", binaryPathIds=" + binaryLibraryPathIds //NOI18N
-                    + ": "); //NOI18N
+            LOG.log(
+                Level.FINE,
+                "Roots for file {0}, sourcePathIds={1}, libraryPathIds={2}, binaryPathIds={3}: ",    //NOI18N
+                new Object[]{
+                    f,
+                    sourcePathIds,
+                    libraryPathIds,
+                    binaryLibraryPathIds
+                });
             for(FileObject root : roots) {
-                try {
-                    LOG.fine("  " + root.getURL()); //NOI18N
-                } catch (FileStateInvalidException ex) {
-                    //ignore
-                }
+                LOG.log(
+                    Level.FINE,
+                    "  {0}",    //NOI18N
+                    root.toURL());
             }
             LOG.fine("----"); //NOI18N
         }
 
-        return roots != null ? roots : Collections.<FileObject>emptySet();
+        return roots;
     }
 
     /**
@@ -247,57 +239,105 @@ public final class QuerySupport {
      * 
      * @since 1.6
      */
+    @NonNull
     public static Collection<FileObject> findRoots(
-            Project project,
-            Collection<String> sourcePathIds,
-            Collection<String> libraryPathIds,
-            Collection<String> binaryLibraryPathIds)
+            @NullAllowed final Project project,
+            @NullAllowed Collection<String> sourcePathIds,
+            @NullAllowed Collection<String> libraryPathIds,
+            @NullAllowed Collection<String> binaryLibraryPathIds)
     {
-        Set<FileObject> roots = new HashSet<FileObject>();
-
-        if (sourcePathIds == null) {
-            sourcePathIds = PathRecognizerRegistry.getDefault().getSourceIds();
-        }
-
-        if (libraryPathIds == null) {
-            libraryPathIds = PathRecognizerRegistry.getDefault().getLibraryIds();
-        }
-
-        if (binaryLibraryPathIds == null) {
-            binaryLibraryPathIds = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
-        }
-
-        collectClasspathRoots(null, sourcePathIds, false, roots);
-        collectClasspathRoots(null, libraryPathIds, false, roots);
-        collectClasspathRoots(null, binaryLibraryPathIds, true, roots);
+        Collection<FileObject> roots = collectClasspathRoots(
+            null,
+            sourcePathIds,
+            libraryPathIds,
+            binaryLibraryPathIds);
 
         if (project != null) {
-            Set<FileObject> rootsInProject = new HashSet<FileObject>();
-            for(FileObject root : roots) {
-                if (FileOwnerQuery.getOwner(root) == project) {
-                    rootsInProject.add(root);
-                }
+            roots = reduceRootsByProjects(roots, Collections.singleton(project)).get(project);
+            if (roots == null) {
+                roots = Collections.emptySet();
             }
-            roots = rootsInProject;
         }
 
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Roots for project " + project //NOI18N
-                    + ", sourcePathIds=" + sourcePathIds //NOI18N
-                    + ", libraryPathIds=" + libraryPathIds //NOI18N
-                    + ", binaryPathIds=" + binaryLibraryPathIds //NOI18N
-                    + ": "); //NOI18N
+            LOG.log(
+                Level.FINE,
+                "Roots for project {0}, sourcePathIds={1}, libraryPathIds={2}, binaryPathIds={3}: ",    //NOI18N
+                new Object[]{
+                    project,
+                    sourcePathIds,
+                    libraryPathIds,
+                    binaryLibraryPathIds
+                });
             for(FileObject root : roots) {
-                try {
-                    LOG.fine("  " + root.getURL()); //NOI18N
-                } catch (FileStateInvalidException ex) {
-                    //ignore
-                }
+                LOG.log(
+                    Level.FINE,
+                    "  {0}",    //NOI18N
+                    root.toURL());
             }
             LOG.fine("----"); //NOI18N
         }
 
         return roots;
+    }
+
+    /**
+     * Gets classpath roots relevant for a projects.
+     * This method tries to find classpaths with <code>sourcePathIds</code>, <code>libraryPathIds</code> and
+     * <code>binaryPathIds</code> supplied by the <code>projects</code>.
+     *
+     * <p>The roots collected from <code>binaryLibraryPathIds</code> will be translated
+     * by the <code>SourceForBinaryQuery</code> in order to find relevant sources root.
+     * The roots collected from <code>libraryPathIds</code> are expected to be
+     * libraries in their sources form (ie. no translation).
+     *
+     * @param projects The projects to find the roots for.
+     * @param sourcePathIds The IDs of source classpath to look at.
+     * @param libraryPathIds The IDs of library classpath to look at.
+     * @param binaryLibraryPathIds The IDs of binary library classpath to look at.
+     * @return The roots for a given projects. It may be empty, but never <code>null</code>.
+     *
+     * @since 1.76
+     */
+    @NonNull
+    public static Map<Project,Collection<FileObject>> findRoots(
+        @NonNull final Collection<? extends Project> projects,
+        @NullAllowed Collection<String> sourcePathIds,
+        @NullAllowed Collection<String> libraryPathIds,
+        @NullAllowed Collection<String> binaryLibraryPathIds) {
+        Parameters.notNull("projects", projects);   //NOI18N
+        final Set<FileObject> roots = collectClasspathRoots(
+            null,
+            sourcePathIds,
+            libraryPathIds,
+            binaryLibraryPathIds);
+        final Map<Project,Collection<FileObject>> rbp = reduceRootsByProjects(roots, projects);
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(
+                Level.FINE,
+                "Roots for projects {0}, sourcePathIds={1}, libraryPathIds={2}, binaryPathIds={3}: ",   //NOI18N
+                new Object[]{
+                    projects,
+                    sourcePathIds,
+                    libraryPathIds,
+                    binaryLibraryPathIds
+                });
+            for (Map.Entry<Project,Collection<FileObject>> e : rbp.entrySet()) {
+                LOG.log(
+                    Level.FINE,
+                    "\tProject: {0}:",   //NOI18N
+                    e.getKey());
+                for(FileObject root : e.getValue()) {
+                    LOG.log(
+                        Level.FINE,
+                        "\t\t{0}",   //NOI18N
+                        root.toURL());
+                }
+            }
+            LOG.fine("----"); //NOI18N
+        }
+        return rbp;
     }
 
     public static QuerySupport forRoots (final String indexerName, final int indexerVersion, final URL... roots) throws IOException {
@@ -311,7 +351,7 @@ public final class QuerySupport {
         Parameters.notNull("roots", roots); //NOI18N
         final List<URL> rootsURL = new ArrayList<URL>(roots.length);
         for (FileObject root : roots) {
-            rootsURL.add(root.getURL());
+            rootsURL.add(root.toURL());
         }
         return new QuerySupport(indexerName, indexerVersion, rootsURL.toArray(new URL[rootsURL.size()]));
     }
@@ -429,6 +469,57 @@ public final class QuerySupport {
                         fieldName,
                         fieldValue,
                         translateQueryKind(kind)));
+            }
+
+            /**
+             * Creates a query for documents created for a file.
+             * @param relativePath the relative path from source root
+             * the {@link QuerySupport} was created for
+             * @return the newly created query
+             * @since 1.75
+             */
+            @NonNull
+            public Query file(@NonNull final String relativePath) {
+                Parameters.notNull("relativePath", relativePath);   //NOI18N
+                return field(ClusteredIndexables.FIELD_PRIMARY_KEY, relativePath, Kind.EXACT);
+            }
+
+            /**
+             * Creates a query for documents created for a file.
+             * @param file  the file under a source root the {@link QuerySupport} was created for
+             * @return the newly created query
+             * @throws IllegalArgumentException if the file is not under the {@link QuerySupport} roots
+             * @since 1.75
+             */
+            @NonNull
+            public Query file(@NonNull final FileObject file) {
+                Parameters.notNull("file", file);   //NOI18N
+                String relativePath = null;
+                final Collection<? extends FileObject> roots = mapToFileObjects(qs.roots);
+                for (FileObject root : roots) {
+                    relativePath = FileUtil.getRelativePath(root, file);
+                    if (relativePath != null) {
+                        break;
+                    }
+                }
+                if (relativePath == null) {
+                    final StringBuilder rootsList = new StringBuilder();
+                    boolean first = true;
+                    for (FileObject root : roots) {
+                        if (first) {
+                            first = false;
+                        } else {
+                            rootsList.append(", "); //NOI18N
+                        }
+                        rootsList.append(FileUtil.getFileDisplayName(root));
+                    }
+                    throw new IllegalArgumentException(String.format(
+                        "The file %s is not owned by QuerySupport roots: %s",   //NOI18N
+                        FileUtil.getFileDisplayName(file),
+                        rootsList
+                    ));
+                }
+                return file(relativePath);
             }
 
             /**
@@ -574,16 +665,52 @@ public final class QuerySupport {
 
     private QuerySupport (final String indexerName, int indexerVersion, final URL... roots) throws IOException {
         this.indexerQuery = IndexerQuery.forIndexer(indexerName, indexerVersion);
-        this.roots = new LinkedList<URL>(Arrays.asList(roots));
+        this.roots = new ArrayList<URL>(Arrays.asList(roots));
 
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine(getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) //NOI18N
-                    + "[indexer=" + indexerQuery.getIndexerId() + "]:"); //NOI18N
+            LOG.log(
+                Level.FINE,
+                "{0}@{1}[indexer={2}]:", //NOI18N
+                new Object[]{
+                   getClass().getSimpleName(),
+                   Integer.toHexString(System.identityHashCode(this)),
+                   indexerQuery.getIndexerId()
+                }); //NOI18N
             for(Pair<URL, LayeredDocumentIndex> pair : indexerQuery.getIndices(this.roots)) {
-                LOG.fine(" " + pair.first() + " -> index: " + pair.second()); //NOI18N
+                LOG.log(
+                    Level.FINE,
+                    " {0} -> index: {1}",   //NOI18N
+                    new Object[]{
+                        pair.first(),
+                        pair.second()
+                    }); //NOI18N
             }
             LOG.fine("----"); //NOI18N
         }
+    }
+
+    @NonNull
+    private static Set<FileObject> collectClasspathRoots(
+        @NullAllowed final FileObject file,
+        @NullAllowed Collection<String> sourcePathIds,
+        @NullAllowed Collection<String> libraryPathIds,
+        @NullAllowed Collection<String> binaryLibraryPathIds) {
+        final Set<FileObject> roots = new HashSet<FileObject>();
+        if (sourcePathIds == null) {
+            sourcePathIds = PathRecognizerRegistry.getDefault().getSourceIds();
+        }
+
+        if (libraryPathIds == null) {
+            libraryPathIds = PathRecognizerRegistry.getDefault().getLibraryIds();
+        }
+
+        if (binaryLibraryPathIds == null) {
+            binaryLibraryPathIds = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
+        }
+        collectClasspathRoots(file, sourcePathIds, false, roots);
+        collectClasspathRoots(file, libraryPathIds, false, roots);
+        collectClasspathRoots(file, binaryLibraryPathIds, true, roots);
+        return roots;
     }
 
     private static void collectClasspathRoots(FileObject file, Collection<String> pathIds, boolean binaryPaths, Collection<FileObject> roots) {
@@ -592,13 +719,7 @@ public final class QuerySupport {
             if (binaryPaths) {
                 // Filter out roots that do not have source files available
                 for(FileObject binRoot : classpathRoots) {
-                    URL binRootUrl;
-                    try {
-                        binRootUrl = binRoot.getURL();
-                    } catch (FileStateInvalidException fsie) {
-                        continue;
-                    }
-
+                    final URL binRootUrl = binRoot.toURL();
                     URL[] srcRoots = PathRegistry.getDefault().sourceForBinaryQuery(binRootUrl, null, false);
                     if (srcRoots != null) {
                         LOG.log(Level.FINE, "Translating {0} -> {1}", new Object [] { binRootUrl, srcRoots }); //NOI18N
@@ -628,14 +749,8 @@ public final class QuerySupport {
                 roots = Arrays.asList(classpath.getRoots());
             }
         } else {
-            roots = new HashSet<FileObject>();
             Set<URL> urls = PathRegistry.getDefault().getRootsMarkedAs(classpathId);
-            for(URL url : urls) {
-                FileObject f = URLCache.getInstance().findFileObject(url, false);
-                if (f != null) {
-                    roots.add(f);
-                }
-            }
+            roots = mapToFileObjects(urls);
         }
 
         return roots;
@@ -723,14 +838,34 @@ public final class QuerySupport {
     @NonNull
     private static Collection<FileObject> mapToFileObjects(
         @NonNull final Collection<? extends URL> urls) {
+        final URLCache ucache = URLCache.getInstance();
         final Collection<FileObject> result = new ArrayList<FileObject>(urls.size());
         for (URL u : urls) {
-            final FileObject fo = URLMapper.findFileObject(u);
+            final FileObject fo = ucache.findFileObject(u, false);
             if (fo != null) {
                 result.add(fo);
             }
         }
         return result;
+    }
+
+    @NonNull
+    private static Map<Project,Collection<FileObject>> reduceRootsByProjects(
+        @NonNull Collection<? extends FileObject> roots,
+        @NonNull Collection<? extends Project> projects) {
+         final Map<Project,Collection<FileObject>> rbp = new HashMap<>();
+         for (FileObject root : roots) {
+             final Project p = FileOwnerQuery.getOwner(root);
+             if (p != null && projects.contains(p)) {
+                 Collection<FileObject> pr = rbp.get(p);
+                 if (pr == null) {
+                     pr = new ArrayList<>();
+                     rbp.put(p, pr);
+                 }
+                 pr.add(root);
+             }
+         }
+         return rbp;
     }
 
     /* test */ static final class IndexerQuery {

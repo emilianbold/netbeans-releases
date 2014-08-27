@@ -79,4 +79,12 @@ public final class Type {
         }
         return retval;
     }
+
+    public static boolean isArray(String typeName) {
+        boolean result = false;
+        if (ARRAY.equals(typeName) || (typeName != null && typeName.contains("[") && typeName.contains("]"))) { //NOI18N
+            result = true;
+        }
+        return result;
+    }
 }

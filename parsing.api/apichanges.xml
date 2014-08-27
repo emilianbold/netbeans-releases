@@ -171,6 +171,43 @@ is the proper place.
               </p>
           </description>
       </change>
+      <change id="SuspendStatus.isSuspendSupported">
+          <api name="ParsingAPI"/>
+          <summary>Added <code>SuspendStatus.isSuspendSupported</code></summary>
+          <version major="1" minor="78"/>
+          <date day="7" month="7" year="2014"/>
+          <author login="tzezula"/>
+          <compatibility source="compatible" binary="compatible" semantic="compatible" addition="yes"/>
+          <description>
+              Added <code>SuspendStatus.isSuspendSupported</code> which test if active indexing task
+              supports suspending.
+          </description>
+          <class package="org.netbeans.modules.parsing.spi.indexing" name="SuspendStatus"/>
+      </change>
+      <change id="QuerySupport.per-project-roots">
+          <api name="ParsingAPI"/>
+          <summary>Added <code>QuerySupport.findRoots</code> mapping class paths roots by projects.</summary>
+          <version major="1" minor="76"/>
+          <date day="7" month="7" year="2014"/>
+          <author login="tzezula"/>
+          <compatibility source="compatible" binary="compatible" semantic="compatible" addition="yes"/>
+          <description>
+              Added <code>QuerySupport.findRoots</code> mapping class paths roots by projects.
+          </description>
+          <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport"/>
+      </change>
+      <change id="QuerySupport.Query.file">
+          <api name="ParsingAPI"/>
+          <summary>Added <code>QuerySupport.Query.file</code> factory for query searching index documents created for given file.</summary>
+          <version major="1" minor="75"/>
+          <date day="13" month="6" year="2014"/>
+          <author login="tzezula"/>
+          <compatibility source="compatible" binary="compatible" semantic="compatible" addition="yes"/>
+          <description>
+              Added <code>QuerySupport.Query.file</code> factory for query searching index documents created for given file.
+          </description>
+          <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport"/>
+      </change>
       <change id="CancelSupport">
           <api name="ParsingAPI"/>
           <summary>Added <code>CancelSupport</code> for thread safe testing of <code>SchedulerTask</code> cancelling.</summary>

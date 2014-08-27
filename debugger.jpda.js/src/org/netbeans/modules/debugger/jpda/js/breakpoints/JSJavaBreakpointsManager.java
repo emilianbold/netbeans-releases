@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.debugger.jpda.js.breakpoints;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.request.EventRequest;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -52,18 +53,23 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
@@ -88,9 +94,15 @@ import org.openide.util.Exceptions;
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
     
+    private static final String NASHORN_CONTEXT_CLASS = "jdk.nashorn.internal.runtime.Context"; // NOI18N
+    private static final String NASHORN_CONTEXT_SOURCE_BIND_METHOD = "cacheClass";    // NOI18N
+    
+    private static final Logger LOG = Logger.getLogger(JSJavaBreakpointsManager.class.getName());
+    
     private final Map<JPDADebugger, ScriptsHandler> scriptHandlers = new HashMap<>();
     private final Map<URLEquality, Set<JSLineBreakpoint>> breakpointsByURL = new HashMap<>();
     private ClassLoadUnloadBreakpoint scriptBP;
+    private MethodBreakpoint sourceBindBP;
     
     public JSJavaBreakpointsManager() {
     }
@@ -102,7 +114,12 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                                                     ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
         scriptBP.setHidden(true);
         scriptBP.setSuspend(EventRequest.SUSPEND_NONE);
-        return new Breakpoint[] { scriptBP };
+        
+        sourceBindBP = MethodBreakpoint.create(NASHORN_CONTEXT_CLASS, NASHORN_CONTEXT_SOURCE_BIND_METHOD);
+        sourceBindBP.setHidden(true);
+        sourceBindBP.setSuspend(EventRequest.SUSPEND_EVENT_THREAD);
+        
+        return new Breakpoint[] { scriptBP, sourceBindBP };
     }
     
     @Override
@@ -172,6 +189,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
         }
         ScriptsHandler sh = new ScriptsHandler(debugger);
         scriptBP.addJPDABreakpointListener(sh);
+        sourceBindBP.addJPDABreakpointListener(sh);
         synchronized (scriptHandlers) {
             scriptHandlers.put(debugger, sh);
         }
@@ -189,6 +207,8 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
         }
         if (sh != null) {
             scriptBP.removeJPDABreakpointListener(sh);
+            sourceBindBP.removeJPDABreakpointListener(sh);
+            scriptBP.enable();
             sh.destroy();
         }
     }
@@ -199,6 +219,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
         private final Map<MethodBreakpoint, JPDAClassType> scriptAccessBreakpoints = new HashMap<>();
         private final Map<URLEquality, Source> sourcesByURL = new HashMap<>();
         private final Map<JSLineBreakpoint, LineBreakpointHandler> lineBreakpointHandlers = new HashMap<>();
+        private boolean isSourceBind = false;
         
         ScriptsHandler(JPDADebugger debugger) {
             this.debugger = debugger;
@@ -237,7 +258,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                 if (scriptType != null) {
                     // script class method breakpoint so that we know when the script class is actually accessed
                     // we can load the source object only after the script class is initialized
-                    MethodBreakpoint scriptMethodBP = MethodBreakpoint.create(scriptType.getName(), "");
+                    MethodBreakpoint scriptMethodBP = MethodBreakpoint.create(scriptType.getName(), "*getMap");
                     scriptMethodBP.setHidden(true);
                     scriptMethodBP.setSuspend(EventRequest.SUSPEND_EVENT_THREAD);
                     scriptMethodBP.setSession(debugger);
@@ -245,6 +266,48 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                     DebuggerManager.getDebuggerManager().addBreakpoint(scriptMethodBP);
                     synchronized (scriptAccessBreakpoints) {
                         scriptAccessBreakpoints.put(scriptMethodBP, scriptType);
+                    }
+                }
+            } else if (sourceBindBP == event.getSource()) {
+                Variable sourceVar = null;
+                Variable scriptClass = null;
+                try {
+                    CallStackFrame csf = event.getThread().getCallStack(0, 1)[0];
+                    LocalVariable[] localVariables = csf.getLocalVariables();
+                    for (LocalVariable lv : localVariables) {
+                        switch (lv.getName()) {
+                            case "source":  sourceVar = lv;
+                                            break;
+                            case "clazz":   scriptClass = lv;
+                                            break;
+                        }
+                    }
+                } catch (AbsentInformationException aiex) {
+                }
+                if (scriptClass instanceof ObjectVariable) {
+                    try {
+                        Object jdiVal = scriptClass.getClass().getMethod("getJDIValue").invoke(scriptClass);
+                        scriptClass = (Variable) debugger.getClass().getMethod("getVariable", com.sun.jdi.Value.class).invoke(debugger, jdiVal);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                if (sourceVar instanceof ObjectVariable && scriptClass instanceof ClassVariable) {
+                    JPDAClassType scriptType;
+                    try {
+                        scriptType = (JPDAClassType) scriptClass.getClass().getMethod("getReflectedType").invoke(scriptClass);
+                    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+                        scriptType = null;
+                    }
+                    if (scriptType != null) {
+                        Source source = Source.getSource(debugger, scriptType, (ObjectVariable) sourceVar);
+                        if (source != null) {
+                            sourceCreated(source);
+                        }
+                    }
+                    if (!isSourceBind) {
+                        isSourceBind = true;
+                        scriptBP.disable();
                     }
                 }
             } else {
@@ -257,18 +320,22 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                 }
                 Source source = Source.getSource(scriptType);
                 if (source != null) {
-                    URL url = source.getUrl();
-                    if (url != null) {
-                        URLEquality urleq = new URLEquality(url);
-                        synchronized (sourcesByURL) {
-                            sourcesByURL.put(urleq, source);
-                            //classTypesBySource.put(source, scriptType);
-                        }
-                        createSourceLineBreakpoints(urleq, source);
-                    }
+                    sourceCreated(source);
                 }
             }
             event.resume();
+        }
+        
+        private void sourceCreated(Source source) {
+            URL url = source.getUrl();
+            if (url != null) {
+                URLEquality urleq = new URLEquality(url);
+                synchronized (sourcesByURL) {
+                    sourcesByURL.put(urleq, source);
+                    //classTypesBySource.put(source, scriptType);
+                }
+                createSourceLineBreakpoints(urleq, source);
+            }
         }
         
         /**
@@ -374,6 +441,9 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
             lb.setHidden(true);
             //lb.setPreferredClassType(source.getClassType());
             setPreferredClassType(lb, source.getClassType());
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("LineBreakpointHandler.createLineBreakpoint() classtype = "+source.getClassType().getName());
+            }
             lb.setSuspend(JPDABreakpoint.SUSPEND_EVENT_THREAD);
             lb.setSession(debugger);
             if (!jslb.isEnabled()) {

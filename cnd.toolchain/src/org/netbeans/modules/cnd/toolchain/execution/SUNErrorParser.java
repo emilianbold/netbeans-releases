@@ -140,7 +140,7 @@ public final class SUNErrorParser extends ErrorParser {
                 if(file == null || !file.matches(".*\\.pc")) { // NOI18N 
                     file = m.group(1);
                     lineNumber = Integer.valueOf(m.group(2));
-                    if (m.groupCount()<= 3) {
+                    if (m.groupCount()>= 3) {
                         description = m.group(3);
                     }
                 } else {

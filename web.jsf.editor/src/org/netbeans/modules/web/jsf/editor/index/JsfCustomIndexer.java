@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -123,8 +124,8 @@ public class JsfCustomIndexer extends CustomIndexer {
     private void processTlds(FileObject file, Context context) {
         LOGGER.log(Level.FINE, "indexing {0}", file); //NOI18N
 
-        try {
-            String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream());
+        try (InputStream is = file.getInputStream()) {
+            String namespace = FaceletsLibraryDescriptor.parseNamespace(is);
             if (namespace != null) {
                 JsfIndexSupport.indexTagLibraryDescriptor(context, file, namespace);
                 LOGGER.log(Level.FINE, "The file {0} indexed as a Tag Library Descriptor", file); //NOI18N
@@ -137,8 +138,8 @@ public class JsfCustomIndexer extends CustomIndexer {
     private void processFaceletsLibraryDescriptors(FileObject file, Context context) {
         LOGGER.log(Level.FINE, "indexing {0}", file); //NOI18N
 
-        try {
-            String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream());
+        try (InputStream is = file.getInputStream()) {
+            String namespace = FaceletsLibraryDescriptor.parseNamespace(is);
             if (namespace != null) {
                 JsfIndexSupport.indexFaceletsLibraryDescriptor(context, file, namespace);
                 LOGGER.log(Level.FINE, "The file {0} indexed as a Facelets Library Descriptor", file); //NOI18N

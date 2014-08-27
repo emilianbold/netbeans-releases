@@ -62,7 +62,7 @@ import org.openide.util.actions.SystemAction;
  * Node which describes an EJB Module.
  *
  * @author Michal Mocnak
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyEjbModuleNode extends AbstractNode {
     

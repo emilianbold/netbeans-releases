@@ -900,14 +900,14 @@ public final class ToolchainManagerImpl {
             }
             element.appendChild(c);
         }
-        if (scanner.getStackHeaderPattern() != null) {
+        for(String pattern : scanner.getStackHeaderPattern()) {
             c = doc.createElement("stack_header"); // NOI18N
-            c.setAttribute("pattern", scanner.getStackHeaderPattern()); // NOI18N
+            c.setAttribute("pattern", pattern); // NOI18N
             element.appendChild(c);
         }
-        if (scanner.getStackNextPattern() != null) {
+        for(String pattern : scanner.getStackNextPattern()) {
             c = doc.createElement("stack_next"); // NOI18N
-            c.setAttribute("pattern", scanner.getStackNextPattern()); // NOI18N
+            c.setAttribute("pattern", pattern); // NOI18N
             element.appendChild(c);
         }
         if (scanner.getEnterDirectoryPattern() != null) {
@@ -1251,8 +1251,8 @@ public final class ToolchainManagerImpl {
         String enterDirectoryPattern;
         String leaveDirectoryPattern;
         String makingAllInDirectoryPattern;
-        String stackHeaderPattern;
-        String stackNextPattern;
+        List<String> stackHeaderPattern = new ArrayList<String>();
+        List<String> stackNextPattern = new ArrayList<String>();
         final List<String> filterOut = new ArrayList<String>();
     }
 
@@ -1794,9 +1794,9 @@ public final class ToolchainManagerImpl {
                 } else if (path.endsWith(".leave_directory")) { // NOI18N
                     s.leaveDirectoryPattern = getValue(attributes, "pattern"); // NOI18N
                 } else if (path.endsWith(".stack_header")) { // NOI18N
-                    s.stackHeaderPattern = getValue(attributes, "pattern"); // NOI18N
+                    s.stackHeaderPattern.add(getValue(attributes, "pattern")); // NOI18N
                 } else if (path.endsWith(".stack_next")) { // NOI18N
-                    s.stackNextPattern = getValue(attributes, "pattern"); // NOI18N
+                    s.stackNextPattern.add(getValue(attributes, "pattern")); // NOI18N
                 } else if (path.endsWith(".filter_out")) { // NOI18N
                     final String pattern = getValue(attributes, "pattern"); // NOI18N
                     if (pattern != null) {
@@ -2678,12 +2678,12 @@ public final class ToolchainManagerImpl {
         }
 
         @Override
-        public String getStackHeaderPattern() {
+        public List<String> getStackHeaderPattern() {
             return s.stackHeaderPattern;
         }
 
         @Override
-        public String getStackNextPattern() {
+        public List<String> getStackNextPattern() {
             return s.stackNextPattern;
         }
 

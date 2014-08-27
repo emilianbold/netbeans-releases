@@ -587,7 +587,7 @@ public class CsmCompletionProvider implements CompletionProvider {
     private final static class LastResultItem extends CsmResultItem {
 
         private final String str;
-        private final static CsmPaintComponent.StringPaintComponent stringComponent = new CsmPaintComponent.StringPaintComponent();
+        private static CsmPaintComponent.StringPaintComponent stringComponent = null;
 
         public LastResultItem() {
             super(null, Integer.MAX_VALUE);
@@ -596,6 +596,10 @@ public class CsmCompletionProvider implements CompletionProvider {
 
         @Override
         public java.awt.Component getPaintComponent(boolean isSelected) {
+            // lack of sync is intentional, no harm if we do this twice
+            if (stringComponent == null) {
+                stringComponent = new CsmPaintComponent.StringPaintComponent();
+            }
             stringComponent.setString(str);
             return stringComponent;
         }

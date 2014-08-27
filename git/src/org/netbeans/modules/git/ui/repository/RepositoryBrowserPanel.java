@@ -48,6 +48,7 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.BeanInfo;
@@ -56,6 +57,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -70,7 +72,11 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -86,8 +92,11 @@ import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.GitRepositories;
+import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.branch.BranchSynchronizer;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.branch.DeleteBranchAction;
 import org.netbeans.modules.git.ui.branch.SetTrackingAction;
@@ -95,6 +104,9 @@ import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.fetch.PullAction;
+import org.netbeans.modules.git.ui.history.SearchHistoryAction;
+import org.netbeans.modules.git.ui.history.SearchIncomingAction;
+import org.netbeans.modules.git.ui.history.SearchOutgoingAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.push.PushAction;
 import org.netbeans.modules.git.ui.push.PushMapping;
@@ -106,6 +118,7 @@ import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.awt.Actions;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
 import org.openide.nodes.AbstractNode;
@@ -117,6 +130,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -128,6 +142,7 @@ import org.openide.windows.TopComponent;
  */
 public class RepositoryBrowserPanel extends JPanel implements Provider, PropertyChangeListener, ListSelectionListener,
         MouseListener {
+    private int sliderPos;
 
     AbstractNode root;
     private static final RequestProcessor RP = new RequestProcessor("RepositoryPanel", 1); //NOI18N
@@ -145,6 +160,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     public static final String PROP_REVISION_ACCEPTED = "RepositoryBrowserPanel.acceptedRevision"; //NOI18N
     private final File[] roots;
     private String branchMergeWith;
+    private static final String PROP_DELETE_ACTION = "RepoBrowser.deleteAction"; //NOI18N
 
     public static enum Option {
         DISPLAY_ALL_REPOSITORIES,
@@ -157,6 +173,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         DISPLAY_TOOLBAR,
         EXPAND_BRANCHES,
         EXPAND_TAGS,
+        SELECT_ACTIVE_BRANCH,
         ENABLE_POPUP
     }
 
@@ -165,6 +182,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             Option.DISPLAY_REVISIONS,
             Option.EXPAND_BRANCHES,
             Option.EXPAND_TAGS,
+            Option.SELECT_ACTIVE_BRANCH,
             Option.DISPLAY_TAGS);
 
     public RepositoryBrowserPanel () {
@@ -188,6 +206,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         if (!options.contains(Option.DISPLAY_REVISIONS)) {
             remove(jSplitPane1);
             add(tree, BorderLayout.CENTER);
+        }
+        if (options.contains(Option.ENABLE_POPUP)) {
+            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete"); // NOI18N
+            getActionMap().put("delete", new DeleteAction()); // NOI18N
         }
     }
 
@@ -215,6 +237,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     int width = revisionsPanel1.getPreferredSize().width;
                     int leftPanelWidth = jSplitPane1.getPreferredSize().width - width;
                     jSplitPane1.setDividerLocation(Math.min(200, leftPanelWidth));
+                    if (sliderPos > 0) {
+                        EventQueue.invokeLater(new Runnable() {
+
+                            @Override
+                            public void run () {
+                                jSplitPane1.setDividerLocation(sliderPos);
+                            }
+                        });
+                    }
                 }
             });
         }
@@ -324,6 +355,22 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
     }
 
+    @Override
+    public boolean requestFocusInWindow () {
+        return tree.requestFocusInWindow();
+    }
+    
+    void setSliderPosition (int pos) {
+        assert options.contains(Option.DISPLAY_REVISIONS);
+        sliderPos = pos;
+        jSplitPane1.setDividerLocation(pos);
+    }
+    
+    int getSliderPosition () {
+        assert options.contains(Option.DISPLAY_REVISIONS);
+        return jSplitPane1.getDividerLocation();
+    }
+
     private void attachToolbarListeners () {
 
     }
@@ -356,6 +403,45 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     }
 
     private static final HashMap<String, Image> cachedIcons = new HashMap<String, Image>(2);
+
+    @NbBundle.Messages({
+        "RepoBrowserPanel.DeleteAction.name=Delete"
+    })
+    private class DeleteAction extends AbstractAction {
+
+        public DeleteAction () {
+            super(Bundle.RepoBrowserPanel_DeleteAction_name());
+        }
+
+        @Override
+        public boolean isEnabled () {
+            return !getDeleteDelegates().isEmpty();
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            List<Action> delegetaActions = getDeleteDelegates();
+            for (Action a : delegetaActions) {
+                a.actionPerformed(e);
+            }
+        }
+
+        private List<Action> getDeleteDelegates () {
+            Node[] nodes = getExplorerManager().getSelectedNodes();
+            Action delegate = null;
+            // works only for one node at the moment
+            if (nodes.length == 1) {
+                Action[] actions = nodes[0].getActions(true);
+                for (Action a : actions) {
+                    if (a != null && Boolean.TRUE.equals(a.getValue(PROP_DELETE_ACTION)) && a.isEnabled()) {
+                        delegate = a;
+                    }
+                }
+            }
+            return delegate == null ? Collections.<Action>emptyList() : Arrays.asList(delegate);
+        }
+    }
+    
     private abstract class RepositoryBrowserNode extends AbstractNode {
         
         protected RepositoryBrowserNode (Children children, File repository) {
@@ -368,11 +454,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         public final Action[] getActions (boolean context) {
-            return options.contains(Option.ENABLE_POPUP) ? getPopupActions(context) : RepositoryBrowserNode.this.getPopupActions(context);
+            return options.contains(Option.ENABLE_POPUP) ? getPopupActions(context) : getDefaultActions();
         }
 
         protected Action[] getPopupActions (boolean context) {
-            return new Action[0];
+            return getDefaultActions();
         }
         
         protected Image getFolderIcon (int type) {
@@ -421,6 +507,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             }
 
             return null;
+        }
+
+        private Action[] getDefaultActions () {
+            return new Action[0];
         }
 
     }
@@ -691,10 +781,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private static class GitBranchInfo {
         private final GitBranch branch;
         private final Boolean mergedStatus;
+        private final Boolean autoSyncState;
 
-        public GitBranchInfo (GitBranch branch, Boolean mergedStatus) {
+        public GitBranchInfo (GitBranch branch, Boolean mergedStatus, Boolean autoSyncState) {
             this.branch = branch;
             this.mergedStatus = mergedStatus;
+            this.autoSyncState = autoSyncState;
         }
     }
     
@@ -798,7 +890,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                             GitRevisionInfo commonAncestor = client.getCommonAncestor(new String[] { branchMergeWith, e.getValue().getId()}, GitUtils.NULL_PROGRESS_MONITOR);
                             mergedStatus = commonAncestor != null && commonAncestor.getRevision().equals(e.getValue().getId());
                         }
-                        BranchesTopChildren.this.branches.put(e.getKey(), new GitBranchInfo(e.getValue(), mergedStatus));
+                        boolean autoSyncState = GitModuleConfig.getDefault().getAutoSyncBranch(repository, e.getKey());
+                        BranchesTopChildren.this.branches.put(e.getKey(), new GitBranchInfo(e.getValue(), mergedStatus, autoSyncState));
                     }
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, null, ex);
@@ -902,7 +995,19 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 node = node.getParentNode();
             }
             File repository = ((RepositoryNode) node).getRepository();
-            return new Node[] { new BranchNode(repository, key) };
+            final BranchNode n = new BranchNode(repository, key);
+            if (options.containsAll(EnumSet.of(Option.EXPAND_BRANCHES, Option.SELECT_ACTIVE_BRANCH)) && n.active) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        try {
+                            getExplorerManager().setSelectedNodes(new Node[] { n });
+                        } catch (PropertyVetoException ex) {
+                        }
+                    }
+                });
+            }
+            return new Node[] { n };
         }
 
         private void refreshKeys () {
@@ -943,12 +1048,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private String lastTrackingOtherId;
         private final Boolean mergeStatus;
         private final boolean remote;
+        private String trackingStatus;
+        private Boolean autoSyncState;
 
         public BranchNode (File repository, GitBranchInfo branchInfo) {
             super(Children.LEAF, repository, Lookups.singleton(new Revision.BranchReference(branchInfo.branch)));
             GitBranch branch = branchInfo.branch;
             branchName = branch.getName();
             mergeStatus = branchInfo.mergedStatus;
+            autoSyncState = branchInfo.autoSyncState;
             branchId = branch.getId();
             trackedBranch = branch.getTrackedBranch();
             remote = branch.isRemote();
@@ -985,6 +1093,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             return getName(false);
         }
         
+        @NbBundle.Messages({
+            "# {0} - tracked branch", "LBL_BranchNode.basedOn= (based on {0})",
+            "# {0} - tracking status", "LBL_BranchNode.trackingStatus= ({0})"
+        })
         public String getName (boolean html) {
             StringBuilder sb = new StringBuilder();
             if (active && html) {
@@ -993,10 +1105,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 sb.append(branchName).append(getMergeStatus(mergeStatus));
             }
             if (options.contains(Option.DISPLAY_COMMIT_IDS)) {
-                if (trackedBranch != null) {
-                    sb.append(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_BranchNode.basedOn", trackedBranch.getName())); //NOI18N
+                if (trackingStatus != null) {
+                    sb.append(Bundle.LBL_BranchNode_trackingStatus(trackingStatus));
+                } else if (trackedBranch != null) {
+                    sb.append(Bundle.LBL_BranchNode_basedOn(trackedBranch.getName()));
                 }
-                sb.append(" - ").append(branchId); //NOI18N
+                sb.append(" - ").append(branchId.substring(0, 10)); //NOI18N
             }
             return sb.toString();
         }
@@ -1023,6 +1137,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         @Override
         @NbBundle.Messages({
             "# {0} - branch name", "LBL_DiffToTrackedBranchAction_PopupName=Diff to \"{0}\"",
+            "# {0} - branch name", "LBL_SyncBranchAction_PopupName=Sync with \"{0}\"",
+            "# {0} - branch name", "LBL_AutosyncBranchAction_PopupName=Automatically sync with \"{0}\"",
+            "# {0} - branch name", "# {1} - remote branch name", "MSG_AutosyncBranchAction_progress=Synchronizing \"{0}\" with \"{1}\"",
             "LBL_SetTrackedBranchAction_PopupName=Setup Tracked Branch"
         })
         protected Action[] getPopupActions (boolean context) {
@@ -1057,8 +1174,13 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 actions.add(new AbstractAction(NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction_PopupName")) { //NOI18N
                     @Override
                     public void actionPerformed (ActionEvent e) {
-                        CreateTagAction action = SystemAction.get(CreateTagAction.class);
-                        action.createTag(repo, branch);
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                CreateTagAction action = SystemAction.get(CreateTagAction.class);
+                                action.createTag(repo, branch);
+                            }
+                        });
                     }
                 });
                 actions.add(new AbstractAction(NbBundle.getMessage(MergeRevisionAction.class, "LBL_MergeRevisionAction_PopupName")) { //NOI18N
@@ -1078,18 +1200,44 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         return !active;
                     }
                 });
-                actions.add(new AbstractAction(NbBundle.getMessage(DeleteBranchAction.class, "LBL_DeleteBranchAction_PopupName")) { //NOI18N
+                actions.add(new AbstractAction(NbBundle.getMessage(SearchHistoryAction.class, "LBL_SearchHistoryAction_PopupName")) { //NOI18N
                     @Override
                     public void actionPerformed (ActionEvent e) {
-                        DeleteBranchAction action = SystemAction.get(DeleteBranchAction.class);
-                        action.deleteBranch(currRepository, branchName);
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                SearchHistoryAction.openSearch(repo, new File[] { repo }, branch,
+                                        Utils.getContextDisplayName(VCSContext.forNodes(new Node[] {
+                                            new AbstractNode(Children.LEAF, Lookups.fixed(repo)) {
+                                                @Override
+                                                public String getDisplayName () {
+                                                    return repo.getName();
+                                                }
+                                            }
+                                        })));
+                            }
+                        });
+                    }
+                });
+                Action a = new AbstractAction(NbBundle.getMessage(DeleteBranchAction.class, "LBL_DeleteBranchAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                DeleteBranchAction action = SystemAction.get(DeleteBranchAction.class);
+                                action.deleteBranch(repo, branch);
+                            }
+                        });
                     }
 
                     @Override
                     public boolean isEnabled() {
                         return !active;
                     }
-                });
+                };
+                a.putValue(PROP_DELETE_ACTION, Boolean.TRUE);
+                actions.add(a);
                 if (!remote) {
                     actions.add(null);
                     if (trackedBranch != null) {
@@ -1109,14 +1257,110 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                         new Revision.BranchReference(trackedBranch));
                             }
                         });
+                        actions.add(new AbstractAction(Bundle.LBL_SyncBranchAction_PopupName(trackedBranch.getName())) {
+                            @Override
+                            public void actionPerformed (ActionEvent e) {
+                                EventQueue.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run () {
+                                        new BranchSynchronizer().syncBranches(repo, new String[] { branch }, true);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public boolean isEnabled () {
+                                return !active;
+                            }
+                        });
+                        
+                        class AutoSyncAction extends AbstractAction implements Presenter.Popup {
+
+                            @Override
+                            public void actionPerformed (ActionEvent e) {
+                            }
+
+                            @Override
+                            public JMenuItem getPopupPresenter () {
+                                final JCheckBoxMenuItem item = new JCheckBoxMenuItem();
+                                item.setState(autoSyncState);
+                                Action a = new AbstractAction(Bundle.LBL_AutosyncBranchAction_PopupName(trackedBranch.getName())) {
+
+                                    @Override
+                                    public void actionPerformed (ActionEvent e) {
+                                        final boolean autoSync = item.getState();
+                                        autoSyncState = autoSync;
+                                        new GitProgressSupport() {
+
+                                            @Override
+                                            protected void perform () {
+                                                GitModuleConfig.getDefault().setAutoSyncBranch(repo, branch, autoSync);
+                                                if (autoSync) {
+                                                    try {
+                                                        new BranchSynchronizer().syncBranches(repo, new String[] { branch }, this);
+                                                    } catch (GitException ex) {
+                                                        GitClientExceptionHandler.notifyException(ex, true);
+                                                    }
+                                                }
+                                            }
+                                        }.start(Git.getInstance().getRequestProcessor(repo), repo,
+                                                Bundle.MSG_AutosyncBranchAction_progress(branch, trackedBranch.getName()));
+                                    }
+                                    
+                                };
+                                Actions.connect(item, a, true);
+                                return item;
+                            }
+                            
+                        }
+                        actions.add(new AutoSyncAction());
                     }
                     actions.add(new AbstractAction(Bundle.LBL_SetTrackedBranchAction_PopupName()) {
                         @Override
                         public void actionPerformed (ActionEvent e) {
-                            SystemAction.get(SetTrackingAction.class).setupTrackedBranch(currRepository, branchName,
-                                    trackedBranch == null ? null : trackedBranch.getName());
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run () {
+                                    SystemAction.get(SetTrackingAction.class).setupTrackedBranch(repo, branch,
+                                            trackedBranch == null ? null : trackedBranch.getName());
+                                }
+                            });
                         }
                     });
+                }
+
+                if (trackedBranch != null && trackedBranch.isRemote() || remote) {
+                    actions.add(null);
+                    actions.add(new AbstractAction(NbBundle.getMessage(SearchIncomingAction.class, "LBL_SearchIncomingAction_PopupName")) { //NOI18N
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            Utils.post(new Runnable () {
+
+                                @Override
+                                public void run () {
+                                    SystemAction.get(SearchIncomingAction.class).openSearch(repo, new File[] { repo },
+                                            branch, getContextDisplayName(repo));
+                                }
+
+                            });
+                        }
+                    });
+                    if (trackedBranch != null && trackedBranch.isRemote() && !remote) {
+                        actions.add(new AbstractAction(NbBundle.getMessage(SearchOutgoingAction.class, "LBL_SearchOutgoingAction_PopupName")) { //NOI18N
+                            @Override
+                            public void actionPerformed (ActionEvent e) {
+                                Utils.post(new Runnable () {
+
+                                    @Override
+                                    public void run () {
+                                        SystemAction.get(SearchOutgoingAction.class).openSearch(repo, new File[] { repo },
+                                                branch, getContextDisplayName(repo));
+                                    }
+
+                                });
+                            }
+                        });
+                    }
                 }
             }
             return actions.toArray(new Action[actions.size()]);
@@ -1124,7 +1368,24 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         public Action getPreferredAction () {
-            if (currRevision != null) {
+            if (options.contains(Option.ENABLE_POPUP)) {
+                if (currRepository != null && branchName != null) {
+                    final File repo = currRepository;
+                    final String branch = branchName;
+                    return new AbstractAction(NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName")) { //NOI18N
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            Utils.postParallel(new Runnable () {
+                                @Override
+                                public void run() {
+                                    CheckoutRevisionAction action = SystemAction.get(CheckoutRevisionAction.class);
+                                    action.checkoutRevision(repo, branch);
+                                }
+                            }, 0);
+                        }
+                    };
+                }
+            } else if (currRevision != null) {
                 return new AbstractAction() {
                     @Override
                     public void actionPerformed (ActionEvent e) {
@@ -1135,13 +1396,22 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             return null;
         }
 
+        @NbBundle.Messages({
+            "# {0} - tracked branch name", "MSG_BranchNode.trackingStatus.inSync=in sync with \"{0}\"",
+            "# {0} - tracked branch name", "MSG_BranchNode.trackingStatus.merge=merge with \"{0}\"",
+            "# {0} - tracked branch name", "MSG_BranchNode.trackingStatus.behind=behind \"{0}\"",
+            "# {0} - tracked branch name", "MSG_BranchNode.trackingStatus.ahead=ahead of \"{0}\""
+        })
         private void refreshTracking (final GitBranch trackedBranch, final File repository) {
             if (trackedBranch != null && repository != null && options.contains(Option.DISPLAY_COMMIT_IDS)
                     && (!branchId.equals(lastTrackingMyId) || !trackedBranch.getId().equals(lastTrackingOtherId))) {
                 lastTrackingMyId = branchId;
                 lastTrackingOtherId = trackedBranch.getId();
                 if (trackedBranch.getId().equals(branchId)) {
+                    String oldName = getHtmlDisplayName();
+                    trackingStatus = Bundle.MSG_BranchNode_trackingStatus_inSync(trackedBranch.getName());
                     setShortDescription(NbBundle.getMessage(RepositoryBrowserPanel.class, "MSG_BranchNode.tracking.inSync", trackedBranch.getName())); //NOI18N
+                    fireDisplayNameChange(oldName, getHtmlDisplayName());
                 } else {
                     final String id = branchId;
                     RP.post(new Runnable() {
@@ -1154,7 +1424,13 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                 GitRevisionInfo info = client.getCommonAncestor(new String[] { id, trackedBranch.getId() }, GitUtils.NULL_PROGRESS_MONITOR);
                                 if (info == null || !(info.getRevision().equals(id) || info.getRevision().equals(trackedBranch.getId()))) {
                                     tt = NbBundle.getMessage(RepositoryBrowserPanel.class, "MSG_BranchNode.tracking.mergeNeeded", trackedBranch.getName()); //NOI18N
+                                    setTrackingStatus(Bundle.MSG_BranchNode_trackingStatus_merge(trackedBranch.getName()));
                                 } else {
+                                    if (info.getRevision().equals(trackedBranch.getId())) {
+                                        setTrackingStatus(Bundle.MSG_BranchNode_trackingStatus_ahead(trackedBranch.getName()));
+                                    } else if (info.getRevision().equals(id)) {
+                                        setTrackingStatus(Bundle.MSG_BranchNode_trackingStatus_behind(trackedBranch.getName()));
+                                    }
                                     SearchCriteria crit = new SearchCriteria();
                                     if (info.getRevision().equals(trackedBranch.getId())) {
                                         crit.setRevisionFrom(trackedBranch.getId());
@@ -1187,6 +1463,17 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                 @Override
                                 public void run () {
                                     setShortDescription(toolTip);
+                                }
+                            });
+                        }
+                        
+                        private void setTrackingStatus (final String status) {
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run () {
+                                    String oldName = getHtmlDisplayName();
+                                    trackingStatus = status;
+                                    fireDisplayNameChange(oldName, getHtmlDisplayName());
                                 }
                             });
                         }
@@ -1318,6 +1605,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
     }
 
+    @NbBundle.Messages({
+        "CTL_TagNode.deleteTag.action=Delete Tag...",
+        "MSG_TagNode.deleteTag.progress=Deleting Tag",
+        "# {0} - tag name", "MSG_TagNode.deleteTag.confirmation=Do you really want to delete tag {0}?",
+        "LBL_TagNode.deleteTag.confirmation=Delete Tag"
+    })
     private class TagNode extends RepositoryBrowserNode {
         private boolean active;
         private final String tagName;
@@ -1453,13 +1746,69 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         return !active;
                     }
                 });
+                actions.add(new AbstractAction(NbBundle.getMessage(SearchHistoryAction.class, "LBL_SearchHistoryAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                SearchHistoryAction.openSearch(repo, repo, getContextDisplayName(repo), null, tag);
+                            }
+                        });
+                    }
+                });
+                Action a = new AbstractAction(Bundle.CTL_TagNode_deleteTag_action()) {
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        EventQueue.invokeLater(new Runnable() {
+                            
+                            @Override
+                            public void run () {
+                                if (JOptionPane.showConfirmDialog(RepositoryBrowserPanel.this, Bundle.MSG_TagNode_deleteTag_confirmation(tag),
+                                        Bundle.LBL_TagNode_deleteTag_confirmation(),
+                                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {                                     
+                                    new GitProgressSupport() {
+
+                                        @Override
+                                        protected void perform () {
+                                            try {
+                                                getClient().deleteTag(tag, GitUtils.NULL_PROGRESS_MONITOR);
+                                            } catch (GitException ex) {
+                                                GitClientExceptionHandler.notifyException(ex, false);
+                                            }
+                                        }
+                                    }.start(Git.getInstance().getRequestProcessor(currRepository), currRepository, Bundle.MSG_TagNode_deleteTag_progress());
+                                }
+                            }
+                        });
+                    }
+                };
+                a.putValue(PROP_DELETE_ACTION, Boolean.TRUE);
+                actions.add(a);
             }
             return actions.toArray(new Action[actions.size()]);
         }
 
         @Override
         public Action getPreferredAction () {
-            if (currRevision != null) {
+            if (options.contains(Option.ENABLE_POPUP)) {
+                if (currRepository != null && tagName != null) {
+                    final File repo = currRepository;
+                    final String tag = tagName;
+                    return new AbstractAction(NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction_PopupName")) { //NOI18N
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            Utils.postParallel(new Runnable () {
+                                @Override
+                                public void run() {
+                                    CheckoutRevisionAction action = SystemAction.get(CheckoutRevisionAction.class);
+                                    action.checkoutRevision(repo, tag);
+                                }
+                            }, 0);
+                        }
+                    };
+                }
+            } else if (currRevision != null) {
                 return new AbstractAction() {
                     @Override
                     public void actionPerformed (ActionEvent e) {
@@ -1617,7 +1966,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             actions.add(new AbstractAction(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_RepositoryPanel.RemoteNode.remove")) { //NOI18N
                 @Override
                 public void actionPerformed (ActionEvent e) {
-                    new RemoveRemoteConfig().removeRemote(repository, remoteName);
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            new RemoveRemoteConfig().removeRemote(repository, remoteName);
+                        }
+                    });
                 }
             });
             return actions.toArray(new Action[actions.size()]);
@@ -1746,6 +2100,17 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             return null;
         }
         return trackedBranch;
+    }
+
+    private static String getContextDisplayName (final File repo) {
+        return Utils.getContextDisplayName(VCSContext.forNodes(new Node[] {
+            new AbstractNode(Children.LEAF, Lookups.fixed(repo)) {
+                @Override
+                public String getDisplayName () {
+                    return repo.getName();
+                }
+            }
+        }));
     }
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

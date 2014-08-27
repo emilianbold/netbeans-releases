@@ -71,6 +71,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -93,7 +94,6 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -424,9 +424,23 @@ public class GoToSupport {
 
         String result = null;
         try {
-            final ElementJavadoc jdoc = ElementJavadoc.create(controller, resolved.resolved);
+            // attempt to cancel the background task once the tooltip waiting period is over
+            class Ctrl implements Callable<Boolean> {
+                private volatile boolean cancel;
+                
+                @Override
+                public Boolean call() throws Exception {
+                    return cancel;
+                }
+                
+            };
+            
+            final Ctrl control = new Ctrl();
+            // #240060: if non-null cancel is passed, the actual URL fetch is done on background, allowing us to proceed without blocking
+            final ElementJavadoc jdoc = ElementJavadoc.create(controller, resolved.resolved, control);
             Future<String> text = jdoc != null ? jdoc.getTextAsync() : null;
             result = text != null ? text.get(1, TimeUnit.SECONDS) : null;
+            // signal that the task should be cancelled
             if (result != null) {
                 int idx = 0;
                 for (int i = 0; i < 3 && idx >= 0; i++) {
@@ -463,7 +477,9 @@ public class GoToSupport {
                     }
                 });
             }
+            control.cancel = true;
         } catch (Exception ex) {}
+        
         
         if (result == null) {
             result = v.result.toString();
@@ -517,10 +533,12 @@ public class GoToSupport {
                     if (JavadocImports.isInsideReference(jdts, offset) || JavadocImports.isInsideParamName(jdts, offset)) {
                         jdts.move(offset);
                         jdts.moveNext();
-                        if (token != null) {
-                            token[0] = t;
+                        if (jdts.token().id() != JavadocTokenId.OTHER_TEXT) {
+                            if (token != null) {
+                                token[0] = t;
+                            }
+                            ret[0] = new int [] {jdts.offset(), jdts.offset() + jdts.token().length()};
                         }
-                        ret[0] = new int [] {jdts.offset(), jdts.offset() + jdts.token().length()};
                     }
                     return;
                 } else if (!USABLE_TOKEN_IDS.contains(t.id())) {

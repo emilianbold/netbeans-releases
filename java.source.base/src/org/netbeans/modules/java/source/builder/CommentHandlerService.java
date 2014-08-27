@@ -86,6 +86,17 @@ public class CommentHandlerService implements CommentHandler {
     private CommentHandlerService(Context context) {
     }
     
+    Map<Tree, CommentSetImpl> getCommentMap() {
+        Map<Tree, CommentSetImpl> m = new HashMap<>(map);
+        for (Iterator<Map.Entry<Tree, CommentSetImpl>> it = m.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<Tree, CommentSetImpl> e = it.next();
+            if (!e.getValue().hasComments()) {
+                it.remove();
+            }
+        }
+        return m;
+    }
+    
     public boolean hasComments(Tree tree) {
         synchronized (map) {
             return map.containsKey(tree);
@@ -108,6 +119,10 @@ public class CommentHandlerService implements CommentHandler {
      * appending the new entries to the existing comment lists.
      */
     public void copyComments(Tree fromTree, Tree toTree) {
+        copyComments(fromTree, toTree, null, null);
+    }
+        
+    public void copyComments(Tree fromTree, Tree toTree, RelativePosition copyToPos, Collection<Comment> copied) {
         if (fromTree == toTree) {
             return;
         }
@@ -119,7 +134,12 @@ public class CommentHandlerService implements CommentHandler {
                     map.put(toTree, to = new CommentSetImpl());
                 }
                 for (RelativePosition pos : RelativePosition.values()) {
-                    to.addComments(pos, from.getComments(pos));
+                    for (Comment c : from.getComments(pos)) {
+                        if (copied != null && !copied.add(c)) {
+                            continue;
+                        }
+                        to.addComment(copyToPos == null ? pos : copyToPos, c, true);
+                    }
                 }
             }
         }

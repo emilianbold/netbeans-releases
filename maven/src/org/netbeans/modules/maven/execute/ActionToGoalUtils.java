@@ -165,6 +165,9 @@ public final class ActionToGoalUtils {
             }
         }
         if (rc != null ) {
+            if (rc instanceof ModelRunConfig && ((ModelRunConfig)rc).isFallback()) {
+                return rc;
+            }
             List<String> acts = new ArrayList<String>(); 
             acts.addAll(rc.getActivatedProfiles());
             acts.addAll(configs.getActiveConfiguration().getActivatedProfiles());
@@ -210,6 +213,9 @@ public final class ActionToGoalUtils {
         NetbeansActionMapping na = null;
         if (configuration != null) {
             na = configuration.getMappingForAction(action, project);
+            if (na == null) {
+                na = configuration.getProfileMappingForAction(action, project, Collections.<String,String>emptyMap(), null);
+            }
         }
         if (na == null) {
             na = getDefaultMapping(action, project);

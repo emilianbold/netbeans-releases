@@ -1611,6 +1611,9 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
             // same version, check for rc, pre, beta
             String fullVer1 = fullVersion1.toLowerCase();
             String fullVer2 = fullVersion2.toLowerCase();
+            if (fullVer1.equals(fullVer2)) {
+                return 0;
+            }
             Integer result = compareVersions(POSTVERSIONS, fullVer1, fullVer2, true);
             if (result != null) {
                 return result;
@@ -1657,6 +1660,11 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
             String[] parts = SANITIZE_VERSION_PATTERN.split(version);
             if (parts.length == 0) {
                 return version;
+            }
+            for (String part : parts) {
+                if (!part.isEmpty()) {
+                    return part;
+                }
             }
             return parts[0];
         }

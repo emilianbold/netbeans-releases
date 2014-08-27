@@ -257,7 +257,7 @@ public final class Utilities {
      * class MyReference extends WeakReference<Thing> implements Runnable {
      *     private final OtherInfo dataToCleanUp;
      *     public MyReference(Thing ref, OtherInfo data) {
-     *         super(ref, Utilities.queue());
+     *         super(ref, Utilities.activeReferenceQueue());
      *         dataToCleanUp = data;
      *     }
      *     public void run() {
@@ -2071,6 +2071,20 @@ public final class Utilities {
             // not a file: URL
             return null;
         }
+    }
+
+    /**
+     * On some platform this method makes a short audible beep, use it when user 
+     * tries to invoke an action that's disabled.
+     * Some platforms, e.g. MS Windows do not emit any sound in such cases.
+     * @since 8.39
+     */
+    public static void disabledActionBeep() {
+        if( isWindows() ) {
+            //no sound on MS Windows
+            return;
+        }
+        Toolkit.getDefaultToolkit().beep();
     }
 
    /** Exception indicating that a given list could not be partially-ordered.

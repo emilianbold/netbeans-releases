@@ -1,0 +1,14 @@
+Code completion result for source line:
+'|',
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+FILE       api                                        
+FILE       config                                     
+FILE       fileCC                                     
+FILE       folder1                                    
+FILE       folder2                                    
+FILE       lib                                        
+FILE       lib/api                                    
+FILE       main.js                                    
+FILE       main2.js                                   
+FILE       utils                                      

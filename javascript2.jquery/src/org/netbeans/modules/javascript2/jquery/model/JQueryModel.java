@@ -103,7 +103,7 @@ public class JQueryModel {
     }
 
     private static class JQFunction implements JsFunction {
-    
+        
         private final JsFunction delegate;
 
         public JQFunction(JsFunction delegate) {
@@ -297,6 +297,10 @@ public class JQueryModel {
             return delegate.getOffsetRange(result);
         }
 
+        @Override
+        public boolean containsOffset(int offset) {
+            return delegate.containsOffset(offset);
+        }
     }
 
 }

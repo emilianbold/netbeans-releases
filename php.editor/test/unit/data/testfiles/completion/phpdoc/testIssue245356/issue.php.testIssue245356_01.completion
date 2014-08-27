@@ -1,0 +1,9 @@
+Code completion result for source line:
+* @see |Name\Space\Bar::
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+PACKAGE    Name                            [PUBLIC]   null
+CLASS      ClassName                       [PUBLIC]   issue.php
+------------------------------------
+PACKAGE    Space                           [PUBLIC]   Name
+CLASS      Bar                             [PUBLIC]   Name\Space
+KEYWORD    callable                                   Language Construct

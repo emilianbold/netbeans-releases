@@ -268,6 +268,20 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug235447.cpp", 9, 28, "bug235447.cpp", 12, 9);
     }    
     
+    public void testBug243083() throws Exception {
+        // Bug 243083 -  unresolved method after dereferencing template based interator
+        performTest("bug243083.cpp", 38, 13, "bug243083.cpp", 29, 9);
+        performTest("bug243083.cpp", 39, 16, "bug243083.cpp", 29, 9);
+        performTest("bug243083.cpp", 47, 43, "bug243083.cpp", 46, 7);
+    }        
+    
+    public void testBug243083_1() throws Exception {
+        // Bug 243083 -  unresolved method after dereferencing template based interator
+        performTest("bug243083_1.cpp", 25, 16, "bug243083_1.cpp", 9, 9);
+        performTest("bug243083_1.cpp", 27, 16, "bug243083_1.cpp", 14, 9);
+        performTest("bug243083_1.cpp", 29, 16, "bug243083_1.cpp", 19, 9);
+    }      
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

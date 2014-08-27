@@ -399,7 +399,7 @@ public class CommitAction extends ContextAction {
 
                     for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
                         File file = it.next();
-                        HgFileNode node = new HgFileNode(file);
+                        HgFileNode node = new HgFileNode(repository, file);
                         nodesList.add(node);
                     }
                     final HgFileNode[] nodes = nodesList.toArray(new HgFileNode[fileList.size()]);
@@ -590,6 +590,10 @@ public class CommitAction extends ContextAction {
 
             new Cmd.AddCmd(addCandidates, logger, null, "hg add {0} into {1}").handle();
             new Cmd.RemoveCmd(deleteCandidates, logger, null, "hg delete {0} from {1}").handle();
+            removeDeletedTemporaryFiles(commitCandidates, deleteCandidates);
+            if (support.isCanceled()) {
+                return;
+            }
 
             File[] hookFiles = null;
             if(hooks.size() > 0) {
@@ -722,6 +726,33 @@ public class CommitAction extends ContextAction {
         };
         supp.start(Mercurial.getInstance().getRequestProcessor(repository));
         return supp;
+    }
+
+    /**
+     * Removes deleted uncommitted files (previously added but then deleted => no longer existing files)
+     * from the commit candidate list.
+     */
+    private static void removeDeletedTemporaryFiles (Map<File, List<File>> commitCandidates, Map<File, List<File>> deleteCandidates) {
+        for (Entry<File, List<File>> e : deleteCandidates.entrySet()) {
+            File root = e.getKey();
+            List<File> files = e.getValue();
+            if (!files.isEmpty()) {
+                try {
+                    List<File> commitFiles = commitCandidates.get(root);
+                    Map<File, FileInformation> status = HgCommand.getStatus(root, files, null, null);
+                    for (File f : files) {
+                        if (status.get(f) == null) {
+                            // status no longer interesting, do not commit
+                            commitFiles.remove(f);
+                        }
+                    }
+                } catch (HgException.HgCommandCanceledException ex) {
+                    return;
+                } catch (HgException ex) {
+                    Logger.getLogger(CommitAction.class.getName()).log(Level.FINE, null, ex);
+                }
+            }
+        }
     }
 
     private static abstract class Cmd {

@@ -78,6 +78,7 @@ public final class CGSGenerator implements CodeGenerator {
     static final String START_OF_SETTER = "set"; //NOI18N
     static final String NEW_LINE = System.getProperty("line.separator"); //NOI18N
     static final String UNDERSCORED_METHOD_NAME = "${UNDERSCORED_METHOD_NAME}"; //NOI18N
+    static final String ACCESS_MODIFIER = "${MODIFIER}"; //NOI18N
     static final String ACCESSOR = "${ACCESSOR}"; //NOI18N
     static final String PROPERTY = "${PROPERTY}"; //NOI18N
     static final String PARAM_NAME = "${PARAM_NAME}"; //NOI18N
@@ -88,10 +89,10 @@ public final class CGSGenerator implements CodeGenerator {
     private static final String PROPERTY_WITHOUT_UNDERSCORE = "${PropertyWithoutUnderscore}"; //NOI18N
     private static final String PARAMS = "${PARAMS}"; //NOI18N
     private static final String ASSIGNMENTS = "${ASSIGNMENT}"; //NOI18N
-    private static final String CONSTRUCTOR_TEMPLATE = "function __construct(" + PARAMS + ") {" + ASSIGNMENTS  + CURSOR + NEW_LINE + "}" + NEW_LINE;    //NOI18N
+    private static final String CONSTRUCTOR_TEMPLATE = ACCESS_MODIFIER + "function __construct(" + PARAMS + ") {" + ASSIGNMENTS  + CURSOR + NEW_LINE + "}" + NEW_LINE;    //NOI18N
 
     public enum GenType {
-        CONSTRUCTOR(PanelStrategy.CONSTRUCTOR, FluentSetterStrategy.INVISIBLE) {
+        CONSTRUCTOR(Panel.CONSTRUCTOR, Visibility.INVISIBLE, Visibility.VISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -140,11 +141,14 @@ public final class CGSGenerator implements CodeGenerator {
                 if (params.length() == 0) {
                     params.append(", "); //NOI18N
                 }
-                return CONSTRUCTOR_TEMPLATE.replace(PARAMS, params.toString().substring(2)).replace(ASSIGNMENTS, assignments);
+                String accessModifier = cgsInfo.isPublicModifier() ? "public " : ""; //NOI18N
+                return CONSTRUCTOR_TEMPLATE.replace(ACCESS_MODIFIER, accessModifier)
+                        .replace(PARAMS, params.toString().substring(2))
+                        .replace(ASSIGNMENTS, assignments);
             }
 
         },
-        GETTER(PanelStrategy.CONSTRUCTOR, FluentSetterStrategy.INVISIBLE) {
+        GETTER(Panel.CONSTRUCTOR, Visibility.INVISIBLE, Visibility.VISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -176,7 +180,7 @@ public final class CGSGenerator implements CodeGenerator {
             }
 
         },
-        SETTER(PanelStrategy.CONSTRUCTOR, FluentSetterStrategy.VISIBLE) {
+        SETTER(Panel.CONSTRUCTOR, Visibility.VISIBLE, Visibility.VISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -208,7 +212,7 @@ public final class CGSGenerator implements CodeGenerator {
             }
 
         },
-        GETTER_AND_SETTER(PanelStrategy.CONSTRUCTOR, FluentSetterStrategy.VISIBLE) {
+        GETTER_AND_SETTER(Panel.CONSTRUCTOR, Visibility.VISIBLE, Visibility.VISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -246,7 +250,7 @@ public final class CGSGenerator implements CodeGenerator {
             }
 
         },
-        METHODS(PanelStrategy.METHOD, FluentSetterStrategy.INVISIBLE) {
+        METHODS(Panel.METHOD, Visibility.INVISIBLE, Visibility.INVISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -291,8 +295,9 @@ public final class CGSGenerator implements CodeGenerator {
 
         };
 
-        private final PanelStrategy panelStrategy;
-        private final FluentSetterStrategy fluentSetterStrategy;
+        private final Panel panel;
+        private final Visibility fluentSetter;
+        private final Visibility publicModifier;
 
         public abstract String getPanelTitle();
         public abstract ComboBoxModel getModel(final String propertyName);
@@ -300,20 +305,25 @@ public final class CGSGenerator implements CodeGenerator {
         public abstract String getDialogTitle();
         public abstract String getTemplateText(final CGSInfo cgsInfo);
 
-        private GenType(final PanelStrategy panelStrategy, final FluentSetterStrategy fluentSetterStrategy) {
-            this.panelStrategy = panelStrategy;
-            this.fluentSetterStrategy = fluentSetterStrategy;
+        private GenType(final Panel panel, Visibility fluentSetter, Visibility publicModifier) {
+            this.panel = panel;
+            this.fluentSetter = fluentSetter;
+            this.publicModifier = publicModifier;
         }
 
         public JPanel createPanel(final CGSInfo cgsInfo) {
-            return panelStrategy.createPanel(this, cgsInfo);
+            return panel.createPanel(this, cgsInfo);
         }
 
         public boolean isFluentSetterVisible() {
-            return fluentSetterStrategy.isFluentSetterVisible();
+            return fluentSetter.isVisible();
         }
 
-        private enum PanelStrategy {
+        public boolean isPublicModifierVisible() {
+            return publicModifier.isVisible();
+        }
+
+        private enum Panel {
             CONSTRUCTOR {
                 @Override
                 JPanel createPanel(final GenType genType, final CGSInfo cgsInfo) {
@@ -330,21 +340,21 @@ public final class CGSGenerator implements CodeGenerator {
             abstract JPanel createPanel(final GenType genType, final CGSInfo cgsInfo);
         }
 
-        private enum FluentSetterStrategy {
+        private enum Visibility {
             VISIBLE {
                 @Override
-                boolean isFluentSetterVisible() {
+                boolean isVisible() {
                     return true;
                 }
             },
             INVISIBLE {
                 @Override
-                boolean isFluentSetterVisible() {
+                boolean isVisible() {
                     return false;
                 }
             };
 
-            abstract boolean isFluentSetterVisible();
+            abstract boolean isVisible();
         }
 
     }
@@ -436,6 +446,7 @@ public final class CGSGenerator implements CodeGenerator {
 
     private static final String GETTER_SETTER_PROJECT_PROPERTY = "getter.setter.method.name.generation"; //NOI18N
     private static final String FLUENT_SETTER_PROJECT_PROPERTY = "fluent.setter.project.property"; //NOI18N
+    private static final String PUBLIC_MODIFIER_PROJECT_PROPERTY = "public.modifier.project.property"; //NOI18N
 
     private CGSGenerator(CGSInfo cgsInfo, GenType type) {
         this.genType = type;
@@ -457,6 +468,7 @@ public final class CGSGenerator implements CodeGenerator {
                 cgsInfo.setHowToGenerate(GenWay.AS_JAVA);
             }
             cgsInfo.setFluentSetter(preferences.getBoolean(FLUENT_SETTER_PROJECT_PROPERTY, false));
+            cgsInfo.setPublicModifier(preferences.getBoolean(PUBLIC_MODIFIER_PROJECT_PROPERTY, false));
         }
         DialogDescriptor desc = new DialogDescriptor(genType.createPanel(cgsInfo), genType.getDialogTitle());
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
@@ -470,6 +482,7 @@ public final class CGSGenerator implements CodeGenerator {
                 //save the gen type value to the project properties
                 preferences.put(GETTER_SETTER_PROJECT_PROPERTY, cgsInfo.getHowToGenerate().name());
                 preferences.putBoolean(FLUENT_SETTER_PROJECT_PROPERTY, cgsInfo.isFluentSetter());
+                preferences.putBoolean(PUBLIC_MODIFIER_PROJECT_PROPERTY, cgsInfo.isPublicModifier());
             }
         }
     }

@@ -111,6 +111,7 @@ public class ConstructorGenerator implements CodeGenerator {
             if (typeElement == null || !typeElement.getKind().isClass() || NestingKind.ANONYMOUS.equals(typeElement.getNestingKind())) {
                 return ret;
             }
+            final WorkingCopy wc = context.lookup(WorkingCopy.class);
             final Set<? extends VariableElement> uninitializedFields = tu.getUninitializedFields(path);
             final List<ExecutableElement> inheritedConstructors = new ArrayList<>();
             TypeMirror superClassType = typeElement.getSuperclass();
@@ -149,7 +150,7 @@ public class ConstructorGenerator implements CodeGenerator {
                 fieldsDescription = ElementNode.Description.create(controller, typeElement, fieldDescriptions, false, false);
             }
             if (constructorHandle != null || constructorDescription != null || fieldsDescription != null) {
-                ret.add(new ConstructorGenerator(component, TreePathHandle.create(path, controller), constructorHandle, constructorDescription, fieldsDescription));
+                ret.add(new ConstructorGenerator(component, TreePathHandle.create(path, controller), constructorHandle, constructorDescription, fieldsDescription, wc));
             }
             return ret;
         }
@@ -160,14 +161,17 @@ public class ConstructorGenerator implements CodeGenerator {
     private final ElementHandle<? extends Element> constructorHandle;
     private final ElementNode.Description constructorDescription;
     private final ElementNode.Description fieldsDescription;
+    private final WorkingCopy existingWorkingCopy;
     
     /** Creates a new instance of ConstructorGenerator */
-    private ConstructorGenerator(JTextComponent component, TreePathHandle typeHandle, ElementHandle<? extends Element> constructorHandle, ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
+    private ConstructorGenerator(JTextComponent component, TreePathHandle typeHandle, ElementHandle<? extends Element> constructorHandle, ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription,
+            WorkingCopy wc) {
         this.component = component;
         this.typeHandle = typeHandle;
         this.constructorHandle = constructorHandle;
         this.constructorDescription = constructorDescription;
         this.fieldsDescription = fieldsDescription;
+        this.existingWorkingCopy = wc;
     }
 
     @Override
@@ -180,7 +184,7 @@ public class ConstructorGenerator implements CodeGenerator {
         final List<ElementHandle<? extends Element>> fieldHandles;
         final List<ElementHandle<? extends Element>> constrHandles;
         final int caretOffset = component.getCaretPosition();
-
+        
         if (constructorDescription != null || fieldsDescription != null) {
             ConstructorPanel panel = new ConstructorPanel(constructorDescription, fieldsDescription);
             DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_constructor")); //NOI18N
@@ -199,51 +203,61 @@ public class ConstructorGenerator implements CodeGenerator {
             fieldHandles = null;
             constrHandles = null;
         }
-        JavaSource js = JavaSource.forDocument(component.getDocument());
-        if (js != null) {
-            try {
-                ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
+        try {
+            if (existingWorkingCopy == null) {
+                JavaSource js = JavaSource.forDocument(component.getDocument());
+                if (js != null) {
+                    ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                     @Override
-                    public void run(WorkingCopy copy) throws IOException {
-                        copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        TreePath path = typeHandle.resolve(copy);
-                        if (path == null) {
-                            path = copy.getTreeUtilities().pathFor(caretOffset);
+                        public void run(WorkingCopy copy) throws IOException {
+                            doGenerateConstructor(copy, fieldHandles, constrHandles, caretOffset);
                         }
-                        path = copy.getTreeUtilities().getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
-                        if (path == null) {
-                            String message = NbBundle.getMessage(ConstructorGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
-                            org.netbeans.editor.Utilities.setStatusBoldText(component, message);
-                        } else {
-                            ArrayList<VariableElement> variableElements = new ArrayList<>();
-                            if (fieldHandles != null) {
-                                for (ElementHandle<? extends Element> elementHandle : fieldHandles) {
-                                    VariableElement field = (VariableElement) elementHandle.resolve(copy);
-                                    if (field == null) {
-                                        return;
-                                    }
-                                    variableElements.add(field);
-                                }
-                            }
-                            if (constrHandles != null && !constrHandles.isEmpty()) {
-                                ArrayList<ExecutableElement> constrElements = new ArrayList<>();
-                                for (ElementHandle<? extends Element> elementHandle : constrHandles) {
-                                    ExecutableElement constr = (ExecutableElement)elementHandle.resolve(copy);
-                                    if (constr == null) {
-                                        return;
-                                    }
-                                    constrElements.add(constr);
-                                }
-                                GeneratorUtils.generateConstructors(copy, path, variableElements, constrElements, caretOffset);
-                            } else {
-                                GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement)constructorHandle.resolve(copy) : null, caretOffset);
-                            }
-                        }
+                    });
+                    GeneratorUtils.guardedCommit(component, mr);
+                }
+            } else {
+                doGenerateConstructor(existingWorkingCopy, fieldHandles, constrHandles, caretOffset);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void doGenerateConstructor(WorkingCopy copy,
+            List<ElementHandle<? extends Element>> fieldHandles,
+            List<ElementHandle<? extends Element>> constrHandles, int caretOffset) throws IOException {
+        copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+        TreePath path = typeHandle.resolve(copy);
+        if (path == null) {
+            path = copy.getTreeUtilities().pathFor(caretOffset);
+        }
+        path = copy.getTreeUtilities().getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
+        if (path == null) {
+            String message = NbBundle.getMessage(ConstructorGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
+            org.netbeans.editor.Utilities.setStatusBoldText(component, message);
+        } else {
+            ArrayList<VariableElement> variableElements = new ArrayList<>();
+            if (fieldHandles != null) {
+                for (ElementHandle<? extends Element> elementHandle : fieldHandles) {
+                    VariableElement field = (VariableElement) elementHandle.resolve(copy);
+                    if (field == null) {
+                        return;
                     }
-                });
-                GeneratorUtils.guardedCommit(component, mr);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                    variableElements.add(field);
+                }
+            }
+            if (constrHandles != null && !constrHandles.isEmpty()) {
+                ArrayList<ExecutableElement> constrElements = new ArrayList<>();
+                for (ElementHandle<? extends Element> elementHandle : constrHandles) {
+                    ExecutableElement constr = (ExecutableElement) elementHandle.resolve(copy);
+                    if (constr == null) {
+                        return;
+                    }
+                    constrElements.add(constr);
+                }
+                GeneratorUtils.generateConstructors(copy, path, variableElements, constrElements, caretOffset);
+            } else {
+                GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement) constructorHandle.resolve(copy) : null, caretOffset);
             }
         }
     }

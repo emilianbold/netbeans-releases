@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -73,6 +74,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.spi.project.ActionProvider;
@@ -97,16 +99,19 @@ import org.openide.util.datatransfer.ExTransferable;
 final class ViewItemNode extends FilterNode implements ChangeListener {
     
     private static final RequestProcessor RP = new RequestProcessor("ViewItemNode", 1); //NOI18N
+    private static CodeAssistance cachedCA;
 
     private static final MessageFormat ITEM_VIEW_FLAVOR = new MessageFormat("application/x-org-netbeans-modules-cnd-makeproject-uidnd; class=org.netbeans.modules.cnd.makeproject.ui.ViewItemNode; mask={0}"); // NOI18N
 
     private RefreshableItemsContainer childrenKeys;
     private Folder folder;
     private Item item;
+    private volatile boolean itemIsExcludedCache = false;
     private final MakeProject project;
     private final ProjectNodesRefreshSupport.ProjectNodeRefreshListener refreshListener;
     private final boolean simpleRunDebug;
     private Action runAction;
+    private final VisualUpdater visualUpdater = new VisualUpdater();
 
     public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject, MakeProject project, boolean simpleRunDebug) {
         super(dataObject.getNodeDelegate());//, null, Lookups.fixed(item));
@@ -122,7 +127,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
                     return;
                 }
                 if (project == ViewItemNode.this.project) {
-                    EventQueue.invokeLater(new VisualUpdater());
+                    visualUpdater.postIfNeed();
                 }
             }
         };
@@ -130,10 +135,11 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
                 ProjectNodesRefreshSupport.ProjectNodeRefreshListener.class, refreshListener, ProjectNodesRefreshSupport.class));
 
         this.simpleRunDebug = simpleRunDebug;
-        CodeAssistance CAProvider = Lookup.getDefault().lookup(CodeAssistance.class);
+        CodeAssistance CAProvider = getCodeAssistance();
         if (CAProvider != null) {
             CAProvider.addChangeListener(this);
         }
+        itemIsExcludedCache = isExcluded();
     }
     
     public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject, MakeProject project) {
@@ -348,7 +354,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
     @Override
     public Image getIcon(int type) {
         Image image = super.getIcon(type);
-        if (isExcluded() && (image instanceof BufferedImage)) {
+        if (itemIsExcludedCache && (image instanceof BufferedImage)) {
             image = getGrayImage((BufferedImage)image);
         }
         return image;
@@ -368,7 +374,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
     
     @Override
     public String getHtmlDisplayName() {
-        if (isExcluded()) {
+        if (itemIsExcludedCache) {
             String baseName = super.getHtmlDisplayName();
             if (baseName != null && baseName.toLowerCase().contains("color=")) { // NOI18N
                 // decorating node already has color, leave it
@@ -383,6 +389,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
     }
 
     private boolean isExcluded() {
+        CndUtils.assertNonUiThread();
         if (item == null || item.getFolder() == null || item.getFolder().getConfigurationDescriptor() == null || item.getFolder().getConfigurationDescriptor().getConfs() == null) {
             return false;
         }
@@ -401,10 +408,31 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         return excl.getValue();
     }
 
+    private CodeAssistance getCodeAssistance(){
+        CodeAssistance res = cachedCA;
+        if (res == null) {
+            res = Lookup.getDefault().lookup(CodeAssistance.class);
+            cachedCA = res;
+        }
+        return res;
+    }
+    
     private class VisualUpdater implements Runnable {
+        private final AtomicBoolean finished = new AtomicBoolean(true);
 
+        private VisualUpdater() {
+        }                
+
+        private void postIfNeed() {
+            ViewItemNode.this.itemIsExcludedCache = ViewItemNode.this.isExcluded();
+            if (finished.getAndSet(false)) {
+                EventQueue.invokeLater(this);
+            }
+        }
+        
         @Override
         public void run() {
+            finished.set(true);
             fireIconChange();
             fireOpenedIconChange();
             String displayName = getDisplayName();
@@ -419,15 +447,15 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         if (source instanceof FileObject) {
             // See CsmCodeAssistanceProvider.fireChanges(CsmFile file)
             if (source.equals(item.getFileObject())) {
-                EventQueue.invokeLater(new VisualUpdater());
+                visualUpdater.postIfNeed();
             }
         } else if (source instanceof NativeProject) {
             // See CsmCodeAssistanceProvider.fireChanges(CsmProject project)
             if (source.equals(item.getNativeProject())) {
-                EventQueue.invokeLater(new VisualUpdater());
+                visualUpdater.postIfNeed();
             }
         } else {
-            EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
+            visualUpdater.postIfNeed();
         }
     }
 

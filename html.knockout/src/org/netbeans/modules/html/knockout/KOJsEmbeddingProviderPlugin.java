@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.knockout;
 
+import org.netbeans.modules.html.knockout.api.KODataBindTokenId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;

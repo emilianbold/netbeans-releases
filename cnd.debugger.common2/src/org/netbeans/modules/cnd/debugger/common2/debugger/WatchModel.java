@@ -383,6 +383,7 @@ public final class WatchModel extends VariableModel
         boolean canDoDy = desp.hasCapability(EngineCapability.DYNAMIC_TYPE);
         boolean canDoIn = desp.hasCapability(EngineCapability.INHERITED_MEMBERS);
         boolean canDoSt = desp.hasCapability(EngineCapability.STATIC_MEMBERS);
+	boolean canDoPP = desp.hasCapability(EngineCapability.PRETY_PRINT);
 
 	if (o == TreeModel.ROOT) {
 	    return new Action[] {
@@ -393,6 +394,7 @@ public final class WatchModel extends VariableModel
                 canDoIn ? Action_INHERITED_MEMBERS : null,
                 canDoDy ? Action_DYNAMIC_TYPE : null,
                 canDoSt ? Action_STATIC_MEMBERS : null,
+		canDoPP ? Action_PRETTY_PRINT : null,
                 null,
                 canDoMaxObject ? SystemAction.get(MaxObjectAction.class) : null,
 		null,
@@ -408,6 +410,7 @@ public final class WatchModel extends VariableModel
                 canDoIn ? Action_INHERITED_MEMBERS : null,
                 canDoDy ? Action_DYNAMIC_TYPE : null,
                 canDoSt ? Action_STATIC_MEMBERS : null,
+		canDoPP ? Action_PRETTY_PRINT : null,
                 null,
                 canDoMaxObject ? SystemAction.get(MaxObjectAction.class) : null,
 		null,

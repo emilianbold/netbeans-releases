@@ -390,7 +390,7 @@ public class AntSanityTest extends JellyTestCase {
         assertEquals("Evaluate code fragment (Ctrl + Enter)", expressionEvaluatorButton.getToolTipText());
         expressionEvaluatorButton.doClick();
         JTableOperator variablesTable = new JTableOperator(evaluationResultView);
-        assertValue(variablesTable, 0, 2, "If n is: 50, then n + 1 is: 51");        
+        assertValue(variablesTable, 0, 2, "\"If n is: 50, then n + 1 is: 51\"");
         assertEquals("\"If n is: \" + n + \", then n + 1 is: \" + (n + 1)", variablesTable.getValueAt(0, 0).toString());
     }
     

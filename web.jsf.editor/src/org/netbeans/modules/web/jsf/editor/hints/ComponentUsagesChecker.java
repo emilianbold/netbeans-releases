@@ -100,9 +100,8 @@ public class ComponentUsagesChecker extends HintsProvider {
         Map<String, Library> declaredLibraries = LibraryUtils.getDeclaredLibraries(result);
 
         // now we have all declared component libraries, let's get their parse trees and check the content
-        for (final String declaredLibraryNamespace : declaredLibraries.keySet()) {
-
-            Node root = result.root(declaredLibraryNamespace);
+        for (final Map.Entry<String, Library> declaredLib : declaredLibraries.entrySet()) {
+            Node root = result.root(declaredLib.getKey());
             if (root == null) {
                 //no parse tree for this namespace
                 continue;
@@ -114,8 +113,7 @@ public class ComponentUsagesChecker extends HintsProvider {
             }
 
             // compute components errors
-            Library library = declaredLibraries.get(declaredLibraryNamespace);
-            ComponentUsageVisitor componentVisitor = new ComponentUsageVisitor(snapshot, library, documentContent);
+            ComponentUsageVisitor componentVisitor = new ComponentUsageVisitor(snapshot, declaredLib.getValue(), documentContent);
             ElementUtils.visitChildren(root, componentVisitor, ElementType.OPEN_TAG);
             hints.addAll(componentVisitor.getHints());
         }
@@ -178,7 +176,7 @@ public class ComponentUsagesChecker extends HintsProvider {
                     //1. check required attributes
                     Collection<Attribute> attrs = tag.getAttributes();
                     for (Attribute attr : attrs) {
-                        if (attr.isRequired()) {
+                        if (attr.isRequired() && attr.getDefaultValue() == null) {
                             if (openTag.getAttribute(attr.getName()) == null) {
                                 //missing required attribute
                                 Hint hint = new Hint(ERROR_RULE_BADGING,

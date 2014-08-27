@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.php.editor.js;
 
+import junit.framework.Test;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -53,6 +55,10 @@ public class JsFormatterEmbeddedTest extends PHPTestBase {
 
     public JsFormatterEmbeddedTest(String name) {
         super(name);
+    }
+
+    public static Test suite() {
+        return NbModuleSuite.createConfiguration(JsFormatterEmbeddedTest.class).gui(false).suite();
     }
 
     @Override

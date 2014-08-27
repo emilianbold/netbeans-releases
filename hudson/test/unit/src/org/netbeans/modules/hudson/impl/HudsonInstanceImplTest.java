@@ -43,13 +43,10 @@ package org.netbeans.modules.hudson.impl;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.netbeans.modules.hudson.api.HudsonChangeAdapter;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
@@ -96,6 +93,7 @@ public class HudsonInstanceImplTest {
      * @throws java.lang.InterruptedException
      */
     @Test
+    @SuppressWarnings("SleepWhileInLoop")
     public void testJobWithoutSomePropertiesCanBeCreated()
             throws InterruptedException {
 
@@ -180,17 +178,14 @@ public class HudsonInstanceImplTest {
         HudsonInstance hi = HudsonManager.addInstance("x230406",
                 "http://x230406/", 1, bc);
         try {
-            final Semaphore s = new Semaphore(0);
-            hi.addHudsonChangeListener(new HudsonChangeAdapter() {
-
-                @Override
-                public void contentChanged() {
-                    s.release();
+            for (int i = 0; i < 600; i++) {
+                if (hi.getJobs().isEmpty()) {
+                    Thread.sleep(100);
+                } else {
+                    break;
                 }
-            });
-            hi.synchronize(false);
-            boolean acquired = s.tryAcquire(1, TimeUnit.MINUTES);
-            assertTrue(acquired);
+            }
+            assertFalse(hi.getJobs().isEmpty());
             HudsonJob hj = hi.getJobs().iterator().next();
             assertEquals(HudsonJob.Color.grey, hj.getColor());
             assertEquals("test", hj.getName());

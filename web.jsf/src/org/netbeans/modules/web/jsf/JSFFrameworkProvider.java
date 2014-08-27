@@ -71,15 +71,6 @@ import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.dd.api.web.*;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
-import org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanel;
-import org.openide.DialogDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileLock;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -87,14 +78,17 @@ import org.netbeans.modules.j2ee.common.ClasspathUtil;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
+import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
-import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
+import org.netbeans.modules.web.jsf.api.JsfComponentUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
@@ -103,10 +97,18 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
+import org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanel;
+import org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanel.PreferredLanguage;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
+import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Exceptions;
@@ -122,7 +124,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
     private static String HANDLER = "com.sun.facelets.FaceletViewHandler";                          //NOI18N
 
-    private static final String PREFERRED_LANGUAGE = "jsf.language"; //NOI18N
     private static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";  //NOI18N
     private static String WELCOME_JSF = "welcomeJSF.jsp";   //NOI18N
     private static String WELCOME_XHTML = "index.xhtml"; //NOI18N
@@ -323,14 +324,16 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     @Override
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean isFrameworkAddition = (webModule == null || !isInWebModule(webModule));
+        boolean isMaven = webModule == null ? false : JsfComponentUtils.isMavenBased(webModule);
+        controller.getProperties().setProperty("maven", isMaven);
         if (webModule != null && webModule.getDocumentBase() != null) {
             FileObject docBase = webModule.getDocumentBase();
             Project project = FileOwnerQuery.getOwner(docBase);
-            Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
-            if (preferences.get(PREFERRED_LANGUAGE, "").equals("")) { //NOI18N
+            JsfPreferences preferences = JsfPreferences.forProject(project);
+            if (preferences.getPreferredLanguage() == null) { //NOI18N
                 ClassPath cp  = ClassPath.getClassPath(docBase, ClassPath.COMPILE);
                 if (JSFUtils.isFaceletsPresent(cp)) {
-                    preferences.put(PREFERRED_LANGUAGE, "Facelets");    //NOI18N
+                    preferences.setPreferredLanguage(PreferredLanguage.Facelets);    //NOI18N
                 }
             }
             panel = new JSFConfigurationPanel(this, controller, isFrameworkAddition, preferences, webModule);
@@ -460,7 +463,11 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
             }
 
-            WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
+            WebApp ddRoot = null;
+            // issue #244100 - obviously the web project's profile can be unrecognized and the DD needn't still exist
+            if (dd != null) {
+                ddRoot = DDProvider.getDefault().getDDRoot(dd);
+            }
 
             //Add Faces Servlet and servlet-mapping into web.xml
             if (ddRoot != null && ddRoot.getStatus() == WebApp.STATE_VALID) {

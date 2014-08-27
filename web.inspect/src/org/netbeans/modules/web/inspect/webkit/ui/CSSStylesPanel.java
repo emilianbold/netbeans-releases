@@ -316,7 +316,9 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                             FileObject fob = new Resource(project, resourceName).toFileObject();
                             if (fob == null || fob.isFolder() /* issue 233463 */) {
                                 StyleSheetBody body = rule.getParentStyleSheet();
-                                fob = RemoteStyleSheetCache.getDefault().getFileObject(body);
+                                if (body != null && body.getText() != null) {
+                                    fob = RemoteStyleSheetCache.getDefault().getFileObject(body);
+                                }
                             }
                             if (fob == null) {
                                 controller.setNoRuleState();

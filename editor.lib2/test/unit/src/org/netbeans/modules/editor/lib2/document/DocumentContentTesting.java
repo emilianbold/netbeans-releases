@@ -44,10 +44,6 @@
 
 package org.netbeans.modules.editor.lib2.document;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import javax.swing.JEditorPane;
 import javax.swing.event.UndoableEditEvent;
@@ -129,15 +125,16 @@ public class DocumentContentTesting {
         RandomTestContainer container = new RandomTestContainer();
         container.addCheck(new DocumentContentCheck());
         Document doc = getDocument(container);
-        if (doc == null) {
-            doc = new TestEditorDocument();
-            container.putProperty(Document.class, doc);
-        }
         Document expectedDoc = getExpectedDocument(container);
         if (expectedDoc == null) {
             expectedDoc = new ExpectedDocument();
             container.putProperty(ExpectedDocument.class, expectedDoc);
         }
+        if (doc == null) {
+            doc = new TestEditorDocument();
+            container.putProperty(Document.class, doc);
+        }
+        ((ExpectedDocument)expectedDoc).setTestDocument((TestEditorDocument)doc);
         UndoManager undoManager = getUndoManager(container);
         if (undoManager == null) {
             undoManager = new UndoMgr(container);
@@ -146,13 +143,6 @@ public class DocumentContentTesting {
             // Add them here to be sure they are added just once (not correct - should analyze existing listeners)
             doc.addUndoableEditListener(undoManager);
             expectedDoc.addUndoableEditListener(undoManager);
-        }
-        PositionPairList positionPairList = container.getInstanceOrNull(PositionPairList.class);
-        if (positionPairList == null) {
-            positionPairList = new PositionPairList();
-            container.putProperty(PositionPairList.class, positionPairList);
-        } else {
-            positionPairList.clear();
         }
         container.putProperty(UNDO_REDO_INVERSE_RATIO, 0.3f);
 
@@ -316,7 +306,6 @@ public class DocumentContentTesting {
     }
 
     public static Position createPosition(Context context, int offset, boolean backwardBias) throws Exception {
-        PositionPairList positionPairList = context.getInstance(PositionPairList.class);
         final Document expectedDoc = getExpectedDocument(context);
         final Document doc = getDocument(context);
         if (context.isLogOp()) {
@@ -325,33 +314,27 @@ public class DocumentContentTesting {
             sb.append(offset).append("): \n");
             context.logOp(sb);
         }
-        Position testPos = backwardBias
-                ? ((TestEditorDocument)doc).getDocumentContent().createBackwardBiasPosition(offset)
-                : doc.createPosition(offset);
+        Position testPos = (expectedDoc instanceof ExpectedDocument)
+                ? ((ExpectedDocument)expectedDoc).createSyncedTestPosition(offset, backwardBias)
+                : (backwardBias
+                        ? ((TestEditorDocument)doc).createBackwardBiasPosition(offset)
+                        :doc.createPosition(offset));
         // Since EditorDocumentContent implements position sharing the test should obey
         // and if shared position is returned it should only check that the existing position has the right offset.
-        PositionPair pair = positionPairList.findPair(testPos);
-        if (pair != null) {
-            NbTestCase.assertEquals(offset, pair.testPos.getOffset());
-            NbTestCase.assertEquals(offset, pair.expectedPos.getOffset());
-        } else { // New pair has to be created
-            Position expectedPos = backwardBias
-                ? ((ExpectedDocument) expectedDoc).getDocumentContent().createBackwardBiasPosition(offset)
-                : expectedDoc.createPosition(offset);
-            positionPairList.addPair(new PositionPair(expectedPos, testPos));
-        }
         return testPos;
     }
 
     public static void releasePosition(Context context, Position pos) throws Exception {
-        PositionPairList positionPairList = context.getInstance(PositionPairList.class);
+        final Document expectedDoc = getExpectedDocument(context);
         if (context.isLogOp()) {
             StringBuilder sb = context.logOpBuilder();
             sb.append("RELEASE_POSITION(").append(pos).append(")");
             sb.append("\n");
             context.logOp(sb);
         }
-        positionPairList.releaseTestPos(pos);
+        if (expectedDoc instanceof ExpectedDocument) {
+            ((ExpectedDocument)expectedDoc).releaseSyncedTestPosition(pos);
+        }
     }
     
     private static void logUndoRedoOp(Context context, String opType, int count) {
@@ -404,12 +387,13 @@ public class DocumentContentTesting {
         if (!expectedDocText.equals(docText)) {
             assert false : "Document texts differ";
         }
+        if (expectedDoc instanceof ExpectedDocument) {
+            ((ExpectedDocument) expectedDoc).checkConsistency();
+        }
         if (doc instanceof TestEditorDocument) {
             TestEditorDocument testDoc = (TestEditorDocument) doc;
             testDoc.getDocumentContent().checkConsistency();
         }
-        PositionPairList positionPairList = context.getInstance(PositionPairList.class);
-        positionPairList.checkConsistency(doc);
         
         Element eLineRoot = expectedDoc.getDefaultRootElement();
         Element lineRoot = doc.getDefaultRootElement();
@@ -441,15 +425,15 @@ public class DocumentContentTesting {
             int offset = random.nextInt(expectedDoc.getLength() + 1);
             RandomText randomText = context.getInstance(RandomText.class);
             String text;
-            if (INSERT_CHAR == name()) { // Just use ==
+            if (INSERT_CHAR.equals(name())) {
                 text = randomText.randomText(random, 1);
-            } else if (INSERT_TEXT == name()) { // Just use ==
+            } else if (INSERT_TEXT.equals(name())) {
                 Integer maxLength = (Integer) context.getPropertyOrNull(INSERT_TEXT_MAX_LENGTH);
                 if (maxLength == null)
                     maxLength = Integer.valueOf(10);
                 int textLength = random.nextInt(maxLength) + 1;
                 text = randomText.randomText(random, textLength);
-            } else if (INSERT_PHRASE == name()) { // Just use ==
+            } else if (INSERT_PHRASE.equals(name())) {
                 text = randomText.randomPhrase(random);
             } else {
                 throw new IllegalStateException("Unexpected op name=" + name());
@@ -473,9 +457,9 @@ public class DocumentContentTesting {
                 return; // Nothing to possibly remove
             Random random = context.container().random();
             int length;
-            if (REMOVE_CHAR == name()) { // Just use ==
+            if (REMOVE_CHAR.equals(name())) {
                 length = 1;
-            } else if (REMOVE_TEXT == name()) { // Just use ==
+            } else if (REMOVE_TEXT.equals(name())) {
                 Integer maxLength = (Integer) context.getPropertyOrNull(REMOVE_TEXT_MAX_LENGTH);
                 if (maxLength == null)
                     maxLength = Integer.valueOf(10);
@@ -505,10 +489,10 @@ public class DocumentContentTesting {
             int count = random.nextInt(maxCount + 1);
             float performInverse = random.nextFloat();
             int inverseCount = (count > 0 && performInverse >= inverseRatio) ? random.nextInt(count + 1) : 0;
-            if (UNDO == name()) { // Just use ==
+            if (UNDO.equals(name())) {
                 undo(context, count);
                 redo(context, inverseCount);
-            } else if (REDO == name()) { // Just use ==
+            } else if (REDO.equals(name())) {
                 redo(context, count);
                 undo(context, inverseCount);
             } else {
@@ -530,25 +514,26 @@ public class DocumentContentTesting {
             Random random = context.container().random();
             Integer maxCount = context.getProperty(MAX_CREATE_RELEASE_POSITION_COUNT, Integer.valueOf(4));
             int count = random.nextInt(maxCount + 1);
-            PositionPairList positionPairList = context.getInstanceOrNull(PositionPairList.class);
             while (--count >= 0) {
                 int offset = random.nextInt(expectedDoc.getLength() + 2);
-                if (CREATE_POSITION == name()) { // Just use ==
+                if (CREATE_POSITION.equals(name())) {
                     createPosition(context, offset, false);
-                } else if (CREATE_BACKWARD_BIAS_POSITION == name()) { // Just use ==
+                } else if (CREATE_BACKWARD_BIAS_POSITION.equals(name())) {
                     createPosition(context, offset, true);
-                } else if (RELEASE_POSITION == name()) { // Just use ==
-                    int positionListSize = positionPairList.size();
-                    if (positionListSize > 0) {
-                        int index = random.nextInt(positionListSize);
-                        PositionPair posPair = positionPairList.getPair(index);
-                        if (context.isLogOp()) {
-                            StringBuilder sb = context.logOpBuilder();
-                            sb.append("RELEASE_POSITION[").append(index).append("](").append(posPair.testPos).append(")");
-                            sb.append("\n");
-                            context.logOp(sb);
+                } else if (RELEASE_POSITION.equals(name())) {
+                    if (expectedDoc instanceof ExpectedDocument) {
+                        ExpectedDocument expDoc = (ExpectedDocument) expectedDoc;
+                        int syncPositionCount = expDoc.syncPositionCount();
+                        if (syncPositionCount > 0) {
+                            int index = random.nextInt(syncPositionCount);
+                            if (context.isLogOp()) {
+                                StringBuilder sb = context.logOpBuilder();
+                                sb.append("RELEASE_POSITION[").append(index).append("])");
+                                sb.append("\n");
+                                context.logOp(sb);
+                            }
+                            expDoc.releaseSyncedPosition(index);
                         }
-                        positionPairList.removePair(index);
                     }
                 } else {
                     throw new IllegalStateException("Unexpected op name=" + name());
@@ -604,86 +589,6 @@ public class DocumentContentTesting {
             super.redo();
             expectedUndoEdit.redo();
             testUndoEdit.redo();
-        }
-
-    }
-
-    private static class PositionPair {
-
-        final Position expectedPos;
-        
-        final Position testPos;
-
-        public PositionPair(Position expectedPos, Position testPos) {
-            assert (expectedPos != null);
-            assert (testPos != null);
-            this.expectedPos = expectedPos;
-            this.testPos = testPos;
-        }
-        
-    }
-    
-    static class PositionPairList {
-        
-        List<PositionPair> positionPairList;
-        
-        Map<Position,PositionPair> testPos2pair;
-        
-        PositionPairList() {
-            positionPairList = new ArrayList<PositionPair>();
-            testPos2pair = new HashMap<Position, PositionPair>();
-        }
-        
-        int size() {
-            return positionPairList.size();
-        }
-        
-        void clear() {
-            positionPairList.clear();
-            testPos2pair.clear();
-        }
-        
-        PositionPair getPair(int index) {
-            return positionPairList.get(index);
-        }
-        
-        PositionPair findPair(Position testPos) {
-            return testPos2pair.get(testPos);
-        }
-        
-        void addPair(PositionPair pair) {
-            positionPairList.add(pair);
-            testPos2pair.put(pair.testPos, pair);
-        }
-        
-        void removePair(int index) {
-            PositionPair pair = positionPairList.remove(index);
-            testPos2pair.remove(pair.testPos);
-        }
-
-        void releaseTestPos(Position testPos) {
-            boolean found = false;
-            for (int i = positionPairList.size() - 1; i >= 0; i--) {
-                PositionPair pair = positionPairList.get(i);
-                if (pair.testPos == testPos) {
-                    found = true;
-                    removePair(i);
-                    break;
-                }
-            }
-            assert found : "Test Position testPos=" + testPos + " not found in PositionPairList"; // NOI18N
-        }
-        
-        void checkConsistency(Document testDoc) {
-            for (PositionPair positionPair : positionPairList) {
-                int expOffset = positionPair.expectedPos.getOffset();
-                int offset = positionPair.testPos.getOffset();
-                if (expOffset != offset) {
-                    assert false : "expOffset=" + expOffset + " != offset=" + offset + ", pos=" +
-                            positionPair.testPos + ", content:\n" +
-                            ((TestEditorDocument)testDoc).getDocumentContent().toStringDetail();
-                }
-            }
         }
 
     }

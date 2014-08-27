@@ -624,6 +624,13 @@ public final class CodeStyle {
     }
 
     /**
+     * @since 0.140
+     */
+    public int getBlankLinesAfterEnumHeader() {
+        return preferences.getInt(blankLinesAfterEnumHeader, getDefaultAsInt(blankLinesAfterEnumHeader));
+    }
+
+    /**
      * @since 0.106
      */
     public int getBlankLinesBeforeClassClosingBrace() {
@@ -635,6 +642,13 @@ public final class CodeStyle {
      */
     public int getBlankLinesBeforeAnonymousClassClosingBrace() {
         return preferences.getInt(blankLinesBeforeAnonymousClosingBrace, getDefaultAsInt(blankLinesBeforeAnonymousClosingBrace));
+    }
+
+    /**
+     * @since 0.140
+     */
+    public int getBlankLinesBeforeEnumClosingBrace() {
+        return preferences.getInt(blankLinesBeforeEnumClosingBrace, getDefaultAsInt(blankLinesBeforeEnumClosingBrace));
     }
 
     public int getBlankLinesBeforeFields() {
@@ -868,6 +882,10 @@ public final class CodeStyle {
 
     public boolean spaceWithinArrayInitBrackets() {
         return preferences.getBoolean(spaceWithinArrayInitBrackets, getDefaultAsBoolean(spaceWithinArrayInitBrackets));
+    }
+
+    public boolean spaceWithinArrayIndexBrackets() {
+        return preferences.getBoolean(spaceWithinArrayIndexBrackets, getDefaultAsBoolean(spaceWithinArrayIndexBrackets));
     }
 
     public boolean spaceBeforeComma() {

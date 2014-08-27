@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFUtils;
+import org.netbeans.modules.web.jsf.JsfPreferences;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -96,8 +97,8 @@ public class TemplatePanel implements WizardDescriptor.Panel, WizardDescriptor.F
         Project project = Templates.getProject(wizard);
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
-            Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
-            if (preferences.get("Facelets", "").equals("")) { //NOI18N
+            JsfPreferences preferences = JsfPreferences.forProject(project);
+            if (preferences.getPreferredLanguage() == null) { //NOI18N
                 ClassPath cp  = wm.getDocumentBase() != null
                         ? ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE)
                         : ClassPath.getClassPath(project.getProjectDirectory(), ClassPath.COMPILE);

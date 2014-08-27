@@ -46,10 +46,21 @@ import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 
 public final class PhpDocPreferences {
+
+    private static final String PHPDOC_ENABLED = "enabled"; // NOI18N
     private static final String PHPDOC_TARGET = "target"; // NOI18N
     private static final String PHPDOC_TITLE = "title"; // NOI18N
 
+
     private PhpDocPreferences() {
+    }
+
+    public static boolean isEnabled(PhpModule phpModule) {
+        return getPreferences(phpModule).getBoolean(PHPDOC_ENABLED, false);
+    }
+
+    public static void setEnabled(PhpModule phpModule, boolean enabled) {
+        getPreferences(phpModule).putBoolean(PHPDOC_ENABLED, enabled);
     }
 
     public static String getPhpDocTarget(PhpModule phpModule, boolean showPanel) {

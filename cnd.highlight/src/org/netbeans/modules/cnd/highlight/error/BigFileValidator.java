@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.highlight.error;
 
+import javax.swing.text.Document;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
 
@@ -54,7 +56,11 @@ public class BigFileValidator implements CsmErrorProvider.RequestValidator {
 
     @Override
     public boolean isValid(CsmErrorProvider provider, CsmErrorProvider.Request request) {
-        return !SemanticHighlighter.isVeryBigDocument(request.getDocument());
+        final Document doc = request.getDocument();
+        if (doc != null && doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
+            return false;
+        }
+        return !SemanticHighlighter.isVeryBigDocument(doc);
     }
     
 }

@@ -178,7 +178,7 @@ public class ModelUtils {
         visited.add(jsObject.getFullyQualifiedName());
         JsObject result = null;
         JsObject tmpObject = null;
-        if (jsObject.getOffsetRange().containsInclusive(offset)) {
+        if (jsObject.containsOffset(offset)) {
             result = jsObject;
             for (JsObject property : jsObject.getProperties().values()) {
                 JsElement.Kind kind = property.getJSKind();
@@ -339,7 +339,7 @@ public class ModelUtils {
                     result.put(object.getName(), object);
                 }
             }
-            if (!result.containsKey(((JsObject)inScope).getName())) {
+            if (inScope.getParentScope() != null && !result.containsKey(((JsObject)inScope).getName())) {
                 result.put(((JsObject)inScope).getName(), (JsObject)inScope);
             }
             inScope = inScope.getParentScope();
@@ -606,8 +606,12 @@ public class ModelUtils {
         if (parent != null && (parent.getJSKind() == JsElement.Kind.FUNCTION || parent.getJSKind() == JsElement.Kind.METHOD)) {
             if (parent.getParent().getJSKind() != JsElement.Kind.FILE) {
                 JsObject grandParent = parent.getParent();
-                if (grandParent != null && grandParent.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
+                if (grandParent != null 
+                        && (grandParent.getJSKind() == JsElement.Kind.OBJECT_LITERAL || PROTOTYPE.equals(grandParent.getName()))) {
                     parent = grandParent;
+                    if (PROTOTYPE.equals(parent.getName()) && parent.getParent() != null) {
+                        parent = parent.getParent();
+                    }
                 }
             }
         }
@@ -902,7 +906,7 @@ public class ModelUtils {
                                 lastResolvedTypes.addAll(((JsArray) lObject).getTypesInArray());
                             } else {
                                 // just property
-                                Collection<? extends Type> lastTypeAssignment = lObject.getAssignmentForOffset(offset);
+                                 Collection<? extends Type> lastTypeAssignment = lObject.getAssignmentForOffset(offset);
                                 // we need to process the object later anyway. To get learning cc, see issue #224453
                                 lastResolvedObjects.add(lObject);
                                 if (!lastTypeAssignment.isEmpty()) {
@@ -1181,9 +1185,6 @@ public class ModelUtils {
                     boolean isType = false;
                     for (IndexResult indexResult: indexResults) {
                         Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
-                        if (assignments.size() > 10) {
-                            System.out.println("@@@@Assignments for " + fqn + " " + assignments.size());
-                        }
                         if (!assignments.isEmpty()) {
                             hasAssignments = true;
                             for (TypeUsage type : assignments) {

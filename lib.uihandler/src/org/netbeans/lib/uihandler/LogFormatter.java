@@ -281,7 +281,8 @@ class LogFormatter extends XMLFormatter{
         }
         
         sb.append("  <level>");// NOI18N
-        escape(sb, record.getLevel().toString());
+        String level = Integer.toString(record.getLevel().intValue());
+        escape(sb, level);
         sb.append("</level>\n");// NOI18N
         
         if (record.getSourceClassName() != null) {

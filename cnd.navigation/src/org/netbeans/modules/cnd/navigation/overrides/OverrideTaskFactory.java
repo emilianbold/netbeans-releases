@@ -56,6 +56,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -109,6 +110,9 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<Parser.Re
         }
         Document doc = result.getSnapshot().getSource().getDocument(false);
         if (!(doc instanceof StyledDocument)) {
+            return;
+        }
+        if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
             return;
         }
         CsmFile csmFile = CsmFileInfoQuery.getDefault().getCsmFile(result);

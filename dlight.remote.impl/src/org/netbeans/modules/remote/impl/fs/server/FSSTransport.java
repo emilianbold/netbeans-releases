@@ -42,6 +42,7 @@ package org.netbeans.modules.remote.impl.fs.server;
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.ConnectException;
@@ -53,8 +54,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -186,13 +189,72 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         
     }
 
+    @Override
+    protected boolean canCopy(String from, String to) {
+        return true;
+    }
+
+    @Override
+    protected DirEntryList copy(String from, String to) throws IOException, InterruptedException, CancellationException, ExecutionException {
+        FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_COPY, from, to);
+        FSSResponse response = null;
+        RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_copy", from, to); // NOI18N
+        long time = System.currentTimeMillis();
+        try {
+            RemoteLogger.finest("Sending request #{0} for copying {1} to {2} to fs_server", request.getId(), from, to);
+            response = dispatcher.dispatch(request);
+            FSSResponse.Package pkg = response.getNextPackage();
+            if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
+                throw createIOException(pkg);
+            } else if(pkg.getKind() != FSSResponseKind.FS_RSP_LS) {
+                throw new IOException("Unexpected package kind: " + pkg.getKind() + " expected " + FSSResponseKind.FS_RSP_LS); // NOI18N
+            }
+            return readEntries(response, to, request.getId(), dirReadCnt);
+        } catch (ConnectException ex) {
+            throw new IOException(ex);
+        } catch (CancellationException ex) {
+            throw new IOException(ex);
+        } catch (InterruptedException ex) {
+            throw new IOException(ex);
+        } catch (ExecutionException ex) {
+            if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
+                throw new FileNotFoundException(from + " or " + to); //NOI18N
+            } else {
+                throw new IOException(ex);
+            }
+        } finally {
+            RemoteStatistics.stopChannelActivity(activityID, 0);
+            RemoteLogger.finest("Communication #{0} with fs_server for copying {1} to {2} took {3} ms",
+                    request.getId(), from, to, System.currentTimeMillis() - time);
+            if (response != null) {
+                response.dispose();
+            }
+        }
+    }
+
+    @Override
+    protected boolean canMove(String from, String to) {
+        return true;
+    }
+
+    @Override
+    protected MoveInfo move(String from, String to) throws IOException, InterruptedException, CancellationException, ExecutionException {
+        Future<FileInfoProvider.StatInfo> f = FileInfoProvider.move(env, from, to);
+        f.get();
+        String fromParent = PathUtilities.getDirName(from);
+        DirEntryList fromList = readDirectory(fromParent == null ? "/" : fromParent); // NOI18N
+        String toParent = PathUtilities.getDirName(to);
+        DirEntryList toList = readDirectory(toParent == null ? "/" : toParent); // NOI18N
+        return new MoveInfo(fromList, toList);
+    }
+
     private IOException createIOException(FSSResponse.Package pkg) {
         Buffer buf = pkg.getBuffer();
         buf.getChar(); // skip kind                
         buf.getInt(); // unused
         int errno = buf.getInt();
         String emsg = buf.getRest();
-        IOException ioe = FSSUtil.createIOException(errno, emsg);
+        IOException ioe = FSSUtil.createIOException(errno, emsg, env);
         return ioe;
     }
     

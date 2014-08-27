@@ -119,7 +119,30 @@ final class SourceFS extends AbstractFileSystem {
             parent = getExistingParent(path);
         }
         parent.refresh(true);
-        return findResource(path);
+        FileObject fo = findResource(path);
+        if (fo == null && i > 0) {
+            // check refreshes of intermediate folders
+            String pp = parent.getPath();
+            String parentPath = path.substring(0, i);
+            while (parentPath.startsWith(pp) && pp.length() < parentPath.length()) {
+                i = path.indexOf('/', pp.length() + 1);
+                if (i < 0) {
+                    break;
+                }
+                pp = path.substring(0, i);
+                parent = findResource(pp);
+                if (parent != null) {
+                    parent.refresh();
+                } else {
+                    break;
+                }
+            }
+            fo = findResource(path);
+        }
+        if (fo == null) {
+            throw new IllegalStateException("Can not create file '"+path+"' parent = "+parent);
+        }
+        return fo;
     }
     
     private FileObject getExistingParent(String path) {

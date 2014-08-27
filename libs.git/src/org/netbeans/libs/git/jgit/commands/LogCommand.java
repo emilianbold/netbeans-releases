@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
+import org.netbeans.libs.git.jgit.utils.CancelRevFilter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -71,6 +72,7 @@ import org.eclipse.jgit.revwalk.filter.AndRevFilter;
 import org.eclipse.jgit.revwalk.filter.AuthorRevFilter;
 import org.eclipse.jgit.revwalk.filter.CommitTimeRevFilter;
 import org.eclipse.jgit.revwalk.filter.CommitterRevFilter;
+import org.eclipse.jgit.revwalk.filter.MaxCountRevFilter;
 import org.eclipse.jgit.revwalk.filter.MessageRevFilter;
 import org.eclipse.jgit.revwalk.filter.OrRevFilter;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
@@ -274,6 +276,7 @@ public class LogCommand extends GitCommand {
         } else {
             filter = RevFilter.NO_MERGES;
         }
+        filter = AndRevFilter.create(filter, new CancelRevFilter(monitor));
         filter = AndRevFilter.create(filter, new RevFilter() {
 
             @Override
@@ -309,6 +312,10 @@ public class LogCommand extends GitCommand {
             filter = AndRevFilter.create(filter, CommitTimeRevFilter.after(from));
         } else if (to != null) {
             filter = AndRevFilter.create(filter, CommitTimeRevFilter.before(to));
+        }
+        // this must be at the end, limit filter must apply as the last
+        if (criteria.getLimit() != -1) {
+            filter = AndRevFilter.create(filter, MaxCountRevFilter.create(criteria.getLimit()));
         }
         walk.setRevFilter(filter);
     }

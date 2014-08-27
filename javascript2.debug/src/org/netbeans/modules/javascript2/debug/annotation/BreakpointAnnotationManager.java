@@ -77,11 +77,12 @@ class BreakpointAnnotationManager implements PropertyChangeListener {
     private static Reference<BreakpointAnnotationManager> INSTANCE_REF = new WeakReference<>(null);
     
     static BreakpointAnnotationManager getInstance() {
+        JSBreakpointsInfoManager jsBIM = JSBreakpointsInfoManager.getDefault();
         BreakpointAnnotationManager instance;
         synchronized (BreakpointAnnotationManager.class) {
             instance = INSTANCE_REF.get();
             if (instance == null) {
-                instance = new BreakpointAnnotationManager();
+                instance = new BreakpointAnnotationManager(jsBIM);
                 INSTANCE_REF = new WeakReference<>(instance);
             }
         }
@@ -94,12 +95,10 @@ class BreakpointAnnotationManager implements PropertyChangeListener {
     private final Set<FileObject> annotatedFiles = new WeakSet<>();
     private Set<PropertyChangeListener> dataObjectListeners;
     private final RequestProcessor annotationProcessor = new RequestProcessor("Annotation Refresh", 1);
-    private boolean active = true;
+    private volatile Boolean active = null;
     
-    private BreakpointAnnotationManager() {
-        JSBreakpointsInfoManager.getDefault().addPropertyChangeListener(
-                WeakListeners.propertyChange(this, JSBreakpointsInfoManager.getDefault()));
-        active = JSBreakpointsInfoManager.getDefault().areBreakpointsActivated();
+    private BreakpointAnnotationManager(JSBreakpointsInfoManager jsBIM) {
+        jsBIM.addPropertyChangeListener(WeakListeners.propertyChange(this, jsBIM));
     }
     
     private static boolean isAnnotateable(Breakpoint breakpoint) {
@@ -208,7 +207,7 @@ class BreakpointAnnotationManager implements PropertyChangeListener {
             annotationProcessor.post(new AnnotationRefresh(lb, true, true));
         } else if (JSBreakpointsInfo.PROP_BREAKPOINTS_ACTIVE.equals(propertyName)) {
             boolean a = JSBreakpointsInfoManager.getDefault().areBreakpointsActivated();
-            if (a != active) {
+            if (active != null && a != active.booleanValue()) {
                 active = a;
                 annotationProcessor.post(new AnnotationRefresh(null, true, true));
             }
@@ -217,6 +216,9 @@ class BreakpointAnnotationManager implements PropertyChangeListener {
 
     private void addAnnotation(JSLineBreakpoint breakpoint) {
         Line line = breakpoint.getLine();
+        if (active == null) {
+            active = JSBreakpointsInfoManager.getDefault().areBreakpointsActivated();
+        }
         Annotation annotation = new LineBreakpointAnnotation(line, (JSLineBreakpoint) breakpoint, active);
         logger.log(Level.FINE, "Added annotation of {0} : {1}",
                    new Object[] { breakpoint, annotation });

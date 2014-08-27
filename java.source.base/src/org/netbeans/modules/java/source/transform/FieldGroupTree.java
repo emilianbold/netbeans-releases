@@ -85,7 +85,11 @@ public class FieldGroupTree extends JCTree implements Tree {
     }
 
     public <R, D> R accept(TreeVisitor<R, D> arg0, D arg1) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        R ret = null;
+        for (JCVariableDecl v : vars) {
+            ret = v.accept(arg0, arg1);
+        }
+        return ret;
     }
 
     public void accept(Visitor arg0) {

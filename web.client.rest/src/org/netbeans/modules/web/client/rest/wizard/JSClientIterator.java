@@ -279,7 +279,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
     
     static FileObject getRootFolder(Project project){
         SourceGroup[] groups =  ProjectUtils.getSources(project).getSourceGroups(
-                WebClientProjectConstants.SOURCES_TYPE_HTML5);
+                WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT);
         if ( groups!= null && groups.length >0 ){
             return groups[0].getRootFolder();
         }
@@ -315,7 +315,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         }
         
         if ( underscore == null ){
-            builder.append("<script src='http://documentcloud.github.com/underscore/underscore-min.js'>"); // NOI18N
+            builder.append("<script src='http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js'>"); // NOI18N
             builder.append("</script>\n");  // NOI18N
         }
         else {
@@ -325,7 +325,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             builder.append("'></script>\n");    // NOI18N
         }
         if ( jQuery == null ){
-            builder.append("<script src='http://code.jquery.com/jquery-1.7.2.min.js'></script>\n");// NOI18N
+            builder.append("<script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>\n");// NOI18N
         }
         else {
             String relativePath = getRelativePath(folder, jQuery);
@@ -334,7 +334,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             builder.append("'></script>\n");  // NOI18N
         }
         if ( backbone == null ){
-            builder.append("<script src='http://backbonejs.org/backbone-min.js'></script>\n");// NOI18N
+            builder.append("<script src='http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js'></script>\n");// NOI18N
         }
         else {
             String relativePath = getRelativePath(folder, backbone);

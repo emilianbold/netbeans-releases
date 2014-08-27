@@ -109,7 +109,10 @@ public final class Server implements Comparable<Server> {
         }
 
         // Otherwise compare just by String name
-        return this.toString().compareTo(wrapper.toString());
+        String displayName = this.toString();
+        String displayName2 = wrapper != null ? wrapper.toString() : "";
+
+        return displayName.compareTo(displayName2);
     }
 
     @Messages({

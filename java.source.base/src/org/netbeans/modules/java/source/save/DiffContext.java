@@ -48,11 +48,15 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.PositionConverter;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -87,6 +91,8 @@ public class DiffContext {
      * Special flag; when creating new CUs from template, always include their initial comments
      */
     public final boolean forceInitialComment;
+    
+    public Map<Integer, Comment> usedComments = new HashMap<>();
 
     public DiffContext(CompilationInfo copy) {
         this(copy, new HashSet<Tree>());

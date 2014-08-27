@@ -51,7 +51,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
@@ -64,6 +66,7 @@ import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig;
+import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfigProperty;
 import org.netbeans.modules.j2ee.dd.api.ejb.AroundInvoke;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.LifecycleCallback;
@@ -77,6 +80,7 @@ import org.netbeans.modules.j2ee.dd.impl.common.annotation.EjbRefHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
 
 public class MessageDrivenImpl extends PersistentObject implements MessageDriven {
@@ -85,6 +89,7 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
     private String name;
     private String ejbClass;
     private String mappedName;
+    private ActivationConfig activationConfig;
     
     private ResourceRef[] resourceRefs = null;
     private ResourceEnvRef[] resourceEnvRefs = null;
@@ -110,13 +115,21 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
         AnnotationParser parser = AnnotationParser.create(getHelper());
         parser.expectString("name", AnnotationParser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
         parser.expectString("mappedName", null); // NOI18N
+
+        activationConfig = new ActivationConfigImpl();
+        TypeMirror acpType = getHelper().resolveType("javax.ejb.ActivationConfigProperty");
+        ActivationConfigPropertyHandler handler = new ActivationConfigPropertyHandler(getHelper(), activationConfig);
+        if (acpType != null) {
+            parser.expectAnnotationArray("activationConfig", acpType, handler, null); //NOI18N
+        }
+
         ParseResult parseResult = parser.parse(annotationMirror);
-        name = parseResult.get("name", String.class); // NOI18N
-        mappedName = parseResult.get("mappedName", String.class); // NOI18N
+        name = parseResult.get("name", String.class);               //NOI18N
+        mappedName = parseResult.get("mappedName", String.class);   //NOI18N
         ejbClass = typeElement.getQualifiedName().toString();
         return true;
     }
-    
+
     private void initResourceRefs() {
         if (resourceRefs != null) {
             return;
@@ -255,8 +268,34 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
         return getEjbName();
     }
 
+    /**
+     * Mapped name mustn't be available for MDB 2.0, there is used destinationLookup activationConfigProperty.
+     *
+     * @return mappedName for MDBs 1.1 or {@code null}
+     * @throws VersionNotSupportedException never thrown
+     */
+    @Override
     public String getMappedName() throws VersionNotSupportedException {
         return mappedName;
+    }
+
+    @Override
+    public ActivationConfig getActivationConfig() throws VersionNotSupportedException {
+        return activationConfig;
+    }
+
+    @Override
+    public String getMessageDestinationType() throws VersionNotSupportedException {
+        if (activationConfig == null) {
+            return null;
+        }
+
+        for (ActivationConfigProperty activationConfigProperty : activationConfig.getActivationConfigProperty()) {
+            if ("destinationType".equals(activationConfigProperty.getActivationConfigPropertyName())) {
+                return activationConfigProperty.getActivationConfigPropertyValue();
+            }
+        }
+        return null;
     }
 
     // </editor-fold>
@@ -288,10 +327,6 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public String getMessageDestinationType() throws VersionNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public void setMessageDestinationLink(String value) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -301,10 +336,6 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
     }
 
     public void setActivationConfig(ActivationConfig value) throws VersionNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public ActivationConfig getActivationConfig() throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -865,6 +896,38 @@ public class MessageDrivenImpl extends PersistentObject implements MessageDriven
     }
 
     // </editor-fold>
+
+    private static class ActivationConfigPropertyHandler implements ArrayValueHandler {
+
+        private final AnnotationModelHelper helper;
+        private final ActivationConfig config;
+
+        public ActivationConfigPropertyHandler(AnnotationModelHelper helper, ActivationConfig config) {
+            this.helper = helper;
+            this.config = config;
+        }
+
+        @Override
+        public Object handleArray(List<AnnotationValue> arrayMembers) {
+            for (AnnotationValue arrayMember : arrayMembers) {
+                Object arrayMemberValue = arrayMember.getValue();
+                if (arrayMemberValue instanceof AnnotationMirror) {
+                    AnnotationParser parser = AnnotationParser.create(helper);
+                    parser.expectString("propertyName", null);      //NOI18N
+                    parser.expectString("propertyValue", null);     //NOI18N
+                    ParseResult pr = parser.parse((AnnotationMirror) arrayMemberValue);
+
+                    // fill up the ActivationConfig
+                    ActivationConfigPropertyImpl property = new ActivationConfigPropertyImpl(
+                            pr.get("propertyName", String.class),   //NOI18N
+                            pr.get("propertyValue", String.class)); //NOI18N
+                    config.addActivationConfigProperty(property);
+                }
+            }
+            return null;
+        }
+
+    }
 
 }
  

@@ -90,6 +90,22 @@ made subject to such option by the copyright holder.
             </description>
             <class package="org.netbeans.spi.java.classpath" name="ClassLoaderFactory"/>
         </change>
+        <change id="ClassPath.getFlags">
+            <api name="classpath"/>
+            <summary>Added ClassPath flags</summary>
+            <version major="1" minor="44"/>
+            <date day="21" month="8" year="2014"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added flags to <code>ClassPath</code>
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.classpath" name="ClassPath"/>
+            <class package="org.netbeans.spi.java.classpath" name="FlaggedClassPathImplementation"/>
+            <issue number="245155"/>
+        </change>
         <change id="ClassPath.EMPTY">
             <api name="classpath"/>
             <summary>Added a constant representing an empty ClassPath</summary>

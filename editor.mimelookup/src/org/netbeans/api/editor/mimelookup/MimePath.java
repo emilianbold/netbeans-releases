@@ -646,7 +646,7 @@ public final class MimePath {
             List<String> paths = new ArrayList<String>(arrays.size());
 
             for (String[] p : arrays) {
-                StringBuffer sb = new StringBuffer(10 * p.length + 20);
+                StringBuilder sb = new StringBuilder(10 * p.length + 20);
 
                 if (prefixPath != null && prefixPath.length() > 0) {
                     sb.append(prefixPath);

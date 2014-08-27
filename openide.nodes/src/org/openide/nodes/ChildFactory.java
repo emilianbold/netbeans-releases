@@ -257,9 +257,12 @@ public abstract class ChildFactory <T> {
             //do nothing
         }
         /**
-         * Called when this child factory is no longer in use, to dispose of
-         * resources, detach listeners, etc.  Does nothing by default;  override
-         * if you need notification when not in use anymore.
+         * Called when this child factory is no longer in memory. 
+         * Does nothing by default; override if you need notification when not in use anymore.
+         *
+         * Note that this is usually not the best place for unregistering listeners, etc.,
+         * as listeners usually keep the child factory in memory, preventing it from being collected, thus preventing
+         * this method to be called in the first place.
          */
         @Override
         protected void removeNotify() {

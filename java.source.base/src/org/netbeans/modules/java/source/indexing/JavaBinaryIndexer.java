@@ -206,7 +206,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         }
         TypeElement jc = (TypeElement) jt.getElements().getTypeElementByBinaryName(fqn);
         if (jc != null) {
-            List<ExecutableElement> methods = ElementFilter.methodsIn(jc.getEnclosedElements());
+            List<ExecutableElement> methods = ElementFilter.methodsIn(jt.getElements().getAllMembers(jc));
             for (ExecutableElement method : methods) {
                 List<? extends VariableElement> params = method.getParameters();
                 if (!params.isEmpty()) {

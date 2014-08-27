@@ -214,7 +214,7 @@ public class SourceUtils {
                     || info.getTypes().isAssignable(to, t.getUpperBound());
         }
         if (from.getKind() == TypeKind.WILDCARD) {
-            from = Types.instance(c).upperBound((Type)from);
+            from = Types.instance(c).wildUpperBound((Type)from);
         }
         return Check.instance(c).checkType(null, (Type)from, (Type)to).getKind() != TypeKind.ERROR;
     }
@@ -429,6 +429,7 @@ public class SourceUtils {
                 CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).resolveRewriteTarget(cut);
                 ((WorkingCopy)info).rewrite(info.getCompilationUnit(), GeneratorUtilities.get((WorkingCopy)info).addImports(nue, elementsToImport));
             } else {
+                final ElementHandle handle = ElementHandle.create(toImport);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -438,7 +439,8 @@ public class SourceUtils {
                                 public void run(ResultIterator resultIterator) throws Exception {
                                     WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
                                     copy.toPhase(Phase.ELEMENTS_RESOLVED);
-                                    copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(copy.getCompilationUnit(), elementsToImport));
+                                    Element elementToImport = handle.resolve(copy);
+                                    copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(copy.getCompilationUnit(), Collections.singleton(elementToImport)));
                                 }
                             }).commit();
                         } catch (Exception e) {

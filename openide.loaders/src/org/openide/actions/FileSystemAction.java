@@ -130,7 +130,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
                 return createMenu(Enumerations.<Action>empty(), popUp, lookup);
             }
             
-            List<SystemAction> result = new LinkedList<SystemAction>();
+            List<Action> result = new LinkedList<Action>();
             Set<FileObject> backSet = new LinkedHashSet<FileObject>();
             for (Map.Entry<FileSystem,Set<FileObject>> entry : fsSet.entrySet()) {
 
@@ -149,7 +149,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
                     }
                 }                
                 backSet.addAll(backupList);
-                //result.addAll(Arrays.asList(fs.getActions (backSet)));
+                result.addAll(fs.findExtrasFor(backSet).lookupAll(Action.class));
             }
 
             if (isManualRefresh()) {

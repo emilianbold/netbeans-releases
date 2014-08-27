@@ -106,7 +106,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
     
-    static int MAX_STRING_LENGTH = 100000; // Limit retrieved String length to 100K characters to limit memory consumption.
+    static final int MAX_STRING_LENGTH = 100000; // Limit retrieved String length to 100K characters to limit memory consumption.
 
     private String          genericType;
     private Field[]         fields;
@@ -509,7 +509,10 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             boolean addDots = false;
             StringReference sr;
             maxLength = (maxLength > 0 && maxLength < MAX_STRING_LENGTH) ? maxLength : MAX_STRING_LENGTH;
-            if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
+            if (v instanceof StringReference) {
+                sr = (StringReference) v;
+                addQuotation = true;
+            } else if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
                 Method toStringMethod = ClassTypeWrapper.concreteMethodByName(ct,
                      "toString", "()Ljava/lang/String;");  // NOI18N
                 if (toStringMethod == null) {
@@ -521,9 +524,6 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
                     new Value [0],
                     maxLength + 1
                 );
-            } else if (v instanceof StringReference) {
-                sr = (StringReference) v;
-                addQuotation = true;
             } else {
                 Method toStringMethod = ClassTypeWrapper.concreteMethodByName(ct,
                     "toString", "()Ljava/lang/String;");  // NOI18N
@@ -539,10 +539,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             if (sr == null) {
                 return null;
             }
-            String str = StringReferenceWrapper.value(sr);
-            if (maxLength > 0 && maxLength < Integer.MAX_VALUE && str.length() > maxLength) {
-                str = str.substring(0, maxLength) + "..."; // NOI18N
-            }
+            String str = ShortenedStrings.getStringWithLengthControl(sr);
             if (addQuotation) {
                 str = "\"" + str + "\""; // NOI18N
             }

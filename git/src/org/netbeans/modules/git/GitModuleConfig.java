@@ -44,6 +44,7 @@ package org.netbeans.modules.git;
 
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,6 +57,7 @@ import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.FileInformation.Mode;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.repository.remote.ConnectionSettings;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
@@ -86,12 +88,14 @@ public final class GitModuleConfig {
     private static final String SHOW_CLONE_COMPLETED    = "cloneCompleted.showCloneCompleted";        // NOI18N  
     private static final String GURI_PASSWORD           = "guri_password";
     private static final String GURI_PASSPHRASE           = "guri_passphrase";
+    private static final String PROP_STATUS_VIEW_MODE = "statusViewMode"; //NOI18N
     private static final String PROP_DIFF_VIEW_MODE = "diffViewMode"; //NOI18N
     private static final String DELIMITER               = "<=~=>";              // NOI18N
     private static final String KEY_SHOW_HISTORY_MERGES = "showHistoryMerges"; //NOI18N
     private static final String KEY_SHOW_FILE_INFO = "showFileInfo"; //NOI18N
     private static final String KEY_SEARCH_ON_BRANCH = "searchOnBranch.enabled"; //NOI18N
     private static final String PROP_ANNOTATIONFORMAT_PROJECT = "annotationFormat.project"; //NOI18N
+    private static final String KEY_ANNOTATION_DISPLAYED_FIELDS = "annotate.displayedFields"; //NOI18N
     
     private String lastCanceledCommitMessage;
     private static final String DEFAULT_ANNOTATION_PROJECT = Annotator.DEFAULT_ANNOTATION_PROJECT;
@@ -166,6 +170,16 @@ public final class GitModuleConfig {
 
     public void setProjectAnnotationFormat (String text) {
         getPreferences().put(PROP_ANNOTATIONFORMAT_PROJECT, text);
+    }
+
+    public boolean getAutoSyncBranch (File repository, String branch) {
+        RepositoryInfo.NBGitConfig cfg = RepositoryInfo.getInstance(repository).getNetbeansConfig();
+        return cfg.getAutoSyncBranch(branch);
+    }
+
+    public void setAutoSyncBranch (File repository, String branch, boolean autoSync) {
+        RepositoryInfo.NBGitConfig cfg = RepositoryInfo.getInstance(repository).getNetbeansConfig();
+        cfg.setAutoSyncBranch(branch, autoSync);
     }
     
     synchronized Set<String> getCommitExclusions() {
@@ -386,14 +400,10 @@ public final class GitModuleConfig {
                 connSettings = entry.toConnectionSettings();
                 if (connSettings.isPrivateKeyAuth()) {
                     char[] passphrase = KeyringSupport.read(GURI_PASSPHRASE, connSettings.getUri().toString());
-                    if (passphrase != null) {
-                        connSettings.setPassphrase(passphrase);
-                    }
+                    connSettings.setPassphrase(passphrase == null ? new char[0] : passphrase);
                 } else {
                     char[] password = KeyringSupport.read(GURI_PASSWORD, connSettings.getUri().toString());
-                    if(password != null) {
-                        connSettings.setPassword(password);
-                    }
+                    connSettings.setPassword(password == null ? new char[0] : password);
                 }
             }
             ret.add(connSettings);
@@ -430,14 +440,10 @@ public final class GitModuleConfig {
             if (uriString.equals(entry.guriString) && (username == null || storedSettings.getUser() == null || username.equals(storedSettings.getUser()))) {
                 if (storedSettings.isPrivateKeyAuth()) {
                     char[] passphrase = KeyringSupport.read(GURI_PASSPHRASE, storedSettings.getUri().toString());
-                    if (passphrase != null) {
-                        storedSettings.setPassphrase(passphrase);
-                    }
+                    storedSettings.setPassphrase(passphrase == null ? new char[0] : passphrase);
                 } else {
                     char[] password = KeyringSupport.read(GURI_PASSWORD, storedSettings.getUri().toString());
-                    if(password != null) {
-                        storedSettings.setPassword(password);
-                    }
+                    storedSettings.setPassword(password == null ? new char[0] : password);
                 }
                 retval = storedSettings;
                 break;
@@ -474,6 +480,14 @@ public final class GitModuleConfig {
     public void setDiffViewMode (int value) {
         getPreferences().putInt(PROP_DIFF_VIEW_MODE, value);
     }
+
+    public int getStatusViewMode (int def) {
+        return getPreferences().getInt(PROP_STATUS_VIEW_MODE, def);
+    }
+
+    public void setStatusViewMode (int value) {
+        getPreferences().putInt(PROP_STATUS_VIEW_MODE, value);
+    }
     
     public boolean isSearchOnlyCurrentBranchEnabled () {
         return getPreferences().getBoolean(KEY_SEARCH_ON_BRANCH, true);
@@ -481,6 +495,14 @@ public final class GitModuleConfig {
 
     public void setSearchOnlyCurrentBranchEnabled (boolean enabled) {
         getPreferences().putBoolean(KEY_SEARCH_ON_BRANCH, enabled);
+    }
+    
+    public void setAnnotationDisplayedFields (int value) {
+        getPreferences().putInt(KEY_ANNOTATION_DISPLAYED_FIELDS, value);
+    }
+    
+    public int getAnnotationDisplayedFields (int defaultValue) {
+        return getPreferences().getInt(KEY_ANNOTATION_DISPLAYED_FIELDS, defaultValue);
     }
     
     private static class GitConnectionSettingsEntry {

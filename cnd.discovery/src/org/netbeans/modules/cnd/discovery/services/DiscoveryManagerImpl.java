@@ -58,6 +58,9 @@ import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -130,6 +133,7 @@ public final class DiscoveryManagerImpl {
                 final Map<String, Object> map = new HashMap<>();
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, findRoot());
                 map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, artifact);
+                map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks());
                 if (isIncremental) {
                     map.put(DiscoveryWizardDescriptor.INCREMENTAL, Boolean.TRUE);
                 }
@@ -148,6 +152,7 @@ public final class DiscoveryManagerImpl {
                 final Map<String, Object> map = new HashMap<>();
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, findRoot());
                 map.put(DiscoveryWizardDescriptor.LOG_FILE, artifact);
+                map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks());
                 if (isIncremental) {
                     map.put(DiscoveryWizardDescriptor.INCREMENTAL, Boolean.TRUE);
                 }
@@ -160,6 +165,18 @@ public final class DiscoveryManagerImpl {
                     }
                 }
             }
+        }
+        
+        private boolean resolveSymbolicLinks() {
+            ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            MakeConfigurationDescriptor cd = cdp.getConfigurationDescriptor();
+            if (cd != null) {
+                MakeConfiguration activeConfiguration = cd.getActiveConfiguration();
+                if (activeConfiguration != null) {
+                    return activeConfiguration.getCodeAssistanceConfiguration().getResolveSymbolicLinks().getValue();
+                }
+            }
+            return false;
         }
 
         private String findRoot() {

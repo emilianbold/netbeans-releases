@@ -97,6 +97,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
     private DefaultListModel model;
     private final int position;
     private final JTextComponent target;
+    private final String altKey = KeyEvent.getKeyText(org.openide.util.Utilities.isMac() ? KeyEvent.VK_META : KeyEvent.VK_ALT);
     
     /** Creates new form ImportClassPanel */
     public ImportClassPanel(List<TypeElement> priviledged, List<TypeElement> denied, Font font, JavaSource javaSource, int position, JTextComponent target ) {
@@ -192,7 +193,7 @@ public class ImportClassPanel extends javax.swing.JPanel {
         jPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
         jPanel1.setLayout(new java.awt.BorderLayout());
 
-        ctrlLabel.setText(org.openide.util.NbBundle.getMessage(ImportClassPanel.class, "LBL_PackageImport")); // NOI18N
+        ctrlLabel.setText(org.openide.util.NbBundle.getMessage(ImportClassPanel.class, "LBL_PackageImport", altKey)); // NOI18N
         jPanel1.add(ctrlLabel, java.awt.BorderLayout.CENTER);
 
         add(jPanel1, java.awt.BorderLayout.PAGE_END);

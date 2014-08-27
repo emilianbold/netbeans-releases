@@ -735,24 +735,29 @@ public final class CustomizerLibraries extends NbPropertyPanel.Single {
     }//GEN-LAST:event_removeModuleDependency
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
-        ModuleDependency[] newDeps = AddModulePanel.selectDependencies(getProperties());
-        for (int i = 0; i < newDeps.length; i++) {
-            ModuleDependency dep = newDeps[i];
-            if ("0".equals(dep.getReleaseVersion()) && !dep.hasImplementationDependency()) { // #72216 NOI18N
-                dep = new ModuleDependency(
-                            dep.getModuleEntry(), "0-1", dep.getSpecificationVersion(), // NOI18N
-                            dep.hasCompileDependency(), dep.hasImplementationDependency());
-            }
-            String warn = pxml.getDependencyCycleWarning(Collections.singleton(dep));
-            if (warn != null) {
-                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(warn, NotifyDescriptor.WARNING_MESSAGE);
-                DialogDisplayer.getDefault().notify(msg);
-                return;
-            }
-            getDepListModel().addDependency(dep);
-            dependencyList.setSelectedValue(dep, true);
-        }
-        dependencyList.requestFocusInWindow();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                ModuleDependency[] newDeps = AddModulePanel.selectDependencies(getProperties());
+                for (int i = 0; i < newDeps.length; i++) {
+                    ModuleDependency dep = newDeps[i];
+                    if ("0".equals(dep.getReleaseVersion()) && !dep.hasImplementationDependency()) { // #72216 NOI18N
+                        dep = new ModuleDependency(
+                                    dep.getModuleEntry(), "0-1", dep.getSpecificationVersion(), // NOI18N
+                                    dep.hasCompileDependency(), dep.hasImplementationDependency());
+                    }
+                    String warn = pxml.getDependencyCycleWarning(Collections.singleton(dep));
+                    if (warn != null) {
+                        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(warn, NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(msg);
+                        return;
+                    }
+                    getDepListModel().addDependency(dep);
+                    dependencyList.setSelectedValue(dep, true);
+                }
+                dependencyList.requestFocusInWindow();
+           }
+        });
     }//GEN-LAST:event_addModuleDependency
 
     private static final Pattern checkWrappedJarPat = Pattern.compile("^(.*)release[\\\\/]modules[\\\\/]ext[\\\\/]([^\\\\/]+)$");

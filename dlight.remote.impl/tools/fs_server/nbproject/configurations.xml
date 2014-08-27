@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="94">
+<configurationDescriptor version="95">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="0">
       <df name="src">
@@ -54,22 +54,23 @@
             <preprocessorList>
               <Elem>LINUX</Elem>
               <Elem>_GNU_SOURCE</Elem>
+              <Elem>_REENTRANT</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="src/array.c" ex="false" tool="0" flavor2="0">
+      <item path="src/array.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/queue.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      <item path="src/util.c" ex="false" tool="0" flavor2="3">
       </item>
     </conf>
     <conf name="Solaris-x86" type="0">
@@ -83,8 +84,8 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f Makefile</buildCommand>
-          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <buildCommand>gmake -f Makefile</buildCommand>
+          <cleanCommand>gmake -f Makefile clean</cleanCommand>
           <executablePath>../../release/bin/SunOS-x86/fs_server</executablePath>
           <cTool>
             <incDir>
@@ -93,6 +94,7 @@
             <preprocessorList>
               <Elem>SOLARIS</Elem>
               <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
+              <Elem>_REENTRANT</Elem>
               <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
@@ -169,8 +171,8 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f Makefile</buildCommand>
-          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <buildCommand>gmake -f Makefile</buildCommand>
+          <cleanCommand>gmake -f Makefile clean</cleanCommand>
           <executablePath>../../release/bin/FreeBSD-x86/fs_server</executablePath>
           <cTool>
             <incDir>
@@ -205,7 +207,7 @@
     </conf>
     <conf name="MacOS" type="0">
       <toolsSet>
-        <compilerSet>GNU|GNU</compilerSet>
+        <compilerSet>CLang|CLang</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -224,6 +226,7 @@
             <preprocessorList>
               <Elem>MAXOSX</Elem>
               <Elem>_DARWIN_C_SOURCE</Elem>
+              <Elem>_REENTRANT</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -237,22 +240,22 @@
           </preprocessorList>
         </cTool>
       </folder>
-      <item path="src/array.c" ex="false" tool="0" flavor2="0">
+      <item path="src/array.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/queue.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      <item path="src/util.c" ex="false" tool="0" flavor2="3">
       </item>
     </conf>
     <conf name="Test_on_Linux" type="0">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -343,8 +346,8 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f Makefile</buildCommand>
-          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <buildCommand>gmake -f Makefile</buildCommand>
+          <cleanCommand>gmake -f Makefile clean</cleanCommand>
           <executablePath>../../release/bin/SunOS-sparc/fs_server</executablePath>
           <cTool>
             <incDir>
@@ -353,22 +356,23 @@
             <preprocessorList>
               <Elem>SOLARIS</Elem>
               <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
+              <Elem>_REENTRANT</Elem>
               <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="src/array.c" ex="false" tool="0" flavor2="0">
+      <item path="src/array.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/queue.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      <item path="src/util.c" ex="false" tool="0" flavor2="3">
       </item>
     </conf>
     <conf name="Linux64" type="0">
@@ -392,22 +396,23 @@
             <preprocessorList>
               <Elem>LINUX</Elem>
               <Elem>_GNU_SOURCE</Elem>
+              <Elem>_REENTRANT</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="src/array.c" ex="false" tool="0" flavor2="0">
+      <item path="src/array.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/queue.c" ex="false" tool="0" flavor2="3">
       </item>
-      <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      <item path="src/util.c" ex="false" tool="0" flavor2="3">
       </item>
     </conf>
     <conf name="Debug_Linux32" type="0">
@@ -637,6 +642,85 @@
       <item path="src/util.c" ex="false" tool="0" flavor2="3">
       </item>
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
+      </item>
+    </conf>
+    <conf name="Armv6" type="0">
+      <toolsSet>
+        <compilerSet>GNU|GNU</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath>../../release/bin/Linux-arm/fs_server</executablePath>
+          <cTool>
+            <incDir>
+              <pElem>.</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>LINUX</Elem>
+              <Elem>_GNU_SOURCE</Elem>
+              <Elem>_XOPEN_SOURCE=700</Elem>
+            </preprocessorList>
+          </cTool>
+        </makeTool>
+      </makefileType>
+      <item path="src/array.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/queue.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="src/util.c" ex="false" tool="0" flavor2="9">
+      </item>
+    </conf>
+    <conf name="Armv5" type="0">
+      <toolsSet>
+        <compilerSet>GNU|GNU</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath>../../release/bin/Linux-arm/fs_server</executablePath>
+          <cTool>
+            <incDir>
+              <pElem>.</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>LINUX</Elem>
+              <Elem>_GNU_SOURCE</Elem>
+              <Elem>_REENTRANT</Elem>
+              <Elem>_XOPEN_SOURCE=700</Elem>
+            </preprocessorList>
+          </cTool>
+        </makeTool>
+      </makefileType>
+      <item path="src/array.c" ex="false" tool="0" flavor2="3">
+      </item>
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="3">
+      </item>
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="3">
+      </item>
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="3">
+      </item>
+      <item path="src/queue.c" ex="false" tool="0" flavor2="3">
+      </item>
+      <item path="src/util.c" ex="false" tool="0" flavor2="3">
       </item>
     </conf>
   </confs>

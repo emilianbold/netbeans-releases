@@ -848,7 +848,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
 
         @Override
         public Properties call() throws WizardValidationException {
-            return RemotePlatformProbe.verifyPlatform(jreLocation, workingDir, connectionMethod, buildScript);
+            return RemotePlatformProbe.verifyPlatform(jreLocation, null, workingDir, connectionMethod, buildScript);
         }
     }
 }

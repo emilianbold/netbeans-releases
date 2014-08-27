@@ -76,7 +76,6 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;

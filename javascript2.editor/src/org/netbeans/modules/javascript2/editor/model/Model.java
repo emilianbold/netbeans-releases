@@ -498,9 +498,17 @@ public final class Model {
             }
         }
         ArrayList<JsObject> copy = new ArrayList(object.getProperties().values());
+        ArrayList<String> namesBefore = new ArrayList(object.getProperties().keySet());
         Collections.reverse(copy);  // resolve the properties in revers order (how was added)
         for(JsObject property: copy) {
             resolveLocalTypes(property, docHolder);
+        }
+        ArrayList<String> namesAfter = new ArrayList(object.getProperties().keySet());
+        // it's possible that some properties was moved to the object, then resolve them.
+        for (String propertyName : namesAfter) {
+            if (!namesBefore.contains(propertyName)) {
+                resolveLocalTypes(object.getProperty(propertyName), docHolder);
+            }
         }
     }
 

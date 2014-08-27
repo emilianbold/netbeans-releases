@@ -57,8 +57,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -75,12 +77,13 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
-import org.netbeans.modules.cnd.modelutil.spi.FileObjectRedirector;
+import org.netbeans.modules.cnd.spi.utils.FileObjectRedirector;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -245,6 +248,14 @@ public class CsmUtilities {
 
     public static CsmFile getCsmFile(Node node, boolean waitParsing) {
         return getCsmFile(node.getLookup().lookup(DataObject.class), waitParsing, false);
+    }
+    
+    public static CsmFile getCsmFile(NativeFileItem item, boolean waitParsing, boolean snapShot) {
+        CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
+        if (csmProject != null) {
+            return csmProject.findFile(item, waitParsing, snapShot);
+        }
+        return null;
     }
 
     public static DataObject getDataObject(JTextComponent component) {
@@ -735,6 +746,22 @@ public class CsmUtilities {
         }
     }
 
+    public static StyledDocument openDocument(DataObject dataObject) {
+        if (dataObject == null) {
+            return null;
+        }
+        EditorCookie cookie = dataObject.getLookup().lookup(EditorCookie.class);
+        if (cookie == null) {
+            FileObject fileObject = dataObject.getPrimaryFile();
+            String name = fileObject == null ? dataObject.getName() : fileObject.getPath();
+            CndUtils.getLogger().log(Level.WARNING, "Given file (\"{0}\", data object is instance of class {1}) does not have EditorCookie. Register file extension as C/C++/Header extension.", // NOI18N
+                    new Object[]{name, dataObject.getClass().getName()});
+            return null;
+        }
+        StyledDocument doc = CsmUtilities.openDocument(cookie);
+        return doc;
+    }
+    
     /**
      * opens document even if it is very big by silently confirming open
      * @param cookie
@@ -1143,13 +1170,56 @@ public class CsmUtilities {
         }
         Collection<? extends FileObjectRedirector> redirectors = Lookup.getDefault().lookupAll(FileObjectRedirector.class);
         for (FileObjectRedirector redirector : redirectors) {
-            DataObject newDO = redirector.redirect(dob);
-            if(newDO != null) {
-                dob = newDO;
+            FileObject fo = redirector.redirect(dob.getPrimaryFile());
+            if (fo != null) {
+                DataObject newDO = getDataObject(fo);
+                if(newDO != null) {
+                    dob = newDO;
+                }
             }
         }
         return dob;
     }
+    
+    public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2) {
+        return checkTypesEqual(type1, contextFile1, type2, contextFile2, new AlwaysEqualQualsEqualizer());
+    }
+    
+    public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2, QualifiersEqualizer qualsEqualizer) {
+        if (type1 != null && type2 != null) {
+            if (!qualsEqualizer.areQualsEqual(type1, type2)) {
+                return false;
+            }
+            
+            boolean resolveTypeChain = false;
+            for (int i = 0; i < 2; i++) {
+                CsmClassifier tbsp1Cls = getClassifier(type1, contextFile1, resolveTypeChain);
+                if (tbsp1Cls != null) {
+                    CsmClassifier tbsp2Cls = getClassifier(type2, contextFile2, resolveTypeChain);
+                    if (tbsp2Cls != null) {
+                        if (tbsp1Cls.getQualifiedName().toString().equals(tbsp2Cls.getQualifiedName().toString())) {
+                            return true;
+                        }
+                    }
+                }
+                
+                resolveTypeChain = true;
+                
+                if (contextFile1 == null && contextFile2 == null) {
+                    break;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private static CsmClassifier getClassifier(CsmType type, CsmFile contextFile, boolean resolveTypeChain) {
+        CsmClassifier cls = type.getClassifier();
+        if (resolveTypeChain && contextFile != null && CsmBaseUtilities.isValid(cls)) {
+            cls = CsmBaseUtilities.getOriginalClassifier(cls, contextFile);
+        }
+        return cls;
+    }        
     
     /**
      * Iterates type chain until end is reached or stopFilter returned true
@@ -1208,7 +1278,7 @@ public class CsmUtilities {
 
     private static final class FileTarget implements CsmOffsetable {
 
-        private CsmFile file;
+        private final CsmFile file;
 
         public FileTarget(CsmFile file) {
             this.file = file;
@@ -1321,6 +1391,93 @@ public class CsmUtilities {
             return false;
         }
     }
+    
+    public static interface QualifiersEqualizer {
+        
+        boolean areQualsEqual(CsmType from, CsmType to);
+    }
+    
+    public static class AlwaysEqualQualsEqualizer implements QualifiersEqualizer {
+
+        @Override
+        public boolean areQualsEqual(CsmType from, CsmType to) {
+            return true;
+        }
+        
+    }
+    
+    public static class ExactMatchQualsEqualizer implements QualifiersEqualizer {
+
+        @Override
+        public boolean areQualsEqual(CsmType from, CsmType to) {
+            TypeInfoCollector typeInfo1 = new TypeInfoCollector();
+            iterateTypeChain(from, typeInfo1);
+
+            TypeInfoCollector typeInfo2 = new TypeInfoCollector();
+            iterateTypeChain(to, typeInfo2);
+
+            Iterator<TypeInfoCollector.Qualificator> qualIter1 = typeInfo1.qualificators.iterator();
+            Iterator<TypeInfoCollector.Qualificator> qualIter2 = typeInfo2.qualificators.iterator();
+            if (typeInfo1.qualificators.size() == typeInfo2.qualificators.size()) {
+                while (qualIter1.hasNext()) {
+                    if (!qualIter1.next().equals(qualIter2.next())) {
+                        return false;
+                    }
+                }
+            } else {
+                return false;
+            }
+            
+            return true;
+        }
+    }
+    
+    public static class AssignableQualsEqualizer implements QualifiersEqualizer {
+
+        @Override
+        public boolean areQualsEqual(CsmType from, CsmType to) {
+            TypeInfoCollector typeInfo1 = new TypeInfoCollector();
+            iterateTypeChain(from, typeInfo1);
+
+            TypeInfoCollector typeInfo2 = new TypeInfoCollector();
+            iterateTypeChain(to, typeInfo2);
+
+            ListIterator<TypeInfoCollector.Qualificator> qualIter1 = typeInfo1.qualificators.listIterator();
+            ListIterator<TypeInfoCollector.Qualificator> qualIter2 = typeInfo2.qualificators.listIterator();
+            while (qualIter1.hasNext()) {
+                if (!qualIter2.hasNext()) {
+                    TypeInfoCollector.Qualificator qual = qualIter1.next();
+                    if (TypeInfoCollector.Qualificator.REFERENCE.equals(qual)) {
+                        continue;
+                    } else if (TypeInfoCollector.Qualificator.RVALUE_REFERENCE.equals(qual)) { // ?
+                        continue;
+                    }
+                    return false;
+                } else {
+                    TypeInfoCollector.Qualificator qual1 = qualIter1.next();
+                    TypeInfoCollector.Qualificator qual2 = qualIter2.next();
+                    if (!qual1.equals(qual2)) {
+                        if (TypeInfoCollector.Qualificator.CONST.equals(qual2)) {
+                            qualIter1.previous();
+                            continue;
+                        }
+                        return false;
+                    }
+                }
+            }
+            while (qualIter2.hasNext()) {
+                TypeInfoCollector.Qualificator qual = qualIter2.next();
+                if (TypeInfoCollector.Qualificator.REFERENCE.equals(qual)) {
+                    continue;
+                } else if (TypeInfoCollector.Qualificator.RVALUE_REFERENCE.equals(qual)) { // ?
+                    continue;
+                }
+                return false;
+            }
+            
+            return true;
+        }
+    }    
 
     private CsmUtilities() {
     }

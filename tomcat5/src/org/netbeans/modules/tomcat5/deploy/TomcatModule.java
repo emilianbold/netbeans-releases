@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.tomcat5.deploy;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 
@@ -52,6 +54,8 @@ import javax.enterprise.deploy.spi.TargetModuleID;
  * @author  Radim Kubacki
  */
 public final class TomcatModule implements TargetModuleID {
+
+    private static final Logger LOGGER = Logger.getLogger(TomcatModule.class.getName());
 
     private TomcatTarget target;
 
@@ -63,8 +67,9 @@ public final class TomcatModule implements TargetModuleID {
     }
 
     public TomcatModule (Target target, String path, String docRoot) {
-        assert path.isEmpty() || path.startsWith("/") 
-                : "Non empty module path must start with '/'; was " + path;
+        if (!path.isEmpty() && !path.startsWith("/")) {
+            LOGGER.log(Level.INFO, "Non empty module path must start with '/'; was {0}", path);
+        }
         this.target = (TomcatTarget) target;
         this.path = "".equals(path) ? "/" : path; // NOI18N
         this.docRoot = docRoot;

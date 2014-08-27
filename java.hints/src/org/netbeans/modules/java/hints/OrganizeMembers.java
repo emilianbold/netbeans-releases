@@ -56,7 +56,9 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -145,6 +147,7 @@ public class OrganizeMembers {
         TreeMaker maker = copy.getTreeMaker();
         ClassTree nue = maker.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), clazz.getImplementsClause(), Collections.<Tree>emptyList());
         List<Tree> members = new ArrayList<>(clazz.getMembers().size());
+        Map<Tree, Tree> memberMap = new HashMap<>(clazz.getMembers().size());
         for (Tree tree : clazz.getMembers()) {
             if (copy.getTreeUtilities().isSynthetic(new TreePath(path, tree))) {
                 continue;
@@ -164,21 +167,25 @@ public class OrganizeMembers {
                     member = maker.setLabel(tree, ((MethodTree)tree).getName());
                     break;
                 case BLOCK:
-                    member = maker.Block(((BlockTree)tree).getStatements(), ((BlockTree)tree).isStatic());
+                    member = maker.asReplacementOf(maker.Block(((BlockTree)tree).getStatements(), ((BlockTree)tree).isStatic()), tree, true);
                     break;
                 default:
                     member = tree;    
             }
-            if (member != tree) {
-                gu.copyComments(tree, member, true);
-                gu.copyComments(tree, member, false);
-            }
             members.add(member);
+            memberMap.put(member, tree);
         }
+        // fool the generator utilities with cloned members, so it does not take positions into account
         nue = GeneratorUtilities.get(copy).insertClassMembers(nue, members);
-        gu.copyComments(clazz, nue, true);
-        gu.copyComments(clazz, nue, false);
-        copy.rewrite(clazz, nue);
+        // now create a new class, based on the original one - retain the order decided by GeneratorUtilities.
+        ClassTree changed = maker.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), clazz.getImplementsClause(), Collections.<Tree>emptyList());
+        int index = 0;
+        for (Tree t : nue.getMembers()) {
+            Tree orig = memberMap.get(t);
+            changed = maker.insertClassMember(changed, index, orig);
+            index++;
+        }
+        copy.rewrite(clazz, changed);
     }
     
     private static boolean checkGuarded(Document doc, List<? extends Difference> diffs) {

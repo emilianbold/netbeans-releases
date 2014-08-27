@@ -181,15 +181,11 @@ public class CssIndex {
         if(factory == null) {
             throw new IllegalArgumentException(String.format("No %s class registered as a system service!", factoryClass.getName()));
         }
-        
-        Collection<? extends IndexResult> results =
-                    querySupport.query(CssIndexer.CSS_CONTENT_KEY, "", QuerySupport.Kind.PREFIX, factory.getIndexKeys().toArray(new String[0]));
-            
-        for(IndexResult result : results) {
-            FileObject resultFile = result.getFile(); //can be null as the file can be removed/moved
-            if(resultFile != null && resultFile.equals(file)) {
-                return factory.loadFromIndex(result);
-            }
+        final Collection<String> fieldsToLoad = factory.getIndexKeys();
+        final Collection<? extends IndexResult> results = querySupport.getQueryFactory().file(file).execute(
+            fieldsToLoad.toArray(new String[fieldsToLoad.size()]));
+        if (!results.isEmpty()) {
+            return factory.loadFromIndex(results.iterator().next());
         }
         return null;
     }

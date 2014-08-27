@@ -85,7 +85,7 @@ public class ToolsMenuTest extends MainMenuTest {
     public static Test suite() {
         return emptyConfiguration()
                 .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
-                .addTest(ToolsMenuTest.class)
+                .addTest(ToolsMenuTest.class, "testJavaToolsMenu", "testXmlToolsMenu", "testTxtToolsMenu")
                 .suite();
     }
 

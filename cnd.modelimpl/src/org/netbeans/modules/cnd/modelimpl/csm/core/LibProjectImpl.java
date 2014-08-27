@@ -51,13 +51,14 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.CharSequences;
 
 /**
  * @author Vladimir Kvasihn
@@ -87,16 +88,18 @@ public final class LibProjectImpl extends ProjectBase {
                 DiagnosticExceptoins.register(e);
             }
         }
+        if (instance != null && !(instance instanceof LibProjectImpl)) {
+            CndUtils.assertTrueInConsole(false, "cannot correctly deserialize library for " + includePathName);
+            cleanRepository(fs, includePathName, true, sourceUnitId);
+            instance = null;
+        }
         if (instance == null) {
             instance = new LibProjectImpl(model, fs, includePathName, sourceUnitId);
         }
-        if (instance instanceof LibProjectImpl) {
-            assert ((LibProjectImpl) instance).includePath != null;
-        } else {
-            // ProjectBase inst = readInstance(model, fs, includePathName, includePathName);
-            assert false : "Wrong instance, should be LibProjectImpl: " + instance; //NOI18N
+        if (CndUtils.isDebugMode()) {
+            CndUtils.assertTrue(CharSequences.comparator().compare(includePathName, ((LibProjectImpl) instance).includePath) == 0, includePathName + " vs. " + ((LibProjectImpl) instance).includePath);
+            CndUtils.assertTrue(instance.getFileSystem() == fs, instance.getFileSystem() + " vs. " + fs);
         }
-        CndUtils.assertTrue(instance.getFileSystem() == fs);
         return (LibProjectImpl) instance;
     }
 

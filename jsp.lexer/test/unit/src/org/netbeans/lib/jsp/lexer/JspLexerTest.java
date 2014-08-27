@@ -241,7 +241,7 @@ public class JspLexerTest extends CslTestBase {
         assertToken(ts, "#{'t\\'e}xt'}", JspTokenId.EL);
         assertToken(ts, "\"", JspTokenId.ATTR_VALUE);
 
-        code = "<jsp:tag attr=\"#{\"t\\\"e}xt\"}\"";
+        code = "<jsp:tag attr=\"#{\\\"t&quot;e}xt\\\"}\"";
         th = TokenHierarchy.create(code, JspTokenId.language());
         ts = th.tokenSequence(JspTokenId.language());
 
@@ -251,9 +251,14 @@ public class JspLexerTest extends CslTestBase {
         assertToken(ts, "attr", JspTokenId.ATTRIBUTE);
         assertToken(ts, "=", JspTokenId.SYMBOL);
         assertToken(ts, "\"", JspTokenId.ATTR_VALUE);
-        assertToken(ts, "#{\"t\\\"e}xt\"}", JspTokenId.EL);
+        assertToken(ts, "#{\\\"t&quot;e}xt\\\"}", JspTokenId.EL);
         assertToken(ts, "\"", JspTokenId.ATTR_VALUE);
 
+        code = "#{\"t\\\"e}xt\"}";
+        th = TokenHierarchy.create(code, JspTokenId.language());
+        ts = th.tokenSequence(JspTokenId.language());
+
+        assertToken(ts, "#{\"t\\\"e}xt\"}", JspTokenId.EL);
     }
 
     public void testEmbeddedCurlyBracketInEL() throws BadLocationException {

@@ -227,8 +227,7 @@ public class IndexedElement implements JsElement {
     public static IndexedElement create(IndexResult indexResult) {
         FileObject fo = indexResult.getFile();
         String name = indexResult.getValue(JsIndex.FIELD_BASE_NAME);
-        String fqn = indexResult.getValue(JsIndex.FIELD_FQ_NAME);
-        fqn = fqn.substring(0, fqn.length() - 1);
+        String fqn = getFQN(indexResult);
         int flag = Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG));
         boolean isDeclared = Flag.isDeclared(flag);
         boolean isAnonymous = Flag.isAnonymous(flag);
@@ -272,6 +271,12 @@ public class IndexedElement implements JsElement {
         return getAssignments(indexResult.getValue(JsIndex.FIELD_ASSIGNMENTS));
     }
 
+    public static String getFQN(IndexResult indexResult) {
+        String fqn = indexResult.getValue(JsIndex.FIELD_FQ_NAME);
+        fqn = fqn.substring(0, fqn.length() - 1);
+        return fqn;
+    }
+    
     private static Collection<TypeUsage> getAssignments(String sAssignments) {
         Collection<TypeUsage> result = new ArrayList<TypeUsage>();
         if (sAssignments != null) {

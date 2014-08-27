@@ -173,7 +173,9 @@ public class ResetCommand extends GitCommand {
                                         // remove from index
                                         listener.notifyFile(path, treeWalk.getPathString());
                                         toDelete.add(path);
-                                    } else if (modeRev != FileMode.MISSING.getBits() && modeCache != FileMode.MISSING.getBits() && !objIdCache.equals(objIdRev)
+                                    } else if (modeRev != FileMode.MISSING.getBits() && modeCache != FileMode.MISSING.getBits()
+                                            // either not equal or the cache contains conflicts
+                                            && (!objIdCache.equals(objIdRev) || treeWalk.getTree(0, DirCacheBuildIterator.class).getDirCacheEntry().getStage() != 0)
                                             || modeCache == FileMode.MISSING.getBits()) {
                                         // add entry
                                         listener.notifyFile(path, treeWalk.getPathString());
@@ -206,9 +208,12 @@ public class ResetCommand extends GitCommand {
                                 } else {
                                     builder.commit();
                                 }
-                                repository.writeMergeHeads(null);
-                                repository.writeMergeCommitMsg(null);
-                                repository.writeCherryPickHead(null);
+                                if (moveHead) {
+                                    repository.writeMergeHeads(null);
+                                    repository.writeMergeCommitMsg(null);
+                                    repository.writeCherryPickHead(null);
+                                    repository.writeRevertHead(null);
+                                }
                             }
                         }
                         if (moveHead && !monitor.isCanceled()) {

@@ -43,15 +43,11 @@ ovu:CLASS:[PUBLIC]:ESCAPED{ovu}:
       _highlightCurrentDay:METHOD:[PUBLIC]:ESCAPED{_highlightCurrentDay}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
       _inTrimester:METHOD:[PUBLIC]:ESCAPED{_inTrimester}ESCAPED{(}ESCAPED{mousePos}ESCAPED{)}<font color="#999999">ESCAPED{ : }BooleanESCAPED{|}Number</font>:
       _load:METHOD:[PUBLIC]:ESCAPED{_load}ESCAPED{(}ESCAPED{reload}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
-        that:CLASS:[PRIVATE]:ESCAPED{that}:
-          canvas:CLASS:[PUBLIC]:ESCAPED{canvas}:
-            width:FIELD:[PUBLIC]:ESCAPED{width}<font color="#999999">ESCAPED{ : }that.json.width</font>:
-          columnW:FIELD:[PUBLIC]:ESCAPED{columnW}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}margin.innerLeftESCAPED{|}margin.innerRightESCAPED{|}margin.leftESCAPED{|}margin.rightESCAPED{|}that.json.widthESCAPED{|}that.weeks</font>:
-          json:CLASS:[PUBLIC]:ESCAPED{json}:
-          weeks:FIELD:[PUBLIC]:ESCAPED{weeks}<font color="#999999">ESCAPED{ : }Number</font>:
+        that:VARIABLE:[PRIVATE]:ESCAPED{that}:
       _searchNextValue:METHOD:[PUBLIC]:ESCAPED{_searchNextValue}ESCAPED{(}ESCAPED{index}ESCAPED{)}<font color="#999999">ESCAPED{ : }Number</font>:
       canvas:CLASS:[PUBLIC]:ESCAPED{canvas}:
         height:FIELD:[PUBLIC]:ESCAPED{height}<font color="#999999">ESCAPED{ : }Number</font>:
+        width:FIELD:[PUBLIC]:ESCAPED{width}:
       columnW:FIELD:[PUBLIC]:ESCAPED{columnW}:
       context:CLASS:[PUBLIC]:ESCAPED{context}:
         fillStyle:FIELD:[PUBLIC]:ESCAPED{fillStyle}<font color="#999999">ESCAPED{ : }String</font>:
@@ -79,8 +75,10 @@ ovu:CLASS:[PUBLIC]:ESCAPED{ovu}:
       layer_id:FIELD:[PUBLIC]:ESCAPED{layer_id}:
       maxValue:FIELD:[PUBLIC]:ESCAPED{maxValue}:
       minValue:FIELD:[PUBLIC]:ESCAPED{minValue}:
+      options:CLASS:[PUBLIC]:ESCAPED{options}:
+        trimester:FIELD:[PUBLIC]:ESCAPED{trimester}<font color="#999999">ESCAPED{ : }trimester</font>:
       roundRect:METHOD:[PUBLIC]:ESCAPED{roundRect}ESCAPED{(}<font color="#999999">ESCAPED{CanvasRenderingContext2D}ESCAPED{ }</font>ESCAPED{ctx}ESCAPED{, }<font color="#999999">ESCAPED{Number}ESCAPED{ }</font>ESCAPED{x}ESCAPED{, }<font color="#999999">ESCAPED{Number}ESCAPED{ }</font>ESCAPED{y}ESCAPED{, }<font color="#999999">ESCAPED{Number}ESCAPED{ }</font>ESCAPED{width}ESCAPED{, }<font color="#999999">ESCAPED{Number}ESCAPED{ }</font>ESCAPED{height}ESCAPED{, }<font color="#999999">ESCAPED{Number}ESCAPED{ }</font>ESCAPED{radius}ESCAPED{, }<font color="#999999">ESCAPED{Boolean}ESCAPED{ }</font>ESCAPED{fill}ESCAPED{, }<font color="#999999">ESCAPED{Boolean}ESCAPED{ }</font>ESCAPED{stroke}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
       scale:FIELD:[PUBLIC]:ESCAPED{scale}:
       weeks:FIELD:[PUBLIC]:ESCAPED{weeks}:
-      widget:CLASS:[PUBLIC]:ESCAPED{widget}:
+      widget:FIELD:[PUBLIC]:ESCAPED{widget}:
     update:METHOD:[PUBLIC]:ESCAPED{update}ESCAPED{(}ESCAPED{url}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:

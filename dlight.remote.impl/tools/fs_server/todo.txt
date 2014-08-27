@@ -4,8 +4,11 @@ Known issues
 Unsorted
 --------
 
+- Add const where applicable
+- replace strerorr with err_to_string
+- when reporting error (say, in protocol) to stderr, respond error package to stdout, otherwise client will wait forever
 
-High 
+High
 ----
 
 - non-ASCII file names
@@ -32,8 +35,8 @@ otherwise we can get an issue with different types of stat structure on differen
 
 - atomic file writes (use tmp file and rename)
 
-- 2-phase commit? what if 
-    - content changed 
+- 2-phase commit? what if
+    - content changed
     - fs_server reported the change
     - fs_server was asked for new content, answered and logged the answer on disk
     - but IDE was shutting down at that moment, so it didn't process this
@@ -48,7 +51,7 @@ otherwise we can get an issue with different types of stat structure on differen
 
 - when reading dir, consider simultaneous adding/removing files to this dir
 
-- [client-side:] fs_server sends changes even for dirs that aren't instantiated in current IDE session at all. 
+- [client-side:] fs_server sends changes even for dirs that aren't instantiated in current IDE session at all.
 That's correct. But the processing should be smarter on client side (now it will instantiate and refresh directory)
 
 - what if two IDE instances are launched, one fs_server will fail to lock
@@ -75,7 +78,7 @@ Low
 - test error processing
 
 - queue isn't effective in terms of memory: it uses alloc for each node...
-possible solution for requests queue is cyclic buffer 
+possible solution for requests queue is cyclic buffer
 (and in the case it is full, main() just waits
 
 - dirtab uses malloc for each element, which is probably not effective enough
@@ -96,4 +99,4 @@ Checks
 
 - check assertions and replace with more gentle checks?
 
-- check that all mutexes are freed when exiting a function 
+- check that all mutexes are freed when exiting a function

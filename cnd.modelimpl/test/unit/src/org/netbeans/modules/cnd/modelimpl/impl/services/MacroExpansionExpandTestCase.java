@@ -155,7 +155,7 @@ public class MacroExpansionExpandTestCase extends MacroExpansionDocProviderImplB
             if (expandDoc) {
                 Document doc2 = createExpandedContextDocument(doc, currentFile);
                 assertNotNull(doc2);
-                int expNum = mp.expand(doc, startOffset, endOffset, doc2, new AtomicBoolean(false), false);
+                int expNum = mp.expand(doc, startOffset, endOffset, doc2, new AtomicBoolean(false));
                 streamOut.println("Number of expansions: " + expNum); // NOI18N
                 String res = doc2.getText(0, doc2.getLength());
                 assertNotNull(doc);
@@ -190,7 +190,7 @@ public class MacroExpansionExpandTestCase extends MacroExpansionDocProviderImplB
             if (expandDoc) {
                 Document doc2 = createExpandedContextDocument(doc, currentFile);
                 assertNotNull(doc2);
-                int expNum = mp.expand(doc, startOffset, endOffset, doc2, new AtomicBoolean(false), false);
+                int expNum = mp.expand(doc, startOffset, endOffset, doc2, new AtomicBoolean(false));
                 streamOut.println("Number of expansions: " + expNum); // NOI18N
                 String res = doc2.getText(0, doc2.getLength());
                 assertNotNull(doc);

@@ -55,6 +55,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -172,28 +173,43 @@ public class CssTypedTextInterceptor implements TypedTextInterceptor {
                                     //found unmatched quotation mark - do nothing
                                     return;
                                 }
+                            } else {
+                                //check whether the next token starts with a letter, if so do not autocomplete
+                                //example: typeing quote in: div { background-image: url(|hello.png);
+                                //should not add the pair quote
+                                if(t.text().length() > 0 && Character.isJavaIdentifierPart(t.text().charAt(diff))) {
+                                    return ;
+                                }
+                                
                             }
                             
                             //cover "text| and user types "
                             //in such case just the quotation should be added
                             //go back until we find " or ; { or } and test of the
                             //found quotation is a part of a string or not
-                            ts.move(offset);
-                            while (ts.movePrevious()) {
-                                t = ts.token();
-                                if (t.text().charAt(0) == ch) {
-                                    if (t.id() == CssTokenId.STRING) {
-                                        //no unmatched quotation mark
-                                        break;
+                            diff = ts.move(offset);
+                            if (ts.moveNext()) {
+                                do {
+                                    t = ts.token();
+                                    if (t.text().charAt(0) == ch) {
+                                        if (t.id() == CssTokenId.STRING) {
+                                            //no unmatched quotation mark
+                                            break;
+                                        } else {
+                                            //found unmatched quotation mark - do nothing
+                                            return;
+                                        }
                                     } else {
-                                        //found unmatched quotation mark - do nothing
-                                        return;
+                                        //TODO fix - naive - is the token contains the typed quote, lets assume the quote about to be typed is the closing quote -> do not add a pair
+                                        if(CharSequenceUtilities.indexOf(t.text(), ch) != -1) {
+                                            return ;
+                                        }
                                     }
-                                }
-                                if (t.id() == CssTokenId.LBRACE || t.id() == CssTokenId.RBRACE || t.id() == CssTokenId.SEMI) {
-                                    //break the loop, not quotation found - we can complete
-                                    break;
-                                }
+                                    if (t.id() == CssTokenId.LBRACE || t.id() == CssTokenId.RBRACE || t.id() == CssTokenId.SEMI) {
+                                        //break the loop, not quotation found - we can complete
+                                        break;
+                                    }
+                                } while (ts.movePrevious());
                             }
                         }
                     }

@@ -6,22 +6,6 @@
             <code-name-base>org.netbeans.modules.cnd.testrunner</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.api.progress</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.core.multiview</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.cnd</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -91,15 +75,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>3</release-version>
-                        <specification-version>3.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.extexecution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -135,46 +110,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.awt</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.5</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.dialogs</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.execution</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>9.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.explorer</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.8</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -191,27 +126,11 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.loaders</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.modules</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.7</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.nodes</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.4</specification-version>
+                        <specification-version>7.23</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -246,15 +165,7 @@
                         <specification-version>8.0</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.openide.windows</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.2</specification-version>
-                    </run-dependency>
-                </dependency>
-            </module-dependencies>
+                </module-dependencies>
             <friend-packages>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>

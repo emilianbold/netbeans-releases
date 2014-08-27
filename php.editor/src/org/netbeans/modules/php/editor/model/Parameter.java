@@ -59,6 +59,8 @@ public interface Parameter {
      */
     boolean hasRawType();
     boolean isMandatory();
+    boolean isReference();
+    boolean isVariadic();
     /*mixed types can be documented in php doc*/
     List<QualifiedName> getTypes();
     OffsetRange getOffsetRange();

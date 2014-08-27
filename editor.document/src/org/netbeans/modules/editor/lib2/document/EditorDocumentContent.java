@@ -93,7 +93,7 @@ import org.netbeans.modules.editor.lib2.document.ContentEdit.RemoveEdit;
 public final class EditorDocumentContent implements AbstractDocument.Content {
     
     // -J-Dorg.netbeans.modules.editor.lib2.document.EditorDocumentContent.level=FINE
-    static final Logger LOG = Logger.getLogger(EditorDocumentContent.class.getName());
+    private static final Logger LOG = Logger.getLogger(EditorDocumentContent.class.getName());
 
     /** Character contents of document. */
     private final CharContent charContent;

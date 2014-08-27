@@ -177,7 +177,7 @@ public abstract class CompletionResultItem implements CompletionItem {
         TokenSequence s = createTokenSequence(component);
         s.move(offset);
         s.moveNext();
-        if (s.token().id() == XMLTokenId.TAG) {
+        if (s.token().id() == XMLTokenId.TAG || s.token().id() == XMLTokenId.TEXT) {
             // replace entire tag, minus starting >
             if (s.token().text().toString().startsWith(CompletionUtil.TAG_FIRST_CHAR)) {
                 return s.token().length() - (offset - s.offset());

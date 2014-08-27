@@ -84,6 +84,10 @@ public class BreakpointGroup {
         this.name = name;
         this.group = group;
     }
+    
+    Object getId() {
+        return id;
+    }
 
     String getName() {
         return name;

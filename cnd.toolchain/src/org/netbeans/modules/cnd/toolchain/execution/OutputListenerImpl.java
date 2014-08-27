@@ -225,16 +225,21 @@ public final class OutputListenerImpl implements OutputListener {
             if (listener instanceof OutputListenerImpl) {
                 OutputListenerImpl impl = (OutputListenerImpl) listener;
                 String aDescription = impl.description;
-                if (impl.isError) {
-                    if (aDescription == null) {
-                        aDescription = NbBundle.getMessage(OutputListenerImpl.class, "HINT_CompilerError"); // NOI18N
+                try {
+                    if (impl.isError) {
+                        if (aDescription == null) {
+                            aDescription = NbBundle.getMessage(OutputListenerImpl.class, "HINT_CompilerError"); // NOI18N
+                        }
+                        errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, aDescription, doc, impl.line + 1));
+                    } else {
+                        if (aDescription == null) {
+                            aDescription = NbBundle.getMessage(OutputListenerImpl.class, "HINT_CompilerWarning"); // NOI18N
+                        }
+                        errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, aDescription, doc, impl.line + 1));
                     }
-                    errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, aDescription, doc, impl.line + 1));
-                } else {
-                    if (aDescription == null) {
-                        aDescription = NbBundle.getMessage(OutputListenerImpl.class, "HINT_CompilerWarning"); // NOI18N
-                    }
-                    errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, aDescription, doc, impl.line + 1));
+                } catch( IndexOutOfBoundsException e ) {
+                    //probably the document has been modified or
+                    //compiler error parser detect wrong line
                 }
             }
         }

@@ -20,7 +20,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.31.3</specification-version>
+                        <specification-version>1.32.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -29,7 +29,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.29.2</specification-version>
+                        <specification-version>1.31.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -47,7 +47,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.31.2</specification-version>
+                        <specification-version>1.31.11</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -74,24 +74,6 @@
                     <run-dependency>
                         <release-version>3</release-version>
                         <specification-version>3.49</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.lib2</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.5</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.33.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -217,6 +199,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
+                <friend>com.oracle.tools.ide.binary.dependencies</friend>
                 <friend>com.oracle.tools.ide.projectless.impl</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
@@ -251,6 +234,7 @@
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.simpleunit</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
+                <friend>org.netbeans.modules.mixeddev</friend>
                 <package>org.netbeans.modules.cnd.api.model.services</package>
                 <package>org.netbeans.modules.cnd.api.model.syntaxerr</package>
                 <package>org.netbeans.modules.cnd.api.model.xref</package>

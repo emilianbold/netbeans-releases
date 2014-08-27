@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.services.CsmVisibilityQuery;
@@ -160,7 +161,12 @@ public class CppSymbolProvider implements SymbolProvider {
         }
         if (!filled) {
             long time = System.currentTimeMillis();
-            collect(context, nameAcceptor, symbols);
+            CsmCacheManager.enter();
+            try {
+                collect(context, nameAcceptor, symbols);
+            } finally {
+                CsmCacheManager.leave();
+            }
             if (TRACE) { trace("Collecting %d symbols took %d ms", symbols.size(), System.currentTimeMillis() - time); } //NOI18N
         }
         
@@ -226,8 +232,10 @@ public class CppSymbolProvider implements SymbolProvider {
             Iterator<CsmMacro> macros = CsmSelect.getMacros(csmFile, nameFilter);
             while (macros.hasNext() && !cancelled.get()) {
                 CsmMacro macro = macros.next();
-                if(CsmVisibilityQuery.isVisible(macro)) {
-                    symbols.add(new CppSymbolDescriptor(macro));
+                if (nameAcceptor.accept(macro.getName())) {
+                    if(CsmVisibilityQuery.isVisible(macro)) {
+                        symbols.add(new CppSymbolDescriptor(macro));
+                    }
                 }
             }
             if (cancelled.get()) {
@@ -237,17 +245,19 @@ public class CppSymbolProvider implements SymbolProvider {
             Iterator<CsmFunction> funcs = CsmSelect.getStaticFunctions(csmFile, nameFilter);
             while (funcs.hasNext() && !cancelled.get()) {
                 CsmFunction func = funcs.next();
-                if (CsmKindUtilities.isFunctionDefinition(func)) { // which is unlikely, but just in case
-                    if(CsmVisibilityQuery.isVisible(func)) {
-                        symbols.add(new CppSymbolDescriptor(func));
-                    }
-                } else {
-                    // static functions definitions are not returned by Select;
-                    // neither do they reside in namespace
-                    CsmFunctionDefinition definition = func.getDefinition();
-                    if (definition != null ) {
-                        if(CsmVisibilityQuery.isVisible(definition)) {
-                            symbols.add(new CppSymbolDescriptor(definition));
+                if (nameAcceptor.accept(func.getName())) {
+                    if (CsmKindUtilities.isFunctionDefinition(func)) { // which is unlikely, but just in case
+                        if(CsmVisibilityQuery.isVisible(func)) {
+                            symbols.add(new CppSymbolDescriptor(func));
+                        }
+                    } else {
+                        // static functions definitions are not returned by Select;
+                        // neither do they reside in namespace
+                        CsmFunctionDefinition definition = func.getDefinition();
+                        if (definition != null ) {
+                            if(CsmVisibilityQuery.isVisible(definition)) {
+                                symbols.add(new CppSymbolDescriptor(definition));
+                            }
                         }
                     }
                 }
@@ -259,11 +269,13 @@ public class CppSymbolProvider implements SymbolProvider {
             Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(csmFile, definitions);
             while (declarations.hasNext() && !cancelled.get()) {
                 CsmOffsetableDeclaration decl = declarations.next();
-                if (CsmKindUtilities.isFunctionDefinition(decl) && ((CsmFunction)decl).isStatic()) {
-                    CsmFunction func = (CsmFunction) decl;
-                    if (func.equals(func.getDeclaration()) && CsmKindUtilities.isFile(func.getScope())) {
-                        if(CsmVisibilityQuery.isVisible(func)) {
-                            symbols.add(new CppSymbolDescriptor(func));
+                if (nameAcceptor.accept(decl.getName())) {
+                    if (CsmKindUtilities.isFunctionDefinition(decl) && ((CsmFunction)decl).isStatic()) {
+                        CsmFunction func = (CsmFunction) decl;
+                        if (func.equals(func.getDeclaration()) && CsmKindUtilities.isFile(func.getScope())) {
+                            if(CsmVisibilityQuery.isVisible(func)) {
+                                symbols.add(new CppSymbolDescriptor(func));
+                            }
                         }
                     }
                 }
@@ -275,8 +287,10 @@ public class CppSymbolProvider implements SymbolProvider {
             Iterator<CsmVariable> vars = CsmSelect.getStaticVariables(csmFile, nameFilter);
             while (vars.hasNext() && !cancelled.get()) {
                 CsmVariable var = vars.next();
-                if(CsmVisibilityQuery.isVisible(var)) {
-                    symbols.add(new CppSymbolDescriptor(var));
+                if (nameAcceptor.accept(var.getName())) {
+                    if(CsmVisibilityQuery.isVisible(var)) {
+                        symbols.add(new CppSymbolDescriptor(var));
+                    }
                 }
             }
             if (cancelled.get()) {
@@ -306,37 +320,39 @@ public class CppSymbolProvider implements SymbolProvider {
                 break;
             }
             CsmOffsetableDeclaration decl = declarations.next();
-            if (CsmKindUtilities.isFunction(decl)) {
-                // do not add declarations if their definitions exist
-                if (CsmKindUtilities.isFunctionDefinition(decl)) {
-                    if(CsmVisibilityQuery.isVisible(decl)) {
-                        symbols.add(new CppSymbolDescriptor(decl));
-                    }
-                } else {
-                    CsmFunctionDefinition definition = ((CsmFunction) decl).getDefinition();
-                    if (definition == null || definition == decl) {
+            if (nameAcceptor.accept(decl.getName())) {
+                if (CsmKindUtilities.isFunction(decl)) {
+                    // do not add declarations if their definitions exist
+                    if (CsmKindUtilities.isFunctionDefinition(decl)) {
                         if(CsmVisibilityQuery.isVisible(decl)) {
                             symbols.add(new CppSymbolDescriptor(decl));
                         }
+                    } else {
+                        CsmFunctionDefinition definition = ((CsmFunction) decl).getDefinition();
+                        if (definition == null || definition == decl) {
+                            if(CsmVisibilityQuery.isVisible(decl)) {
+                                symbols.add(new CppSymbolDescriptor(decl));
+                            }
+                        }
                     }
-                }
-            } else {
-                if(CsmVisibilityQuery.isVisible(decl)) {
-                    symbols.add(new CppSymbolDescriptor(decl));
+                } else {
+                    if(CsmVisibilityQuery.isVisible(decl)) {
+                        symbols.add(new CppSymbolDescriptor(decl));
+                    }
                 }
             }
         }
 
         // instantiate classes and enums to check them and their members as well
-        CsmSelect.CsmFilter compoundKindFilter = CsmSelect.getFilterBuilder().createKindFilter(
+        CsmSelect.CsmFilter kindFilter = CsmSelect.getFilterBuilder().createKindFilter(
                 CsmDeclaration.Kind.CLASS, CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.STRUCT);
-
-        declarations = CsmSelect.getDeclarations(namespace, compoundKindFilter);
+        CsmSelect.CsmFilter classesOrMembers = CsmSelect.getFilterBuilder().createOrFilter(kindFilter, nameFilter);
+        declarations = CsmSelect.getDeclarations(namespace, kindFilter);
         while (declarations.hasNext()) {
             if (cancelled.get()) {
                 break;
             }
-            addDeclarationIfNeed(declarations.next(), nameAcceptor, symbols);
+            addDeclarationIfNeed(declarations.next(), nameAcceptor, symbols, classesOrMembers, nameFilter);
         }
 
         // process nested namespaces
@@ -353,18 +369,24 @@ public class CppSymbolProvider implements SymbolProvider {
      * Checks name, if it suites, adds result to symbols collection.
      * Does the same recursively (with members/enumerators)
      */
-    private void addDeclarationIfNeed(CsmOffsetableDeclaration decl, CsmSelect.NameAcceptor nameAcceptor, List<CppSymbolDescriptor> symbols) {
+    private void addDeclarationIfNeed(CsmOffsetableDeclaration decl, CsmSelect.NameAcceptor nameAcceptor, List<CppSymbolDescriptor> symbols,
+            CsmSelect.CsmFilter classesOrMembers, CsmSelect.CsmFilter nameFilter) {
         if (nameAcceptor.accept(decl.getName())) {
             if(CsmVisibilityQuery.isVisible(decl)) {
                 symbols.add(new CppSymbolDescriptor(decl));
             }
         }
         if (CsmKindUtilities.isClass(decl)) {
-            for (CsmMember member : ((CsmClass) decl).getMembers()) {
-                addDeclarationIfNeed(member, nameAcceptor, symbols);
+            CsmClass cls = (CsmClass) decl;
+            final Iterator<CsmMember> classMembers = CsmSelect.getClassMembers(cls, classesOrMembers);
+            while(classMembers.hasNext()) {
+                addDeclarationIfNeed(classMembers.next(), nameAcceptor, symbols, classesOrMembers, nameFilter);
             }
         } else if (CsmKindUtilities.isEnum(decl)) {
-            for (CsmEnumerator enumerator : ((CsmEnum) decl).getEnumerators()) {
+            CsmEnum en = (CsmEnum) decl;
+            Iterator<CsmEnumerator> enumerators = CsmSelect.getEnumerators(en, nameFilter);
+            while(enumerators.hasNext()) {
+                CsmEnumerator enumerator = enumerators.next();
                 if (nameAcceptor.accept(enumerator.getName())) {
                     if(CsmVisibilityQuery.isVisible(enumerator)) {
                         symbols.add(new CppSymbolDescriptor(enumerator));

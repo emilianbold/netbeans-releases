@@ -65,6 +65,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -524,21 +525,10 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
     public void updatePersistenceUnitButton() {
         boolean visible = true;
         if (ProviderUtil.isValidServerInstanceOrNone(project) && visible) {
-            PersistenceScope[] scopes = PersistenceUtils.getPersistenceScopes(project);
-            for (int i = 0; i < scopes.length; i++) {
-                FileObject persistenceXml = scopes[i].getPersistenceXml();
-                if (persistenceXml != null) {
-                    try {
-                        Persistence persistence = PersistenceMetadata.getDefault().getRoot(persistenceXml);
-                        // TODO: should ask the user which pu should be used
-                        if (persistence.getPersistenceUnit().length > 0) {
-                            visible = false;
-                            break;
-                        }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
+            try {
+                visible = !ProviderUtil.persistenceExists(project);
+            } catch (InvalidPersistenceXmlException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         createPUCheckbox.setVisible(visible);

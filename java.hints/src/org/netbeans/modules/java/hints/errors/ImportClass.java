@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
@@ -61,17 +62,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.ReferencesCount;
@@ -203,6 +206,10 @@ public final class ImportClass implements ErrorRule<Void> {
                 changePath = path;
             }
         }
+        
+        Preferences prefs = ErrorFixesFakeHint.getPreferences(info.getFileObject(), 
+                ErrorFixesFakeHint.FixKind.IMPORT_CLASS);
+        boolean doOrganize = ErrorFixesFakeHint.isOrganizeAfterImportClass(prefs);
 
         List<Element> filtered = candidates.first();
         List<Element> unfiltered = candidates.second();
@@ -233,7 +240,7 @@ public final class ImportClass implements ErrorRule<Void> {
                 sort.append('#');
                 sort.append(fqn);
                 
-                fixes.add(new FixImport(file, fqn, ElementHandle.create(element), sort.toString(), prefered, info, changePath, replaceSuffix));
+                fixes.add(new FixImport(file, fqn, ElementHandle.create(element), sort.toString(), prefered, info, changePath, replaceSuffix, doOrganize));
             }
         }
         
@@ -340,8 +347,9 @@ public final class ImportClass implements ErrorRule<Void> {
         private final @NullAllowed TreePathHandle replacePathHandle;
         private final @NullAllowed String suffix;
         private final boolean statik;
+        private final boolean doOrganize;
         
-        public FixImport(FileObject file, String fqn, ElementHandle<Element> toImport, String sortText, boolean isValid, CompilationInfo info, @NullAllowed TreePath replacePath, @NullAllowed String replaceSuffix) {
+        public FixImport(FileObject file, String fqn, ElementHandle<Element> toImport, String sortText, boolean isValid, CompilationInfo info, @NullAllowed TreePath replacePath, @NullAllowed String replaceSuffix, boolean doOrganize) {
             this.file = file;
             this.fqn = fqn;
             this.toImport = toImport;
@@ -359,6 +367,7 @@ public final class ImportClass implements ErrorRule<Void> {
                 this.suffix = null;
                 this.statik = false;
             }
+            this.doOrganize = doOrganize;
         }
 
         @Messages("Change_to_import_X=Change to import {1}{0}")
@@ -404,7 +413,16 @@ public final class ImportClass implements ErrorRule<Void> {
                             Logger.getAnonymousLogger().warning(String.format("Attempt to fix import for FQN: %s, which does not have a TypeElement in currect context", fqn));
                             return ;
                         }
-                        OrganizeImports.doOrganizeImports(copy, Collections.singleton(te), false);
+                        
+                        if (doOrganize) {
+                            OrganizeImports.doOrganizeImports(copy, Collections.singleton(te), false);
+                        } else {
+                            CompilationUnitTree cut = GeneratorUtilities.get(copy).addImports(
+                                copy.getCompilationUnit(),
+                                Collections.singleton(te)
+                            );                        
+                            copy.rewrite(copy.getCompilationUnit(), cut);
+                        }
                     }
                     
             };

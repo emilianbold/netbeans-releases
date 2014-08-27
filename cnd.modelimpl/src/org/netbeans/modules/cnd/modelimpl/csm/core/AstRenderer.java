@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MutableObject;
+import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 
@@ -1472,7 +1473,7 @@ public class AstRenderer {
                 AST next = tokType.getNextSibling();
                 AST ptrOperator = (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
                 if(inSpecializationParams) {
-                    return TypeFactory.createType(typeAST, file, ptrOperator, 0, null, null, false, true);
+                    return TypeFactory.createType(typeAST, file, ptrOperator, 0, null, null, true, false);
                 } else {
                     return TypeFactory.createType(typeAST, file, ptrOperator, 0);
                 }                
@@ -1815,16 +1816,15 @@ public class AstRenderer {
                 return true;
             }
 
-            if (functionParameter && nextToken != null &&
-                    nextToken.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
-                processVariable(nextToken, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
+            if (functionParameter && nextToken != null) {
+                if (nextToken.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                    processVariable(nextToken, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
+                } else if (nextToken.getType() == CPPTokenTypes.CSM_PARMLIST) {
+                    processVariable(null, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
+                } else if (nextToken.getType() == CPPTokenTypes.RPAREN) {
+                    processVariable(ast, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
+                }
             }
-            if (functionParameter && nextToken != null &&                    
-                    nextToken.getType() == CPPTokenTypes.RPAREN) {
-                processVariable(ast, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
-            }
-
-
         }
         return false;
     }
@@ -1836,41 +1836,43 @@ public class AstRenderer {
         int arrayDepth = 0;
         NameHolder name = NameHolder.createName(CharSequences.empty());
         AST qn = null;
-        int inParamsLevel = 0;
-        for (AST token = varAst.getFirstChild(); token != null; token = token.getNextSibling()) {
-            switch (token.getType()) {
-                case CPPTokenTypes.LPAREN:
-                    inParamsLevel++;
-                    break;
-                case CPPTokenTypes.RPAREN:
-                    inParamsLevel--;
-                    break;
-                case CPPTokenTypes.LSQUARE:
-                    if (inParamsLevel == 0) {
-                        arrayDepth++;
-                    }
-                    break;
-                case CPPTokenTypes.CSM_EXPRESSION:
-                    // TODO: TypeImpl should store expression for array definitions
-                    break;
-                case CPPTokenTypes.LITERAL_struct:
-                case CPPTokenTypes.LITERAL_union:
-                case CPPTokenTypes.LITERAL_enum:
-                case CPPTokenTypes.LITERAL_class:
-                    // skip both this and next
-                    token = token.getNextSibling();
-                    continue;
-                case CPPTokenTypes.CSM_QUALIFIED_ID:
-                    if (inParamsLevel == 0) {
-                        qn = token;
-                        name = NameHolder.createSimpleName(AstUtil.getLastChild(token));
-                    }
-                    break;
-                case CPPTokenTypes.IDENT:
-                    if (inParamsLevel == 0) {
-                        name = NameHolder.createSimpleName(token);
-                    }
-                    break;
+        if (varAst != null) {
+            int inParamsLevel = 0;
+            for (AST token = varAst.getFirstChild(); token != null; token = token.getNextSibling()) {
+                switch (token.getType()) {
+                    case CPPTokenTypes.LPAREN:
+                        inParamsLevel++;
+                        break;
+                    case CPPTokenTypes.RPAREN:
+                        inParamsLevel--;
+                        break;
+                    case CPPTokenTypes.LSQUARE:
+                        if (inParamsLevel == 0) {
+                            arrayDepth++;
+                        }
+                        break;
+                    case CPPTokenTypes.CSM_EXPRESSION:
+                        // TODO: TypeImpl should store expression for array definitions
+                        break;
+                    case CPPTokenTypes.LITERAL_struct:
+                    case CPPTokenTypes.LITERAL_union:
+                    case CPPTokenTypes.LITERAL_enum:
+                    case CPPTokenTypes.LITERAL_class:
+                        // skip both this and next
+                        token = token.getNextSibling();
+                        continue;
+                    case CPPTokenTypes.CSM_QUALIFIED_ID:
+                        if (inParamsLevel == 0) {
+                            qn = token;
+                            name = NameHolder.createSimpleName(AstUtil.getLastChild(token));
+                        }
+                        break;
+                    case CPPTokenTypes.IDENT:
+                        if (inParamsLevel == 0) {
+                            name = NameHolder.createSimpleName(token);
+                        }
+                        break;
+                }
             }
         }
         CsmType type;
@@ -2069,7 +2071,7 @@ public class AstRenderer {
         return false;
     }
 
-    private boolean isClassSpecialization(AST ast) {
+    public static boolean isClassSpecialization(AST ast) {
         AST type = ast.getFirstChild(); // type
         if (type != null) {
             AST child = type;
@@ -2089,7 +2091,7 @@ public class AstRenderer {
         return true;
     }
 
-    private boolean isClassExplicitInstantiation(AST ast) {
+    public static boolean isClassExplicitInstantiation(AST ast) {
         AST type = ast.getFirstChild(); // type
         if (type != null) {
             AST child = type;
@@ -2409,6 +2411,49 @@ public class AstRenderer {
         }
         
         return false;
+    }
+    
+    public static CharSequence[] renderQualifiedId(AST qid, List<CsmTemplateParameter> parameters) {
+        return renderQualifiedId(qid, parameters, false);
+    }
+    
+    public static CharSequence[] renderQualifiedId(AST qid, List<CsmTemplateParameter> parameters, boolean includeLastIdent) {
+        int cnt = qid.getNumberOfChildren();
+        if( cnt >= 1 ) {
+            List<CharSequence> l = new ArrayList<>();
+            APTStringManager manager = NameCache.getManager();
+            StringBuilder id = new StringBuilder(""); // NOI18N
+            int level = 0;
+            for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
+                int type2 = token.getType();
+                switch (type2) {
+                    case CPPTokenTypes.IDENT:
+                        id = new StringBuilder(AstUtil.getText(token));
+                        break;
+                    case CPPTokenTypes.GREATERTHAN:
+                        level--;
+                        break;
+                    case CPPTokenTypes.LESSTHAN:
+                        if (id != null) {
+                            TemplateUtils.addSpecializationSuffix(token, id, parameters, true);
+                        }
+                        level++;
+                        break;
+                    case CPPTokenTypes.SCOPE:
+                        if (id != null && level == 0 && id.length()>0) {
+                            l.add(manager.getString(id));
+                            id = null;
+                        }
+                        break;
+                    default:
+                }
+            }
+            if (includeLastIdent && id != null && level == 0 && id.length() > 0) {
+                l.add(manager.getString(id));
+            }
+            return l.toArray(new CharSequence[l.size()]);
+        }      
+        return null;
     }
     
     private static NamespaceImpl findClosestNamespace(CsmScope scope) {

@@ -116,6 +116,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.remote.api.RfsListener;
@@ -444,6 +445,7 @@ public class ImportProject implements PropertyChangeListener {
                     waitSources.countDown();
                 }
                 if (configurationDescriptor.getActiveConfiguration() != null) {
+                    configurationDescriptor.getActiveConfiguration().getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(CommonUtilities.resolveSymbolicLinks());
                     if (runConfigure && configurePath != null && configurePath.length() > 0 &&
                             configureFileObject != null && configureFileObject.isValid()) {
                         waitSources.await(); // or should it be waitConfigurationDescriptor() ?
@@ -691,18 +693,12 @@ public class ImportProject implements PropertyChangeListener {
                     if (HostInfoUtils.fileExists(executionEnvironment, remoteFile)){
                         Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, executionEnvironment, file.getAbsolutePath(), null);
                         if (TRACE) {
-                            logger.log(Level.INFO, "#download file {0}", file.getAbsolutePath()); // NOI18N
+                            logger.log(Level.INFO, "#download file {0}->{1}", new Object[]{remoteFile, file.getAbsolutePath()}); // NOI18N
                         }
                         /*int rc =*/ task.get();
                     }
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
                 } catch (Throwable ex) {
-                    Exceptions.printStackTrace(ex);
+                    logger.log(Level.INFO, "Cannot download file {0}->{1}. Exception {2}", new Object[]{remoteFile, file.getAbsolutePath(), ex.getMessage()}); // NOI18N
                 }
             }
         }
@@ -906,12 +902,12 @@ public class ImportProject implements PropertyChangeListener {
                         if (HostInfoUtils.fileExists(executionEnvironment, remoteExecLog)){
                             Future<Integer> task = CommonTasksSupport.downloadFile(remoteExecLog, executionEnvironment, execLog.getAbsolutePath(), null);
                             if (TRACE) {
-                                logger.log(Level.INFO, "#download file {0}", makeLog.getAbsolutePath()); // NOI18N
+                                logger.log(Level.INFO, "#download file {0}->{1}", new Object[]{remoteExecLog, execLog.getAbsolutePath()}); // NOI18N
                             }
                             /*int rc =*/ task.get();
                         }
                     } catch (Throwable ex) {
-                        Exceptions.printStackTrace(ex);
+                        logger.log(Level.INFO, "Cannot download file {0}->{1}. Exception {2}", new Object[]{remoteExecLog, execLog.getAbsolutePath(), ex.getMessage()}); // NOI18N
                         execLog = null;
                     }
                 }
@@ -1407,6 +1403,7 @@ public class ImportProject implements PropertyChangeListener {
             final Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, execLog.getAbsolutePath());
+            map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, CommonUtilities.resolveSymbolicLinks());
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start discovery by exec log file {0}", execLog.getAbsolutePath()); // NOI18N
@@ -1460,6 +1457,7 @@ public class ImportProject implements PropertyChangeListener {
         if (extension != null) {
             final Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
+            map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, CommonUtilities.resolveSymbolicLinks());
             if (extension.canApply(map, makeProject, interrupter)) {
                 DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
                 if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
@@ -1497,6 +1495,7 @@ public class ImportProject implements PropertyChangeListener {
             final Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
+            map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, CommonUtilities.resolveSymbolicLinks());
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start discovery by log file {0}", makeLog.getAbsolutePath()); // NOI18N
@@ -1525,6 +1524,7 @@ public class ImportProject implements PropertyChangeListener {
             final Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
+            map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, CommonUtilities.resolveSymbolicLinks());
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start fix macros by log file {0}", makeLog.getAbsolutePath()); // NOI18N
@@ -1547,6 +1547,7 @@ public class ImportProject implements PropertyChangeListener {
             Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
+            map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, CommonUtilities.resolveSymbolicLinks());
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start discovery by object files"); // NOI18N

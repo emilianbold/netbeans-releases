@@ -52,7 +52,6 @@ import java.util.Enumeration;
 import java.util.logging.Level;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -100,6 +99,8 @@ public class DataFolderTimeOrderTest extends NbTestCase implements PropertyChang
         OutputStream os = y.getOutputStream();
         os.write("Ahoj".getBytes());
         os.close();
+        
+        org.openide.filesystems.test.TestFileUtils.touch(y, x);
 
         aa = DataFolder.findFolder (lfs.findResource ("AA"));
         aa.addPropertyChangeListener (this);
@@ -112,7 +113,6 @@ public class DataFolderTimeOrderTest extends NbTestCase implements PropertyChang
         aa.removePropertyChangeListener (this);
     }
 
-    @RandomlyFails // NB-Core-Build #3871
     public void testLastModifiedOrderUpdatedAfterFileIsTouched() throws Exception {
         aa.setSortMode(DataFolder.SortMode.LAST_MODIFIED);
 

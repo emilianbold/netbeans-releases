@@ -1172,6 +1172,58 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "(new Two)->get^Two();", true);
     }
 
+    public void testUseFuncAndConst_01() throws Exception {
+        checkOccurrences(getTestPath(), "use const Name\\Space\\F^OO;", true);
+    }
+
+    public void testUseFuncAndConst_02() throws Exception {
+        checkOccurrences(getTestPath(), "use const Name\\Space\\F^OO as FOO2;", true);
+    }
+
+    public void testUseFuncAndConst_03() throws Exception {
+        checkOccurrences(getTestPath(), "use const Name\\Space\\FOO as F^OO2;", true);
+    }
+
+    public void testUseFuncAndConst_04() throws Exception {
+        checkOccurrences(getTestPath(), "use function Name\\Space\\f^nc;", true);
+    }
+
+    public void testUseFuncAndConst_05() throws Exception {
+        checkOccurrences(getTestPath(), "use function Name\\Space\\f^nc as fnc2;", true);
+    }
+
+    public void testUseFuncAndConst_06() throws Exception {
+        checkOccurrences(getTestPath(), "use function Name\\Space\\fnc as f^nc2;", true);
+    }
+
+    public void testUseFuncAndConst_07() throws Exception {
+        checkOccurrences(getTestPath(), "echo F^OO;", true);
+    }
+
+    public void testUseFuncAndConst_08() throws Exception {
+        checkOccurrences(getTestPath(), "echo F^OO2;", true);
+    }
+
+    public void testUseFuncAndConst_09() throws Exception {
+        checkOccurrences(getTestPath(), "f^nc();", true);
+    }
+
+    public void testUseFuncAndConst_10() throws Exception {
+        checkOccurrences(getTestPath(), "f^nc2();", true);
+    }
+
+    public void testIssue244317_01() throws Exception {
+        checkOccurrences(getTestPath(), "const test^Constant = \"test\";", true);
+    }
+
+    public void testIssue244317_02() throws Exception {
+        checkOccurrences(getTestPath(), "$variable = self::test^Constant;", true);
+    }
+
+    public void testIssue244317_03() throws Exception {
+        checkOccurrences(getTestPath(), "echo self::test^Constant;", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};

@@ -59,6 +59,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.ConfigurationDescriptorProviderImpl;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -73,11 +75,14 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 
@@ -302,10 +307,12 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
         IOProvider iop = IOProvider.getDefault();
         assert iop instanceof CndTestIOProvider : "found " + iop.getClass();
+        final StringBuilder buf = new StringBuilder();
         ((CndTestIOProvider) iop).addListener(new CndTestIOProvider.Listener() {
             @Override
             public void linePrinted(String line) {
                 if(line != null) {
+                    buf.append(line).append('\n');
                     if (line.trim().startsWith(successLine)) {
                         build_rc.set(0);
                         done.countDown();
@@ -355,7 +362,21 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             done.await();
         } catch (InterruptedException ir) {
         }
-
-        assertTrue("build failed - rc = " + build_rc.intValue(), build_rc.intValue() == 0);
+        String shell = null;
+        try {
+            shell = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal()).getShell();
+        } catch (Exception ex) {
+        }
+        Tool C = set.findTool(PredefinedToolKind.CCompiler);
+        Tool CPP = set.findTool(PredefinedToolKind.CCCompiler);
+        Tool MAKE = set.findTool(PredefinedToolKind.MakeTool);
+        assertTrue("build failed - rc = " + build_rc.intValue()+
+                "\nBuildLog:\n"+buf.toString()+
+                "\nTool Collection:"+set.getName()+
+                "\n\tC:"+(C == null?"null":C.getPath())+
+                "\n\tC++:"+(CPP == null?"null":CPP.getPath())+
+                "\n\tmake:"+(MAKE == null?"null":MAKE.getPath())+
+                "\n\tShell:"+shell,
+                build_rc.intValue() == 0);
     }
 }

@@ -263,16 +263,20 @@ public final class Utils {
     }
     
     public static RevCommit findCommit (Repository repository, String revision, RevWalk walk) throws GitException.MissingObjectException, GitException {
+        ObjectId commitId = parseObjectId(repository, revision);
+        if (commitId == null) {
+            throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT);
+        }
+        return findCommit(repository, commitId, walk);
+    }
+    
+    public static RevCommit findCommit (Repository repository, ObjectId commitId, RevWalk walk) throws GitException.MissingObjectException, GitException {
         try {
-            ObjectId commitId = parseObjectId(repository, revision);
-            if (commitId == null) {
-                throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT);
-            }
             return (walk == null ? new RevWalk(repository) : walk).parseCommit(commitId);
         } catch (MissingObjectException ex) {
-            throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT, ex);
+            throw new GitException.MissingObjectException(commitId.name(), GitObjectType.COMMIT, ex);
         } catch (IncorrectObjectTypeException ex) {
-            throw new GitException(MessageFormat.format(Utils.getBundle(Utils.class).getString("MSG_Exception_IdNotACommit"), revision)); //NOI18N
+            throw new GitException(MessageFormat.format(Utils.getBundle(Utils.class).getString("MSG_Exception_IdNotACommit"), commitId.name())); //NOI18N
         } catch (IOException ex) {
             throw new GitException(ex);
         }

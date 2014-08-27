@@ -228,7 +228,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         buttonGroup1.add(automaticButton);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(automaticButton, bundle.getString("ParserAutomaticConfiguration")); // NOI18N
-        automaticButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         automaticButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 automaticButtonActionPerformed(evt);
@@ -280,7 +279,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
         buttonGroup1.add(manualButton);
         org.openide.awt.Mnemonics.setLocalizedText(manualButton, bundle.getString("ParserManualConfiguration")); // NOI18N
-        manualButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         manualButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manualButtonActionPerformed(evt);

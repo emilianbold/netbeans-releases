@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.spi.model.services;
 
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -77,6 +79,7 @@ public interface CsmSelectProvider {
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmNamespaceDefinition namespace, CsmFilter filter);
     public Iterator<CsmMember> getClassMembers(CsmClass cls, CsmFilter filter);
     public Iterator<CsmFriend> getClassFriends(CsmClass cls, CsmFilter filter);
+    public Iterator<CsmEnumerator> getEnumerators(CsmEnum en, CsmFilter filter);
 
     public Iterator<CsmUID<CsmFile>> getFileUIDs(CsmProject csmProject, NameAcceptor nameFilter);
 

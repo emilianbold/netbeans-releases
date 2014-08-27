@@ -45,12 +45,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 import org.netbeans.modules.web.clientproject.validation.ProjectFoldersValidator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
@@ -88,9 +90,8 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void init() {
         jProjectFolderTextField.setText(FileUtil.getFileDisplayName(project.getProjectDirectory()));
-        jSiteRootFolderTextField.setText(getSiteRootPath());
-        jTestFolderTextField.setText(uiProperties.getTestFolder());
-        configTextField.setText(uiProperties.getConfigFolder());
+        jSiteRootFolderTextField.setText(beautifyPath(getSiteRootPath()));
+        jTestFolderTextField.setText(beautifyPath(uiProperties.getTestFolder().get()));
         jEncodingComboBox.setModel(ProjectCustomizer.encodingModel(uiProperties.getEncoding()));
         jEncodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
     }
@@ -98,14 +99,15 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     private String getSiteRootPath() {
         String siteRootPath = null;
         File siteRoot = uiProperties.getResolvedSiteRootFolder();
-        if (siteRoot.exists()) {
+        if (siteRoot != null
+                && siteRoot.exists()) {
             FileObject siteRootFO = FileUtil.toFileObject(siteRoot);
             if (siteRootFO != null) {
                 siteRootPath = FileUtil.getRelativePath(project.getProjectDirectory(), siteRootFO);
             }
         }
         if (siteRootPath == null) {
-            siteRootPath = uiProperties.getSiteRootFolder();
+            siteRootPath = uiProperties.getSiteRootFolder().get();
         }
         return siteRootPath;
     }
@@ -114,7 +116,6 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         DocumentListener documentListener = new DefaultDocumentListener();
         jSiteRootFolderTextField.getDocument().addDocumentListener(documentListener);
         jTestFolderTextField.getDocument().addDocumentListener(documentListener);
-        configTextField.getDocument().addDocumentListener(documentListener);
         jEncodingComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -130,7 +131,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void validateData() {
         ValidationResult result = new ProjectFoldersValidator()
-                .validate(FileUtil.toFile(project.getProjectDirectory()), getSiteRootFolder(), getTestFolder(), getConfigFolder())
+                .validate(getSiteRootFolder(), getTestFolder())
                 .getResult();
         // errors
         if (result.hasErrors()) {
@@ -151,11 +152,9 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void storeData() {
         File siteRootFolder = getSiteRootFolder();
-        uiProperties.setSiteRootFolder(siteRootFolder.getAbsolutePath());
+        uiProperties.setSiteRootFolder(new AtomicReference<>(siteRootFolder.getAbsolutePath()));
         File testFolder = getTestFolder();
-        uiProperties.setTestFolder(testFolder != null ? testFolder.getAbsolutePath() : ""); // NOI18N
-        File configFolder = getConfigFolder();
-        uiProperties.setConfigFolder(configFolder != null ? configFolder.getAbsolutePath() : ""); // NOI18N
+        uiProperties.setTestFolder(new AtomicReference<>(testFolder != null ? testFolder.getAbsolutePath() : null));
         uiProperties.setEncoding(getEncoding().name());
     }
 
@@ -170,10 +169,6 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private File getTestFolder() {
         return resolveFile(jTestFolderTextField.getText());
-    }
-
-    private File getConfigFolder() {
-        return resolveFile(configTextField.getText());
     }
 
     private Charset getEncoding() {
@@ -205,12 +200,26 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         if (folder == null) {
             return null;
         }
-        String filePath = FileUtil.getRelativePath(project.getProjectDirectory(), FileUtil.toFileObject(folder));
+        String filePath = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), folder);
         if (filePath == null) {
             // path cannot be relativized
             filePath = folder.getAbsolutePath();
+        } else if (".".equals(filePath)) { // NOI18N
+            // project directory
+            return null;
         }
-        return filePath;
+        return beautifyPath(filePath);
+    }
+
+    private String beautifyPath(String path) {
+        if (path == null) {
+            return ""; // NOI18N
+        } else if (path.startsWith("../../")) { // NOI18N
+            File resolved = resolveFile(path);
+            assert resolved != null : path;
+            return resolved.getAbsolutePath();
+        }
+        return path;
     }
 
     /**
@@ -230,11 +239,10 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         jLabel3 = new javax.swing.JLabel();
         jTestFolderTextField = new javax.swing.JTextField();
         jBrowseTestButton = new javax.swing.JButton();
-        configLabel = new javax.swing.JLabel();
-        configTextField = new javax.swing.JTextField();
-        configBrowseButton = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         jEncodingComboBox = new javax.swing.JComboBox();
+        siteRootInfoLabel5 = new javax.swing.JLabel();
+        testInfoLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jLabel1.text")); // NOI18N
 
@@ -263,16 +271,11 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.configLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(configBrowseButton, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.configBrowseButton.text")); // NOI18N
-        configBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                configBrowseButtonActionPerformed(evt);
-            }
-        });
-
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.jLabel4.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(siteRootInfoLabel5, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.siteRootInfoLabel5.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(testInfoLabel, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.testInfoLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -283,26 +286,27 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
                     .addComponent(jLabel2)
                     .addComponent(jLabel1)
                     .addComponent(jLabel3)
-                    .addComponent(jLabel4)
-                    .addComponent(configLabel))
+                    .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jProjectFolderTextField)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jEncodingComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jEncodingComboBox, 0, 185, Short.MAX_VALUE)
                             .addComponent(jTestFolderTextField, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jSiteRootFolderTextField, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(configTextField))
+                            .addComponent(jSiteRootFolderTextField, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(configBrowseButton)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jBrowseSiteRootButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(jBrowseTestButton, javax.swing.GroupLayout.Alignment.TRAILING))))))
+                            .addComponent(jBrowseSiteRootButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jBrowseTestButton, javax.swing.GroupLayout.Alignment.TRAILING)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(testInfoLabel)
+                            .addComponent(siteRootInfoLabel5))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {configBrowseButton, jBrowseSiteRootButton, jBrowseTestButton});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jBrowseSiteRootButton, jBrowseTestButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -316,19 +320,19 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
                     .addComponent(jSiteRootFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jBrowseSiteRootButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(siteRootInfoLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(jTestFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jBrowseTestButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(configLabel)
-                    .addComponent(configTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(configBrowseButton))
+                .addComponent(testInfoLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(jEncodingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jEncodingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -348,18 +352,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         }
     }//GEN-LAST:event_jBrowseTestButtonActionPerformed
 
-    @NbBundle.Messages("SourcesPanel.browse.configFolder=Select Config")
-    private void configBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configBrowseButtonActionPerformed
-        String filePath = browseFolder(Bundle.SourcesPanel_browse_configFolder(), getConfigFolder());
-        if (filePath != null) {
-            configTextField.setText(filePath);
-        }
-    }//GEN-LAST:event_configBrowseButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton configBrowseButton;
-    private javax.swing.JLabel configLabel;
-    private javax.swing.JTextField configTextField;
     private javax.swing.JButton jBrowseSiteRootButton;
     private javax.swing.JButton jBrowseTestButton;
     private javax.swing.JComboBox jEncodingComboBox;
@@ -370,6 +363,8 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     private javax.swing.JTextField jProjectFolderTextField;
     private javax.swing.JTextField jSiteRootFolderTextField;
     private javax.swing.JTextField jTestFolderTextField;
+    private javax.swing.JLabel siteRootInfoLabel5;
+    private javax.swing.JLabel testInfoLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes

@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -184,29 +186,33 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
         if (possibleParent != null) {
             final NbMavenProjectImpl par = possibleParent.getLookup().lookup(NbMavenProjectImpl.class);
             if (par != null) {
-                FileObject pomFO = par.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-                ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                FileObject pomFO = par.getProjectDirectory().getFileObject("pom.xml"); //NOI18N                
+                if(pomFO != null) {
+                    ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
 
-                    @Override
-                    public void performOperation(POMModel model) {
-                        MavenProject prj = par.getOriginalMavenProject();
-                        if ((prj.getModules() != null && prj.getModules().contains(prjLoc)) == delete) {
-                            //delete/add module from/to parent..
-                            if (delete) {
-                                model.getProject().removeModule(prjLoc);
-                            } else {
-                                model.getProject().addModule(prjLoc);
+                        @Override
+                        public void performOperation(POMModel model) {
+                            MavenProject prj = par.getOriginalMavenProject();
+                            if ((prj.getModules() != null && prj.getModules().contains(prjLoc)) == delete) {
+                                //delete/add module from/to parent..
+                                if (delete) {
+                                    model.getProject().removeModule(prjLoc);
+                                } else {
+                                    model.getProject().addModule(prjLoc);
+                                }
+                            }
+                            if (newName != null && oldName != null) {
+                                if (oldName.equals(model.getProject().getArtifactId())) {
+                                    // is this condition necessary.. why not just overwrite the artifactID always..
+                                    model.getProject().setArtifactId(newName);
+                                }
                             }
                         }
-                        if (newName != null && oldName != null) {
-                            if (oldName.equals(model.getProject().getArtifactId())) {
-                                // is this condition necessary.. why not just overwrite the artifactID always..
-                                model.getProject().setArtifactId(newName);
-                            }
-                        }
-                    }
-                };
-                Utilities.performPOMModelOperations(pomFO, Collections.singletonList(operation));
+                    };
+                    Utilities.performPOMModelOperations(pomFO, Collections.singletonList(operation));
+                } else {
+                    Logger.getLogger(OperationsImpl.class.getName()).log(Level.WARNING, "no pom found for a supposed project in {0}", par.getProjectDirectory());
+                }
             }
         }
         

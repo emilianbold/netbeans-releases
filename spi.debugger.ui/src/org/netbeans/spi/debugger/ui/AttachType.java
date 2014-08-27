@@ -119,7 +119,7 @@ public abstract class AttachType {
      * @since 2.16
      */
     @Retention(RetentionPolicy.SOURCE)
-    @Target({ElementType.TYPE})
+    @Target({ElementType.TYPE, ElementType.METHOD})
     public @interface Registration {
         /**
          * The display name, in the form of either a general string to take as is,
@@ -174,7 +174,9 @@ public abstract class AttachType {
 
         @Override
         public String getTypeDisplayName() {
-            if (displayName != null) {
+            // We ask the delegate also when an empty displayName is declared.
+            // Studio is using this.
+            if (displayName != null && !displayName.isEmpty()) {
                 return displayName;
             }
             return getDelegate().getTypeDisplayName();

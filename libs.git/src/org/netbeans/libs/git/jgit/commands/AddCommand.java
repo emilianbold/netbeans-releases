@@ -47,11 +47,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuildIterator;
 import org.eclipse.jgit.dircache.DirCacheBuilder;
@@ -123,11 +125,11 @@ public class AddCommand extends GitCommand {
                 String lastAddedFile = null;
                 WorkingTreeOptions opt = repository.getConfig().get(WorkingTreeOptions.KEY);
                 boolean autocrlf = opt.getAutoCRLF() != CoreConfig.AutoCRLF.FALSE;
-                boolean checkExecutable = Utils.checkExecutable(repository);
                 while (treeWalk.next() && !monitor.isCanceled()) {
                     String path = treeWalk.getPathString();
                     WorkingTreeIterator f = treeWalk.getTree(1, WorkingTreeIterator.class);
-                    if (f != null && (treeWalk.getTree(0, DirCacheIterator.class) == null && f.isEntryIgnored())) {
+                    DirCacheIterator dcit = treeWalk.getTree(0, DirCacheIterator.class);
+                    if (f != null && (dcit == null && f.isEntryIgnored())) {
                         // file is not in index but is ignored, do nothing
                     } else if (!(path.equals(lastAddedFile))) {
                         if (f != null) { // the file exists
@@ -136,12 +138,17 @@ public class AddCommand extends GitCommand {
                             entry.setLastModified(f.getEntryLastModified());
                             int fm = f.getEntryFileMode().getBits();
                             long sz = f.getEntryLength();
-                            final Path p = Paths.get(file.getAbsolutePath());
+                            Path p = null;
+                            try {
+                                p = file.toPath();
+                            } catch (InvalidPathException ex) {
+                                Logger.getLogger(AddCommand.class.getName()).log(Level.FINE, null, ex);
+                            }
                             if (Utils.isFromNested(fm)) {
-                                entry.setFileMode(FileMode.fromBits(fm));
+                                entry.setFileMode(f.getIndexFileMode(dcit));
                                 entry.setLength(sz);
                                 entry.setObjectId(f.getEntryObjectId());
-                            } else if (Files.isSymbolicLink(p)) {
+                            } else if (p != null && Files.isSymbolicLink(p)) {
                                 Path link = Utils.getLinkPath(p);                                
                                 entry.setFileMode(FileMode.SYMLINK);
                                 entry.setLength(0);
@@ -154,10 +161,12 @@ public class AddCommand extends GitCommand {
                                 treeWalk.enterSubtree();
                                 continue;
                             } else {
-                                if (!checkExecutable) {
-                                    fm = fm & ~0111;
+                                FileMode indexFileMode = f.getIndexFileMode(dcit);
+                                if (dcit == null && indexFileMode == FileMode.EXECUTABLE_FILE && !opt.isFileMode()) {
+                                    // new files should not set exec flag if filemode is set to false
+                                    indexFileMode = FileMode.REGULAR_FILE;
                                 }
-                                entry.setFileMode(FileMode.fromBits(fm));
+                                entry.setFileMode(indexFileMode);
                                 InputStream in = f.openEntryStream();
                                 try {
                                     if (autocrlf) {

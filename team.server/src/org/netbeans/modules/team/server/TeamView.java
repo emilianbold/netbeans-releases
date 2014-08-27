@@ -83,7 +83,7 @@ public final class TeamView {
 
     private final PropertyChangeListener serverManagerListener;
     
-    private static final TeamView theInstance = new TeamView();
+    private static TeamView theInstance;
     
     @Messages("A11Y_TeamProjects=Team Projects")
     private TeamView() {
@@ -135,7 +135,10 @@ public final class TeamView {
         }
     }    
 
-    public static TeamView getInstance() {
+    public synchronized static TeamView getInstance() {
+        if(theInstance == null) {
+            theInstance = new TeamView();
+        }
         return theInstance;
     }
 

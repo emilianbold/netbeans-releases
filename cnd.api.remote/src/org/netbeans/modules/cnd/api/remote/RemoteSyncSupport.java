@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.concurrent.ExecutionException;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -63,7 +62,7 @@ public final class RemoteSyncSupport {
     private RemoteSyncSupport() {
     }
 
-    public static RemoteSyncWorker createSyncWorker(Project project, PrintWriter out, PrintWriter err) {
+    public static RemoteSyncWorker createSyncWorker(Lookup.Provider project, PrintWriter out, PrintWriter err) {
         if (project != null) {
             RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
             if (remoteProject != null) {
@@ -81,7 +80,7 @@ public final class RemoteSyncSupport {
      * instead of repeating in client construct like
      * pathMap = (project == null) ? HostInfoProvider.getMapper(execEnv) : RemoteSyncSupport.getPathMap(project);
      */
-    public static PathMap getPathMap(ExecutionEnvironment env, Project project) {
+    public static PathMap getPathMap(ExecutionEnvironment env, Lookup.Provider project) {
         PathMap pathMap = null;
         if (project != null) {
             pathMap = getPathMap(project);
@@ -92,7 +91,7 @@ public final class RemoteSyncSupport {
         return pathMap;
     }
 
-    public static PathMap getPathMap(Project project) {
+    public static PathMap getPathMap(Lookup.Provider project) {
         RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
         if (remoteProject == null) {
             return null;
@@ -113,7 +112,7 @@ public final class RemoteSyncSupport {
         }
     }
 
-    public static ExecutionEnvironment getRemoteFileSystemHost(Project project) {
+    public static ExecutionEnvironment getRemoteFileSystemHost(Lookup.Provider project) {
         RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
         return (remoteProject == null) ? ExecutionEnvironmentFactory.getLocal() : remoteProject.getSourceFileSystemHost();
     }
@@ -172,7 +171,7 @@ public final class RemoteSyncSupport {
         void close();
     }
 
-    public static Worker createUploader(Project project, ExecutionEnvironment execEnv) throws IOException {
+    public static Worker createUploader(Lookup.Provider project, ExecutionEnvironment execEnv) throws IOException {
         RemoteSyncService rss = Lookup.getDefault().lookup(RemoteSyncService.class);
         return (rss == null) ? null : rss.getUploader(project, execEnv);
     }

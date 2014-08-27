@@ -75,6 +75,7 @@ public final class SuspendSupport {
     }
     
     public static interface SuspendStatusImpl {
+        public boolean isSuspendSupported();
         public boolean isSuspended();
         public void parkWhileSuspended() throws InterruptedException;
     }
@@ -134,6 +135,10 @@ public final class SuspendSupport {
     
     private static final class NopImpl implements SuspendStatusImpl {
         @Override
+        public boolean isSuspendSupported() {
+            return true;
+        }
+        @Override
         public boolean isSuspended() {
             return false;
         }
@@ -143,6 +148,11 @@ public final class SuspendSupport {
     }
     
     private final class DefaultImpl implements SuspendStatusImpl {
+        @Override
+        public boolean isSuspendSupported() {
+            return ignoreSuspend.get() != Boolean.TRUE;
+        }
+
         @Override
         public boolean isSuspended() {
             if (ignoreSuspend.get() == Boolean.TRUE) {

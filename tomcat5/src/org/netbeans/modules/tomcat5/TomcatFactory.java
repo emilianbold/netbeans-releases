@@ -104,11 +104,11 @@ public final class TomcatFactory implements DeploymentFactory {
     public static final String TOMCAT_URI_HOME_PREFIX = "home=";    // NOI18N
     public static final String TOMCAT_URI_BASE_PREFIX = ":base=";   // NOI18N
 
-    private static final Pattern TOMEE_JAR_PATTERN = Pattern.compile("tomee-common-(\\d+\\.\\d+\\.\\d+)\\.jar"); // NOI18N
+    private static final Pattern TOMEE_JAR_PATTERN = Pattern.compile("tomee-common-(\\d+(\\.\\d+)*).*\\.jar"); // NOI18N
 
-    private static final Pattern TOMEE_JAXRS_JAR_PATTERN = Pattern.compile("tomee-jaxrs-(\\d+\\.\\d+\\.\\d+)\\.jar"); // NOI18N
+    private static final Pattern TOMEE_JAXRS_JAR_PATTERN = Pattern.compile("tomee-jaxrs-(\\d+(\\.\\d+)*).*\\.jar"); // NOI18N
 
-    private static final Pattern TOMEE_GERONIMO_JAR_PATTERN = Pattern.compile("geronimo-connector-(\\d+\\.\\d+\\.\\d+)\\.jar"); // NOI18N
+    private static final Pattern TOMEE_GERONIMO_JAR_PATTERN = Pattern.compile("geronimo-connector-(\\d+(\\.\\d+)*).*\\.jar"); // NOI18N
 
     private static final String GENERIC_DISCONNECTED_URI_PREFIX = "tomcat-any:"; // NOI18N
     private static final String GENERIC_DISCONNECTED_URI =

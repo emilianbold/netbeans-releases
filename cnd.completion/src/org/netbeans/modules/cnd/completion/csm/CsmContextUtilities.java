@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -574,11 +575,12 @@ public class CsmContextUtilities {
     public static CsmClass getClass(CsmContext context, boolean checkFunDefition, boolean inScope) {
         CsmClass clazz = null;
 
-        // Support of GCC extension - designated initializers (bug 240016)
+        // TODO: Note that common initializers also supported in CompletionSupport.findExactVarType method!
+        // Support of common initializers and GCC extension - designated initializers (bug 240016)
         if (CsmKindUtilities.isVariable(context.getLastObject()) && CsmContextUtilities.isInInitializerList(context, context.getOffset())) {
             CsmVariable var = (CsmVariable) context.getLastObject();
 
-            CsmClassifier classifier = var.getType().getClassifier();
+            CsmClassifier classifier = CsmBaseUtilities.getOriginalClassifier(var.getType().getClassifier(), var.getContainingFile());
 
             if (classifier != null && CsmKindUtilities.isClass(classifier)) {
                 CsmExpression expression = var.getInitialValue();
@@ -608,24 +610,33 @@ public class CsmContextUtilities {
                         }                        
                         if (cppts != null) {
                             cppts.move(context.getOffset() - expression.getStartOffset());
-                            if (cppts.movePrevious() && cppts.token() != null && CppTokenId.IDENTIFIER.equals(cppts.token().id())) {
-                                boolean leftSeparatorFound = findToken(
-                                        cppts,
-                                        true,
-                                        Arrays.asList(CppTokenId.LBRACE, CppTokenId.COMMA),
-                                        CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
-                                ) != null;
-                                
-                                boolean rightSeparatorFound = findToken(
-                                        cppts,
-                                        false,
-                                        Arrays.asList(CppTokenId.COLON),
-                                        CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
-                                ) != null;
-                                
-                                if (leftSeparatorFound && rightSeparatorFound) {
-                                    clazz = (CsmClass) classifier;
-                                }
+                            List<Token<TokenId>> identSequence = new ArrayList<Token<TokenId>>(); // for example: { a : { .b= { c : ...
+                            cppts.movePrevious();
+                            while (checkValidInitializerIdent(cppts)) {
+                               identSequence.add(0, cppts.token());                               
+                               int level = 0;
+                               while (cppts.movePrevious() && cppts.token() != null && level >= 0) {
+                                   if (CppTokenId.LBRACE.equals(cppts.token().id())) {
+                                       --level;
+                                   } else if (CppTokenId.RBRACE.equals(cppts.token().id())) {
+                                       ++level;
+                                   }
+                               }                               
+                               if (level < 0) {
+                                   // Lets find first ident before '{'
+                                   findToken(
+                                       cppts,
+                                       true,
+                                       false,
+                                       Arrays.asList(CppTokenId.IDENTIFIER),
+                                       CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT, CppTokenId.COLON, CppTokenId.EQ
+                                   );
+                               }
+                            }
+                            
+                            if (!identSequence.isEmpty()) {
+                                identSequence.remove(identSequence.size() - 1); // remove last because we are providing context for it!
+                                clazz = resolveInitializerContext(identSequence, (CsmClass) classifier);
                             }
                         }
                     }
@@ -668,9 +679,61 @@ public class CsmContextUtilities {
         }
         return clazz;
     }
+    
+    private static boolean checkValidInitializerIdent(TokenSequence<TokenId> cppts) {
+        // checks if we are at identifier in initializers like:
+        // '..., .ident = { ...' or '..., ident : {...'
+        if (cppts.token() != null && CppTokenId.IDENTIFIER.equals(cppts.token().id())) {
+            boolean leftSeparatorFound = findToken(
+                    cppts,
+                    true,
+                    true,
+                    Arrays.asList(CppTokenId.LBRACE, CppTokenId.COMMA),
+                    CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT, CppTokenId.DOT
+            ) != null;
+
+            boolean rightSeparatorFound = findToken(
+                    cppts,
+                    false,
+                    true,
+                    Arrays.asList(CppTokenId.COLON, CppTokenId.EQ),
+                    CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
+            ) != null;
+
+            return leftSeparatorFound && rightSeparatorFound;
+        }
+        return false;
+    }
+    
+    private static CsmClass resolveInitializerContext(List<Token<TokenId>> identSequence, CsmClass context) {
+        for (Token<TokenId> ident : identSequence) {
+            CsmClassifier classifier = null;
+            if (ident.text() != null) {
+                String fieldName = ident.text().toString();
+                for (CsmMember csmMember : context.getMembers()) {
+                    if (CsmKindUtilities.isField(csmMember) && fieldName.equals(csmMember.getName().toString())) {
+                        CsmType fieldType = ((CsmField)csmMember).getType();
+                        if (fieldType != null) {
+                            classifier = CsmBaseUtilities.getOriginalClassifier(fieldType.getClassifier(), fieldType.getContainingFile());
+                        }
+                        break;
+                    }
+                }                                    
+            }
+            if (CsmKindUtilities.isClass(classifier)) {
+                context = (CsmClass) classifier;
+            }
+            if (classifier == null) {
+                context = null; // error happened
+                break;
+            }
+        }
+        return context;
+    }
 
     private static Token<TokenId> findToken(TokenSequence<TokenId> ts,
                                             boolean backward,
+                                            boolean restoreTs,
                                             List<? extends TokenId> targetTokens,
                                             TokenId ... skipTokens
     ) {
@@ -706,8 +769,10 @@ public class CsmContextUtilities {
             }
         }
 
-        ts.move(offset);
-        ts.moveNext();
+        if (restoreTs) {
+            ts.move(offset);
+            ts.moveNext();
+        }
 
         return result;
     }

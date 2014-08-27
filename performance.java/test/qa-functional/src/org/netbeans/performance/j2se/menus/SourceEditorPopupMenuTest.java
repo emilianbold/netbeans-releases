@@ -95,20 +95,20 @@ public class SourceEditorPopupMenuTest extends PerformanceTestCase {
 
     public void testPopupInTxt() {
         fileName = "textfile.txt";
-        doMeasurement();
         expectedTime = 200;
+        doMeasurement();
     }
 
     public void testPopupInXml() {
         fileName = "xmlfile.xml";
-        doMeasurement();
         expectedTime = 200;
+        doMeasurement();
     }
 
     public void testPopupInJava() {
         fileName = "Main.java";
-        doMeasurement();
         expectedTime = 500;
+        doMeasurement();
     }
 
     @Override

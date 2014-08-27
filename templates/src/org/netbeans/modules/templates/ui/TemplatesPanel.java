@@ -91,6 +91,7 @@ import org.openide.cookies.OpenCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -748,8 +749,11 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                         if (fo != null) {
                             try {
                                 fo.revert();
+                            } catch (FileAlreadyLockedException falex) {
+                                notifyFileLocked(fo);
+                                revertButton.setEnabled(true);
                             } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
+                                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ex);
                             }
                         }
                     }
@@ -758,6 +762,13 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             revertButton.setEnabled(false);
         }
     }//GEN-LAST:event_revertButtonActionPerformed
+    
+    @NbBundle.Messages({"# {0} - The file name",
+                        "MSG_FileIsLocked=The file {0} is in use."})
+    private void notifyFileLocked(FileObject fo) {
+        NotifyDescriptor warning = new NotifyDescriptor.Message(Bundle.MSG_FileIsLocked(fo.getNameExt()), NotifyDescriptor.WARNING_MESSAGE);
+        DialogDisplayer.getDefault().notify(warning);
+    }
     
     private boolean confirmRevert(Node[] nodes) {
         String title, message;

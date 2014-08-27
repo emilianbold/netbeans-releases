@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.twig.editor.parsing;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.event.ChangeListener;
@@ -55,7 +54,6 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.php.twig.editor.lexer.TwigBlockTokenId;
 
@@ -302,14 +300,6 @@ public class TwigParser extends Parser {
 
     @Override
     public void removeChangeListener(ChangeListener cl) {
-    }
-
-    public static class Factory extends ParserFactory {
-
-        @Override
-        public Parser createParser(Collection<Snapshot> clctn) {
-            return new TwigParser();
-        }
     }
 
     private static class Block {

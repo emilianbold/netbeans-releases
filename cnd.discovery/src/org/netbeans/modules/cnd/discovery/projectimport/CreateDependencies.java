@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
+import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
@@ -136,11 +137,12 @@ public class CreateDependencies implements PropertyChangeListener {
                             if (!checkedDll.contains(entry.getValue())) {
                                 checkedDll.add(entry.getValue());
                                 final Map<String, Object> extMap = new HashMap<>();
-                                extMap.put("DW:buildResult", entry.getValue()); // NOI18N
+                                extMap.put(DiscoveryWizardDescriptor.BUILD_RESULT, entry.getValue());
+                                extMap.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, CommonUtilities.resolveSymbolicLinks());
                                 if (extension != null) {
                                     extension.discoverArtifacts(extMap);
                                     @SuppressWarnings("unchecked")
-                                    List<String> dlls = (List<String>) extMap.get("DW:dependencies"); // NOI18N
+                                    List<String> dlls = (List<String>) extMap.get(DiscoveryWizardDescriptor.DEPENDENCIES);
                                     if (dlls != null) {
                                         for(String so : dlls) {
                                             if (!dllPaths.containsKey(so)) {
@@ -244,8 +246,9 @@ public class CreateDependencies implements PropertyChangeListener {
                     }
                     if (extension != null) {
                         Map<String, Object> map = new HashMap<>();
-                        map.put("DW:buildResult", executable); // NOI18N
-                        map.put("DW:rootFolder", aProject.getProjectDirectory().getPath()); // NOI18N
+                        map.put(DiscoveryWizardDescriptor.BUILD_RESULT, executable);
+                        map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, aProject.getProjectDirectory().getPath());
+                        map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, CommonUtilities.resolveSymbolicLinks());
                         process((DiscoveryExtension)extension, aProject, map);
                     }
                 }
@@ -277,6 +280,7 @@ public class CreateDependencies implements PropertyChangeListener {
                     Applicable applicable = extension.isApplicable(map, lastSelectedProject, false);
                     if (applicable.isApplicable()) {
                         ImportExecutable.resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
+                        configurationDescriptor.getActiveConfiguration().getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(CommonUtilities.resolveSymbolicLinks());
                         if (extension.canApply(map, lastSelectedProject, null)) {
                             try {
                                 extension.apply(map, lastSelectedProject, null);
@@ -286,8 +290,8 @@ public class CreateDependencies implements PropertyChangeListener {
                             }
                         }
                     }
-                    ImportExecutable.switchModel(model, true, lastSelectedProject);
                     onProjectParsingFinished(lastSelectedProject);
+                    ImportExecutable.switchModel(model, true, lastSelectedProject);
                 } catch (Throwable ex) {
                     Exceptions.printStackTrace(ex);
                 } finally {

@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
@@ -773,6 +774,12 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     res.compiler = compiler;
                     res.sourceName = sourceName;
                     //
+                    if (project.resolveSymbolicLinks() && FileSystemProvider.getExecutionEnvironment(fileSystem).isLocal()) {
+                        String resolvedLink = DiscoveryUtils.resolveSymbolicLink(fullName);
+                        if (resolvedLink != null) {
+                            fullName = resolvedLink;
+                        }
+                    }
                     fullName = compilerSettings.normalizePath(fullName);
                     //
                     res.fullName = fullName;
@@ -782,19 +789,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     res.userMacros = userMacros;
                     res.undefinedMacros = artifacts.undefinedMacros;
                     res.importantFlags = artifacts.getImportantFlags();
-                    for(String lang : artifacts.languageArtifacts) {
-                        if ("c89".equals(lang)) { //NOI18N
-                            res.standard = ItemProperties.LanguageStandard.C89;
-                        } else if ("c99".equals(lang)) { //NOI18N
-                            res.standard = ItemProperties.LanguageStandard.C99;
-                        } else if ("c11".equals(lang)) { //NOI18N
-                            res.standard = ItemProperties.LanguageStandard.C11;
-                        } else if ("c++98".equals(lang)) { //NOI18N
-                            res.standard = ItemProperties.LanguageStandard.CPP;
-                        } else if ("c++11".equals(lang)) { //NOI18N
-                            res.standard = ItemProperties.LanguageStandard.CPP11;
-                        } 
-                    }
+                    res.standard = artifacts.getLanguageStandard(res.standard);
                     if (storage != null) {
                         StringBuilder buf = new StringBuilder();
                         for (String s : args) {
@@ -816,6 +811,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                         }
                         res.handler = storage.putCompileLine(buf.toString());
                     }
+                    
                     result.add(res);
                 //} else {
                 //    continue;

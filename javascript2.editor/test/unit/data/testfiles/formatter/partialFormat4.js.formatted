@@ -4,10 +4,10 @@ switch (tagName) {
     case 'TBODY':
         
             {
-            div.innerHTML = '<table><tbody>' + html.stripScripts() + '</tbody></table>';
-            depth = 2;
-            break;
-            // test
+        div.innerHTML = '<table><tbody>' + html.stripScripts() + '</tbody></table>';
+        depth = 2;
+        break;
+        // test
 
         }
 

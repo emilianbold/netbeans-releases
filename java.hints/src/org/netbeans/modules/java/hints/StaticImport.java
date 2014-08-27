@@ -27,6 +27,7 @@
  * Contributor(s):
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 markiewb
  */
 package org.netbeans.modules.java.hints;
 
@@ -38,6 +39,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
@@ -66,12 +68,25 @@ import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 
 /**
- * Hint offering to convert a qualified static method into a static import. e.g.
- * <code>Math.abs(-1)</code> -> <code>abs(-1)</code>.
+ * Hint offering to convert code to use static imports.
  * <p>
+ * Supported are
+ * <ul>
+ * <li>a qualified static method is tranformed into a static import. e.g.
+ * <code>Math.abs(-1)</code> -> <code>abs(-1)</code>.
+ * </li>
+ * <li>a qualified static field is tranformed into a static import. e.g.
+ * <code>java.util.Calendar.JANUARY</code> -> <code>JANUARY</code>.
+ * </li>
+ * <li>a qualified static enum field is tranformed into a static import. e.g.
+ * <code>java.util.concurrent.TimeUnit.DAYS</code> -> <code>DAYS</code>.
+ * </li>
+ * </ul>
+ * </p>
  * Future versions might support other member types.
  *
  * @author Sam Halliday
+ * @author markiewb
  * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=89258">RFE 89258</a>
  * @see <a href="http://java.sun.com/j2se/1.5.0/docs/guide/language/static-import.html>Static Imports</a>
  */
@@ -81,21 +96,29 @@ public class StaticImport {
     @TriggerTreeKind(Kind.MEMBER_SELECT)
     public static List<ErrorDescription> run(HintContext ctx) {
         CompilationInfo info = ctx.getInfo();
-        TreePath treePath = ctx.getPath();
-        TreePath mitp = treePath.getParentPath();
-        if (mitp == null || mitp.getLeaf().getKind() != Kind.METHOD_INVOCATION || ((MethodInvocationTree)mitp.getLeaf()).getMethodSelect() != treePath.getLeaf()) {
-            return null;
-        }
-        List<? extends Tree> typeArgs = ((MethodInvocationTree) mitp.getLeaf()).getTypeArguments();
-        if (typeArgs != null && !typeArgs.isEmpty()) {
-            return null;
-        }
-        Element e = info.getTrees().getElement(treePath);
-        if (e == null || !e.getModifiers().contains(Modifier.STATIC) || e.getKind() != ElementKind.METHOD) {
-            return null;
-        }
         if (!supportsStaticImports(info)) {
             return null;
+        }
+        TreePath treePath = ctx.getPath();
+
+        Element e = info.getTrees().getElement(treePath);
+        EnumSet<ElementKind> supportedTypes = EnumSet.of(ElementKind.METHOD, ElementKind.ENUM_CONSTANT, ElementKind.FIELD);
+        if (e == null || !e.getModifiers().contains(Modifier.STATIC) || !supportedTypes.contains(e.getKind())) {
+            return null;
+        }
+
+        if (ElementKind.METHOD.equals(e.getKind())) {
+            TreePath mitp = treePath.getParentPath();
+            if (mitp == null || mitp.getLeaf().getKind() != Kind.METHOD_INVOCATION) {
+            return null;
+        }
+            if (((MethodInvocationTree) mitp.getLeaf()).getMethodSelect() != treePath.getLeaf()) {
+            return null;
+        }
+            List<? extends Tree> typeArgs = ((MethodInvocationTree) mitp.getLeaf()).getTypeArguments();
+            if (typeArgs != null && !typeArgs.isEmpty()) {
+            return null;
+        }
         }
         Element enclosingEl = e.getEnclosingElement();
         if (enclosingEl == null) {
@@ -161,7 +184,7 @@ public class StaticImport {
             WorkingCopy copy = ctx.getWorkingCopy();
             TreePath treePath = ctx.getPath();
             TreePath mitp = treePath.getParentPath();
-            if (mitp == null || mitp.getLeaf().getKind() != Kind.METHOD_INVOCATION) {
+            if (mitp == null) {
                 return;
             }
             Element e = copy.getTrees().getElement(treePath);

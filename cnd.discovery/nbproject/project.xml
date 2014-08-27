@@ -38,7 +38,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.21</specification-version>
+                        <specification-version>1.31.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -56,7 +56,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.45.2</specification-version>
+                        <specification-version>2.48.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -83,15 +83,6 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.7</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.repository.api</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -206,7 +197,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.7.22</specification-version>
+                        <specification-version>7.23</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -310,6 +301,10 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.cnd.repository</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.cnd.repository.api</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

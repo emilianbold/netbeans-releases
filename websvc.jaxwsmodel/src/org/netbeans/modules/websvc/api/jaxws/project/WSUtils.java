@@ -397,24 +397,24 @@ public class WSUtils {
 
     public static void addJaxWsApiEndorsed(Project project, FileObject srcRoot) throws IOException {
         Library jaxWsApiLib = LibraryManager.getDefault().getLibrary(JAX_WS_ENDORSED);
-        if (jaxWsApiLib == null) {
-            jaxWsApiLib = createJaxWsApiLibrary();
-        }
-        if (jaxWsApiLib != null) {
-            if (!isJaxWs22InJDK(srcRoot)) {
-                ClassPath classPath = ClassPath.getClassPath(srcRoot, ENDORSED);
-                if (classPath == null || classPath.findResource("javax/xml/ws/Service.class") == null) { //NOI18N
-                    ProjectClassPathModifier.addLibraries(new Library[]{jaxWsApiLib}, srcRoot, ENDORSED);
-                }
-            } else {
-                // remove JAX-WS Endorsed from project properties
+        if (!isJaxWs22InJDK(srcRoot)) {
+            if (jaxWsApiLib == null) {
+                jaxWsApiLib = createJaxWsApiLibrary();
+            }
+            ClassPath classPath = ClassPath.getClassPath(srcRoot, ENDORSED);
+            if (classPath == null || classPath.findResource("javax/xml/ws/EndpointContext.class") == null) { //NOI18N
+                ProjectClassPathModifier.addLibraries(new Library[]{jaxWsApiLib}, srcRoot, ENDORSED);
+            }
+        } else if (jaxWsApiLib != null) {
+            ClassPath classPath = ClassPath.getClassPath(srcRoot, ENDORSED);
+            if (classPath != null && classPath.findResource("javax/xml/ws/EndpointContext.class") != null) {
                 try {
                     ProjectClassPathModifier.removeLibraries(new Library[]{jaxWsApiLib}, srcRoot, ENDORSED);
                 } catch (UnsupportedOperationException ex) {
                     Logger.getLogger(WSUtils.class.getName()).log(Level.INFO, null, ex);
                 }
             }
-        }
+        }        
     }
     
     private static boolean isJaxWs22InJDK(FileObject srcRoot) {

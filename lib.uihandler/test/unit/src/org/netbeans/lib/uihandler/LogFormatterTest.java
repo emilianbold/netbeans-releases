@@ -34,9 +34,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Formatter;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.XMLFormatter;
@@ -47,6 +50,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.io.ReaderInputStream;
 
 /**
  *
@@ -230,6 +234,43 @@ public class LogFormatterTest extends NbTestCase {
         }
     }
     
+    public void testUnknownLevels() throws IOException {
+        TestLevel level = new TestLevel("WARN", 233);
+        LogRecord r = new LogRecord(level, "Custom level test");
+        Formatter formatter = new LogFormatter();
+        String s = formatter.format(r);
+        cleanKnownLevels();
+        final LogRecord[] rPtr = new LogRecord[] { null };
+        Handler h = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                rPtr[0] = record;
+            }
+            @Override
+            public void flush() {}
+            @Override
+            public void close() throws SecurityException {}
+        };
+        LogRecords.scan(new ReaderInputStream(new StringReader(s)), h);
+        assertEquals("level", r.getLevel(), rPtr[0].getLevel());
+    }
+    
+    private static void cleanKnownLevels() {
+        try {
+            Class knownLevelClass = Class.forName(Level.class.getName()+"$KnownLevel");
+            java.lang.reflect.Field nameToLevelsField = knownLevelClass.getDeclaredField("nameToLevels");
+            nameToLevelsField.setAccessible(true);
+            Map nameToLevels = (Map) nameToLevelsField.get(null);
+            nameToLevels.clear();
+            java.lang.reflect.Field intToLevelsField = knownLevelClass.getDeclaredField("intToLevels");
+            intToLevelsField.setAccessible(true);
+            Map intToLevels = (Map) intToLevelsField.get(null);
+            intToLevels.clear();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    
     public static class SA extends CallbackSystemAction {
 
         public String getName() {
@@ -238,6 +279,14 @@ public class LogFormatterTest extends NbTestCase {
 
         public HelpCtx getHelpCtx() {
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+    }
+    
+    private static class TestLevel extends Level {
+        
+        public TestLevel(String name, int value) {
+            super(name, value);
         }
         
     }

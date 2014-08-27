@@ -15,15 +15,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.progress</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.22</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.dlight.libs.common</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -36,7 +27,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.32.3</specification-version>
+                        <specification-version>1.35.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -44,7 +35,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.24.1</specification-version>
+                        <specification-version>1.25.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -71,22 +62,6 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>7.29</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.dialogs</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>7.14</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.explorer</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.26</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

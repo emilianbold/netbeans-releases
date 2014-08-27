@@ -44,9 +44,12 @@ package org.netbeans.modules.maven.j2ee;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -61,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.maven.j2ee.Bundle.*;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Implementation of {@link Sources} interface for Java EE Maven projects.
@@ -173,17 +177,22 @@ public class J2eeMavenSourcesImpl implements Sources, OtherSourcesExclude {
 
     @NbBundle.Messages("LBL_WebPages=Web Pages")
     private String getDisplayName(FileObject webRoot) {
+        String projectDirPath = project.getProjectDirectory().getPath() + "/src/main/webapp"; // NOI18N
         // To preserve current behavior, don't show web root name in the node name for default "webapp"
-        if ("webapp".equals(webRoot.getName())) { // NOI18N
+        if (webRoot.getPath().equals(projectDirPath)) {
             return LBL_WebPages();
         } else {
-            return LBL_WebPages() + " (" + webRoot.getName() + ")"; // NOI18N
+            return LBL_WebPages() + " (" + webRoot.getPath() + ")"; // NOI18N
         }
     }
 
     @Override
-    public String folderName() {
-        return "webapp"; // NOI18N
+    public Set<Path> excludedFolders() {
+        Set<Path> result = new HashSet<>();
+        for (SourceGroup sourceGroup : getSourceGroups(TYPE_DOC_ROOT)) {
+            result.add(FileUtil.toFile(sourceGroup.getRootFolder()).toPath());
+        }
+        return result;
     }
 
     /**

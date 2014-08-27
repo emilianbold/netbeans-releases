@@ -188,5 +188,97 @@ made subject to such option by the copyright holder.
       </api>
   </p>
  </answer>
+ 
+ <answer id="resources-file">
+     <p>
+         <api category="stable" group="java.io.File" name="nbactions.xml" type="export">
+             <p>
+                NetBeans Maven support recognizes special file(s) that can be placed
+                next to a <code>pom.xml</code>. These files contain description of 
+                bindings between NetBeans UI actions (compile, run, debug, etc.) and
+                the actual Maven goals to execute.
+             </p>
+             <p>
+                 Primary name of the file is <code>nbactions.xml</code>. In
+                 addition to this, there can be other <code>nbactions-profile.xml</code>
+                 where profile is the name of a Maven profile. These files are
+                 active when such profile is choosen as a selected 
+                 project configuration. The sample format of the file follows:
+             </p>
+             <pre>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;actions&gt;
+    &lt;action&gt;
+        &lt;actionName&gt;run&lt;/actionName&gt;
+        &lt;goals&gt;
+            &lt;goal&gt;process-classes&lt;/goal&gt;
+            &lt;goal&gt;exec:java&lt;/goal&gt;
+        &lt;/goals&gt;
+    &lt;/action&gt;
+    &lt;action&gt;
+        &lt;actionName&gt;debug&lt;/actionName&gt;
+        &lt;goals&gt;
+            &lt;goal&gt;process-classes&lt;/goal&gt;
+            &lt;goal&gt;exec:java&lt;/goal&gt;
+        &lt;/goals&gt;
+        &lt;properties&gt;
+            &lt;jpda.listen&gt;maven&lt;/jpda.listen&gt;
+        &lt;/properties&gt;
+    &lt;/action&gt;
+    &lt;action&gt;
+        &lt;!-- this action is shown in 'Custom' submenu of project popup menu --&gt;
+        &lt;actionName&gt;CUSTOM-bck2brwsr-show&lt;/actionName&gt;
+        &lt;displayName&gt;Run in a Browser&lt;/displayName&gt;
+        &lt;goals&gt;
+            &lt;goal&gt;clean&lt;/goal&gt;
+            &lt;goal&gt;package&lt;/goal&gt;
+            &lt;goal&gt;bck2brwsr:show&lt;/goal&gt;
+        &lt;/goals&gt;
+        &lt;activatedProfiles&gt;
+            &lt;activatedProfile&gt;bck2brwsr&lt;/activatedProfile&gt;
+        &lt;/activatedProfiles&gt;
+        &lt;properties&gt;
+            &lt;skipTests&gt;true&lt;/skipTests&gt;
+        &lt;/properties&gt;
+    &lt;/action&gt;
+    &lt;!-- the profiles section is only useful in nbactions.xml 
+        and gets activated when profile of given id is choosen in the UI
+        --&gt;
+    &lt;profiles&gt;
+        &lt;profile&gt;
+            &lt;id&gt;bck2brwsr&lt;/id&gt;
+            &lt;!-- changes meaning of run action when bck2brwsr profile
+                 is selected
+            --&gt;
+            &lt;actions&gt;
+                &lt;action&gt;
+                    &lt;actionName&gt;run&lt;/actionName&gt;
+                    &lt;displayName&gt;Run in a Browser&lt;/displayName&gt;
+                    &lt;goals&gt;
+                        &lt;goal&gt;clean&lt;/goal&gt;
+                        &lt;goal&gt;package&lt;/goal&gt;
+                        &lt;goal&gt;bck2brwsr:show&lt;/goal&gt;
+                    &lt;/goals&gt;
+                    &lt;activatedProfiles&gt;
+                        &lt;activatedProfile&gt;bck2brwsr&lt;/activatedProfile&gt;
+                    &lt;/activatedProfiles&gt;
+                    &lt;properties&gt;
+                        &lt;skipTests&gt;true&lt;/skipTests&gt;
+                    &lt;/properties&gt;
+                &lt;/action&gt;
+            &lt;/actions&gt;
+        &lt;/profile&gt;
+    &lt;/profiles&gt;
+&lt;/actions&gt;
+             </pre>
+             <p>
+             If an action is not found in currently selected &lt;profile&gt;
+             section, the system fallbacks to the main list of actions. In
+             the previous example, the debug action would be taken from main
+             list for all the profiles.    
+             </p>
+         </api>
+     </p>
+ </answer>
 
 </api-answers>

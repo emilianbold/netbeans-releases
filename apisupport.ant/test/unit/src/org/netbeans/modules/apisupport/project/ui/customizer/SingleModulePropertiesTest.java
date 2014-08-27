@@ -317,6 +317,7 @@ public class SingleModulePropertiesTest extends TestBase {
         String real = TestBase.slurp(p.getManifestFile());
         String newline = System.getProperty("line.separator");
         String expected = "Manifest-Version: 1.0" + newline +
+                "AutoUpdate-Show-In-Client: true" + newline +
                 "OpenIDE-Module: org.example.module1" + newline +
                 "OpenIDE-Module-Layer: org/example/module1/resources/layer.xml" + newline +
                 "OpenIDE-Module-Localizing-Bundle: org/example/module1/resources/Bundle.properties" + newline +
@@ -334,6 +335,7 @@ public class SingleModulePropertiesTest extends TestBase {
         ProjectManager.getDefault().saveProject(p);
         real = TestBase.slurp(p.getManifestFile());
         expected = "Manifest-Version: 1.0" + newline +
+                "AutoUpdate-Show-In-Client: true" + newline +
                 "OpenIDE-Module: org.example.module1" + newline +
                 "OpenIDE-Module-Layer: org/example/module1/resources/layer.xml" + newline +
                 "OpenIDE-Module-Localizing-Bundle: org/example/module1/resources/Bundle.properties" + newline +

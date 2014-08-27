@@ -55,12 +55,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import static org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.getDefaultConfigurationFile;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ivan Sidorkin
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class AddServerLocationVisualPanel extends javax.swing.JPanel {
 
@@ -218,7 +220,6 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         locationTextField = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
@@ -313,7 +314,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
                 configurationTextField.setText(WildflyPluginProperties.getInstance().getConfigLocation());
             } else {
                 configurationTextField.setText(getDefaultConfigurationFile(WildflyPluginProperties.getInstance().getInstallLocation()));
-            }            
+            }
         }
     }
 
@@ -325,6 +326,11 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
                 configurationTextField.setText(newLoc + File.separatorChar
                         + "standalone" + File.separatorChar + "configuration"
                         + File.separatorChar + "standalone-full.xml");
+            } else if (!configurationTextField.getText().startsWith(newLoc)) {
+                NotifyDescriptor d = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(AddServerLocationVisualPanel.class, "MSG_WARN_INSTALLATION_DIFFERS_CONFIGURATION"),
+                        NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
             }
         }
     }
@@ -342,8 +348,6 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField locationTextField;
     private javax.swing.JTextField configurationTextField;
     // End of variables declaration

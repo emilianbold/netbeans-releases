@@ -244,7 +244,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     }
 
     @NbBundle.Messages({
-        "MSG_RevisionDialog.selectBranch=Select Branch"
+        "MSG_RevisionDialog.noBranches=No Branches"
     })
     private void setModel (Map<String, GitBranch> branches, String toSelectBranchName) {
         if (branches.isEmpty()) {
@@ -284,7 +284,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
             @Override
             public void run () {
                 if (branchList.isEmpty()) {
-                    branchModel.addElement(Bundle.MSG_RevisionDialog_selectBranch());
+                    branchModel.addElement(Bundle.MSG_RevisionDialog_noBranches());
                 } else {
                     for (Revision rev : branchList) {
                         branchModel.addElement(rev);
@@ -306,7 +306,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
 
                         @Override
                         public boolean contains (Revision rev, String needle) {
-                            return rev.getRevision().contains(needle);
+                            return rev.getRevision().toLowerCase().contains(needle.toLowerCase());
                         }
                     });
                 }
@@ -316,7 +316,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
 
     private void selectedBranchChanged () {
         Object activeBranch = panel.lstBranches.getSelectedValue();
-        revisionString = activeBranch instanceof Revision ? ((Revision) activeBranch).getRevision() : Bundle.MSG_RevisionDialog_selectBranch();
+        revisionString = activeBranch instanceof Revision ? ((Revision) activeBranch).getRevision() : Bundle.MSG_RevisionDialog_noBranches();
         updateRevision();
     }
 
@@ -338,7 +338,9 @@ public class RevisionDialogController implements ActionListener, DocumentListene
                     @Override
                     public void run () {
                         panel.lstBranches.setEnabled(true);
-                        setModel(branches, defaultBranch);
+                        setModel(branches.isEmpty()
+                                ? Collections.singletonMap(GitBranch.NO_BRANCH, GitBranch.NO_BRANCH_INSTANCE)
+                                : branches, defaultBranch);
                     }
                 });
             }

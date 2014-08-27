@@ -119,7 +119,7 @@ public class ManageTagsPanel extends javax.swing.JPanel {
                     .addComponent(lblTaggedObject)
                     .addComponent(txtTaggedObject, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(revisionInfoPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+                .addComponent(revisionInfoPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, Short.MAX_VALUE)
                 .addGap(0, 0, 0))
         );
 
@@ -162,6 +162,9 @@ public class ManageTagsPanel extends javax.swing.JPanel {
 
         tagsPanel.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
+        org.openide.awt.Mnemonics.setLocalizedText(btnCreate, org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.btnCreate.text")); // NOI18N
+        btnCreate.setToolTipText(org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.btnCreate.TTtext")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -172,7 +175,7 @@ public class ManageTagsPanel extends javax.swing.JPanel {
                     .addComponent(panelProgress, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
                             .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -182,16 +185,22 @@ public class ManageTagsPanel extends javax.swing.JPanel {
                                     .addComponent(jLabel1))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
-                                    .addComponent(txtTagId, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
-                                    .addComponent(txtTagger, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+                                    .addComponent(txtTagId, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+                                    .addComponent(txtTagger, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
                                     .addComponent(txtTagName))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel7)
-                            .addComponent(btnDelete)
-                            .addComponent(tagsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE))))
-                .addContainerGap())
+                            .addComponent(tagsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel7)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(btnCreate)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btnDelete)))
+                                .addGap(0, 0, Short.MAX_VALUE)))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -214,7 +223,7 @@ public class ManageTagsPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblTagMessage)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 22, Short.MAX_VALUE))
                         .addGap(18, 18, 18)
                         .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -222,13 +231,16 @@ public class ManageTagsPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(tagsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(12, 12, 12)
-                        .addComponent(btnDelete)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnDelete)
+                            .addComponent(btnCreate))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(panelProgress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JButton btnCreate = new javax.swing.JButton();
     final javax.swing.JButton btnDelete = new javax.swing.JButton();
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel6;

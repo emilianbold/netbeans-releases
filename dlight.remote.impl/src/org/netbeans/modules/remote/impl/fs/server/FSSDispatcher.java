@@ -65,6 +65,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -123,7 +124,7 @@ import org.openide.util.RequestProcessor;
     
     private volatile boolean cleanupUponStart = false;
     
-    private static final String MIN_SERVER_VERSION = "1.1.22"; // NOI18N
+    private static final String MIN_SERVER_VERSION = "1.2.1"; // NOI18N
     
     private FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
@@ -283,10 +284,11 @@ import org.openide.util.RequestProcessor;
         if (force) {
             valid = false;
         } else {
-            if (attempts.incrementAndGet() > MAX_ATTEMPTS) {
+            if (attempts.incrementAndGet() > MAX_ATTEMPTS) {                
                 valid = false;
             }
         }
+        RemoteLogger.log(Level.WARNING, "fs_server at {0} failed: {1} ", env, lastErrorMessage.get());
     }
     
     private void checkValid() throws ExecutionException, InterruptedException {
@@ -362,8 +364,16 @@ import org.openide.util.RequestProcessor;
     
     /*package*/ static void sendRequest(PrintWriter writer, FSSRequest request) {
         String escapedPath = FSSUtil.escape(request.getPath());
-        String buffer = String.format("%c %d %d %s\n", request.getKind().getChar(), // NOI18N
+        String path2 = request.getPath2();
+        String buffer;
+        if (path2 == null) {
+            buffer = String.format("%c %d %d %s\n", request.getKind().getChar(), // NOI18N
                 request.getId(), escapedPath.length(), escapedPath);
+        } else {
+            String escapedPath2 = FSSUtil.escape(path2);
+            buffer = String.format("%c %d %d %s %d %s\n", request.getKind().getChar(), // NOI18N
+                    request.getId(), escapedPath.length(), escapedPath, escapedPath2.length(), escapedPath2);
+        }
         RemoteLogger.finest("### sending request {0}", buffer);
         writer.print(buffer);
         writer.flush();   
@@ -511,10 +521,10 @@ import org.openide.util.RequestProcessor;
         if (line == null) {
             NativeProcess.State state = server.getProcess().getState();
             if (state == NativeProcess.State.FINISHED) {
-                int rc = server.getProcess().waitFor();
-                if (rc == FSSExitCodes.FAILURE_LOCKING_LOCK_FILE) {
-                    throw new InitializationException(lastErrorMessage.get());
-                }
+                //int rc = server.getProcess().waitFor();
+                //if (rc == FSSExitCodes.FAILURE_LOCKING_LOCK_FILE) {
+                throw new InitializationException(lastErrorMessage.get());
+                //}
             }
         } else {
             Buffer buf = new Buffer(line);
@@ -554,6 +564,8 @@ import org.openide.util.RequestProcessor;
             }
             if (factValue < refValue) {
                 throw new InitializationException("Wrong server version: " + fact + " should be more or equal to " + MIN_SERVER_VERSION); // NOI18N`
+            } else if (factValue > refValue) {
+                break; // minor version does not matter
             }
         }        
     }

@@ -382,6 +382,12 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             public boolean mergeProjectProperties() {
                 return wizardDescriptor.isIncrementalMode();
             }
+
+            @Override
+            public boolean resolveSymbolicLinks() {
+                return wizardDescriptor.isResolveSymbolicLinks();
+            }
+            
         }, new MyProgress(NbBundle.getMessage(DiscoveryExtension.class, "AnalyzingProjectProgress")), interrupter);
         if (interrupter != null && interrupter.cancelled()) {
             return;
@@ -515,6 +521,11 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         @Override
         public boolean mergeProjectProperties() {
             return false;
+        }
+
+        @Override
+        public boolean resolveSymbolicLinks() {
+            return descriptor.isResolveSymbolicLinks();
         }
     };
 

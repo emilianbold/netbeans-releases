@@ -44,7 +44,7 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
 
 
     }
-
+    
     private void initListeners(FileChangeListener fileChangeListener, FileObject projectDir) {
         FileObject nbproject = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
         FileObject publicLaunchers = nbproject.getFileObject(NAME);
@@ -60,6 +60,7 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
             if (privateLaunchers != null) {
                 privateLaunchers.removeFileChangeListener(fileChangeListener);
                 privateLaunchers.addFileChangeListener(fileChangeListener);
+                LaunchersRegistryFactory.getInstance(projectDir).setPrivateLaucnhersListener(fileChangeListener);  //for debugging purposes only
             }
         }
     }
@@ -95,8 +96,9 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
         } catch (IOException ex) {
             //Exceptions.printStackTrace(ex);
         }
-        launchersRegistry.load(properties);
-        UIGesturesSupport.submit(USG_CND_LAUNCHERS, launchersRegistry.getLaunchers().size());
+        if (launchersRegistry.load(properties)) {
+            UIGesturesSupport.submit(USG_CND_LAUNCHERS, launchersRegistry.getLaunchers().size());
+        }
     }
 
     private class FileChangeListenerImpl implements FileChangeListener {

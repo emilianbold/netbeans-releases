@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.actions.Closable;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
+import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -206,16 +207,23 @@ public class RemoteStyleSheetCache {
 
         @Override
         public String getName() {
-            String name;
+            String name = null;
             if (body == null) {
                 name = ""; // NOI18N
             } else {
                 List<Rule> rules = body.getRules();
                 if (rules.isEmpty()) {
-                    name = body.getStyleSheetId();
+                    StyleSheetHeader header = body.getHeader();
+                    if (header != null) {
+                        name = header.getSourceURL();
+                    }
                 } else {
                     Rule rule = rules.get(0);
                     name = rule.getSourceURL();
+                }
+                if (name == null) {
+                    name = body.getStyleSheetId();
+                } else {
                     int index = name.lastIndexOf('/'); // NOI18N
                     name = name.substring(index+1);
                     if (name.endsWith(".css")) { // NOI18N

@@ -146,6 +146,10 @@ public class FileObj extends BaseFileObj {
                     if (!closable.isClosed()) {
                         delegate.close();
                         LOGGER.log(Level.FINEST, "getOutputStream-close");
+                        Long lastModif = MOVED_FILE_TIMESTAMP.get();
+                        if (lastModif != null) {
+                            f.setLastModified(lastModif);
+                        }
                         setLastModified(f.lastModified(), f, false);
                         closable.close();
                         fireFileChangedEvent(false);

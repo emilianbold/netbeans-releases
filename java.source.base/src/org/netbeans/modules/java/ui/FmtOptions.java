@@ -159,8 +159,10 @@ public class FmtOptions {
     public static final String blankLinesAfterClass = "blankLinesAfterClass"; //NOI18N
     public static final String blankLinesAfterClassHeader = "blankLinesAfterClassHeader"; //NOI18N
     public static final String blankLinesAfterAnonymousClassHeader = "blankLinesAfterAnonymousClassHeader"; //NOI18N
+    public static final String blankLinesAfterEnumHeader = "blankLinesAfterEnumHeader"; //NOI18N
     public static final String blankLinesBeforeClassClosingBrace = "blankLinesBeforeClassClosingBrace"; //NOI18N
     public static final String blankLinesBeforeAnonymousClosingBrace = "blankLinesBeforeAnonymousClassClosingBrace"; //NOI18N
+    public static final String blankLinesBeforeEnumClosingBrace = "blankLinesBeforeEnumClosingBrace"; //NOI18N
     public static final String blankLinesBeforeFields = "blankLinesBeforeFields"; //NOI18N
     public static final String blankLinesAfterFields = "blankLinesAfterFields"; //NOI18N
     public static final String blankLinesBeforeMethods = "blankLinesBeforeMethods"; //NOI18N
@@ -216,6 +218,7 @@ public class FmtOptions {
     public static final String spaceWithinAnnotationParens = "spaceWithinAnnotationParens"; //NOI18N
     public static final String spaceWithinBraces = "spaceWithinBraces"; //NOI18N
     public static final String spaceWithinArrayInitBrackets = "spaceWithinArrayInitBrackets"; //NOI18N
+    public static final String spaceWithinArrayIndexBrackets = "spaceWithinArrayIndexBrackets"; //NOI18N
     public static final String spaceBeforeComma = "spaceBeforeComma"; //NOI18N
     public static final String spaceAfterComma = "spaceAfterComma"; //NOI18N
     public static final String spaceBeforeSemi = "spaceBeforeSemi"; //NOI18N
@@ -443,8 +446,10 @@ public class FmtOptions {
             { blankLinesAfterClass, "0"}, //NOI18N
             { blankLinesAfterClassHeader, "1"}, //NOI18N 
             { blankLinesAfterAnonymousClassHeader, "0"}, //NOI18N 
+            { blankLinesAfterEnumHeader, "0"}, //NOI18N 
             { blankLinesBeforeClassClosingBrace, "0"}, //NOI18N 
             { blankLinesBeforeAnonymousClosingBrace, "0"}, //NOI18N 
+            { blankLinesBeforeEnumClosingBrace, "0"}, //NOI18N 
             { blankLinesBeforeFields, "0"}, //NOI18N 
             { blankLinesAfterFields, "0"}, //NOI18N
             { blankLinesBeforeMethods, "1"}, //NOI18N
@@ -500,6 +505,7 @@ public class FmtOptions {
             { spaceWithinAnnotationParens, FALSE}, //NOI18N
             { spaceWithinBraces, FALSE}, //NOI18N
             { spaceWithinArrayInitBrackets, FALSE}, //NOI18N
+            { spaceWithinArrayIndexBrackets, FALSE}, //NOI18N
             { spaceBeforeComma, FALSE}, //NOI18N
             { spaceAfterComma, TRUE}, //NOI18N
             { spaceBeforeSemi, FALSE}, //NOI18N

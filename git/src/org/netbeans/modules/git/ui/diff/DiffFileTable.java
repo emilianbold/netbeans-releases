@@ -54,13 +54,11 @@ import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
-import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.GitStatusNode.GitStatusProperty;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
-import org.netbeans.modules.versioning.util.common.FileViewComponent;
 import org.netbeans.modules.versioning.util.status.VCSStatusNode.NameProperty;
 import org.netbeans.modules.versioning.util.status.VCSStatusNode.PathProperty;
 import org.openide.cookies.EditorCookie;
@@ -76,7 +74,7 @@ import org.openide.util.WeakListeners;
  * 
  * @author Maros Sandor
  */
-class DiffFileTable extends VCSStatusTable<DiffNode> implements FileViewComponent<DiffNode> {
+class DiffFileTable extends VCSStatusTable<DiffNode> {
 
     /**
      * editor cookies belonging to the files being diffed.
@@ -89,11 +87,9 @@ class DiffFileTable extends VCSStatusTable<DiffNode> implements FileViewComponen
     
     private PropertyChangeListener changeListener;
     private final MultiDiffPanelController controller;
-    private final VCSStatusTableModel<DiffNode> model;
     
     public DiffFileTable (VCSStatusTableModel<DiffNode> model, MultiDiffPanelController controller) {
         super(model);
-        this.model = model;
         this.controller = controller;
         setDefaultRenderer(new DiffTableCellRenderer());
     }
@@ -166,102 +162,6 @@ class DiffFileTable extends VCSStatusTable<DiffNode> implements FileViewComponen
     }
 
     @Override
-    public DiffNode getSelectedNode () {
-        DiffNode[] selected = getSelectedNodes();
-        if (selected.length == 1) {
-        }
-        return selected.length == 1 ? selected[0] : null;
-    }
-
-    @Override
-    public void setSelectedNode (DiffNode toSelect) {
-        File selectedFile = toSelect.getFile();
-        super.setSelectedNodes(new File[] { selectedFile });
-    }
-
-    @Override
-    public DiffNode getNodeAtPosition (int position) {
-        return model.getNode(getTable().convertRowIndexToModel(position));
-    }
-
-    @Override
-    public DiffNode[] getNeighbouringNodes (DiffNode node, int boundary) {
-        int index = Arrays.asList(model.getNodes()).indexOf(node);
-        DiffNode[] nodes;
-        if (index < 0) {
-            nodes = new DiffNode[0];
-        } else {
-            JTable table = getTable();
-            index = table.convertRowIndexToView(index);
-            int min = Math.max(0, index - 2);
-            int max = Math.min(table.getRowCount() - 1, index + 2);
-            nodes = new DiffNode[max - min + 1];
-            // adding tableIndex, tableIndex - 1, tableIndex + 1, tableIndex - 2, tableIndex + 2, etc.
-            for (int i = index, j = index + 1, k = 0; i >= min || j <= max; --i, ++j) {
-                if (i >= min) {
-                    nodes[k++] = getNodeAtPosition(i);
-                }
-                if (j <= max) {
-                    nodes[k++] = getNodeAtPosition(j);
-                }
-            }
-        }
-        return nodes;
-    }
-
-    @Override
-    public DiffNode getNextNode (DiffNode node) {
-        DiffNode next = null;
-        if (node != null) {
-            int index = Arrays.asList(model.getNodes()).indexOf(node);
-            if (index >= 0) {
-                JTable table = getTable();
-                index = table.convertRowIndexToView(index);
-                if (++index < table.getRowCount()) {
-                    next = model.getNodes()[table.convertRowIndexToModel(index)];
-                }
-            }
-        }
-        return next;
-    }
-
-    @Override
-    public DiffNode getPreviousNode (DiffNode node) {
-        DiffNode prev = null;
-        if (node != null) {
-            int index = Arrays.asList(model.getNodes()).indexOf(node);
-            if (index >= 0) {
-                JTable table = getTable();
-                index = table.convertRowIndexToView(index);
-                if (--index >= 0) {
-                    prev = model.getNodes()[table.convertRowIndexToModel(index)];
-                }
-            }
-        }
-        return prev;
-    }
-
-    @Override
-    public boolean hasNextNode (DiffNode node) {
-        return getNextNode(node) != null;
-    }
-
-    @Override
-    public boolean hasPreviousNode (DiffNode node) {
-        return getPreviousNode(node) != null;
-    }
-
-    @Override
-    public int getPreferredHeaderHeight () {
-        return getTable().getTableHeader().getPreferredSize().height;
-    }
-
-    @Override
-    public int getPreferredHeight () {
-        return getTable().getPreferredSize().height;
-    }
-
-    @Override
     public Object prepareModel (DiffNode[] nodes) {
         return null; // no time expensive preparation needed
     }
@@ -300,7 +200,7 @@ class DiffFileTable extends VCSStatusTable<DiffNode> implements FileViewComponen
             if (modelColumnIndex == 0) {
                 node = tableModel.getNode(table.convertRowIndexToModel(row));
                 String htmlDisplayName = DiffUtils.getHtmlDisplayName(node, isModified(node.getFile()), isSelected);
-                if (GitModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
+                if (node.isExcluded()) {
                     htmlDisplayName = "<s>" + (htmlDisplayName == null ? node.getFileNode().getName() : htmlDisplayName) + "</s>"; //NOI18N
                 }
                 if (htmlDisplayName != null) {

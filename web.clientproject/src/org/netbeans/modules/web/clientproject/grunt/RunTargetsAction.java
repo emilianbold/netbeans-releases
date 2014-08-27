@@ -49,8 +49,6 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.AbstractAction;
@@ -59,12 +57,15 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.grunt.TargetLister.Target;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.ContextAwareAction;
@@ -86,7 +87,11 @@ import org.openide.util.actions.SystemAction;
 @ActionRegistration(displayName = "#LBL_run_targets_action", lazy = false)
 @ActionReferences(value = {
     @ActionReference(position = 900, path = "Editors/text/grunt+javascript/Popup"),
-    @ActionReference(position = 150, path = "Loaders/text/grunt+javascript/Actions")
+    @ActionReference(position = 150, path = "Loaders/text/grunt+javascript/Actions"),
+    @ActionReference(path="Projects/org-netbeans-modules-web-clientproject/Actions", position = 180),
+    @ActionReference(path="Projects/org-netbeans-modules-php-phpproject/Actions", position = 670),
+    @ActionReference(path="Projects/org-netbeans-modules-web-project/Actions", position = 670),
+    @ActionReference(path="Projects/org-netbeans-modules-maven/Actions", position = 770)
 })
 public final class RunTargetsAction extends SystemAction implements ContextAwareAction {
 
@@ -114,6 +119,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     try {
+                        ClientSideProjectUtilities.logUsage(RunTargetsAction.class, "USG_GRUNT_BUILD", null);
                         new GruntfileExecutor(target.getOriginatingScript(), new String[]{target.getName()}).execute();
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
@@ -137,12 +143,17 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
         
         public ContextAction(Lookup lkp) {
             super(SystemAction.get(RunTargetsAction.class).getName());
+            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
             Collection<? extends FileObject> apcs = lkp.lookupAll(FileObject.class);
             FileObject _file = null;
             if (apcs.size() == 1) {
                 _file = apcs.iterator().next();
                 if (!_file.isValid()) {
                     _file = null;
+                }
+                Project project = lkp.lookup(Project.class);
+                if (project!=null) {
+                    _file = project.getProjectDirectory().getFileObject("Gruntfile.js");
                 }
             }
             file = _file;
@@ -177,7 +188,8 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
         private final FileObject gruntFile;
         
         @NbBundle.Messages({
-            "LBL_LoadingTasks=Loading Tasks..."
+            "LBL_LoadingTasks=Loading Tasks...",
+            "LBL_RefreshTasks=Reload Tasks"    
         })
         public LazyMenu(FileObject gruntFile) {
             //super(SystemAction.get(RunTargetsAction.class).getName());
@@ -260,6 +272,8 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                         needsep = false;
                         addSeparator();
                     }
+                    
+                    add(new RefreshAction(gruntFile));
                     if (!otherTargets.isEmpty()) {
                         needsep = true;
                         JMenu submenu = new JMenu(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_other_targets"));
@@ -316,6 +330,20 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
+        }
+    }
+
+    private static class RefreshAction extends AbstractAction {
+
+        private FileObject gruntFile;
+        public RefreshAction(FileObject gruntFile) {
+            super(Bundle.LBL_RefreshTasks());
+            this.gruntFile = gruntFile;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            TargetLister.invalidateCache(gruntFile);
         }
     }
 }
