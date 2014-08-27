@@ -226,9 +226,10 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                         WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_NON_NUMERIC_PORT"))); // NOI18N
                 return false;
             }
-            if (!debugPortTextField.getText().isEmpty()) {
+            String debugPort = debugPortTextField.getText();
+            if (!debugPort.isEmpty()) {
                 try {
-                    Integer.parseInt(debugPortTextField.getText());
+                    Integer.parseInt(debugPort);
                 } catch (NumberFormatException ex) {
                     wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                             WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_NON_NUMERIC_PORT"))); // NOI18N
@@ -254,6 +255,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             instantiatingIterator.setUsername(usernameField.getText());
             instantiatingIterator.setPassword(new String(passwordField.getPassword()));
             instantiatingIterator.setPort(Integer.toString(port));
+            instantiatingIterator.setDebugPort(debugPort);
             instantiatingIterator.setDomainName(null);
             instantiatingIterator.setHost(host);
             instantiatingIterator.setRemote(true);

@@ -161,11 +161,12 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         Map<String, String> props = new HashMap<String, String>();
         props.put(WLPluginProperties.SERVER_ROOT_ATTR, serverRoot);
         props.put(WLPluginProperties.DOMAIN_ROOT_ATTR, domainRoot);
-        props.put(WLPluginProperties.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
         props.put(WLPluginProperties.DOMAIN_NAME, domainName);
         props.put(WLPluginProperties.PORT_ATTR, port);
         props.put(WLPluginProperties.HOST_ATTR, host);
         props.put(WLPluginProperties.REMOTE_ATTR, Boolean.toString(remote));
+        props.put(WLPluginProperties.DEBUGGER_PORT_ATTR,
+                debugPort == null || debugPort.isEmpty() ? DEFAULT_DEBUGGER_PORT : debugPort);
         
         if (Utilities.isMac()) {
             props.put(WLPluginProperties.MEM_OPTS, DEFAULT_MAC_MEM_OPTS);
@@ -197,6 +198,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     private String url;
     private String domainName;
     private String port;
+    private String debugPort;
     private String host;
     private boolean remote;
     private Version serverVersion;
@@ -329,6 +331,14 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
 
     public void setRemote(boolean remote) {
         this.remote = remote;
+    }
+
+    public String getDebugPort() {
+        return debugPort;
+    }
+
+    public void setDebugPort(String debugPort) {
+        this.debugPort = debugPort;
     }
 
     public Version getServerVersion() {
