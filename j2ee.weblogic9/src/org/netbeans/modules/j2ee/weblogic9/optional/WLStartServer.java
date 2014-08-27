@@ -112,7 +112,7 @@ public final class WLStartServer extends StartServer {
         if (!isRunning()) {
             return false;
         }
-        return true;
+        return !dm.isRemote();
     }
 
     @Override
