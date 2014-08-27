@@ -41,6 +41,7 @@ import com.jcraft.jsch.IdentityRepository;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.ProxyHTTP;
+import com.jcraft.jsch.ProxySOCKS5;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.agentproxy.AgentProxy;
 import com.jcraft.jsch.agentproxy.Buffer;
@@ -80,6 +81,7 @@ public class JGitSshSessionFactory extends JschConfigSessionFactory {
     private OpenSshConfig sshConfig;
     private static SshSessionFactory INSTANCE;
     private static final Logger LOG = Logger.getLogger(JGitSshSessionFactory.class.getName());
+    private static final boolean USE_PROXY_TUNNELING = Boolean.getBoolean("git.lib.proxyHttpTunneling"); //NOI18N
 
     public static synchronized SshSessionFactory getDefault () {
         if (INSTANCE == null) {
@@ -171,7 +173,7 @@ public class JGitSshSessionFactory extends JschConfigSessionFactory {
                         InetSocketAddress inetAddr = (InetSocketAddress) addr;
                         String proxyHost = inetAddr.getHostName();
                         int proxyPort = inetAddr.getPort();
-                        session.setProxy(new ProxyHTTP(proxyHost, proxyPort));
+                        session.setProxy(createProxy(proxyHost, proxyPort));
                     }
                 }
             }
@@ -214,6 +216,12 @@ public class JGitSshSessionFactory extends JschConfigSessionFactory {
             throw new TransportException(uri, ex.getMessage(), ex);
         }
         return agentUsed;
+    }
+
+    private com.jcraft.jsch.Proxy createProxy (String proxyHost, int proxyPort) {
+        return USE_PROXY_TUNNELING
+                ? new ProxyHTTP(proxyHost, proxyPort)
+                : new ProxySOCKS5(proxyHost, proxyPort);
     }
 
     private static class IdentityRepositoryImpl implements IdentityRepository {
