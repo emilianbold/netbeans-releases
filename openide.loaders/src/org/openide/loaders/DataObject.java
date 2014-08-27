@@ -138,6 +138,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      * @GuardedBy(LOCK)
        */
     private transient Node nodeDelegate;
+    private static final Node BEING_CREATED = Node.EMPTY.cloneNode();
 
     /** item with info about this data object 
      * @GuardedBy(DataObjectPool.getPOOL())
@@ -333,7 +334,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     private final Node getNodeDelegateImpl() {
         for (;;) {
             synchronized (LOCK) {
-                if (nodeDelegate != null) {
+                if (nodeDelegate != null && nodeDelegate != BEING_CREATED) {
                     return nodeDelegate;
                 }
             }
@@ -345,15 +346,32 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
                 public void run() {
                     synchronized(LOCK) {
                         if (nodeDelegate == null) {
-                            nodeDelegate = createNodeDelegate();
+                            nodeDelegate = BEING_CREATED;
+                        } else {
+                            if (nodeDelegate == BEING_CREATED) {
+                                try {
+                                    LOCK.wait();
+                                } catch (InterruptedException ex) {
+                                    LOG.log(Level.FINE, null, ex);
+                                }
+                            }
+                            return;
                         }
+                    }
+                    Node newNode = createNodeDelegate();
+                    synchronized (LOCK) {
+                        if (nodeDelegate == BEING_CREATED) {
+                            nodeDelegate = newNode;
+                        }
+                        LOCK.notifyAll();
                     }
                 }
             });
 
-            // JST: debuging code
-            if (nodeDelegate == null) {
-                throw new IllegalStateException("DataObject " + this + " has null node delegate"); // NOI18N
+            synchronized (LOCK) {
+                if (nodeDelegate == null) {
+                    throw new IllegalStateException("DataObject " + this + " has null node delegate"); // NOI18N
+                }
             }
         }
     }
@@ -372,11 +390,15 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      * @return node delegate or null
      */
     final Node getNodeDelegateOrNull () {
-        return nodeDelegate;
+        synchronized (LOCK) {
+            return nodeDelegate;
+        }
     }
 
     final void setNodeDelegate(Node n) {
-        nodeDelegate = n;
+        synchronized (LOCK) {
+            nodeDelegate = n;
+        }
     }
 
     /** Provides node that should represent this data object.
