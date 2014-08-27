@@ -48,9 +48,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Util;
@@ -124,7 +126,7 @@ public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, Act
     }
 
     List<QueryResultHandle> getQueryResults() {
-        List<QueryResultHandle> ret = new ArrayList<QueryResultHandle>();
+        List<QueryResultHandle> ret = new ArrayList<>();
         QueryResultHandle qh = QueryResultHandleImpl.forAllStatus(query);
         if(qh != null) {
             ret.add(qh);
@@ -210,7 +212,7 @@ public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, Act
     private void registerStatusCL() {
         synchronized(query) {
             if(statusListeners == null) {
-                statusListeners = new HashSet<>();
+                statusListeners = new ConcurrentSkipListSet<>();
             }
             if(statusChangedListener == null) {
                 statusChangedListener = new StatusChangedListener();
