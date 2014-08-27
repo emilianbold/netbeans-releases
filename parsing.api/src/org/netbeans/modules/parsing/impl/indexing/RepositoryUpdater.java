@@ -5236,8 +5236,15 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         if (lctx != null) {
                             lctx.noteRootScanning(source, false);
                         }
-                        if (ctx.newIncompleteSeenRoots.contains(source) ||
-                            scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), outOfDateFiles, deletedFiles, recursiveListenersTime)) {
+                        final boolean sourceForBinaryRoot = ctx.sourcesForBinaryRoots.contains(source);
+                        if (ctx.newIncompleteSeenRoots.contains(source)) {
+                            long st = System.currentTimeMillis();
+                            final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(URLMapper.findFileObject(source));
+                            RepositoryUpdater.getDefault().rootsListeners.add(source, true, entry);
+                            recursiveListenersTime[0] = System.currentTimeMillis() - st;
+                            ctx.scannedRoots.add(source);
+                            success = true;
+                        } else if (scanSource (source, ctx.fullRescanSourceRoots.contains(source), sourceForBinaryRoot, outOfDateFiles, deletedFiles, recursiveListenersTime)) {
                             ctx.scannedRoots.add(source);
                             success = true;
                         } else {
