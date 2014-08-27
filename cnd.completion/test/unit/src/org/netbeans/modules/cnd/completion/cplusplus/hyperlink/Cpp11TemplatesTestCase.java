@@ -88,9 +88,18 @@ public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
     
     public void testBug246517() throws Exception {
         // Bug 246517 - Cannot resolve elements of std::tuple
-        performTest("bug246517.cpp", 47, 22, "bug246517.cpp", 36, 9);
-        performTest("bug246517.cpp", 48, 22, "bug246517.cpp", 39, 9);
-        performTest("bug246517.cpp", 49, 22, "bug246517.cpp", 42, 9);
+        performTest("bug246517.cpp", 88, 22, "bug246517.cpp", 77, 9);
+        performTest("bug246517.cpp", 89, 22, "bug246517.cpp", 80, 9);
+        performTest("bug246517.cpp", 90, 22, "bug246517.cpp", 83, 9);
+        performTest("bug246517.cpp", 92, 23, "bug246517.cpp", 77, 9);
+        performTest("bug246517.cpp", 93, 23, "bug246517.cpp", 80, 9);
+        performTest("bug246517.cpp", 94, 23, "bug246517.cpp", 83, 9);        
+        performTest("bug246517.cpp", 96, 23, "bug246517.cpp", 77, 9);
+        performTest("bug246517.cpp", 97, 23, "bug246517.cpp", 80, 9);
+        performTest("bug246517.cpp", 98, 23, "bug246517.cpp", 83, 9); 
+        performTest("bug246517.cpp", 100, 23, "bug246517.cpp", 77, 9);
+        performTest("bug246517.cpp", 101, 23, "bug246517.cpp", 80, 9);
+        performTest("bug246517.cpp", 102, 23, "bug246517.cpp", 83, 9);           
     }                
     
     public void testBugbug246548_1() throws Exception {
@@ -103,5 +112,12 @@ public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
         // Bug 246548 - Cannot reach base class in case of simple variadic recursion
         performTest("bug246548_2.cpp", 16, 40, "bug246548_2.cpp", 7, 9);
         performTest("bug246548_2.cpp", 17, 40, "bug246548_2.cpp", 12, 9);
+    }    
+    
+    public void testBug246683() throws Exception {
+        // Bug 246683 - C++11: variadic template and partial specialization
+        performTest("bug246683.cpp", 20, 32, "bug246683.cpp", 4, 9);
+        performTest("bug246683.cpp", 21, 26, "bug246683.cpp", 11, 9);
+        performTest("bug246683.cpp", 22, 25, "bug246683.cpp", 14, 9);
     }    
 }
