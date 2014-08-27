@@ -58,12 +58,17 @@ public class NewClientSideProject extends JPanel {
 
     private static final long serialVersionUID = 6783546871135477L;
 
-    private static final String PROJECT_NAME = "HTML5Application"; // NOI18N
+    private static final String HTML_PROJECT_NAME = "HTML5Application"; // NOI18N
+    private static final String LIBRARY_PROJECT_NAME = "JsLibrary"; // NOI18N
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final boolean library;
 
 
-    public NewClientSideProject() {
+    public NewClientSideProject(boolean library) {
+
+        this.library = library;
+
         initComponents();
         initProjectNameAndLocation();
     }
@@ -73,11 +78,12 @@ public class NewClientSideProject extends JPanel {
         File projectLocation = ProjectChooser.getProjectsFolder();
         projectLocationTextField.setText(projectLocation.getAbsolutePath());
 
-        String projectName = PROJECT_NAME;
+        String nameTemplate = library ? LIBRARY_PROJECT_NAME : HTML_PROJECT_NAME;
+        String projectName = nameTemplate;
         int index = 0;
         while ((new File(projectLocation, projectName)).exists()) {
             index++;
-            projectName = PROJECT_NAME + index;
+            projectName = nameTemplate + index;
         }
         projectNameTextField.setText(projectName);
         projectNameTextField.selectAll();
