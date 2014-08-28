@@ -61,6 +61,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
@@ -384,7 +386,9 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
 
         @NbBundle.Messages({
             "# {0} - template name",
-            "CreateSiteTemplate.info.templateCreated=Template {0} successfully created."
+            "CreateSiteTemplate.info.templateCreating=Creating template {0}...",
+            "# {0} - template name",
+            "CreateSiteTemplate.info.templateCreated=Template {0} successfully created.",
         })
         @Override
         public Set<FileObject> instantiate() throws IOException {
@@ -394,15 +398,21 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
             if (!name.endsWith(".zip")) { //NOI18N
                 name += ".zip"; //NOI18N
             }
-            File f = new File(panel.comp.getTemplateFolder(), name);
-            if (f.exists()) {
-                if (DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Confirmation(Bundle.CreateSiteTemplate_Error4(f.getAbsolutePath()))) != NotifyDescriptor.YES_OPTION) {
-                    return null;
+            ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.CreateSiteTemplate_info_templateCreating(name));
+            try {
+                progressHandle.start();
+                File f = new File(panel.comp.getTemplateFolder(), name);
+                if (f.exists()) {
+                    if (DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Confirmation(Bundle.CreateSiteTemplate_Error4(f.getAbsolutePath()))) != NotifyDescriptor.YES_OPTION) {
+                        return null;
+                    }
                 }
+                createZipFile(f, p, panel.comp.manager.getRootContext());
+                StatusDisplayer.getDefault().setStatusText(Bundle.CreateSiteTemplate_info_templateCreated(name));
+            } finally {
+                progressHandle.finish();
             }
-            createZipFile(f, p, panel.comp.manager.getRootContext());
-            StatusDisplayer.getDefault().setStatusText(Bundle.CreateSiteTemplate_info_templateCreated(name));
             ClientSideProjectUtilities.logUsage(CreateSiteTemplate.class, "USG_PROJECT_HTML5_SAVE_AS_TEMPLATE", null); // NOI18N
             return null;
         }
