@@ -105,15 +105,11 @@ public final class WLPluginProperties {
     // additional properties that are stored in the InstancePropeties object
     public static final String SERVER_ROOT_ATTR = "serverRoot";        // NOI18N
     public static final String DOMAIN_ROOT_ATTR = "domainRoot";        // NOI18N
-    //public static final String IS_LOCAL_ATTR = "isLocal";              // NOI18N
     public static final String HOST_ATTR = "host";                     // NOI18N
     public static final String PORT_ATTR = "port";                     // NOI18N
     public static final String REMOTE_ATTR = "remote";                 // NOI18N
     public static final String DEBUGGER_PORT_ATTR = "debuggerPort";    // NOI18N
-    public static final String ADMIN_SERVER_NAME= "adminName";      // NOI18N
     public static final String DOMAIN_NAME = "domainName";          // NOI18N
-    public static final String PRODUCTION_MODE = "productionMode";  // NOI18N
-    public static final String DOMAIN_VERSION = "domainVersion";  // NOI18N
 
     public static final String VENDOR   = "vendor";                 // NOI18N
     public static final String JAVA_OPTS="java_opts";               // NOI18N
@@ -153,21 +149,6 @@ public final class WLPluginProperties {
     private static final Pattern SHELL_DEFAULT_VENDOR_PATTERN = 
         Pattern.compile("\\s*(export)?\\s*JAVA_VENDOR\\s*=(.*)");
     
-    private static final Pattern LISTEN_ADDRESS_PATTERN = 
-        Pattern.compile("(?:[a-z]+\\:)?listen-address");            // NOI18N
-
-    private static final Pattern LISTEN_PORT_PATTERN = 
-        Pattern.compile("(?:[a-z]+\\:)?listen-port");               // NOI18N
-
-    private static final Pattern NAME_PATTERN = 
-        Pattern.compile("(?:[a-z]+\\:)?name");                      // NOI18N
-    
-    private static final  Pattern SERVER_PATTERN = 
-        Pattern.compile("(?:[a-z]+\\:)?server");                    // NOI18N
-    
-    private static final  Pattern ADMIN_SERVER_PATTERN = 
-        Pattern.compile("(?:[a-z]+\\:)?admin-server-name");         // NOI18N
-
     private static final String DOMAIN_LIST = "common/nodemanager/nodemanager.domains"; // NOI18N
 
     private static final String DOMAIN_REGISTRY = "domain-registry.xml"; // NOI18N
@@ -199,6 +180,9 @@ public final class WLPluginProperties {
     @CheckForNull
     public static FileObject getDomainConfigFileObject(WLDeploymentManager manager) {
         String domainDir = manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
+        if (domainDir == null) {
+            return null;
+        }
         return getDomainConfigFileObject(new File(domainDir));
     }
 
@@ -306,147 +290,6 @@ public final class WLPluginProperties {
             result.addAll(getDomainsFromNodeManager(serverRoot));
         }
         return result.toArray(new String[result.size()]);
-    }
-    
-    /**
-     * Returns map of server domain configuration properties red from config.xml file.
-     * Only properties required for the moment are returned.  
-     * Method implementation should be extended for additional properties. 
-     * return server configuration properties 
-     */
-    public static Properties getDomainProperties(String domainPath) {
-        Properties properties = new Properties();
-        String configPath = domainPath + "/config/config.xml"; // NOI18N
-
-        // init the input stream for the file and the w3c document object
-        InputStream inputStream = null;
-        Document document = null;
-
-        try {
-            // open the stream from the instances config file
-            File config = new File(configPath);
-            if (!config.exists()){
-                LOGGER.log(Level.FINE, "Domain config file "
-                        + "is not found. Probably server configuration was "
-                        + "changed externally"); // NOI18N
-                return properties;
-            }
-            inputStream = new FileInputStream(config);
-
-            // parse the document
-            document = DocumentBuilderFactory.newInstance()
-                    .newDocumentBuilder().parse(inputStream);
-
-            // get the root element
-            Element root = document.getDocumentElement();
-
-            // get the child nodes
-            NodeList children = root.getChildNodes();
-
-            String adminServer = null;
-            LinkedHashMap<String, ServerDescriptor> servers = new LinkedHashMap<String, ServerDescriptor>();
-            // for each child
-            for (int j = 0; j < children.getLength(); j++) {
-                Node child = children.item(j);
-                if ("name".equals(child.getNodeName())) {
-                    String domainName = child.getFirstChild().getNodeValue();
-                    properties.put(DOMAIN_NAME, domainName);
-                } else if ("domain-version".equals(child.getNodeName())) {
-                    String domainVersion = child.getFirstChild().getNodeValue();
-                    properties.put(DOMAIN_VERSION, domainVersion);
-                } else if ("production-mode-enabled".equals(child.getNodeName())) {
-                    String isEnabled = child.getFirstChild().getNodeValue();
-                    properties.put(PRODUCTION_MODE, "true".equals( isEnabled ));
-                } else if (ADMIN_SERVER_PATTERN.matcher(child.getNodeName()).matches()) {
-                    adminServer = child.getFirstChild().getNodeValue();
-                // if the child's name equals 'server' get its children
-                // and iterate over them
-                } else if (SERVER_PATTERN.matcher(child.getNodeName()).matches()) {
-                    NodeList nl = child.getChildNodes();
-
-                    // declare the server's name/host/port
-                    String name = ""; // NOI18N
-                    String port = ""; // NOI18N
-                    String host = ""; // NOI18N
-
-                    // iterate over the children
-                    for (int k = 0; k < nl.getLength(); k++) {
-                        Node ch = nl.item(k);
-
-                        // if the child's name equals 'name' fetch the
-                        // instance's name
-                        if (NAME_PATTERN.matcher(ch.getNodeName()).matches()) {
-                            name = ch.getFirstChild().getNodeValue();
-                        }
-
-                        // if the child's name equals 'listen-port' fetch the
-                        // instance's port
-                        if (LISTEN_PORT_PATTERN.matcher(ch.getNodeName())
-                                .matches())
-                        {
-                            port = ch.getFirstChild().getNodeValue();
-                        }
-
-                        // if the child's name equals 'listen-address' fetch the
-                        // instance's host
-                        if (LISTEN_ADDRESS_PATTERN.matcher(ch.getNodeName())
-                                .matches())
-                        {
-                            if (ch.hasChildNodes()) {
-                                host = ch.getFirstChild().getNodeValue();
-                            }
-                        }
-                    }
-
-                    if (port != null) {
-                        port = port.trim();
-                    }
-
-                    // if all the parameters were fetched successfully add
-                    // them to the result
-                    if ((name != null) && (!name.equals(""))) { // NOI18N
-                        // address and port have minOccurs=0 and are missing in
-                        // 90 examples server
-                        port = (port == null || port.equals("")) // NOI18N
-                        ? Integer.toString(WLDeploymentFactory.DEFAULT_PORT)
-                                : port;
-                        host = (host == null || host.equals("")) ? "localhost" // NOI18N
-                                : host;
-                        
-                        servers.put(name, new ServerDescriptor(host, port, name));
-                    }
-                }
-            }
-            ServerDescriptor admin = null;
-            if (adminServer != null) {
-                admin = servers.get(adminServer);
-            }
-            if (admin == null && !servers.isEmpty()) {
-                admin = servers.entrySet().iterator().next().getValue();
-            }
-            if (admin != null) {
-                properties.put(PORT_ATTR, admin.getPort());
-                properties.put(HOST_ATTR, admin.getHost());
-                properties.put(ADMIN_SERVER_NAME, admin.getName());
-            }
-        } catch (FileNotFoundException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch (IOException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch (ParserConfigurationException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch (SAXException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } finally {
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.INFO, null, e);
-            }
-        }
-        return properties;
     }
     
     @CheckForNull
@@ -897,33 +740,6 @@ public final class WLPluginProperties {
                 return DEFAULT;
             }
             return new JvmVendor(value, value);
-        }
-    }
-    
-    private static class ServerDescriptor {
-        
-        private final String host;
-        
-        private final String port;
-        
-        private final String name;
-
-        public ServerDescriptor(String host, String port, String name) {
-            this.host = host;
-            this.port = port;
-            this.name = name;
-        }
-
-        public String getHost() {
-            return host;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getPort() {
-            return port;
         }
     }
 }
