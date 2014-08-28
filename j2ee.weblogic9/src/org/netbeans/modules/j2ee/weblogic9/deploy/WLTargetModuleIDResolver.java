@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.weblogic9.deploy;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,19 +69,15 @@ public class WLTargetModuleIDResolver extends TargetModuleIDResolver {
         if (contextRoot == null) {
             return EMPTY_TMID_ARRAY;
         }
+        // WAR modules in EAR contains slash in name
+        String noSlashContextRoot = contextRoot;
         if (contextRoot.startsWith("/")) { // NOI18N
-            contextRoot = contextRoot.substring(1);
+            noSlashContextRoot = contextRoot.substring(1);
         }
 
         ArrayList result = new ArrayList();
         try {
-            TargetModuleID[] tmidList = dm.getAvailableModules(ModuleType.WAR, targetList);
-            for (int i = 0; i < tmidList.length; i++) {
-                TargetModuleID tm = tmidList[i];
-                if (contextRoot.equals(tm.getModuleID())) {
-                    result.add(tm);
-                }
-            }
+            addCollisions(contextRoot, noSlashContextRoot, result, dm.getAvailableModules(ModuleType.WAR, targetList));
         } catch (Exception ex) {
             Logger.getLogger(WLTargetModuleIDResolver.class.getName()).log(Level.INFO, null, ex);
         }
@@ -88,4 +85,17 @@ public class WLTargetModuleIDResolver extends TargetModuleIDResolver {
         return (TargetModuleID[]) result.toArray(new TargetModuleID[result.size()]);
     }
 
+    private void addCollisions(String contextRoot, String noSlashContextRoot, List<TargetModuleID> result, TargetModuleID[] candidates) {
+        for (int i = 0; i < candidates.length; i++) {
+            TargetModuleID tm = candidates[i];
+            if (contextRoot.equals(tm.getModuleID()) || noSlashContextRoot.equals(tm.getModuleID())) {
+                TargetModuleID parent = tm.getParentTargetModuleID();
+                if (parent != null) {
+                    result.add(parent);
+                } else {
+                    result.add(tm);
+                }
+            }
+        }
+    }
 }

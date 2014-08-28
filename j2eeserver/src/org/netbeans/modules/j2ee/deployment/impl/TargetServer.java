@@ -82,6 +82,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
@@ -165,6 +166,20 @@ public class TargetServer {
                 contextRoot = configSupport.getWebContextRoot();
             } catch (ConfigurationException e) {
                 contextRoot = null;
+            }
+        }
+        if (contextRoot == null) {
+            J2eeModuleProvider provider = dtarget.getModuleProvider();
+            if (provider instanceof J2eeApplicationProvider) {
+                for (J2eeModuleProvider child : ((J2eeApplicationProvider) provider).getChildModuleProviders()) {
+                    if (J2eeModule.Type.WAR.equals(child.getJ2eeModule().getType())) {
+                        try {
+                            contextRoot = child.getConfigSupport().getWebContextRoot();
+                            break;
+                        } catch (ConfigurationException e) {
+                        }
+                    }
+                }
             }
         }
 
