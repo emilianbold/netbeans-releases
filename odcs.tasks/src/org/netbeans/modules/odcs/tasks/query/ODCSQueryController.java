@@ -137,6 +137,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     private final QueryParameters parameters;
     private boolean populated = false;
     private QueryProvider.IssueContainer<ODCSIssue> delegatingIssueContainer;
+    private QueryTask initTask;
         
     ODCSQueryController(ODCSRepository repository, ODCSQuery query, Criteria criteria, boolean modifiable) {
         this.repository = repository;
@@ -245,11 +246,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
 
     @Override
     public void closed() {
-        synchronized(REFRESH_LOCK) {
-            if(refreshTask != null) {
-                refreshTask.cancel();
-            }
-        }
+        cancel();
         // XXX
 //        if(query.isSaved()) {
 //            if(!(query.getRepository() instanceof KenaiRepository)) {
@@ -258,6 +255,17 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
 //        }
     }
 
+    public void cancel() {
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask != null) {
+                refreshTask.cancel();
+            }
+            if(initTask != null) {
+                initTask.cancel();
+            }
+        }
+    }
+    
     protected void scheduleForRefresh() {
         // XXX
 //        if(query.isSaved()) {
@@ -801,7 +809,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         String displayName = getQueryProgressName(); 
         final String progressTitle = NbBundle.getMessage(ODCSQueryController.class, "MSG_InitializingQuery", new Object[] {displayName}); // NOI18N
         final String progressText = NbBundle.getMessage(ODCSQueryController.class, "MSG_Initializing");  // NOI18N
-        QueryTask qt = new QueryTask() {
+        initTask = new QueryTask() {
             @Override
             void notifyStart() {
                 if (delegatingIssueContainer != null) {
@@ -814,6 +822,10 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                     delegatingIssueContainer.restoreFinished();
                 }
                 query.removeNotifyListener(this);
+                
+                synchronized(REFRESH_LOCK) { 
+                    initTask = null;
+                }
             }
             @Override
             void invokeQueryOperation() {
@@ -828,7 +840,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                 return progressText;
             }
         };
-        qt.post().waitFinished();
+        initTask.post().waitFinished();
     }
 
     private void refresh(final boolean auto, boolean synchronously) {
@@ -978,6 +990,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     private void remove() {
         synchronized(REFRESH_LOCK) {
             if (refreshTask != null) {
+                refreshTask.cancel();
+            }
+            if (initTask != null) {
                 refreshTask.cancel();
             }
         }

@@ -58,7 +58,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider;
@@ -98,8 +98,8 @@ public class CsmExpressionEvaluator {
      * @param expr - expression as string
      * @return result object
      */
-    public static Object eval(String expr) {
-        return getProvider().eval(expr);
+    public static Object eval(String expr, CsmScope scope) {
+        return getProvider().eval(expr, scope);
     }
 
     /**
@@ -109,8 +109,8 @@ public class CsmExpressionEvaluator {
      * @param inst - instantiation
      * @return result object
      */
-    public static Object eval(String expr, CsmInstantiation inst) {
-        return getProvider().eval(expr, inst);
+    public static Object eval(String expr, CsmInstantiation inst, CsmScope scope) {
+        return getProvider().eval(expr, inst, scope);
     }
 
     /**
@@ -121,8 +121,8 @@ public class CsmExpressionEvaluator {
      * @param mapping - specialization mapping
      * @return result object
      */
-    public static Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
-        return getProvider().eval(expr, decl, mapping);
+    public static Object eval(String expr, CsmOffsetableDeclaration decl, CsmScope scope, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        return getProvider().eval(expr, decl, scope, mapping);
     }
 
     //
@@ -134,22 +134,22 @@ public class CsmExpressionEvaluator {
         }
 
         @Override
-        public Object eval(String expr) {
+        public Object eval(String expr, CsmScope scope) {
             return expr;
         }
 
         @Override
-        public Object eval(String expr, CsmInstantiation inst) {
+        public Object eval(String expr, CsmInstantiation inst, CsmScope scope) {
             return expr;
         }
 
         @Override
-        public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        public Object eval(String expr, CsmOffsetableDeclaration decl, CsmScope scope, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
             return expr;
         }
 
         @Override
-        public Object eval(String expr, CsmOffsetableDeclaration decl, CsmFile expressionFile, int startOffset, int endOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        public Object eval(String expr, CsmOffsetableDeclaration decl, CsmScope scope, CsmFile expressionFile, int startOffset, int endOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
             return expr;
         }
     }

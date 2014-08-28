@@ -48,6 +48,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -91,8 +94,12 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
 //                        ActionsManager.ACTION_RUN_TO_CURSOR,
                         ActionsManager.ACTION_EVALUATE,
                     })));
+    
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.debugger"); // NOI18N
+    private static final String USG_LOG_MSG = "USG_DEBUG_HTML5_JS";   // NOI18N
 
     private Debugger debugger;
+    private static boolean usgLogged = false;
 
     private void updateDebuggerState() {
         if (!debugger.isEnabled()) {
@@ -164,6 +171,10 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
     
     @Override
     public void doAction(final Object action) {
+        if (!usgLogged) {
+            logJSDebugAction();
+            usgLogged = true;
+        }
         if (action == ActionsManager.ACTION_START) {
             //debugger.startJSDebugging();
         } else if (action == ActionsManager.ACTION_KILL) {
@@ -228,6 +239,16 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
 
     @Override
     public void reset() {
+    }
+    
+    private void logJSDebugAction() {
+        LogRecord record = new LogRecord(Level.INFO, USG_LOG_MSG);
+        record.setResourceBundle(NbBundle.getBundle(DebuggerActionsProvider.class));
+        record.setResourceBundleName(DebuggerActionsProvider.class.getPackage().getName() + ".Bundle"); // NOI18N
+        record.setLoggerName(USG_LOGGER.getName());
+        boolean inLiveHTML = debugger.isInLiveHTMLMode();
+        record.setParameters(new Object[] { inLiveHTML });
+        USG_LOGGER.log(record);
     }
 
 }

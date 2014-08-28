@@ -94,7 +94,7 @@ public final class PhpDocOptions {
         String phpDoc = getPreferences().get(PHPDOC, null);
         if (phpDoc == null && !phpDocSearched) {
             phpDocSearched = true;
-            List<String> scripts = FileUtils.findFileOnUsersPath(PhpDocScript.SCRIPT_NAME, PhpDocScript.SCRIPT_NAME_LONG);
+            List<String> scripts = FileUtils.findFileOnUsersPath(PhpDocScript.SCRIPT_NAME, PhpDocScript.SCRIPT_NAME_LONG, PhpDocScript.SCRIPT_NAME_PHAR);
             if (!scripts.isEmpty()) {
                 phpDoc = scripts.get(0);
                 setPhpDoc(phpDoc);

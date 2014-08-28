@@ -229,11 +229,13 @@ final class MainImpl extends Object {
             }
         }
         if (result.getExitCode () == CLIHandler.Status.ALREADY_RUNNING) {
-            JOptionPane.showMessageDialog(null,
-                MessageFormat.format(ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunning"), user),
-                ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunningTitle"),
-                JOptionPane.OK_OPTION
-            );
+            if (!GraphicsEnvironment.isHeadless()) {
+                JOptionPane.showMessageDialog(null,
+                    MessageFormat.format(ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunning"), user),
+                    ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunningTitle"),
+                    JOptionPane.OK_OPTION
+                );
+            }
             return result.getExitCode();
         }
 

@@ -66,6 +66,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -75,8 +76,8 @@ import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -97,14 +98,14 @@ public final class PathRegistry implements Runnable {
 
     // -J-Dorg.netbeans.modules.parsing.impl.indexing.PathRegistry.level=FINE
     private static final Logger LOGGER = Logger.getLogger(PathRegistry.class.getName());
-    private static final Set<String> FAST_HOST_PROTOCOLS = new HashSet<String>(Arrays.asList("file", "nbfs", "rfs"));   //NOI18N
+    private static final Set<String> FAST_HOST_PROTOCOLS = new HashSet<>(Arrays.asList("file", "nbfs", "rfs"));   //NOI18N
     private static final String DIGEST_ALGORITHM = "SHA1";  //NOI18N
     private static final boolean[] BOOLOUT = new boolean[1];
 
     private final RequestProcessor.Task firerTask;
     private final RequestProcessor.Task openProjectChangeTask;
     private final GlobalPathRegistry regs;
-    private final List<PathRegistryEvent.Change> changes = new LinkedList<PathRegistryEvent.Change>();    
+    private final List<PathRegistryEvent.Change> changes = new LinkedList<>();
 
     private Map<ClassPath,byte[]> activeCps;
     @org.netbeans.api.annotations.common.SuppressWarnings(
@@ -136,14 +137,14 @@ public final class PathRegistry implements Runnable {
 
     private final Listener listener;
     private final List<PathRegistryListener> listeners;
-    
+
     // @GuardedBy(this);
     private LogContext logCtx;
 
     private volatile boolean firstProjectOpened;
 
     @SuppressWarnings("LeakingThisInConstructor")
-    private  PathRegistry () {        
+    private  PathRegistry () {
         regs = GlobalPathRegistry.getDefault();
         assert regs != null;
         this.listener = new Listener ();
@@ -152,9 +153,9 @@ public final class PathRegistry implements Runnable {
         this.timeStamp = -1;
         this.activeCps = Collections.emptyMap();
         this.sourceResults = Collections.emptyMap();
-        this.unknownRoots = new HashMap<URL, WeakValue>();
-        this.translatedRoots = new HashMap<URL, URL[]> ();
-        this.listeners = new CopyOnWriteArrayList<PathRegistryListener>();
+        this.unknownRoots = new HashMap<>();
+        this.translatedRoots = new HashMap<>();
+        this.listeners = new CopyOnWriteArrayList<>();
         this.regs.addGlobalPathRegistryListener (WeakListeners.create(GlobalPathRegistryListener.class,this.listener,this.regs));
         final OpenProjects openProjects = OpenProjects.getDefault();
         openProjects.addPropertyChangeListener(WeakListeners.propertyChange(listener, openProjects));
@@ -188,6 +189,7 @@ public final class PathRegistry implements Runnable {
         return sourceForBinaryQuery(binaryRoot, definingClassPath, fire, BOOLOUT);
     }
 
+    @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
     URL[] sourceForBinaryQuery (
         @NonNull final URL binaryRoot,
         @NullAllowed final ClassPath definingClassPath,
@@ -204,7 +206,7 @@ public final class PathRegistry implements Runnable {
                 return null;
             }
         } else if (definingClassPath != null) {
-            List<URL> cacheRoots = new ArrayList<URL> ();
+            List<URL> cacheRoots = new ArrayList<>();
             Collection<? extends URL> unknownRes;
             try {
                 unknownRes = getSources(SourceForBinaryQuery.findSourceRoots2(binaryRoot),cacheRoots,null);
@@ -227,7 +229,7 @@ public final class PathRegistry implements Runnable {
                 }
                 if (FIRE_UNKNOWN_ALWAYS && fire) {
                     this.resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.UNKNOWN_SOURCE, null, Collections.singleton(definingClassPath));
-                }                
+                }
                 return result;
             }
         } else {
@@ -245,14 +247,14 @@ public final class PathRegistry implements Runnable {
             for (URL root : roots) {
                 unknownRoots.put(root,new WeakValue(owner,root));
             }
-            unknownSourcePath = new HashSet<URL>(unknownRoots.keySet());
+            unknownSourcePath = new HashSet<>(unknownRoots.keySet());
             changes.add(new PathRegistryEvent.Change(EventKind.PATHS_ADDED,
                     PathKind.UNKNOWN_SOURCE,
                     null,
                     Collections.singleton(owner)));
         }
         if (LOGGER.isLoggable(Level.FINE)) {
-            List<URL> l = new LinkedList<URL>();
+            List<URL> l = new LinkedList<>();
             for(URL r : roots) {
                 l.add(r);
             }
@@ -277,7 +279,7 @@ public final class PathRegistry implements Runnable {
         Request request;
         synchronized (this) {
             if (this.sourcePaths != null) {
-                return this.sourcePaths;
+                return Collections.unmodifiableCollection(this.sourcePaths);
             }
             LOGGER.fine("Computing data due to getSources"); //NOI18N
             request = new Request (
@@ -285,9 +287,9 @@ public final class PathRegistry implements Runnable {
                 getSourcePaths(),
                 getLibraryPaths(),
                 getBinaryLibraryPaths(),
-                new HashMap<ClassPath,byte[]> (this.activeCps),
-                new HashMap<URL,SourceForBinaryQuery.Result2> (this.sourceResults),
-                new HashMap<URL,WeakValue> (this.unknownRoots),
+                new HashMap<>(this.activeCps),
+                new HashMap<>(this.sourceResults),
+                new HashMap<>(this.unknownRoots),
                 this.listener,
                 this.listener);
         }
@@ -309,9 +311,8 @@ public final class PathRegistry implements Runnable {
                     this.rootPathIds = res.rootPathIds;
                     this.pathIdToRoots = res.pathIdToRoots;
                 }
-                return this.sourcePaths;
-            }
-            else {
+                return Collections.unmodifiableCollection(this.sourcePaths);
+            } else {
                 return res.sourcePath;
             }
         }
@@ -321,7 +322,7 @@ public final class PathRegistry implements Runnable {
         Request request;
         synchronized (this) {
             if (this.libraryPath != null) {
-                return this.libraryPath;
+                return Collections.unmodifiableCollection(this.libraryPath);
             }
             LOGGER.fine("Computing data due to getLibraries"); //NOI18N
             request = new Request (
@@ -329,9 +330,9 @@ public final class PathRegistry implements Runnable {
                 getSourcePaths(),
                 getLibraryPaths(),
                 getBinaryLibraryPaths(),
-                new HashMap<ClassPath,byte[]>(this.activeCps),
-                new HashMap<URL,SourceForBinaryQuery.Result2>(this.sourceResults),
-                new HashMap<URL, WeakValue> (this.unknownRoots),
+                new HashMap<>(this.activeCps),
+                new HashMap<>(this.sourceResults),
+                new HashMap<>(this.unknownRoots),
                 this.listener,
                 this.listener);
         }
@@ -353,9 +354,8 @@ public final class PathRegistry implements Runnable {
                     this.rootPathIds = res.rootPathIds;
                     this.pathIdToRoots = res.pathIdToRoots;
                 }
-                return this.libraryPath;
-            }
-            else {
+                return Collections.unmodifiableCollection(this.libraryPath);
+            } else {
                 return res.libraryPath;
             }
         }
@@ -365,7 +365,7 @@ public final class PathRegistry implements Runnable {
         Request request;
         synchronized (this) {
             if (this.binaryLibraryPath != null) {
-                return this.binaryLibraryPath;
+                return Collections.unmodifiableCollection(this.binaryLibraryPath);
             }
             LOGGER.fine("Computing data due to getBinaryLibraries"); //NOI18N
             request = new Request (
@@ -373,9 +373,9 @@ public final class PathRegistry implements Runnable {
                 getSourcePaths(),
                 getLibraryPaths(),
                 getBinaryLibraryPaths(),
-                new HashMap<ClassPath,byte[]>(this.activeCps),
-                new HashMap<URL,SourceForBinaryQuery.Result2>(this.sourceResults),
-                new HashMap<URL, WeakValue> (this.unknownRoots),
+                new HashMap<>(this.activeCps),
+                new HashMap<>(this.sourceResults),
+                new HashMap<>(this.unknownRoots),
                 this.listener,
                 this.listener);
         }
@@ -397,9 +397,8 @@ public final class PathRegistry implements Runnable {
                     this.rootPathIds = res.rootPathIds;
                     this.pathIdToRoots = res.pathIdToRoots;
                 }
-                return this.binaryLibraryPath;
-            }
-            else {
+                return Collections.unmodifiableCollection(this.binaryLibraryPath);
+            } else {
                 return res.binaryLibraryPath;
             }
         }
@@ -409,7 +408,7 @@ public final class PathRegistry implements Runnable {
         Request request;
         synchronized (this) {
             if (this.unknownSourcePath != null) {
-                return unknownSourcePath;
+                return Collections.unmodifiableCollection(unknownSourcePath);
             }
             LOGGER.fine("Computing data due to getUnknownRoots"); //NOI18N
             request = new Request (
@@ -417,9 +416,9 @@ public final class PathRegistry implements Runnable {
                 getSourcePaths(),
                 getLibraryPaths(),
                 getBinaryLibraryPaths(),
-                new HashMap<ClassPath,byte[]> (this.activeCps),
-                new HashMap<URL,SourceForBinaryQuery.Result2> (this.sourceResults),
-                new HashMap<URL, WeakValue> (this.unknownRoots),
+                new HashMap<>(this.activeCps),
+                new HashMap<>(this.sourceResults),
+                new HashMap<>(this.unknownRoots),
                 this.listener,
                 this.listener);
         }
@@ -441,9 +440,8 @@ public final class PathRegistry implements Runnable {
                     this.rootPathIds = res.rootPathIds;
                     this.pathIdToRoots = res.pathIdToRoots;
                 }
-                return this.unknownSourcePath;
-            }
-            else {
+                return Collections.unmodifiableCollection(this.unknownSourcePath);
+            } else {
                 return res.unknownSourcePath;
             }
         }
@@ -479,7 +477,7 @@ public final class PathRegistry implements Runnable {
         justification="URLs have never host part")
     public Set<URL> getRootsMarkedAs(String... pathIds) {
         final Map<String, Set<URL>> rootsByPathIds = getPathIdToRoots();
-        final Set<URL> roots = new HashSet<URL>();
+        final Set<URL> roots = new HashSet<>();
         for(String id : pathIds) {
             Set<URL> idRoots = rootsByPathIds.get(id);
             if (idRoots != null) {
@@ -508,22 +506,15 @@ public final class PathRegistry implements Runnable {
        return firerTask.isFinished();
     }
 
-    public @Override void run () {
+    @Override
+    public void run () {
         assert firer.isRequestProcessorThread();
-        long now = System.currentTimeMillis();
-        try {
-            LOGGER.log(Level.FINE, "resetCacheAndFire waiting for projects"); // NOI18N
-            OpenProjects.getDefault().openProjects().get();
-            LOGGER.log(Level.FINE, "resetCacheAndFire blocked for {0} ms", System.currentTimeMillis() - now); // NOI18N
-        } catch (Exception ex) {
-            LOGGER.log(Level.FINE, "resetCacheAndFire timeout", ex); // NOI18N
-        }
-
+        awaitProjectsOpen();
         Iterable<? extends PathRegistryEvent.Change> ch;
         LogContext ctx;
-        
+
         synchronized (this) {
-            ch = new ArrayList<PathRegistryEvent.Change>(this.changes);
+            ch = new ArrayList<>(this.changes);
             ctx = this.logCtx;
             this.logCtx = null;
             this.changes.clear();
@@ -541,9 +532,57 @@ public final class PathRegistry implements Runnable {
                 url.getProtocol());
     }
 
+    static boolean isIncompleteClassPath(@NonNull final ClassPath cp) {
+        return cp.getFlags().contains(ClassPath.Flag.INCOMPLETE);
+    }
+
+    @SuppressWarnings("NestedAssignment")
+    boolean isIncompleteRoot(@NonNull final FileObject root) {
+        Set<String> sourceIds;
+        Set<String> libIds;
+        Set<String> binLibIds;
+
+        if ((sourceIds = getSourceIdsFor(root.toURL())) != null && !sourceIds.isEmpty()) {
+            libIds = new HashSet<>();
+            binLibIds = new HashSet<>();
+            for(String id : sourceIds) {
+                libIds.addAll(PathRecognizerRegistry.getDefault().getLibraryIdsForSourceId(id));
+                binLibIds.addAll(PathRecognizerRegistry.getDefault().getBinaryLibraryIdsForSourceId(id));
+            }
+        } else if ((libIds = getLibraryIdsFor(root.toURL())) != null && !libIds.isEmpty()) {
+            sourceIds = Collections.emptySet();
+            binLibIds = new HashSet<>();
+            for(String id : libIds) {
+                binLibIds.addAll(PathRecognizerRegistry.getDefault().getBinaryLibraryIdsForLibraryId(id));
+            }
+        } else {
+            sourceIds = PathRecognizerRegistry.getDefault().getSourceIds();
+            libIds = new HashSet<>();
+            binLibIds = new HashSet<>();
+            for(String id : sourceIds) {
+                libIds.addAll(PathRecognizerRegistry.getDefault().getLibraryIdsForSourceId(id));
+                binLibIds.addAll(PathRecognizerRegistry.getDefault().getBinaryLibraryIdsForSourceId(id));
+            }
+        }
+        assert sourceIds != null;
+        assert libIds != null;
+        assert binLibIds != null;
+        return isIncompleteClassPath(root, binLibIds) ||
+           isIncompleteClassPath(root, libIds) ||
+           isIncompleteClassPath(root, sourceIds);
+    }
+
+    boolean isIncompleteRoot(@NonNull final URL root) {
+        final FileObject rootFo = URLMapper.findFileObject(root);
+        return rootFo == null ?
+            false :
+            isIncompleteRoot(rootFo);
+    }
+
     @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private Map<URL, PathIds> getRootPathIds () {
         Request request;
         synchronized (this) {
@@ -556,9 +595,9 @@ public final class PathRegistry implements Runnable {
                 getSourcePaths(),
                 getLibraryPaths(),
                 getBinaryLibraryPaths(),
-                new HashMap<ClassPath,byte[]> (this.activeCps),
-                new HashMap<URL,SourceForBinaryQuery.Result2> (this.sourceResults),
-                new HashMap<URL, WeakValue> (this.unknownRoots),
+                new HashMap<>(this.activeCps),
+                new HashMap<>(this.sourceResults),
+                new HashMap<>(this.unknownRoots),
                 this.listener,
                 this.listener);
         }
@@ -591,6 +630,7 @@ public final class PathRegistry implements Runnable {
     @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private Map<String, Set<URL>> getPathIdToRoots () {
         Request request;
         synchronized (this) {
@@ -603,9 +643,9 @@ public final class PathRegistry implements Runnable {
                 getSourcePaths(),
                 getLibraryPaths(),
                 getBinaryLibraryPaths(),
-                new HashMap<ClassPath,byte[]> (this.activeCps),
-                new HashMap<URL,SourceForBinaryQuery.Result2> (this.sourceResults),
-                new HashMap<URL, WeakValue> (this.unknownRoots),
+                new HashMap<>(this.activeCps),
+                new HashMap<>(this.sourceResults),
+                new HashMap<>(this.unknownRoots),
                 this.listener,
                 this.listener);
         }
@@ -634,7 +674,7 @@ public final class PathRegistry implements Runnable {
             }
         }
     }
-    
+
     private boolean classPathChanged(@NonNull final ClassPath cp) {
         final byte[] oldHash;
         synchronized (this) {
@@ -643,14 +683,9 @@ public final class PathRegistry implements Runnable {
         if (oldHash == null) {
             return true;
         }
-        final StringBuilder newRoots = new StringBuilder();
-        for (ClassPath.Entry e : cp.entries()) {
-            newRoots.append(e.getURL().toExternalForm()).
-                append(File.pathSeparatorChar);
-        }
         return !Arrays.equals(
             oldHash,
-            toDigest(createDigest(),newRoots));
+            toDigest(cp, createDigest()));
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(
@@ -658,30 +693,27 @@ public final class PathRegistry implements Runnable {
         justification="URLs have never host part")
     private static Result createResources (final Request request) {
         assert request != null;
-        final Set<URL> sourceResult = new HashSet<URL> ();
-        final Set<URL> unknownResult = new HashSet<URL> ();
-        final Set<URL> libraryResult = new HashSet<URL> ();
-        final Set<URL> binaryLibraryResult = new HashSet<URL> ();
-        final Map<URL,URL[]> translatedRoots = new HashMap<URL, URL[]>();
-        final Map<ClassPath,byte[]> newCps = new HashMap<ClassPath,byte[]> ();
-        final Map<URL,SourceForBinaryQuery.Result2> newSR = new HashMap<URL,SourceForBinaryQuery.Result2> ();
-        final Map<URL, PathIds> pathIdsResult = new HashMap<URL, PathIds>();
-        final Map<String, Set<URL>> pathIdToRootsResult = new HashMap<String, Set<URL>>();
+        final Set<URL> sourceResult = new HashSet<>();
+        final Set<URL> unknownResult = new HashSet<>();
+        final Set<URL> libraryResult = new HashSet<>();
+        final Set<URL> binaryLibraryResult = new HashSet<>();
+        final Map<URL,URL[]> translatedRoots = new HashMap<>();
+        final Map<ClassPath,byte[]> newCps = new HashMap<>();
+        final Map<URL,SourceForBinaryQuery.Result2> newSR = new HashMap<>();
+        final Map<URL, PathIds> pathIdsResult = new HashMap<>();
+        final Map<String, Set<URL>> pathIdToRootsResult = new HashMap<>();
         final MessageDigest digest = createDigest();
-        
+
         for (TaggedClassPath tcp : request.sourceCps) {
             ClassPath cp = tcp.getClasspath();
             boolean isNew = request.oldCps.remove(cp) == null;
-            final StringBuilder sb = new StringBuilder();
             for (ClassPath.Entry entry : cp.entries()) {
                 URL root = entry.getURL();
                 assert noHostPart(root) : root;
-                sb.append(root.toExternalForm()).
-                   append(File.pathSeparatorChar);
                 sourceResult.add(root);
                 updatePathIds(root, tcp, pathIdsResult, pathIdToRootsResult);
             }
-            boolean notContained = newCps.put (cp, toDigest(digest, sb)) == null;
+            boolean notContained = newCps.put (cp, toDigest(cp,digest)) == null;
             if (isNew && notContained) {
                cp.addPropertyChangeListener(request.propertyListener);
             }
@@ -690,16 +722,13 @@ public final class PathRegistry implements Runnable {
         for (TaggedClassPath tcp : request.libraryCps) {
             ClassPath cp = tcp.getClasspath();
             boolean isNew = request.oldCps.remove(cp) == null;
-            final StringBuilder sb = new StringBuilder();
             for (ClassPath.Entry entry : cp.entries()) {
                 URL root = entry.getURL();
                 assert noHostPart(root) : root;
-                sb.append(root.toExternalForm()).
-                   append(File.pathSeparatorChar);
                 libraryResult.add(root);
                 updatePathIds(root, tcp, pathIdsResult, pathIdToRootsResult);
             }
-            boolean notContained = newCps.put (cp, toDigest(digest, sb)) == null;
+            boolean notContained = newCps.put (cp, toDigest(cp, digest)) == null;
             if (isNew && notContained) {
                cp.addPropertyChangeListener(request.propertyListener);
             }
@@ -708,15 +737,12 @@ public final class PathRegistry implements Runnable {
         for (TaggedClassPath tcp : request.binaryLibraryCps) {
             ClassPath cp = tcp.getClasspath();
             boolean isNew = request.oldCps.remove(cp) == null;
-            final StringBuilder sb = new StringBuilder();
             for (ClassPath.Entry entry : cp.entries()) {
                 URL binRoot = entry.getURL();
                 assert noHostPart(binRoot) : binRoot;
-                sb.append(binRoot.toExternalForm()).
-                   append(File.pathSeparatorChar);
                 if (!translatedRoots.containsKey(binRoot)) {
                     updatePathIds(binRoot, tcp, pathIdsResult, pathIdToRootsResult);
-                    
+
                     SourceForBinaryQuery.Result2 sr = request.oldSR.remove (binRoot);
                     boolean isNewSR;
                     if (sr == null) {
@@ -729,7 +755,7 @@ public final class PathRegistry implements Runnable {
                     assert !newSR.containsKey(binRoot);
                     newSR.put(binRoot,sr);
                     LOGGER.log(Level.FINE, "{0}: preferSources={1}", new Object[] { binRoot, sr.preferSources() }); //NOI18N
-                    final Set<URL> cacheURLs = new LinkedHashSet<URL> (); //LinkedSet to protect against wrong SFBQ but keep ordering
+                    final Set<URL> cacheURLs = new LinkedHashSet<>(); //LinkedSet to protect against wrong SFBQ but keep ordering
                     final Collection<? extends URL> srcRoots = getSources(sr, cacheURLs, request.unknownRoots);
                     if (srcRoots.isEmpty()) {
                         binaryLibraryResult.add(binRoot);
@@ -747,7 +773,7 @@ public final class PathRegistry implements Runnable {
                     }
                 }
             }
-            boolean notContained = newCps.put (cp, toDigest(digest, sb)) == null;
+            boolean notContained = newCps.put (cp, toDigest(cp, digest)) == null;
             if (isNew && notContained) {
                 cp.addPropertyChangeListener(request.propertyListener);
             }
@@ -774,22 +800,17 @@ public final class PathRegistry implements Runnable {
         if (sr.preferSources()) {
             final FileObject[] roots = sr.getRoots();
             assert roots != null;
-            List<URL> result = new ArrayList<URL> (roots.length);
+            List<URL> result = new ArrayList<>(roots.length);
             for (int i=0; i<roots.length; i++) {
-                try {
-                    final URL url = roots[i].getURL();
-                    assert noHostPart(url) : url;
-                    if (cacheDirs != null) {
-                        cacheDirs.add (url);
-                    }
-                    if (unknownRoots != null) {
-                        unknownRoots.remove (url);
-                    }
-                    result.add(url);
-                } catch (FileStateInvalidException e) {
-                    //Actually never happens, just declared in FileObject.getURL()
-                    Exceptions.printStackTrace(e);
+                final URL url = roots[i].toURL();
+                assert noHostPart(url) : url;
+                if (cacheDirs != null) {
+                    cacheDirs.add (url);
                 }
+                if (unknownRoots != null) {
+                    unknownRoots.remove (url);
+                }
+                result.add(url);
             }
             return result;
         }
@@ -812,12 +833,12 @@ public final class PathRegistry implements Runnable {
         for(String id : tcp.getPathIds().getAllIds()) {
             Set<URL> rootsWithId = pathIdToRootsResult.get(id);
             if (rootsWithId == null) {
-                rootsWithId = new HashSet<URL>();
+                rootsWithId = new HashSet<>();
                 pathIdToRootsResult.put(id, rootsWithId);
             }
             rootsWithId.add(root);
         }
-        
+
         LOGGER.log(Level.FINE, "Root {0} associated with {1}", new Object [] { root, tcp.getPathIds() });
     }
 
@@ -825,8 +846,8 @@ public final class PathRegistry implements Runnable {
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
     private static void updateTranslatedPathIds(Collection<? extends URL> roots, TaggedClassPath tcp, Map<URL, PathIds> pathIdsResult, Map<String, Set<URL>> pathIdToRootsResult) {
-        Set<String> sids = new HashSet<String>();
-        Set<String> mimeTypes = new HashSet<String>();
+        Set<String> sids = new HashSet<>();
+        Set<String> mimeTypes = new HashSet<>();
         for(String blid : tcp.getPathIds().getBlids()) {
             Set<String> ids = PathRecognizerRegistry.getDefault().getSourceIdsForBinaryLibraryId(blid);
             if (ids != null) {
@@ -849,7 +870,7 @@ public final class PathRegistry implements Runnable {
             for(String id : sids) {
                 Set<URL> rootsWithId = pathIdToRootsResult.get(id);
                 if (rootsWithId == null) {
-                    rootsWithId = new HashSet<URL>();
+                    rootsWithId = new HashSet<>();
                     pathIdToRootsResult.put(id, rootsWithId);
                 }
                 rootsWithId.add(root);
@@ -861,13 +882,34 @@ public final class PathRegistry implements Runnable {
 
     @NonNull
     private static byte[] toDigest(
-        @NonNull final MessageDigest md,
-        @NonNull final StringBuilder sb) {
+        @NonNull final ClassPath cp,
+        @NonNull final MessageDigest md) {
+        final StringBuilder sb = new StringBuilder();
+        for (ClassPath.Flag flag : cp.getFlags()) {
+            sb.append(flag.name()).
+                append(File.pathSeparatorChar);
+        }
+        for (ClassPath.Entry e : cp.entries()) {
+            sb.append(e.getURL().toExternalForm()).
+                append(File.pathSeparatorChar);
+        }
         try {
             return md.digest(sb.toString().getBytes());
         } finally {
             md.reset();
         }
+    }
+
+    private static boolean isIncompleteClassPath(
+        @NonNull final FileObject root,
+        @NonNull final Set<String> classPathTypes) {
+        for (String classPathType : classPathTypes) {
+            final ClassPath cp = ClassPath.getClassPath(root, classPathType);
+            if (cp != null && isIncompleteClassPath(cp)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @NonNull
@@ -881,8 +923,9 @@ public final class PathRegistry implements Runnable {
 
     private void resetCacheAndFire (
             @NonNull final EventKind eventKind,
-            @NonNull final PathKind pathKind, final String pathId,
-            @NonNull final Set<? extends ClassPath> paths) {
+            @NullAllowed final PathKind pathKind,
+            @NullAllowed final String pathId,
+            @NullAllowed final Set<? extends ClassPath> paths) {
         synchronized (this) {
             this.sourcePaths = null;
             this.libraryPath = null;
@@ -939,11 +982,9 @@ public final class PathRegistry implements Runnable {
         }
     }
 
-    private PathKind getPathKind (final String pathId) {
-        assert pathId != null;
-        if (pathId == null) {
-            return null;
-        }
+    @CheckForNull
+    private PathKind getPathKind (@NonNull final String pathId) {
+        Parameters.notNull("pathId", pathId);   //NOI18N
         final Set<String> sIds = PathRecognizerRegistry.getDefault().getSourceIds();
         if (sIds.contains(pathId)) {
             return PathKind.SOURCE;
@@ -977,10 +1018,10 @@ public final class PathRegistry implements Runnable {
             case SOURCE:
                 ids = PathRecognizerRegistry.getDefault().getSourceIds();
                 break;
-            case LIBRARY: 
+            case LIBRARY:
                 ids = PathRecognizerRegistry.getDefault().getLibraryIds();
                 break;
-            case BINARY_LIBRARY: 
+            case BINARY_LIBRARY:
                 ids = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
                 break;
             default:
@@ -988,7 +1029,7 @@ public final class PathRegistry implements Runnable {
                 return Collections.<TaggedClassPath>emptySet();
         }
 
-        Map<ClassPath, TaggedClassPath> result = new HashMap<ClassPath, TaggedClassPath>();   //Maybe caching, but should be called once per change
+        Map<ClassPath, TaggedClassPath> result = new HashMap<>();   //Maybe caching, but should be called once per change
         for (String id : ids) {
             for(ClassPath cp : this.regs.getPaths(id)) {
                 TaggedClassPath tcp = result.get(cp);
@@ -1015,6 +1056,18 @@ public final class PathRegistry implements Runnable {
 
     private long getTimeStamp () {
         return this.timeStamp;
+    }
+
+    @SuppressWarnings("UseSpecificCatch")
+    private static void awaitProjectsOpen() {
+        final long now = System.currentTimeMillis();
+        try {
+            LOGGER.log(Level.FINE, "resetCacheAndFire waiting for projects"); // NOI18N
+            OpenProjects.getDefault().openProjects().get();
+            LOGGER.log(Level.FINE, "resetCacheAndFire blocked for {0} ms", System.currentTimeMillis() - now); // NOI18N
+        } catch (Exception ex) {
+            LOGGER.log(Level.FINE, "resetCacheAndFire timeout", ex); // NOI18N
+        }
     }
 
     private static class Request {
@@ -1130,7 +1183,7 @@ public final class PathRegistry implements Runnable {
 
     private class WeakValue extends WeakReference<ClassPath> implements Runnable {
 
-        private URL key;
+        private final URL key;
 
         public WeakValue (ClassPath ref, URL key) {
             super (ref, Utilities.activeReferenceQueue());
@@ -1139,7 +1192,7 @@ public final class PathRegistry implements Runnable {
         }
 
         public @Override void run () {
-            boolean fire = false;
+            boolean fire;
             synchronized (PathRegistry.this) {
                 fire = (unknownRoots.remove (key) != null);
             }
@@ -1187,26 +1240,33 @@ public final class PathRegistry implements Runnable {
                     LOGGER.log(Level.FINE, msg);
                 }
 
-                String propName = evt.getPropertyName();
-                if (ClassPath.PROP_ENTRIES.equals(propName)) {
-                    final Object source = evt.getSource();
-                    if ((source instanceof ClassPath) &&
-                        classPathChanged((ClassPath)source)) {
-                        resetCacheAndFire (EventKind.PATHS_CHANGED, null, null, Collections.singleton((ClassPath)evt.getSource()));
-                    }
-                } else if (ClassPath.PROP_INCLUDES.equals(propName)) {
-                    final Object newPropagationId = evt.getPropagationId();
-                    boolean fire;
-                    synchronized (this) {
-                        fire = (newPropagationId == null || lastPropagationId == null || lastPropagationId.get() != newPropagationId);
-                        lastPropagationId = new WeakReference<Object>(newPropagationId);
-                    }
-                    if (fire) {
-                        resetCacheAndFire (EventKind.INCLUDES_CHANGED, PathKind.SOURCE, null, Collections.singleton((ClassPath)evt.getSource()));
-                    }
-                } else if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(propName)) {
-                    if (!firstProjectOpened) {
-                        openProjectChangeTask.schedule(0);
+                final String propName = evt.getPropertyName();
+                if (propName != null) {
+                    switch (propName) {
+                        case ClassPath.PROP_ENTRIES:
+                        case ClassPath.PROP_FLAGS:
+                            final Object source = evt.getSource();
+                            if ((source instanceof ClassPath) &&
+                                    classPathChanged((ClassPath)source)) {
+                                resetCacheAndFire (EventKind.PATHS_CHANGED, null, null, Collections.singleton((ClassPath)evt.getSource()));
+                            }
+                            break;
+                        case ClassPath.PROP_INCLUDES:
+                            final Object newPropagationId = evt.getPropagationId();
+                            boolean fire;
+                            synchronized (this) {
+                                fire = (newPropagationId == null || lastPropagationId == null || lastPropagationId.get() != newPropagationId);
+                                lastPropagationId = new WeakReference<>(newPropagationId);
+                            }
+                            if (fire) {
+                                resetCacheAndFire (EventKind.INCLUDES_CHANGED, PathKind.SOURCE, null, Collections.singleton((ClassPath)evt.getSource()));
+                            }
+                            break;
+                        case OpenProjects.PROPERTY_OPEN_PROJECTS:
+                            if (!firstProjectOpened) {
+                                openProjectChangeTask.schedule(0);
+                            }
+                            break;
                     }
                 }
             }
@@ -1240,7 +1300,7 @@ public final class PathRegistry implements Runnable {
                     LOGGER.fine("Interrupted while waiting for projects to be loaded.");  //NOI18N
                 } catch (ExecutionException ex) {
                     Exceptions.printStackTrace(ex);
-                }                
+                }
             }
     }
 
@@ -1284,29 +1344,37 @@ public final class PathRegistry implements Runnable {
 
     private static final class PathIds {
 
-        private final Set<String> sourcePathIds = new HashSet<String>();
-        private final Set<String> libraryPathIds = new HashSet<String>();
-        private final Set<String> binaryLibraryPathIds = new HashSet<String>();
-        private final Set<String> mimeTypes = new HashSet<String>();
+        private final Set<String> sourcePathIds = new HashSet<>();
+        private final Set<String> libraryPathIds = new HashSet<>();
+        private final Set<String> binaryLibraryPathIds = new HashSet<>();
+        private final Set<String> mimeTypes = new HashSet<>();
 
+        @NonNull
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
         public Set<String> getSids() {
             return sourcePathIds;
         }
 
+        @NonNull
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
         public Set<String> getLids() {
             return libraryPathIds;
         }
 
+        @NonNull
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
         public Set<String> getBlids() {
             return binaryLibraryPathIds;
         }
 
+        @NonNull
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
         public Set<String> getMimeTypes() {
             return mimeTypes;
         }
 
         public Set<String> getAllIds() {
-            Set<String> allIds = new HashSet<String>();
+            Set<String> allIds = new HashSet<>();
             allIds.addAll(sourcePathIds);
             allIds.addAll(libraryPathIds);
             allIds.addAll(binaryLibraryPathIds);
@@ -1326,7 +1394,8 @@ public final class PathRegistry implements Runnable {
         }
     } // End of PathIds class
 
-    /*test*/ static class IdentityDigest extends MessageDigest {
+    /*test*/ @SuppressWarnings("PackageVisibleInnerClass")
+    static class IdentityDigest extends MessageDigest {
 
         private byte[] buffer = new byte[1024];
         private int length = 0;
@@ -1336,6 +1405,7 @@ public final class PathRegistry implements Runnable {
         }
 
         @Override
+        @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
         protected void engineUpdate(byte input) {
             ensureSize(1);
             buffer[length++] = input;

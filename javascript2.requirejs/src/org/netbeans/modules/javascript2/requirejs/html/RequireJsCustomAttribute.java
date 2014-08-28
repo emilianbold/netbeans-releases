@@ -39,26 +39,32 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javascript2.requirejs.html;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 import org.netbeans.modules.html.editor.lib.api.HelpItem;
 import org.netbeans.modules.html.editor.lib.api.HelpResolver;
 import org.netbeans.modules.javascript2.requirejs.RequireJsDataProvider;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Petr Pisl
  */
 public class RequireJsCustomAttribute implements CustomAttribute {
+
     // attribute for the script tag
     private static Collection<CustomAttribute> attributes = null;
-    private static String AT_DATA_MAIN = "data-main";
-    
+    private static String AT_DATA_MAIN = "data-main"; //NOI18N
+    private static final Logger LOG = Logger.getLogger(RequireJsCustomAttribute.class.getSimpleName()); //NOI18N
+
     public static synchronized Collection<CustomAttribute> getCustomAttributes() {
         if (attributes == null) {
             //init
@@ -67,7 +73,7 @@ public class RequireJsCustomAttribute implements CustomAttribute {
         }
         return attributes;
     }
-    
+
     private final String name;
     private final boolean isRequired;
     private final boolean isValueRequired;
@@ -77,7 +83,7 @@ public class RequireJsCustomAttribute implements CustomAttribute {
         this.isRequired = isRequired;
         this.isValueRequired = isValueRequired;
     }
-    
+
     @Override
     public String getName() {
         return name;
@@ -97,15 +103,17 @@ public class RequireJsCustomAttribute implements CustomAttribute {
     public HelpItem getHelp() {
         return new RequireJsHelpItem(name);
     }
-    
+
     private static class RequireJsHelpItem implements HelpItem {
-        
+
         private final String tagName;
+        private final HelpResolver helpResolver;
 
         public RequireJsHelpItem(String tagName) {
             this.tagName = tagName;
+            this.helpResolver = new RequireJsHelpResolver();
         }
-        
+
         @Override
         public String getHelpHeader() {
             return null;
@@ -118,14 +126,43 @@ public class RequireJsCustomAttribute implements CustomAttribute {
 
         @Override
         public URL getHelpURL() {
+            try {
+                URL url = new URL(RequireJsDataProvider.API_URL);
+                return url;
+            } catch (MalformedURLException ex) {
+                LOG.log(Level.INFO, null, ex);
+            }
             return null;
         }
 
         @Override
         public HelpResolver getHelpResolver() {
+            return helpResolver;
+        }
+
+    }
+
+    private static class RequireJsHelpResolver implements HelpResolver {
+
+        @Override
+        public URL resolveLink(URL base, String link) {
+            try {
+                if (!link.startsWith("http")) {  //NOI18N
+                    // try to read from cachd file
+                    URL url = new URL(RequireJsDataProvider.getCachedAPIFile().toURI().toURL().toString() + link);
+                    return url;
+                }
+            } catch (MalformedURLException ex) {
+                LOG.log(Level.INFO, null, ex);
+            }
             return null;
         }
-        
+
+        @Override
+        public String getHelpContent(URL url) {
+            return null;
+        }
+
     }
-    
+
 }

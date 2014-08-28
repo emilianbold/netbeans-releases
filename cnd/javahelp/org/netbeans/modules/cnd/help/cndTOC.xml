@@ -26,9 +26,10 @@
 			</tocitem>
 			<tocitem text="Creating and Modifying C/C++/Fortran Projects">
 				<tocitem text="Creating a C/C++/Fortran Project" target="CreatingCorC++Project" />
-                                <tocitem text="Creating a C or C++ Project from a Binary File" target="CreatingCorC++ProjectBinary" />
+				<tocitem text="Creating a C or C++ Project from a Binary File" target="CreatingCorC++ProjectBinary" />
 				<tocitem text="Configuring Code Assistance for Projects from Existing Sources" target="CodeAssistance" />
 				<tocitem text="Relocating the Code Assistance Cache for Version Controlled Projects" target="CodeAssistanceCache" />
+				<tocitem text="Using Properties Files for Verson Controlled Projects" target="PublicPrivateProperties" />
 				<tocitem text="Setting the Main C/C++/Fortran Project" target="SettingMainCorC++Project." />
 				<tocitem text="Setting Project Properties for a Single Project" target="SettingProjectProperties" />
 				<tocitem text="Setting Folder Properties" target="SettingCandC++FolderProperties" />
@@ -41,7 +42,6 @@
 				<tocitem text="Using C or C++ Project Launchers" target="UsingCandC++Launchers" />
 				<tocitem text="Moving, Copying, or Renaming a C/C++/Fortran Project" target="MovingCorC++Project" />
 				<tocitem text="Deleting a C/C++/Fortran Project" target="DeletingCorC++Project" />
-				<tocitem text="Using Properties Files for Verson Controlled Projects" target="PublicPrivateProperties" />
 			</tocitem>
 			<tocitem text="Building and Running C/C++/Fortran Projects">
 				<tocitem text="Building Tasks: Quick Reference" target="CandC++BuildingTasks" />
@@ -65,6 +65,7 @@
 				<tocitem text="Commenting Lines in Your Code" target="Commenting" />
 				<tocitem text="Refactoring Source Files" target="Refactoring" />
 				<tocitem text="Adding Documentation to Your Code" target="Documenting" />
+				<tocitem text="Viewing C/C++ Documentation" target="CppDocumentation" />
 			</tocitem>
 			<tocitem text="Navigating Source Files and Projects">
 				<tocitem text="Using Hyperlink Navigation" target="UsingHyperlinks" />
@@ -82,9 +83,11 @@
 				<tocitem text="Usages Window" target="UsagesWindow" />
 				<tocitem text="Using the Type Hierarchy Window" target="TypeView" />
 				<tocitem text="Using the Include Hierarchy Window" target="IncludeView" />
+				<tocitem text="Using the Macro Expansion Window" target="MacroExpansionWindow" />
+				<tocitem text="Using the C/C++ Documentation Window" target="CppDocumentation" />
 			</tocitem>
-                 </tocitem>
-                <tocitem text="Using Remote Development for C/C++/Fortran Projects">
+		</tocitem>
+		<tocitem text="Using Remote Development for C/C++/Fortran Projects">
 			<tocitem text="Overview of C/C++ Remote Development" target="RemoteDevelopment" />
 			<tocitem text="Configuring C/C++ Remote Build Hosts" target="RemoteDevelopmentConfigureHost" />
 			<tocitem text="Setting Remote Host Properties" target="RemoteDevelopmentManageHosts" />

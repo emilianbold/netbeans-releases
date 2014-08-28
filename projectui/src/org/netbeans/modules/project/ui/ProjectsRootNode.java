@@ -180,15 +180,14 @@ public class ProjectsRootNode extends AbstractNode {
                     continue; // but try again (in next outer loop) as a fallback
                 }
                 Node n = null;
-                if (ch.type == LOGICAL_VIEW) {
-                    LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
-                    if (lvp != null) {
-                        // XXX (cf. #63554): really should be calling this on DataObject usually, since
-                        // DataNode does *not* currently have a FileObject in its lookup (should it?)
-                        // ...but it is not clear who has implemented findPath to assume FileObject!
-                        n = lvp.findPath(node, target);
-                    }
-                } else if (ch.type == PHYSICAL_VIEW){
+                LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
+                if (lvp != null) {
+                    // XXX (cf. #63554): really should be calling this on DataObject usually, since
+                    // DataNode does *not* currently have a FileObject in its lookup (should it?)
+                    // ...but it is not clear who has implemented findPath to assume FileObject!
+                    n = lvp.findPath(node, target);
+                }
+                if (n == null && ch.type == PHYSICAL_VIEW) {
                     PhysicalView.PathFinder pf = node.getLookup().lookup(PhysicalView.PathFinder.class);
                     if ( pf != null ) {
                         n = pf.findPath(node, target);

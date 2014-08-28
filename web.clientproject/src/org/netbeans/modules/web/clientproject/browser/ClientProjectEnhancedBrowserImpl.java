@@ -53,7 +53,6 @@ import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationC
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.browser.BrowserConfigurationPanel;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 
@@ -143,11 +142,6 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
         if (browserSupport != null) {
             getBrowserSupport().close(true);
         }
-    }
-
-    @Override
-    public ProjectConfigurationProvider getProjectConfigurationProvider() {
-        return null;
     }
 
     private class ProjectConfigurationCustomizerImpl implements ProjectConfigurationCustomizer {

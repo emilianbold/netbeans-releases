@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
@@ -75,6 +76,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
@@ -100,6 +102,7 @@ public class VariableProvider {
     public static final int INFINITE_RECURSION = 16;
 
     private final int level;
+    private final CsmScope scope; // could be null, in that case decl is scope
     private CsmOffsetableDeclaration decl;
     private MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping;
     private CsmFile variableFile; 
@@ -107,15 +110,17 @@ public class VariableProvider {
     private int variableEndOffset;
     
     
-    public VariableProvider(int level) {
+    public VariableProvider(int level, CsmScope scope) {
         this.level = level;
+        this.scope = scope;
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "\nVARIABLE PROVIDER CREATED WITHOUT MAP HIERARCHY\n"); // NOI18N
         }
     }
     
-    public VariableProvider(CsmOffsetableDeclaration decl, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile variableFile, int variableStartOffset, int variableEndOffset, int level) {
+    public VariableProvider(CsmOffsetableDeclaration decl, CsmScope scope, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile variableFile, int variableStartOffset, int variableEndOffset, int level) {
         this.decl = decl;
+        this.scope = scope;
         this.mapping = mapping;
         this.variableFile = variableFile != null ? variableFile : (decl != null ? decl.getContainingFile() : null);
         this.variableStartOffset = variableStartOffset;
@@ -141,17 +146,21 @@ public class VariableProvider {
             if(variableName.equals("false")) { // NOI18N
                 return 0;
             }
-            if (decl != null) {
+            if (decl != null) { // TODO: why this condition?
                 for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : mapping.entries()) {
                     CsmTemplateParameter param = entry.getKey();
+                    String scopeQualifiedName = CsmKindUtilities.isQualified(scope) ? 
+                            ((CsmQualifiedNamedElement) scope).getQualifiedName().toString() : 
+                            decl.getQualifiedName().toString();
                     if (variableName.equals(param.getQualifiedName().toString()) ||
-                            (decl.getQualifiedName() + "::" + variableName).equals(param.getQualifiedName().toString())) { // NOI18N
+                            (scopeQualifiedName + APTUtils.SCOPE + variableName).equals(param.getQualifiedName().toString())) {
                         CsmSpecializationParameter spec = entry.getValue();
                         if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
                             CsmExpressionBasedSpecializationParameter specParam = (CsmExpressionBasedSpecializationParameter) spec;
                             Object eval = new ExpressionEvaluator(level+1).eval(
                                     specParam.getText().toString(), 
                                     decl, 
+                                    specParam.getScope(),
                                     specParam.getContainingFile(),
                                     specParam.getStartOffset(),
                                     specParam.getEndOffset(),
@@ -161,28 +170,16 @@ public class VariableProvider {
                                 return (Integer) eval;
                             }
                         } else if (CsmKindUtilities.isTypeBasedSpecalizationParameter(spec)) {
-                            CsmTypeBasedSpecializationParameter specParameter = (CsmTypeBasedSpecializationParameter) spec;
-                            
-// TODO: think about param decl and appropriate mapping (could be necessary if parameter is instantiation itself)
-//                            CsmOffsetableDeclaration paramContextDecl = decl;
-//                            MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> paramMapping = mapping;
-//                            
-//                            CsmType specParamType = specParameter.getType();
-//                            CsmClassifier specParamCls = specParamType.getClassifier();
-//                            if (CsmKindUtilities.isInstantiation(specParamCls) && CsmKindUtilities.isOffsetableDeclaration(specParamCls)) {
-//                                paramContextDecl = (CsmOffsetableDeclaration) specParamCls;
-//                                paramMapping = TemplateUtils.gatherMapping((CsmInstantiation) paramContextDecl);
-//                            }
-                            
+                            CsmTypeBasedSpecializationParameter specParam = (CsmTypeBasedSpecializationParameter) spec;                                                        
                             Object eval = new ExpressionEvaluator(level+1).eval(
-                                    specParameter.getText().toString(), 
-                                    decl, 
-                                    specParameter.getContainingFile(), 
-                                    specParameter.getStartOffset(), 
-                                    specParameter.getEndOffset(), 
+                                    specParam.getText().toString(), 
+                                    decl,
+                                    specParam.getScope(),
+                                    specParam.getContainingFile(), 
+                                    specParam.getStartOffset(), 
+                                    specParam.getEndOffset(), 
                                     mapping
-                            );
-                            
+                            );                            
                             if (eval instanceof Integer) {
                                 return (Integer) eval;
                             }
@@ -201,6 +198,7 @@ public class VariableProvider {
                                 Object eval = new ExpressionEvaluator(level+1).eval(
                                         expr.getExpandedText().toString(), 
                                         member.getContainingClass(), 
+                                        member.getScope(),
                                         expr.getContainingFile(),
                                         expr.getStartOffset(),
                                         expr.getEndOffset(),
@@ -213,6 +211,7 @@ public class VariableProvider {
                                 Object eval = new ExpressionEvaluator(level+1).eval(
                                         expr.getExpandedText().toString(), 
                                         member.getContainingClass(), 
+                                        member.getScope(),
                                         expr.getContainingFile(),
                                         expr.getStartOffset(),
                                         expr.getEndOffset(),
@@ -226,124 +225,128 @@ public class VariableProvider {
                     }
                 }
 
-                boolean executeSimpleResolution = !(TraceFlags.EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER && variableName.contains("<")); // NOI18N
+                // TODO: parse variableName instead of that simple check
+                // as it won't work in many cases
+                if (variableName.contains(APTUtils.SCOPE)) {
+                    boolean executeSimpleResolution = !(TraceFlags.EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER && variableName.contains("<")); // NOI18N
 
-                if (executeSimpleResolution) {
-                    CsmObject o = null;
-                    Resolver aResolver = ResolverFactory.createResolver(decl);            
-                    try {
-                        o = aResolver.resolve(Utils.splitQualifiedName(variableName.replaceAll("(.*)::.*", "$1")), Resolver3.ALL); // NOI18N
-                    } finally {
-                        ResolverFactory.releaseResolver(aResolver);
-                    }
-                    if (CsmKindUtilities.isClassifier(o)) {
-                        CsmClassifier cls = (CsmClassifier) o;
-                        CsmClassifier originalClassifier = CsmClassifierResolver.getDefault().getOriginalClassifier(cls, decl.getContainingFile());
-                        if(CsmKindUtilities.isInstantiation(originalClassifier)) {
-                            Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmInstantiation) originalClassifier); // NOI18N
-                            if (eval instanceof Integer) {
-                                return (Integer) eval;
-                            }
-                        } else if (CsmKindUtilities.isOffsetableDeclaration(originalClassifier)) {
-                            Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmOffsetableDeclaration) originalClassifier, Collections.<CsmTemplateParameter, CsmSpecializationParameter>emptyMap()); // NOI18N
-                            if (eval instanceof Integer) {
-                                return (Integer) eval;
-                            }                    
+                    if (executeSimpleResolution) {
+                        CsmObject o = null;
+                        Resolver aResolver = ResolverFactory.createResolver(decl);            
+                        try {
+                            o = aResolver.resolve(Utils.splitQualifiedName(variableName.replaceAll("(.*)::.*", "$1")), Resolver3.ALL); // NOI18N
+                        } finally {
+                            ResolverFactory.releaseResolver(aResolver);
                         }
-                    }
-                }
-
-                if (TraceFlags.EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER) {
-                    // it works but does it too slow
-
-                    int flags = CPPParserEx.CPP_CPLUSPLUS;
-                    flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
-                    // TODO get flavor from variableFile?
-                    try {
-                        // use cached TS
-                        TokenStream buildTokenStream = APTTokenStreamBuilder.buildTokenStream(variableName.replaceAll("(.*)::.*", "$1"), APTLanguageSupport.GNU_CPP); // NOI18N
-                        if (buildTokenStream != null) {
-                            if (variableStartOffset > 0) {
-                                buildTokenStream = new ShiftedTokenStream(buildTokenStream, variableStartOffset);
-                            }
-
-                            CPPParserEx parser = CPPParserEx.getInstance(variableFile, buildTokenStream, flags);
-                            parser.type_name();
-                            AST ast = parser.getAST();
-
-                            CsmType type = TypeFactory.createType(ast, variableFile, null, 0, decl.getScope()); // TODO: decl.getScope() is a wrong scope
-                            if(CsmKindUtilities.isInstantiation(decl)) {
-                                type = checkTemplateType(type, (Instantiation)decl);
-                            }
-                            for (CsmTemplateParameter csmTemplateParameter : mapping.keys()) {
-                                type = TemplateUtils.checkTemplateType(type, csmTemplateParameter.getScope());
-                            }
-
-                            if (CsmKindUtilities.isTemplateParameterType(type)) {
-                                CsmSpecializationParameter instantiatedType = mapping.get(((CsmTemplateParameterType) type).getParameter());
-                                int iteration = 15;
-                                while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType) &&
-                                        CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) instantiatedType).getType()) && iteration != 0) {
-                                    CsmSpecializationParameter nextInstantiatedType = mapping.get(((CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) instantiatedType).getType()).getParameter());
-                                    if (nextInstantiatedType != null) {
-                                        instantiatedType = nextInstantiatedType;
-                                    } else {
-                                        break;
-                                    }
-                                    iteration--;
-                                }
-                                if (instantiatedType != null && instantiatedType instanceof CsmTypeBasedSpecializationParameter) {
-                                    type = ((CsmTypeBasedSpecializationParameter) instantiatedType).getType();
-                                }
-                            }                      
-
-                            // TODO: think about differences between decl and mapping!!!
-                            
-//                            if (CsmKindUtilities.isInstantiation(decl)) {
-//                                type = instantiateType(type, (Instantiation)decl);
-//                            }
-
-                            CsmClassifier originalClassifier = CsmClassifierResolver.getDefault().getOriginalClassifier(type.getClassifier(), decl.getContainingFile());
-                            
-                            // TODO:
-                            // This block should be deleted - type should be instantiated with the right parameters
-                            // (Or type should not be instantiated at all, but in such case type.getClassifier() shouldn't specialize classifier)
-                            if (CsmKindUtilities.isInstantiation(originalClassifier) && !CsmKindUtilities.isSpecialization(originalClassifier)) {
-                                CsmObject instantiation = originalClassifier;
-                                
-                                InstantiationProviderImpl ip = (InstantiationProviderImpl) InstantiationProviderImpl.getDefault();
-                                
-                                while (CsmKindUtilities.isInstantiation(((CsmInstantiation) instantiation).getTemplateDeclaration())) {
-                                    instantiation = (CsmClassifier) ((CsmInstantiation) instantiation).getTemplateDeclaration();
-                                }
-
-                                List<Map<CsmTemplateParameter, CsmSpecializationParameter>> maps = mapping.getMaps(new MapHierarchy.NonEmptyFilter());
-                                
-                                for (int i = maps.size() - 1; i > 0; i--) {
-                                    instantiation = ip.instantiate((CsmTemplate) instantiation, variableFile, variableStartOffset, maps.get(i), false);
-                                }
-                                if (!maps.isEmpty()) {
-                                    instantiation = ip.instantiate((CsmTemplate) instantiation, variableFile, variableStartOffset, maps.get(0));
-                                }
-                                
-                                if (CsmKindUtilities.isClassifier(instantiation)) {
-                                    originalClassifier = (CsmClassifier) instantiation;
-                                }
-                            }
-                            
-                            if (CsmKindUtilities.isInstantiation(originalClassifier)) {
-                                Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmInstantiation) originalClassifier); // NOI18N
+                        if (CsmKindUtilities.isClassifier(o)) {
+                            CsmClassifier cls = (CsmClassifier) o;
+                            CsmClassifier originalClassifier = CsmClassifierResolver.getDefault().getOriginalClassifier(cls, decl.getContainingFile());
+                            if(CsmKindUtilities.isInstantiation(originalClassifier)) {
+                                Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmInstantiation) originalClassifier, null); // NOI18N
                                 if (eval instanceof Integer) {
                                     return (Integer) eval;
                                 }
                             } else if (CsmKindUtilities.isOffsetableDeclaration(originalClassifier)) {
-                                Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmOffsetableDeclaration) originalClassifier, mapping); // NOI18N
+                                Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmOffsetableDeclaration) originalClassifier, null, Collections.<CsmTemplateParameter, CsmSpecializationParameter>emptyMap()); // NOI18N
                                 if (eval instanceof Integer) {
                                     return (Integer) eval;
-                                }                                
+                                }                    
                             }
                         }
-                    } catch (Throwable ex) {
+                    }
+
+                    if (TraceFlags.EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER) {
+                        // it works but does it too slow
+
+                        int flags = CPPParserEx.CPP_CPLUSPLUS;
+                        flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
+                        // TODO get flavor from variableFile?
+                        try {
+                            // use cached TS
+                            TokenStream buildTokenStream = APTTokenStreamBuilder.buildTokenStream(variableName.replaceAll("(.*)::.*", "$1"), APTLanguageSupport.GNU_CPP); // NOI18N
+                            if (buildTokenStream != null) {
+                                if (variableStartOffset > 0) {
+                                    buildTokenStream = new ShiftedTokenStream(buildTokenStream, variableStartOffset);
+                                }
+
+                                CPPParserEx parser = CPPParserEx.getInstance(variableFile, buildTokenStream, flags);
+                                parser.type_name();
+                                AST ast = parser.getAST();
+
+                                CsmType type = TypeFactory.createType(ast, variableFile, null, 0, this.scope);
+                                if(CsmKindUtilities.isInstantiation(decl)) {
+                                    type = checkTemplateType(type, (Instantiation)decl);
+                                }
+                                for (CsmTemplateParameter csmTemplateParameter : mapping.keys()) {
+                                    type = TemplateUtils.checkTemplateType(type, csmTemplateParameter.getScope());
+                                }
+
+                                if (CsmKindUtilities.isTemplateParameterType(type)) {
+                                    CsmSpecializationParameter instantiatedType = mapping.get(((CsmTemplateParameterType) type).getParameter());
+                                    int iteration = 15;
+                                    while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType) &&
+                                            CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) instantiatedType).getType()) && iteration != 0) {
+                                        CsmSpecializationParameter nextInstantiatedType = mapping.get(((CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) instantiatedType).getType()).getParameter());
+                                        if (nextInstantiatedType != null) {
+                                            instantiatedType = nextInstantiatedType;
+                                        } else {
+                                            break;
+                                        }
+                                        iteration--;
+                                    } 
+                                    if (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType)) {
+                                        type = ((CsmTypeBasedSpecializationParameter) instantiatedType).getType();
+                                    }
+                                }                      
+
+                                // TODO: think about differences between decl and mapping!!!
+
+    //                            if (CsmKindUtilities.isInstantiation(decl)) {
+    //                                type = instantiateType(type, (Instantiation)decl);
+    //                            }
+
+                                CsmClassifier originalClassifier = CsmClassifierResolver.getDefault().getOriginalClassifier(type.getClassifier(), decl.getContainingFile());
+
+                                // TODO:
+                                // This block should be deleted - type should be instantiated with the right parameters
+                                // (Or type should not be instantiated at all, but in such case type.getClassifier() shouldn't specialize classifier)
+                                if (CsmKindUtilities.isInstantiation(originalClassifier) && !CsmKindUtilities.isSpecialization(originalClassifier)) {
+                                    CsmObject instantiation = originalClassifier;
+
+                                    InstantiationProviderImpl ip = (InstantiationProviderImpl) InstantiationProviderImpl.getDefault();
+
+                                    while (CsmKindUtilities.isInstantiation(((CsmInstantiation) instantiation).getTemplateDeclaration())) {
+                                        instantiation = (CsmClassifier) ((CsmInstantiation) instantiation).getTemplateDeclaration();
+                                    }
+
+                                    List<Map<CsmTemplateParameter, CsmSpecializationParameter>> maps = mapping.getMaps(new MapHierarchy.NonEmptyFilter());
+
+                                    for (int i = maps.size() - 1; i > 0; i--) {
+                                        instantiation = ip.instantiate((CsmTemplate) instantiation, variableFile, variableStartOffset, maps.get(i), false);
+                                    }
+                                    if (!maps.isEmpty()) {
+                                        instantiation = ip.instantiate((CsmTemplate) instantiation, variableFile, variableStartOffset, maps.get(0), true);
+                                    }
+
+                                    if (CsmKindUtilities.isClassifier(instantiation)) {
+                                        originalClassifier = (CsmClassifier) instantiation;
+                                    }
+                                }
+
+                                if (CsmKindUtilities.isInstantiation(originalClassifier)) {
+                                    Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmInstantiation) originalClassifier, null); // NOI18N
+                                    if (eval instanceof Integer) {
+                                        return (Integer) eval;
+                                    }
+                                } else if (CsmKindUtilities.isOffsetableDeclaration(originalClassifier)) {
+                                    Object eval = new ExpressionEvaluator(level+1).eval(variableName.replaceAll(".*::(.*)", "$1"), (CsmOffsetableDeclaration) originalClassifier, null, mapping); // NOI18N
+                                    if (eval instanceof Integer) {
+                                        return (Integer) eval;
+                                    }                                
+                                }
+                            }
+                        } catch (Throwable ex) {
+                        }
                     }
                 }
             }

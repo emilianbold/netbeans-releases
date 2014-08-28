@@ -64,13 +64,15 @@ public final class NativeProjectRegistry {
      * Property representing open projects.
      * @see #getOpenProjects
      */
-    public static final String PROPERTY_OPEN_NATIVE_PROJECTS = "openNativeProjects"; // NOI18N
-    private static NativeProjectRegistry INSTANCE = new NativeProjectRegistry();
+    public static final String PROPERTY_OPEN_NATIVE_PROJECT = "openNativeProject"; // NOI18N
+    public static final String PROPERTY_CLOSE_NATIVE_PROJECT = "closeNativeProject"; // NOI18N
+    public static final String PROPERTY_DELETE_NATIVE_PROJECT = "deleteNativeProject"; // NOI18N
+    private static final NativeProjectRegistry INSTANCE = new NativeProjectRegistry();
     private static final Logger LOG = Logger.getLogger(NativeProjectRegistry.class.getName());
 
-    private final Set<NativeProject> projects = new HashSet<NativeProject>();
+    private final Set<NativeProject> projects = new HashSet<>();
     private final ReentrantReadWriteLock projectsLock = new ReentrantReadWriteLock();
-    private final Set<PropertyChangeListener> listeners = new WeakSet<PropertyChangeListener>();
+    private final Set<PropertyChangeListener> listeners = new WeakSet<>();
     private final ReentrantReadWriteLock listenersLock = new ReentrantReadWriteLock();
 
     private NativeProjectRegistry() {
@@ -93,7 +95,7 @@ public final class NativeProjectRegistry {
     public Collection<NativeProject> getOpenProjects() {
         projectsLock.readLock().lock();
         try {
-            return new HashSet<NativeProject>(projects);
+            return new HashSet<>(projects);
         } finally {
             projectsLock.readLock().unlock();
         }
@@ -104,7 +106,7 @@ public final class NativeProjectRegistry {
      * As this class is a singleton and is not subject to garbage collection,
      * it is recommended to add only weak listeners, or remove regular listeners reliably.
      * @param listener a listener to add
-     * @see #PROPERTY_OPEN_NATIVE_PROJECTS
+     * @see #PROPERTY_OPEN_NATIVE_PROJECT, PROPERTY_CLOSE_NATIVE_PROJECT, PROPERTY_DELETE_NATIVE_PROJECT
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         listenersLock.writeLock().lock();
@@ -140,10 +142,10 @@ public final class NativeProjectRegistry {
             projectsLock.writeLock().unlock();
         }
         Collection<NativeProject> newProjects = getOpenProjects();
-        notifyListeners(oldProjects, newProjects);
+        notifyListeners(oldProjects, newProjects, project, PROPERTY_OPEN_NATIVE_PROJECT);
     }
 
-    public void unregister(NativeProject project) {
+    public void unregister(NativeProject project, boolean isDeleted) {
         if (LOG.isLoggable(Level.INFO)) {
             LOG.log(Level.INFO, "Close native project {0}", project); //NOI18N
         }
@@ -155,15 +157,19 @@ public final class NativeProjectRegistry {
             projectsLock.writeLock().unlock();
         }
         Collection<NativeProject> newProjects = getOpenProjects();
-        notifyListeners(oldProjects, newProjects);
+        if (isDeleted) {
+            notifyListeners(oldProjects, newProjects, project, PROPERTY_DELETE_NATIVE_PROJECT);
+        } else {
+            notifyListeners(oldProjects, newProjects, project, PROPERTY_CLOSE_NATIVE_PROJECT);
+        }
     }
 
-    private void notifyListeners(Collection<NativeProject> oldProjects, Collection<NativeProject> newProjects) {
-        PropertyChangeEvent ev = new PropertyChangeEvent(this, PROPERTY_OPEN_NATIVE_PROJECTS, oldProjects, newProjects);
+    private void notifyListeners(Collection<NativeProject> oldProjects, Collection<NativeProject> newProjects, NativeProject project, String property) {
+        PropertyChangeEvent ev = new PropertyChangeEvent(project, property, oldProjects, newProjects);
         List<PropertyChangeListener> listeners_copy;
         listenersLock.readLock().lock();
         try {
-            listeners_copy = new ArrayList<PropertyChangeListener>(listeners);
+            listeners_copy = new ArrayList<>(listeners);
         } finally {
             listenersLock.readLock().unlock();
         }

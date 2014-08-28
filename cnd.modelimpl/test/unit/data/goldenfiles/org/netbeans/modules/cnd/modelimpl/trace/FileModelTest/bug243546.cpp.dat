@@ -51,7 +51,7 @@ NAMESPACE DEFINITOIN bug243546 [1:1/0-15:2/401] SCOPE: bug243546.cpp
                 VARIABLE ip [12:7/354-12:15/362]  TYPE: *int TEXT=int*  [12:7/354-12:12/359]  INIT: null  SCOPE: Stmt  [10:23/326-14:6/399]
             STATEMENT EXPRESSION  [13:7/370-13:29/392] SCOPE: Stmt  [10:23/326-14:6/399] text: 'ip = a.operator int*()'
 
-========== Dumping model of PROJECT trace_FileModelTest
+========== Dumping model of PROJECT DummyProject
 NAMESPACE DEFINITIONS for bug243546 (bug243546) 
     bug243546.cpp  [1:1/0-15:2/401]
 NAMESPACE bug243546 (bug243546) 

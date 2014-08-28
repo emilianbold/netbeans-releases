@@ -167,7 +167,9 @@ public class SiteZip implements SiteTemplateImplementation {
     private FileObject getTargetDir(FileObject projectDir, ProjectProperties projectProperties) throws IOException {
         if (FileUtilities.listZipFiles(getArchiveFile(), NB_TEMPLATE_FILTER).isEmpty()) {
             // not nb template
-            return projectDir.getFileObject(projectProperties.getSiteRootFolder());
+            String siteRootFolder = projectProperties.getSiteRootFolder();
+            assert siteRootFolder != null;
+            return projectDir.getFileObject(siteRootFolder);
         }
         return projectDir;
     }

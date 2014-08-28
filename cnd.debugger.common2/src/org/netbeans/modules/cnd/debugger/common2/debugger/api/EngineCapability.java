@@ -58,4 +58,5 @@ public enum EngineCapability {
     INHERITED_MEMBERS, // can display class with inherited members
     STATIC_MEMBERS, // can display class with static members
     MAX_OBJECT, // can set object size for display variables
+    PRETTY_PRINT, // can use pretty print
 }

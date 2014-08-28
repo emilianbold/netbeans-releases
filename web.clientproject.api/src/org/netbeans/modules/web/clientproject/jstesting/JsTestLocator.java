@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.web.clientproject.jstesting;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -49,12 +52,14 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.spi.gototest.TestLocator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -105,15 +110,68 @@ public final class JsTestLocator implements TestLocator {
 
     @NbBundle.Messages({
         "# {0} - file name",
-        "JsTestLocator.not.found=Test/Tested file not found for {0}.",
+        "# {1} - file path",
+        "JsTestLocator.not.found.source.both=Tested file not found for {0} in <siteroot>/{1} or <sources>/{1}.",
+        "# {0} - file name",
+        "# {1} - file path",
+        "JsTestLocator.not.found.source.sources=Tested file not found for {0} in <sources>/{1}.",
+        "# {0} - file name",
+        "# {1} - file path",
+        "JsTestLocator.not.found.source.siteroot=Tested file not found for {0} in <siteroot>/{1}.",
+        "# {0} - file name",
+        "# {1} - file path",
+        "JsTestLocator.not.found.test=Test file not found for {0} in <tests>/{1}.",
     })
     @Override
     public void findOpposite(FileObject fo, int caretOffset, LocationListener callback) {
-        LocationResult locationResult = getLocationResult(fo);
-        if (locationResult == null) {
-            locationResult = new LocationResult(Bundle.JsTestLocator_not_found(fo.getNameExt()));
+        Project project = findProject(fo);
+        if (project == null) {
+            LOGGER.log(Level.INFO, "Project was not found for file {0}", fo);
+            foundLocation(null, fo, callback);
+            return;
         }
-        callback.foundLocation(fo, locationResult);
+        FileType fileType = getFileType(fo);
+        if (fileType == FileType.TEST) {
+            Pair<String, FileObject> source = findSource(project, fo);
+            if (source == null) {
+                foundLocation(null, fo, callback);
+            } else if (source.second() != null) {
+                foundLocation(new LocationResult(source.second(), -1), fo, callback);
+            } else {
+                String message;
+                boolean hasSources = !getSourceGroupsForSources(project, WebClientProjectConstants.SOURCES_TYPE_HTML5).isEmpty();
+                boolean hasSiteroot = !getSourceGroupsForSources(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT).isEmpty();
+                if (hasSources
+                        && hasSiteroot) {
+                    message = Bundle.JsTestLocator_not_found_source_both(fo.getNameExt(), getProperRelativePath(source.first()));
+                } else if (hasSources) {
+                    message = Bundle.JsTestLocator_not_found_source_sources(fo.getNameExt(), getProperRelativePath(source.first()));
+                } else {
+                    message = Bundle.JsTestLocator_not_found_source_siteroot(fo.getNameExt(), getProperRelativePath(source.first()));
+                }
+                foundLocation(new LocationResult(message), fo, callback);
+            }
+        } else if (fileType == FileType.TESTED) {
+            Pair<String, FileObject> test = findTest(project, fo);
+            if (test == null) {
+                foundLocation(null, fo, callback);
+            } else if (test.second() != null) {
+                foundLocation(new LocationResult(test.second(), -1), fo, callback);
+            } else {
+                foundLocation(new LocationResult(Bundle.JsTestLocator_not_found_test(fo.getNameExt(), getProperRelativePath(test.first()))), fo, callback);
+            }
+        } else {
+            foundLocation(null, fo, callback);
+        }
+    }
+
+    private String getProperRelativePath(String relPath) {
+        assert relPath != null;
+        String path = relPath;
+        if (!path.isEmpty()) {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path;
     }
 
     @Override
@@ -132,17 +190,38 @@ public final class JsTestLocator implements TestLocator {
         return FileType.NEITHER;
     }
 
+    @NbBundle.Messages({
+        "# {0} - file name",
+        "JsTestLocator.not.found=Test/Tested file not found for {0}.",
+    })
+    private void foundLocation(LocationResult locationResult, FileObject fo, LocationListener callback) {
+        callback.foundLocation(fo,
+                locationResult != null ? locationResult : new LocationResult(Bundle.JsTestLocator_not_found(fo.getNameExt())));
+    }
+
     @CheckForNull
     private Project findProject(FileObject file) {
         return FileOwnerQuery.getOwner(file);
     }
 
-    private SourceGroup[] getSourceGroupsForSources(Project project) {
-        return ProjectUtils.getSources(project).getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5);
+    private List<SourceGroup> getSourceGroupsForSources(Project project) {
+        return getSourceGroupsForSources(project, null);
     }
 
-    private SourceGroup[] getSourceGroupsForTests(Project project) {
-        return ProjectUtils.getSources(project).getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST);
+    private List<SourceGroup> getSourceGroupsForSources(Project project, String type) {
+        Sources sources = ProjectUtils.getSources(project);
+        List<SourceGroup> sourceGroups = new ArrayList<>();
+        if (type == null) {
+            sourceGroups.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5)));
+            sourceGroups.addAll(Arrays.asList(sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT)));
+        } else {
+            sourceGroups.addAll(Arrays.asList(sources.getSourceGroups(type)));
+        }
+        return sourceGroups;
+    }
+
+    private List<SourceGroup> getSourceGroupsForTests(Project project) {
+        return Arrays.asList(ProjectUtils.getSources(project).getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST));
     }
 
     @CheckForNull
@@ -170,24 +249,9 @@ public final class JsTestLocator implements TestLocator {
     }
 
     @CheckForNull
-    private LocationResult getLocationResult(FileObject fo) {
-        Project project = findProject(fo);
-        if (project == null) {
-            LOGGER.log(Level.INFO, "Project was not found for file {0}", fo);
-            return null;
-        }
-        FileType fileType = getFileType(fo);
-        if (fileType == FileType.TEST) {
-            return findSource(project, fo);
-        } else if (fileType == FileType.TESTED) {
-            return findTest(project, fo);
-        }
-        return null;
-    }
-
-    private LocationResult findSource(Project project, FileObject fo) {
-        SourceGroup[] sourceGroups = getSourceGroupsForSources(project);
-        if (sourceGroups.length == 0) {
+    private Pair<String, FileObject> findSource(Project project, FileObject fo) {
+        List<SourceGroup> sourceGroups = getSourceGroupsForSources(project);
+        if (sourceGroups.isEmpty()) {
             return null;
         }
         SourceGroup testGroup = getSourceGroupForTests(project, fo);
@@ -212,16 +276,17 @@ public final class JsTestLocator implements TestLocator {
                 FileObject source = sources.getFileObject(relPath);
                 if (source != null
                         && source.isData()) {
-                    return new LocationResult(source, -1);
+                    return Pair.of(parentRelativePath, source);
                 }
             }
         }
-        return null;
+        return Pair.of(parentRelativePath, null);
     }
 
-    private LocationResult findTest(Project project, FileObject fo) {
-        SourceGroup[] testGroups = getSourceGroupsForTests(project);
-        if (testGroups.length == 0) {
+    @CheckForNull
+    private Pair<String, FileObject> findTest(Project project, FileObject fo) {
+        List<SourceGroup> testGroups = getSourceGroupsForTests(project);
+        if (testGroups.isEmpty()) {
             // no tests -> try to use ProjectDirectoriesProvider to be able to select test folder
             ProjectDirectoriesProvider directoriesProvider = project.getLookup().lookup(ProjectDirectoriesProvider.class);
             if (directoriesProvider == null) {
@@ -232,7 +297,7 @@ public final class JsTestLocator implements TestLocator {
                 return null;
             }
             testGroups = getSourceGroupsForTests(project);
-            if (testGroups.length == 0) {
+            if (testGroups.isEmpty()) {
                 // not html5 project -> not supported now, sorry
                 return null;
             }
@@ -254,11 +319,11 @@ public final class JsTestLocator implements TestLocator {
                 FileObject test = tests.getFileObject(relPath);
                 if (test != null
                         && test.isData()) {
-                    return new LocationResult(test, -1);
+                    return Pair.of(parentRelativePath, test);
                 }
             }
         }
-        return null;
+        return Pair.of(parentRelativePath, null);
     }
 
 }

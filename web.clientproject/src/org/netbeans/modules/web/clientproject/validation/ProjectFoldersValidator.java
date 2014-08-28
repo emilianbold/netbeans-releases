@@ -51,7 +51,9 @@ import org.openide.util.NbBundle;
  */
 public final class ProjectFoldersValidator {
 
+    public static final String SOURCE_FOLDER = "source.folder"; // NOI18N
     public static final String SITE_ROOT_FOLDER = "site.root.folder"; // NOI18N
+    public static final String SOURCE_OR_SITE_ROOT_FOLDER = "source.or.site.root.folder"; // NOI18N
     public static final String TEST_FOLDER = "test.folder"; // NOI18N
 
     private final ValidationResult result = new ValidationResult();
@@ -61,40 +63,71 @@ public final class ProjectFoldersValidator {
         return result;
     }
 
-    public ProjectFoldersValidator validate(File projectDirectory, File siteRootFolder, File testFolder) {
+    public ProjectFoldersValidator validate(File sourceFolder, File siteRootFolder, File testFolder) {
+        validateSourceFolder(sourceFolder);
         validateSiteRootFolder(siteRootFolder);
-        validateTestFolder(projectDirectory, testFolder);
+        validateSourceAndSiteRootFolders(sourceFolder, siteRootFolder);
+        validateTestFolder(testFolder);
         return this;
     }
 
-    @NbBundle.Messages("ProjectFoldersValidator.error.siteRoot.invalid=Site Root must be a valid directory.")
+    @NbBundle.Messages("ProjectFoldersValidator.sources=Sources")
+    public ProjectFoldersValidator validateSourceFolder(File sourceFolder) {
+        return validateProjectFolder(sourceFolder, SOURCE_FOLDER, Bundle.ProjectFoldersValidator_sources());
+    }
+
+    @NbBundle.Messages("ProjectFoldersValidator.siteRoot=Site Root")
     public ProjectFoldersValidator validateSiteRootFolder(File siteRootFolder) {
-        ValidationResult folderValidationResult = new FolderValidator()
-                .validateFolder(siteRootFolder)
-                .getResult();
-        for (ValidationResult.Message error : folderValidationResult.getErrors()) {
-            result.addError(new ValidationResult.Message(SITE_ROOT_FOLDER, error.getMessage()));
-        }
-        for (ValidationResult.Message warning : folderValidationResult.getWarnings()) {
-            result.addWarning(new ValidationResult.Message(SITE_ROOT_FOLDER, warning.getMessage()));
+        return validateProjectFolder(siteRootFolder, SITE_ROOT_FOLDER, Bundle.ProjectFoldersValidator_siteRoot());
+    }
+
+    @NbBundle.Messages({
+        "ProjectFoldersValidator.error.noSourcesOrSiteRoot=Source or Site Root directory must be specified.",
+        "ProjectFoldersValidator.error.sourcesEqualsSiteRoot=Source directory and Site Root directory are the same.",
+        "ProjectFoldersValidator.error.sourcesUnderneathSiteRoot=Source directory is underneath Site Root directory.",
+    })
+    public ProjectFoldersValidator validateSourceAndSiteRootFolders(File sourceFolder, File siteRootFolder) {
+        if (sourceFolder == null
+                && siteRootFolder == null) {
+            result.addError(new ValidationResult.Message(SOURCE_OR_SITE_ROOT_FOLDER, Bundle.ProjectFoldersValidator_error_noSourcesOrSiteRoot()));
+        } else if (sourceFolder != null
+                && siteRootFolder != null) {
+            if (siteRootFolder.equals(sourceFolder)) {
+                result.addWarning(new ValidationResult.Message(SOURCE_FOLDER, Bundle.ProjectFoldersValidator_error_sourcesEqualsSiteRoot()));
+            } else {
+                File parent = sourceFolder.getParentFile();
+                while (parent != null) {
+                    if (parent.equals(siteRootFolder)) {
+                        result.addWarning(new ValidationResult.Message(SOURCE_FOLDER, Bundle.ProjectFoldersValidator_error_sourcesUnderneathSiteRoot()));
+                        break;
+                    }
+                    parent = parent.getParentFile();
+                }
+            }
         }
         return this;
     }
 
-    @NbBundle.Messages("ProjectFoldersValidator.error.test.invalid=Unit Tests must be a valid directory.")
-    ProjectFoldersValidator validateTestFolder(File projectDirectory, File testFolder) {
-        validateProjectFolder(testFolder, TEST_FOLDER, Bundle.ProjectFoldersValidator_error_test_invalid());
-        return this;
+    @NbBundle.Messages("ProjectFoldersValidator.tests=Unit Tests")
+    ProjectFoldersValidator validateTestFolder(File testFolder) {
+        return validateProjectFolder(testFolder, TEST_FOLDER, Bundle.ProjectFoldersValidator_tests());
     }
 
-    private void validateProjectFolder(File folder, String source, String invalidFolderMessage) {
+    private ProjectFoldersValidator validateProjectFolder(File folder, String source, String dirName) {
         if (folder == null) {
             // can be empty
-            return;
+            return this;
         }
-        if (!folder.isDirectory()) {
-            result.addError(new ValidationResult.Message(source, invalidFolderMessage));
+        ValidationResult folderValidationResult = new FolderValidator()
+                .validateFolder(folder, dirName)
+                .getResult();
+        for (ValidationResult.Message error : folderValidationResult.getErrors()) {
+            result.addError(new ValidationResult.Message(source, error.getMessage()));
         }
+        for (ValidationResult.Message warning : folderValidationResult.getWarnings()) {
+            result.addWarning(new ValidationResult.Message(source, warning.getMessage()));
+        }
+        return this;
     }
 
 }

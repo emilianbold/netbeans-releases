@@ -260,7 +260,7 @@ public class ClipboardHandler {
         boolean finished = runQuickly(js, new Task<CompilationController>() {
             @Override
             public void run(final CompilationController cc) throws Exception {
-                cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                cc.toPhase(JavaSource.Phase.RESOLVED);
 
                 final TreePath tp = cc.getTreeUtilities().pathFor(caret);
                 final Scope context = cc.getTrees().getScope(tp);

@@ -250,7 +250,9 @@ abstract class TransportCommand extends GitCommand {
             String repositoryUrl = message.substring(0, pos);
             throw new GitException.AuthorizationException(repositoryUrl, message, e);
         } else if (e.getCause() instanceof JSchException) {
-            if (message.contains("timeout:")) { //NOI18N
+            if (message.contains("timeout:") || message.contains("ProxyHTTP")
+                    || message.contains("ProxySOCKS4")
+                    || message.contains("ProxySOCKS5")) { //NOI18N
                 throw new GitException(message, e);
             } else {
                 throw new GitException.AuthorizationException(uri.toString(), message, e);

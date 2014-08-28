@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/net/edgard/export/repos/cnd-main/cnd/javahelp/org/netbeans/modules/cnd/help">
+		<directory title="/net/sdt-m8k-d0/scratch/semorgan/repos/cnd-main/cnd/javahelp/org/netbeans/modules/cnd/help">
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>
@@ -29,7 +29,6 @@
 				<file title="CandC++SessionsWindow.html"/>
 				<file title="CandC++ThreadsWindow.html"/>
 				<file title="CandC++WatchesWindow.html"/>
-				<file title="CodeAssistance.html"/>
 				<file title="CompilerOptions.html"/>
 				<file title="CompilingSingleCandC++File.html"/>
 				<file title="CorC++VariablesandExpressions.html"/>
@@ -86,10 +85,13 @@
 			</directory>
 			<directory title="EditingSourceFiles">
 				<file title="CandC++CodeFolding.html"/>
+				<file title="ChangeFunctionParameters.html"/>
 				<file title="Commenting.html"/>
+				<file title="CppDocumentation.html"/>
 				<file title="Documenting.html"/>
 				<file title="EditingFortranSourceFiles.html"/>
 				<file title="EditingSourceFiles.html"/>
+				<file title="EncapsulateFields.html"/>
 				<file title="ErrorHighlighting.html"/>
 				<file title="FindingUsages.html"/>
 				<file title="FindinProject.html"/>
@@ -101,6 +103,7 @@
 				<file title="GoToType.html"/>
 				<file title="Icons.html"/>
 				<file title="IncludeView.html"/>
+				<file title="MacroExpansionWindow.html"/>
 				<file title="Refactoring.html"/>
 				<file title="RefactoringWindow.html"/>
 				<file title="SourceHeaderSwitch.html"/>
@@ -133,6 +136,7 @@
 				<file title="blue-sqr-mid.gif"/>
 				<file title="Breakpoint.gif"/>
 				<file title="Breakpoint_PC.gif"/>
+				<file title="BreakpointGroups_options_16.png"/>
 				<file title="CallStack.gif"/>
 				<file title="cf_minus.gif"/>
 				<file title="cf_plus.gif"/>
@@ -230,6 +234,7 @@
 				<file title="module.gif"/>
 				<file title="namespace_16.png"/>
 				<file title="namespace_alias.png"/>
+				<file title="NewBreakpoint.png"/>
 				<file title="newProject24.png"/>
 				<file title="newWatch.png"/>
 				<file title="next.png"/>
@@ -347,6 +352,7 @@
 				<file title="ConfiguringSemanticHighlighting.html"/>
 				<file title="CreateProject.html"/>
 				<file title="CreatingCorC++Project.html"/>
+				<file title="CreatingCorC++ProjectBinary.html"/>
 				<file title="DeletingCorC++Project.html"/>
 				<file title="ManagingProjectConfigurations.html"/>
 				<file title="MovingCorC++Project.html"/>
@@ -368,6 +374,7 @@
 				<file title="ProjectPropsBuild.html"/>
 				<file title="ProjectPropsCompilerGeneral.html"/>
 				<file title="ProjectPropsDebugging.html"/>
+				<file title="ProjectPropsFormatting.html"/>
 				<file title="ProjectPropsGeneral.html"/>
 				<file title="ProjectPropsLinkerGeneral.html"/>
 				<file title="ProjectPropsMake.html"/>

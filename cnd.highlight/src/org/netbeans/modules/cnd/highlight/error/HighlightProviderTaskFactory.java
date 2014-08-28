@@ -99,11 +99,13 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
                     return;
                 }
                 interrupter.cancel();
-                this.lastParserResult = result;
                 this.interrupter = new InterrupterImpl();
-            }
-            if (cancel.isCancelled()) {
-                return;
+                if (cancel.isCancelled()) {
+                    lastParserResult = null;
+                    return;
+                } else {
+                    this.lastParserResult = result;
+                }
             }
             long time = 0;
             try {

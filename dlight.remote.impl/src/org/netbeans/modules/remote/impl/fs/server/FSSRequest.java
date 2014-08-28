@@ -55,17 +55,24 @@ public final class FSSRequest {
     private final int id;
     private final FSSRequestKind kind;
     private final String path;
+    private final String path2;
 
     public FSSRequest(FSSRequestKind kind, String path) {
+        this(kind, path, null);
+    }
+
+    public FSSRequest(FSSRequestKind kind, String path, String path2) {
         this.id = nextId.incrementAndGet();
         this.kind = kind;
         this.path = path;
+        this.path2 = path2;
     }
     
     /*package*/ FSSRequest(FSSRequestKind kind, String path, boolean zeroId) {
         this.id = zeroId ? 0 : nextId.incrementAndGet();
         this.kind = kind;
         this.path = path;
+        this.path2 = null;
     }
 
     public int getId() {
@@ -80,9 +87,13 @@ public final class FSSRequest {
         return path;
     }
 
+    public String getPath2() {
+        return path2;
+    }
+
     @Override
     public String toString() {
-        return getClass().getSimpleName() + ' ' + kind + ' ' + id + path; //NOI18N
+        return getClass().getSimpleName() + ' ' + kind + ' ' + id + ' ' + path + ' ' + ((path2 == null) ? "" : path2); //NOI18N
     }
 
     /*package*/ boolean needsResponse() {

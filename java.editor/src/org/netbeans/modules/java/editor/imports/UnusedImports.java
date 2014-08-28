@@ -100,7 +100,7 @@ public class UnusedImports {
         
         List<TreePath> allUnusedImports = new ArrayList<TreePath>();
 
-        for (TreePath tree : v.import2Highlight.values()) {
+        for (TreePath tree : v.getUnusedImports().values()) {
             if (cancel.get()) {
                 return null;
             }
@@ -124,6 +124,7 @@ public class UnusedImports {
         private final Map<String, Collection<ImportTree>> simpleName2UnresolvableImports = new HashMap<String, Collection<ImportTree>>();
         private final Set<ImportTree> unresolvablePackageImports = new HashSet<ImportTree>();
         private final Map<ImportTree, TreePath/*ImportTree*/> import2Highlight = new HashMap<ImportTree, TreePath>();
+        private final Map<ImportTree, Integer> usageCounts = new HashMap<>();
         
         private DetectorVisitor(CompilationInfo info, AtomicBoolean cancel) {
             super(cancel);
@@ -138,6 +139,12 @@ public class UnusedImports {
             for (Element el : JavadocImports.computeReferencedElements(info, classMember)) {
                 typeUsed(el, null, false);
             }
+        }
+        
+        public Map<ImportTree, TreePath/*ImportTree*/> getUnusedImports() {
+            Map<ImportTree, TreePath> ret = new HashMap<>(import2Highlight);
+            ret.keySet().removeAll(usageCounts.keySet());
+            return ret;
         }
 
         @Override
@@ -260,14 +267,16 @@ public class UnusedImports {
                         importedBySingleImport.add(decl);
                     }
                 } else if (decl.getKind().isClass() || decl.getKind().isInterface()) {
-                    Name simpleName = isStar(tree) ? null : qualIdent.getIdentifier();
+                    Name simpleName = star ? null : qualIdent.getIdentifier();
 
                     for (Element e : info.getElements().getAllMembers((TypeElement) decl)) {
                         if (!e.getModifiers().contains(Modifier.STATIC)) continue;
                         if (simpleName != null && !e.getSimpleName().equals(simpleName)) {
                             continue;
                         }
-                        element2Import.put(e, tree);
+                        if (!star || !element2Import.containsKey(e)) {
+                            element2Import.put(e, tree);
+                        }
                         assign = true;
                     }
                 }
@@ -295,14 +304,21 @@ public class UnusedImports {
             l.add(imp);
         }
         
+        private void addUsage(ImportTree imp) {
+            Integer i = usageCounts.get(imp);
+            if (i == null) {
+                i = 0;
+            }
+            usageCounts.put(imp, i++);
+        }
+        
         private void typeUsed(Element decl, TreePath expr, boolean methodInvocation) {
             if (decl != null && (expr == null || expr.getLeaf().getKind() == Kind.IDENTIFIER || expr.getLeaf().getKind() == Kind.PARAMETERIZED_TYPE)) {
                 if (!isErroneous(decl)) {
                     ImportTree imp = element2Import.get(decl);
 
                     if (imp != null) {
-                        import2Highlight.remove(imp);
-
+                        addUsage(imp);
                         if (isStar(imp)) {
                             //TODO: explain
                             handleUnresolvableImports(decl, methodInvocation, false);

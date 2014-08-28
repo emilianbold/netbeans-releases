@@ -1364,7 +1364,7 @@ public class EnumTest extends GeneratorTestBase {
         String golden =
             "package hierbas.del.litoral;\n" +
             "public class Test {\n\n"+
-            "    public enum E {\n\n" +
+            "    public enum E {\n" +
             "        A, B, C\n" +
             "    }\n" +
             "}\n";

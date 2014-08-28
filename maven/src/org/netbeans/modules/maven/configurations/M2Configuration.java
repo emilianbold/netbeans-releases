@@ -335,10 +335,11 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
                 return M2Configuration.this.performDynamicSubstitutions(replaceMap, in);
             }
         };
-        NetbeansActionMapping ret = parsed.getMappingForAction(reader, LOG, action, project, id, replaceMap);
+        NetbeansActionMapping ret = parsed.getMappingForAction(reader, LOG, action, null, project, id, replaceMap);
         if (ret == null) {
-            ret = parsed.getMappingForAction(reader, LOG, action, project, null, replaceMap);
-            if (fallback != null && ret != null) {
+            boolean[] hasProfiles = { false };
+            ret = parsed.getMappingForAction(reader, LOG, action, hasProfiles, project, null, replaceMap);
+            if (fallback != null && ret != null && hasProfiles[0]) {
                 fallback[0] = true;
             }
         }
@@ -365,7 +366,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
             protected Reader performDynamicSubstitutions(Map<String, String> replaceMap, String in) throws IOException {
                 return M2Configuration.this.performDynamicSubstitutions(replaceMap, in);
             }
-        }.getMappingForAction(reader, LOG, actionName, project, null, replaceMap);
+        }.getMappingForAction(reader, LOG, actionName, null, project, null, replaceMap);
     }
 
 }

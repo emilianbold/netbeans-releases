@@ -118,8 +118,10 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -417,6 +419,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         if (!preventRunPathConvertion) {
             runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
+        }
+        
+        if (!CndFileUtils.isExistingDirectory(FileSystemProvider.getFileSystem(executor.getExecutionEnvironment()), runDir)) {
+            NativeDebuggerManager.error(Catalog.format("MSG_NonExistentWorkDir", runDir)); // NOI18N
+            kill();
+            return;
         }
 
 	factory = new Gdb.Factory(executor, additionalArgv,
@@ -2225,6 +2233,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      */
 
     @Override
+    public void postPrettyPrint(boolean v) {
+    }
+
+
+    @Override
     public void postVerboseStack(boolean v) {
     }
 
@@ -3043,6 +3056,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     // interface NativeDebugger
     @Override
+    public boolean isPrettyPrint() {
+	return true; // always use pretty-print
+    }
+
+    // interface NativeDebugger
+    @Override
+    public void setPrettyPrint(boolean b) {
+	// no-op
+	// GDB TODO
+    }
+
+    // interface NativeDebugger
+    @Override
     public boolean isInheritedMembers() {
 	return true; // always show inherited members
     }
@@ -3667,7 +3693,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    MITList props = b.value().asTuple();
 	    // System.out.printf("props %s\n", props.toString());
 
-	    int hid = Integer.parseInt(props.getConstValue(MI_NUMBER));
+            int hid = -1;
+            try {
+                hid = Integer.parseInt(props.getConstValue(MI_NUMBER));
+            } catch (NumberFormatException ex) {
+                /* Handling sub-breakpoints with <number>.<sub-number> IDs.
+                   As hid was set to -1 there will be no handler for such a breakpoint.
+                
+                   This is a temporary solution until CND supports multiple breakpoints in full
+                */
+            }
 	    Handler h = bm().findHandler(hid);
 
 	    if (h != null && h.breakpoint().hasCountLimit()) {

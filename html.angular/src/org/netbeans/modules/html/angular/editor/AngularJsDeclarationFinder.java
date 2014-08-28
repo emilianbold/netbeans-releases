@@ -123,28 +123,36 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
     }
 
     @Override
-    public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
+    public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
 //        int embeddedOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
-        
-        if (ts == null) {
-            return OffsetRange.NONE;
-        }
-        
-        ts.move(caretOffset);
-        if (ts.moveNext()) {
-            JsTokenId id = ts.token().id();
-            if (id == JsTokenId.IDENTIFIER) {
-                return new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
+        final OffsetRange[] value = new OffsetRange[1];
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
+
+                if (ts == null) {
+                    return;
+                }
+
+                ts.move(caretOffset);
+                if (ts.moveNext()) {
+                    JsTokenId id = ts.token().id();
+                    if (id == JsTokenId.IDENTIFIER) {
+                        value[0] = new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
+                        return;
+                    }
+                    value[0] = isValueOfProperty(AngularWhenInterceptor.CONTROLLER_PROP, ts, caretOffset);
+                    if (value[0] != null) {
+                        return;
+                    }
+                    value[0] = isValueOfProperty(AngularWhenInterceptor.TEMPLATE_URL_PROP, ts, caretOffset);
+                }
             }
-            OffsetRange range = isValueOfProperty(AngularWhenInterceptor.CONTROLLER_PROP, ts, caretOffset);
-            if (range != null) {
-                return range;
-            }
-            range = isValueOfProperty(AngularWhenInterceptor.TEMPLATE_URL_PROP, ts, caretOffset);
-            if (range != null) {
-                return range;
-            }
+        });
+        if (value[0] != null) {
+            return value[0];
         }
         return OffsetRange.NONE;
     }

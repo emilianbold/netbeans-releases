@@ -43,10 +43,10 @@ package org.netbeans.modules.php.project.ui.actions;
 
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
@@ -90,7 +90,7 @@ public abstract class Command {
 
     protected boolean validateInvokeAction(Lookup context) {
         if (PhpProjectValidator.isFatallyBroken(project)) {
-            Utils.warnInvalidSourcesDirectory(project);
+            UiUtils.warnBrokenProject(project.getPhpModule());
             return false;
         }
         return true;

@@ -75,11 +75,32 @@ public final class FolderValidator {
      * </ul>
      * @param folder folder to be validated, can be {@code null}
      * @return validator itself
+     * @see #validateFolder(File, String)
      */
-    @NbBundle.Messages("FolderValidator.error.folder.invalid=Folder must be a valid directory.")
+    @NbBundle.Messages("FolderValidator.error.folder.prefix=Folder")
     public FolderValidator validateFolder(@NullAllowed File folder) {
+        return validateFolder(folder, Bundle.FolderValidator_error_folder_prefix());
+    }
+
+    /**
+     * Validate the given folder. It means that the given folder:
+     * <ul>
+     *   <li>must be non-null</li>
+     *   <li>must exist and must be a directory</li>
+     * </ul>
+     * @param folder folder to be validated, can be {@code null}
+     * @param directoryName custom directory name to be used in the validation messages, e.g. "Unit Tests"
+     * @return validator itself
+     * @since 1.65
+     * @see #validateFolder(File)
+     */
+    @NbBundle.Messages({
+        "# {0} - directory name, e.g. Unit Tests directory",
+        "FolderValidator.error.folder.invalid={0} must be a valid directory.",
+    })
+    public FolderValidator validateFolder(@NullAllowed File folder, String directoryName) {
         if (folder == null || !folder.isDirectory()) {
-            result.addError(new ValidationResult.Message(FOLDER, Bundle.FolderValidator_error_folder_invalid()));
+            result.addError(new ValidationResult.Message(FOLDER, Bundle.FolderValidator_error_folder_invalid(directoryName)));
         }
         return this;
     }

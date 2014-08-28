@@ -109,13 +109,14 @@ import org.openide.util.CharSequences;
  * @author Vladimir Kvashin
  */
 public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBasedProvider {
+    private static final CharSequence NON_INITIALIZED_CLASSIFIER_TEXT = CharSequences.empty();
+    
     private static final byte FLAGS_TYPE_OF_TYPEDEF = 1;
     private static final byte FLAGS_REFERENCE = 1 << 1;
     private static final byte FLAGS_CONST = 1 << 2;
     private static final byte FLAGS_TYPE_WITH_CLASSIFIER = 1 << 3;
     private static final byte FLAGS_RVALREFERENCE = 1 << 4;
     protected static final int LAST_USED_FLAG_INDEX = 5;
-    private static final CharSequence NON_INITIALIZED_CLASSIFIER_TEXT = CharSequences.empty();
     
     private final byte pointerDepth;
     
@@ -548,6 +549,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }
     
     public boolean isConst(int pointerDepth) {
+        return isConst(constQualifiers, pointerDepth);
+    }
+    
+    static boolean isConst(int constQualifiers, int pointerDepth) {
         return (constQualifiers & (1 << pointerDepth)) != 0;
     }
 
@@ -800,16 +805,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             if (ip instanceof InstantiationProviderImpl) {
                 Resolver resolver = ResolverFactory.createResolver(this);
                 try {
-                    CsmResolveContext context = getLastResolveContext();
-                    
-                    CsmFile contextFile = context != null ? context.getFile() : this.getContainingFile();
-                    int contextOffset = context != null ? context.getOffset() : this.getStartOffset();
-                    
                     if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
                         for (int i = instantiations.size() - 1; i > 0; i--) {
-                            obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, contextFile, contextOffset, instantiations.get(i), false);
+                            obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, instantiations.get(i), false);
                         }
-                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, contextFile, contextOffset, instantiations.get(0), true);
+                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, instantiations.get(0), true);
                     }
                 } finally {
                     ResolverFactory.releaseResolver(resolver);
@@ -948,7 +948,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                                     || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                                     || namePart.getType() == CPPTokenTypes.LITERAL_struct) {
                                 CsmType type = AstRenderer.renderType(namePart, getContainingFile(), true, null, false); // last two params just dummy ones
-                                addInstantiationParam(new TypeBasedSpecializationParameterImpl(type));
+                                addInstantiationParam(new TypeBasedSpecializationParameterImpl(type, null)); // TODO: null?
                             }
                             if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
                                 addInstantiationParam(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, getContainingFile(), null),
@@ -977,14 +977,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             }
         }
         return null;
-    }
-    
-    private CsmResolveContext getLastResolveContext() {
-        CsmResolveContext context;
-        Stack<CsmResolveContext> contexts = (Stack<CsmResolveContext>) CsmCacheManager.get(CsmResolveContext.class);
-        context = (contexts != null && !contexts.empty()) ? contexts.peek() : null;
-        return context;
-    }
+    }    
 
     @Override
     public int getArrayDepth() {

@@ -141,7 +141,43 @@ public abstract class RemoteFileSystemTransport {
     public static DirEntryList delete(ExecutionEnvironment execEnv, String path, boolean directory) throws IOException {
         return getInstance(execEnv).delete(path, directory);
     }
-    
+
+    public static boolean canCopy(ExecutionEnvironment execEnv, String from, String to) {
+        return getInstance(execEnv).canCopy(from, to);
+    }
+
+    /**
+     * Copies the file, returns new parent directory content. Returning parent
+     * directory content is for the sake of optimization. For example,
+     * fs_server, can do copy and return refreshed content in one call. It can
+     * return null if there is no way of doing that more effective than just
+     * calling RemoteFileSystemTransport.readDirectory
+     *
+     * @return parent directory content (can be null - see above)
+     */
+    public static DirEntryList copy(ExecutionEnvironment execEnv, String from, String to)
+            throws IOException, InterruptedException, CancellationException, ExecutionException {
+        return getInstance(execEnv).copy(from, to);
+    }
+
+    public static class MoveInfo {
+        public final DirEntryList from;
+        public final DirEntryList to;
+        public MoveInfo(DirEntryList src, DirEntryList dst) {
+            this.from = src;
+            this.to = dst;
+        }
+    }
+
+    public static boolean canMove(ExecutionEnvironment execEnv, String from, String to) {
+        return getInstance(execEnv).canMove(from, to);
+    }
+
+    public static MoveInfo move(ExecutionEnvironment execEnv, String from, String to)
+            throws IOException, InterruptedException, CancellationException, ExecutionException {
+        return getInstance(execEnv).move(from, to);
+    }
+
     private static RemoteFileSystemTransport getInstance(ExecutionEnvironment execEnv) {
         RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
         if (transport == null || ! transport.isValid()) {
@@ -149,6 +185,16 @@ public abstract class RemoteFileSystemTransport {
         }
         return transport;
     }
+
+    protected abstract boolean canCopy(String from, String to);
+
+    protected abstract DirEntryList copy(String from, String to)
+            throws IOException, InterruptedException, CancellationException, ExecutionException;
+
+    protected abstract boolean canMove(String from, String to);
+
+    protected abstract MoveInfo move(String from, String to)
+            throws IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract FileInfoProvider.StatInfo stat(String path) 
             throws InterruptedException, CancellationException, ExecutionException;

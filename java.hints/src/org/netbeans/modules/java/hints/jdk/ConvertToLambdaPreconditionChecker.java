@@ -50,6 +50,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -63,6 +64,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -91,6 +93,8 @@ public class ConvertToLambdaPreconditionChecker {
     private BlockTree singleStatementLambdaMethodBody = null;
     private boolean foundMemberReferenceCandidate = false;
     private boolean havePreconditionsBeenChecked = false;
+    private boolean foundRefToUninitializedVar = false;
+    private final Element ownerClass;
 
     public ConvertToLambdaPreconditionChecker(TreePath pathToNewClassTree, CompilationInfo info) {
 
@@ -101,8 +105,29 @@ public class ConvertToLambdaPreconditionChecker {
 
         this.lambdaMethodTree = getMethodFromFunctionalInterface(this.newClassTree);
         this.localScope = getScopeFromTree(this.pathToNewClassTree);
+        this.ownerClass = findFieldOwner();
     }
-
+    
+    /**
+     * Returns the class Element, if the pathToNewClassTree is a part of class field's
+     * init expression; otherwise null.
+     * @return 
+     */
+    private Element findFieldOwner() {
+        TreePath p = pathToNewClassTree.getParentPath();
+        while (p != null) {
+            Tree t = p.getLeaf();
+            if (t.getKind() == Tree.Kind.METHOD) {
+                // this is OK
+                return null;
+            } else if (t.getKind() == Tree.Kind.CLASS) {
+                return info.getTrees().getElement(p);
+            }
+            p = p.getParentPath();
+        }
+        return null;
+    }
+    
     private static MethodTree getMethodFromFunctionalInterface(NewClassTree newClassTree) {
         //ignore first member, which is a synthetic constructor call
         ClassTree classTree = newClassTree.getClassBody();
@@ -118,7 +143,8 @@ public class ConvertToLambdaPreconditionChecker {
                 && !foundRecursiveCall()
                 && !foundOverloadWhichMakesLambdaAmbiguous()
                 && !foundAssignmentToSupertype()
-                && !foundAssignmentToRawtype();
+                && !foundAssignmentToRawtype()
+                && !foundRefToUninitializedVar();
     }
     
     private void ensurePreconditionsAreChecked() {
@@ -132,10 +158,16 @@ public class ConvertToLambdaPreconditionChecker {
         }
     }
     
+    boolean foundRefToUninitializedVar() {
+        ensurePreconditionsAreChecked();
+        return foundRefToUninitializedVar;
+    }
+    
     public boolean passesFatalPreconditions() {
         return !foundRefToThisOrSuper() &&
                !foundRecursiveCall() &&
-               !foundErroneousTargetType();
+               !foundErroneousTargetType() && 
+               !foundRefToUninitializedVar();
     }
 
     public boolean needsCastToExpectedType() {
@@ -218,6 +250,20 @@ public class ConvertToLambdaPreconditionChecker {
             //check for ref to 'this'
             if (identifierTree.getName().contentEquals("this") || identifierTree.getName().contentEquals("super")) {
                 foundRefToThisOrSuper = true;
+            }
+            Element el = info.getTrees().getElement(getCurrentPath());
+            if (el != null && el.getKind() == ElementKind.FIELD) {
+                if (ownerClass == el.getEnclosingElement()) {
+                    if (!el.getModifiers().contains(Modifier.FINAL)) {
+                        foundRefToUninitializedVar = true;
+                    } else {
+                        // PENDING: shortcut: the field must be assigned 
+                        // in its initializer. It would more appropriate to check whether it
+                        // is definitively assigned before the lambda code - future enhancement
+                        VariableTree vt = (VariableTree)info.getTrees().getTree(el);
+                        foundRefToUninitializedVar |= vt.getInitializer() == null;
+                    }
+                }
             }
             return super.visitIdentifier(identifierTree, trees);
         }

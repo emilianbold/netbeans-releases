@@ -44,7 +44,6 @@ package org.netbeans.modules.web.clientproject;
 import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.netbeans.modules.web.clientproject.grunt.GruntfileExecutor;
@@ -136,7 +135,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         final ActionProvider ap = getActionProvider();
         if (ap != null && isSupportedAction(command, ap)) {
             // #217362 and possibly others
-            if (!checkSiteRoot()) {
+            if (project.isBroken(true)) {
                 return;
             }
             RP.post(new Runnable() {
@@ -254,22 +253,6 @@ public class ClientSideProjectActionProvider implements ActionProvider {
 
     private void deleteProject() {
         DefaultProjectOperations.performDefaultDeleteOperation(project);
-    }
-
-    @NbBundle.Messages({
-        "# {0} - project name",
-        "ClientSideProjectActionProvider.error.invalidSiteRoot=<html>Project <b>{0}</b> has invalid Site Root, resolve project problems first."
-    })
-    private boolean checkSiteRoot() {
-        if (project.getSiteRootFolder() == null) {
-            // broken project, do not run any action
-            NotifyDescriptor descriptor = new NotifyDescriptor.Message(
-                    Bundle.ClientSideProjectActionProvider_error_invalidSiteRoot(project.getName()), NotifyDescriptor.WARNING_MESSAGE);
-            DialogDisplayer.getDefault().notify(descriptor);
-            ProjectProblems.showCustomizer(project);
-            return false;
-        }
-        return true;
     }
 
     void runTests() {

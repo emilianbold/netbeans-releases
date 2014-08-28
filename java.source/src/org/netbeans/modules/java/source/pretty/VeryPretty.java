@@ -303,11 +303,15 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     }
     
     public void print(DCTree t) {
+        print(t, false);
+    }
+    
+    public void print(DCTree t, boolean noMarginAfter) {
         if (t == null) return;
-        blankLines(t, true);
+        blankLines(t, true, false);
         toLeftMargin();
         doAccept(t);
-        blankLines(t, false);
+        blankLines(t, false, noMarginAfter);
     }
     
     private Map<JCTree, Integer> overrideStartPositions;
@@ -774,9 +778,10 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         if (cs.spaceBeforeClassDeclLeftBrace())
             needSpace();
 	print('{');
+        printInnerCommentsAsTrailing(tree, true);
         java.util.List<JCTree> members = CasualDiff.filterHidden(diffContext, tree.defs);
 	if (!members.isEmpty()) {
-	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesAfterAnonymousClassHeader() : cs.getBlankLinesAfterClassHeader());
+	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesAfterAnonymousClassHeader() : (flags & ENUM) != 0 ? cs.getBlankLinesAfterEnumHeader() : cs.getBlankLinesAfterClassHeader());
             boolean firstMember = true;
             if ((tree.mods.flags & ENUM) != 0 && members.get(0) instanceof FieldGroupTree && ((FieldGroupTree) members.get(0)).isEnum()) {
                 printEnumConstants(((FieldGroupTree) members.get(0)).getVariables(), false);
@@ -787,7 +792,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 printStat(t, true, firstMember, true, true);
                 firstMember = false;
             }
-	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace());
+	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : (flags & ENUM) != 0 ? cs.getBlankLinesBeforeEnumClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace());
         } else {
             printEmptyBlockComments(tree, false);
         }
@@ -1905,7 +1910,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
      * <li>@deprecated (see How and When To Deprecate APIs)</li>
      * </ul>
      */
-    private void blankLines(DCTree tree, boolean before) {
+    private void blankLines(DCTree tree, boolean before, boolean suppressMarginAfter) {
         if (tree == null) {
             return;
         }
@@ -1935,7 +1940,9 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 } else {
                     newline();
                 }
-                toLeftMargin();
+                if (!suppressMarginAfter) {
+                    toLeftMargin();
+                }
                 break;
             default:
                 break;
@@ -2774,13 +2781,14 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 	if (emptyBlock) {
             printEmptyBlockComments(tree, members);
         } else {
-            innerCommentsHandled.add(tree);
-            java.util.List<Comment> comments = commentHandler.getComments(tree).getComments(CommentSet.RelativePosition.INNER);
-            for (Comment c : comments) {
-                printComment(c, false, members);
+            if (innerCommentsHandled.add(tree)) {
+                java.util.List<Comment> comments = commentHandler.getComments(tree).getComments(CommentSet.RelativePosition.INNER);
+                for (Comment c : comments) {
+                    printComment(c, false, members);
+                }
             }
             if (members)
-                blankLines(enclClassName.isEmpty() ? cs.getBlankLinesAfterAnonymousClassHeader() : cs.getBlankLinesAfterClassHeader());
+                blankLines(cs.getBlankLinesAfterAnonymousClassHeader());
             else
                 newline();
 	    printStats(stats, members);
@@ -2904,7 +2912,9 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 //                }
 //            }
 //        }
-        innerCommentsHandled.add(tree);
+        if (!innerCommentsHandled.add(tree)) {
+            return;
+        }
         java.util.List<Comment> comments = commentHandler.getComments(tree).getComments(CommentSet.RelativePosition.INNER);
         for (Comment c : comments)
             printComment(c, false, printWhitespace);

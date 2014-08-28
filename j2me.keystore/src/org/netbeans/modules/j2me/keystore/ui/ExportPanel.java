@@ -83,9 +83,10 @@ import org.openide.util.RequestProcessor;
  */
 public class ExportPanel extends javax.swing.JPanel implements ItemListener, ListSelectionListener {
 
-    private static final String HELP_ID = "org.netbeans.modules.j2me.keystore.ui.ExportPanel";
+    private static final String HELP_ID = "org.netbeans.modules.j2me.keystore.ui.ExportPanel"; //NOI18N
     private static final Dimension PREFERRED_SIZE = new Dimension(500, 500);
     private static final RequestProcessor RP = new RequestProcessor(ExportPanel.class);
+    public static final String SHARED_CLIENT = "Shared"; //NOI18N
 
     private DialogDescriptor dd;
     final private KeyStoreRepository.KeyStoreBean bean;
@@ -112,14 +113,19 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
             @SuppressWarnings("synthetic-access")
             @Override
             public void actionPerformed(@SuppressWarnings("unused") final ActionEvent evt) {
-                setListCustomMessage(NbBundle.getMessage(ExportPanel.class, "MSG_Exporting"));
+                setListCustomMessage(NbBundle.getMessage(ExportPanel.class, "MSG_Exporting")); //NOI18N
                 bExport.setEnabled(false);
                 cTarget.setEnabled(false);
+                cClient.setEnabled(false);
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
                         export();
-                        reloadList(cTarget.getSelectedItem());
+                        String client = null;
+                        if (cClient.isVisible() && cClient.getSelectedItem() != null && !cClient.getSelectedItem().equals(SHARED_CLIENT)) {
+                            client = (String) cClient.getSelectedItem();
+                        }
+                        reloadList(cTarget.getSelectedItem(), client);
                     }
                 });
             }
@@ -128,6 +134,17 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         tAlias.setText(alias.getAlias());
         lDetails.setText(KeyAliasCellRenderer.getHtmlFormattedText(alias));
         cTarget.addItemListener(this);
+        cClient.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    String client = (String) cClient.getSelectedItem();
+                    if (!client.equals(NbBundle.getMessage(ExportPanel.class, "MSG_Loading_Clients"))) { //NOI18N
+                        reloadList((J2MEPlatform.Device) cTarget.getSelectedItem(), client.equals(SHARED_CLIENT) ? null : client);
+                    }
+                }
+            }
+        });
         list.setCellRenderer(new DefaultListCellRenderer() {
 
             @Override
@@ -183,7 +200,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
 
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -193,13 +210,13 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
     }
 
     private boolean equivalent(String owner, String subjectName) {
-        final String[] ownerSplit = owner.split("[,;]");
+        final String[] ownerSplit = owner.split("[,;]"); //NOI18N
         final Set<String> ownerSet = new HashSet<>();
         for (final String string : ownerSplit) {
             ownerSet.add(string.trim());
         }
 
-        final String[] subjectSplit = subjectName.split("[,;]");
+        final String[] subjectSplit = subjectName.split("[,;]"); //NOI18N
         final Set<String> subjectSet = new HashSet<>();
         for (final String string : subjectSplit) {
             subjectSet.add(string.trim());
@@ -231,6 +248,8 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         jScrollPane1 = new javax.swing.JScrollPane();
         list = new javax.swing.JList();
         bDelete = new javax.swing.JButton();
+        lClient = new javax.swing.JLabel();
+        cClient = new javax.swing.JComboBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
         setMinimumSize(new java.awt.Dimension(500, 250));
@@ -320,13 +339,13 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         org.openide.awt.Mnemonics.setLocalizedText(lDomain, org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Domain")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(lDomain, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
@@ -337,7 +356,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         org.openide.awt.Mnemonics.setLocalizedText(lKeys, org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Keys")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(lKeys, gridBagConstraints);
@@ -348,7 +367,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -364,16 +383,32 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(bDelete, gridBagConstraints);
         bDelete.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_DeleteKey")); // NOI18N
+
+        lClient.setLabelFor(cClient);
+        org.openide.awt.Mnemonics.setLocalizedText(lClient, org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Client")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        add(lClient, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
+        add(cClient, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void initAccessibility() {
-        getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportPanel.class, "ACSN_Export"));
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export"));
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportPanel.class, "ACSN_Export")); //NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export")); //NOI18N
     }
 
     @Override
@@ -439,14 +474,21 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
                     @Override
                     public void run() {
                         cTarget.setEnabled(false);
+                        cClient.setEnabled(false);
                     }
                 });
-                setListCustomMessage(NbBundle.getMessage(ExportPanel.class, "MSG_Deleting"));
+                setListCustomMessage(NbBundle.getMessage(ExportPanel.class, "MSG_Deleting")); //NOI18N
+                String client = null;
+                if (cClient.isVisible() && cClient.getSelectedItem() != null && !cClient.getSelectedItem().equals(SHARED_CLIENT)) {
+                    client = (String) cClient.getSelectedItem();
+                }
                 try {
                     if (target instanceof J2MEPlatform.Device) {
                         final String keystore = MEKeyTool.keystoreForDevice((J2MEPlatform.Device) target);
                         if (keystore != null) {
                             MEKeyTool.execute(new String[]{keytool, "-delete", "-MEkeystore", keystore, "-number", Integer.toString(key.getOrder())}); // NOI18N
+                        } else if (client != null) {
+                            MEKeyTool.execute(new String[]{keytool, "-delete", "-Xdevice:" + ((J2MEPlatform.Device) target).getName(), "-client", client, "-number", Integer.toString(key.getOrder())}); // NOI18N
                         } else {
                             MEKeyTool.execute(new String[]{keytool, "-delete", "-Xdevice:" + ((J2MEPlatform.Device) target).getName(), "-number", Integer.toString(key.getOrder())}); // NOI18N
                         }
@@ -454,16 +496,18 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
                         MEKeyTool.execute(new String[]{keytool, "-delete", "-number", Integer.toString(key.getOrder())}); // NOI18N
                     }
                 } catch (IOException e) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ExportPanel.class, "ERR_WhileDeletingKey"), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ExportPanel.class, "ERR_WhileDeletingKey") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
                 }
-                reloadList(target);
+                reloadList(cTarget.getSelectedItem(), client);
             }
         }
     }
 
     @Override
-    public void itemStateChanged(@SuppressWarnings("unused")
-            final ItemEvent e) {
+    public void itemStateChanged(ItemEvent e) {
+        if (e.getStateChange() == ItemEvent.DESELECTED) {
+            return;
+        }
         final Object target = cTarget.getSelectedItem();
         if (target instanceof String) {
             reloadList(target);
@@ -474,6 +518,8 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
                     && ((target instanceof J2MEPlatform.Device
                     && (mapDevice2ME3Platform.get((J2MEPlatform.Device) target) != null && mapDevice2ME3Platform.get((J2MEPlatform.Device) target).booleanValue()))
                     || (target instanceof J2MEPlatform && ((J2MEPlatform) target).isMe3Platform()))) {
+                // clients option is not available for ME 3.x
+                enableClients(false);
                 // security domains are valid only for ME 3.x, not for ME 8.0+
                 enableSecurityDomains(true);
                 final ArrayList<String> domainList = new ArrayList<>();
@@ -505,14 +551,70 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
                 for (int i = 0; i < domainList.size(); i++) {
                     cDomain.addItem(domainList.get(i));
                 }
+                reloadList(target);
             } else {
                 enableSecurityDomains(false);
+                if (target instanceof J2MEPlatform.Device) {
+                    loadClients((J2MEPlatform.Device) target);
+                } else {
+                    enableClients(false);
+                    reloadList(target);
+                }
             }
         }
-        reloadList(target);
+    }
+
+    private void loadClients(final J2MEPlatform.Device device) {
+        setListLoading();
+        if (SwingUtilities.isEventDispatchThread()) {
+            cClient.setEnabled(false);
+            cClient.removeAllItems();
+            cClient.addItem(NbBundle.getMessage(ExportPanel.class, "MSG_Loading_Clients")); // NOI18N
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    final String[] clients = MEKeyTool.listClientsForDevice(device);
+                    updateClientCombo(device, clients);
+                }
+            });
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    cClient.setEnabled(false);
+                    cClient.removeAllItems();
+                    cClient.addItem(NbBundle.getMessage(ExportPanel.class, "MSG_Loading_Clients")); // NOI18N
+                }
+            });
+            final String[] clients = MEKeyTool.listClientsForDevice(device);
+            updateClientCombo(device, clients);
+        }
+    }
+
+    private void updateClientCombo(final J2MEPlatform.Device device, final String[] clients) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                boolean clientsAvailable = clients != null && clients.length > 0;
+                if (clientsAvailable) {
+                    cClient.setModel(new DefaultComboBoxModel(clients));
+                }
+                enableClients(clientsAvailable);
+                String client = clientsAvailable ? (String) cClient.getSelectedItem() : null;
+                if (client != null && client.equals(SHARED_CLIENT)) {
+                    // Do not use specific client
+                    client = null;
+                }
+                reloadList(device, client);
+            }
+        });
     }
 
     protected void reloadList(final Object target) {
+        reloadList(target, null);
+    }
+
+    protected void reloadList(final Object target, final String client) {
         bDelete.setEnabled(false);
         if (target != null && !(target instanceof String)) {
             setListLoading();
@@ -520,11 +622,11 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        reloadListImpl(target);
+                        reloadListImpl(target, client);
                     }
                 });
             } else {
-                reloadListImpl(target);
+                reloadListImpl(target, client);
             }
         } else {
             setListNotLoaded();
@@ -532,13 +634,19 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         }
     }
 
-    private void reloadListImpl(Object target) {
-        final MEKeyTool.KeyDetail[] keyList = MEKeyTool.listKeys(target);
+    private void reloadListImpl(Object target, String client) {
+        final MEKeyTool.KeyDetail[] keyList;
+        if (client != null) {
+            keyList = MEKeyTool.listKeys((J2MEPlatform.Device) target, client);
+        } else {
+            keyList = MEKeyTool.listKeys(target);
+        }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 setList(keyList);
                 cTarget.setEnabled(true);
+                cClient.setEnabled(cClient.getModel() != null && cClient.getModel().getSize() > 0);
                 checkErrors();
             }
         });
@@ -603,6 +711,14 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         if (cDomain.isVisible()) {
             domain = (String) cDomain.getSelectedItem();
         }
+        String client = null;
+        if (cClient.isVisible()) {
+            client = (String) cClient.getSelectedItem();
+            if (client.equals(SHARED_CLIENT)) {
+                // Do not use client
+                client = null;
+            }
+        }
         final String keytool = MEKeyTool.getMEKeyToolPath(target);
         if (target != null && keytool != null) {
             final File keyStoreFile = new File(System.getProperty("user.home", ""), ".keystore"); // NOI18N
@@ -650,6 +766,8 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
                     final String keystore = MEKeyTool.keystoreForDevice((J2MEPlatform.Device) target);
                     if (domain != null && keystore != null) {
                         MEKeyTool.execute(new String[]{keytool, "-import", "-MEkeystore", keystore, "-keystore", bean.getKeyStorePath(), "-storepass", bean.getPassword(), "-alias", alias.getAlias(), "-domain", domain}); // NOI18N
+                    } else if (client != null) {
+                        MEKeyTool.execute(new String[]{keytool, "-import", "-Xdevice:" + ((J2MEPlatform.Device) target).getName(), "-client", client, "-keystore", bean.getKeyStorePath(), "-storepass", bean.getPassword(), "-alias", alias.getAlias()}); // NOI18N
                     } else {
                         MEKeyTool.execute(new String[]{keytool, "-import", "-Xdevice:" + ((J2MEPlatform.Device) target).getName(), "-keystore", bean.getKeyStorePath(), "-storepass", bean.getPassword(), "-alias", alias.getAlias()}); // NOI18N
                     }
@@ -659,7 +777,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
                     }
                 }
             } catch (IOException e) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ExportPanel.class, "MSG_ErrorExportingKey"), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ExportPanel.class, "MSG_ErrorExportingKey") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             }
 
             if (canDeleteTempKeystore) {
@@ -690,12 +808,19 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         cDomain.setVisible(enable);
     }
 
+    private void enableClients(boolean enable) {
+        lClient.setVisible(enable);
+        cClient.setVisible(enable);
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bDelete;
+    private javax.swing.JComboBox cClient;
     private javax.swing.JComboBox cDomain;
     private javax.swing.JComboBox cTarget;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lAlias;
+    private javax.swing.JLabel lClient;
     private javax.swing.JLabel lDetails;
     private javax.swing.JLabel lDomain;
     private javax.swing.JLabel lKeys;

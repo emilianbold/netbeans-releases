@@ -88,9 +88,4 @@ public interface ClientProjectEnhancedBrowserImplementation {
     
     boolean isAutoRefresh();
 
-    /**
-     * Configurations provider associated with this browser.
-     * @return
-     */
-    ProjectConfigurationProvider getProjectConfigurationProvider();
 }

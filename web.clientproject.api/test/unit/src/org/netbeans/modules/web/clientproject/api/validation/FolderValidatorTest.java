@@ -102,4 +102,18 @@ public class FolderValidatorTest extends NbTestCase {
         assertTrue(result.getWarnings().isEmpty());
     }
 
+    public void testNonExistingFolderWithCustomName() throws Exception {
+        String dirName = "sdf5465fd4sdf";
+        File subdir = new File(folder, "subdir");
+        assertFalse(subdir.exists());
+        ValidationResult result = new FolderValidator()
+                .validateFolder(subdir, dirName)
+                .getResult();
+        assertFalse(result.getErrors().isEmpty());
+        ValidationResult.Message error = result.getErrors().get(0);
+        assertEquals(FolderValidator.FOLDER, error.getSource());
+        assertTrue(error.getMessage(), error.getMessage().contains(dirName));
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
 }

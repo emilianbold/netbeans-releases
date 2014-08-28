@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -76,8 +77,9 @@ public final class ClientSideProjectProperties {
     final ClientSideProject project;
     private final List<JavaScriptLibrarySelectionPanel.SelectedLibrary> newJsLibraries = new CopyOnWriteArrayList<JavaScriptLibrarySelectionPanel.SelectedLibrary>();
 
-    private volatile String siteRootFolder = null;
-    private volatile String testFolder = null;
+    private volatile AtomicReference<String> sourceFolder = null;
+    private volatile AtomicReference<String> siteRootFolder = null;
+    private volatile AtomicReference<String> testFolder = null;
     private volatile String jsLibFolder = null;
     private volatile String encoding = null;
     private volatile String startFile = null;
@@ -89,8 +91,6 @@ public final class ClientSideProjectProperties {
 
     //customizer license headers
     private LicensePanelSupport licenseSupport;
-    private volatile boolean isSiteRootModified;
-    private volatile boolean isTestFolderModified;
 
     public ClientSideProjectProperties(ClientSideProject project) {
         this.project = project;
@@ -157,25 +157,36 @@ public final class ClientSideProjectProperties {
 
     void saveProperties() {
         // first, create possible foreign file references
-        String siteRootFolderReference = createForeignFileReference(siteRootFolder);
-        String testFolderReference = null;
-        if (isTestFolderModified
-                && !testFolder.trim().isEmpty()) {
-            testFolderReference = createForeignFileReference(testFolder);
-        }
+        String sourceFolderReference = createForeignFileReference(sourceFolder, true);
+        String siteRootFolderReference = createForeignFileReference(siteRootFolder, true);
+        String testFolderReference = createForeignFileReference(testFolder, false);
         // save properties
         EditableProperties privateProperties = project.getProjectHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties projectProperties = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-        if (isSiteRootModified) {
-            putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRootFolderReference);
-            isSiteRootModified = false;
+        if (sourceFolder != null) {
+            if (sourceFolderReference != null) {
+                putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SOURCE_FOLDER, sourceFolderReference);
+            } else {
+                // source dir removed
+                projectProperties.remove(ClientSideProjectConstants.PROJECT_SOURCE_FOLDER);
+            }
         }
-        if (testFolderReference != null) {
-            putProperty(projectProperties, ClientSideProjectConstants.PROJECT_TEST_FOLDER, testFolderReference);
-        } else if (isTestFolderModified) {
-            // tests dir removed
-            projectProperties.remove(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
+        if (siteRootFolder != null) {
+            if (siteRootFolderReference != null) {
+                putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRootFolderReference);
+            } else {
+                // siteroot dir removed
+                projectProperties.remove(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
+            }
+        }
+        if (testFolder != null) {
+            if (testFolderReference != null) {
+                putProperty(projectProperties, ClientSideProjectConstants.PROJECT_TEST_FOLDER, testFolderReference);
+            } else {
+                // tests dir removed
+                projectProperties.remove(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
+            }
         }
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_ENCODING, encoding);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_START_FILE, startFile);
@@ -213,32 +224,37 @@ public final class ClientSideProjectProperties {
         return project;
     }
 
-    public String getSiteRootFolder() {
+    public AtomicReference<String> getSourceFolder() {
+        if (sourceFolder == null) {
+            sourceFolder = new AtomicReference<>(getProjectProperty(ClientSideProjectConstants.PROJECT_SOURCE_FOLDER, null));
+        }
+        return sourceFolder;
+    }
+
+    public void setSourceFolder(String sourceFolder) {
+        this.sourceFolder = new AtomicReference<>(sourceFolder);
+    }
+
+    public AtomicReference<String> getSiteRootFolder() {
         if (siteRootFolder == null) {
-            siteRootFolder = getProjectProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, ""); // NOI18N
+            siteRootFolder = new AtomicReference<>(getProjectProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, null));
         }
         return siteRootFolder;
     }
 
     public void setSiteRootFolder(String siteRootFolder) {
-        isSiteRootModified = true;
-        this.siteRootFolder = siteRootFolder;
+        this.siteRootFolder = new AtomicReference<>(siteRootFolder);
     }
 
-    public String getTestFolder() {
+    public AtomicReference<String> getTestFolder() {
         if (testFolder == null) {
-            testFolder = getProjectProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, ""); // NOI18N
+            testFolder = new AtomicReference<>(getProjectProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, null));
         }
         return testFolder;
     }
 
     public void setTestFolder(String testFolder) {
-        isTestFolderModified = true;
-        if (testFolder == null) {
-            // we need to find out that some value was set ("no value" in this case)
-            testFolder = ""; // NOI18N
-        }
-        this.testFolder = testFolder;
+        this.testFolder = new AtomicReference<>(testFolder);
     }
 
     public String getEncoding() {
@@ -352,17 +368,18 @@ public final class ClientSideProjectProperties {
         return jsLibFolder;
     }
 
+    @CheckForNull
     public File getResolvedSiteRootFolder() {
-        File resolvedFile = resolveFile(getSiteRootFolder());
-        if (resolvedFile != null) {
-            return resolvedFile;
-        }
-        return FileUtil.toFile(project.getProjectDirectory());
+        return resolveFile(getSiteRootFolder().get());
     }
 
     @CheckForNull
     public File getResolvedStartFile() {
-        return resolveFile(getSiteRootFolder() + (getSiteRootFolder().isEmpty() ? "" : "/") + getStartFile()); // NOI18N
+        String siteRoot = getSiteRootFolder().get();
+        if (siteRoot == null) {
+            return null;
+        }
+        return resolveFile(siteRoot + (siteRoot.isEmpty() ? "" : "/") + getStartFile()); // NOI18N
     }
 
     private String getProjectProperty(String property, String defaultValue) {
@@ -379,14 +396,24 @@ public final class ClientSideProjectProperties {
         }
     }
 
-    private String createForeignFileReference(String filePath) {
+    private String createForeignFileReference(AtomicReference<String> filePath, boolean storeEmptyPath) {
+        if (filePath == null) {
+            return null;
+        }
+        return createForeignFileReference(filePath.get(), storeEmptyPath);
+    }
+
+    private String createForeignFileReference(String filePath, boolean storeEmptyPath) {
         if (filePath == null) {
             // not set at all
             return null;
         }
         if (filePath.isEmpty()) {
-            // empty value will be saved
-            return ""; // NOI18N
+            if (storeEmptyPath) {
+                // empty value will be saved
+                return ""; // NOI18N
+            }
+            return null;
         }
         File file = project.getProjectHelper().resolveFile(filePath);
         return project.getReferenceHelper().createForeignFileReference(file, null);
@@ -394,8 +421,11 @@ public final class ClientSideProjectProperties {
 
     @CheckForNull
     private File resolveFile(String path) {
-        if (path == null || path.isEmpty()) {
+        if (path == null) {
             return null;
+        }
+        if (path.isEmpty()) {
+            return FileUtil.toFile(project.getProjectDirectory());
         }
         return project.getProjectHelper().resolveFile(path);
     }

@@ -379,7 +379,11 @@ public class FileInfoProvider {
     public static Future<StatInfo[]> ls(ExecutionEnvironment env, String absPath, Writer error) {
         return SftpSupport.getInstance(env).ls(absPath, error);
     }
-        
+
+    public static Future<StatInfo> move(ExecutionEnvironment env, String from, String to) {
+        return SftpSupport.getInstance(env).move(from, to);
+    }
+
     private static final short ACCESS_MASK = 0x1FF;
     private static final short USR_R = 256;
     private static final short USR_W = 128;

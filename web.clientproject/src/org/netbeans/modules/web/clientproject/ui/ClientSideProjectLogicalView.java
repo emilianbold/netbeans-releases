@@ -46,18 +46,23 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.File;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -86,20 +91,25 @@ import org.openide.actions.ToolsAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
+import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -321,7 +331,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.loadImage(ClientSideProject.PROJECT_ICON);
+            return ImageUtilities.icon2Image(projectInfo.getIcon());
         }
 
         @Override
@@ -343,18 +353,24 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             } catch (CharConversionException ex) {
                 return dispName;
             }
-            return ClientSideProjectUtilities.isBroken(project)
+            return ClientSideProjectUtilities.hasErrors(project)
                     ? "<font color=\"#" + Integer.toHexString(ClientSideProjectUtilities.getErrorForeground().getRGB() & 0xffffff) + "\">" + dispName + "</font>" // NOI18N
                     : null;
         }
 
         @NbBundle.Messages({
             "# {0} - project directory",
-            "ClientSideProjectNode.description=HTML5 application in {0}"
+            "ClientSideProjectNode.project.description=HTML5 application in {0}",
+            "# {0} - project directory",
+            "ClientSideProjectNode.library.description=JS library in {0}",
         })
         @Override
         public String getShortDescription() {
-            return Bundle.ClientSideProjectNode_description(FileUtil.getFileDisplayName(project.getProjectDirectory()));
+            String projectDirName = FileUtil.getFileDisplayName(project.getProjectDirectory());
+            if (project.isJsLibrary()) {
+                return Bundle.ClientSideProjectNode_library_description(projectDirName);
+            }
+            return Bundle.ClientSideProjectNode_project_description(projectDirName);
         }
 
         @Override
@@ -394,6 +410,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    fireIconChange();
                     fireNameChange(null, null);
                     fireDisplayNameChange(null, null);
                 }
@@ -455,6 +472,8 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     private static enum BasicNodes {
         Sources,
+        SiteRoot,
+        SourcesAndSiteRoot,
         Tests,
     }
 
@@ -472,6 +491,19 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     }
 
+    // #246318
+    @NodeFactory.Registration(projectType="org-netbeans-modules-web-clientproject",position=510)
+    public static final class OtherDirsNodeFactory implements NodeFactory {
+
+        @Override
+        public NodeList<?> createNodes(Project project) {
+            ClientSideProject clientSideProject = project.getLookup().lookup(ClientSideProject.class);
+            assert clientSideProject != null;
+            return NodeFactorySupport.fixedNodeList(new AllFilesNode(clientSideProject));
+        }
+
+    }
+
     @NodeFactory.Registration(projectType="org-netbeans-modules-web-clientproject",position=537)
     public static NodeFactory createRemoteFiles() {
         return RemoteFilesNodeFactory.createRemoteFilesNodeFactory();
@@ -484,11 +516,13 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     private static class ClientProjectNodeList implements NodeList<Key> {
 
-        private ChangeSupport changeSupport = new ChangeSupport(this);
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
         private final ClientSideProject project;
         private final FileObject nbprojectFolder;
         private final Listener listener;
-        private List<Key> keysCache = new ArrayList<>();
+        // @GuardedBy(this)
+        private final List<Key> keysCache = new ArrayList<>();
+
 
         public ClientProjectNodeList(ClientSideProject p) {
             this.project = p;
@@ -524,15 +558,14 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             FileObject projectDirectory = project.getProjectDirectory();
             projectDirectory.addRecursiveListener(
                     WeakListeners.create(FileChangeListener.class, listener, projectDirectory));
-            addTestsListeners();
+            addTestsListener();
         }
 
-        private void addTestsListeners() {
+        private void addTestsListener() {
             FileObject projectDirectory = project.getProjectDirectory();
             FileObject testsFolder = project.getTestsFolder(false);
             if (testsFolder != null
-                    && !projectDirectory.equals(testsFolder)
-                    && !FileUtil.isParentOf(projectDirectory, testsFolder)) {
+                    && !ClientSideProjectUtilities.isParentOrItself(projectDirectory, testsFolder)) {
                 testsFolder.addRecursiveListener(
                         WeakListeners.create(FileChangeListener.class, listener, testsFolder));
             }
@@ -541,10 +574,14 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         private class Listener extends FileChangeAdapter implements PropertyChangeListener {
 
             private volatile boolean sourcesNodeHidden;
+            private volatile boolean siteRootNodeHidden;
+            private volatile boolean sourcesAndSiteRootNodeHidden;
             private volatile boolean testsNodeHidden;
 
             public Listener() {
                 sourcesNodeHidden = isNodeHidden(BasicNodes.Sources);
+                siteRootNodeHidden = isNodeHidden(BasicNodes.SiteRoot);
+                sourcesAndSiteRootNodeHidden = isNodeHidden(BasicNodes.SourcesAndSiteRoot);
                 testsNodeHidden = isNodeHidden(BasicNodes.Tests);
             }
 
@@ -566,13 +603,20 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName())) {
+                if (ClientSideProjectConstants.PROJECT_SOURCE_FOLDER.equals(evt.getPropertyName())) {
                     sourcesNodeHidden = isNodeHidden(BasicNodes.Sources);
+                    sourcesAndSiteRootNodeHidden = isNodeHidden(BasicNodes.SourcesAndSiteRoot);
                     refreshKey(BasicNodes.Sources);
+                    refreshKey(BasicNodes.SourcesAndSiteRoot);
+                } else if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName())) {
+                    siteRootNodeHidden = isNodeHidden(BasicNodes.SiteRoot);
+                    sourcesAndSiteRootNodeHidden = isNodeHidden(BasicNodes.SourcesAndSiteRoot);
+                    refreshKey(BasicNodes.SiteRoot);
+                    refreshKey(BasicNodes.SourcesAndSiteRoot);
                 } else if (ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName())) {
                     testsNodeHidden = isNodeHidden(BasicNodes.Tests);
                     refreshKey(BasicNodes.Tests);
-                    addTestsListeners();
+                    addTestsListener();
                 }
             }
 
@@ -581,6 +625,16 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 if (nodeHidden != sourcesNodeHidden) {
                     sourcesNodeHidden = nodeHidden;
                     refreshKey(BasicNodes.Sources);
+                }
+                nodeHidden = isNodeHidden(BasicNodes.SiteRoot);
+                if (nodeHidden != siteRootNodeHidden) {
+                    siteRootNodeHidden = nodeHidden;
+                    refreshKey(BasicNodes.SiteRoot);
+                }
+                nodeHidden = isNodeHidden(BasicNodes.SourcesAndSiteRoot);
+                if (nodeHidden != sourcesAndSiteRootNodeHidden) {
+                    sourcesAndSiteRootNodeHidden = nodeHidden;
+                    refreshKey(BasicNodes.SourcesAndSiteRoot);
                 }
                 nodeHidden = isNodeHidden(BasicNodes.Tests);
                 if (nodeHidden != testsNodeHidden) {
@@ -598,6 +652,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         private synchronized void removeKey(final BasicNodes type) {
+            assert Thread.holdsLock(this);
             for (int i = 0; i < keysCache.size(); i++) {
                 if (type.equals(keysCache.get(i).getNode())) {
                     keysCache.remove(i);
@@ -610,9 +665,12 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         public Node node(Key k) {
             switch (k.getNode()) {
                 case Sources:
+                case SiteRoot:
+                case SourcesAndSiteRoot:
                 case Tests:
                     return createNodeForFolder(k.getNode());
                 default:
+                    assert false : "Unknown node type: " + k.getNode();
                     return null;
             }
         }
@@ -623,6 +681,8 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             FileObject buildFolder = project.getProjectDirectory().getFileObject("build"); // NOI18N
             switch (basicNodes) {
                 case Sources:
+                case SiteRoot:
+                case SourcesAndSiteRoot:
                 case Tests:
                     addIgnoredFile(ignoredFiles, nbprojectFolder);
                     addIgnoredFile(ignoredFiles, buildFolder);
@@ -644,9 +704,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         private boolean isNodeHidden(BasicNodes type) {
-            if (type == BasicNodes.Sources) {
-                return false;
-            }
             FileObject root = getRootForNode(type);
             return root == null
                     || !root.isValid()
@@ -654,9 +711,36 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         private FileObject getRootForNode(BasicNodes node) {
+            FileObject sources = project.getSourcesFolder();
+            FileObject siteRoot = project.getSiteRootFolder();
             switch (node) {
-                case Tests: return project.getTestsFolder(false);
-                case Sources: return project.getSiteRootFolder();
+                case Sources:
+                    if (sources == null) {
+                        return null;
+                    }
+                    if (sources.equals(siteRoot)) {
+                        return null;
+                    }
+                    return sources;
+                case SiteRoot:
+                    if (siteRoot == null) {
+                        return null;
+                    }
+                    if (siteRoot.equals(sources)) {
+                        return null;
+                    }
+                    return siteRoot;
+                case SourcesAndSiteRoot:
+                    if (sources == null
+                            || siteRoot == null) {
+                        return null;
+                    }
+                    if (sources.equals(siteRoot)) {
+                        return sources;
+                    }
+                    return null;
+                case Tests:
+                    return project.getTestsFolder(false);
                 default:
                     assert false : "Unknown node: " + node;
                     return null;
@@ -696,6 +780,13 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             if (canCreateNodeFor(BasicNodes.Sources)) {
                 keys.add(getKey(BasicNodes.Sources));
             }
+            if (canCreateNodeFor(BasicNodes.SiteRoot)) {
+                keys.add(getKey(BasicNodes.SiteRoot));
+            }
+            if (canCreateNodeFor(BasicNodes.SourcesAndSiteRoot)) {
+                assert keys.isEmpty() : keys;
+                keys.add(getKey(BasicNodes.SourcesAndSiteRoot));
+            }
             if (canCreateNodeFor(BasicNodes.Tests)) {
                 keys.add(getKey(BasicNodes.Tests));
             }
@@ -703,6 +794,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         private synchronized Key getKey(BasicNodes n) {
+            assert Thread.holdsLock(this);
             for (Key k : keysCache) {
                 if (n.equals(k.getNode())) {
                     return k;
@@ -721,13 +813,16 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
      * was reconfigured.
      */
     private static class Key {
-        private BasicNodes node;
-        private int timestamp;
-        private static int counter = 0;
+
+        private static final AtomicInteger counter = new AtomicInteger();
+
+        private final BasicNodes node;
+        private final int timestamp;
+
 
         public Key(BasicNodes node) {
             this.node = node;
-            this.timestamp = ++counter;
+            this.timestamp = counter.incrementAndGet();
         }
 
         public BasicNodes getNode() {
@@ -738,7 +833,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         public int hashCode() {
             int hash = 7;
             hash = 67 * hash + (this.node != null ? this.node.hashCode() : 0);
-            hash = hash + this.timestamp * 67;
+            hash += this.timestamp * 67;
             return hash;
         }
 
@@ -769,11 +864,15 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     private static final class FolderFilterNode extends FilterNode {
 
-        private BasicNodes nodeType;
-        private Node iconDelegate;
-        private Node delegate;
-        private static final Image SOURCES_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/sources-badge.gif", true); // NOI18N
-        private static final Image TESTS_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/tests-badge.gif", true); // NOI18N
+        @StaticResource
+        private static final String SOURCES_FILES_BADGE = "org/netbeans/modules/web/clientproject/ui/resources/sources-badge.gif"; // NOI18N
+        @StaticResource
+        private static final String SITE_ROOT_FILES_BADGE = "org/netbeans/modules/web/clientproject/ui/resources/siteroot-badge.gif"; // NOI18N
+
+        private final BasicNodes nodeType;
+        private final Node iconDelegate;
+        private final Node delegate;
+
 
         public FolderFilterNode(BasicNodes nodeType, Node folderNode, List<File> ignoreList) {
             super(folderNode, folderNode.isLeaf() ? Children.LEAF :
@@ -817,21 +916,23 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         private Image computeIcon(BasicNodes node, boolean opened, int type) {
             Image image;
-            Image badge = null;
+            String badge = null;
             switch (nodeType) {
                 case Sources:
+                case Tests:
                     badge = SOURCES_FILES_BADGE;
                     break;
-                case Tests:
-                    badge = TESTS_FILES_BADGE;
+                case SiteRoot:
+                case SourcesAndSiteRoot:
+                    badge = SITE_ROOT_FILES_BADGE;
                     break;
                 default:
-                    assert false;
+                    assert false : "Unknown nodeType: " + nodeType;
             }
 
             image = opened ? iconDelegate.getOpenedIcon(type) : iconDelegate.getIcon(type);
             if (badge != null) {
-                image = ImageUtilities.mergeImages(image, badge, 7, 7);
+                image = ImageUtilities.mergeImages(image, ImageUtilities.loadImage(badge, false), 7, 7);
             }
 
             return image;
@@ -841,7 +942,11 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         public String getDisplayName() {
             switch (nodeType) {
                 case Sources:
+                    return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("SOURCES");
+                case SiteRoot:
                     return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("SITE_ROOT");
+                case SourcesAndSiteRoot:
+                    return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("SOURCES_SITE_ROOT");
                 case Tests:
                     return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("UNIT_TESTS");
                 default:
@@ -909,5 +1014,151 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     }
 
+    private static final class AllFilesNode extends AbstractNode {
+
+        private final Node iconDelegate;
+
+
+        public AllFilesNode(ClientSideProject project) {
+            super(Children.create(AllFilesChildFactory.create(project), true));
+            iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
+        }
+
+        @NbBundle.Messages("AllFilesNode.name=All Files")
+        @Override
+        public String getDisplayName() {
+            return Bundle.AllFilesNode_name();
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return iconDelegate.getIcon(type);
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return iconDelegate.getOpenedIcon(type);
+        }
+
+    }
+
+    private static final class AllFilesChildFactory extends ChildFactory<FileObject> implements FileChangeListener {
+
+        private static final Comparator<FileObject> CHILDREN_CAMPARATOR = new FileObjectUiComparator();
+
+
+        private final ClientSideProject project;
+
+
+        private AllFilesChildFactory(ClientSideProject project) {
+            this.project = project;
+        }
+
+        public static AllFilesChildFactory create(ClientSideProject project) {
+            AllFilesChildFactory factory = new AllFilesChildFactory(project);
+            FileObject projectDirectory = project.getProjectDirectory();
+            projectDirectory.addFileChangeListener(FileUtil.weakFileChangeListener(factory, projectDirectory));
+            return factory;
+        }
+
+        @Override
+        protected boolean createKeys(List<FileObject> toPopulate) {
+            FileObject[] children = project.getProjectDirectory().getChildren();
+            for (FileObject fileObject : children) {
+                if (isVisible(fileObject)) {
+                    toPopulate.add(fileObject);
+                }
+            }
+            // sort - really there is no easy/better way?
+            Collections.sort(toPopulate, CHILDREN_CAMPARATOR);
+            return true;
+        }
+
+        @Override
+        protected Node createNodeForKey(FileObject key) {
+            try {
+                return DataObject.find(key).getNodeDelegate();
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return null;
+        }
+
+        private boolean isVisible(FileObject fileObject) {
+            if ("nbproject".equals(fileObject.getNameExt())) { // NOI18N
+                return false;
+            }
+            return VisibilityQuery.getDefault().isVisible(fileObject);
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            refresh();
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            refresh();
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            refresh();
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            refresh();
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            refresh();
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // noop
+        }
+
+        private void refresh() {
+            refresh(false);
+        }
+
+    }
+
+    private static final class FileObjectUiComparator implements Comparator<FileObject> {
+
+        private final Collator collator;
+
+
+        public FileObjectUiComparator() {
+            collator = Collator.getInstance();
+        }
+
+        @Override
+        public int compare(FileObject file1, FileObject file2) {
+            if (file1.isFolder()
+                    && file2.isData()) {
+                return -1;
+            }
+            if (file1.isData()
+                    && file2.isFolder()) {
+                return 1;
+            }
+            String name1 = file1.getNameExt();
+            String name2 = file2.getNameExt();
+            if (Character.isUpperCase(name1.charAt(0))
+                    && Character.isLowerCase(name2.charAt(0))) {
+                return -1;
+            }
+            if (Character.isLowerCase(name1.charAt(0))
+                    && Character.isUpperCase(name2.charAt(0))) {
+                return 1;
+            }
+            return collator.compare(name1, name2);
+        }
+
+    }
 
 }

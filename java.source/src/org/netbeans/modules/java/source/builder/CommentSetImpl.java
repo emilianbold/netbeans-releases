@@ -57,7 +57,12 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
 //    private final List<Comment> trailingComments = new ArrayList<Comment>();
     private boolean commentsMapped;
     private final Map<RelativePosition, List<Comment>> commentsMap = new HashMap<RelativePosition, List<Comment>>();
-
+    
+    /**
+     * True, if comments have been changed after the initial mapping from source.
+     * Changed comments return true from {@link #hasComments} even though the comment set is empty
+     */
+    private boolean changed;
     /**
      * Add the specified comment string to the list of preceding comments. 
      */
@@ -113,7 +118,7 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
     }
     
     public boolean hasComments() {
-        return !commentsMap.isEmpty();
+        return !commentsMap.isEmpty() || changed;
     }
     
     /** 
@@ -155,7 +160,7 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
         if (commentsMap.containsKey(positioning)) {
             comments = commentsMap.get(positioning);
         } else {
-            comments = new LinkedList<Comment>();
+            comments = new CL<Comment>();
             commentsMap.put(positioning, comments);
         }
         // new comments are always added at the end
@@ -187,6 +192,7 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
                 comments.add(c);
             }
         }
+        changed = true;
     }
 
     public void addComments(RelativePosition positioning, Iterable<? extends Comment> comments) {
@@ -204,7 +210,7 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
 
     @SuppressWarnings({"MethodWithMultipleLoops"})
     public boolean hasChanges() {
-        if (commentsMap.isEmpty()) return false;
+        if (commentsMap.isEmpty()) return changed;
         for (List<Comment> commentList : commentsMap.values()) {
             for (Comment comment : commentList) {
                 if (comment.isNew()) return true;
@@ -246,9 +252,51 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
     
     public void commentsMapped() {
         commentsMapped = true;
+        changed = false;
     }
 
     public void clearComments(RelativePosition forPosition) {
         commentsMap.remove(forPosition);
+    }
+    
+    class CL<T> extends ArrayList<T> {
+        @Override
+        public T remove(int index) {
+            changed = true;
+            return super.remove(index);
+        }
+
+        @Override
+        public boolean retainAll(Collection c) {
+            boolean r = super.retainAll(c);
+            changed |= r;
+            return r;
+        }
+
+        @Override
+        public boolean removeAll(Collection c) {
+            boolean r = super.removeAll(c);
+            changed |= r;
+            return r;
+        }
+
+        @Override
+        protected void removeRange(int fromIndex, int toIndex) {
+            changed |= (toIndex > fromIndex);
+            super.removeRange(fromIndex, toIndex);
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            boolean r = super.remove(o);
+            changed |= r;
+            return r;
+        }
+
+        @Override
+        public T set(int index, T element) {
+            changed |= element != get(index);
+            return super.set(index, element);
+        }
     }
 }

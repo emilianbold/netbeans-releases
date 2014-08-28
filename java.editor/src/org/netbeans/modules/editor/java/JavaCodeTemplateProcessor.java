@@ -558,7 +558,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                 && e.asType().getKind() != TypeKind.ERROR && types.isAssignable(e.asType(), type)) {
                             if (name == null)
                                 return (VariableElement)e;
-                            int d = ElementHeaders.getDistance(e.getSimpleName().toString(), name);
+                            int d = ElementHeaders.getDistance(e.getSimpleName().toString().toLowerCase(), name.toLowerCase());
                             if (isSameType(e.asType(), type, types))
                                 d -= 1000;
                             if (d < distance) {
@@ -600,7 +600,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         for (Element ee : cInfo.getElementUtilities().getMembers(dType, acceptor)) {
                             if (name == null)
                                 return (VariableElement)ee;
-                            int d = ElementHeaders.getDistance(ee.getSimpleName().toString(), name);
+                            int d = ElementHeaders.getDistance(ee.getSimpleName().toString().toLowerCase(), name.toLowerCase());
                             if (ee.getKind().isField() && isSameType(((VariableElement)ee).asType(), dType, types) || ee.getKind() == ElementKind.METHOD && isSameType(((ExecutableElement)ee).getReturnType(), dType, types))
                                 d -= 1000;
                             if (d < distance) {
@@ -626,7 +626,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     Types types = cInfo.getTypes();
                     for (Element e : typeVars) {
                         if (e instanceof TypeParameterElement && !ERROR.contentEquals(e.getSimpleName()) && types.isAssignable(e.asType(), type)) {
-                            int d = ElementHeaders.getDistance(e.getSimpleName().toString(), name);
+                            int d = ElementHeaders.getDistance(e.getSimpleName().toString().toLowerCase(), name.toLowerCase());
                             if (isSameType(e.asType(), type, types))
                                 d -= 1000;
                             if (d < distance) {
@@ -1053,7 +1053,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                     case RESOURCE_VARIABLE:
                                     case EXCEPTION_PARAMETER:
                                     case PARAMETER:
-                                        return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
+                                        return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
                                                 !illegalForwardRefNames.contains(e.getSimpleName());
                                     case FIELD:
                                         if (e.getSimpleName().contentEquals("this")) //NOI18N

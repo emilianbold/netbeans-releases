@@ -324,6 +324,7 @@ public class TextRegexpUtilTest extends NbTestCase {
         assertTrue(TextRegexpUtil.canBeMultilinePattern("test\\ftest"));
         assertTrue(TextRegexpUtil.canBeMultilinePattern("test\\u000Btest"));
         assertTrue(TextRegexpUtil.canBeMultilinePattern("test\\x85test"));
+        assertTrue(TextRegexpUtil.canBeMultilinePattern("test\\s*86test"));
     }
 
     public void testLiteralMatches() {

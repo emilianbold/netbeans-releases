@@ -52,11 +52,11 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
@@ -88,7 +88,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
     public void showCustomizer(final String preselectedCategory, String preselectedSubCategory) {
         if (PhpProjectValidator.isFatallyBroken(project)) {
             // metadata corrupted
-            Utils.warnInvalidSourcesDirectory(project);
+            UiUtils.warnBrokenProject(project.getPhpModule());
             return;
         }
         Mutex.EVENT.readAccess(new Runnable() {

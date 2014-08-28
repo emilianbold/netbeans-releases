@@ -44,8 +44,10 @@ package org.netbeans.modules.php.editor.verification;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
@@ -109,6 +111,8 @@ import org.openide.util.NbBundle.Messages;
 public class IntroduceSuggestion extends SuggestionRule {
 
     private static final String UNKNOWN_FILE_NAME = "?"; //NOI18N
+    private static final String NAMESPACE_PARAMETER_NAME = "namespace"; //NOI18N
+    private static final String NAMESPACE_SEPARATOR = "\\"; //NOI18N
 
     @Override
     public String getId() {
@@ -376,7 +380,9 @@ public class IntroduceSuggestion extends SuggestionRule {
     }
 
     private static class IntroduceClassFix extends IntroduceFix {
-        private final String clsName;
+        private final String nsPart;
+        private final String className;
+        private final String classNameWithNsPart;
         private final FileObject folder;
         private final FileObject template;
 
@@ -389,9 +395,12 @@ public class IntroduceSuggestion extends SuggestionRule {
                     ? new IntroduceClassFix(className, template, folder, instanceCreation) : null;
         }
 
-        IntroduceClassFix(String className, FileObject template, FileObject folder, ClassInstanceCreation instanceCreation) {
+        IntroduceClassFix(String classNameWithNsPart, FileObject template, FileObject folder, ClassInstanceCreation instanceCreation) {
             super(null, instanceCreation);
-            this.clsName = className;
+            int lastIndexOfNsSeparator = classNameWithNsPart.lastIndexOf(NAMESPACE_SEPARATOR);
+            this.nsPart = lastIndexOfNsSeparator == -1 ? "" : classNameWithNsPart.substring(0, lastIndexOfNsSeparator);
+            this.className = classNameWithNsPart.substring(lastIndexOfNsSeparator + 1);
+            this.classNameWithNsPart = classNameWithNsPart;
             this.template = template;
             this.folder = folder;
         }
@@ -406,7 +415,11 @@ public class IntroduceSuggestion extends SuggestionRule {
                 @Override
                 public void run() {
                     try {
-                        DataObject clsDataObject = configDataObject.createFromTemplate(dataFolder, clsName);
+                        Map<String, String> parameters = new HashMap<>();
+                        if (StringUtils.hasText(nsPart)) {
+                            parameters.put(NAMESPACE_PARAMETER_NAME, nsPart); //NOI18N
+                        }
+                        DataObject clsDataObject = configDataObject.createFromTemplate(dataFolder, className, parameters);
                         clsFo[0] = clsDataObject.getPrimaryFile();
                         FileObject fo = clsFo[0];
                         FileLock lock = fo.lock();
@@ -440,9 +453,9 @@ public class IntroduceSuggestion extends SuggestionRule {
                 if (indexOf != -1) { //NOI18N
                     fileName = fileName.substring(indexOf);
                 }
-                fileName = String.format("...%s/%s.php", fileName, clsName); //NOI18N
+                fileName = String.format("...%s/%s.php", fileName, className); //NOI18N
             }
-            return Bundle.IntroduceHintClassDesc(clsName, fileName);
+            return Bundle.IntroduceHintClassDesc(classNameWithNsPart, fileName);
         }
     }
 

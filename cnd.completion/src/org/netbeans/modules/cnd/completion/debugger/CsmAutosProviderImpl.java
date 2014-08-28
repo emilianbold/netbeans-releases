@@ -174,7 +174,12 @@ public class CsmAutosProviderImpl implements AutosProvider {
                                     case SCOPE:
                                         break;
                                     case LBRACKET:
-                                        arraysStartOffsets.add(context.getReference(i-1).getStartOffset());
+                                        if (i > 0) {
+                                            CsmReference prevReference = context.getReference(i-1);
+                                            if (prevReference != null) {
+                                                arraysStartOffsets.add(prevReference.getStartOffset());
+                                            }
+                                        }
                                     default: break outer;
                                 }
                                 if (i > 0) {
