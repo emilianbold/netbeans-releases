@@ -378,7 +378,7 @@ public final class TomcatFactory implements DeploymentFactory {
             Matcher matcher = TOMEE_JAR_PATTERN.matcher(tomeeJar.getName());
             if (matcher.matches()) {
                 String versionString = matcher.group(1);
-                return getTomEEVersion(versionString, null);
+                return getTomEEVersion(versionString, TomEEVersion.TOMEE_15);
             }
         }
 
@@ -441,6 +441,8 @@ public final class TomcatFactory implements DeploymentFactory {
             return TomcatManager.TomEEVersion.TOMEE_15;
         } else if (version.startsWith("1.6.")) { // NOI18N
             return TomcatManager.TomEEVersion.TOMEE_16;
+        } else if (version.startsWith("1.7.")) { // NOI18N
+            return TomcatManager.TomEEVersion.TOMEE_17;
         }
         return defaultVersion;
     }
