@@ -103,14 +103,13 @@ public class ProfilerLauncher {
     
     final private static class ProfilerSessionImpl extends ProfilerSession {
         
-        private final Lookup context;
-        
         ProfilerSessionImpl(Lookup _context) {
             super(NetBeansProfiler.getDefaultNB(), _context);
-            context = _context;
         }
 
         public boolean start() {
+            getProfiler().setProfiledProject(getProject(), getFile());
+            
             final ProfilingSettings pSettings = getProfilingSettings();
             
             if (isAttach()) {
@@ -133,8 +132,8 @@ public class ProfilerLauncher {
                     }
                 });
             } else {
-                Command command = context.lookup(Command.class);
-                final Session s = newSession(command.get(), context);
+                Command command = getContext().lookup(Command.class);
+                final Session s = newSession(command.get(), getContext());
                 if (s != null) {
                     s.setProfilingSettings(pSettings);
                     s.run();
@@ -172,12 +171,12 @@ public class ProfilerLauncher {
             if (!inProgress()) return true;
             
             // Compare commands
-            Command c = context.lookup(Command.class);
+            Command c = getContext().lookup(Command.class);
             Command _c = _context.lookup(Command.class);
             if (!Objects.equals(c, _c)) return false;
             
             // Compare files
-            FileObject f = context.lookup(FileObject.class);
+            FileObject f = getContext().lookup(FileObject.class);
             FileObject _f = _context.lookup(FileObject.class);
             if (!Objects.equals(f, _f)) return false;
             
