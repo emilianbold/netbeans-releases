@@ -828,7 +828,19 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
         @Override
         public Target getTarget() {
-            return moduleId.getTarget();
+            Target delegate = moduleId.getTarget();
+            if (delegate == null) {
+                return null;
+            }
+            String target = delegate.getName();
+            // the target returned from server is "myserver/server"
+            if (target != null) {
+                int index = target.indexOf("/server"); // NOI18N
+                if (index >= 0) {
+                    return new WLTarget(target.substring(index));
+                }
+            }
+            return target == null ? delegate : new WLTarget(target);
         }
 
         @Override

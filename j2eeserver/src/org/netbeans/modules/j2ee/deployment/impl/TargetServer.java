@@ -357,8 +357,8 @@ public class TargetServer {
 
             for (Iterator i=sharerTMIDs.iterator(); i.hasNext();) {
                 TargetModule sharer = (TargetModule) i.next();
-                if ((toRedeploy.size() > 0 && ! toRedeploy.contains(sharer)) ||
-                    toDistribute.contains(sharer.getTarget())) {
+                if ((toRedeploy.size() > 0 && !toRedeploy.contains(sharer))
+                        || toDistribute.contains(sharer.getTarget())) {
                     shared = true;
                     addToUndeployWhenSharedDetected.add(sharer.delegate());
                 } else {
