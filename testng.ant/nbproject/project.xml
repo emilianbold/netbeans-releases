@@ -139,7 +139,7 @@ goods, or services available on or through any such sites or resources.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.36</specification-version>
+                        <specification-version>1.62</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -148,7 +148,7 @@ goods, or services available on or through any such sites or resources.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.61</specification-version>
+                        <specification-version>1.62</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
