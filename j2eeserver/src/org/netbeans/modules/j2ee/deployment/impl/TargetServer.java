@@ -57,6 +57,16 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
+import org.openide.filesystems.FileUtil;
+
+import javax.enterprise.deploy.shared.ModuleType;
+
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
@@ -74,6 +84,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTarget;
@@ -87,6 +98,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -162,6 +174,20 @@ public class TargetServer {
                 contextRoot = configSupport.getWebContextRoot();
             } catch (ConfigurationException e) {
                 contextRoot = null;
+            }
+        }
+        if (contextRoot == null) {
+            J2eeModuleProvider provider = dtarget.getModuleProvider();
+            if (provider instanceof J2eeApplicationProvider) {
+                for (J2eeModuleProvider child : ((J2eeApplicationProvider) provider).getChildModuleProviders()) {
+                    if (J2eeModule.Type.WAR.equals(child.getJ2eeModule().getType())) {
+                        try {
+                            contextRoot = child.getConfigSupport().getWebContextRoot();
+                            break;
+                        } catch (ConfigurationException e) {
+                        }
+                    }
+                }
             }
         }
 
@@ -354,8 +380,8 @@ public class TargetServer {
 
             for (Iterator i=sharerTMIDs.iterator(); i.hasNext();) {
                 TargetModule sharer = (TargetModule) i.next();
-                if ((toRedeploy.size() > 0 && ! toRedeploy.contains(sharer)) ||
-                    toDistribute.contains(sharer.getTarget())) {
+                if ((toRedeploy.size() > 0 && !toRedeploy.contains(sharer))
+                        || toDistribute.contains(sharer.getTarget())) {
                     shared = true;
                     addToUndeployWhenSharedDetected.add(sharer.delegate());
                 } else {
@@ -639,7 +665,7 @@ public class TargetServer {
         ModuleConfigurationProvider mcp = dtarget.getModuleConfigurationProvider();
         if (mcp != null)
             deployable = mcp.getJ2eeModule(null);
-    boolean hasDirectory = (dtarget.getModule().getContentDirectory() != null);
+        boolean hasDirectory = (dtarget.getModule().getContentDirectory() != null);
 
         // undeploy if necessary
         if (undeployTMIDs.size() > 0) {
