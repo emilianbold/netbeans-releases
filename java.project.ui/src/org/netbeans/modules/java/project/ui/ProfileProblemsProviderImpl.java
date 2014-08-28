@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.project;
+package org.netbeans.modules.java.project.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -96,7 +96,7 @@ import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.MutexException;
 
-import static org.netbeans.modules.java.project.Bundle.*;
+import static org.netbeans.modules.java.project.ui.Bundle.*;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -116,8 +116,8 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
     private static final String REF_PREFIX = "${"; //NOI18N
     private static final String VOL_CLASSPATH = "classpath";    //NOI18N
     private static final char PATH_SEPARATOR_CHAR = ':';                          //NOI18N
-    private static final String ICON_LIBRARIES = "org/netbeans/modules/java/project/resources/libraries.gif"; //NOI18N
-    private static final String ICON_FILE = "org/netbeans/modules/java/project/resources/jar.gif";//NOI18N
+    private static final String ICON_LIBRARIES = "org/netbeans/modules/java/project/ui/resources/libraries.gif"; //NOI18N
+    private static final String ICON_FILE = "org/netbeans/modules/java/project/ui/resources/jar.gif";//NOI18N
     private static final int SLIDING_DELAY = 1000;  //1s
     private static final Logger LOG = Logger.getLogger(ProfileProblemsProviderImpl.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(ProjectProblemsProviders.class);

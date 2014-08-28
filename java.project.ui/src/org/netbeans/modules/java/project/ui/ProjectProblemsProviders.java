@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.project;
+package org.netbeans.modules.java.project.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -87,8 +87,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.java.project.FixProjectSourceLevel;
-import org.netbeans.modules.java.project.ProfileProblemsProviderImpl;
+import org.netbeans.modules.java.project.ui.FixProjectSourceLevel;
+import org.netbeans.modules.java.project.ui.ProfileProblemsProviderImpl;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -100,7 +100,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
-import static org.netbeans.modules.java.project.Bundle.*;
+import static org.netbeans.modules.java.project.ui.Bundle.*;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.support.ant.ui.VariablesSupport;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;

@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
         <folder name="Classes">
             <attr name="displayName" bundlevalue="org.netbeans.modules.java.project.Bundle#Templates/Classes"/>
             <attr name="position" intvalue="900"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Classes.html"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/ui/resources/Classes.html"/>
         </folder>
     </folder>
   <folder name="Loaders">

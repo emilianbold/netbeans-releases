@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.project;
+package org.netbeans.modules.java.project.ui;
 
 import java.awt.Component;
 import java.io.File;
@@ -58,7 +58,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.java.project.NewJavaFileWizardIterator.Type;
+import org.netbeans.modules.java.project.ui.NewJavaFileWizardIterator.Type;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -69,7 +69,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
-import static org.netbeans.modules.java.project.Bundle.*;
+import static org.netbeans.modules.java.project.ui.Bundle.*;
 
 /**
  * @author  Petr Hrebejk

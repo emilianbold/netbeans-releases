@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.project;
+package org.netbeans.modules.java.project.ui;
 
 import java.awt.Component;
 import java.io.IOException;
@@ -63,8 +63,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.templates.TemplateRegistrations;
-import org.netbeans.modules.java.project.JavaTargetChooserPanel;
-import org.netbeans.modules.java.project.PackageDisplayUtils;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -86,7 +84,7 @@ import org.openide.util.NbBundle.Messages;
     @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 600, content = "resources/Exception.java.template", scriptEngine = "freemarker", displayName = "#Exception.java", iconBase = JavaTemplates.JAVA_ICON, description = "resources/Exception.html", category = {"java-classes", "java-classes-basic"}),
     @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 700, content = "resources/JApplet.java.template", scriptEngine = "freemarker", displayName = "#JApplet.java", iconBase = JavaTemplates.JAVA_ICON, description = "resources/JApplet.html", category = "java-classes"),
     @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 800, content = "resources/Applet.java.template", scriptEngine = "freemarker", displayName = "#Applet.java", iconBase = JavaTemplates.JAVA_ICON, description = "resources/Applet.html", category = "java-classes"),
-    @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 900, content = "resources/Main.java.template", scriptEngine = "freemarker", displayName = "#Main.java", iconBase = "org/netbeans/modules/java/project/resources/main-class.png", description = "resources/Main.html", category = "java-main-class"),
+    @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 900, content = "resources/Main.java.template", scriptEngine = "freemarker", displayName = "#Main.java", iconBase = "org/netbeans/modules/java/project/ui/resources/main-class.png", description = "resources/Main.html", category = "java-main-class"),
     @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 950, content = "resources/Singleton.java.template", scriptEngine = "freemarker", displayName = "#Singleton.java", iconBase = JavaTemplates.JAVA_ICON, description = "resources/Singleton.html", category = "java-classes"),
     @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 1000, content = "resources/Empty.java.template", scriptEngine = "freemarker", displayName = "#Empty.java", iconBase = JavaTemplates.JAVA_ICON, description = "resources/Empty.html", category = {"java-classes", "java-classes-basic"})
 })

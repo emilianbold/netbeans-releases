@@ -42,8 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.project;
+package org.netbeans.modules.java.project.ui;
 
+import org.netbeans.modules.java.project.ui.JavaAntLogger;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;

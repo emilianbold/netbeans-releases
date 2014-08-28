@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.project;
+package org.netbeans.modules.java.project.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -67,7 +67,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.queries.SourceLevelQuery.Profile;
-import org.netbeans.modules.java.project.Bundle;
 import org.openide.util.NbBundle;
 
 /**
