@@ -49,7 +49,6 @@ import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.modules.profiler.LoadedSnapshot;
-import org.netbeans.modules.profiler.ProfilerControlPanel2;
 import org.netbeans.modules.profiler.ResultsManager;
 import org.netbeans.modules.profiler.ppoints.ui.TimedTakeSnapshotCustomizer;
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
@@ -80,6 +79,7 @@ import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointReport;
+import org.netbeans.modules.profiler.v2.SnapshotsWindow;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 
@@ -592,11 +592,14 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
         }
 
         if (heapdumpTaken) {
-            if (ProfilerControlPanel2.hasDefault())
-                ProfilerControlPanel2.getDefault().refreshSnapshotsList();
+//            if (ProfilerControlPanel2.hasDefault())
+//                ProfilerControlPanel2.getDefault().refreshSnapshotsList();
 
             try {
-                return new File(dumpFileName).toURI().toURL().toExternalForm();
+                File file = new File(dumpFileName);
+                FileObject folder = FileUtil.toFileObject(file.getParentFile());
+                SnapshotsWindow.instance().refreshFolder(folder, true);
+                return file.toURI().toURL().toExternalForm();
             } catch (MalformedURLException ex) {
                 ProfilerLogger.log(ex);
 
