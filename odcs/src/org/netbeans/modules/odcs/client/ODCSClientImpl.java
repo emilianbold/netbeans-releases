@@ -1,5 +1,6 @@
 package org.netbeans.modules.odcs.client;
 
+import com.tasktop.c2c.server.common.service.AuthenticationException;
 import com.tasktop.c2c.server.common.service.EntityNotFoundException;
 import com.tasktop.c2c.server.common.service.ValidationException;
 import com.tasktop.c2c.server.common.service.WrappedCheckedException;
@@ -58,6 +59,8 @@ public class ODCSClientImpl implements ODCSClient {
             return getProfileClient().getCurrentProfile();
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
 
@@ -75,6 +78,8 @@ public class ODCSClientImpl implements ODCSClient {
             throw new ODCSException(ex);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
 
@@ -84,6 +89,8 @@ public class ODCSClientImpl implements ODCSClient {
             return getActivityClient().getRecentActivity(projectId);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
 
@@ -93,6 +100,8 @@ public class ODCSClientImpl implements ODCSClient {
             return getActivityClient().getShortActivityList(projectId);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
 
@@ -104,6 +113,8 @@ public class ODCSClientImpl implements ODCSClient {
             throw new ODCSException(ex);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
 
@@ -115,6 +126,8 @@ public class ODCSClientImpl implements ODCSClient {
             throw new ODCSException(ex);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
 
@@ -128,8 +141,10 @@ public class ODCSClientImpl implements ODCSClient {
             q.setProjectRelationship(ProjectRelationship.ALL);
             QueryResult<Project> r = getProfileClient().findProjects(q);
             return r != null ? r.getResultPage() : null;
-                } catch (WrappedCheckedException e) {
+        } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
 
@@ -141,6 +156,8 @@ public class ODCSClientImpl implements ODCSClient {
             throw new ODCSException(ex);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
 
@@ -152,6 +169,8 @@ public class ODCSClientImpl implements ODCSClient {
             throw new ODCSException(ex);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
 
@@ -162,6 +181,8 @@ public class ODCSClientImpl implements ODCSClient {
             return r != null ? r.getResultPage() : null;
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
 
@@ -175,6 +196,8 @@ public class ODCSClientImpl implements ODCSClient {
             throw new ODCSException(ex);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
     
@@ -186,6 +209,8 @@ public class ODCSClientImpl implements ODCSClient {
             throw new ODCSException(ex);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
 
@@ -199,6 +224,8 @@ public class ODCSClientImpl implements ODCSClient {
             throw new ODCSException(ex);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
 
@@ -212,6 +239,8 @@ public class ODCSClientImpl implements ODCSClient {
             throw new ODCSException(ex);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
 
@@ -221,6 +250,8 @@ public class ODCSClientImpl implements ODCSClient {
             return getTasksClient(projectId).getRepositoryContext();
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
+        } catch(AuthenticationException e) {
+            throw new ODCSException(e);
         }
     }
 
