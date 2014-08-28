@@ -168,7 +168,9 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
             }
             return out;
         } finally {
-            System.err.println("getReferences took " + (System.currentTimeMillis() - time));
+            if (TraceFlags.TRACE_XREF_REPOSITORY) {
+                System.err.println("getReferences took " + (System.currentTimeMillis() - time));
+            }
         } 
     }
     
