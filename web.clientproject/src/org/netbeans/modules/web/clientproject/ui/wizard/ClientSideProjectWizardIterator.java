@@ -527,8 +527,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         private void initProject(ClientSideProject project, ProjectProperties properties, WizardDescriptor wizardDescriptor) throws IOException {
             ClientSideProjectUtilities.initializeProject(project,
-                    null,
                     properties.getSourceFolder(),
+                    properties.getSiteRootFolder(),
                     properties.getTestFolder());
             // #231326
             String librariesPath = (String) wizardDescriptor.getProperty(LIBRARIES_PATH);
