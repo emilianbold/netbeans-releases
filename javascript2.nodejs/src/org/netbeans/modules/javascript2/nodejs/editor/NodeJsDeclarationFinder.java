@@ -40,40 +40,46 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript2.nodejs.model;
+package org.netbeans.modules.javascript2.nodejs.editor;
 
-import java.util.Collection;
-import java.util.regex.Pattern;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
-import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.spi.DeclarationFinder;
+import org.netbeans.modules.javascript2.nodejs.ModuleLocator;
 
 /**
  *
  * @author Petr Pisl
  */
-@FunctionInterceptor.Registration(priority = 200)
-public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
+@DeclarationFinder.Registration(priority = 13)
+public class NodeJsDeclarationFinder implements DeclarationFinder {
 
-    private static Pattern METHOD_NAME = Pattern.compile("require");
-    
     @Override
-    public Pattern getNamePattern() {
-        return METHOD_NAME;
+    public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
+//        System.out.println("findDeclaraion");
+        return DeclarationLocation.NONE;
     }
 
     @Override
-    public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
-//        System.out.println("NodeJs require: " + name);
-        if (args.size() == 1) {
-            FunctionArgument theFirst = args.iterator().next();
-            if (theFirst.getKind() == FunctionArgument.Kind.STRING) {
-//                System.out.println("   loading : " + theFirst.getValue());
-                
+    public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
+        final OffsetRange[] value = new OffsetRange[1];
+        value[0] = OffsetRange.NONE;
+        
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
+                if (ts != null && NodeJsUtils.isModuleName(ts, caretOffset)) {
+                    
+                }
             }
-        }
+        });
+        return value[0];
     }
     
 }

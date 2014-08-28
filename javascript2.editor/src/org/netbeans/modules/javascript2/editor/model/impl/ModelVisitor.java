@@ -599,12 +599,18 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                     if (originalFunction != null) {
                         JsObjectImpl jsObject = ModelUtils.getJsObject(modelBuilder, name, true);
+                        if (ModelUtils.isDescendant(jsObject, originalFunction)) {
+                            //XXX This is not right solution. The right solution would be to create new anonymous function
+                            // and the recreate the object that has the same name as the function.
+                            // See issue #246598
+                            return null;
+                        }
                         JsFunctionReference jsFunctionReference = new JsFunctionReference(jsObject.getParent(), jsObject.getDeclarationName(), (JsFunction)originalFunction, true, jsObject.getModifiers());
                         jsObject.getParent().addProperty(jsObject.getName(), jsFunctionReference);
-                        return null;
-                    }
+                        return null; 
                 }
             }
+        }
         }
 
         JsObject previousUsage = null;
