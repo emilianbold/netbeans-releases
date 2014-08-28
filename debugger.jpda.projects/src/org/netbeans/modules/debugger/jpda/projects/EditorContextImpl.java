@@ -2969,7 +2969,8 @@ public class EditorContextImpl extends EditorContext {
                  Position methodEndPosition,
                  String methodName,
                  String methodClassType,
-                 int bytecodeIndex) {
+                 int bytecodeIndex,
+                 boolean isNative) {
              return EditorContextImpl.this.createMethodOperation(
                      startPosition,
                      endPosition,
@@ -2977,7 +2978,7 @@ public class EditorContextImpl extends EditorContext {
                      methodEndPosition,
                      methodName,
                      methodClassType,
-                     bytecodeIndex);
+                     bytecodeIndex, isNative);
          }
         @Override
          public Position createPosition(

@@ -195,11 +195,14 @@ public class MethodChooserSupport implements PropertyChangeListener {
     public void doStepInto() {
         final int index = chooser.getSelectedIndex();
         final String name = operations[index].getMethodName();
+        final boolean isNative = operations[index].isNative();
+        final String methodClassType = operations[index].getMethodClassType();
         debugger.getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                RunIntoMethodActionProvider.doAction(debugger, name, locations[index],
-                                                     expressionLines, true, MethodEntry.SELECTED);
+                RunIntoMethodActionProvider.doAction(debugger, name, methodClassType, isNative,
+                                                     locations[index], expressionLines, true,
+                                                     MethodEntry.SELECTED);
             }
         });
     }
@@ -376,12 +379,14 @@ public class MethodChooserSupport implements PropertyChangeListener {
 
         if (operations.length == 1) {
             // do not show UI, continue directly using the selection
-            String name = operations[selectedIndex].getMethodName();
+            Operation op = operations[selectedIndex];
+            String name = op.getMethodName();
             if ("<init>".equals(name)) {
-                name = operations[selectedIndex].getMethodClassType();
+                name = op.getMethodClassType();
             }
-            RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex],
-                                                 expr.getInterval(), true, MethodEntry.DIRECT);
+            RunIntoMethodActionProvider.doAction(debugger, name, op.getMethodClassType(), op.isNative(),
+                                                 locations[selectedIndex], expr.getInterval(),
+                                                 true, MethodEntry.DIRECT);
             return true;
         }
         return false;

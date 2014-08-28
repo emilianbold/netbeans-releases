@@ -373,7 +373,33 @@ public abstract class EditorContext {
                                                     int bytecodeIndex) {
         return new Operation(startPosition, endPosition,
                              methodStartPosition, methodEndPosition,
-                             methodName, methodClassType, bytecodeIndex);
+                             methodName, methodClassType, bytecodeIndex, false);
+    }
+    
+    /**
+     * Creates a method operation.
+     * @param startPosition The starting position of the operation
+     * @param endPosition The ending position of the operation
+     * @param methodStartPosition The starting position of the method name
+     * @param methodEndPosition The ending position of the method name
+     * @param methodName The string representation of the method name
+     * @param methodClassType The class type, which defines this method
+     * @param bytecodeIndex The bytecode index of this method call
+     * @param isNative <code>true</code> when the method is determined as a native
+     *                 method by the parser.
+     */
+    protected final Operation createMethodOperation(Position startPosition,
+                                                    Position endPosition,
+                                                    Position methodStartPosition,
+                                                    Position methodEndPosition,
+                                                    String methodName,
+                                                    String methodClassType,
+                                                    int bytecodeIndex,
+                                                    boolean isNative) {
+        return new Operation(startPosition, endPosition,
+                             methodStartPosition, methodEndPosition,
+                             methodName, methodClassType, bytecodeIndex,
+                             isNative);
     }
     
     /**
@@ -502,6 +528,7 @@ public abstract class EditorContext {
         private String methodDescriptor; // TODO: Add API get/set, accessed through reflection in the meantime.
         private String methodClassType;
         private Variable returnValue;
+        private boolean isNative;
         
         private List<Operation> nextOperations;
         
@@ -520,7 +547,7 @@ public abstract class EditorContext {
         Operation(Position startPosition, Position endPosition,
                   Position methodStartPosition, Position methodEndPosition,
                   String methodName, String methodClassType,
-                  int bytecodeIndex) {
+                  int bytecodeIndex, boolean isNative) {
             this.startPosition = startPosition;
             this.endPosition = endPosition;
             this.bytecodeIndex = bytecodeIndex;
@@ -528,6 +555,7 @@ public abstract class EditorContext {
             this.methodEndPosition = methodEndPosition;
             this.methodName = methodName;
             this.methodClassType = methodClassType;
+            this.isNative = isNative;
         }
         
         synchronized void addNextOperation(Operation next) {
@@ -577,6 +605,14 @@ public abstract class EditorContext {
          */
         public String getMethodClassType() {
             return methodClassType;
+        }
+        
+        /**
+         * Indicates whether the method was determined as native by the parser.
+         * @return 
+         */
+        public boolean isNative() {
+            return isNative;
         }
         
         /**
