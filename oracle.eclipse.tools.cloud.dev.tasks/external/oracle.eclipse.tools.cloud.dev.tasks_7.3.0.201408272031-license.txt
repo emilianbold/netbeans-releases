@@ -1,5 +1,5 @@
 Name: ODCS Tasks Connector
-Version: 6.2.1.201308021156
+Version: 7.3.0.201408272031
 License: CDDL-GPL-2-CP
 OSR: 
 Origin: 
