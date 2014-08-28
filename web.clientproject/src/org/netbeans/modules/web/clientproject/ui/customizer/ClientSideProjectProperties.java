@@ -369,8 +369,18 @@ public final class ClientSideProjectProperties {
     }
 
     @CheckForNull
+    public File getResolvedSourceFolder() {
+        return resolveFile(getSourceFolder().get());
+    }
+
+    @CheckForNull
     public File getResolvedSiteRootFolder() {
         return resolveFile(getSiteRootFolder().get());
+    }
+
+    @CheckForNull
+    public File getResolvedTestFolder() {
+        return resolveFile(getTestFolder().get());
     }
 
     @CheckForNull
