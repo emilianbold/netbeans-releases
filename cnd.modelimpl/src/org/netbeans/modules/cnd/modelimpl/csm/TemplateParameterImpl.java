@@ -318,7 +318,8 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     private boolean checkExplicitType(AST ast) {
         if (ast != null) {
             if (!"class".equals(ast.getText()) &&     // NOI18N
-                !"typename".equals(ast.getText())) {  // NOI18N
+                !"typename".equals(ast.getText()) &&  // NOI18N
+                ast.getType() != CPPTokenTypes.CSM_TEMPLATE_TEMPLATE_PARAMETER) {
                 return true;
             }
         }

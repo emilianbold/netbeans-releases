@@ -634,30 +634,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     
                     // try to find partial specialization of class
                     if (specialization == null) {
-                        Collection<CsmOffsetableDeclaration> specs = new ArrayList<>();
-                        
-                        for (ProjectBase proj : projects) {
-                            StringBuilder fqn = new StringBuilder();
-                            fqn.append(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS));
-                            fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
-                            fqn.append(cls.getQualifiedName());
-                            fqn.append('<'); // NOI18N
-                            specs.addAll(proj.findDeclarationsByPrefix(fqn.toString()));
-                            fqn.setLength(0);
-                            fqn.append(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT));
-                            fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
-                            fqn.append(cls.getQualifiedName());
-                            fqn.append('<'); // NOI18N
-                            specs.addAll(proj.findDeclarationsByPrefix(fqn.toString()));
-                        }
-                        
-                        Collection<CsmOffsetableDeclaration> visibleSpecs = new ArrayList<>();
-                        for (CsmOffsetableDeclaration spec : specs) {
-                            if(CsmIncludeResolver.getDefault().isObjectVisible(contextFile, spec)) {
-                                visibleSpecs.add(spec);
-                            }
-                        }
-                        
+                        List<CsmOffsetableDeclaration> visibleSpecs = collectVisibleSpecializations(cls, projects, contextFile);
                         specialization = findBestSpecialization(visibleSpecs, paramsInfo, cls);
                     }
                 }
@@ -665,17 +642,13 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             if (specialization == null && isClassForward(classifier)) {
                 // try to find specialization of class forward
                 CsmClass cls = (CsmClass) classifier;
-                CsmProject proj = contextFile.getProject();
-                StringBuilder fqn = new StringBuilder(cls.getUniqueName());
-                fqn.append('<'); // NOI18N
-                Collection<CsmOffsetableDeclaration> specs = ((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString());
+                List<ProjectBase> projects = collectProjects(contextFile);
+                List<CsmOffsetableDeclaration> specs = collectVisibleSpecializations(cls, projects, contextFile);
                 for (CsmOffsetableDeclaration decl : specs) {
                     if (decl instanceof ClassImplSpecialization) {
                         ClassImplSpecialization spec = (ClassImplSpecialization) decl;
-//                        if(spec.getSpecializationParameters().size() >= params.size()) {
-                            specialization = spec;
-                            break;
-//                        }
+                        specialization = spec;
+                        break;
                     }
                 }
             }
@@ -831,6 +804,34 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         }
         
         return projects;
+    }
+    
+    private List<CsmOffsetableDeclaration> collectVisibleSpecializations(CsmClass cls, List<ProjectBase> projects, CsmFile contextFile) {
+        List<CsmOffsetableDeclaration> specs = new ArrayList<>();
+
+        for (ProjectBase proj : projects) {
+            StringBuilder fqn = new StringBuilder();
+            fqn.append(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS));
+            fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
+            fqn.append(cls.getQualifiedName());
+            fqn.append('<'); // NOI18N
+            specs.addAll(proj.findDeclarationsByPrefix(fqn.toString()));
+            fqn.setLength(0);
+            fqn.append(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT));
+            fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
+            fqn.append(cls.getQualifiedName());
+            fqn.append('<'); // NOI18N
+            specs.addAll(proj.findDeclarationsByPrefix(fqn.toString()));
+        }
+
+        List<CsmOffsetableDeclaration> visibleSpecs = new ArrayList<>();
+        for (CsmOffsetableDeclaration spec : specs) {
+            if(CsmIncludeResolver.getDefault().isObjectVisible(contextFile, spec)) {
+                visibleSpecs.add(spec);
+            }
+        }
+
+        return visibleSpecs;
     }
 
     private CsmClassifier findBestSpecialization(Collection<CsmOffsetableDeclaration> specializations, InstantiationParametersInfo paramsInfo, final CsmClassifier cls) {
