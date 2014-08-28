@@ -113,7 +113,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     @TemplateRegistration(folder="Project/ClientSide",
             displayName="#ClientSideProjectWizardIterator.newProject.displayName",
             description="../resources/NewClientSideProjectDescription.html",
-            iconBase=ClientSideProject.PROJECT_ICON,
+            iconBase=ClientSideProject.HTML5_PROJECT_ICON,
             position=100)
     @NbBundle.Messages("ClientSideProjectWizardIterator.newProject.displayName=HTML5 Application")
     public static ClientSideProjectWizardIterator newHtml5Project() {
@@ -123,7 +123,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     @TemplateRegistration(folder="Project/ClientSide",
             displayName="#ClientSideProjectWizardIterator.existingProject.displayName",
             description="../resources/ExistingClientSideProjectDescription.html",
-            iconBase=ClientSideProject.PROJECT_ICON,
+            iconBase=ClientSideProject.HTML5_PROJECT_ICON,
             position=110)
     @NbBundle.Messages("ClientSideProjectWizardIterator.existingProject.displayName=HTML5 Application with Existing Sources")
     public static ClientSideProjectWizardIterator existingHtml5Project() {
@@ -133,7 +133,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     @TemplateRegistration(folder="Project/ClientSide",
             displayName="#ClientSideProjectWizardIterator.newLibrary.displayName",
             description="../resources/NewClientSideLibraryDescription.html",
-            iconBase=ClientSideProject.PROJECT_ICON,
+            iconBase=ClientSideProject.JS_LIBRARY_PROJECT_ICON,
             position=200)
     @NbBundle.Messages("ClientSideProjectWizardIterator.newLibrary.displayName=JS Library")
     public static ClientSideProjectWizardIterator newLibraryProject() {
