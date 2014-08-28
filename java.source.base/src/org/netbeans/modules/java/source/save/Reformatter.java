@@ -779,7 +779,7 @@ public class Reformatter implements ReformatTask {
             } else {
                 if (!cs.indentTopLevelClassMembers())
                     indent = old;
-                blankLines(node.getSimpleName().length() == 0 ? cs.getBlankLinesAfterAnonymousClassHeader() : cs.getBlankLinesAfterClassHeader());
+                blankLines(node.getSimpleName().length() == 0 ? cs.getBlankLinesAfterAnonymousClassHeader() : node.getKind() == Tree.Kind.ENUM ? cs.getBlankLinesAfterEnumHeader() : cs.getBlankLinesAfterClassHeader());
                 JavaTokenId id = null;
                 boolean first = true;
                 boolean semiRead = false;
@@ -866,7 +866,7 @@ public class Reformatter implements ReformatTask {
                 }
                 if (lastBlankLinesTokenIndex < 0)
                     newline();
-                blankLines(node.getSimpleName().length() == 0 ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace());
+                blankLines(node.getSimpleName().length() == 0 ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : node.getKind() == Tree.Kind.ENUM ? cs.getBlankLinesBeforeEnumClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace());
             }
             indent = halfIndent;
             Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
@@ -2475,7 +2475,9 @@ public class Reformatter implements ReformatTask {
         public Boolean visitArrayAccess(ArrayAccessTree node, Void p) {
             scan(node.getExpression(), p);
             accept(LBRACKET);
+            spaces(cs.spaceWithinArrayIndexBrackets() ? 1 : 0);
             scan(node.getIndex(), p);
+            spaces(cs.spaceWithinArrayIndexBrackets() ? 1 : 0);
             accept(RBRACKET);
             return true;
         }
@@ -3217,6 +3219,42 @@ public class Reformatter implements ReformatTask {
                 lastBlankLines = count;
                 rollback(lastBlankLinesTokenIndex, lastBlankLinesTokenIndex, lastBlankLinesDiff);
             } else {
+                Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
+                if (diff != null && diff.end == tokens.offset()) {
+                    if (diff.text != null) {
+                        int idx = diff.text.lastIndexOf('\n'); //NOI18N
+                        if (idx < 0)
+                            diff.text = getIndent();
+                        else
+                            diff.text = diff.text.substring(0, idx + 1) + getIndent();
+                    }
+                    String spaces = diff.text != null ? diff.text : getIndent();
+                    if (spaces.equals(fText.substring(diff.start, diff.end)))
+                        diffs.removeFirst();
+                } else if (tokens.movePrevious()) {
+                    if (tokens.token().id() == WHITESPACE) {
+                        String text =  tokens.token().text().toString();
+                        int idx = text.lastIndexOf('\n'); //NOI18N
+                        if (idx >= 0) {
+                            text = text.substring(idx + 1);
+                            String ind = getIndent();
+                            if (!ind.equals(text))
+                                addDiff(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
+                        } else if (tokens.movePrevious()) {
+                            if (tokens.token().id() == LINE_COMMENT) {
+                                tokens.moveNext();
+                                String ind = getIndent();
+                                if (!ind.equals(text))
+                                    addDiff(new Diff(tokens.offset(), tokens.offset() + tokens.token().length(), ind));
+
+                            } else {
+                                tokens.moveNext();
+                            }
+                        }
+                    }
+                    tokens.moveNext();
+                }
+                col = indent();
                 return;
             }
             lastNewLineOffset = tokens.offset();
@@ -4031,6 +4069,8 @@ public class Reformatter implements ReformatTask {
                                             && lastAddedNLOffset < currWSOffset && (toAdd == null || toAdd.first() < currWSOffset)) {
                                         addMark(Pair.of(currWSOffset, 1), marks, state);
                                     }
+                                    addMark(Pair.of(javadocTokens.offset() - offset, 5), marks, state);
+                                    addMark(Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset - 1, 6), marks, state);
                                     nlAdd = Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 1);
                                 }
                             } else {
@@ -4166,6 +4206,7 @@ public class Reformatter implements ReformatTask {
             int lastNewLinePos = -1;
             Diff pendingDiff = null;
             int start = javadocTokens != null ? 3 : 2;
+            int end = text.length() - 2;
             col += start;
             boolean preserveNewLines = true;
             boolean firstLine = true;
@@ -4352,10 +4393,17 @@ public class Reformatter implements ReformatTask {
                                     pendingDiff = null;
                                 }
                             } else {
-                                String s = NEWLINE + indentString + SPACE;
-                                String subs = text.substring(lastNewLinePos, i);
-                                if (!s.equals(subs))
-                                    pendingDiff = new Diff(offset + lastNewLinePos, offset + i, s);
+                                // do format last line with only whitespaces and end-comment marker, even though
+                                // comment formatting is disabled. Do properly indent javadoc, if the line nonblank text
+                                // starts with * (as javadoc should)
+                                if (enableCommentFormatting || i == end || (javadocTokens != null && c == '*')) {
+                                    String s = NEWLINE + indentString + SPACE;
+                                    String subs = text.substring(lastNewLinePos, i);
+                                    if (!s.equals(subs))
+                                        pendingDiff = new Diff(offset + lastNewLinePos, offset + i, s);
+                                } else {
+                                    
+                                }
                             }
                             lastWSPos = currWSPos = -1;
                             col = getCol(indentString + SPACE);

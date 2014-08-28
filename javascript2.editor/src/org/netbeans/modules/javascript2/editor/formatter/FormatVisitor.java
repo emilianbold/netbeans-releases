@@ -72,6 +72,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import jdk.nashorn.internal.ir.ExecuteNode;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
@@ -337,7 +338,10 @@ public class FormatVisitor extends NodeVisitor {
             if (leftParen != null) {
                 FormatToken previous = leftParen.previous();
                 if (previous != null) {
-                    appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION));
+                    appendToken(previous, FormatToken.forFormat(
+                            functionNode.isAnonymous()
+                                    ? FormatToken.Kind.BEFORE_ANONYMOUS_FUNCTION_DECLARATION
+                                    : FormatToken.Kind.BEFORE_FUNCTION_DECLARATION));
                 }
 
                 // mark the within parenthesis places
@@ -794,7 +798,19 @@ public class FormatVisitor extends NodeVisitor {
     private void handleCaseBlock(Block block) {
         handleBlockContent(block);
 
-        // indentation mark & block start
+        List<Node> nodes = block.getStatements();
+        if (nodes.size() == 1) {
+            Node node = nodes.get(0);
+            if (node instanceof ExecuteNode) {
+                node = ((ExecuteNode) node).getExpression();
+                if (node instanceof Block) {
+                    // the case contains one big block
+                    return;
+                }
+            }
+        }
+
+        // indentation mark
         FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.OPERATOR_COLON, true);
         if (formatToken != null) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));

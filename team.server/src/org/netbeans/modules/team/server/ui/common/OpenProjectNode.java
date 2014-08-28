@@ -174,16 +174,20 @@ class OpenProjectNode<P> extends TreeListNode {
                 component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,3), 0,0) );
 
                 component.add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
-                AbstractAction ba = new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        accessor.bookmark(project);
-                    }
-                };
-                btnBookmark = new LinkButton(ImageUtilities.loadImageIcon(
-                        "org/netbeans/modules/team/server/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true), ba); //NOI18N
-                btnBookmark.setRolloverEnabled(true);
-                component.add( btnBookmark, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                
+                if(dashboard.getDashboardProvider().getProjectAccessor().canBookmark()) {
+                    AbstractAction ba = new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            accessor.bookmark(project);
+                        }
+                    };
+                    btnBookmark = new LinkButton(ImageUtilities.loadImageIcon(
+                            "org/netbeans/modules/team/server/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true), ba); //NOI18N
+                    btnBookmark.setRolloverEnabled(true);
+                    component.add( btnBookmark, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                }
+                        
                 myPrjLabel = new JLabel();
                 component.add( myPrjLabel, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/close.png", true), new RemoveProjectAction(project)); //NOI18N
@@ -194,12 +198,16 @@ class OpenProjectNode<P> extends TreeListNode {
             }
             lbl.setForeground(foreground);
             lbl.setFont( isMemberProject ? boldFont : regFont );
-            btnBookmark.setForeground(foreground, isSelected);
-            btnBookmark.setIcon(ImageUtilities.loadImageIcon(
-                        "org/netbeans/modules/team/server/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
-            btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
-                        "org/netbeans/modules/team/server/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
-            btnBookmark.setToolTipText(NbBundle.getMessage(OpenProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
+            
+            if(btnBookmark != null) {
+                btnBookmark.setForeground(foreground, isSelected);
+                btnBookmark.setIcon(ImageUtilities.loadImageIcon(
+                            "org/netbeans/modules/team/server/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
+                btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
+                            "org/netbeans/modules/team/server/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
+                btnBookmark.setToolTipText(NbBundle.getMessage(OpenProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
+            }
+            
             if (isMemberProject) {
                 myPrjLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/bookmark.png", true)); // NOI18N
                 myPrjLabel.setToolTipText(NbBundle.getMessage(OpenProjectNode.class, "LBL_MyProject_Tooltip")); // NOI18N

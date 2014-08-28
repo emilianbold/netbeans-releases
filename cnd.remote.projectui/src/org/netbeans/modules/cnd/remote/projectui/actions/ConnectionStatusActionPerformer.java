@@ -75,7 +75,7 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
 
     private void init() {
         ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, this));
-        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, this));
+        ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, ConnectionManager.getInstance()));
         // initial status        
         updateStatus();
     }
@@ -151,7 +151,9 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
                     }
                     presenter.setEnabled(!executionEnvironment.isLocal());
                     boolean connectedTo = ConnectionManager.getInstance().isConnectedTo(executionEnvironment);
-                    if (!executionEnvironment.isLocal()) {
+                    if (executionEnvironment.isLocal()) {
+                        presenter.putValue("iconBase", "org/netbeans/modules/cnd/remote/projectui/resources/connected.png"); //NOI18N
+                    } else {
                         if (connectedTo) {                            
                             if(record != null && record.isOnline()) {
                                 presenter.putValue("iconBase", "org/netbeans/modules/cnd/remote/projectui/resources/connected.png"); //NOI18N

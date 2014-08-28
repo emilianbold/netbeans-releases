@@ -43,10 +43,7 @@
  */
 package org.netbeans.modules.cnd.completion.impl.xref;
 
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,7 +53,6 @@ import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
@@ -89,10 +85,6 @@ import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
@@ -331,7 +323,7 @@ public final class ReferencesSupport {
                         repeat = true;
                     }
                 } 
-                if (!type.getInstantiationParams().isEmpty()) {
+                if (type != null && !type.getInstantiationParams().isEmpty()) {
                     CsmSpecializationParameter param = CsmOffsetUtilities.findObject(type.getInstantiationParams(), null, offset);
                     if (param != null && !CsmOffsetUtilities.sameOffsets(type, param)) {
                         if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {

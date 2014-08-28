@@ -42,8 +42,7 @@
 
 package org.netbeans.modules.j2ee.weblogic9.j2ee;
 
-import java.io.File;
-
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
@@ -59,11 +58,31 @@ import org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation;
  */
 public class WebLogicJaxWsStack implements WSStackImplementation<JaxWs> {
 
+    private static final Version ALTERNATIVE_TESTER_URL_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.2"); // NOI18N
+
+    private static final Version JAXWS_225_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
+    
+    private static final Version JAXWS_228_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.2"); // NOI18N
+    
+    private static final Version JAXWS_2210_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.3"); // NOI18N
+    
+    private final Version serverVersion;
+    
     private final String version;
+    
     private final JaxWs jaxWs;
     
-    public WebLogicJaxWsStack() {
-        version = "2.1.4";
+    public WebLogicJaxWsStack(Version serverVersion) {
+        this.serverVersion = serverVersion;
+        if (serverVersion != null && JAXWS_2210_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
+            version = "2.2.10"; // NOI18N
+        } else if (serverVersion != null && JAXWS_228_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
+            version = "2.2.8"; // NOI18N
+        } else if (serverVersion != null && JAXWS_225_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
+            version = "2.2.5"; // NOI18N
+        } else {
+            version = "2.1.4"; // NOI18N
+        }
         jaxWs = new JaxWs(getUriDescriptor());
     }
 
@@ -84,13 +103,7 @@ public class WebLogicJaxWsStack implements WSStackImplementation<JaxWs> {
 
     @Override
     public boolean isFeatureSupported(Feature feature) {
-        if (feature == JaxWs.Feature.TESTER_PAGE) {
-            return true;
-        } else if (feature == JaxWs.Feature.JSR109) {
-            return true;
-        } else {
-            return false;
-        }
+        return feature == JaxWs.Feature.TESTER_PAGE || feature == JaxWs.Feature.JSR109;
     }
     
     private JaxWs.UriDescriptor getUriDescriptor() {
@@ -121,9 +134,15 @@ public class WebLogicJaxWsStack implements WSStackImplementation<JaxWs> {
                     String applicationRoot, String serviceName, String portName, 
                         boolean isEjb) 
             {
-                String prefix = "http://"+host+":"+port+"/wls_utc/begin.do?wsdlUrl="; //NOI18N
-                return prefix+"http://"+host+":"+port+"/"+getServiceUri(
-                        applicationRoot, serviceName, portName, isEjb)+"?wsdl";   //NOI18N
+                String prefix;
+                if (serverVersion != null && ALTERNATIVE_TESTER_URL_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
+                    prefix = "http://"+host+":"+port+"/ws_utc/begin.do?wsdlUrl="; //NOI18N
+                } else {
+                    prefix = "http://"+host+":"+port+"/wls_utc/begin.do?wsdlUrl="; //NOI18N
+                }
+
+                return prefix + "http://" + host + ":" + port + "/" + getServiceUri( // NOI18N
+                        applicationRoot, serviceName, portName, isEjb) + "?wsdl"; // NOI18N
             }
             
         };

@@ -220,36 +220,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         if( qid == null ) {
             return null;
         }
-        int cnt = qid.getNumberOfChildren();
-        if( cnt >= 1 ) {
-            List<CharSequence> l = new ArrayList<>();
-            APTStringManager manager = NameCache.getManager();
-            StringBuilder id = new StringBuilder(""); // NOI18N
-            int level = 0;
-            for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
-                int type2 = token.getType();
-                switch (type2) {
-                    case CPPTokenTypes.IDENT:
-                        id = new StringBuilder(AstUtil.getText(token));
-                        break;
-                    case CPPTokenTypes.GREATERTHAN:
-                        level--;
-                        break;
-                    case CPPTokenTypes.LESSTHAN:
-                        TemplateUtils.addSpecializationSuffix(token, id, !getInheritedTemplateParameters().isEmpty() ? getInheritedTemplateParameters() : getTemplateParameters(), true);
-                        level++;
-                        break;
-                    case CPPTokenTypes.SCOPE:
-                        if (id != null && level == 0 && id.length()>0) {
-                            l.add(manager.getString(id));
-                        }
-                        break;
-                    default:
-                }
-            }
-            return l.toArray(new CharSequence[l.size()]);
-        }
-        return null;
+        return AstRenderer.renderQualifiedId(qid, !getInheritedTemplateParameters().isEmpty() ? getInheritedTemplateParameters() : getTemplateParameters());
     }
     
     @Override

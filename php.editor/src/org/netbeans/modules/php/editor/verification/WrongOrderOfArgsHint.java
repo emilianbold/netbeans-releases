@@ -107,7 +107,7 @@ public class WrongOrderOfArgsHint extends HintRule {
             for (FunctionDeclaration wrongFunction : wrongFunctions) {
                 processWrongFunction(wrongFunction);
             }
-            return hints;
+            return new ArrayList<>(hints);
         }
 
         @Messages("WrongOrderOfArgsDesc=Wrong order of arguments")
@@ -121,11 +121,13 @@ public class WrongOrderOfArgsHint extends HintRule {
 
         @Override
         public void visit(FunctionDeclaration node) {
-            boolean defaultValue = false;
+            boolean previousParamIsOptional = false;
+            boolean currentParamIsOptional;
             for (FormalParameter formalParameter : node.getFormalParameters()) {
-                if (formalParameter.getDefaultValue() != null) {
-                    defaultValue = true;
-                } else if (defaultValue) {
+                currentParamIsOptional = !formalParameter.isMandatory();
+                if (currentParamIsOptional) {
+                    previousParamIsOptional = currentParamIsOptional;
+                } else if (previousParamIsOptional && !formalParameter.isVariadic()) {
                     wrongFunctions.add(node);
                     break;
                 }
@@ -225,14 +227,20 @@ public class WrongOrderOfArgsHint extends HintRule {
         public List<FormalParameter> getFormalParameters() {
             List<FormalParameter> rearrangedList = new ArrayList<>();
             List<FormalParameter> parametersWithDefault = new ArrayList<>();
+            FormalParameter variadicParam = null;
             for (FormalParameter param : super.getFormalParameters()) {
-                if (param.getDefaultValue() == null) {
+                if (param.isMandatory()) {
                     rearrangedList.add(param);
+                } else if (param.isVariadic()) {
+                    variadicParam = param;
                 } else {
                     parametersWithDefault.add(param);
                 }
             }
             rearrangedList.addAll(parametersWithDefault);
+            if (variadicParam != null) {
+                rearrangedList.add(variadicParam);
+            }
             return rearrangedList;
         }
 

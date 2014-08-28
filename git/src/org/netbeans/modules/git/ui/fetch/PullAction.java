@@ -63,6 +63,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitRebaseResult;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.GitRepository;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.modules.git.Git;
@@ -173,7 +174,8 @@ public class PullAction extends SingleRepositoryAction {
 
         @Override
         @NbBundle.Messages({
-            "# {0} - branch name", "MSG_PullAction.branchDeleted=Branch {0} deleted."
+            "# {0} - branch name", "MSG_PullAction.branchDeleted=Branch {0} deleted.",
+            "MSG_PullAction.progress.syncBranches=Synchronizing tracking branches"
         })
         protected void perform () {
             final File repository = getRepositoryRoot();
@@ -207,13 +209,17 @@ public class PullAction extends SingleRepositoryAction {
                             client.deleteBranch(branch, true, getProgressMonitor());
                             getLogger().outputLine(Bundle.MSG_PullAction_branchDeleted(branch));
                         }
-                        setProgress(Bundle.MSG_PullAction_fetching());
+                        setDisplayName(Bundle.MSG_PullAction_fetching());
                         Map<String, GitTransportUpdate> fetchResult = FetchAction.fetchRepeatedly(
                                 client, getProgressMonitor(), target, fetchRefSpecs);
                         if (isCanceled()) {
                             return null;
                         }
                         FetchUtils.log(repository, fetchResult, getLogger());
+                        if (!isCanceled()) {
+                            setDisplayName(Bundle.MSG_PullAction_progress_syncBranches());
+                            FetchUtils.syncTrackingBranches(repository, fetchResult, GitProgressSupportImpl.this);
+                        }
                         if (isCanceled() || branchToMerge == null) {
                             return null;
                         }
@@ -277,7 +283,7 @@ public class PullAction extends SingleRepositoryAction {
         @NbBundle.Messages({
             "# {0} - branch to merge",
             "MSG_PullAction_mergeNeeded_text=A merge commit is needed to synchronize current branch with {0}.\n\n"
-                + "Do you want to Merge the current branch with {0} or Rebase it onto {0}?",
+                + "Do you want to Rebase the current branch onto {0} or Merge it with {0}?",
             "LBL_PullAction_mergeNeeded_title=Merge Commit Needed",
             "CTL_PullAction_mergeButton_text=&Merge",
             "CTL_PullAction_mergeButton_TTtext=Merge the two created heads",
@@ -296,8 +302,8 @@ public class PullAction extends SingleRepositoryAction {
                     Bundle.LBL_PullAction_mergeNeeded_title(),
                     NotifyDescriptor.DEFAULT_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE,
-                    new Object[] { btnMerge, btnRebase, NotifyDescriptor.CANCEL_OPTION },
-                    btnMerge));
+                    new Object[] { btnRebase, btnMerge, NotifyDescriptor.CANCEL_OPTION },
+                    btnRebase));
             if (value == btnMerge) {
                 return new Merge();
             } else if (value == btnRebase) {
@@ -310,15 +316,17 @@ public class PullAction extends SingleRepositoryAction {
 
             @Override
             public ActionProgress call () throws GitException {
-                boolean cont;
                 GitClient client = getClient();
                 File repository = getRepositoryRoot();
-                setProgress(Bundle.MSG_PullAction_merging());
+                setDisplayName(Bundle.MSG_PullAction_merging());
+                MergeRevisionAction.MergeContext ctx = new MergeRevisionAction.MergeContext(branchToMerge, null);
+                MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, ctx, getLogger(), getProgressMonitor());
                 do {
-                    MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, branchToMerge, getLogger(), getProgressMonitor());
-                    cont = false;
+                    ctx.setContinue(false);
+                    GitRepository.FastForwardOption ffOption = null;
                     try {
-                        GitMergeResult result = client.merge(branchToMerge, getProgressMonitor());
+                        GitMergeResult result = client.merge(branchToMerge, ffOption, getProgressMonitor());
+                        mrp.processResult(result);
                         if (result.getMergeStatus() == GitMergeResult.MergeStatus.ALREADY_UP_TO_DATE
                                 || result.getMergeStatus() == GitMergeResult.MergeStatus.FAST_FORWARD
                                 || result.getMergeStatus() == GitMergeResult.MergeStatus.MERGED) {
@@ -328,9 +336,9 @@ public class PullAction extends SingleRepositoryAction {
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.log(Level.FINE, "Local modifications in WT during merge: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
                         }
-                        cont = mrp.resolveLocalChanges(ex.getConflicts());
+                        ctx.setContinue(mrp.resolveLocalChanges(ex.getConflicts()));
                     }
-                } while (cont && !isCanceled());
+                } while (ctx.isContinue() && !isCanceled());
                 return new ActionProgress.ActionResult(isCanceled(), true);
             }
 
@@ -340,7 +348,7 @@ public class PullAction extends SingleRepositoryAction {
 
             @Override
             public ActionProgress call () throws GitException  {
-                setProgress(Bundle.MSG_PullAction_rebasing());
+                setDisplayName(Bundle.MSG_PullAction_rebasing());
                 RebaseOperationType op = RebaseOperationType.BEGIN;
                 GitClient client = getClient();
                 File repository = getRepositoryRoot();

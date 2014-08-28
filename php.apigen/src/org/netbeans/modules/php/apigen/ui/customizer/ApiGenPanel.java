@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.apigen.ui.customizer;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -62,6 +63,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -70,36 +72,27 @@ import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.apigen.ApiGenProvider;
 import org.netbeans.modules.php.apigen.commands.ApiGenScript;
 import org.netbeans.modules.php.apigen.ui.ApiGenPreferences;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.HelpCtx;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
-final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
+final class ApiGenPanel extends JPanel {
 
-    private static final long serialVersionUID = -54768321324347L;
+    private static final long serialVersionUID = -1547854687946312L;
 
     private static final String SEPARATOR = ","; // NOI18N
 
-    private final Category category;
     private final PhpModule phpModule;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
-    ApiGenPanel(Category category, PhpModule phpModule) {
-        assert category != null;
+    ApiGenPanel(PhpModule phpModule) {
+        assert EventQueue.isDispatchThread();
         assert phpModule != null;
 
-        this.category = category;
         this.phpModule = phpModule;
-
-        this.category.setStoreListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                storeData();
-            }
-        });
 
         initComponents();
         init();
@@ -163,14 +156,14 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
 
         // enable/disable fields
         configEnabled(configRadioButton.isSelected());
-
-        // validate
-        validateData();
     }
 
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.php.apigen.ui.customizer.ApiGen"); // NOI18N
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     private boolean hasConfig() {
@@ -277,36 +270,37 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         configButton.setEnabled(enabled);
     }
 
-    void validateData() {
+    boolean isValidData() {
+        return getErrorMessage() == null;
+    }
+
+    public String getErrorMessage() {
         if (hasConfig()) {
-            validateConfigFile();
-        } else {
-            validateManualConfig();
+            return validateConfigFile(true);
         }
+        return validateManualConfig(true);
+    }
+
+    public String getWarningMessage() {
+        if (hasConfig()) {
+            return validateConfigFile(false);
+        }
+        return validateManualConfig(false);
     }
 
     @NbBundle.Messages("ApiGenPanel.warn.configNotNeon=Neon file is expected for configuration.")
-    private void validateConfigFile() {
-        // errors
+    private String validateConfigFile(boolean forErrors) {
         String config = getConfig();
-        String error = FileUtils.validateFile(config, false);
-        if (error != null) {
-            category.setErrorMessage(error);
-            category.setValid(false);
-            return;
+        if (forErrors) {
+            // errors
+            return FileUtils.validateFile(config, false);
         }
-
         // warnings
         File configFile = new File(config);
         if (!configFile.getName().endsWith(".neon")) { // NOI18N
-            category.setErrorMessage(Bundle.ApiGenPanel_warn_configNotNeon());
-            category.setValid(true);
-            return;
+            return Bundle.ApiGenPanel_warn_configNotNeon();
         }
-
-        // everything ok
-        category.setErrorMessage(null);
-        category.setValid(true);
+        return null;
     }
 
     @NbBundle.Messages({
@@ -319,74 +313,54 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         "# {0} - encoding",
         "ApiGenPanel.warn.missingCharset=Project encoding ''{0}'' nout found within specified charsets."
     })
-    private void validateManualConfig() {
-        // errors
-        // target
+    private String validateManualConfig(boolean forErrors) {
         String target = getTarget();
-        if (StringUtils.hasText(target)) {
-            File targetDir = new File(target);
-            if (targetDir.exists()) {
-                String error = FileUtils.validateDirectory(target, true);
-                if (error != null) {
-                    category.setErrorMessage(error);
-                    category.setValid(false);
-                    return;
-                }
-            } else {
-                if (!targetDir.isAbsolute()) {
-                    category.setErrorMessage(Bundle.ApiGenPanel_error_relativeTarget());
-                    category.setValid(false);
-                    return;
+        if (forErrors) {
+            // errors
+            // target
+            if (StringUtils.hasText(target)) {
+                File targetDir = new File(target);
+                if (targetDir.exists()) {
+                    return FileUtils.validateDirectory(target, true);
+                } else {
+                    if (!targetDir.isAbsolute()) {
+                        return Bundle.ApiGenPanel_error_relativeTarget();
+                    }
                 }
             }
+            // title
+            if (!StringUtils.hasText(getTitle())) {
+                return Bundle.ApiGenPanel_error_invalidTitle();
+            }
+            // charsets
+            if (getCharsets().isEmpty()) {
+                return Bundle.ApiGenPanel_error_invalidCharsets();
+            }
+            // access levels
+            if (!accessLevelPublicCheckBox.isSelected()
+                    && !accessLevelProtectedCheckBox.isSelected()
+                    && !accessLevelPrivateCheckBox.isSelected()) {
+                return Bundle.ApiGenPanel_error_invalidAccessLevels();
+            }
+            return null;
         }
-        // title
-        if (!StringUtils.hasText(getTitle())) {
-            category.setErrorMessage(Bundle.ApiGenPanel_error_invalidTitle());
-            category.setValid(false);
-            return;
-        }
-        // charsets
-        if (getCharsets().isEmpty()) {
-            category.setErrorMessage(Bundle.ApiGenPanel_error_invalidCharsets());
-            category.setValid(false);
-            return;
-        }
-        // access levels
-        if (!accessLevelPublicCheckBox.isSelected()
-                && !accessLevelProtectedCheckBox.isSelected()
-                && !accessLevelPrivateCheckBox.isSelected()) {
-            category.setErrorMessage(Bundle.ApiGenPanel_error_invalidAccessLevels());
-            category.setValid(false);
-            return;
-        }
-
         // warnings
         // charsets
         String defaultCharset = ApiGenPreferences.CHARSETS.getDefaultValue(phpModule);
         if (getCharsets().indexOf(defaultCharset) == -1) {
-            category.setErrorMessage(Bundle.ApiGenPanel_warn_missingCharset(defaultCharset));
-            category.setValid(true);
-            return;
+            return Bundle.ApiGenPanel_warn_missingCharset(defaultCharset);
         }
         // target
         if (!StringUtils.hasText(target)) {
-            category.setErrorMessage(Bundle.ApiGenPanel_warn_nbWillAskForDir());
-            category.setValid(true);
-            return;
+            return Bundle.ApiGenPanel_warn_nbWillAskForDir();
         }
         if (!new File(target).exists()) {
-            category.setErrorMessage(Bundle.ApiGenPanel_warn_targetDirWillBeCreated());
-            category.setValid(true);
-            return;
+            return Bundle.ApiGenPanel_warn_targetDirWillBeCreated();
         }
-
-        // everything ok
-        category.setErrorMessage(null);
-        category.setValid(true);
+        return null;
     }
 
-    void storeData() {
+    public void storeData() {
         ApiGenPreferences.putBoolean(phpModule, ApiGenPreferences.HAS_CONFIG, hasConfig());
         ApiGenPreferences.putTarget(phpModule, getTarget());
         ApiGenPreferences.put(phpModule, ApiGenPreferences.TITLE, getTitle());
@@ -401,6 +375,10 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         ApiGenPreferences.putBoolean(phpModule, ApiGenPreferences.TODO, getTodo());
         ApiGenPreferences.putBoolean(phpModule, ApiGenPreferences.DOWNLOAD, getDownload());
         ApiGenPreferences.putBoolean(phpModule, ApiGenPreferences.SOURCE_CODE, getSourceCode());
+    }
+
+    void fireChange() {
+        changeSupport.fireChange();
     }
 
     /** This method is called from within the constructor to
@@ -685,7 +663,7 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         }
 
         private void processChange() {
-            validateData();
+            fireChange();
         }
 
     }
@@ -694,7 +672,7 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            validateData();
+            fireChange();
         }
 
     }
@@ -704,7 +682,7 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         @Override
         public void itemStateChanged(ItemEvent e) {
             configEnabled(e.getStateChange() == ItemEvent.SELECTED);
-            validateData();
+            fireChange();
         }
 
     }

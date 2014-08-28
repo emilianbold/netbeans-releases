@@ -67,5 +67,17 @@ public class TestAttachType extends AttachType {
     public JComponent getCustomizer() {
         return new JPanel();
     }
+    
+    @AttachType.Registration(displayName="Test2")
+    public static AttachType getTest2AttachType() {
+        return new AttachType() {
+
+            @Override
+            public JComponent getCustomizer() {
+                return new JPanel();
+            }
+            
+        };
+    }
 
 }

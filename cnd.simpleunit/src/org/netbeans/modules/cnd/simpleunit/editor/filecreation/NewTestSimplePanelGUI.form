@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AccessibilityProperties>
@@ -241,8 +241,8 @@
     </Component>
     <Component class="javax.swing.JTextArea" name="createdFileArea">
       <Properties>
-        <Property name="columns" type="int" value="20"/>
         <Property name="editable" type="boolean" value="false"/>
+        <Property name="columns" type="int" value="20"/>
         <Property name="rows" type="int" value="1"/>
         <Property name="focusable" type="boolean" value="false"/>
         <Property name="opaque" type="boolean" value="false"/>
@@ -260,8 +260,8 @@
     </Component>
     <Component class="javax.swing.JTextArea" name="modifiedFileArea">
       <Properties>
-        <Property name="columns" type="int" value="20"/>
         <Property name="editable" type="boolean" value="false"/>
+        <Property name="columns" type="int" value="20"/>
         <Property name="rows" type="int" value="1"/>
         <Property name="focusable" type="boolean" value="false"/>
         <Property name="opaque" type="boolean" value="false"/>

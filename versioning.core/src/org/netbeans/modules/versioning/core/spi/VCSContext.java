@@ -451,6 +451,8 @@ public final class VCSContext {
         // exclusions that are also root files should be removed
         tempExclusions.removeAll(tempRootFiles);
         while (normalize(tempRootFiles, tempExclusions));
+        tempRootFiles.remove(null);
+        tempExclusions.remove(null);
         this.rootFiles = Collections.unmodifiableSet(tempRootFiles);
         this.exclusions = Collections.unmodifiableSet(tempExclusions);
         this.elements = Lookups.fixed(elements);
@@ -486,7 +488,7 @@ public final class VCSContext {
         if (exclusionChildren == null) return;
         for (int i = 0; i < exclusionChildren.length; i++) {
             VCSFileProxy child = exclusionChildren[i];
-            if (!Utils.isAncestorOrEqual(root, child)) {
+            if (child != null && !Utils.isAncestorOrEqual(root, child)) {
                 exclusions.add(child);
             }
         }
@@ -497,6 +499,9 @@ public final class VCSContext {
         Set<VCSFileProxy> checkedFiles = new HashSet<VCSFileProxy>();
         for (VCSFileProxy exclusion : exclusions) {
             assert exclusion != null;
+            if (exclusion == null) {
+                continue;
+            }
             for (;;) {
                 VCSFileProxy parent = exclusion.getParentFile();
                 /**

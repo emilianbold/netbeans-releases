@@ -65,7 +65,7 @@ NetBeans_Warning.init = function() {
 // show proper content of the page
 NetBeans_Warning._showContent = function() {
     document.getElementById(this._ident).style.display = 'block';
-}
+};
 // register events
 NetBeans_Warning._registerEvents = function() {
     var that = this;

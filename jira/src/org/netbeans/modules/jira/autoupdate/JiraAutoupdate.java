@@ -60,7 +60,10 @@ import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.netbeans.modules.team.ide.spi.SettingsServices;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.awt.NotificationDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -104,7 +107,7 @@ public class JiraAutoupdate {
     public void checkAndNotify(JiraRepository repository) {
         repos.add(repository);
         support.checkAndNotify(repository.getUrl());
-        
+
         if(JiraConnectorSupport.getActiveConnector() != JiraConnectorProvider.Type.XMLRPC) {
             return;
         }
@@ -115,9 +118,9 @@ public class JiraAutoupdate {
         JiraVersion version50 = JiraConnectorSupport.getInstance().getConnector().createJiraVersion("5.0.0");
         if(serverVersion.compareTo(version50) >= 0) {
             askToChangeConnector();
-        } 
+        }         
     }
-
+    
     public JiraVersion getSupportedServerVersion(final JiraRepository repository) {
         final String[] v = new String[1];
         BugtrackingCommand cmd = new BugtrackingCommand() {

@@ -48,25 +48,16 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
 import static junit.framework.Assert.assertTrue;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import static org.netbeans.modules.csl.api.test.CslTestBase.getCaretOffset;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
+import org.netbeans.modules.html.angular.TestProjectSupport;
 import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
 import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
-import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -96,6 +87,12 @@ public class AngularJsDeclarationFinder2Test extends JsCodeCompletionBase {
             super.setUp(); 
             isSetup = true;
         }
+        FileObject folder = getTestFile("angularTestProject");
+        Project tp = new TestProjectSupport.TestProject(folder, null);
+        List lookupAll = new ArrayList();
+        lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
+        lookupAll.add(new TestProjectSupport.FileOwnerQueryImpl(tp));
+        MockLookup.setInstances(lookupAll.toArray());
     }
 
     public void testIssue243888_01() throws Exception {

@@ -121,7 +121,7 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
+            // don't report cancellation exception
         }
     }
 

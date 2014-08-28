@@ -78,15 +78,6 @@ public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
     }
 
     @ForAllEnvironments
-    public void testBuildMakefileWithExt_scp_gnu() throws Exception {
-        if (ENABLE_SCP) {
-            doTest(Sync.ZIP, Toolchain.GNU);
-        } else {
-            System.out.println("Sync.ZIP: testBuildMakefileWithExt_scp_gnu is skipped. 'cnd.remote.scp' property is set to 'false'.");
-        }
-    }
-
-    @ForAllEnvironments
     public void testBuildMakefileWithExt_ftp_gnu() throws Exception {
         doTest(Sync.FTP, Toolchain.GNU);
     }
@@ -94,15 +85,6 @@ public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
     @ForAllEnvironments
     public void testBuildMakefileWithExt_rfs_sunstudio() throws Exception {
         doTest(Sync.RFS, Toolchain.SUN);
-    }
-
-    @ForAllEnvironments
-    public void testBuildMakefileWithExt_scp_sunstudio() throws Exception {
-        if (ENABLE_SCP) {
-            doTest(Sync.ZIP, Toolchain.SUN);
-        } else {
-            System.out.println("Sync.ZIP: testBuildMakefileWithExt_scp_sunstudio is skipped. 'cnd.remote.scp' property is set to 'false'.");
-        }
     }
 
     @ForAllEnvironments

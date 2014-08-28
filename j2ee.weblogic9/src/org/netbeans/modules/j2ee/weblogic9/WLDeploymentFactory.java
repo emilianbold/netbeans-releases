@@ -86,6 +86,8 @@ public class WLDeploymentFactory implements DeploymentFactory {
     public static final Version VERSION_10 = Version.fromJsr277NotationWithFallback("10"); // NOI18N
 
     public static final Version VERSION_11 = Version.fromJsr277NotationWithFallback("11"); // NOI18N
+    
+    public static final Version VERSION_1212 = Version.fromJsr277NotationWithFallback("12.1.2"); // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(WLDeploymentFactory.class.getName());
 

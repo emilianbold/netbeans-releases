@@ -21,7 +21,7 @@ Copyright &copy; 2007, 2014 Oracle and/or its affiliates.
       to all folders and files in the project.
     </p>
     <p>
-       By default, a file inherits the include directories, preprocessor definitions, and
+       By default, a file inherits the code assistance properties, include directories, preprocessor definitions, and
       C/C++&nbsp;standard&nbsp;from the project. You can choose to have a file not inherit these
       properties.
     </p>
@@ -33,7 +33,7 @@ Copyright &copy; 2007, 2014 Oracle and/or its affiliates.
         In the Projects window, right-click the file and choose Properties.
       </li>
       <li>
-        In the Project Properties dialog box, select the configuration for which you want to set a
+        In the File Properties dialog box, select the configuration for which you want to set a
         property.
       </li>
       <li>
@@ -42,8 +42,13 @@ Copyright &copy; 2007, 2014 Oracle and/or its affiliates.
       </li>
     </ol>
     <p>
-       You can set the following properties for a specific file:
+       The General node shows the following properties for a specific file in addition to the name and file path:
     </p>
+    <p><b>Has Code Assistance.</b> Indicates the code assistance state and is dynamically determined. </p>
+    <p><b>Add to Parse.</b> Select this option to enforce parsing of the file. This can be used to parse extra 
+        headers not included by any compilation units or to manually add the file as an extra compilation unit.</p>
+    
+    <p>The Compiler node shows the following properties:</p>
     <p>
        <b>Include Directories.</b> Type the absolute or relative path to the
       directories containing headers for your project, or click the button to browse to the
@@ -95,7 +100,7 @@ Copyright &copy; 2007, 2014 Oracle and/or its affiliates.
     </table>
     <hr>
     <p>
-       <small><a href="nbdocs:/org/netbeans/modules/usersguide/legal_notice.htm">Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a></small>
+       <small><a href="nbdocs:/org/netbeans/modules/usersguide/legal_notice.htm">Copyright&nbsp;&copy;&nbsp;2014,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a></small>
     </p>
     <table cellpadding="20" border="0">
       <tr>

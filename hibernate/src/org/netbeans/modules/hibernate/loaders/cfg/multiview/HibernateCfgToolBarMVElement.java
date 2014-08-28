@@ -42,11 +42,9 @@
 package org.netbeans.modules.hibernate.loaders.cfg.multiview;
 
 import org.netbeans.modules.hibernate.loaders.cfg.*;
-import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.modules.hibernate.cfg.model.Event;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
@@ -57,8 +55,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.xml.multiview.Error;
-import org.netbeans.modules.xml.multiview.ui.ConfirmDialog;
-import org.netbeans.modules.xml.multiview.ui.EditDialog;
 import org.netbeans.modules.xml.multiview.ui.SectionContainer;
 import org.netbeans.modules.xml.multiview.ui.SectionContainerNode;
 import org.netbeans.modules.xml.multiview.ui.SectionPanel;
@@ -94,15 +90,12 @@ public class HibernateCfgToolBarMVElement extends ToolBarMultiViewElement {
     public static final String CLASS_CACHE = "Class Cache";
     public static final String COLLECTION_CACHE = "Collection Cache";
     public static final String CACHE = "Cache";
-    public static final String EVENTS = "Events";
-    public static final String EVENT = "Event";
     public static final String SECURITY = "Security";
     private ConfigurationView view;
     private ToolBarDesignEditor comp;
     private HibernateCfgDataObject configDataObject;
     private HibernateCfgPanelFactory factory;
     private Project project;
-    private Action addEvent,  removeEventAction;
 
     public HibernateCfgToolBarMVElement(Lookup lookup){
         this(lookup.lookup(HibernateCfgDataObject.class));
@@ -112,22 +105,10 @@ public class HibernateCfgToolBarMVElement extends ToolBarMultiViewElement {
         super(dObj);
         this.configDataObject = dObj;
         this.project = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
-        addEvent = new AddEventAction(NbBundle.getMessage(HibernateCfgToolBarMVElement.class, "LBL_Add"));
-        removeEventAction = new RemoveEventAction(NbBundle.getMessage(HibernateCfgToolBarMVElement.class, "LBL_Remove"));
 
         comp = new ToolBarDesignEditor();
         factory = new HibernateCfgPanelFactory(comp, dObj);
         setVisualEditor(comp);
-
-    /*repaintingTask = RequestProcessor.getDefault().create(new Runnable() {
-    public void run() {
-    javax.swing.SwingUtilities.invokeLater(new Runnable() {
-    public void run() {
-    repaintView();
-    }
-    });
-    }
-    });*/
     }
 
     public SectionView getSectionView() {
@@ -180,8 +161,6 @@ public class HibernateCfgToolBarMVElement extends ToolBarMultiViewElement {
         private HibernateCfgDataObject configDataObject;
         private Node securityNode;
         private Node sessionFactoryContainerNode;
-        private Node eventsContainerNode;
-        private SectionContainer eventsCont;
 
         ConfigurationView(HibernateCfgDataObject dObj) {
             super(factory);
@@ -191,14 +170,6 @@ public class HibernateCfgToolBarMVElement extends ToolBarMultiViewElement {
         public Node getSessionFactoryContainerNode() {
             return this.sessionFactoryContainerNode;
 
-        }
-
-        public Node getEventsContainerNode() {
-            return this.eventsContainerNode;
-        }
-        
-        public SectionContainer getEventsContainer() {
-            return this.eventsCont;
         }
 
         public Node getSecurityNode() {
@@ -269,33 +240,9 @@ public class HibernateCfgToolBarMVElement extends ToolBarMultiViewElement {
                 // Deal with a bad xml - missing <session-factory>. see issue 138154
                 configuration.setSessionFactory( new SessionFactory());
             }
-            Event events[] = configuration.getSessionFactory().getEvent();
-            Node eventNodes[] = new Node[events.length];
-            for (int i = 0; i < events.length; i++) {
-                // Use the event type as the node display name
-                String type = events[i].getAttributeValue("Type"); // NOI18N
-                eventNodes[i] = new ElementLeafNode(type);
-            }
-            Children eventsCh = new Children.Array();
-            eventsCh.add(eventNodes);
-
-            // Container Node for the events inside the session-factory
-            eventsContainerNode = new SectionContainerNode(eventsCh);
-            eventsContainerNode.setDisplayName(NbBundle.getMessage(HibernateCfgToolBarMVElement.class, "LBL_Events"));
-
-            eventsCont = new SectionContainer(this, eventsContainerNode,
-                    NbBundle.getMessage(HibernateCfgToolBarMVElement.class, "LBL_Events"));
-            eventsCont.setHeaderActions(new javax.swing.Action[]{addEvent});
-            SectionPanel panels[] = new SectionPanel[events.length];
-            for (int i = 0; i < events.length; i++) {
-                panels[i] = new SectionPanel(this, eventNodes[i], eventNodes[i].getDisplayName(), events[i], false, false);
-                panels[i].setHeaderActions(new javax.swing.Action[]{removeEventAction});
-                eventsCont.addSection(panels[i]);
-            }
-
             // Container Node to contain the session factory child nodes
             Children sessionFactoryCh = new Children.Array();
-            sessionFactoryCh.add(new Node[]{jdbcPropsNode, datasourcePropsNode, mappingsNode, cacheContainerNode, eventsContainerNode, optionalPropsContainerNode});
+            sessionFactoryCh.add(new Node[]{jdbcPropsNode, datasourcePropsNode, mappingsNode, cacheContainerNode, optionalPropsContainerNode});
             sessionFactoryContainerNode = new SectionContainerNode(sessionFactoryCh);
             sessionFactoryContainerNode.setDisplayName(NbBundle.getMessage(HibernateCfgToolBarMVElement.class, "LBL_SessionFactory"));
 
@@ -305,7 +252,6 @@ public class HibernateCfgToolBarMVElement extends ToolBarMultiViewElement {
             sessionFactoryCont.addSection(new SectionPanel(this, datasourcePropsNode, datasourcePropsNode.getDisplayName(), HibernateCfgToolBarMVElement.DATASOURCE_PROPS, false, false));
             sessionFactoryCont.addSection(new SectionPanel(this, mappingsNode, mappingsNode.getDisplayName(), HibernateCfgToolBarMVElement.MAPPINGS, false, false));
             sessionFactoryCont.addSection(cacheCont);
-            sessionFactoryCont.addSection(eventsCont);
             sessionFactoryCont.addSection(optionalPropsContainer);
 
             // Node for security
@@ -343,72 +289,4 @@ public class HibernateCfgToolBarMVElement extends ToolBarMultiViewElement {
             return null;
         }
     }
-
-    /**
-     * For adding a new event in the configuration
-     */
-    private class AddEventAction extends javax.swing.AbstractAction {
-
-        AddEventAction(String actionName) {
-            super(actionName);
-        }
-
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-
-            NewEventPanel dialogPanel = new NewEventPanel();
-            EditDialog dialog = new EditDialog(dialogPanel, NbBundle.getMessage(HibernateCfgToolBarMVElement.class, "LBL_Event"), true) {
-
-                protected String validate() {
-                    // Nothing to validate
-                    return null;
-                }
-            };
-
-            java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
-            d.setVisible(true);
-
-            if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
-
-                String eventType = dialogPanel.getEventType();
-                Event event = new Event();
-                event.setAttributeValue("Type", eventType);
-                configDataObject.getHibernateConfiguration().getSessionFactory().addEvent(event);
-                configDataObject.modelUpdatedFromUI();
-
-                ConfigurationView view = (ConfigurationView) comp.getContentView();
-                Node eventNode = new ElementLeafNode(eventType);
-                view.getEventsContainerNode().getChildren().add(new Node[]{eventNode});
-
-                SectionPanel pan = new SectionPanel(view, eventNode, eventNode.getDisplayName(), event, false, false);
-                pan.setHeaderActions(new javax.swing.Action[]{removeEventAction});
-                view.getEventsContainer().addSection(pan, true);
-            }
-        }
-    }
-
-    /**
-     * For removing an event from the configuration
-     */
-    private class RemoveEventAction extends javax.swing.AbstractAction {
-
-        RemoveEventAction(String actionName) {
-            super(actionName);
-        }
-
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-
-            SectionPanel sectionPanel = ((SectionPanel.HeaderButton) evt.getSource()).getSectionPanel();
-            Event event = (Event) sectionPanel.getKey();
-            org.openide.DialogDescriptor desc = new ConfirmDialog(NbBundle.getMessage(HibernateCfgToolBarMVElement.class,
-                    "TXT_Remove_Event",
-                    event.getAttributeValue("Type"))); // NOI18N
-            java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
-            dialog.setVisible(true);
-            if (org.openide.DialogDescriptor.OK_OPTION.equals(desc.getValue())) {
-                sectionPanel.getSectionView().removeSection(sectionPanel.getNode());
-                configDataObject.getHibernateConfiguration().getSessionFactory().removeEvent(event);
-                configDataObject.modelUpdatedFromUI();
-            }
-        }
-        }
-    }
+}

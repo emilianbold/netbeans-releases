@@ -62,32 +62,43 @@ public class JSBreakpointsInfoManager {
     
     private static JSBreakpointsInfoManager INSTANCE;
     
-    private Collection<? extends JSBreakpointsInfo> infoServices;
+    private JSBreakpointsInfo[] infoServices;
     private final Object infoServicesLock = new Object();
     private final PropertyChangeListener servicePCL = new ServicePropertyChangeListener();
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private Boolean lastActivated = null;
     
-    private JSBreakpointsInfoManager() {
-        final Lookup.Result<JSBreakpointsInfo> lookupResult =
-                Lookup.getDefault().lookupResult(JSBreakpointsInfo.class);
+    private JSBreakpointsInfoManager(final Lookup.Result<JSBreakpointsInfo> lookupResult,
+                                     JSBreakpointsInfo[] activeServices) {
         lookupResult.addLookupListener(new LookupListener() {
             @Override
             public void resultChanged(LookupEvent ev) {
-                 updateServices(lookupResult.allInstances());
+                 updateServices(lookupResult.allInstances().toArray(new JSBreakpointsInfo[]{}));
             }
         });
-        initServices(lookupResult.allInstances());
+        initServices(activeServices);
     }
     
-    public static synchronized JSBreakpointsInfoManager getDefault() {
-        if (INSTANCE == null) {
-            INSTANCE = new JSBreakpointsInfoManager();
+    public static JSBreakpointsInfoManager getDefault() {
+        synchronized (JSBreakpointsInfoManager.class) {
+            if (INSTANCE != null) {
+                return INSTANCE;
+            }
+        }
+        // Examine the lookup outside of synchronization block.
+        // It can create new instances and do a lot of stuff.
+        final Lookup.Result<JSBreakpointsInfo> lookupResult =
+                Lookup.getDefault().lookupResult(JSBreakpointsInfo.class);
+        JSBreakpointsInfo[] activeServices = lookupResult.allInstances().toArray(new JSBreakpointsInfo[]{});
+        synchronized (JSBreakpointsInfoManager.class) {
+            if (INSTANCE == null) {
+                INSTANCE = new JSBreakpointsInfoManager(lookupResult, activeServices);
+            }
         }
         return INSTANCE;
     }
     
-    private void initServices(Collection<? extends JSBreakpointsInfo> activeServices) {
+    private void initServices(JSBreakpointsInfo[] activeServices) {
         for (JSBreakpointsInfo as : activeServices) {
             as.addPropertyChangeListener(servicePCL);
         }
@@ -97,15 +108,15 @@ public class JSBreakpointsInfoManager {
         }
     }
     
-    private void updateServices(Collection<? extends JSBreakpointsInfo> activeServices) {
+    private void updateServices(JSBreakpointsInfo[] activeServices) {
         initServices(activeServices);
         fireChange(JSBreakpointsInfo.PROP_BREAKPOINTS_ACTIVE);
     }
     
-    private Collection<? extends JSBreakpointsInfo> getServices() {
-        List<JSBreakpointsInfo> services;
+    private JSBreakpointsInfo[] getServices() {
+        JSBreakpointsInfo[] services;
         synchronized (infoServicesLock) {
-            services = new ArrayList<>(infoServices);
+            services = infoServices;
         }
         return services;
     }

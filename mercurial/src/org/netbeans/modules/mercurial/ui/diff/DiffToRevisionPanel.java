@@ -68,7 +68,6 @@ public class DiffToRevisionPanel extends javax.swing.JPanel {
         lblRevisionBaseToAny = new javax.swing.JLabel();
 
         btnGrp.add(rbLocalToBase);
-        rbLocalToBase.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(rbLocalToBase, org.openide.util.NbBundle.getMessage(DiffToRevisionPanel.class, "DiffToRevisionPanel.localToBase.text")); // NOI18N
         rbLocalToBase.setToolTipText(org.openide.util.NbBundle.getMessage(DiffToRevisionPanel.class, "DiffToRevisionPanel.localToBase.TTtext")); // NOI18N
 

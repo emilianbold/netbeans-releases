@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -102,14 +103,16 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
                 //        }
                 //    }
                 //}
-                target = ReferencesSupport.instance().findReferencedObject(getContainingFile(), super.getDocument(),
+                target = ReferencesSupport.instance().findReferencedObject(getContainingFile(), getDocument(),
                         this.offset, token, fileReferencesContext);
                 if (target != null) {
                     initOwner();
                     initKind(target);
                     initClosestTopLevelObject();
                     if (!CsmFileInfoQuery.getDefault().isDocumentBasedFile(getContainingFile())) {
-                        CsmReferenceStorage.getDefault().put(this, target);
+                        if (getDocument().getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) == null) {
+                            CsmReferenceStorage.getDefault().put(this, target);
+                        }
                     }
                 }
 //            } else {
@@ -129,8 +132,10 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
     private synchronized void restoreIfPossible() {
         if (!restoreDone) {
-
-            CsmReference candidate = CsmReferenceStorage.getDefault().get(this);
+            CsmReference candidate = null;
+            if (getDocument().getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) == null) {
+                candidate = CsmReferenceStorage.getDefault().get(this);
+            }
             //if (this.getContainingFile().getAbsolutePath().toString().endsWith("ConjunctionScorer.cpp")) {
             //    if (("sort".contentEquals(this.getText())) && this.getStartPosition().getLine() == 49) {
             //        Logger.getLogger("xRef").log(Level.INFO, "{0} \n with candidate {1}\n", new Object[]{this, candidate});

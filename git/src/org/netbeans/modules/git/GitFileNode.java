@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git;
 
+import java.awt.Color;
 import java.io.File;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.modules.git.FileInformation.Status;
@@ -74,17 +75,28 @@ public abstract class GitFileNode<T extends FileNodeInformation> extends VCSFile
     }
     
     @Override
-    public abstract FileNodeInformation getInformation ();
+    public abstract T getInformation ();
 
     public static class GitLocalFileNode extends GitFileNode<FileInformation> {
+        private FileInformation.Mode mode;
         
         public GitLocalFileNode(File root, File file) {
             super(root, file);
         }
         
+        public GitLocalFileNode(File root, File file, FileInformation.Mode mode) {
+            super(root, file);
+            this.mode = mode;
+        }
+        
         @Override
         public FileInformation getInformation() {
             return Git.getInstance().getFileStatusCache().getStatus(getFile());
+        }
+
+        @Override
+        public String getStatusText () {
+            return mode == null ? getInformation().getStatusText() : getInformation().getStatusText(mode);
         }
 
         @Override
@@ -207,6 +219,25 @@ public abstract class GitFileNode<T extends FileNodeInformation> extends VCSFile
                     break;
             }
             return format.getFormat().format(new Object[] { name, "" });
+        }
+
+        @Override
+        public Color getAnnotatedColor () {
+            switch (info.getStatus()) {
+                case ADDED:
+                    return AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor();
+                case COPIED:
+                    return AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor();
+                case MODIFIED:
+                    return AnnotationColorProvider.getInstance().MODIFIED_FILE.getActualColor();
+                case REMOVED:
+                    return AnnotationColorProvider.getInstance().REMOVED_FILE.getActualColor();
+                case RENAMED:
+                    return AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor();
+                case UNKNOWN:
+                default:
+                    return AnnotationColorProvider.getInstance().EXCLUDED_FILE.getActualColor();
+            }
         }
         
     }

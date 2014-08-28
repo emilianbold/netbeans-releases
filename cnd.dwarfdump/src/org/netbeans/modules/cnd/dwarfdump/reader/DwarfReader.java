@@ -121,6 +121,7 @@ public class DwarfReader extends ElfReader {
                 return readInt();
             case DW_FORM_string:
                 return readString();
+            case DW_FORM_exprloc:
             case DW_FORM_block:
                 return read(new byte[readUnsignedLEB128()]);
             case DW_FORM_block1:
@@ -149,11 +150,15 @@ public class DwarfReader extends ElfReader {
                 return read(new byte[readUnsignedLEB128()]);
             case DW_FORM_indirect:
                 return readForm(FORM.get(readUnsignedLEB128()));
+            case DW_FORM_flag_present:
+                return true;
+            case DW_FORM_sig8:
+                return readLong();
             default:
             throw new IOException("unknown type " + form); // NOI18N
         }
     }
-    
+
     @Override
     ElfSection initSection(Integer sectionIdx, String sectionName) throws IOException {
         if (sectionName.equals(SECTIONS.DEBUG_STR)) {

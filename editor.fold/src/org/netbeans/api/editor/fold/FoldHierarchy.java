@@ -456,6 +456,10 @@ public final class FoldHierarchy {
             return fold.getExtraInfo();
         }
         
+        public void foldSetExtraInfo(Fold fold, Object info) {
+            fold.setExtraInfo(info);
+        }
+
         public void foldStateChangeCollapsedChanged(FoldStateChange fsc) {
             fsc.collapsedChanged();
         }

@@ -49,6 +49,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
@@ -61,12 +62,15 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.MetadataModelReadHelper;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig;
+import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfigProperty;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.JmsDestinationDefinition;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageDestinationUiSupport;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendJMSMessageUiSupport.MdbHolder;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -82,29 +86,29 @@ import org.openide.util.NbBundle;
  * @see MessageDestinationUiSupport
  */
 public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSupport {
-    
+
     /**
      * Get list of message-driven beans with all required properties.
      * @return list of message-driven beans.
      */
     public static List<MdbHolder> getMdbs(ChangeListener listener) {
-        List<MdbHolder> mdbs = new ArrayList<MdbHolder>();
-        
+        List<MdbHolder> mdbs = new ArrayList<>();
+
         Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
         for (Project p : openProjects) {
             if (EjbJar.getEjbJars(p).length > 0) {
                 try {
-                    Map<String, String> drivens = getMdbs(p, listener);
+                    Map<String, MessageDestination> drivens = getMdbs(p, listener);
                     populateMdbs(mdbs, drivens, p);
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
             }
         }
-        
+
         return mdbs;
     }
-    
+
     /**
      * Populate given combo box and text field with given message-driven beans.
      * @param mdbs message-driven beans for given combo box and text field.
@@ -116,12 +120,12 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
         assert mdbs != null;
         assert comboBox != null;
         assert textField != null;
-        
+
         comboBox.setRenderer(new MdbHolderListCellRenderer());
-        
-        List<MdbHolder> sortedMdbs = new ArrayList<MdbHolder>(mdbs);
+
+        List<MdbHolder> sortedMdbs = new ArrayList<>(mdbs);
         Collections.sort(sortedMdbs, new MdbHolderComparator());
-        
+
         comboBox.removeAllItems();
         textField.setText("");
         for (MdbHolder mdbHolder : sortedMdbs) {
@@ -135,7 +139,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
         });
         populateMdbTextField(comboBox, textField);
     }
-    
+
     private static void populateMdbTextField(final JComboBox comboBox, final JTextField textField) {
         MdbHolder selectedItem = (MdbHolder) comboBox.getSelectedItem();
         if (selectedItem != null) {
@@ -143,44 +147,58 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
             textField.setText(md != null ? md.getName() : "");
         }
     }
-    
-    private static void populateMdbs(List<MdbHolder> mdbs, final Map<String, String> drivens, final Project project) {
-        for (Map.Entry<String, String> mdbEntry : drivens.entrySet()) {
-            J2eeModuleProvider j2eeModuleProvider = getJ2eeModuleProvider(project);
+
+    private static void populateMdbs(List<MdbHolder> mdbs, final Map<String, MessageDestination> drivens, final Project project) {
+        J2eeModuleProvider j2eeModuleProvider = getJ2eeModuleProvider(project);
+        for (Map.Entry<String, MessageDestination> mdbEntry : drivens.entrySet()) {
             try {
                 String mdbName = mdbEntry.getKey();
-                String mappedName = mdbEntry.getValue();
-                String destName = j2eeModuleProvider.getConfigSupport().findMessageDestinationName(mdbName);
-                if (destName == null && mappedName != null) {
-                    destName = mappedName;
-                }
-                if (destName != null) {
-                    MessageDestination messageDestination = j2eeModuleProvider.getConfigSupport().findMessageDestination(destName);
-                    mdbs.add(new MdbHolder(mdbName, messageDestination, project));
-                }
+                MessageDestination destination = mdbEntry.getValue();
+
+                // handle message destination deployment setup if any
+                MessageDestination serverDestination = getServerMessageDestination(j2eeModuleProvider, destination.getName());
+                destination = serverDestination != null ? serverDestination : destination;
+
+                mdbs.add(new MdbHolder(mdbName, destination, project));
             } catch (ConfigurationException ce) {
                 Exceptions.printStackTrace(ce);
             }
         }
     }
-    
+
+    private static MessageDestination getServerMessageDestination(J2eeModuleProvider j2eeModuleProvider, String destinationName) throws ConfigurationException {
+        // handle message destination deployment setup if any
+        J2eeModuleProvider.ConfigSupport configSupport = j2eeModuleProvider.getConfigSupport();
+        String serverDestName = configSupport.findMessageDestinationName(destinationName);
+
+        if (serverDestName == null && destinationName != null) {
+            serverDestName = destinationName;
+        }
+
+        if (serverDestName == null) {
+            return null;
+        }
+
+        return configSupport.findMessageDestination(serverDestName);
+    }
+
     private static J2eeModuleProvider getJ2eeModuleProvider(Project project) {
         return project.getLookup().lookup(J2eeModuleProvider.class);
     }
 
     // kay ejb-name and value is mapped-name
-    private static Map<String, String> getMdbs(Project project, final ChangeListener listener) throws IOException {
-        
-        Map<String, String> mdbs = new HashMap<String, String>();
+    private static Map<String, MessageDestination> getMdbs(Project project, final ChangeListener listener) throws IOException {
+
+        Map<String, MessageDestination> mdbs = new HashMap<>();
 
         for (EjbJar ejbModule : EjbJar.getEjbJars(project)) {
             MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
             MdbReadAction mdbReadAction = new MdbReadAction();
-            Map<String, String> mdbsInModule = new HashMap<String, String>();
+            HashMap<String, MessageDestination> mdbsInModule = new HashMap<>();
 
             // read current model data
             mdbsInModule.putAll(metadataModel.runReadAction(mdbReadAction));
-            
+
             // read all data once processing/scanning is gone if requires (means not null listener)
             if (!metadataModel.isReady() && listener != null) {
                 final MetadataModelReadHelper<EjbJarMetadata, Void> readHelper =
@@ -200,21 +218,35 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
                 });
                 readHelper.start();
             }
-            
+
             mdbs.putAll(mdbsInModule);
         }
-        
+
         return mdbs;
     }
 
-    private static class MdbReadAction implements MetadataModelAction<EjbJarMetadata, Map<String, String>> {
+//    private static void putMissingMDBs(Map<String, MessageDestination> result, HashMap<String, MessageDestination> mdbsInModule) {
+//        for (Map.Entry<String, MessageDestination> entry : mdbsInModule.entrySet()) {
+//            MessageDestination dest = result.get(entry.getKey());
+//            if (dest == null) {
+//                result.put(entry.getKey(), entry.getValue());
+//            } else {
+//                MessageDestination moduleDest = entry.getValue();
+//                if (dest.getName() != null && !dest.getName().equals(moduleDest.getName())) {
+//                    result.put(entry.getKey(), entry.getValue());
+//                }
+//            }
+//        }
+//    }
+
+    private static class MdbReadAction implements MetadataModelAction<EjbJarMetadata, Map<String, MessageDestination>> {
 
         @Override
-        public Map<String, String> run(EjbJarMetadata metadata) throws Exception {
-            Map<String, String> result = new HashMap<String, String>();
+        public Map<String, MessageDestination> run(EjbJarMetadata metadata) throws Exception {
+            Map<String, MessageDestination> result = new HashMap<>();
             EnterpriseBeans eb = metadata.getRoot().getEnterpriseBeans();
             if (eb == null) {
-                return Collections.<String, String>emptyMap();
+                return Collections.<String, MessageDestination>emptyMap();
             }
 
             MessageDriven[] messageDrivens = eb.getMessageDriven();
@@ -224,24 +256,36 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
             return result;
         }
     }
-    
+
     // fix for 162899
     // not very nice solution, but the interface
     // org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven is not nice too.
-    private static String findMsgDest(MessageDriven mdb) {
+    private static MessageDestination findMsgDest(MessageDriven mdb) {
         try {
             // try EJB 3.0 style first
-            return  mdb.getMappedName();
-        }
-        catch (VersionNotSupportedException e) {
-            try {
-                // try EJB 2.1 style
-                return mdb.getMessageDestinationLink();
+            String destName = mdb.getMappedName();
+            MessageDestination.Type destType = MessageDestination.Type.QUEUE;
+            ActivationConfig activationConfig = mdb.getActivationConfig();
+            if (activationConfig != null) {
+                for (ActivationConfigProperty property : activationConfig.getActivationConfigProperty()) {
+                    if (null != property.getActivationConfigPropertyName()) {
+                        switch (property.getActivationConfigPropertyName()) {
+                            case "destinationLookup":   //NOI18N
+                                destName = property.getActivationConfigPropertyValue();
+                                break;
+                            case "destinationType":     //NOI18N
+                                destType = "javax.jms.Topic".equals(property.getActivationConfigPropertyValue()) ? //NOI18N
+                                        MessageDestination.Type.TOPIC : MessageDestination.Type.QUEUE;
+                                break;
+                        }
+                    }
+                }
             }
-            catch (VersionNotSupportedException e2) {
-                // sorry, we don't resolve older versions than 2.1...
-                return null;
-            }
+
+            return new JmsDestinationDefinition(destName, destType, false);
+        } catch (VersionNotSupportedException e) {
+            Logger.getLogger(SendJMSMessageUiSupport.class.getName()).info("Older than EJB 3.0 is not supported any more.");
+            return null;
         }
     }
 
@@ -249,7 +293,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
      * Holder for message-driven bean and its properties.
      */
     public static class MdbHolder {
-        
+    
         private final String mdbEjbName;
         private final MessageDestination messageDestination;
         private final Project project;
@@ -259,7 +303,7 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
             assert mdbEjbName != null;
 //            assert messageDestination != null;
             assert project != null;
-            
+
             this.mdbEjbName = mdbEjbName;
             this.messageDestination = messageDestination;
             this.project = project;
@@ -272,15 +316,15 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
         public Project getProject() {
             return project;
         }
-        
+
         public String getMdbEjbName() {
             return mdbEjbName;
         }
-        
+
         public String getProjectName() {
             return ProjectUtils.getInformation(project).getDisplayName();
         }
-        
+
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
@@ -295,31 +339,31 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
             return sb.toString();
         }
     }
-    
+
     // optional - create factory method for this class
     private static class MdbHolderComparator implements Comparator<MdbHolder> {
-        
+
         @Override
         public int compare(MdbHolder mdbHolder1, MdbHolder mdbHolder2) {
-            
+
             if (mdbHolder1 == null) {
                 return mdbHolder2 == null ? 0 : -1;
             }
-            
+
             if (mdbHolder2 == null) {
                 return 1;
             }
-            
+
             String name1 = mdbHolder1.getMdbEjbName();
             String name2 = mdbHolder2.getMdbEjbName();
             if (name1 == null) {
                 return name2 == null ? 0 : -1;
             }
-            
+
             return name2 == null ? 1 : name1.compareToIgnoreCase(name2);
         }
     }
-    
+
     // optional - create factory method for this class
     private static class MdbHolderListCellRenderer extends DefaultListCellRenderer {
 
@@ -337,7 +381,10 @@ public abstract class SendJMSMessageUiSupport extends MessageDestinationUiSuppor
 
             if (value instanceof MdbHolder) {
                 MdbHolder mdbHolder = (MdbHolder) value;
-                setText(mdbHolder.getMdbEjbName());
+
+                // "ejbName (projectName)"
+                setText(mdbHolder.getMdbEjbName() + " (" + mdbHolder.getProjectName() + ")"); //NOI18N
+
                 // tooltip
                 MessageDestination messageDestination = mdbHolder.getMessageDestination();
                 if (messageDestination == null) {

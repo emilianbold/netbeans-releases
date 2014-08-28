@@ -99,6 +99,7 @@ public final class RemotePlatformProbe {
     @NonNull
     public static Properties verifyPlatform(
         @NonNull final String jreLocation,
+        @NullAllowed final String execDecorator,
         @NonNull final String workingDir,
         @NonNull final ConnectionMethod connectionMethod,
         @NullAllowed File buildScript) throws WizardValidationException {
@@ -108,6 +109,9 @@ public final class RemotePlatformProbe {
             prop.setProperty("remote.port", String.valueOf(connectionMethod.getPort())); //NOI18N
             prop.setProperty("remote.username", connectionMethod.getAuthentification().getUserName()); //NOI18N
             prop.setProperty("remote.platform.home", jreLocation); //NOI18N
+            if (execDecorator != null) {
+                prop.setProperty("remote.exec.decorator", execDecorator);   //NOI18N
+            }
             prop.setProperty("remote.working.dir", workingDir.length() > 0 ? workingDir : "/home/" + connectionMethod.getAuthentification().getUserName() + "/NetBeansProjects/"); //NOI18N
             final File probe = InstalledFileLocator.getDefault().locate("modules/ext/org-netbeans-modules-java-j2seembedded-probe.jar", "org.netbeans.modules.java.j2seembedded", false);   //NOI18N
             if (probe == null) {
@@ -119,6 +123,7 @@ public final class RemotePlatformProbe {
             prop.setProperty("probe.file", probe.getAbsolutePath());
             File platformProperties = null;            
             ExecutorTask executorTask = null;
+            int antResult = -1;
             try {
                 platformProperties = File.createTempFile("platform", ".properties");   //NOI18N
                 prop.setProperty("platform.properties.file", platformProperties.getAbsolutePath()); //NOI18N
@@ -136,7 +141,7 @@ public final class RemotePlatformProbe {
 
                 final FileObject antScript = FileUtil.toFileObject(buildScript != null && buildScript.exists() ? buildScript : createBuildScript());
                 executorTask = ActionUtils.runTarget(antScript, antTargets, prop, concealedProps);
-                final int antResult = executorTask.result();
+                antResult = executorTask.result();
                 if (antResult != 0) {
                     throw new WizardValidationException(
                         null,
@@ -155,7 +160,7 @@ public final class RemotePlatformProbe {
                     ex.getMessage(),
                     ex.getLocalizedMessage());
             } finally {
-                if (executorTask != null) {
+                if (antResult == 0 && executorTask != null) {
                     executorTask.getInputOutput().closeInputOutput();
                 }
                 if (buildScript != null) {

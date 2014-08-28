@@ -56,6 +56,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -77,6 +78,7 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
+import org.openide.util.test.MockPropertyChangeListener;
 
 public class ClassPathTest extends NbTestCase {
 
@@ -312,7 +314,38 @@ public class ClassPathTest extends NbTestCase {
         f.delete();
         assertEquals("again empty", null, cp.findResource("f"));
     }
-    
+
+    public void testFlags() {
+        final FlaggedClassPathImpl fcpImpl = new FlaggedClassPathImpl();
+        final ClassPath cp = ClassPathFactory.createClassPath(fcpImpl);
+        Set<ClassPath.Flag> flags = cp.getFlags();
+        assertNotNull(flags);
+        assertTrue(flags.isEmpty());
+        fcpImpl.setFlags(EnumSet.of(ClassPath.Flag.INCOMPLETE));
+        flags = cp.getFlags();
+        assertNotNull(flags);
+        assertEquals(1, flags.size());
+        assertEquals(ClassPath.Flag.INCOMPLETE, flags.iterator().next());
+        fcpImpl.setFlags(EnumSet.noneOf(ClassPath.Flag.class));
+        flags = cp.getFlags();
+        assertNotNull(flags);
+        assertTrue(flags.isEmpty());
+    }
+
+    public void testFlagsFiring() {
+        final FlaggedClassPathImpl fcpImpl = new FlaggedClassPathImpl();
+        final ClassPath cp = ClassPathFactory.createClassPath(fcpImpl);
+        Set<ClassPath.Flag> flags = cp.getFlags();
+        assertNotNull(flags);
+        assertTrue(flags.isEmpty());
+        final MockPropertyChangeListener pl = new MockPropertyChangeListener(ClassPath.PROP_FLAGS);
+        cp.addPropertyChangeListener(pl);
+        fcpImpl.setFlags(EnumSet.of(ClassPath.Flag.INCOMPLETE));
+        pl.assertEventCount(1);
+        fcpImpl.setFlags(EnumSet.noneOf(ClassPath.Flag.class));
+        pl.assertEventCount(1);
+    }
+
     static final class TestClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
         private final PropertyChangeSupport support = new PropertyChangeSupport (this);

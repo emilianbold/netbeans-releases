@@ -459,7 +459,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
     }
 
-    private static File getMiddlewareModules(File middleware) {
+    @NonNull
+    public static File getMiddlewareModules(File middleware) {
         File modules = new File(middleware, "modules"); // NOI18N
         if (!modules.exists() || !modules.isDirectory()) {
             modules = new File(new File(middleware, "oracle_common"), "modules"); // NOI18N
@@ -852,10 +853,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             List content = new ArrayList();
             File platformRoot = new File(getPlatformRoot());
             WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class ,
-                    new WebLogicJaxWsStack(), WSStack.Source.SERVER);
+                    new WebLogicJaxWsStack(dm.getServerVersion()), WSStack.Source.SERVER);
             Collections.addAll(content, platformRoot, 
                     new JpaSupportImpl(this),new JaxWsPoliciesSupportImpl(this), 
-                    new JaxRsStackSupportImpl(this, dm.getServerVersion()), wsStack );
+                    new JaxRsStackSupportImpl(this, dm.getServerVersion()), wsStack);
            
             Lookup baseLookup = Lookups.fixed(content.toArray());
             return LookupProviderSupport.createCompositeLookup(baseLookup, 

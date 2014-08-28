@@ -204,7 +204,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.14</specification-version>
+                        <specification-version>7.23</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -274,6 +274,7 @@
                 <friend>com.microchip.mdbcore</friend>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
+                <friend>com.oracle.tools.ide.binary.dependencies</friend>
                 <friend>com.oracle.tools.ide.projectless.debug.impl</friend>
                 <friend>com.oracle.tools.ide.projectless.debug.impl.dbx</friend>
                 <friend>com.oracle.tools.ide.projectless.debug.impl.gdb</friend>

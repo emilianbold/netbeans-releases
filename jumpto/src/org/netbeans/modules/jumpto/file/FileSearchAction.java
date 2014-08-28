@@ -60,21 +60,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
@@ -99,33 +88,21 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.search.provider.SearchFilter;
-import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.editor.JumpList;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
-import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.common.Factory;
+import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.modules.jumpto.common.Utils;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
-import org.netbeans.spi.jumpto.file.FileProvider;
-import org.netbeans.spi.jumpto.file.FileProviderFactory;
-import org.netbeans.spi.jumpto.support.NameMatcher;
-import org.netbeans.spi.jumpto.support.NameMatcherFactory;
-import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlRenderer;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
@@ -140,24 +117,26 @@ import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 /**
  *
- * @author Andrei Badea, Petr Hrebejk
+ * @author Andrei Badea, Petr Hrebejk, Tomas Zezula
  */
 public class FileSearchAction extends AbstractAction implements FileSearchPanel.ContentProvider {
 
     /* package */ static final Logger LOGGER = Logger.getLogger(FileSearchAction.class.getName());
     private static final char LINE_NUMBER_SEPARATOR = ':';    //NOI18N
     private static final Pattern PATTERN_WITH_LINE_NUMBER = Pattern.compile("(.*)"+LINE_NUMBER_SEPARATOR+"(\\d*)");    //NOI18N
-    
-    private static ListModel EMPTY_LIST_MODEL = new DefaultListModel();
+
+    private static final ListModel EMPTY_LIST_MODEL = new DefaultListModel();
+    //Threading: Throughput 1 required due to inherent sequential code in Work.Request.exclude
     private static final RequestProcessor rp = new RequestProcessor ("FileSearchAction-RequestProcessor",1);
-    private Worker running;
-    private RequestProcessor.Task task;
+    //@GuardedBy("this")
+    private Worker[] running;
+    //@GuardedBy("this")
+    private RequestProcessor.Task[] scheduledTasks;
     private Dialog dialog;
     private JButton openBtn;
     private FileSearchPanel panel;
     private Dimension initialDimension;
-    private Iterable<? extends FileProvider> providers;
-    
+
     public FileSearchAction() {
         super( NbBundle.getMessage(FileSearchAction.class, "CTL_FileSearchAction") );
         // XXX this should be in initialize()?
@@ -169,7 +148,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     public boolean isEnabled() {
         return OpenProjects.getDefault().getOpenProjects().length > 0;
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent arg0) {
         FileDescriptor[] typeDescriptors = getSelectedFiles();
@@ -197,27 +176,21 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
 
     @Override
-    public void setListModel( FileSearchPanel panel, String text ) {
+    public void setListModel(final FileSearchPanel panel, String text ) {
         if (openBtn != null) {
             openBtn.setEnabled (false);
         }
-        if ( running != null ) {
-            running.cancel();
-            task.cancel();
-            running = null;
-        }
+
+        cancel();
 
         if ( text == null ) {
-            panel.setModel(EMPTY_LIST_MODEL);
+            panel.setModel(EMPTY_LIST_MODEL, true);
             return;
         }
-
         boolean exact = text.endsWith(" "); // NOI18N
-
         text = text.trim();
-
-        if ( text.length() == 0) {
-            panel.setModel(EMPTY_LIST_MODEL);
+        if ( text.length() == 0 || !Utils.isValidInput(text)) {
+            panel.setModel(EMPTY_LIST_MODEL, true);
             return;
         }
 
@@ -238,7 +211,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         else {
             nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
         }
-                
+
         //Extract linenumber from search text
         //Pattern is like 'My*Object.java:123'
         final Matcher matcher = PATTERN_WITH_LINE_NUMBER.matcher(text);
@@ -256,12 +229,65 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         }
 
         // Compute in other thread
-
-        synchronized( this ) {
-            running = new Worker(text , nameKind, panel.getCurrentProject(), lineNr);
-            task = rp.post( running, 220);
+        synchronized(this) {
+            final Models.MutableListModel baseListModel = Models.mutable(
+                    new FileComarator(
+                        panel.isPreferedProject(),
+                        panel.isCaseSensitive()));
+            panel.setModel(Models.refreshable(
+                    baseListModel,
+                    new Factory<FileDescriptor, Pair<FileDescriptor,Runnable>>() {
+                        @Override
+                        public FileDescriptor create(@NonNull final Pair<FileDescriptor,Runnable> param) {
+                            return new AsyncFileDescriptor(param.first(), param.second());
+                        }
+                    }),
+                    false);
+            final Worker.Request request = Worker.newRequest(
+                text,
+                nameKind,
+                panel.getCurrentProject(),
+                lineNr);
+            final Worker.Collector collector = Worker.newCollector(
+                baseListModel,
+                new Runnable(){
+                    @Override
+                    public void run() {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                panel.searchProgress();
+                                if (openBtn != null && baseListModel.getSize() > 0) {
+                                    openBtn.setEnabled (true);
+                                }
+                            }
+                        });
+                    }
+                },
+                new Runnable(){
+                    @Override
+                    public void run() {
+                        panel.searchCompleted();
+                    }
+                },
+                panel.time);
+            final Worker.Type[] wts = Worker.Type.values();
+            final Worker[] workers = new Worker[wts.length];
+            //Threading: All workers need to be created before they are scheduled
+            for (int i = 0; i < wts.length; i++) {
+                workers[i] = Worker.newWorker(request, collector, wts[i]);
+            }
+            running = workers;
+            final RequestProcessor.Task[] tasks = new RequestProcessor.Task[workers.length];
+            for (int i = 0; i < workers.length; i++) {
+                tasks[i] = rp.post(workers[i], 220);
+            }
+            scheduledTasks = tasks;
             if ( panel.time != -1 ) {
-                LOGGER.log( Level.FINE, "Worker posted after {0} ms.",  System.currentTimeMillis() - panel.time );
+                LOGGER.log(
+                    Level.FINE,
+                    "Worker posted after {0} ms.",  //NOI18N
+                    System.currentTimeMillis() - panel.time );
             }
         }
     }
@@ -275,24 +301,6 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     @Override
     public boolean hasValidContent () {
         return this.openBtn != null && this.openBtn.isEnabled();
-    }
-
-    private static boolean isLineNumberChange(
-            @NonNull final String oldText,
-            @NonNull final String newText) {
-        final int oldIndex = oldText.indexOf(LINE_NUMBER_SEPARATOR);
-        final int newIndex = newText.indexOf(LINE_NUMBER_SEPARATOR);
-        if (newIndex > 0) {
-            if (oldIndex == newIndex) {
-                return newText.substring(0,newIndex).equals(oldText.substring(0,oldIndex));
-            } else {
-                return newText.equals(oldText + LINE_NUMBER_SEPARATOR);
-            }
-        } else if (oldIndex > 0) {
-            return oldText.equals(newText + LINE_NUMBER_SEPARATOR);
-        } else {
-            return false;
-        }
     }
 
     // Private methods ---------------------------------------------------------
@@ -396,21 +404,13 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 return p;
             }
         }
-        
+
        return OpenProjects.getDefault().getMainProject();
     }
-    
-//    JButton getOpenButton() {
-//        return openBtn;
-//    }
 
     private void cleanup() {
-
+        cancel();
         if ( dialog != null ) { // Closing event for some reson sent twice
-            //Free SPI
-            synchronized (this) {
-                providers = null;
-            }
             // Save dialog size only when changed
             final int currentWidth = dialog.getWidth();
             final int currentHeight = dialog.getHeight();
@@ -426,315 +426,22 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         }
     }
 
-    private Iterable<? extends FileProvider> getProviders() {
+    private void cancel() {
         synchronized (this) {
-            if (providers != null) {
-                return providers;
+            if ( running != null ) {
+                for (Worker w : running) {
+                    w.cancel();
+                }
+                for (RequestProcessor.Task t : scheduledTasks) {
+                    t.cancel();
+                }
+                running = null;
+                scheduledTasks = null;
             }
-        }
-        final List<FileProvider> result = new LinkedList<FileProvider>();
-        for (FileProviderFactory fpf : Lookup.getDefault().lookupAll(FileProviderFactory.class)) {
-            result.add(fpf.createFileProvider());
-        }
-        synchronized (this) {
-            if (providers == null) {
-                providers = Collections.unmodifiableList(result);
-            }
-            return providers;
         }
     }
-    
+
     // Private classes ---------------------------------------------------------
-
-
-
-    private class Worker implements Runnable {
-
-        private volatile boolean isCanceled = false;
-        private volatile FileProvider currentProvider;
-
-        private final String text;
-        private final QuerySupport.Kind searchType;
-        private final Project currentProject;
-        private final long createTime;
-        private final int lineNr;
-
-        public Worker(String text, QuerySupport.Kind searchType, Project currentProject, int lineNr) {
-            this.text = text;
-            this.lineNr = lineNr;
-            this.searchType = searchType;
-            this.currentProject = currentProject;
-            this.createTime = System.currentTimeMillis();
-            LOGGER.log( Level.FINE, "Worker for {0}, {1} - created after {2} ms.",
-                    new Object[]{
-                        text,
-                        searchType,
-                        System.currentTimeMillis() - panel.time
-            });
-       }
-
-        @Override
-        public void run() {
-
-            LOGGER.log( Level.FINE, "Worker for {0} - started {1} ms.",
-                    new Object[]{
-                        text,
-                        System.currentTimeMillis() - createTime
-            });
-            
-            final List<? extends FileDescriptor> files = getFileNames();
-            if ( isCanceled ) {
-                LOGGER.log( Level.FINE, "Worker for {0} exited after cancel {1} ms.",
-                        new Object[]{
-                            text,
-                            System.currentTimeMillis() - createTime
-                });
-                return;
-            }
-            final ListModel model = Models.refreshable(
-                    Models.fromList(files),
-                    new Factory<FileDescriptor, Pair<FileDescriptor,Runnable>>() {
-                        @Override
-                        public FileDescriptor create(@NonNull final Pair<FileDescriptor,Runnable> param) {
-                            return new AsyncFileDescriptor(param.first(), param.second());
-                        }
-                    });
-
-            if ( !isCanceled && model != null ) {
-                LOGGER.log( Level.FINE, "Worker for text {0} finished after {1} ms.",
-                        new Object[]{
-                            text,
-                            System.currentTimeMillis() - createTime
-                });
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        panel.setModel(model);
-                        if (openBtn != null && !files.isEmpty()) {
-                            openBtn.setEnabled (true);
-                        }
-                    }
-                });
-            }
-
-
-        }
-
-        public void cancel() {
-            if ( panel.time != -1 ) {
-                LOGGER.log( Level.FINE, "Worker for text {0} canceled after {1} ms.",
-                        new Object[]{
-                            text,
-                            System.currentTimeMillis() - createTime
-                });
-            }
-            FileProvider provider;
-            synchronized (this) {
-                isCanceled = true;
-                provider = currentProvider;
-            }
-            if (provider != null) {
-                    provider.cancel();
-            }
-        }
-
-        private List<? extends FileDescriptor> getFileNames() {
-            try {
-                String searchField;
-                String indexQueryText;
-                switch (searchType) {
-                    case CASE_INSENSITIVE_PREFIX:
-                        searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME; 
-                        indexQueryText = text;
-                        break;
-                    case CASE_INSENSITIVE_REGEXP:
-                        searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME;
-                        indexQueryText = NameMatcherFactory.wildcardsToRegexp(text,true);
-                        Pattern.compile(indexQueryText);    //Verify the pattern
-                        break;
-                    case REGEXP:                        
-                        searchField = FileIndexer.FIELD_NAME;
-                        indexQueryText = NameMatcherFactory.wildcardsToRegexp(text,true);
-                        Pattern.compile(indexQueryText);    //Verify the pattern
-                        break;
-                    default:
-                        searchField = FileIndexer.FIELD_NAME;
-                        indexQueryText = text;
-                        break;
-                }
-
-                ArrayList<FileDescriptor> files = new ArrayList<FileDescriptor>();
-                
-                // handled by providers and should be excluded from other searches
-                final Set<FileObject> excludes = new HashSet<FileObject>();
-                final Project[] projects = OpenProjects.getDefault().getOpenProjects();
-                final List<FileObject> sgRoots = new LinkedList<FileObject>();
-                for (Project p : projects) {
-                    for (SourceGroup group : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
-                        sgRoots.add(group.getRootFolder());
-                    }
-                }
-                final SearchType jumpToSearchType = toJumpToSearchType(searchType);
-
-                long st = System.currentTimeMillis();
-                //Ask GTF providers
-                final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext(text, jumpToSearchType, lineNr, currentProject);
-                final FileProvider.Result fpR = FileProviderAccessor.getInstance().createResult(files,new String[1], ctx);
-                for (FileProvider provider : getProviders()) {
-                    currentProvider = provider;
-                    try {
-                        for (FileObject root : sgRoots) {
-                            if (excludes.contains(root)) {
-                                continue;
-                            }
-                            FileProviderAccessor.getInstance().setRoot(ctx, root);
-                            boolean recognized = provider.computeFiles(ctx, fpR);
-                            if (recognized) {
-                                excludes.add(root);
-                            }
-                        }
-                    } finally {
-                        currentProvider = null;
-                        if (isCanceled) {
-                            return files;
-                        }
-                    }
-                }
-                long et = System.currentTimeMillis();
-                LOGGER.log(Level.FINE, "Providers Search: {0}ms", (et-st));
-                    
-                final Set<FileObject> roots = new LinkedHashSet<FileObject>(QuerySupport.findRoots((Project) null, null, Collections.<String>emptyList(), Collections.<String>emptyList()));
-                roots.removeAll(excludes);
-                
-                // indexing-based search
-                QuerySupport q = QuerySupport.forRoots(FileIndexer.ID, FileIndexer.VERSION, roots.toArray(new FileObject[roots.size()]));
-                Collection<? extends IndexResult> results = q.query(searchField, indexQueryText, searchType);
-                for (IndexResult r : results) {
-                    FileObject file = r.getFile();
-                    if (file == null || !file.isValid()) {
-                        // the file has been deleted in the meantime
-                        continue;
-                    }
-
-                    Project project = FileOwnerQuery.getOwner(file);
-                    boolean preferred = project != null && currentProject != null ? project.getProjectDirectory() == currentProject.getProjectDirectory() : false;
-                    FileDescriptor fd = new FileDescription(
-                            file,
-                            r.getRelativePath().substring(0, Math.max(r.getRelativePath().length() - file.getNameExt().length() - 1, 0)),
-                            project,
-                            lineNr);
-                    FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
-                    files.add(fd);
-                    LOGGER.log(Level.FINER, "Found: {0}, project={1}, currentProject={2}, preferred={3}",
-                            new Object[]{
-                                file.getPath(),
-                                project, currentProject, preferred
-                            });
-                }
-                excludes.addAll(roots);
-                et = System.currentTimeMillis();
-                LOGGER.log(Level.FINE, "Indexed Search: {0}ms", (et - st));
-                if (isCanceled) {
-                    return files;
-                }
-                
-                //PENDING Now we have to search folders which not included in Search API
-                st = System.currentTimeMillis();
-                Collection <FileObject> allFolders = new HashSet<FileObject>();
-                List<SearchFilter> filters = SearchInfoUtils.DEFAULT_FILTERS;
-                for (FileObject root : sgRoots) {
-                    allFolders = searchSources(root, allFolders, excludes, filters);
-                }
-                //Looking for matching files in all found folders
-                final NameMatcher matcher = NameMatcherFactory.createNameMatcher(text, jumpToSearchType);
-                for (FileObject folder: allFolders) {
-                    assert folder.isFolder();
-                    Enumeration<? extends FileObject> filesInFolder = folder.getData(false);
-                    while (filesInFolder.hasMoreElements()) {
-                        FileObject file = filesInFolder.nextElement();
-                        if (file.isFolder()) continue;
-
-                        if (matcher.accept(file.getNameExt())) {
-                            Project project = FileOwnerQuery.getOwner(file);
-                            boolean preferred = false;
-                            String relativePath = null;
-                            if(project != null) { // #176495
-                               FileObject pd = project.getProjectDirectory();
-                               preferred = currentProject != null ?
-                                 pd == currentProject.getProjectDirectory() :
-                                 false;
-                                relativePath = FileUtil.getRelativePath(pd, file);
-                            }
-                            if (relativePath == null)
-                                relativePath ="";
-                            FileDescriptor fd = new FileDescription(
-                                file,
-                                relativePath,
-                                project,
-                                lineNr);
-                            FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
-                            files.add(fd);
-                        }
-                    }
-                }
-                et = System.currentTimeMillis();
-                LOGGER.log(Level.FINE, "Unindexed search: {0}ms", (et-st));
-                Collections.sort(files, 
-                                 new FileComarator(panel.isPreferedProject(),
-                                                   panel.isCaseSensitive()));
-                return files;
-            } catch (PatternSyntaxException pse) {
-                return Collections.<FileDescriptor>emptyList();
-            } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, null, ioe);
-                return Collections.<FileDescriptor>emptyList();
-            }
-        }                
-        
-        private SearchType toJumpToSearchType(final QuerySupport.Kind searchType) {
-            switch (searchType) {
-                case CAMEL_CASE:
-                case CASE_INSENSITIVE_CAMEL_CASE:
-                    return org.netbeans.spi.jumpto.type.SearchType.CAMEL_CASE;
-                case CASE_INSENSITIVE_PREFIX:
-                    return org.netbeans.spi.jumpto.type.SearchType.CASE_INSENSITIVE_PREFIX;
-                case CASE_INSENSITIVE_REGEXP:
-                    return org.netbeans.spi.jumpto.type.SearchType.CASE_INSENSITIVE_REGEXP;
-                case EXACT:
-                    return org.netbeans.spi.jumpto.type.SearchType.EXACT_NAME;
-                case PREFIX:
-                    return org.netbeans.spi.jumpto.type.SearchType.PREFIX;
-                case REGEXP:
-                    return org.netbeans.spi.jumpto.type.SearchType.REGEXP;
-                default:
-                    throw new IllegalArgumentException();
-            }
-        }
-    } // End of Worker class
-
-    private Collection<FileObject> searchSources(FileObject root, Collection<FileObject> result, Collection<? extends FileObject> exclude, List<SearchFilter> filters) {
-        if (root.getChildren().length == 0 || exclude.contains(root) || !checkAgainstFilters(root, filters)) {
-            return result;
-        } else {
-//            if (!exclude.contains(root)) {
-                result.add(root);
-                Enumeration<? extends FileObject> subFolders = root.getFolders(false);
-                while (subFolders.hasMoreElements()) {
-                    searchSources(subFolders.nextElement(), result, exclude, filters);
-                }
-//            }
-        }
-        return result;
-    }
-
-    private boolean checkAgainstFilters(FileObject folder, List<SearchFilter> filters) {
-        assert folder.isFolder();
-        for (SearchFilter filter: filters) {
-            if (filter.traverseFolder(folder) == SearchFilter.FolderResult.DO_NOT_TRAVERSE)
-                return false;
-        }
-        return true;
-    }
     private class DialogButtonListener implements ActionListener {
         
         private FileSearchPanel panel;
@@ -791,6 +498,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             Parameters.notNull("refreshCallback", refreshCallback); //NOI18N
             this.delegate = delegate;
             this.refreshCallback = refreshCallback;
+            FileProviderAccessor.getInstance().setFromCurrentProject(
+                this,
+                FileProviderAccessor.getInstance().isFromCurrentProject(delegate));
         }
 
         @Override
@@ -870,7 +580,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         private JLabel jlName = HtmlRenderer.createLabel();
         private JLabel jlPath = new JLabel();
         private JLabel jlPrj = new JLabel();
-        private int DARKER_COLOR_COMPONENT = 5;
+        private int DARKER_COLOR_COMPONENT = 15;
         private int LIGHTER_COLOR_COMPONENT = 80;
         private Color fgColor;
         private Color fgColorLighter;
@@ -998,10 +708,13 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 jlPath.setText(fd.getOwnerPath().length() > 0 ? " (" + fd.getOwnerPath() + ")" : " ()"); //NOI18N
                 setProjectName(jlPrj, fd.getProjectName());
                 jlPrj.setIcon(fd.getProjectIcon());
-                if ( !isSelected ) {
-                    rendererComponent.setBackground( index % 2 == 0 ?
-                        ( FileProviderAccessor.getInstance().isFromCurrentProject(fd) && colorPrefered ? bgColorGreener : bgColor ) :
-                        ( FileProviderAccessor.getInstance().isFromCurrentProject(fd) && colorPrefered ? bgColorDarkerGreener : bgColorDarker ) );
+                if (!isSelected) {
+                    final boolean cprj = FileProviderAccessor.getInstance().isFromCurrentProject(fd) && colorPrefered;
+                    final Color bgc =  index % 2 == 0 ?
+                        (cprj ? bgColorGreener : bgColor ) :
+                        (cprj ? bgColorDarkerGreener : bgColorDarker );
+                    jlName.setBackground(bgc);  //Html does not support transparent bg
+                    rendererComponent.setBackground(bgc);
                 }
                 rendererComponent.setDescription(fd);
             }

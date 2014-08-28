@@ -86,4 +86,13 @@ public interface ProjectProxy {
      * Returns true if discovered properties are merged with project properties
      */
     boolean mergeProjectProperties();
+    
+    /**
+     * Case: binary file compiled from symbolic link.
+     * By default project will contain only real compiled sources (i.e. links).
+     * User expectation is: project contains original source files.
+     * 
+     * @return true if project should contain resolved links.
+     */
+    boolean resolveSymbolicLinks();
 }

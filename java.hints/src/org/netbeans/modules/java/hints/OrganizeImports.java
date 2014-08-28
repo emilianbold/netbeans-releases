@@ -179,8 +179,8 @@ public class OrganizeImports {
             }
         }
         final CodeStyle cs = CodeStyle.getDefault(copy.getFileObject());
-        Set<Element> starImports = cs.countForUsingStarImport() < Integer.MAX_VALUE ? new HashSet<Element>() : null;
-        Set<Element> staticStarImports = cs.countForUsingStaticStarImport() < Integer.MAX_VALUE ? new HashSet<Element>() : null;
+        Set<Element> starImports = new HashSet<Element>();
+        Set<Element> staticStarImports = new HashSet<Element>();
         Set<Element> toImport = getUsedElements(copy, cu, starImports, staticStarImports);
         List<ImportTree> imps = new LinkedList<ImportTree>();  
         TreeMaker maker = copy.getTreeMaker();
@@ -190,22 +190,18 @@ public class OrganizeImports {
             toImport.addAll(addImports);
             imps.addAll(cu.getImports());
         } else if (!toImport.isEmpty() || isBulkMode) {
-            if (starImports != null || staticStarImports != null) {
-                Trees trees = copy.getTrees();
-                for (ImportTree importTree : cu.getImports()) {
-                    Tree qualIdent = importTree.getQualifiedIdentifier();
-                    if (qualIdent.getKind() == Tree.Kind.MEMBER_SELECT && "*".contentEquals(((MemberSelectTree)qualIdent).getIdentifier())) {
-                        if (importTree.isStatic()) {
-                            if (staticStarImports != null && staticStarImports.contains(trees.getElement(TreePath.getPath(cu, ((MemberSelectTree)qualIdent).getExpression()))))
-                                imps.add(maker.Import(qualIdent, true));
-                        } else {
-                            if (starImports != null && starImports.contains(trees.getElement(TreePath.getPath(cu, ((MemberSelectTree)qualIdent).getExpression()))))
-                                imps.add(maker.Import(qualIdent, false));
-                        }
+            Trees trees = copy.getTrees();
+            for (ImportTree importTree : cu.getImports()) {
+                Tree qualIdent = importTree.getQualifiedIdentifier();
+                if (qualIdent.getKind() == Tree.Kind.MEMBER_SELECT && "*".contentEquals(((MemberSelectTree)qualIdent).getIdentifier())) {
+                    if (importTree.isStatic()) {
+                        if (staticStarImports != null && staticStarImports.contains(trees.getElement(TreePath.getPath(cu, ((MemberSelectTree)qualIdent).getExpression()))))
+                            imps.add(maker.Import(qualIdent, true));
+                    } else {
+                        if (starImports != null && starImports.contains(trees.getElement(TreePath.getPath(cu, ((MemberSelectTree)qualIdent).getExpression()))))
+                            imps.add(maker.Import(qualIdent, false));
                     }
                 }
-            } else {
-                imps = Collections.emptyList();
             }
         } else {
             return;

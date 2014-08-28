@@ -48,15 +48,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.io.StringWriter;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import static org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase.composeName;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -355,6 +354,10 @@ public class RemoteFileSystemUtils {
 
    /** Copy-paste from FileObject.copy */
     public static FileObject copy(FileObject source, FileObject target, String name, String ext) throws IOException {
+
+        // copying via transport isn't yet supported for folders -
+        // which is a pity, but, on the other hand, client code in IDE always copy-pastes file by file,
+        // so there is no harm for end user
         if (source.isFolder()) {
             if (FileUtil.isParentOf(source, target)) {
                 throw new IOException(NbBundle.getMessage(RemoteFileSystemUtils.class, "EXC_OperateChild", source, target)); // NOI18N
@@ -365,6 +368,37 @@ public class RemoteFileSystemUtils {
                 fo.copy(peer, fo.getName(), fo.getExt());
             }
             return peer;
+        }
+
+        final String from = source.getPath();
+        final String newNameExt = composeName(name, ext);
+        final String newPath = target.getPath() + '/' + newNameExt;
+        if (target instanceof RemoteFileObject && source instanceof RemoteFileObject) {
+            ExecutionEnvironment env = ((RemoteFileObject) source).getExecutionEnvironment();
+            if (env.equals(((RemoteFileObject) target).getExecutionEnvironment())
+                    && RemoteFileSystemTransport.canCopy(env, from, newPath)) {
+                try {
+                    DirEntryList entries = RemoteFileSystemTransport.copy(env, from, newPath);
+                    ((RemoteFileObject) target).getImplementor().postDeleteOrCreateChild(null, entries);
+                    FileObject fo = target.getFileObject(newNameExt);
+                    if (fo == null) {
+                        throw new IOException("Null file object after copy " + env + ':' + newPath); //NOI18N
+                    } else {
+                        FileUtil.copyAttributes(source, fo);
+                        return fo;
+                    }
+                } catch (InterruptedException ex) {
+                    throw new InterruptedIOException(ex.getLocalizedMessage());
+                } catch (CancellationException ex) {
+                    throw new InterruptedIOException(ex.getLocalizedMessage());
+                } catch (ExecutionException ex) {
+                    if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
+                        throw new FileNotFoundException(from + " or " + newPath); //NOI18N
+                    } else {
+                        throw new IOException(ex);
+                    }
+                }
+            }
         }
 
         FileObject dest = RemoteFileSystemUtils.copyFileImpl(source, target, name, ext);

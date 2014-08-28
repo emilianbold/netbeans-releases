@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.ArrayList;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import java.util.Arrays;
 import java.util.List;
@@ -149,21 +150,35 @@ public class CompletionContextFinder {
         
         //find the begining of the object literal
         Token<? extends JsTokenId> token = null;
-        JsTokenId tokenId;
+        JsTokenId tokenId = ts.token().id();
         
+        if (tokenId == JsTokenId.OPERATOR_COMMA) {
+            ts.movePrevious();
+        }
         List<JsTokenId> listIds = Arrays.asList(JsTokenId.OPERATOR_COMMA, JsTokenId.OPERATOR_COLON, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.OPERATOR_SEMICOLON);
         // find previous , or : or { or ;
         token = LexUtilities.findPreviousToken(ts, listIds);
         tokenId = token.id();
         boolean commaFirst = false;
         if (tokenId == JsTokenId.OPERATOR_COMMA && ts.movePrevious()) {
-            token = LexUtilities.findPreviousToken(ts, listIds);
+            List<JsTokenId> checkParentList = new ArrayList(listIds);
+            List<JsTokenId> parentList = Arrays.asList(JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN, JsTokenId.BRACKET_RIGHT_CURLY); 
+            checkParentList.addAll(parentList);
+            token = LexUtilities.findPreviousToken(ts, checkParentList);
             tokenId = token.id();
             commaFirst = true;
-            if (tokenId == JsTokenId.OPERATOR_COLON) {
-                // we are in the previous property definition
-                return true;
-            } 
+            if (tokenId == JsTokenId.BRACKET_RIGHT_PAREN || tokenId == JsTokenId.BRACKET_RIGHT_CURLY) {
+                balanceBracketBack(ts);
+                token = ts.token();
+                tokenId = token.id();
+            } else if (tokenId == JsTokenId.BRACKET_LEFT_PAREN) {
+                return false;
+            } else {
+                if (tokenId == JsTokenId.OPERATOR_COLON) {
+                    // we are in the previous property definition
+                    return true;
+                }
+            }
         } 
         if (tokenId == JsTokenId.BRACKET_LEFT_CURLY && ts.movePrevious()) {
             List<JsTokenId> emptyIds = Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT);
@@ -174,17 +189,10 @@ public class CompletionContextFinder {
                 return true;
             } else if (tokenId == JsTokenId.BRACKET_RIGHT_PAREN) {
                 // it can be a method definition
-                int balance = 1;
-                while (ts.movePrevious() && balance > 0) {
-                    token = ts.token();
-                    tokenId = token.id();
-                    if (tokenId == JsTokenId.BRACKET_RIGHT_PAREN) {
-                        balance++;
-                    } else if (tokenId == JsTokenId.BRACKET_LEFT_PAREN) {
-                        balance--;
-                    }
-                }
-                if (balance == 0) {
+                balanceBracketBack(ts);
+                token = ts.token();
+                tokenId = token.id();
+                if (tokenId == JsTokenId.BRACKET_LEFT_PAREN && ts.movePrevious()) {
                     token = LexUtilities.findPrevious(ts, emptyIds);
                     tokenId = token.id();
                     if (tokenId == JsTokenId.KEYWORD_FUNCTION && ts.movePrevious()) {
@@ -241,5 +249,29 @@ public class CompletionContextFinder {
         tokenSequence.move(orgTokenSequencePos);
         tokenSequence.moveNext();
        return accept;
+    }
+    
+    private static void balanceBracketBack(TokenSequence<JsTokenId> ts) {
+        Token<? extends JsTokenId> token = ts.token();
+        JsTokenId tokenId = ts.token().id();
+        JsTokenId tokenIdOriginal = ts.token().id();
+        List<JsTokenId> lookingFor;
+        if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY) {
+            lookingFor = Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY);
+        } else if (tokenId == JsTokenId.BRACKET_RIGHT_PAREN) {
+            lookingFor = Arrays.asList(JsTokenId.BRACKET_LEFT_PAREN);
+        } else {
+            return;
+        }
+        int balance = -1;
+        while (balance != 0 && ts.movePrevious()) {
+            token = LexUtilities.findPreviousToken(ts, lookingFor);
+            tokenId = token.id();
+            if (lookingFor.contains(tokenIdOriginal)) {
+                balance --;
+            } else if (lookingFor.contains(tokenId)) {
+                balance++;
+            }
+        }
     }
 }

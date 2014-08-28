@@ -59,12 +59,17 @@ import java.io.IOException;
 import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
 import org.netbeans.modules.cnd.modelimpl.csm.SpecializationDescriptor.SpecializationParameterBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilder;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -76,31 +81,43 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class ExpressionBasedSpecializationParameterImpl extends OffsetableBase implements CsmExpressionBasedSpecializationParameter, SelfPersistent, Persistent {
+    
+    private final CsmUID<CsmScope> scope;
 
     private final CharSequence expression;
     
     private final boolean defaultValue;
 
-    private ExpressionBasedSpecializationParameterImpl(CharSequence expression, CsmFile file, int start, int end, boolean defaultValue) {
+    private ExpressionBasedSpecializationParameterImpl(CharSequence expression, CsmScope scope, CsmFile file, int start, int end, boolean defaultValue) {
         super(file, start, end);
         this.expression = NameCache.getManager().getString(expression);
         this.defaultValue = defaultValue;
+        if ((scope instanceof CsmIdentifiable)) {
+            this.scope = UIDCsmConverter.scopeToUID(scope);
+        } else {
+            this.scope = null;
+        }
     }
     
     public static ExpressionBasedSpecializationParameterImpl create(CsmExpressionStatement expression, CsmFile file, int start, int end) {
-        return create(expression.getText(), file, start, end, false);
+        return create(expression, file, start, end, false);
     }    
 
     public static ExpressionBasedSpecializationParameterImpl create(CsmExpressionStatement expression, CsmFile file, int start, int end, boolean defaultValue) {
-        return new ExpressionBasedSpecializationParameterImpl(expression.getText(), file, start, end, defaultValue);
+        return new ExpressionBasedSpecializationParameterImpl(expression.getText(), expression.getScope(), file, start, end, defaultValue);
     }
     
-    public static ExpressionBasedSpecializationParameterImpl create(CharSequence expression, CsmFile file, int start, int end) {
-        return create(expression, file, start, end, false);
+    public static ExpressionBasedSpecializationParameterImpl create(CharSequence expression, CsmScope scope, CsmFile file, int start, int end) {
+        return create(expression, scope, file, start, end, false);
     }  
 
-    public static ExpressionBasedSpecializationParameterImpl create(CharSequence expression, CsmFile file, int start, int end, boolean defaultValue) {
-        return new ExpressionBasedSpecializationParameterImpl(expression, file, start, end, defaultValue);
+    public static ExpressionBasedSpecializationParameterImpl create(CharSequence expression, CsmScope scope, CsmFile file, int start, int end, boolean defaultValue) {
+        return new ExpressionBasedSpecializationParameterImpl(expression, scope, file, start, end, defaultValue);
+    }
+
+    @Override
+    public CsmScope getScope() {
+        return scope == null? null : scope.getObject();
     }
 
     @Override
@@ -161,7 +178,7 @@ public final class ExpressionBasedSpecializationParameterImpl extends Offsetable
                 expr = NameCache.getManager().getString("1"); // NOI18N
             }
             
-            ExpressionBasedSpecializationParameterImpl param = new ExpressionBasedSpecializationParameterImpl(expr, getFile(), getStartOffset(), getEndOffset(), false);
+            ExpressionBasedSpecializationParameterImpl param = new ExpressionBasedSpecializationParameterImpl(expr, null, getFile(), getStartOffset(), getEndOffset(), false);
             return param;
         }
     }
@@ -174,12 +191,14 @@ public final class ExpressionBasedSpecializationParameterImpl extends Offsetable
         super.write(output);
         PersistentUtils.writeUTF(expression, output);
         output.writeBoolean(defaultValue);
+        UIDObjectFactory.getDefaultFactory().writeUID(scope, output);
     }
 
     public ExpressionBasedSpecializationParameterImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.expression = PersistentUtils.readUTF(input, NameCache.getManager());
         this.defaultValue = input.readBoolean();
+        this.scope = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
 
 }

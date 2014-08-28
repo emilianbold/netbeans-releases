@@ -264,8 +264,9 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 StringBuilder sb = new StringBuilder("\n");
                 sb.append(IndentUtils.createIndentString(doc, indent));
                 String commentDelimiter = "//"; //NOI18N
-                while (ts.token() != null && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT && !isLineCommentDelimiter(ts.token())) {
-                    ts.movePrevious();
+                boolean moved = true;
+                while (moved && ts.token() != null && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT && !isLineCommentDelimiter(ts.token())) {
+                    moved = ts.movePrevious();
                 }
                 if (isLineCommentDelimiter(ts.token())) {
                     commentDelimiter = ts.token().text().toString();
@@ -503,14 +504,21 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
             if (TypingHooksUtils.isStringToken(token) && !isMultiline(token)) {
                 concat = offset != tokenOffsetOnCaret || (id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE && token.length() != 1);
                 if (token.length() == 1) {
-                    if (ts.moveNext()) {
-                        if (TypingHooksUtils.isStringToken(ts.token())) {
-                            concat = false;
-                        } else {
-                            concat = true;
+                    int original = ts.offset();
+                    while (ts.moveNext()) {
+                        Token<? extends PHPTokenId> followingToken = ts.token();
+                        if (followingToken == null) {
+                            break;
                         }
-                        ts.movePrevious();
+                        PHPTokenId followingTokenId = followingToken.id();
+                        if (followingTokenId == PHPTokenId.WHITESPACE) {
+                            continue;
+                        }
+                        concat = !TypingHooksUtils.isStringToken(followingToken) && followingTokenId != PHPTokenId.PHP_CLOSETAG;
+                        break;
                     }
+                    ts.move(original);
+                    ts.moveNext();
                 }
             }
         }
@@ -525,17 +533,20 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
     private static boolean isPartOfHereOrNowDoc(TokenSequence<? extends PHPTokenId> ts) {
         boolean result = false;
         int originalOffset = ts.offset();
-        while (ts.movePrevious()) {
-            Token<? extends PHPTokenId> token = ts.token();
-            if (token != null) {
-                if (TypingHooksUtils.isStringToken(token)) {
-                    continue;
-                } else {
-                    PHPTokenId tokenId = token.id();
-                    if (tokenId == PHPTokenId.PHP_HEREDOC_TAG || tokenId == PHPTokenId.PHP_NOWDOC_TAG) {
-                        result = true;
+        Token<? extends PHPTokenId> token = ts.token();
+        if (token != null && TypingHooksUtils.isStringToken(token)) {
+            while (ts.movePrevious()) {
+                token = ts.token();
+                if (token != null) {
+                    if (!TypingHooksUtils.isStringToken(token)) {
+                        PHPTokenId tokenId = token.id();
+                        if (tokenId == PHPTokenId.PHP_HEREDOC_TAG_START || tokenId == PHPTokenId.PHP_NOWDOC_TAG_START) {
+                            result = true;
+                            break;
+                        } else if (tokenId == PHPTokenId.PHP_HEREDOC_TAG_END || tokenId == PHPTokenId.PHP_NOWDOC_TAG_END) {
+                            break;
+                        }
                     }
-                    break;
                 }
             }
         }

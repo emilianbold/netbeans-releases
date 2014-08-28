@@ -54,13 +54,16 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.navigation.services.IncludedModel;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -87,6 +90,28 @@ public class IncludeNode extends AbstractCsmNode {
         this.model = model;
         object = element;
     }
+
+    public Lookup getNodeLookup() {
+        FileObject fo = object.getFileObject();
+        DataObject dobj = null;
+        if (fo != null) {
+            try {
+                dobj = DataObject.find(fo);
+            } catch (DataObjectNotFoundException ex) {
+            }
+        }
+        if (fo != null && dobj != null) {
+            return Lookups.fixed(fo, dobj);
+        } else {
+            if (fo != null) {
+                return Lookups.fixed(fo);
+            } else if (dobj != null) {
+                return Lookups.fixed(dobj);
+            }
+        }
+        return null;
+    }
+
     
     @Override
     public CsmObject getCsmObject() {

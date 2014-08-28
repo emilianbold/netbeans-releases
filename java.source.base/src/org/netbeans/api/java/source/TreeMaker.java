@@ -1500,7 +1500,7 @@ public final class TreeMaker {
      * @return  class tree with modified implements.
      */
     public ClassTree removeClassImplementsClause(ClassTree clazz, Tree implementsClause) {
-        return delegate.removeClassImplementsClause(clazz, implementsClause);
+        return delegate.removeClassImplementsClause(clazz, asRemoved(implementsClause));
     }
     
     /**
@@ -2677,7 +2677,7 @@ public final class TreeMaker {
      */
     public <N extends Tree> N setLabel(final N node, final CharSequence aLabel)
             throws IllegalArgumentException {
-        N result = setLabelImpl(node, aLabel);
+        N result = asReplacementOf(setLabelImpl(node, aLabel), node, true);
 
         GeneratorUtilities gu = GeneratorUtilities.get(copy);
 
@@ -3041,7 +3041,90 @@ public final class TreeMaker {
             throw new IllegalArgumentException("Index out of bounds, index=" + index + ", length=" + comments.size());
         }
     }
-
+    
+    /**
+     * Marks the tree as new. This information serves as a hint to code generator, which may choose appropriate
+     * formatting for the tree, or suppress comments which might get associated to the tree.
+     * 
+     * @param <T>
+     * @param tree Tree instance
+     * @return the tree itself
+     */
+    public <T extends Tree> T asNew(T tree) {
+        if (handler == null) {
+            throw new IllegalStateException("Cannot work with comments outside runModificationTask.");
+        }
+        if (tree == null) {
+            throw new NullPointerException("tree");
+        }
+        copy.associateTree(tree, null, true);
+        return tree;
+    }
+    
+    /**
+     * Marks a tree as a replacement of some old one. The hint may cause surrounding whitespace to be 
+     * carried over to the new tree and comments to be attached to the same (similar) positions
+     * as in the old tree. Prevous hints are removed.
+     * 
+     * @param <T>
+     * @param treeNew the new tree instance
+     * @param treeOld the old tree instance
+     * @return the new tree instance unchanged
+     * @see #asReplacementOf(com.sun.source.tree.Tree, com.sun.source.tree.Tree, boolean) 
+     * @since 0.137
+     */
+    public <T extends Tree> T asReplacementOf(T treeNew, Tree treeOld) {
+        return asReplacementOf(treeNew, treeOld, false);
+    }
+    
+    /**
+     * Marks a tree as a replacement of some old one. The hint may cause surrounding whitespace to be 
+     * carried over to the new tree and comments to be attached to the same (similar) positions
+     * as in the old tree. 
+     * <p/>
+     * If 'defaultOnly' is true, the hint is only added if no previous hint exists. You generally want
+     * to force the hint, in code manipulation operations. Bulk tree transformers should preserve existing
+     * hints - the {@link TreeUtilities#translate} preserves existing relationships.
+     * 
+     * @param <T>
+     * @param treeNew
+     * @param treeOld
+     * @param defaultOnly
+     * @return a tree that corresponds to treeNew.
+     * @since 0.137
+     */
+    public <T extends Tree> T asReplacementOf(T treeNew, Tree treeOld, boolean defaultOnly) {
+        if (handler == null) {
+            throw new IllegalStateException("Cannot work with comments outside runModificationTask.");
+        }
+        if (treeOld == null) {
+            throw new NullPointerException("treeOld");
+        }
+        if (treeNew != null) {
+            copy.associateTree(treeNew, treeOld, !defaultOnly);
+        }
+        return treeNew;
+    }
+    
+    /**
+     * Marks the tree as removed. The mark may affect whitespace and comment handling. For example, if the tree was 
+     * rewritten by a different construct, and there's no direct replacement for the tree, the tree node should be marked
+     * as removed, so that comments do not end up with the replacement. The caller is then responsible for preserving
+     * comments or other whitespace in the removed node.
+     * 
+     * @param <T>
+     * @param tree tree that has been removed.
+     * @return the tree.
+     * @since 0.137
+     */
+    public <T extends Tree> T asRemoved(T tree) {
+        if (tree == null) {
+            throw new NullPointerException("tree");
+        }
+        copy.associateTree(tree, null, true);
+        return tree;
+    }
+    
     /**
      * Creates a new BlockTree for provided <tt>bodyText</tt>.
      * 

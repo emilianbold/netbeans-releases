@@ -75,6 +75,12 @@ public class FirefoxTest {
                 null, -1);
     }
 
+    @Test
+    public void testPatternIssue246036() {
+        assertFilePattern("@/home/gapon/NetBeansProjects/AngularJSPhoneCat1/test/unit/controllersSpec.js:31:7",
+                "/home/gapon/NetBeansProjects/AngularJSPhoneCat1/test/unit/controllersSpec.js", 31);
+    }
+
     private void assertFilePattern(String input, String file, int line) {
         TestUtils.assertFileLinePattern(Firefox.OUTPUT_FILE_LINE_PATTERN, input, file, line);
     }

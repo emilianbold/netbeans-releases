@@ -50,18 +50,24 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.hibernate.HibernateException;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.JDBCMetaDataConfiguration;
 import org.hibernate.cfg.reveng.DefaultReverseEngineeringStrategy;
 import org.hibernate.cfg.reveng.OverrideRepository;
 import org.hibernate.cfg.reveng.ReverseEngineeringSettings;
 import org.hibernate.cfg.reveng.ReverseEngineeringStrategy;
+import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
+import org.hibernate.service.ServiceRegistry;
+import org.hibernate.service.ServiceRegistryBuilder;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
+import org.netbeans.modules.hibernate.util.CustomJDBCConnectionProvider;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
@@ -278,13 +284,11 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
 
                 settings = new ReverseEngineeringSettings(revStrategy);
                 settings.setDefaultPackageName("validname");//NOI18N
-
+                
                 defaultStrategy.setSettings(settings);
                 revStrategy.setSettings(settings);
 
                 cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(revStrategy));
-                
- 
                 
                 cfg.readFromJDBC();
                 cfg.buildMappings();                

@@ -1435,52 +1435,32 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
         refreshResource("", true);
     }
     
-    private void setDoc(TreeDocumentRoot doc) {
-        this.doc = doc;
-    }
-    
     public void propertyChange(PropertyChangeEvent evt) {
         if (!evt.getPropertyName().equals(TreeEditorCookie.PROP_DOCUMENT_ROOT)) {
             return;
         }
         if (cookie.getStatus() == TreeEditorCookie.STATUS_OK || cookie.getStatus() == TreeEditorCookie.STATUS_NOT) {
             // Document was modified, and reparsed OK. See what changed.
-            if (System.getProperty("Run-OpenDocRoot-Synchronously") == null || !System.getProperty("Run-OpenDocRoot-Synchronously").equals("true")) {
-                RP.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        try {
-                            WritableXMLFileSystem.this.setDoc(cookie.openDocumentRoot());
-                            Enumeration<? extends FileObject> e = existingFileObjects(getRoot());
-                            while (e.hasMoreElements()) {
-                                FileObject fo = (FileObject) e.nextElement();
-                                // fo.refresh() does not work
-                                refreshResource(fo.getPath(), true);
-                            }
-                        } catch (TreeException e) {
-                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                        } catch (IOException e) {
-                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                        }
-
-                    }
-                });
-            } else {
-                try {
-                    doc = cookie.openDocumentRoot();
-                    Enumeration<? extends FileObject> e = existingFileObjects(getRoot());
-                    while (e.hasMoreElements()) {
-                        FileObject fo = (FileObject) e.nextElement();
-                        // fo.refresh() does not work
-                        refreshResource(fo.getPath(), true);
-                    }
-                } catch (TreeException e) {
-                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                } catch (IOException e) {
-                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            try {
+                doc = cookie.openDocumentRoot();
+                /* Neither of the following work:
+                refreshResource("", true); // only works on root folder
+                refreshRoot();             // seems to do nothing at all
+                 */
+                Enumeration<? extends FileObject> e = existingFileObjects(getRoot());
+                while (e.hasMoreElements()) {
+                    FileObject fo = (FileObject) e.nextElement();
+                    // fo.refresh() does not work
+                    refreshResource(fo.getPath(), true);
                 }
-            }        }
+                //System.err.println("got changes; new files: " + Collections.list(getRoot().getChildren(true)));
+                //Thread.dumpStack();
+            } catch (TreeException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            } catch (IOException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
     }
     
 }

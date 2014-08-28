@@ -119,9 +119,6 @@ public class GenerateCodePanel extends javax.swing.JPanel {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 listKeyPressed(evt);
             }
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                listKeyReleased(evt);
-            }
         });
         jScrollPane1.setViewportView(jList1);
 
@@ -137,12 +134,6 @@ public class GenerateCodePanel extends javax.swing.JPanel {
         invokeSelected();
     }//GEN-LAST:event_listMouseReleased
 
-    private void listKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_listKeyReleased
-        KeyStroke ks = KeyStroke.getKeyStrokeForEvent(evt);
-        if (ks.getKeyCode() == KeyEvent.VK_ENTER || ks.getKeyCode() == KeyEvent.VK_SPACE)
-            invokeSelected();
-    }//GEN-LAST:event_listKeyReleased
-
     private void listMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listMouseMoved
         int idx = jList1.locationToIndex(evt.getPoint());
         if (idx != jList1.getSelectedIndex())
@@ -151,7 +142,9 @@ public class GenerateCodePanel extends javax.swing.JPanel {
 
     private void listKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_listKeyPressed
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(evt);
-        if (ks.getKeyCode() == KeyEvent.VK_DOWN) {
+        if (ks.getKeyCode() == KeyEvent.VK_ENTER || ks.getKeyCode() == KeyEvent.VK_SPACE) {
+            invokeSelected();
+        } else if (ks.getKeyCode() == KeyEvent.VK_DOWN) {
             int size = jList1.getModel().getSize();
             if (size > 0) {
                 int idx = (jList1.getSelectedIndex() + 1) % size;

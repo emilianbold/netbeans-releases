@@ -78,15 +78,16 @@ class CreateTag implements DocumentListener, ActionListener {
     private boolean revisionValid = true;
     private Boolean nameValid = false;
     private final Task branchCheckTask;
-    private String branchName;
+    private String tagName;
     private final File repository;
     private final Icon ICON_INFO = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png")); //NOI18N
 
-    CreateTag (File repository, String initialRevision) {
+    CreateTag (File repository, String initialRevision, String initialTagName) {
         this.repository = repository;
         this.branchCheckTask = Git.getInstance().getRequestProcessor(repository).create(new TagNameCheckWorker());
         revisionPicker = new RevisionDialogController(repository, new File[] { repository }, initialRevision);
         panel = new CreateTagPanel(revisionPicker.getPanel());
+        panel.tagNameField.setText(initialTagName);
     }
 
     String getRevision () {
@@ -134,7 +135,8 @@ class CreateTag implements DocumentListener, ActionListener {
     private void validate () {
         boolean flag = revisionValid & Boolean.TRUE.equals(nameValid);
         if (revisionValid && !(panel.cbForceUpdate.isEnabled() && panel.cbForceUpdate.isSelected()) && Boolean.FALSE.equals(nameValid)) {
-            if (panel.tagNameField.getText().isEmpty()) {
+            String tName = getTagName();
+            if (tName.isEmpty() || !GitUtils.isValidTagName(tName)) {
                 setInfoMessage(NbBundle.getMessage(CreateTag.class, "MSG_CreateTag.errorTagNameInvalid")); //NOI18N
             } else {
                 setInfoMessage(NbBundle.getMessage(CreateTag.class, "MSG_CreateTag.errorTagExists")); //NOI18N
@@ -179,8 +181,8 @@ class CreateTag implements DocumentListener, ActionListener {
 
     private void validateName () {
         nameValid = false;
-        branchName = panel.tagNameField.getText();
-        if (!branchName.isEmpty()) {
+        tagName = panel.tagNameField.getText();
+        if (!tagName.isEmpty() && GitUtils.isValidTagName(tagName)) {
             nameValid = null;
             branchCheckTask.cancel();
             branchCheckTask.schedule(500);
@@ -195,7 +197,7 @@ class CreateTag implements DocumentListener, ActionListener {
     private class TagNameCheckWorker implements Runnable {
         @Override
         public void run () {
-            final String tagName = CreateTag.this.branchName;
+            final String tagName = CreateTag.this.tagName;
             GitClient client = null;
             try {
                 client = Git.getInstance().getClient(repository);

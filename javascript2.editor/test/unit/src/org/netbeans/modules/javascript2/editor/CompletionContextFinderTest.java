@@ -118,6 +118,22 @@ public class CompletionContextFinderTest extends JsTestBase {
         checkCompletionContext("testfiles/completion/extDefine.js", "    extend2: 'Ext.panel.^',", CompletionContext.STRING);
     }
 
+    public void testIssue244803() throws Exception {
+        checkCompletionContext("testfiles/completion/issue244803.js", "foo: encode^,", CompletionContext.EXPRESSION);
+    }
+    
+    public void testIssue246020_01() throws Exception {
+        checkCompletionContext("testfiles/completion/issue246020.js", "for(var i=0, max = ^i )", CompletionContext.EXPRESSION);
+    }
+    
+    public void testIssue246020_02() throws Exception {
+        checkCompletionContext("testfiles/completion/issue246020.js", "},^ ", CompletionContext.OBJECT_PROPERTY_NAME);
+    }
+    
+    public void testIssue246020_03() throws Exception {
+        checkCompletionContext("testfiles/completion/issue246020.js", "for(var i=0, max = i )^", CompletionContext.EXPRESSION);
+    }
+    
     private void checkCompletionContext(final String file, final String caretLine, final CompletionContext expected) throws Exception {
         
         Source testSource = getTestSource(getTestFile(file));

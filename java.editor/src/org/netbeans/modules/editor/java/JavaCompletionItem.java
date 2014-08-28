@@ -1051,39 +1051,39 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     if (insideNew && (toAdd == null || toAdd.length() == 0)) {
                                         Completion.get().showCompletion();
                                     }
-                                    return;
-                                }
-                                StringBuilder sb = new StringBuilder();
-                                if (addSimpleName || enclName == null) {
-                                    sb.append(elem.getSimpleName());
-                                } else if (!"text/x-java".equals(controller.getSnapshot().getMimePath().getPath())) { //NOI18N
-                                    TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
-                                    sb.append(AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)));
                                 } else {
-                                    sb.append("${PAR#0"); //NOI18N
-                                    if ((type == null || type.getKind() != TypeKind.ERROR) &&
-                                            EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
-                                        sb.append(" type=\""); //NOI18N
-                                        sb.append(elem.getQualifiedName());
-                                        sb.append("\" default=\""); //NOI18N
+                                    StringBuilder sb = new StringBuilder();
+                                    if (addSimpleName || enclName == null) {
                                         sb.append(elem.getSimpleName());
+                                    } else if (!"text/x-java".equals(controller.getSnapshot().getMimePath().getPath())) { //NOI18N
+                                        TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
+                                        sb.append(AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)));
                                     } else {
-                                        sb.append(" default=\""); //NOI18N
-                                        sb.append(elem.getQualifiedName());
+                                        sb.append("${PAR#0"); //NOI18N
+                                        if ((type == null || type.getKind() != TypeKind.ERROR) &&
+                                                EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
+                                            sb.append(" type=\""); //NOI18N
+                                            sb.append(elem.getQualifiedName());
+                                            sb.append("\" default=\""); //NOI18N
+                                            sb.append(elem.getSimpleName());
+                                        } else {
+                                            sb.append(" default=\""); //NOI18N
+                                            sb.append(elem.getQualifiedName());
+                                        }
+                                        sb.append("\" editable=false}"); //NOI18N
                                     }
-                                    sb.append("\" editable=false}"); //NOI18N
+                                    template.insert(0, sb);
+                                    if (insideNew && dim == 0 && !partialMatch) {
+                                        template.append("${cursor completionInvoke}"); //NOI18N
+                                    }
+                                    if (tail != null) {
+                                        template.append(tail);
+                                    }
+                                    if (partialMatch) {
+                                        template.append(toAdd);
+                                    }
+                                    ClassItem.super.substituteText(c, offset, length, null, null);
                                 }
-                                template.insert(0, sb);
-                                if (insideNew && dim == 0 && !partialMatch) {
-                                    template.append("${cursor completionInvoke}"); //NOI18N
-                                }
-                                if (tail != null) {
-                                    template.append(tail);
-                                }
-                                if (partialMatch) {
-                                    template.append(toAdd);
-                                }
-                                ClassItem.super.substituteText(c, offset, length, null, null);
                                 if (autoImportEnclosingType && elem != null) {
                                     TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
                                     AutoImport.resolveImport(controller, tp, elem.getEnclosingElement().asType());
@@ -1533,7 +1533,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private boolean memberRef;
         private String simpleName;
         protected Set<Modifier> modifiers;
-        private List<ParamDesc> params;
+        protected List<ParamDesc> params;
         private String typeName;
         private boolean addSemicolon;
         private String sortText;
@@ -1751,8 +1751,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 sb.append("${"); //NOI18N
                                 sb.append(paramDesc.name);
                                 if (guessArgs) {
-                                    sb.append(" named instanceof="); //NOI18N
+                                    sb.append(" named instanceof=\""); //NOI18N
                                     sb.append(paramDesc.fullTypeName);
+                                    sb.append("\""); //NOI18N
                                 }
                                 sb.append('}'); //NOI18N
                                 if (it.hasNext()) {
@@ -1768,9 +1769,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             if (sb.length() == 0) {
-                return super.substituteText(c, offset, length, text, toAdd);
+                CharSequence st = super.substituteText(c, offset, length, text, toAdd);
+                if (st != null) {
+                    sb.append(st);
+                }
+            } else {
+                super.substituteText(c, offset, length, null, null);
             }
-            super.substituteText(c, offset, length, null, null);
             if (autoImportEnclosingType) {
                 final AtomicBoolean cancel = new AtomicBoolean();
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {
@@ -1846,6 +1851,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         private OverrideMethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement, WhiteListQuery.WhiteList whiteList) {
             super(info, elem, type, substitutionOffset, null, false, false, false, false, false, -1, false, whiteList);
+            CodeStyle cs = null;
+            try {
+                cs = CodeStyle.getDefault(info.getDocument());
+            } catch (IOException ex) {
+            }
+            if (cs == null) {
+                cs = CodeStyle.getDefault(info.getFileObject());
+            }
+            for (ParamDesc paramDesc : params) {
+                String name = CodeStyleUtils.removePrefixSuffix(paramDesc.name, cs.getParameterNamePrefix(), cs.getParameterNameSuffix());
+                paramDesc.name = CodeStyleUtils.addPrefixSuffix(name, cs.getParameterNamePrefix(), cs.getParameterNameSuffix());
+            }
             this.implement = implement;
         }
 
@@ -2323,8 +2340,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 sb.append("${"); //NOI18N
                                 sb.append(paramDesc.name);
                                 if (guessArgs) {
-                                    sb.append(" named instanceof="); //NOI18N
+                                    sb.append(" named instanceof=\""); //NOI18N
                                     sb.append(paramDesc.fullTypeName);
+                                    sb.append("\""); //NOI18N
                                 }
                                 sb.append("}"); //NOI18N
                                 if (it.hasNext()) {
@@ -2621,8 +2639,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append("${"); //NOI18N
                 sb.append(paramDesc.name);
                 if (guessArgs) {
-                    sb.append(" named instanceof="); //NOI18N
+                    sb.append(" named instanceof=\""); //NOI18N
                     sb.append(paramDesc.fullTypeName);
+                    sb.append("\""); //NOI18N
                 }
                 sb.append("}"); //NOI18N
                 if (i < params.size() - 1) {
@@ -3246,8 +3265,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                             template.append("${"); //NOI18N
                                             template.append(paramDesc.name);
                                             if (guessArgs) {
-                                                template.append(" named instanceof="); //NOI18N
+                                                template.append(" named instanceof=\""); //NOI18N
                                                 template.append(paramDesc.fullTypeName);
+                                                template.append("\""); //NOI18N
                                             }
                                             template.append("}"); //NOI18N
                                             if (it.hasNext()) {
@@ -3538,8 +3558,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             sb.append("${"); //NOI18N
                             sb.append(paramDesc.name);
                             if (guessArgs) {
-                                sb.append(" named instanceof="); //NOI18N
+                                sb.append(" named instanceof=\""); //NOI18N
                                 sb.append(paramDesc.fullTypeName);
+                                sb.append("\""); //NOI18N
                             }
                             sb.append('}');
                             if (paramsIt.hasNext()) {
@@ -3619,6 +3640,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         private InitializeAllConstructorItem(CompilationInfo info, boolean isDefault, Iterable<? extends VariableElement> fields, ExecutableElement superConstructor, TypeElement parent, int substitutionOffset) {
             super(substitutionOffset);
+            CodeStyle cs = null;
+            try {
+                cs = CodeStyle.getDefault(info.getDocument());
+            } catch (IOException ex) {
+            }
+            if (cs == null) {
+                cs = CodeStyle.getDefault(info.getFileObject());
+            }
             this.isDefault = isDefault;
             this.fieldHandles = new ArrayList<ElementHandle<VariableElement>>();
             this.parentHandle = ElementHandle.create(parent);
@@ -3626,14 +3655,27 @@ public abstract class JavaCompletionItem implements CompletionItem {
             for (VariableElement ve : fields) {
                 this.fieldHandles.add(ElementHandle.create(ve));
                 if (!isDefault) {
-                    this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), ve.getSimpleName().toString()));
+                    boolean isStatic = ve.getModifiers().contains(Modifier.STATIC);
+                    String sName = CodeStyleUtils.removePrefixSuffix(ve.getSimpleName(),
+                        isStatic ? cs.getStaticFieldNamePrefix() : cs.getFieldNamePrefix(),
+                        isStatic ? cs.getStaticFieldNameSuffix() : cs.getFieldNameSuffix());
+                    sName = CodeStyleUtils.addPrefixSuffix(
+                            sName,
+                            cs.getParameterNamePrefix(),
+                            cs.getParameterNameSuffix());
+                    this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), sName));
                 }
             }
             if (superConstructor != null) {
                 this.superConstructorHandle = ElementHandle.create(superConstructor);
                 if (!isDefault) {
                     for (VariableElement ve : superConstructor.getParameters()) {
-                        this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), ve.getSimpleName().toString()));
+                        String sName = CodeStyleUtils.removePrefixSuffix(ve.getSimpleName(), cs.getParameterNamePrefix(), cs.getParameterNameSuffix());
+                        sName = CodeStyleUtils.addPrefixSuffix(
+                                sName,
+                                cs.getParameterNamePrefix(),
+                                cs.getParameterNameSuffix());
+                        this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), sName));
                     }
                 }
             } else {
@@ -4016,7 +4058,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class ParamDesc {
         private final String fullTypeName;
         private final String typeName;
-        private final String name;
+        private String name;
 
         public ParamDesc(String fullTypeName, String typeName, String name) {
             this.fullTypeName = fullTypeName;

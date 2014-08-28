@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.php.editor.actions;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenSequence;
@@ -86,6 +86,8 @@ public class FixUsesPerformer {
     private static final String SPACE = " "; //NOI18N
     private static final String USE_KEYWORD = "use"; //NOI18N
     private static final String USE_PREFIX = NEW_LINE + USE_KEYWORD + SPACE; //NOI18N
+    private static final String USE_CONST_PREFIX = NEW_LINE + USE_KEYWORD + SPACE + "const" + SPACE; //NOI18N
+    private static final String USE_FUNCTION_PREFIX = NEW_LINE + USE_KEYWORD + SPACE + "function" + SPACE; //NOI18N
     private static final String AS_KEYWORD = "as"; //NOI18N
     private static final String AS_CONCAT = SPACE + AS_KEYWORD + SPACE;
     private static final String EMPTY_STRING = ""; //NOI18N
@@ -127,7 +129,7 @@ public class FixUsesPerformer {
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), importData.caretPosition);
         assert namespaceScope != null;
         int startOffset = getOffset(baseDocument, namespaceScope);
-        List<String> useParts = new ArrayList<>();
+        List<UsePart> useParts = new ArrayList<>();
         Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
         for (UseScope useElement : declaredUses) {
             processUseElement(useElement, useParts);
@@ -135,7 +137,10 @@ public class FixUsesPerformer {
         for (int i = 0; i < selections.size(); i++) {
             ItemVariant itemVariant = selections.get(i);
             if (itemVariant.canBeUsed()) {
-                SanitizedUse sanitizedUse = new SanitizedUse(modifyUseName(itemVariant.getName()), useParts, createAliasStrategy(i, useParts, selections));
+                SanitizedUse sanitizedUse = new SanitizedUse(
+                        new UsePart(modifyUseName(itemVariant.getName()), UsePart.Type.create(itemVariant.getType()), itemVariant.isFromAliasedElement()),
+                        useParts,
+                        createAliasStrategy(i, useParts, selections));
                 if (sanitizedUse.shouldBeUsed()) {
                     useParts.add(sanitizedUse.getSanitizedUsePart());
                 }
@@ -186,7 +191,7 @@ public class FixUsesPerformer {
         }
     }
 
-    private AliasStrategy createAliasStrategy(final int selectionIndex, final List<String> existingUseParts, final List<ItemVariant> selections) {
+    private AliasStrategy createAliasStrategy(final int selectionIndex, final List<UsePart> existingUseParts, final List<ItemVariant> selections) {
         AliasStrategy createAliasStrategy;
         if (options.aliasesCapitalsOfNamespaces()) {
             createAliasStrategy = new CapitalsStrategy(selectionIndex, existingUseParts, selections);
@@ -196,13 +201,17 @@ public class FixUsesPerformer {
         return createAliasStrategy;
     }
 
-    private void processUseElement(final UseScope useElement, final List<String> useParts) {
+    private void processUseElement(final UseScope useElement, final List<UsePart> useParts) {
         if (isUsed(useElement) || !removeUnusedUses) {
             AliasedName aliasedName = useElement.getAliasedName();
             if (aliasedName != null) {
-                useParts.add(modifyUseName(aliasedName.getRealName().toString()) + AS_CONCAT + aliasedName.getAliasName());
+                useParts.add(new UsePart(
+                        modifyUseName(aliasedName.getRealName().toString()) + AS_CONCAT + aliasedName.getAliasName(),
+                        UsePart.Type.create(useElement.getType())));
             } else {
-                useParts.add(modifyUseName(useElement.getName()));
+                useParts.add(new UsePart(
+                        modifyUseName(useElement.getName()),
+                        UsePart.Type.create(useElement.getType())));
             }
         }
     }
@@ -228,30 +237,64 @@ public class FixUsesPerformer {
         return result;
     }
 
-    private String createInsertString(final List<String> useParts) {
+    private String createInsertString(final List<UsePart> useParts) {
         StringBuilder insertString = new StringBuilder();
-        Collections.sort(useParts, new UsePartsComparator());
+        Collections.sort(useParts);
         if (useParts.size() > 0) {
             insertString.append(NEW_LINE);
         }
         if (options.preferMultipleUseStatementsCombined()) {
-            CodeStyle codeStyle = CodeStyle.get(baseDocument);
-            String indentString = IndentUtils.createIndentString(codeStyle.getIndentSize(), codeStyle.expandTabToSpaces(), codeStyle.getTabSize());
-            insertString.append(USE_PREFIX);
-            for (int i = 0; i < useParts.size(); i++) {
-                String usePart = useParts.get(i);
-                if (i != 0) {
-                    insertString.append(indentString);
-                }
-                insertString.append(usePart);
-                insertString.append(i + 1 == useParts.size() ? SEMICOLON : COLON + NEW_LINE);
-            }
+            insertString.append(createStringForMultipleUse(useParts));
         } else {
-            for (String usePart : useParts) {
-                insertString.append(USE_PREFIX).append(usePart).append(SEMICOLON);
-            }
+            insertString.append(createStringForCommonUse(useParts));
         }
         return insertString.toString();
+    }
+
+    private String createStringForMultipleUse(List<UsePart> useParts) {
+        StringBuilder insertString = new StringBuilder();
+        CodeStyle codeStyle = CodeStyle.get(baseDocument);
+        String indentString = IndentUtils.createIndentString(codeStyle.getIndentSize(), codeStyle.expandTabToSpaces(), codeStyle.getTabSize());
+        UsePart.Type lastUsePartType = null;
+        for (Iterator<UsePart> it = useParts.iterator(); it.hasNext(); ) {
+            UsePart usePart = it.next();
+            if (lastUsePartType != null) {
+                if (lastUsePartType == usePart.getType()) {
+                    insertString.append(COLON).append(NEW_LINE).append(indentString);
+                } else {
+                    insertString.append(SEMICOLON);
+                }
+            }
+            if (lastUsePartType != usePart.getType()) {
+                lastUsePartType = usePart.getType();
+                switch (usePart.getType()) {
+                    case TYPE:
+                        insertString.append(USE_PREFIX);
+                        break;
+                    case CONST:
+                        insertString.append(USE_CONST_PREFIX);
+                        break;
+                    case FUNCTION:
+                        insertString.append(USE_FUNCTION_PREFIX);
+                        break;
+                    default:
+                        insertString.append(USE_PREFIX);
+                }
+            }
+            insertString.append(usePart.getTextPart());
+        }
+        if (!useParts.isEmpty()) {
+            insertString.append(SEMICOLON);
+        }
+        return insertString.toString();
+    }
+
+    private String createStringForCommonUse(List<UsePart> useParts) {
+        StringBuilder result = new StringBuilder();
+        for (UsePart usePart : useParts) {
+            result.append(usePart.getUsePrefix()).append(usePart.getTextPart()).append(SEMICOLON);
+        }
+        return result.toString();
     }
 
     private void processExistingUses() {
@@ -310,10 +353,10 @@ public class FixUsesPerformer {
     private abstract static class AliasStrategyImpl implements AliasStrategy {
 
         private final int selectionIndex;
-        private final List<String> existingUseParts;
+        private final List<UsePart> existingUseParts;
         private final List<ItemVariant> selections;
 
-        public AliasStrategyImpl(final int selectionIndex, final List<String> existingUseParts, final List<ItemVariant> selections) {
+        public AliasStrategyImpl(final int selectionIndex, final List<UsePart> existingUseParts, final List<ItemVariant> selections) {
             this.selectionIndex = selectionIndex;
             this.existingUseParts = existingUseParts;
             this.selections = selections;
@@ -350,8 +393,8 @@ public class FixUsesPerformer {
 
         private boolean existUseWith(final String name) {
             boolean result = false;
-            for (String existingUsePart : existingUseParts) {
-                if (endsWithName(existingUsePart, name) || existingUsePart.endsWith(SPACE + name)) {
+            for (UsePart existingUsePart : existingUseParts) {
+                if (endsWithName(existingUsePart.getTextPart(), name) || existingUsePart.getTextPart().endsWith(SPACE + name)) {
                     result = true;
                 }
             }
@@ -368,7 +411,7 @@ public class FixUsesPerformer {
 
     private static class CapitalsStrategy extends AliasStrategyImpl {
 
-        public CapitalsStrategy(int selectionIndex, List<String> existingUseParts, List<ItemVariant> selections) {
+        public CapitalsStrategy(int selectionIndex, List<UsePart> existingUseParts, List<ItemVariant> selections) {
             super(selectionIndex, existingUseParts, selections);
         }
 
@@ -385,7 +428,7 @@ public class FixUsesPerformer {
 
     private static class UnqualifiedNameStrategy extends AliasStrategyImpl {
 
-        public UnqualifiedNameStrategy(int selectionIndex, List<String> existingUseParts, List<ItemVariant> selections) {
+        public UnqualifiedNameStrategy(int selectionIndex, List<UsePart> existingUseParts, List<ItemVariant> selections) {
             super(selectionIndex, existingUseParts, selections);
         }
 
@@ -398,14 +441,14 @@ public class FixUsesPerformer {
 
     private static class SanitizedUse {
 
-        private final String use;
+        private final UsePart usePartToSanitization;
         private String alias;
         private final boolean shouldBeUsed;
 
-        public SanitizedUse(final String use, final List<String> existingUseParts, final AliasStrategy createAliasStrategy) {
-            this.use = use;
-            QualifiedName qualifiedName = QualifiedName.create(use);
-            if (!existingUseParts.contains(use)) {
+        public SanitizedUse(final UsePart usePartToSanitization, final List<UsePart> existingUseParts, final AliasStrategy createAliasStrategy) {
+            this.usePartToSanitization = usePartToSanitization;
+            QualifiedName qualifiedName = QualifiedName.create(usePartToSanitization.getTextPart());
+            if (!existingUseParts.contains(usePartToSanitization) && !usePartToSanitization.isFromAliasedElement()) {
                 alias = createAliasStrategy.createAlias(qualifiedName);
                 shouldBeUsed = true;
             } else {
@@ -413,8 +456,8 @@ public class FixUsesPerformer {
             }
         }
 
-        public String getSanitizedUsePart() {
-            return hasAlias() ? use + AS_CONCAT + alias : use;
+        public UsePart getSanitizedUsePart() {
+            return new UsePart(hasAlias() ? usePartToSanitization.getTextPart() + AS_CONCAT + alias : usePartToSanitization.getTextPart(), usePartToSanitization.getType(), usePartToSanitization.isFromAliasedElement());
         }
 
         private boolean hasAlias() {
@@ -422,19 +465,21 @@ public class FixUsesPerformer {
         }
 
         public String getReplaceName(final UsedNamespaceName usedNamespaceName) {
-            return hasAlias() ? alias : usedNamespaceName.getReplaceName();
+            String result;
+            if (hasAlias()) {
+                result = alias;
+            } else {
+                if (usePartToSanitization.isFromAliasedElement()) {
+                    result = usePartToSanitization.getTextPart();
+                } else {
+                    result = usedNamespaceName.getReplaceName();
+                }
+            }
+            return result;
         }
 
         public boolean shouldBeUsed() {
             return shouldBeUsed;
-        }
-    }
-
-    private static class UsePartsComparator implements Comparator<String>, Serializable {
-
-        @Override
-        public int compare(String o1, String o2) {
-            return o1.compareToIgnoreCase(o2);
         }
     }
 
@@ -450,5 +495,152 @@ public class FixUsesPerformer {
         public void visit(UseStatement node) {
             usedRanges.add(new OffsetRange(node.getStartOffset(), node.getEndOffset()));
         }
+    }
+
+    private static class UsePart implements Comparable<UsePart> {
+
+        enum Type {
+            TYPE {
+                @Override
+                String getUsePrefix() {
+                    return USE_PREFIX;
+                }
+            },
+            CONST {
+                @Override
+                String getUsePrefix() {
+                    return USE_CONST_PREFIX;
+                }
+            },
+            FUNCTION {
+                @Override
+                String getUsePrefix() {
+                    return USE_FUNCTION_PREFIX;
+                }
+            };
+
+            abstract String getUsePrefix();
+
+            static Type create(ItemVariant.Type type) {
+                Type result;
+                switch (type) {
+                    case CLASS:
+                    case INTERFACE:
+                    case TRAIT:
+                        result = TYPE;
+                        break;
+                    case CONST:
+                        result = CONST;
+                        break;
+                    case FUNCTION:
+                        result = FUNCTION;
+                        break;
+                    default:
+                        result = TYPE;
+                }
+                return result;
+            }
+
+            static Type create(UseScope.Type type) {
+                Type result;
+                switch (type) {
+                    case TYPE:
+                        result = TYPE;
+                        break;
+                    case CONST:
+                        result = CONST;
+                        break;
+                    case FUNCTION:
+                        result = FUNCTION;
+                        break;
+                    default:
+                        result = TYPE;
+                }
+                return result;
+            }
+        }
+
+        private final String textPart;
+        private final Type type;
+        private final boolean isFromAliasedElement;
+
+        private UsePart(String textPart, Type type, boolean isFromAliasedElement) {
+            this.textPart = textPart;
+            this.type = type;
+            this.isFromAliasedElement = isFromAliasedElement;
+        }
+
+        private UsePart(String textPart, Type type) {
+            this(textPart, type, false);
+        }
+
+        public String getTextPart() {
+            return textPart;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public String getUsePrefix() {
+            return type.getUsePrefix();
+        }
+
+        public boolean isFromAliasedElement() {
+            return isFromAliasedElement;
+        }
+
+        @Override
+        public int compareTo(UsePart other) {
+            int result = 0;
+            if (UsePart.Type.TYPE.equals(getType()) && UsePart.Type.TYPE.equals(other.getType())) {
+                result = 0;
+            } else if (UsePart.Type.TYPE.equals(getType()) && UsePart.Type.CONST.equals(other.getType())) {
+                result = -1;
+            } else if (UsePart.Type.TYPE.equals(getType()) && UsePart.Type.FUNCTION.equals(other.getType())) {
+                result = -1;
+            } else if (UsePart.Type.CONST.equals(getType()) && UsePart.Type.TYPE.equals(other.getType())) {
+                result = 1;
+            } else if (UsePart.Type.CONST.equals(getType()) && UsePart.Type.CONST.equals(other.getType())) {
+                result = 0;
+            } else if (UsePart.Type.CONST.equals(getType()) && UsePart.Type.FUNCTION.equals(other.getType())) {
+                result = -1;
+            } else if (UsePart.Type.FUNCTION.equals(getType()) && UsePart.Type.TYPE.equals(other.getType())) {
+                result = 1;
+            } else if (UsePart.Type.FUNCTION.equals(getType()) && UsePart.Type.CONST.equals(other.getType())) {
+                result = 1;
+            } else if (UsePart.Type.FUNCTION.equals(getType()) && UsePart.Type.FUNCTION.equals(other.getType())) {
+                result = 0;
+            }
+            return result == 0 ? getTextPart().compareToIgnoreCase(other.getTextPart()) : result;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 71 * hash + Objects.hashCode(this.textPart);
+            hash = 71 * hash + Objects.hashCode(this.type);
+            hash = 71 * hash + (this.isFromAliasedElement ? 1 : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final UsePart other = (UsePart) obj;
+            if (!Objects.equals(this.textPart, other.textPart)) {
+                return false;
+            }
+            if (this.type != other.type) {
+                return false;
+            }
+            return this.isFromAliasedElement == other.isFromAliasedElement;
+        }
+
     }
 }

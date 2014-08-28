@@ -100,6 +100,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jCodeExpansionEditorPane.setCaretPosition(0);
         jCodeExpansionEditorPane.setContentType(mimeType);
         jCodeExpansionEditorPane.setDocument(doc);
+        jCodeExpansionEditorPane.putClientProperty("HelpID","MacroExpansionWindow"); //NOI18N
         doc.putProperty(JEditorPane.class, jCodeExpansionEditorPane);
     }
 
@@ -377,6 +378,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("MacroExpansionView"); // NOI18N
+        return new HelpCtx("MacroExpansionWindow"); // NOI18N
     }
 }

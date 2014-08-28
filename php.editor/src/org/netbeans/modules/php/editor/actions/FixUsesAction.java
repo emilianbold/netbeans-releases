@@ -66,6 +66,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
@@ -74,6 +75,7 @@ import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
@@ -173,7 +175,7 @@ public class FixUsesAction extends BaseAction {
     }
 
     private static ImportData computeUses(final PHPParseResult parserResult, final int caretPosition) {
-        Map<String, List<UsedNamespaceName>> filteredExistingNames = new UsedNamesComputer(parserResult, caretPosition).computeNames();
+        Map<String, List<UsedNamespaceName>> filteredExistingNames = new UsedNamesCollector(parserResult, caretPosition).collectNames();
         Index index = parserResult.getModel().getIndexScope().getIndex();
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), caretPosition);
         assert namespaceScope != null;
@@ -193,7 +195,7 @@ public class FixUsesAction extends BaseAction {
     private static Options createOptions(final PHPParseResult parserResult) {
         Document document = parserResult.getSnapshot().getSource().getDocument(false);
         CodeStyle codeStyle = CodeStyle.get(document);
-        return new Options(codeStyle);
+        return new Options(codeStyle, parserResult.getModel().getFileScope().getFileObject());
     }
 
     private static final RequestProcessor WORKER = new RequestProcessor(FixUsesAction.class.getName(), 1);
@@ -300,23 +302,27 @@ public class FixUsesAction extends BaseAction {
         private final boolean preferMultipleUseStatementsCombined;
         private final boolean startUseWithNamespaceSeparator;
         private final boolean aliasesCapitalsOfNamespaces;
+        private final boolean isPhp56OrGreater;
 
         public Options(
                 boolean preferFullyQualifiedNames,
                 boolean preferMultipleUseStatementsCombined,
                 boolean startUseWithNamespaceSeparator,
-                boolean aliasesCapitalsOfNamespaces) {
+                boolean aliasesCapitalsOfNamespaces,
+                boolean isPhp56OrGreater) {
             this.preferFullyQualifiedNames = preferFullyQualifiedNames;
             this.preferMultipleUseStatementsCombined = preferMultipleUseStatementsCombined;
             this.startUseWithNamespaceSeparator = startUseWithNamespaceSeparator;
             this.aliasesCapitalsOfNamespaces = aliasesCapitalsOfNamespaces;
+            this.isPhp56OrGreater = isPhp56OrGreater;
         }
 
-        public Options(CodeStyle codeStyle) {
+        public Options(CodeStyle codeStyle, FileObject fileObject) {
             this.preferFullyQualifiedNames = codeStyle.preferFullyQualifiedNames();
             this.preferMultipleUseStatementsCombined = codeStyle.preferMultipleUseStatementsCombined();
             this.startUseWithNamespaceSeparator = codeStyle.startUseWithNamespaceSeparator();
             this.aliasesCapitalsOfNamespaces = codeStyle.aliasesFromCapitalsOfNamespaces();
+            this.isPhp56OrGreater = CodeUtils.isPhp56OrGreater(fileObject);
         }
 
         public boolean preferFullyQualifiedNames() {
@@ -333,6 +339,10 @@ public class FixUsesAction extends BaseAction {
 
         public boolean aliasesCapitalsOfNamespaces() {
             return aliasesCapitalsOfNamespaces;
+        }
+
+        public boolean isPhp56OrGreater() {
+            return isPhp56OrGreater;
         }
 
     }

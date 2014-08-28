@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.knockout;
 
+import org.netbeans.modules.html.knockout.api.KODataBindTokenId;
 import org.netbeans.modules.html.knockout.model.KOModel;
 import java.util.ArrayList;
 import java.util.Collection;

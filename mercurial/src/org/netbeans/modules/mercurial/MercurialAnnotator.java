@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.mercurial;
 
+import java.awt.Color;
+import java.awt.EventQueue;
 import org.netbeans.modules.mercurial.ui.menu.RecoverMenu;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -242,7 +244,9 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             FileStatus fileStatus = mostImportantInfo.getStatus(mostImportantFile);
             if (fileStatus != null && fileStatus.isCopied()) {
-                statusText = getAnnotationProvider().COPIED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+                statusText = (!EventQueue.isDispatchThread() && !fileStatus.getOriginalFile().exists()
+                        ? getAnnotationProvider().MOVED_LOCALY_FILE_TOOLTIP
+                        : getAnnotationProvider().COPIED_LOCALLY_FILE_TOOLTIP).getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
             } else {
                 statusText = getAnnotationProvider().ADDED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
             }
@@ -468,7 +472,9 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             FileStatus fileStatus = mostImportantInfo.getStatus(mostImportantFile);
             if (fileStatus != null && fileStatus.isCopied()) {
-                return getAnnotationProvider().COPIED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+                return (!EventQueue.isDispatchThread() && !fileStatus.getOriginalFile().exists()
+                        ? getAnnotationProvider().MOVED_LOCALY_FILE
+                        : getAnnotationProvider().COPIED_LOCALLY_FILE).getFormat().format(new Object [] { name, textAnnotation });
             } else {
                 return getAnnotationProvider().ADDED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
             }
@@ -484,6 +490,36 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             return name;
         } else {
             throw new IllegalArgumentException("Uncomparable status: " + status); // NOI18N
+        }
+    }
+    
+    public Color getAnnotatedColor (FileInformation mostImportantInfo) {
+        int status = mostImportantInfo.getStatus();
+        if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
+            return getAnnotationProvider().EXCLUDED_FILE.getActualColor();
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
+            return getAnnotationProvider().DELETED_LOCALLY_FILE.getActualColor();
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
+            return getAnnotationProvider().REMOVED_LOCALLY_FILE.getActualColor();
+        } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
+            return getAnnotationProvider().NEW_LOCALLY_FILE.getActualColor();
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
+            FileStatus fileStatus = mostImportantInfo.getStatus(null);
+            if (fileStatus != null && fileStatus.isCopied()) {
+                return (!EventQueue.isDispatchThread() && !fileStatus.getOriginalFile().exists()
+                        ? getAnnotationProvider().MOVED_LOCALY_FILE
+                        : getAnnotationProvider().COPIED_LOCALLY_FILE).getActualColor();
+            } else {
+                return getAnnotationProvider().ADDED_LOCALLY_FILE.getActualColor();
+            }
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
+            return getAnnotationProvider().MODIFIED_LOCALLY_FILE.getActualColor();
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_UPTODATE)) {
+            return getAnnotationProvider().UP_TO_DATE_FILE.getActualColor();
+        } else if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
+            return getAnnotationProvider().CONFLICT_FILE.getActualColor();
+        } else {
+            return null;
         }
     }
     

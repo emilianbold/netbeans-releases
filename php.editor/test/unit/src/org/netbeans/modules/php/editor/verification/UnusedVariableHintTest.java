@@ -73,6 +73,10 @@ public class UnusedVariableHintTest extends PHPHintsTestBase {
         checkHints(new UnusedVariableHintStub(false), "testIssue230297.php");
     }
 
+    public void testIssue246230() throws Exception {
+        checkHints(new UnusedVariableHintStub(false), "testIssue246230.php");
+    }
+
     private class UnusedVariableHintStub extends UnusedVariableHint {
         private final boolean unusedFormalParameters;
 

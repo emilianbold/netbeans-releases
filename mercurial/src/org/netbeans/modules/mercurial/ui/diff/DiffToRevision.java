@@ -93,7 +93,7 @@ public class DiffToRevision  implements ActionListener {
         cancelButton.getAccessibleContext().setAccessibleDescription(Bundle.CTL_DiffToRevision_cancelButton_ACSD());
         initializeSelections();
         attachListeners();
-        panel.rbLocalToBase.doClick();
+        panel.rbLocalToAny.doClick();
     } 
 
     public boolean showDialog() {
@@ -140,7 +140,7 @@ public class DiffToRevision  implements ActionListener {
             if (picker.showDialog()) {
                 HgLogMessage msg = picker.getSelectionRevision();
                 selectionsFirst.put(panel.rbLocalToAny, msg.getHgRevision());
-                panel.tfSelectedRevisionBaseToAny.setText(msg.toAnnotatedString(baseRevision.getChangesetId()));
+                panel.tfSelectedRevisionLocalToAny.setText(msg.toAnnotatedString(baseRevision.getChangesetId()));
             }
         }
     }

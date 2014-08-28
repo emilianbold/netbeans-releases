@@ -92,8 +92,7 @@ public class TestRestTargetPanel extends javax.swing.JPanel {
         myNotice.setText( NbBundle.getMessage(TestRestTargetPanel.class, 
                 "TXT_Notice"));
         myNotice.putClientProperty(javax.swing.JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
-        myLocal.setSelected(true);
-        myBrowse.setEnabled( false );
+        myRemote.setSelected(true);
         ActionListener listener = new ActionListener() {
             
             @Override
@@ -183,8 +182,8 @@ public class TestRestTargetPanel extends javax.swing.JPanel {
         myNoticeLbl.setLabelFor(myNotice);
         org.openide.awt.Mnemonics.setLocalizedText(myNoticeLbl, org.openide.util.NbBundle.getMessage(TestRestTargetPanel.class, "LBL_Notion")); // NOI18N
 
-        myNotice.setContentType("text/html");
         myNotice.setEditable(false);
+        myNotice.setContentType("text/html"); // NOI18N
         myScrollPane.setViewportView(myNotice);
         myNotice.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestRestTargetPanel.class, "ACSN_NoticeDescr")); // NOI18N
         myNotice.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestRestTargetPanel.class, "ACSD_NoticeDescr")); // NOI18N
@@ -196,7 +195,7 @@ public class TestRestTargetPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(myScrollPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
+                    .addComponent(myScrollPane, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(myLocal)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(myRemote)
@@ -205,7 +204,7 @@ public class TestRestTargetPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(myTargetLbl)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(myTarget, javax.swing.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE))
+                        .addComponent(myTarget, javax.swing.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE))
                     .addComponent(myNoticeLbl))
                 .addContainerGap())
         );
@@ -225,7 +224,7 @@ public class TestRestTargetPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(myNoticeLbl)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(myScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
+                .addComponent(myScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -278,7 +277,7 @@ public class TestRestTargetPanel extends javax.swing.JPanel {
         RestSupport support = myProject.getLookup().lookup(RestSupport.class);
         String clientProject = support.getProjectProperty(TEST_CLIENT_PROJECT);
         if ( clientProject == null ){
-            setTargetProject(myProject, false);
+            setTargetProject(myProject, true);
         }
         else {
             myLocal.setSelected(false);

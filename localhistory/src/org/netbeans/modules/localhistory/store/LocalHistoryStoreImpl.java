@@ -48,6 +48,7 @@ import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -177,7 +178,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         rp.post(new Runnable() {
             @Override
             public void run() {
-                final long ts = file.lastModified();
+                final long ts = file.lastModified(); // - (1000 * 60 * 60 * 24 * 14);
                 try {
                     long lastModified = lastModified(file);
                     if(lastModified == ts) {
@@ -730,8 +731,9 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             @Override
             public void run() {
                 LocalHistory.log("Cleanup Start");                       // NOI18N
+                long t = System.currentTimeMillis();
                 cleanUpImpl(ttl);
-                LocalHistory.log("Cleanup End");                         // NOI18N
+                LocalHistory.log("Cleanup End in " + (System.currentTimeMillis() - t) + " millis."); // NOI18N
             }
         });
     }
@@ -740,27 +742,40 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
 
         // XXX fire events
 
+        int maxC = Integer.getInteger("netbeans.localhistory.maxCleanupCount", -1); // NOI18N
+        long maxT = Long.getLong("netbeans.localhistory.maxCleanupTime", -1) * 1000; // NOI18N
+            
         long now = System.currentTimeMillis();
-
-        File[] topLevelFiles = storage.listFiles();
-        if(topLevelFiles == null || topLevelFiles.length == 0) {
+        int count = 0;
+        
+        File[] files = storage.listFiles();
+        if(files == null || files.length == 0) {
             return;
         }
 
+        List<File> topLevelFiles = Arrays.asList(files);
+        if(maxC > -1 || maxT > -1) {
+            Collections.shuffle(topLevelFiles);
+        }
         for(File topLevelFile : topLevelFiles) {
 
             if(topLevelFile.getName().equals(STORAGE_FILE)) {
                 continue;
             }
 
-            File[] secondLevelFiles = topLevelFile.listFiles();
-            if(secondLevelFiles == null || secondLevelFiles.length == 0) {
+            files = topLevelFile.listFiles();
+            if(files == null || files.length == 0) {
                 deleteRecursivelly(topLevelFile);
                 continue;
             }
-
+            
+            List<File> secondLevelFiles = Arrays.asList(files);
+            if(maxC > -1 || maxT > -1) {
+                Collections.shuffle(secondLevelFiles);
+            }
             boolean allEmpty = true;
             for(File secondLevelFile : secondLevelFiles) {
+                count++;
                 boolean empty = !lockedFolders.contains(secondLevelFile) && cleanUpFolder(secondLevelFile, ttl, now);
                 if(empty) {
                     if(secondLevelFile.exists()) {
@@ -772,6 +787,13 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             }
             if(allEmpty) {
                 deleteRecursivelly(topLevelFile);
+            }
+            
+            if(maxC > 0 && count >= maxC) {
+                break;
+            }
+            if(maxT > 0 && (System.currentTimeMillis() - now) >= maxT) {
+                break;
             }
         }
     }
@@ -805,64 +827,64 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     private boolean cleanUpStoredFile(File store, long ttl, long now) {
         File dataFile = new File(store, DATA_FILE);
 
-        if(!dataFile.exists()) {
+            if(!dataFile.exists()) {
             return true;
-        }
-        if(dataFile.lastModified() < now - ttl) {
-            purgeDataFile(dataFile);
-            return true;
-        }
+            }
+            if(dataFile.lastModified() < now - ttl) {
+                purgeDataFile(dataFile);
+                return true;
+            }
 
-        File[] files = store.listFiles(fileEntriesFilter);
-        boolean skipped = false;
+            File[] files = store.listFiles(fileEntriesFilter);
+            boolean skipped = false;
 
-        File labelsFile = new File(store, LABELS_FILE);
-        Map<Long, String> labels = emptyLabels;
-        if(labelsFile.exists()) {
-            labels = getLabels(labelsFile);
-        }
-        if(files != null) {
-            for(File f : files) {
-                // XXX check the timestamp when touched
-                long ts;
-                try {
-                    ts = Long.parseLong(f.getName());
-                } catch (NumberFormatException ex) {
-                    // heh! what's this? ignore...
-                    continue;
-                }
-                if(ts < now - ttl) {
-                    if(labels.size() > 0) {
-                        if(HistorySettings.getInstance().getCleanUpLabeled()) {
-                            // remove label and file
-                        labels.remove(ts);
-                            f.delete();                            
-                        } else {
-                            if(!labels.containsKey(ts)) {
-                                // remove only if no label
-                                f.delete();
+            File labelsFile = new File(store, LABELS_FILE);
+            Map<Long, String> labels = emptyLabels;
+            if(labelsFile.exists()) {
+                labels = getLabels(labelsFile);
+            }
+            if(files != null) {
+                for(File f : files) {
+                    // XXX check the timestamp when touched
+                    long ts;
+                    try {
+                        ts = Long.parseLong(f.getName());
+                    } catch (NumberFormatException ex) {
+                        // heh! what's this? ignore...
+                        continue;
                     }
+                    if(ts < now - ttl) {
+                        if(labels.size() > 0) {
+                            if(HistorySettings.getInstance().getCleanUpLabeled()) {
+                                // remove label and file
+                                labels.remove(ts);
+                                f.delete();                            
+                            } else {
+                                if(!labels.containsKey(ts)) {
+                                    // remove only if no label
+                                    f.delete();
+                                }
+                            }
+                        } else {
+                            // no labels => just remove
+                            f.delete();
                         }
                     } else {
-                        // no labels => just remove
-                    f.delete();
+                        skipped = true;
                     }
-                } else {
-                    skipped = true;
                 }
             }
-        }
-        if(!skipped) {
-            // all entries are gone -> remove also the metadata
-            labelsFile.delete();
-            writeStoreFile(dataFile, null);  // null stands for remove
-        } else {
-            if(labels.size() > 0) {
-                writeLabels(labelsFile, labels);
-            } else {
+            if(!skipped) {
+                // all entries are gone -> remove also the metadata
                 labelsFile.delete();
+                writeStoreFile(dataFile, null);  // null stands for remove
+            } else {
+                if(labels.size() > 0) {
+                    writeLabels(labelsFile, labels);
+                } else {
+                    labelsFile.delete();
+                }
             }
-        }
         return !skipped;
     }
 

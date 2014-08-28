@@ -91,6 +91,9 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     public static final String UNCAUGHT_EXCEPTION_TYPE = "uncaughtExceptionType"; //NOI18N
     public static final String UNCAUGHT_EXCEPTION_CATCH_STATEMENTS = "uncaughtExceptionCatchStatements"; //NOI18N
     public static final String CURRENT_CLASS_NAME = "currClassName"; //NOI18N
+    public static final String CURRENT_CLASS_FULLY_QUALIFIED_NAME = "currClassFQName"; //NOI18N
+    public static final String CURRENT_PACKAGE_NAME = "currPackageName"; //NOI18N
+    public static final String CURRENT_METHOD_NAME = "currMethodName"; //NOI18N
 
     private static final String TRUE = "true"; //NOI18N
     private static final String NULL = "null"; //NOI18N
@@ -131,6 +134,9 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         || CAST.equals(hint)
                         || NEW_VAR_NAME.equals(hint)
                         || CURRENT_CLASS_NAME.equals(hint)
+                        || CURRENT_CLASS_FULLY_QUALIFIED_NAME.equals(hint)
+                        || CURRENT_PACKAGE_NAME.equals(hint)
+                        || CURRENT_METHOD_NAME.equals(hint)
                         || ITERABLE_ELEMENT_TYPE.equals(hint)
                         || UNCAUGHT_EXCEPTION_TYPE.equals(hint)) {
                     initParsing();
@@ -522,7 +528,16 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 return newVarName(param.getInsertTextOffset() + 1, (String)value);
             } else if (CURRENT_CLASS_NAME.equals(entry.getKey())) {
                 param2hints.put(param, CURRENT_CLASS_NAME);
-                return owningClassName();
+                return owningClassName(false);
+            } else if (CURRENT_CLASS_FULLY_QUALIFIED_NAME.equals(entry.getKey())) {
+                param2hints.put(param, CURRENT_CLASS_FULLY_QUALIFIED_NAME);
+                return owningClassName(true);
+            } else if (CURRENT_PACKAGE_NAME.equals(entry.getKey())) {
+                param2hints.put(param, CURRENT_PACKAGE_NAME);
+                return owningPackageName();
+            } else if (CURRENT_METHOD_NAME.equals(entry.getKey())) {
+                param2hints.put(param, CURRENT_METHOD_NAME);
+                return owningMethodName();
             } else if (NAMED.equals(entry.getKey())) {
                 name = param.getName();
             } else if (UNCAUGHT_EXCEPTION_TYPE.equals(entry.getKey())) {
@@ -557,7 +572,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             if (name == null) {
                                 return (VariableElement)e;
                             }
-                            int d = ElementHeaders.getDistance(e.getSimpleName().toString(), name);
+                            int d = ElementHeaders.getDistance(e.getSimpleName().toString().toLowerCase(), name.toLowerCase());
                             if (isSameType(e.asType(), type, types)) {
                                 d -= 1000;
                             }
@@ -602,7 +617,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             if (name == null) {
                                 return (VariableElement)ee;
                             }
-                            int d = ElementHeaders.getDistance(ee.getSimpleName().toString(), name);
+                            int d = ElementHeaders.getDistance(ee.getSimpleName().toString().toLowerCase(), name.toLowerCase());
                             if (ee.getKind().isField() && isSameType(((VariableElement)ee).asType(), dType, types) || ee.getKind() == ElementKind.METHOD && isSameType(((ExecutableElement)ee).getReturnType(), dType, types)) {
                                 d -= 1000;
                             }
@@ -629,7 +644,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     Types types = cInfo.getTypes();
                     for (Element e : typeVars) {
                         if (e instanceof TypeParameterElement && !ERROR.contentEquals(e.getSimpleName()) && types.isAssignable(e.asType(), type)) {
-                            int d = ElementHeaders.getDistance(e.getSimpleName().toString(), name);
+                            int d = ElementHeaders.getDistance(e.getSimpleName().toString().toLowerCase(), name.toLowerCase());
                             if (isSameType(e.asType(), type, types)) {
                                 d -= 1000;
                             }
@@ -909,7 +924,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             };
                         }
                     };
-                    Iterator<String> names = org.netbeans.modules.java.completion.Utilities.varNamesSuggestions(type, element.getKind(), ((VariableTree)decl.getLeaf()).getModifiers().getFlags(), suggestedName, null, cInfo.getTypes(), cInfo.getElements(), loc, CodeStyle.getDefault(request.getComponent().getDocument())).iterator();
+                    String name = Utilities.varNameSuggestion(decl);
+                    Iterator<String> names = Utilities.varNamesSuggestions(type, element.getKind(), ((VariableTree)decl.getLeaf()).getModifiers().getFlags(), name != null ? name : suggestedName, null, cInfo.getTypes(), cInfo.getElements(), loc, CodeStyle.getDefault(request.getComponent().getDocument())).iterator();
                     if (names.hasNext()) {
                         return names.next();
                     }
@@ -920,17 +936,47 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         return null;
     }
 
-    private String owningClassName() {
+    private String owningClassName(boolean fqn) {
         try {
             if (cInfo != null) {
-                TreeUtilities tu = cInfo.getTreeUtilities();
                 TreePath path = treePath;
-                while ((path = tu.getPathElementOfKind (TreeUtilities.CLASS_TREE_KINDS, path)) != null) {
-                    ClassTree tree = (ClassTree) path.getLeaf();
-                    String result = tree.getSimpleName().toString();
-                    if (result.length() > 0) {
-                        return result;
+                while ((path = Utilities.getPathElementOfKind (TreeUtilities.CLASS_TREE_KINDS, path)) != null) {
+                    Element element = cInfo.getTrees().getElement(path);
+                    if (element != null && (element.getKind().isClass() || element.getKind().isInterface())) {
+                        Name name = fqn ? ((TypeElement) element).getQualifiedName() : ((TypeElement) element).getSimpleName();
+                        if (name != null) {
+                            return name.toString();
+                        }
                     }
+                }
+            }
+        } catch (Exception e) {
+        }
+        return null;
+    }
+
+    private String owningPackageName() {
+        try {
+            if (cInfo != null) {
+                ExpressionTree packageName = treePath.getCompilationUnit().getPackageName();
+                String result = packageName != null ? packageName.toString() : null;
+                if (result != null && !result.equals(ERROR))
+                    return result;
+            }
+        } catch (Exception e) {
+        }
+        return null;
+    }
+    
+    private String owningMethodName() {
+        try {
+            if (cInfo != null) {
+                TreePath path = treePath;
+                while ((path = Utilities.getPathElementOfKind (Tree.Kind.METHOD, path)) != null) {
+                    MethodTree tree = (MethodTree) path.getLeaf();
+                    String result = tree.getName().toString();
+                    if (result.length() > 0)
+                        return result;
                     path = path.getParentPath();
                 }
                 return null;
@@ -939,7 +985,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         }
         return null;
     }
-    
+
     private TypeMirror uncaughtExceptionType(int caretOffset) {
         try {
             if (cInfo != null) {
@@ -1059,11 +1105,11 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                     case RESOURCE_VARIABLE:
                                     case EXCEPTION_PARAMETER:
                                     case PARAMETER:
-                                        return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
+                                        return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
                                                 !illegalForwardRefNames.contains(e.getSimpleName());
                                     case FIELD:
                                         if (e.getSimpleName().contentEquals("this")) { //NOI18N
-                                            return !isStatic;
+                                            return !isStatic && e.asType().getKind() == TypeKind.DECLARED && ((DeclaredType)e.asType()).asElement() == enclClass;
                                         }
                                         if (e.getSimpleName().contentEquals("super")) { //NOI18N
                                             return false;

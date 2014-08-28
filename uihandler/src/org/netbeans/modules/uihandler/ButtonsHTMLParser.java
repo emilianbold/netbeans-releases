@@ -45,6 +45,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -69,20 +71,27 @@ final class ButtonsHTMLParser {
     
     static final Logger logger = Logger.getLogger(ButtonsHTMLParser.class.getName());
     
-    private final InputStream is;
+    private final String definition;
     private FormHTMLParser formParser;
     private List<Object> options;
     private List<Object> additionalOptions;
     private boolean containsExitButton;
     
-    public ButtonsHTMLParser(InputStream is) {
-        this.is = is;
+    public ButtonsHTMLParser(InputStream is) throws IOException {
+        Reader r = new InputStreamReader(is, "utf-8");
+        StringWriter sw = new StringWriter();
+        char[] cbuf = new char[4096];
+        int n;
+        while ((n = r.read(cbuf)) > 0) {
+            sw.write(cbuf, 0, n);
+        }
+        this.definition = sw.toString();
     }
 
     void parse() throws IOException {
         ParserDelegator pd = new ParserDelegator();
-        Reader r = new InputStreamReader(is, "utf-8");
         formParser = new FormHTMLParser();
+        Reader r = new StringReader(definition);
         pd.parse(r, formParser, true);
     }
     

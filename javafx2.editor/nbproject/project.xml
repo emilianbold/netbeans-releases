@@ -372,7 +372,7 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.java.source</code-name-base>
+                        <code-name-base>org.netbeans.modules.java.source.base</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                         <test/>

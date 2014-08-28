@@ -63,6 +63,7 @@ import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.project.LinkLabel;
 import org.netbeans.modules.team.server.ui.spi.BuildHandle;
 import org.netbeans.modules.team.server.ui.spi.BuilderAccessor;
+import org.netbeans.modules.team.server.ui.spi.JobHandle;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -193,7 +194,8 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
             BuilderAccessor<ODCSProject> buildAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODCSProject.class);
             final Action action;
             if (buildAccessor != null) {
-                action = buildAccessor.getJob(projectHandle, activity.getJobSummary().getName()).getDefaultAction();
+                JobHandle job = buildAccessor.getJob(projectHandle, activity.getJobSummary().getName());
+                action = job != null ? job.getDefaultAction() : null;
             } else {
                 action = null;
             }

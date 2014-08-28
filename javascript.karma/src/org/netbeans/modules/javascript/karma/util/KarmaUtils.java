@@ -44,13 +44,16 @@ package org.netbeans.modules.javascript.karma.util;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.exec.KarmaExecutable;
-import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
+import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -74,15 +77,41 @@ public final class KarmaUtils {
     private KarmaUtils() {
     }
 
-    public static File getConfigDir(Project project) {
-        ProjectDirectoriesProvider directoriesProvider = project.getLookup().lookup(ProjectDirectoriesProvider.class);
-        if (directoriesProvider != null) {
-            FileObject configDirectory = directoriesProvider.getConfigDirectory();
-            if (configDirectory != null
-                    && configDirectory.isValid()) {
-                return FileUtil.toFile(configDirectory);
+    public static List<WebBrowser> getDebugBrowsers() {
+        List<WebBrowser> browsers = new ArrayList<>();
+        for (WebBrowser browser : WebBrowsers.getInstance().getAll(false, false, false, true)) {
+            if (browser.isEmbedded()) {
+                continue;
+            }
+            if (browser.getBrowserFamily().isMobile()) {
+                continue;
+            }
+            if (!browser.hasNetBeansIntegration()) {
+                continue;
+            }
+            browsers.add(browser);
+        }
+        return browsers;
+    }
+
+    @CheckForNull
+    public static WebBrowser getPreferredDebugBrowser() {
+        for (WebBrowser browser : getDebugBrowsers()) {
+            return browser;
+        }
+        return null;
+    }
+
+    public static File getKarmaConfigDir(Project project) {
+        // prefer directory for current karma config file
+        String karmaConfig = KarmaPreferences.getConfig(project);
+        if (karmaConfig != null) {
+            File karmaConfigFile = new File(karmaConfig);
+            if (karmaConfigFile.isFile()) {
+                return karmaConfigFile.getParentFile();
             }
         }
+        // simply return project directory
         return FileUtil.toFile(project.getProjectDirectory());
     }
 

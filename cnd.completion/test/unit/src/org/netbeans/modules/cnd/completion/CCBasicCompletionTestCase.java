@@ -385,4 +385,19 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         // Bug 214650 - Function declaration code completion messes up with const arguments
         performTest("bug214650.cpp", 6, 5, "void te");
     }   
+    
+    public void testBug235102_cc_1() throws Exception {
+        // Bug 235102 - 5% inaccuracy in LLVM
+        performTest("bug235102_cc.cpp", 15, 42);
+    }       
+    
+    public void testBug235102_cc_2() throws Exception {
+        // Bug 235102 - 5% inaccuracy in LLVM
+        performTest("bug235102_cc.cpp", 15, 43);
+    }           
+    
+    public void testSpecializationQualifiers_0() throws Exception {
+        // No bug
+        performTest("spec_quals_cc_0.cpp", 19, 13, "var.");
+    }
 }

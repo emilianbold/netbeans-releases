@@ -223,6 +223,9 @@ made subject to such option by the copyright holder.
                     <file name="finalfield.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.create"/>
                     </file>
+                    <file name="importClass.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.create"/>
+                    </file>
                 </folder>
                 
                 <folder name="rules15">
@@ -285,26 +288,7 @@ made subject to such option by the copyright holder.
 
                 <folder name="empty">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>                    
-                    
-                    <file name="EmptyDelegate.instance">
-                        <attr name="nonGUI" boolvalue="true"/>
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EmptyStatements.createDelegate"/>
-                    </file>
-                    <file name="EmptyInBlock.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EmptyStatements.createBlock"/>
-                    </file>
-                    <file name="EmptyFor.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EmptyStatements.createFor"/>
-                    </file>
-                    <file name="EmptyWhile.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EmptyStatements.createWhile"/>
-                    </file>
-                    <file name="EmptyDoWhile.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EmptyStatements.createDoWhile"/>
-                    </file>
-                    <file name="EmptyIf.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EmptyStatements.createIf"/>
-                    </file>
+                    <!-- Hints from org.netbeans.modules.java.hints.EmptyStatements will be placed here-->                
                 </folder>
 
                 <folder name="performance">

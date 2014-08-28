@@ -42,16 +42,20 @@
 package org.netbeans.modules.javascript2.editor.formatter;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
+import jdk.nashorn.internal.ir.FunctionNode;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
@@ -69,6 +73,20 @@ public final class FormatContext {
     private static final Logger LOGGER = Logger.getLogger(FormatContext.class.getName());
 
     private static final Pattern SAFE_DELETE_PATTERN = Pattern.compile("\\s*"); // NOI18N
+    
+    private static final Comparator<Region> REGION_COMPARATOR = new Comparator<Region>() {
+
+        @Override
+        public int compare(Region o1, Region o2) {
+            if (o1.getOriginalStart() < o2.getOriginalStart()) {
+                return -1;
+            }
+            if (o1.getOriginalStart() > o2.getOriginalStart()) {
+                return 1;
+            }
+            return 0;
+        }
+    };
 
     private final Context context;
 
@@ -76,7 +94,9 @@ public final class FormatContext {
 
     private final Language<JsTokenId> languange;
 
-    private final DefaultsProvider provider;
+    private final Defaults.Provider provider;
+    
+    private final FunctionNode root;
 
     private final int initialStart;
 
@@ -98,19 +118,23 @@ public final class FormatContext {
 
     private boolean pendingContinuation;
 
-    public FormatContext(Context context, DefaultsProvider provider,
-            Snapshot snapshot, Language<JsTokenId> language) {
+    private int tabCount;
+
+    public FormatContext(Context context, Defaults.Provider provider,
+            Snapshot snapshot, Language<JsTokenId> language, FunctionNode root) {
         this.context = context;
         this.snapshot = snapshot;
         this.languange = language;
         this.provider = provider;
+        this.root = root;
         this.initialStart = context.startOffset();
         this.initialEnd = context.endOffset();
 
         regions = new ArrayList<Region>(context.indentRegions().size());
         for (Context.Region region : context.indentRegions()) {
             regions.add(new Region(region));
-            }
+        }
+        Collections.sort(regions, REGION_COMPARATOR);
 
         dumpRegions();
 
@@ -162,7 +186,7 @@ public final class FormatContext {
         }
     }
 
-    public DefaultsProvider getDefaultsProvider() {
+    public Defaults.Provider getDefaultsProvider() {
         return provider;
     }
 
@@ -214,6 +238,18 @@ public final class FormatContext {
         this.pendingContinuation = pendingContinuation;
     }
 
+    public void incTabCount() {
+        this.tabCount++;
+    }
+
+    public void resetTabCount() {
+        this.tabCount = 0;
+    }
+
+    public int getTabCount() {
+        return tabCount;
+    }
+
     public int getOffsetDiff() {
         return offsetDiff;
     }
@@ -235,6 +271,25 @@ public final class FormatContext {
                 LOGGER.log(Level.FINE, null, ex);
             }
         }
+    }
+    
+    
+    public int getEmbeddedRegionEnd(int offset) {
+        if (!embedded) {
+            return -1;
+        }
+
+        int docOffset = snapshot.getOriginalOffset(offset);
+        if (docOffset < 0) {
+            return -1;
+        }
+
+        for (Region region : regions) {
+            if (docOffset >= region.getOriginalStart() && docOffset < region.getOriginalEnd()) {
+                return snapshot.getEmbeddedOffset(region.getOriginalEnd());
+            }
+        }
+        return -1;
     }
     
     public int getDocumentOffset(int offset) {
@@ -344,11 +399,16 @@ public final class FormatContext {
                         start.setInitialIndentation(0);
                     }
                 } else {
-                    // for case like <script>\nfoo();\n</script>
-                    // we get the inital indentation from already indented
-                    // <script> line
-                    start.setInitialIndentation(context.lineIndent(context.lineStartOffset(start.getContextRegion().getStartOffset()))
-                            + IndentUtils.indentLevelSize(getDocument()));
+                    if (start.getOriginalStart() <= 0) {
+                        // see #246093
+                        start.setInitialIndentation(0);
+                    } else {
+                        // for case like <script>\nfoo();\n</script>
+                        // we get the inital indentation from already indented
+                        // <script> line
+                        start.setInitialIndentation(context.lineIndent(context.lineStartOffset(start.getContextRegion().getStartOffset()))
+                                + IndentUtils.indentLevelSize(getDocument()));
+                    }
                 }
             } catch (BadLocationException ex) {
                 LOGGER.log(Level.INFO, null, ex);
@@ -362,19 +422,23 @@ public final class FormatContext {
         // return embedded && getDocumentOffset(token.getOffset()) < 0;
         return embedded && JsEmbeddingProvider.isGeneratedIdentifier(token.getText().toString());
     }
+    
+    public boolean isBrokenSource() {
+        return embedded && root == null;
+    }
 
     public BaseDocument getDocument() {
         return (BaseDocument) context.document();
     }
 
     public void indentLine(int voffset, int indentationSize,
-            JsFormatter.Indentation indentationCheck) {
+            JsFormatter.Indentation indentationCheck, CodeStyle.Holder codeStyle) {
 
-        indentLineWithOffsetDiff(voffset, indentationSize, indentationCheck, offsetDiff);
+        indentLineWithOffsetDiff(voffset, indentationSize, indentationCheck, offsetDiff, codeStyle);
     }
 
     public void indentLineWithOffsetDiff(int voffset, int indentationSize,
-            JsFormatter.Indentation indentationCheck, int realOffsetDiff) {
+            JsFormatter.Indentation indentationCheck, int realOffsetDiff, CodeStyle.Holder codeStyle) {
 
         if (!indentationCheck.isAllowed()) {
             return;
@@ -386,8 +450,8 @@ public final class FormatContext {
         }
 
         try {
-            int diff = GsfUtilities.setLineIndentation(getDocument(),
-                    offset + realOffsetDiff, indentationSize);
+            int diff = setLineIndentation(getDocument(),
+                    offset + realOffsetDiff, indentationSize, codeStyle);
             setOffsetDiff(offsetDiff + diff);
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
@@ -463,6 +527,9 @@ public final class FormatContext {
 
         BaseDocument doc = getDocument();
         try {
+            if(doc.getText(offset + offsetDiff, length).contains("\n")) {
+                LOGGER.log(Level.WARNING, "Tried to remove EOL");
+            }
             if (SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, length)).matches()) {
                 doc.remove(offset + offsetDiff, length);
                 setOffsetDiff(offsetDiff - length);
@@ -487,6 +554,62 @@ public final class FormatContext {
             }
         }
         return length;
+    }
+
+    // XXX copied from GsfUtilities
+    private static int setLineIndentation(BaseDocument doc, int lineOffset,
+            int newIndent, CodeStyle.Holder codeStyle) throws BadLocationException {
+        int lineStartOffset = Utilities.getRowStart(doc, lineOffset);
+
+        // Determine old indent first together with oldIndentEndOffset
+        int indent = 0;
+        int tabSize = -1;
+        CharSequence docText = DocumentUtilities.getText(doc);
+        int oldIndentEndOffset = lineStartOffset;
+        while (oldIndentEndOffset < docText.length()) {
+            char ch = docText.charAt(oldIndentEndOffset);
+            if (ch == '\n') {
+                break;
+            } else if (ch == '\t') {
+                if (tabSize == -1) {
+                    tabSize = codeStyle.tabSize;
+                }
+                // Round to next tab stop
+                indent = (indent + tabSize) / tabSize * tabSize;
+            } else if (Character.isWhitespace(ch)) {
+                indent++;
+            } else { // non-whitespace
+                break;
+            }
+            oldIndentEndOffset++;
+        }
+
+        String newIndentString = IndentUtils.createIndentString(newIndent, codeStyle.expandTabsToSpaces, codeStyle.tabSize);
+        // Attempt to match the begining characters
+        int offset = lineStartOffset;
+        boolean different = false;
+        int i = 0;
+        for (; i < newIndentString.length() && lineStartOffset + i < oldIndentEndOffset; i++) {
+            if (newIndentString.charAt(i) != docText.charAt(lineStartOffset + i)) {
+                offset = lineStartOffset + i;
+                newIndentString = newIndentString.substring(i);
+                different = true;
+                break;
+            }
+        }
+        if (!different) {
+            offset = lineStartOffset + i;
+            newIndentString = newIndentString.substring(i);
+        }
+
+        // Replace the old indent
+        if (offset < oldIndentEndOffset) {
+            doc.remove(offset, oldIndentEndOffset - offset);
+        }
+        if (newIndentString.length() > 0) {
+            doc.insertString(offset, newIndentString, null);
+        }
+        return newIndentString.length() - (oldIndentEndOffset - offset);
     }
 
     public static class LineWrap {

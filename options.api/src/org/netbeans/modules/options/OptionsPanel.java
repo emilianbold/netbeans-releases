@@ -93,8 +93,10 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -123,6 +125,7 @@ import org.openide.windows.WindowManager;
 public class OptionsPanel extends JPanel {
     private JPanel pCategories;
     private JPanel pCategories2;
+    private JScrollPane categoriesScrollPane;
     private JPanel pOptions;
     private JPanel quickSearch;
     private Color origForeground;
@@ -417,8 +420,13 @@ public class OptionsPanel extends JPanel {
         pCategories = new JPanel (new BorderLayout ());
         pCategories.setBorder (BorderFactory.createMatteBorder(0,0,1,0,Color.lightGray));        
         pCategories.setBackground (getTabPanelBackground());
-        pCategories.add ("Center", pCategories2);
+        categoriesScrollPane = new JScrollPane(pCategories2, ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        categoriesScrollPane.setBorder(null);
+        categoriesScrollPane.getHorizontalScrollBar().setUnitIncrement(Utils.ScrollBarUnitIncrement);
+        pCategories.add ("Center", categoriesScrollPane);
         pCategories.add ("East", quickSearch);
+        pCategories.setPreferredSize(new Dimension(pCategories.getPreferredSize().width, 
+                pCategories.getPreferredSize().height + categoriesScrollPane.getHorizontalScrollBar().getPreferredSize().height));
         
         // layout
         setLayout (new BorderLayout (10, 10));
@@ -1184,10 +1192,11 @@ public class OptionsPanel extends JPanel {
         }
 
         public void mouseEntered (MouseEvent e) {
-            if (buttons.get(category.getID()).isEnabled() && !category.isCurrent() && categoryModel.getCurrent() != null) {
-                setHighlighted ();
-            } else {
-                categoryModel.setHighlited(categoryModel.getCategory(categoryModel.getHighlitedCategoryID()),false);
+            CategoryButton button = buttons.get(category.getID());
+            if (button != null && button.isEnabled() && !category.isCurrent() && categoryModel != null && categoryModel.getCurrent() != null) {
+                setHighlighted();
+            } else if (categoryModel != null) {
+                categoryModel.setHighlited(categoryModel.getCategory(categoryModel.getHighlitedCategoryID()), false);
             }
         }
 

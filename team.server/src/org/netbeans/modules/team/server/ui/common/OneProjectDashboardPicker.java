@@ -97,8 +97,6 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
     private final LinkButton btnClose;
     private final JToolBar.Separator separator;
 
-    private final AbstractAction bookmarkAction;
-
     private final MouseOverListener mListener;
     private final JLabel placeholder;
     private boolean bookmarking;
@@ -152,7 +150,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         JToolBar toolbar = new ProjectToolbar();
         add( toolbar, new GridBagConstraints(4,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );            
 
-        bookmarkAction = new AbstractAction() {
+        AbstractAction bookmarkAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 assert currentProject != null;
@@ -169,7 +167,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         lblBookmarkingProgress = new ProgressLabel("", this);
         lblBookmarkingProgress.setVisible(false);
         toolbar.add(lblBookmarkingProgress);
-
+        
         Action closeAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -229,22 +227,24 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
                     boolean isMemberProject = getDashboard(server).isMemberProject(currentProject);
                     btnClose.setVisible(mListener.mouseOver && !isMemberProject);
                     
-                    btnBookmark.setVisible(mListener.mouseOver && !bookmarking);
-                    lblBookmarkingProgress.setVisible(mListener.mouseOver && bookmarking);
-                    separator.setVisible(mListener.mouseOver);
-                    
-                    btnBookmark.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, isMemberProject ? "LBL_LeaveProject" : "LBL_Bookmark"));
-                    btnBookmark.setIcon(
-                            ImageUtilities.loadImageIcon(
-                            "org/netbeans/modules/team/server/resources/" + (isMemberProject ? "bookmark.png" : "unbookmark.png"), true));
-                    btnBookmark.setRolloverIcon(
-                            ImageUtilities.loadImageIcon(
-                            "org/netbeans/modules/team/server/resources/" + (isMemberProject ? "bookmark_over.png" : "unbookmark_over.png"), true)); // NOI18N                                
+                    if(getDashboard(server).getDashboardProvider().getProjectAccessor().canBookmark()) {
+                        btnBookmark.setVisible(mListener.mouseOver && !bookmarking);
+                        lblBookmarkingProgress.setVisible(mListener.mouseOver && bookmarking);
+                        separator.setVisible(mListener.mouseOver);
+
+                        btnBookmark.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, isMemberProject ? "LBL_LeaveProject" : "LBL_Bookmark"));
+                        btnBookmark.setIcon(
+                                ImageUtilities.loadImageIcon(
+                                "org/netbeans/modules/team/server/resources/" + (isMemberProject ? "bookmark.png" : "unbookmark.png"), true));
+                        btnBookmark.setRolloverIcon(
+                                ImageUtilities.loadImageIcon(
+                                "org/netbeans/modules/team/server/resources/" + (isMemberProject ? "bookmark_over.png" : "unbookmark_over.png"), true)); // NOI18N                                
+                    } 
                 } else {
                     btnClose.setVisible(false);
+                    separator.setVisible(false);                    
                     btnBookmark.setVisible(false);
                     lblBookmarkingProgress.setVisible(false);
-                    separator.setVisible(false);                    
                 }
             }
         });

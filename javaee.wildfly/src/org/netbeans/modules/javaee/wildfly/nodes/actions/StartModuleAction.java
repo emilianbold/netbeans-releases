@@ -54,7 +54,7 @@ import org.openide.util.actions.NodeAction;
 
 /**
  * 
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class StartModuleAction extends NodeAction {
 

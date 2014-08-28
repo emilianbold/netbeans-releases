@@ -136,12 +136,19 @@ public final class IndentCommand {
     private int fixedIndentSize;
     private int lineOffset;
     private int indentation;
+    private int indentationSize;
     private boolean wasContinue;
 
     public IndentCommand(Type type, int lineOffset) {
+        this(type, lineOffset, -1);
+    }
+
+    public IndentCommand(Type type, int lineOffset, int indentationSize) {
         this.type = type;
         this.lineOffset = lineOffset;
         this.fixedIndentSize  = -1;
+        // #242649 - each language can have different indentation level:
+        this.indentationSize = indentationSize;
     }
 
     public int getFixedIndentSize() {
@@ -150,6 +157,10 @@ public final class IndentCommand {
 
     public void setFixedIndentSize(int fixedIndentSize) {
         this.fixedIndentSize = fixedIndentSize;
+    }
+
+    public int getIndentationSize() {
+        return indentationSize;
     }
 
     public int getLineOffset() {

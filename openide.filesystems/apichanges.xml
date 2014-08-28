@@ -70,59 +70,28 @@ made subject to such option by the copyright holder.
             </description>
             <issue number="243561"/>
         </change>
-        <change id="SharedClassObject.separate">
+    
+        <change id="getActionsDeprecated">
             <api name="filesystems"/>
-            <summary>Removed dependency on SharedClassObject</summary>
-            <version major="9" minor="0"/>
-            <date year="2014" month="4" day="11"/>
-            <author login="sdedic"/>
-            <compatibility modification="yes" addition="yes" binary="compatible" source="compatible" semantic="incompatible"/>
+            <summary>Deprecating FileSystem.getActions</summary>
+            <version major="8" minor="12"/>
+            <date year="2014" month="5" day="14"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
             <description>
                 <p>
-                    If the FileSystems API encounters a <a href="@openide-util@/org/openide/util/SharedClassObject.html#find">SharedClassObject</a> subclass in the <code>instanceClass</code> attribute,
-                    or derives the subclass from FileObject's name, it does not create the instance using the default
-                    constructor, but rather using <a href="@openide-util@/org/openide/util/SharedClassObject.html#find">SharedClassObject.find</a>
-                    method.
-                    The <code>SharedClassObject</code> is long deprecated and adds unwanted dependency on desktop
-                    utilities to FileSystems API. 
-                </p>
-                <p>
-                    A new SPI, <a href="@TOP@/org/openide/filesystems/spi/CustomInstanceFactory.html">CustomInstanceFactory</a> is created
-                    to create instances based on the type. The instance is searched for in the default Lookup. 
-                    The NetBeans Platform will provide an implementation that handles <code>SharedClassObjects</code>,
-                    but FileSystems API library no longer implements that behaviour. A compatible implementation
-                    of <code>CustomInstanceFactory</code> is provided by the <code>openide.filesystems.nb</code>
-                    module.
+                    Deprecating <code>getActions</code> method in preparation
+                    of splitting filesystems API into UI (e.g. depending
+                    on Swing) and non-UI part (that can run on JDK8 compact
+                    profile). Introducing general replacement 
+                    <a href="@TOP@org/openide/filesystems/FileSystem.html#findExtrasFor(java.util.Set)">findExtrasFor</a>
+                    instead...
                 </p>
             </description>
-            <issue number="243561"/>
-        </change>
-        <change id="RemoveDeprecatedAndObsolete.8">
-            <api name="filesystems"/>
-            <summary>Remove dependency on Swing (SystemAction) and obsolete APIs</summary>
-            <version major="9" minor="0"/>
-            <date year="2014" month="4" day="11"/>
-            <author login="sdedic"/>
-            <compatibility modification="yes" binary="compatible" source="incompatible" deletion="yes" semantic="compatible"/>
-            <description>
-                <p>
-                    The primary goal of the change is to remove dependencies on Swing APIs - FileSystems should not depend
-                    or directly use <code>SystemAction</code> extends <code>javax.swing.Action</code>. At the same time, 
-                    methods or classes which are long @deprecated and have no semantic value are removed from the APIs.
-                </p>
-                <p>
-                    The changes are binary-compatible; a compatibility module is created as <code>org.openide.filesystems.compat8</code>.
-                    Live code (<a href="@openide-filesystems-compat8@/org/openide/filesystems/FileChooserBuilder.html">FileChooserBuilder</a>
-                    is moved to a new module <code>org.openide.filesystems.nb</code> with automatic dependency in place for client which
-                    use filesystems in their old API version.
-                </p>
-                <p>
-                    It's strongly discouraged to compile against the <code>compat8</code> module. Its contents will be maintained only to
-                    ensure binary compatibility with FileSystems API 8.x, API users should not rely on any contract exposed directly by the compat8
-                    module.
-                </p>
-            </description>
-            <issue number="243561"/>
+            <class package="org.openide.filesystems" name="FileSystem"/>
+            <class package="org.openide.filesystems" name="AbstractFileSystem"/>
+            <class package="org.openide.filesystems" name="MultiFileSystem"/>
+            <issue number="243265"/>
         </change>
         <change id="MultiFileObject.revealEntriesAttribute">
             <api name="filesystems"/>

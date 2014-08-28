@@ -64,7 +64,6 @@ made subject to such option by the copyright holder.
 
     <target name="zip-examples" depends="compile">
         <property name="examples" value="${build.classes.dir}/org/netbeans/modules/cordova/resources"/>
-	<mkdir dir="CordovaMapsSample/config"/>
 	<mkdir dir="CordovaMapsSample/test"/>
         <zip basedir="CordovaMapsSample" destfile="${examples}/CordovaMapsSample.zip"/>
     </target>

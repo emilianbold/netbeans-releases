@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport.PathMapperException;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport.Worker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
@@ -314,7 +315,11 @@ class RemoteSyncActions {
             cacheActiveNodes(activatedNodes);
             Pair<ExecutionEnvironment, RemoteSyncFactory> p = getEnv(activatedNodes);
             if(p != null && p.first() != null && p.first().isRemote()) {
-                enabled = p.second().isCopying();
+                RemoteSyncFactory sync = p.second();
+                if (sync == null) {
+                    sync = ServerList.get(p.first()).getSyncFactory();
+                }
+                enabled = (sync == null) ? false : sync.isCopying();
             } else {
                 enabled = false;
             }
@@ -447,7 +452,8 @@ class RemoteSyncActions {
                 }
             }
         }
-        return Pair.of(ServerList.getDefaultRecord().getExecutionEnvironment(), null);
+        ServerRecord rec = ServerList.getDefaultRecord();
+        return Pair.of(rec.getExecutionEnvironment(), rec.getSyncFactory());
     }
 
     private static Project getNodeProject(Node node) {

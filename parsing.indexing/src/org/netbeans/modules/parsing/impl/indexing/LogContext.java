@@ -492,6 +492,13 @@ import org.openide.util.BaseUtilities;
 
     synchronized void absorb(@NonNull final LogContext other) {
         Parameters.notNull("other", other); //NOI18N
+        if (other.executed == 0) {
+            // #241488: do not absorb works which did not execute at all. Try to save the predecessor to keep track of blocking works.
+            if (other.predecessor != null) {
+                absorb(other.predecessor);
+            }
+            return;
+        }
         if (absorbed == null) {
             absorbed = new ArrayDeque<LogContext>();
         }
@@ -502,7 +509,7 @@ import org.openide.util.BaseUtilities;
      * Records this LogContext as 'executed'. Absorbed LogContexts are
      * not counted, as they are absorbed to an existing indexing work.
      */
-    void recordExecuted() {
+    synchronized void recordExecuted() {
         executed = System.currentTimeMillis();
         // Hack for unit tests, which watch the test logger and wait for RepoUpdater. Do not measure stats, so the test output is not obscured.
         if (!TEST_LOGGER.isLoggable(Level.FINEST)) {

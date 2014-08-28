@@ -5,7 +5,7 @@
         <FunctionDeclaration start='6' end='48' isReference='false'>
             <Identifier start='15' end='16' name='f'/>
             <FormalParameters>
-                <FormalParameter start='18' end='26' isMandatory='false'>
+                <FormalParameter start='18' end='26' isMandatory='true' isVariadic='false'>
                     <ParametrType>
                     </ParametrType>
                     <ParametrName>

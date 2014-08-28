@@ -43,9 +43,8 @@ package org.netbeans.modules.cnd.remote.actions.base;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.MissingResourceException;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -56,49 +55,47 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.actions.OpenRemoteProjectAction;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Alexander Simon
  */
-public abstract class RemoteActionPerformer implements ActionListener, PropertyChangeListener, DynamicMenuContent {
+public abstract class RemoteActionPerformer implements ActionListener, DynamicMenuContent {
     protected RemoteOpenActionBase presenter;
     private JMenuItem lastPresenter;
     
-    private void init() {
-        ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, this));
-        presenter.setEnabled(!ServerList.getDefaultRecord().getExecutionEnvironment().isLocal());
+    protected abstract void actionPerformedRemote(ExecutionEnvironment env, ActionEvent e);
+    
+    protected final Action findAction(String path, String id) {
+        Lookup lookup = Lookups.forPath(path);  
+        Lookup.Template<Action> template = new Lookup.Template<>(Action.class, id, null);
+        Lookup.Item<Action> item = lookup.lookupItem(template);
+        if (item != null) {
+            return item.getInstance();
+        }
+        return null;
     }
 
-    protected abstract void actionPerformedRemote(ExecutionEnvironment env);
-    
     @Override
     public final void actionPerformed(ActionEvent e) {
         if (e != null && "performerActivated".equals(e.getActionCommand())) { // NOI18N
             presenter = (RemoteOpenActionBase) e.getSource();
-            init();
             return;
         }
         if (e!= null && (e.getSource() instanceof JMenuItem)) {
             JMenuItem item = (JMenuItem) e.getSource();
             Object property = item.getClientProperty(RemoteOpenActionBase.ENV_KEY);
             if (property instanceof ExecutionEnvironment) {
-                actionPerformedRemote((ExecutionEnvironment)property);
+                actionPerformedRemote((ExecutionEnvironment)property, e);
             } else {
                 ServerListUI.showServerListDialog();
             }
             return;
         }
-        actionPerformedRemote(ServerList.getDefaultRecord().getExecutionEnvironment());
-    }
-
-    @Override
-    public final void propertyChange(PropertyChangeEvent evt) {
-        if (ServerList.PROP_DEFAULT_RECORD.equals(evt.getPropertyName())){
-            presenter.setEnabled(!ServerList.getDefaultRecord().getExecutionEnvironment().isLocal());
-        }
+        actionPerformedRemote(ServerList.getDefaultRecord().getExecutionEnvironment(), e);
     }
 
     @Override

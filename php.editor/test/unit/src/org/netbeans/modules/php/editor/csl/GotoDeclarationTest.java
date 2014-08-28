@@ -900,6 +900,54 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "(new Two)->getT^wo();", "public function ^getTwo() //Two");
     }
 
+    public void testUseFuncAndConst_01() throws Exception {
+        checkDeclaration(getTestPath(), "use const Name\\Space\\F^OO;", "const ^FOO = 42;");
+    }
+
+    public void testUseFuncAndConst_02() throws Exception {
+        checkDeclaration(getTestPath(), "use const Name\\Space\\F^OO as FOO2;", "const ^FOO = 42;");
+    }
+
+    public void testUseFuncAndConst_03() throws Exception {
+        checkDeclaration(getTestPath(), "use const Name\\Space\\FOO as F^OO2;", "use const Name\\Space\\FOO as ^FOO2;");
+    }
+
+    public void testUseFuncAndConst_04() throws Exception {
+        checkDeclaration(getTestPath(), "use function Name\\Space\\f^nc;", "function ^fnc() {}");
+    }
+
+    public void testUseFuncAndConst_05() throws Exception {
+        checkDeclaration(getTestPath(), "use function Name\\Space\\f^nc as fnc2;", "function ^fnc() {}");
+    }
+
+    public void testUseFuncAndConst_06() throws Exception {
+        checkDeclaration(getTestPath(), "use function Name\\Space\\fnc as f^nc2;", "use function Name\\Space\\fnc as ^fnc2;");
+    }
+
+    public void testUseFuncAndConst_07() throws Exception {
+        checkDeclaration(getTestPath(), "echo F^OO;", "const ^FOO = 42;");
+    }
+
+    public void testUseFuncAndConst_08() throws Exception {
+        checkDeclaration(getTestPath(), "echo F^OO2;", "use const Name\\Space\\FOO as ^FOO2;");
+    }
+
+    public void testUseFuncAndConst_09() throws Exception {
+        checkDeclaration(getTestPath(), "f^nc();", "function ^fnc() {}");
+    }
+
+    public void testUseFuncAndConst_10() throws Exception {
+        checkDeclaration(getTestPath(), "f^nc2();", "use function Name\\Space\\fnc as ^fnc2;");
+    }
+
+    public void testIssue244317_01() throws Exception {
+        checkDeclaration(getTestPath(), "$variable = self::testCon^stant;", "const ^testConstant = \"test\";");
+    }
+
+    public void testIssue244317_02() throws Exception {
+        checkDeclaration(getTestPath(), "echo self::testCon^stant;", "const ^testConstant = \"test\";");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

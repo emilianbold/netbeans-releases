@@ -263,11 +263,12 @@ public class GetterSetterGenerator implements CodeGenerator {
             JavaSource js = JavaSource.forDocument(component.getDocument());
             final List<String> getters = new ArrayList();
             final List<String> setters = new ArrayList();
+            final List<TreePathHandle> handles = new ArrayList<>(variables.size());
             js.runUserActionTask(new Task<CompilationController>() {
 
                 @Override
                 public void run(CompilationController parameter) throws Exception {
-                    createGetterSetterLists(parameter, variables, getters, setters, codestyle);
+                    createGetterSetterLists(parameter, variables, handles, getters, setters, codestyle);
                 }
             }, true);
             
@@ -275,7 +276,7 @@ public class GetterSetterGenerator implements CodeGenerator {
 
                 @Override
                 public void run() {
-                    doDefaultEncapsulate(variables, getters, setters);
+                    doDefaultEncapsulate(handles, getters, setters);
                 }
             },
                     NbBundle.getMessage(GetterSetterGenerator.class, "LBL_EncapsulateFields"),
@@ -288,9 +289,10 @@ public class GetterSetterGenerator implements CodeGenerator {
 
     }
         
-    private void createGetterSetterLists(CompilationController cc, List<ElementHandle<? extends Element>> variables, List<String> getters, List<String> setters, CodeStyle codestyle) {
+    private void createGetterSetterLists(CompilationController cc, List<ElementHandle<? extends Element>> variables, List<? super TreePathHandle> handles, List<String> getters, List<String> setters, CodeStyle codestyle) {
         for (ElementHandle handle:variables) {
             final Element el = handle.resolve(cc);
+            handles.add(TreePathHandle.create(el, cc));
             boolean isStatic = el.getModifiers().contains(Modifier.STATIC);
             if (type!=GeneratorUtils.GETTERS_ONLY) {
                 setters.add(CodeStyleUtils.computeSetterName(el.getSimpleName(), isStatic, codestyle));
@@ -305,12 +307,13 @@ public class GetterSetterGenerator implements CodeGenerator {
         }
     }
 
-    private void doDefaultEncapsulate(List<ElementHandle<? extends Element>> variables, List<String> getters, List<String> setters) {
+    private void doDefaultEncapsulate(List<TreePathHandle> variables, List<String> getters, List<String> setters) {
         RefactoringSession encapsulate = RefactoringSession.create(NbBundle.getMessage(GetterSetterGenerator.class, "LBL_EncapsulateFields"));
         final Iterator<String> setIterator = setters.iterator();
         final Iterator<String> getIterator = getters.iterator();
-        for (Iterator<ElementHandle<? extends Element>> it = variables.iterator(); it.hasNext();) {
-            EncapsulateFieldRefactoring refactoring = new EncapsulateFieldRefactoring(TreePathHandle.from(it.next(), ClasspathInfo.create(component.getDocument())));
+        ClasspathInfo cpinfo = ClasspathInfo.create(component.getDocument());
+        for (Iterator<TreePathHandle> it = variables.iterator(); it.hasNext();) {
+            EncapsulateFieldRefactoring refactoring = new EncapsulateFieldRefactoring(it.next());
             refactoring.setSetterName(setIterator.next());
             refactoring.setGetterName(getIterator.next());
             refactoring.setFieldModifiers(EnumSet.of(Modifier.PRIVATE));

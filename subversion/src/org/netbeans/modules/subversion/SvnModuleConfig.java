@@ -105,6 +105,7 @@ public class SvnModuleConfig {
     private static final String PROP_FORCE_COMMANDLINE = "forcedCommandline"; //NOI18N
     private static final String PROP_PREFERRED_FACTORY = "preferredFactory"; //NOI18N
     private static final String PROP_FILTER_PROPERTIES_ENABLED = "filterProperties.enabled"; //NOI18N
+    private static final String PROP_DETERMINE_BRANCHES_ENABLED = "determineBranch.enabled"; //NOI18N
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
         
@@ -344,6 +345,14 @@ public class SvnModuleConfig {
         List<AnnotationExpression> ret = new ArrayList<AnnotationExpression>(1);
         ret.add(new AnnotationExpression(".*?/(?<!/src/.{1,200})(branches|tags)/(.+?)(/.*)?", "\\2")); //NOI18N
         return ret;
+    }
+    
+    public boolean isDetermineBranchesEnabled () {
+        return getPreferences().getBoolean(PROP_DETERMINE_BRANCHES_ENABLED, true);
+    }
+    
+    public void setDetermineBranchesEnabled (boolean enabled) {
+        getPreferences().putBoolean(PROP_DETERMINE_BRANCHES_ENABLED, enabled);
     }
 
     public int getLastUsedModificationContext () {

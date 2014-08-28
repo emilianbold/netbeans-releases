@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.debugger.jpda.js;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.InternalException;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.StackFrame;
@@ -59,18 +60,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.ActionsManagerListener;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.netbeans.modules.debugger.jpda.js.vars.DebuggerSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.util.Exceptions;
 
@@ -84,11 +89,17 @@ public class StepIntoJSHandler extends LazyActionsManagerListener implements Pro
     
     private static final String SCRIPT_ACCESS_CLASS = "jdk.nashorn.internal.runtime.ScriptFunctionData";    // NOI18N
     private static final String[] SCRIPT_ACCESS_METHODS = { "invoke", "construct" };        // NOI18N
+    // New notifyInvoke API:
+    private static final String SCRIPT_NOTIFY_INVOKE_METHOD = "notifyInvoke";   // NOI18N
+    private static final String SCRIPT_NOTIFY_INVOKE_METHOD_SIG = "(Ljava/lang/invoke/MethodHandle;)V"; // NOI18N
+    private static final String SCRIPT_NOTIFY_INVOKE_METHOD_ARG = "mh";         // NOI18N
     
     private static final Logger logger = Logger.getLogger(StepIntoJSHandler.class.getCanonicalName());
     
     private final JPDADebugger debugger;
     private final MethodBreakpoint[] scriptAccessBPs;
+    private final MethodBreakpoint notifyInvokeBP;
+    private volatile boolean isNotifyInvoke;
     
     public StepIntoJSHandler(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
@@ -107,16 +118,46 @@ public class StepIntoJSHandler extends LazyActionsManagerListener implements Pro
             DebuggerManager.getDebuggerManager().addBreakpoint(mb);
             scriptAccessBPs[i] = mb;
         }
+        ScriptInvokeBPListener sibl = new ScriptInvokeBPListener();
+        notifyInvokeBP = MethodBreakpoint.create(DebuggerSupport.DEBUGGER_SUPPORT_CLASS,
+                                                 SCRIPT_NOTIFY_INVOKE_METHOD);
+        notifyInvokeBP.setMethodSignature(SCRIPT_NOTIFY_INVOKE_METHOD_SIG);
+        notifyInvokeBP.setHidden(true);
+        notifyInvokeBP.setSuspend(debugger.getSuspend());
+        notifyInvokeBP.setSession(debugger);
+        notifyInvokeBP.disable();
+        notifyInvokeBP.addJPDABreakpointListener(sibl);
+        DebuggerManager.getDebuggerManager().addBreakpoint(notifyInvokeBP);
+        notifyInvokeBP.addPropertyChangeListener(Breakpoint.PROP_VALIDITY, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (Breakpoint.VALIDITY.VALID.equals(notifyInvokeBP.getValidity())) {
+                    // notifyInvoke is available we can remove the script access breakpoints
+                    logger.log(Level.FINE, "{0} is valid => we can disable breakpoints on "+SCRIPT_ACCESS_CLASS, notifyInvokeBP);
+                    for (MethodBreakpoint mb : scriptAccessBPs) {
+                        logger.log(Level.FINE, "{0} disable", mb);
+                        mb.disable();
+                        DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
+                    }
+                    isNotifyInvoke = true;
+                }
+            }
+        });
     }
 
     @Override
     protected void destroy() {
         logger.fine("\nStepIntoJSHandler.destroy()");
-        for (MethodBreakpoint mb : scriptAccessBPs) {
-            logger.log(Level.FINE, "{0} disable", mb);
-            mb.disable();
-            DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
+        if (!isNotifyInvoke) {
+            for (MethodBreakpoint mb : scriptAccessBPs) {
+                logger.log(Level.FINE, "{0} disable", mb);
+                mb.disable();
+                DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
+            }
         }
+        logger.log(Level.FINE, "{0} disable", notifyInvokeBP);
+        notifyInvokeBP.disable();
+        DebuggerManager.getDebuggerManager().removeBreakpoint(notifyInvokeBP);
     }
 
     @Override
@@ -137,10 +178,14 @@ public class StepIntoJSHandler extends LazyActionsManagerListener implements Pro
         if ("actionToBeRun".equals(evt.getPropertyName())) {
             Object action = evt.getNewValue();
             if (ActionsManager.ACTION_STEP_INTO.equals(action)) {
-                for (MethodBreakpoint mb : scriptAccessBPs) {
-                    logger.log(Level.FINE, "{0} enable", mb);
-                    mb.enable();
+                if (!isNotifyInvoke) {
+                    for (MethodBreakpoint mb : scriptAccessBPs) {
+                        logger.log(Level.FINE, "{0} enable", mb);
+                        mb.enable();
+                    }
                 }
+                logger.log(Level.FINE, "{0} enable", notifyInvokeBP);
+                notifyInvokeBP.enable();
                 //scriptBP.enable();
             }
         }
@@ -154,11 +199,45 @@ public class StepIntoJSHandler extends LazyActionsManagerListener implements Pro
                 return ;
             }
             logger.fine("Current frame changed>");
-            for (MethodBreakpoint mb : scriptAccessBPs) {
-                logger.log(Level.FINE, " {0} disable", mb);
-                mb.disable();
+            if (!isNotifyInvoke) {
+                for (MethodBreakpoint mb : scriptAccessBPs) {
+                    logger.log(Level.FINE, " {0} disable", mb);
+                    mb.disable();
+                }
             }
+            logger.log(Level.FINE, " {0} disable", notifyInvokeBP);
+            notifyInvokeBP.disable();
         }
+    }
+    
+    private void scriptToBeInvoked(ObjectVariable mh) {
+        ObjectVariable member = (ObjectVariable) mh.getField("member");
+        if (!(member instanceof ObjectVariable)) {
+            logger.info("Variable "+mh+" does not have member field: "+member);
+            return ;
+        }
+        ObjectVariable clazz = (ObjectVariable) member.getField("clazz");
+        if (!(clazz instanceof ClassVariable)) {
+            logger.info("Variable "+mh+" does not have clazz field: "+clazz);
+            return ;
+        }
+        //JPDAClassType classType = ((ClassVariable) clazz).getReflectedType();
+        JPDAClassType classType;
+        try {
+            classType = (JPDAClassType) clazz.getClass().getMethod("getReflectedType").invoke(clazz);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+            return ;
+        }
+        String className = classType.getName();
+
+        MethodBreakpoint mb = MethodBreakpoint.create(className, "");
+        mb.setHidden(true);
+        mb.setSuspend(debugger.getSuspend());
+        mb.setSession(debugger);
+        mb.addJPDABreakpointListener(new InScriptBPListener(mb));
+        DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+        logger.log(Level.FINE, "Created {0} for any method in {1}", new Object[]{mb, className});
     }
     
     private class ScriptBPListener implements JPDABreakpointListener {
@@ -181,34 +260,7 @@ public class StepIntoJSHandler extends LazyActionsManagerListener implements Pro
                     logger.info("getGenericInvoker/Constructor returned "+mh+", which is not an object.");
                     return ;
                 }
-                ObjectVariable omh = (ObjectVariable) mh;
-                ObjectVariable member = (ObjectVariable) omh.getField("member");
-                if (!(member instanceof ObjectVariable)) {
-                    logger.info("Variable "+mh+" does not have member field: "+member);
-                    return ;
-                }
-                ObjectVariable clazz = (ObjectVariable) member.getField("clazz");
-                if (!(clazz instanceof ClassVariable)) {
-                    logger.info("Variable "+mh+" does not have clazz field: "+clazz);
-                    return ;
-                }
-                //JPDAClassType classType = ((ClassVariable) clazz).getReflectedType();
-                JPDAClassType classType;
-                try {
-                    classType = (JPDAClassType) clazz.getClass().getMethod("getReflectedType").invoke(clazz);
-                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
-                    Exceptions.printStackTrace(ex);
-                    return ;
-                }
-                String className = classType.getName();
-
-                MethodBreakpoint mb = MethodBreakpoint.create(className, "");
-                mb.setHidden(true);
-                mb.setSuspend(debugger.getSuspend());
-                mb.setSession(debugger);
-                mb.addJPDABreakpointListener(new InScriptBPListener(mb));
-                DebuggerManager.getDebuggerManager().addBreakpoint(mb);
-                logger.log(Level.FINE, "Created {0} for any method in {1}", new Object[]{mb, className});
+                scriptToBeInvoked((ObjectVariable) mh);
                 
             } catch (InvalidExpressionException iex) {
                 
@@ -238,6 +290,57 @@ public class StepIntoJSHandler extends LazyActionsManagerListener implements Pro
             } catch (InternalException iex) {
             } catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException ex) {
                 
+            }
+        }
+        
+    }
+    
+    private class ScriptInvokeBPListener implements JPDABreakpointListener {
+
+        @Override
+        public void breakpointReached(JPDABreakpointEvent event) {
+            // We have the method handle as an argument
+            logger.fine("ScriptInvokeBPListener.breakpointReached()");
+            try {
+                CallStackFrame frame;
+                try {
+                    CallStackFrame[] callStack = event.getThread().getCallStack(0, 1);
+                    if (callStack.length > 0) {
+                        frame = callStack[0];
+                    } else {
+                        return ;
+                    }
+                } catch (AbsentInformationException ex) {
+                    // No info => no debugging
+                    logger.log(Level.WARNING, "No debug info", ex);
+                    return ;
+                }
+                ObjectVariable mh = null;
+                try {
+                    LocalVariable[] localVariables = frame.getLocalVariables();
+                    for (LocalVariable lv : localVariables) {
+                        if (SCRIPT_NOTIFY_INVOKE_METHOD_ARG.equals(lv.getName())) {
+                            mh = (ObjectVariable) lv;
+                        }
+                    }
+                } catch (AbsentInformationException aiex) {}
+                if (mh == null) {
+                    try {
+                        LocalVariable[] methodArguments = (LocalVariable[]) frame.getClass().getMethod("getMethodArguments").invoke(frame);
+                        if (methodArguments.length > 0) {
+                            mh = (ObjectVariable) methodArguments[0];
+                        }
+                    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+                        logger.log(Level.CONFIG, "Obtaining method argumnets", ex);
+                    }
+                }
+                if (mh != null) {
+                    scriptToBeInvoked(mh);
+                } else {
+                    logger.info("Unable to retrieve the method handle");
+                }
+            } finally {
+                event.resume();
             }
         }
         

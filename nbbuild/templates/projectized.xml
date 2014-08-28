@@ -266,6 +266,9 @@ If you are sure you want to build with JDK 8+ anyway, use: -Dpermit.jdk8.builds=
         <path id="test.unit.lib.cp"/>
         <!-- The IDE is so big that anything enabling all clusters will exceed the JVM's defaults! -->
         <!-- Any changes please propagate into nbbuild/testdist/release/one-module.xml test.run.args property -->
+        <condition property="test.run.args" value="-ea -Xmx480m">
+            <istrue value="${have-jdk-1.8}"/>
+        </condition>
         <property name="test.run.args" value="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx480m"/>
         <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/>
         <macrodef name="test-init-nborg">
@@ -608,7 +611,14 @@ If you are sure you want to build with JDK 8+ anyway, use: -Dpermit.jdk8.builds=
         <property name="sigtest.fail.on.error" value="true"/>
         <taskdef name="sigtest" classname="org.netbeans.nbbuild.Sigtest" classpath="${nbantext.jar}"/>
         <property name="sigtest.jar" location="${nb_all}/nbbuild/external/apitest.jar"/> 
-        <property file="${manifest.mf}" prefix="mf."/>
+        <loadproperties srcFile="${manifest.mf}" prefix="mf.">
+            <filterchain>
+                <replaceregex pattern="[\n\r]+ ([^ ][^\n\r]*)"
+                            replace="\1"
+                            flags="g"
+                            byline="false"/>
+            </filterchain>
+        </loadproperties>
         <condition property="mf.OpenIDE-Module-Specification-Version" value="${spec.version.base}"> <!-- fallback -->
             <isset property="spec.version.base"/>
         </condition>

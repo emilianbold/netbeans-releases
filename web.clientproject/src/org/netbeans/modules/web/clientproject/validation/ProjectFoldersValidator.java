@@ -44,7 +44,6 @@ package org.netbeans.modules.web.clientproject.validation;
 import java.io.File;
 import org.netbeans.modules.web.clientproject.api.validation.FolderValidator;
 import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,7 +53,6 @@ public final class ProjectFoldersValidator {
 
     public static final String SITE_ROOT_FOLDER = "site.root.folder"; // NOI18N
     public static final String TEST_FOLDER = "test.folder"; // NOI18N
-    public static final String CONFIG_FOLDER = "config.folder"; // NOI18N
 
     private final ValidationResult result = new ValidationResult();
 
@@ -63,59 +61,37 @@ public final class ProjectFoldersValidator {
         return result;
     }
 
-    public ProjectFoldersValidator validate(File projectDirectory, File siteRootFolder, File testFolder, File configFolder) {
+    public ProjectFoldersValidator validate(File siteRootFolder, File testFolder) {
         validateSiteRootFolder(siteRootFolder);
-        validateTestFolder(projectDirectory, testFolder);
-        validateConfigFolder(projectDirectory, configFolder);
+        validateTestFolder(testFolder);
         return this;
     }
 
-    @NbBundle.Messages("ProjectFoldersValidator.error.siteRoot.invalid=Site Root must be a valid directory.")
+    @NbBundle.Messages("ProjectFoldersValidator.siteRoot=Site Root")
     public ProjectFoldersValidator validateSiteRootFolder(File siteRootFolder) {
-        ValidationResult folderValidationResult = new FolderValidator()
-                .validateFolder(siteRootFolder)
-                .getResult();
-        for (ValidationResult.Message error : folderValidationResult.getErrors()) {
-            result.addError(new ValidationResult.Message(SITE_ROOT_FOLDER, error.getMessage()));
-        }
-        for (ValidationResult.Message warning : folderValidationResult.getWarnings()) {
-            result.addWarning(new ValidationResult.Message(SITE_ROOT_FOLDER, warning.getMessage()));
-        }
-        return this;
+        return validateProjectFolder(siteRootFolder, SITE_ROOT_FOLDER, Bundle.ProjectFoldersValidator_siteRoot());
     }
 
-    @NbBundle.Messages({
-        "ProjectFoldersValidator.error.test.invalid=Unit Tests must be a valid directory.",
-        "ProjectFoldersValidator.error.test.notUnderProjectDir=Unit Tests must be underneath project directory."
-    })
-    ProjectFoldersValidator validateTestFolder(File projectDirectory, File testFolder) {
-        validateProjectFolder(projectDirectory, testFolder, TEST_FOLDER,
-                Bundle.ProjectFoldersValidator_error_test_invalid(), Bundle.ProjectFoldersValidator_error_test_notUnderProjectDir());
-        return this;
+    @NbBundle.Messages("ProjectFoldersValidator.tests=Unit Tests")
+    ProjectFoldersValidator validateTestFolder(File testFolder) {
+        return validateProjectFolder(testFolder, TEST_FOLDER, Bundle.ProjectFoldersValidator_tests());
     }
 
-    @NbBundle.Messages({
-        "ProjectFoldersValidator.error.config.invalid=Config must be a valid directory.",
-        "ProjectFoldersValidator.error.config.notUnderProjectDir=Config must be underneath project directory."
-    })
-    ProjectFoldersValidator validateConfigFolder(File projectDirectory, File configFolder) {
-        validateProjectFolder(projectDirectory, configFolder, CONFIG_FOLDER,
-                Bundle.ProjectFoldersValidator_error_config_invalid(), Bundle.ProjectFoldersValidator_error_config_notUnderProjectDir());
-        return this;
-    }
-
-    private void validateProjectFolder(File projectDirectory, File folder, String source, String invalidFolderMessage, String notInProjectMessage) {
+    private ProjectFoldersValidator validateProjectFolder(File folder, String source, String dirName) {
         if (folder == null) {
             // can be empty
-            return;
+            return this;
         }
-        if (!folder.isDirectory()) {
-            result.addError(new ValidationResult.Message(source, invalidFolderMessage));
-            return;
+        ValidationResult folderValidationResult = new FolderValidator()
+                .validateFolder(folder, dirName)
+                .getResult();
+        for (ValidationResult.Message error : folderValidationResult.getErrors()) {
+            result.addError(new ValidationResult.Message(source, error.getMessage()));
         }
-        if (!FileUtil.isParentOf(FileUtil.toFileObject(projectDirectory), FileUtil.toFileObject(folder))) {
-            result.addError(new ValidationResult.Message(source, notInProjectMessage));
+        for (ValidationResult.Message warning : folderValidationResult.getWarnings()) {
+            result.addWarning(new ValidationResult.Message(source, warning.getMessage()));
         }
+        return this;
     }
 
 }

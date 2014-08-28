@@ -1398,7 +1398,13 @@ public final class CsmProjectContentResolver {
                         res = baseRes;
                     }
                 } else {
-                   CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + csmClass.getContainingFile() + " class " + csmClass); //NOI18N
+                   // Commented because it is absolutely ok in case of variadic templates inheritance,
+                   // or just in case of unfinished code, like that:
+                   //
+                   //   template <typename T>
+                   //   struct AAA : AAA<typename T::next> {};
+                   //
+                   //CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + csmClass.getContainingFile() + " class " + csmClass); //NOI18N
                 }
             }
         }

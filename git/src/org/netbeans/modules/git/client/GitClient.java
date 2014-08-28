@@ -55,6 +55,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBlameResult;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitCherryPickResult;
+import org.netbeans.libs.git.GitClient.CherryPickOperation;
 import org.netbeans.libs.git.GitClient.DiffMode;
 import org.netbeans.libs.git.GitClient.RebaseOperationType;
 import org.netbeans.libs.git.GitClient.ResetType;
@@ -65,7 +67,9 @@ import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitPullResult;
 import org.netbeans.libs.git.GitPushResult;
 import org.netbeans.libs.git.GitRebaseResult;
+import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.GitRepository.FastForwardOption;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitRevertResult;
 import org.netbeans.libs.git.GitRevisionInfo;
@@ -158,6 +162,7 @@ public final class GitClient {
             "listRemoteTags", //NOI18N
             "log", //NOI18N
             "unignore", //NOI18N
+            "updateReference", //NOI18N
             "push", //NOI18N - does not manipulate with index
             "removeNotificationListener", //NOI18N
             "removeRemote", //NOI18N - does not update index or files in WT
@@ -169,6 +174,7 @@ public final class GitClient {
     private static final HashSet<String> NEED_REPOSITORY_REFRESH_COMMANDS = new HashSet<String>(Arrays.asList("add",//NOI18N // may change state, e.g. MERGING->MERGED
             "checkout", //NOI18N
             "checkoutRevision", //NOI18N // current head changes
+            "cherryPick", //NOI18N
             "commit", //NOI18N
             "createBranch", //NOI18N // should refresh set of known branches
             "createTag", //NOI18N - should refresh set of available tags
@@ -184,6 +190,7 @@ public final class GitClient {
             "revert", //NOI18N - creates a new head
             "setRemote", //NOI18N - updates remotes
             "setUpstreamBranch", //NOI18N - updates remotes
+            "updateReference", //NOI18N - updates branches
             "updateSubmodules" //NOI18N - current head changes
     ));
     /**
@@ -273,6 +280,16 @@ public final class GitClient {
                 return null;
             }
         }, "checkoutRevision", new File[] { repositoryRoot }); //NOI18N
+    }
+
+    public GitCherryPickResult cherryPick (final CherryPickOperation op, final String[] revisions, final ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+        return new CommandInvoker().runMethod(new Callable<GitCherryPickResult>() {
+
+            @Override
+            public GitCherryPickResult call () throws Exception {
+                return delegate.cherryPick(op, revisions, monitor);
+            }
+        }, "cherryPick", new File[] { repositoryRoot }); //NOI18N
     }
 
     public void clean(final File[] roots, final ProgressMonitor monitor) throws GitException {
@@ -498,6 +515,10 @@ public final class GitClient {
             }
         }, "getRemotes"); //NOI18N
     }
+
+    public File getRepositoryRoot () {
+        return repositoryRoot;
+    }
     
     public GitRepositoryState getRepositoryState (final ProgressMonitor monitor) throws GitException {
         return new CommandInvoker().runMethod(new Callable<GitRepositoryState>() {
@@ -601,12 +622,12 @@ public final class GitClient {
         }, "log"); //NOI18N
     }
     
-    public GitMergeResult merge (final String revision, final ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException {
+    public GitMergeResult merge (final String revision, final FastForwardOption ffOption, final ProgressMonitor monitor) throws GitException.CheckoutConflictException, GitException {
         return new CommandInvoker().runMethod(new Callable<GitMergeResult>() {
 
             @Override
             public GitMergeResult call () throws Exception {
-                return delegate.merge(revision, monitor);
+                return delegate.merge(revision, ffOption, monitor);
             }
         }, "merge"); //NOI18N
     }
@@ -751,6 +772,17 @@ public final class GitClient {
         }, "unignore"); //NOI18N
     }
 
+    public GitRefUpdateResult updateReference (final String referenceName, final String newId,
+            final ProgressMonitor monitor) throws GitException {
+        return new CommandInvoker().runMethod(new Callable<GitRefUpdateResult>() {
+
+            @Override
+            public GitRefUpdateResult call () throws Exception {
+                return delegate.updateReference(referenceName, newId, monitor);
+            }
+        }, "updateReference"); //NOI18N
+    }
+
     public Map<File, GitSubmoduleStatus> updateSubmodules (final File[] roots, final ProgressMonitor monitor) throws GitException {
         return new CommandInvoker().runMethod(new Callable<Map<File, GitSubmoduleStatus>>() {
 
@@ -769,7 +801,7 @@ public final class GitClient {
             public GitBranch call () throws Exception {
                 return delegate.setUpstreamBranch(localBranchName, remoteBranchName, monitor);
             }
-        }, "updateTracking"); //NOI18N
+        }, "setUpstreamBranch"); //NOI18N
     }
 
     private static class CleanTask implements Runnable {

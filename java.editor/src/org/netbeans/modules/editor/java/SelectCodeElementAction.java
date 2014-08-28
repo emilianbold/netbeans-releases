@@ -58,6 +58,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
@@ -106,7 +107,7 @@ final class SelectCodeElementAction extends BaseAction {
             putValue(SHORT_DESCRIPTION, desc);
         }
     }
-        
+
     public String getShortDescription(){
         String name = (String)getValue(Action.NAME);
         if (name == null) return null;
@@ -118,7 +119,7 @@ final class SelectCodeElementAction extends BaseAction {
         }
         return shortDesc;
     }
-    
+
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         if (target != null) {
             int selectionStartOffset = target.getSelectionStart();
@@ -132,7 +133,7 @@ final class SelectCodeElementAction extends BaseAction {
                     // is stored is the client-property of the component itself
                     target.putClientProperty(SelectionHandler.class, handler);
                 }
-                
+
                 if (selectNext) { // select next element
                     handler.selectNext();
                 } else { // select previous
@@ -142,35 +143,66 @@ final class SelectCodeElementAction extends BaseAction {
         }
     }
 
-    private static final class SelectionHandler implements CaretListener, Task<CompilationController>, Runnable {
-        
-        private JTextComponent target;
-        private String name;
+    private static final class SelectionHandler implements CaretListener, Runnable {
+
+        private final JTextComponent target;
+        private final String name;
+        //@GuardedBy("this")
         private SelectionInfo[] selectionInfos;
+        //@GuardedBy("this")
         private int selIndex = -1;
+        //Threading: Confinement within EDT
         private boolean ignoreNextCaretUpdate;
-        private AtomicBoolean cancel;
 
         SelectionHandler(JTextComponent target, String name) {
             this.target = target;
+            this.name = name;
         }
 
         public void selectNext() {
-            if (selectionInfos == null) {
+            SelectionInfo[] si;
+            synchronized (this) {
+                si = selectionInfos;
+            }
+            if (si == null) {
                 final JavaSource js = JavaSource.forDocument(target.getDocument());
                 if (js != null) {
-                    cancel = new AtomicBoolean();
+                    final AtomicBoolean cancel = new AtomicBoolean();
                     ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                        @Override
                         public void run() {
                             try {
-                                js.runUserActionTask(SelectionHandler.this, true);
+                                js.runUserActionTask(
+                                    new Task<CompilationController>(){
+                                        @Override
+                                        public void run(CompilationController cc) throws Exception {
+                                            try {
+                                                if (cancel.get()) {
+                                                    return;
+                                                }
+                                                cc.toPhase(Phase.RESOLVED);
+                                                if (cancel.get()) {
+                                                    return;
+                                                }
+                                                synchronized (SelectionHandler.this) {
+                                                    selectionInfos = initSelectionPath(target, cc);
+                                                    if (selectionInfos != null && selectionInfos.length > 0) {
+                                                        selIndex = 0;
+                                                    }
+                                                }
+                                            } catch (IOException ex) {
+                                                Exceptions.printStackTrace(ex);
+                                            }
+                                        }
+                                    },
+                                    true);
                             } catch (IOException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
                         }
                     }, name, cancel, false);
                 }
-            }            
+            }
             run();
         }
 
@@ -181,6 +213,7 @@ final class SelectCodeElementAction extends BaseAction {
         }
 
         private void select(SelectionInfo selectionInfo) {
+            assert SwingUtilities.isEventDispatchThread();
             Caret caret = target.getCaret();
             ignoreNextCaretUpdate = true;
             try {
@@ -190,8 +223,9 @@ final class SelectCodeElementAction extends BaseAction {
                 ignoreNextCaretUpdate = false;
             }
         }
-        
+
         public void caretUpdate(CaretEvent e) {
+            assert SwingUtilities.isEventDispatchThread();
             if (!ignoreNextCaretUpdate) {
                 synchronized (this) {
                     selectionInfos = null;
@@ -200,28 +234,14 @@ final class SelectCodeElementAction extends BaseAction {
             }
         }
 
-
-        public void run(CompilationController cc) {
-            try {
-                if (cancel != null && cancel.get())
-                    return;
-                cc.toPhase(Phase.RESOLVED);
-                if (cancel != null && cancel.get())
-                    return;
-                selectionInfos = initSelectionPath(target, cc);
-                if (selectionInfos != null && selectionInfos.length > 0)
-                    selIndex = 0;
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        
         private SelectionInfo[] initSelectionPath(JTextComponent target, CompilationController ci) {
             List<SelectionInfo> positions = new ArrayList<SelectionInfo>();
             int caretPos = target.getCaretPosition();
             positions.add(new SelectionInfo(caretPos, caretPos));
             if (target.getDocument() instanceof BaseDocument) {
                 try {
+                    //as a nice side effect it also supports word selection within string literals
+                    //"foo b|ar" -> bar
                     int block[] = org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument) target.getDocument(), caretPos);
                     if (block != null) {
                         positions.add(new SelectionInfo(block[0], block[1]));
@@ -235,7 +255,18 @@ final class SelectCodeElementAction extends BaseAction {
                 int startPos = (int)sp.getStartPosition(tp.getCompilationUnit(), tree);
                 int endPos = (int)sp.getEndPosition(tp.getCompilationUnit(), tree);
                 positions.add(new SelectionInfo(startPos, endPos));
-		
+
+                //support content selection within the string literal too
+                //"A|BC" -> ABC
+                if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
+                    positions.add(new SelectionInfo(startPos + 1, endPos - 1));
+                }
+                //support content selection within the {}-block too
+                //{A|BC} -> ABC
+                if (tree.getKind() == Tree.Kind.BLOCK) {
+                    positions.add(new SelectionInfo(startPos + 1, endPos - 1));
+                }
+
 		//Support selection of JavaDoc
 		int docBegin = Integer.MAX_VALUE;
                 for (Comment comment : treeUtilities.getComments(tree, true)) {
@@ -269,7 +300,7 @@ final class SelectCodeElementAction extends BaseAction {
 	    //for each selectioninfo add its line selection
 	    if (target.getDocument() instanceof StyledDocument) {
 		StyledDocument doc = (StyledDocument) target.getDocument();
-                
+
                 Iterator<SelectionInfo> it = positions.iterator();
                 SelectionInfo selectionInfo = it.hasNext() ? it.next() : null;
 		while (selectionInfo != null) {
@@ -279,38 +310,42 @@ final class SelectCodeElementAction extends BaseAction {
                         endOffset = NbDocument.findLineOffset(doc, NbDocument.findLineNumber(doc, selectionInfo.getEndOffset()) + 1);
                     } catch (IndexOutOfBoundsException ioobe) {}
                     SelectionInfo next = it.hasNext() ? it.next() : null;
-                    if (next == null || startOffset >= next.startOffset && endOffset <= next.endOffset) {
-		        orderedPositions.add(new SelectionInfo(startOffset, endOffset));
+                    final boolean isEmptySelection = selectionInfo.startOffset == selectionInfo.endOffset;
+                    //don't create line selection for empty selections
+                    if (!isEmptySelection) {
+                        if (next == null || startOffset >= next.startOffset && endOffset <= next.endOffset) {
+                            orderedPositions.add(new SelectionInfo(startOffset, endOffset));
+                        }
                     }
                     selectionInfo = next;
 		}
 	    }
-	    
+
 	    return orderedPositions.toArray(new SelectionInfo[orderedPositions.size()]);
         }
 
-        public void run() {
+        public synchronized void run() {
             if (selectionInfos != null && selIndex < selectionInfos.length - 1) {
                 select(selectionInfos[++selIndex]);
             }
         }
 
     }
-    
+
     private static final class SelectionInfo {
-        
+
         private int startOffset;
         private int endOffset;
-        
+
         SelectionInfo(int startOffset, int endOffset) {
             this.startOffset = startOffset;
             this.endOffset = endOffset;
         }
-        
+
         public int getStartOffset() {
             return startOffset;
         }
-        
+
         public int getEndOffset() {
             return endOffset;
         }

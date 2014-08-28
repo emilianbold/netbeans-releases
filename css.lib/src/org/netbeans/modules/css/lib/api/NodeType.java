@@ -377,6 +377,19 @@ public enum NodeType {
     sass_else,
     sass_for,
     sass_each,
+    
+    /**
+     * List of variables in the SASS for each loop:
+     * 
+     * @each "$animal, $color, $cursor" in $animals {
+     *      .#{$animal}-icon {
+     *          background-image: url('/images/#{$animal}.png');
+     *          border: 2px solid $color;
+     *          cursor: $cursor;
+     *      }
+     * }
+     */
+    sass_each_variables,
     sass_while,
     sass_control_block,
     sass_control_expression,
@@ -408,7 +421,53 @@ public enum NodeType {
     
     cp_term_symbol,
     
-    less_selector_interpolation
+    less_selector_interpolation,
+    
+    /**
+     * SASS values map
+     * 
+     * "$colors: (
+     *     header: #b06,
+     *     text: #334,
+     *     footer: #666777,
+     * )"
+     */
+    sass_map,
+    
+     /**
+     * SASS values map -- the name of the map variable (including the dollar sign)
+     * 
+     * "$colors": (
+     *     header: #b06,
+     *     text: #334,
+     *     footer: #666777,
+     * )
+     */
+    sass_map_name,
+    
+    
+    /**
+     * SASS values map -- content of the parenthesis
+     * 
+     * $colors: ("
+     *     header: #b06,
+     *     text: #334,
+     *     footer: #666777,
+     * ")
+     */
+    sass_map_pairs,
+    
+    /**
+     * SASS values map -- the key: value pair
+     * 
+     * $colors: (
+     *     "header: #b06",
+     *     "text: #334",
+     *     "footer: #666777",
+     * )
+     */
+    sass_map_pair
+    
     
     ;
     

@@ -89,8 +89,8 @@ public final class AntLoggerUtils {
             }
 
             className = event.evaluate(className);
-            if ((caller.equals(TASK_JUNIT) && className.equals("junit.textui.TestRunner") || className.startsWith("org.junit.runner.") //NOI18N
-                    || className.equals("org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner"))  //NOI18N
+            if ((caller.equals(TASK_JUNIT) && (className.equals("junit.textui.TestRunner") || className.startsWith("org.junit.runner.") //NOI18N
+                    || className.equals("org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner")))  //NOI18N
                     || (caller.equals(TASK_TESTNG) && className.equals("org.testng.TestNG"))) {  //NOI18N
                 TaskStructure[] nestedElems = taskStructure.getChildren();
                 for (TaskStructure ts : nestedElems) {

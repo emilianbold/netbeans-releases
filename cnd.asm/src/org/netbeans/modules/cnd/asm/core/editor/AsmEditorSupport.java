@@ -121,7 +121,7 @@ public class AsmEditorSupport extends DataEditorSupport implements EditCookie,
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws IOException {
             AsmEditorSupport.this.saveDocument();
-            AsmEditorSupport.this.getDataObject().setModified(false);
+            //AsmEditorSupport.this.getDataObject().setModified(false);
         }
     };
     private boolean isReadOnly = false;

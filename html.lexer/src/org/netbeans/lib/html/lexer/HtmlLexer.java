@@ -471,7 +471,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     }
 
     private CharSequence getScriptType(CharSequence attributeValue, boolean quoted) {
-        return quoted ? attributeValue.subSequence(1, attributeValue.length() - 1) : attributeValue;
+        char lastChar = attributeValue.charAt(attributeValue.length() - 1);
+        boolean hasEndQuote = attributeValue.length() > 1 && (lastChar == '\'' || lastChar == '"');
+        return quoted ? attributeValue.subSequence(1, attributeValue.length() - (hasEndQuote ? 1 : 0)) : attributeValue;
     }
 
     private boolean followsCloseTag(CharSequence closeTagName) {

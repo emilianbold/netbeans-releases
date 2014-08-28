@@ -375,4 +375,36 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testIssue237220() throws Exception {
         checkErrors("testfiles/parser/issue237220.php");
     }
+
+    public void testExponentiation_01() throws Exception {
+        checkErrors("testfiles/parser/exponentiation_01.php");
+    }
+
+    public void testConstantScalarExpressions_01() throws Exception {
+        checkErrors("testfiles/parser/constantScalarExpressions_01.php");
+    }
+
+    public void testVariadicFunctions_01() throws Exception {
+        checkErrors("testfiles/parser/testVariadicFunctions_01.php");
+    }
+
+    public void testArgumentUnpacking_01() throws Exception {
+        checkErrors("testfiles/parser/argumentUnpacking_01.php");
+    }
+
+    public void testUseFuncAndConst_01() throws Exception {
+        checkErrors("testfiles/parser/useFuncAndConst_01.php");
+    }
+
+    public void testIssue243409() throws Exception {
+        checkErrors("testfiles/parser/issue243409.php");
+    }
+
+    public void testIssue245320() throws Exception {
+        checkErrors("testfiles/parser/issue245320.php");
+    }
+
+    public void testIssue243512() throws Exception {
+        checkErrors("testfiles/parser/issue243512.php");
+    }
 }

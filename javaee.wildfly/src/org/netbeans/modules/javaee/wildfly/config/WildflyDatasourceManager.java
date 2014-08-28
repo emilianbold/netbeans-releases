@@ -57,13 +57,13 @@ import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.config.gen.DatasourceType;
-import org.netbeans.modules.javaee.wildfly.config.gen.Datasources;
-import org.netbeans.modules.javaee.wildfly.config.gen.DsSecurityType;
-import org.netbeans.modules.javaee.wildfly.config.gen.PoolType;
+import org.netbeans.modules.javaee.wildfly.config.ds.gen.DatasourceType;
+import org.netbeans.modules.javaee.wildfly.config.ds.gen.Datasources;
+import org.netbeans.modules.javaee.wildfly.config.ds.gen.DsSecurityType;
+import org.netbeans.modules.javaee.wildfly.config.ds.gen.PoolType;
 import org.netbeans.modules.javaee.wildfly.config.xml.ConfigurationParser;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.netbeans.modules.schema2beans.BaseBean;
@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Libor Kotouc
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public final class WildflyDatasourceManager implements DatasourceManager {
 

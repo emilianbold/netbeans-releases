@@ -91,7 +91,7 @@ public final class PhpCoverageProvider implements CoverageProvider {
         assert coverage != null;
         assert isEnabled() : "Coverage provider must be enabled";
         synchronized (lock) {
-            this.coverage = coverage;
+            this.coverage = new CoverageImpl(coverage);
         }
         CoverageManager.INSTANCE.resultsUpdated(project, this);
     }
@@ -251,4 +251,23 @@ public final class PhpCoverageProvider implements CoverageProvider {
                 && !CommandUtils.isUnderSelenium(project, fo, false)
                 && phpVisibilityQuery.isVisible(fo);
     }
+
+    //~ Inner classes
+
+    private static final class CoverageImpl implements Coverage {
+
+        private final List<File> files;
+
+
+        public CoverageImpl(Coverage original) {
+            this.files = new ArrayList<>(original.getFiles());
+        }
+
+        @Override
+        public List<File> getFiles() {
+            return files;
+        }
+
+    }
+
 }

@@ -43,45 +43,37 @@
  */
 package org.netbeans.core.multitabs.impl;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.swing.tabcontrol.TabDataModel;
 
 /**
  *
  * @author S. Aubrecht
  */
-public class RowPerProjectTabDisplayer extends MultiRowTabDisplayer {
+public class RowPerProjectTabDisplayer extends MultiRowTabDisplayer implements ChangeListener {
 
-    public RowPerProjectTabDisplayer( final TabDataModel tabModel, int tabsLocation, int rowCount ) {
+    public RowPerProjectTabDisplayer( final TabDataModel tabModel, int tabsLocation ) {
         super( tabModel, tabsLocation );
-
-        ProjectSupport.getDefault().addPropertyChangeListener( new PropertyChangeListener() {
-            @Override
-            public void propertyChange( PropertyChangeEvent evt ) {
-                final int projectCount = ProjectSupport.getDefault().getOpenProjects().length;
-                SwingUtilities.invokeLater( new Runnable() {
-                    @Override
-                    public void run() {
-                        adjustRows( projectCount );
-                    }
-                });
-            }
-        });
     }
 
     @Override
     void initRows() {
-        int rowCount = ProjectSupport.getDefault().getOpenProjects().length+1;
-
+        int rowCount = ProjectSupport.getDefault().getOpenProjects().length;
+        if( rowCount > 1 ) {
+            rowCount++; //add an extra row for non-project tabs
+        }
         for( int i=0; i<rowCount; i++ ) {
             addRowTable();
         }
     }
 
     private void adjustRows( int projectCount ) {
-        int rowCount = projectCount+1;
+        int rowCount = projectCount;
+        if( rowCount > 1 ) {
+            rowCount++; //add an extra row for non-project tabs
+        }
         while( rowCount < rowTables.size() && rowTables.size() > 1 ) {
             removeTable();
         }
@@ -89,9 +81,6 @@ public class RowPerProjectTabDisplayer extends MultiRowTabDisplayer {
             addRowTable();
         }
         layoutManager.invalidate();
-        invalidate();
-        revalidate();
-        doLayout();
     }
 
     private void removeTable() {
@@ -110,7 +99,25 @@ public class RowPerProjectTabDisplayer extends MultiRowTabDisplayer {
 
     @Override
     public void addNotify() {
+        ProjectSupport.getDefault().addChangeListener(this);
         super.addNotify();
         layoutManager.invalidate();
+    }
+    
+    @Override
+    public void removeNotify() {
+        ProjectSupport.getDefault().removeChangeListener(this);
+        super.removeNotify();
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        final int projectCount = ProjectSupport.getDefault().getOpenProjects().length;
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                adjustRows( projectCount );
+            }
+        });
     }
 }

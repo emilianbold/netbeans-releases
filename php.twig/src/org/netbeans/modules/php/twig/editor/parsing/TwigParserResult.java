@@ -49,17 +49,11 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
 public class TwigParserResult extends ParserResult {
-
-    boolean valid = true;
-    List<Error> errorList = new ArrayList<>();
-    List<Block> blockList = new ArrayList<>();
+    private final List<Error> errorList = new ArrayList<>();
+    private final List<Block> blockList = new ArrayList<>();
 
     TwigParserResult(Snapshot snapshot) {
         super(snapshot);
-    }
-
-    public List<Error> getErrors() {
-        return errorList;
     }
 
     public void addError(String description, int offset, int length) {
@@ -67,7 +61,7 @@ public class TwigParserResult extends ParserResult {
     }
 
     public List<Block> getBlocks() {
-        return blockList;
+        return new ArrayList<>(blockList);
     }
 
     public void addBlock(CharSequence function, int offset, int length, CharSequence extra) {
@@ -76,24 +70,18 @@ public class TwigParserResult extends ParserResult {
 
     @Override
     protected void invalidate() {
-        valid = false;
-    }
-
-    public boolean isValid() {
-        return valid;
     }
 
     @Override
     public List<? extends org.netbeans.modules.csl.api.Error> getDiagnostics() {
-        return errorList;
+        return new ArrayList<>(errorList);
     }
 
     public static class Error implements org.netbeans.modules.csl.api.Error {
-
-        String description;
-        int offset;
-        int length;
-        Snapshot snapshot;
+        private final String description;
+        private final int offset;
+        private final int length;
+        private final Snapshot snapshot;
 
         public Error(String description, int offset, int length, Snapshot snapshot) {
             this.description = description;
@@ -105,14 +93,6 @@ public class TwigParserResult extends ParserResult {
         @Override
         public String getDescription() {
             return description;
-        }
-
-        public int getOffset() {
-            return offset;
-        }
-
-        public int getLength() {
-            return length;
         }
 
         @Override
@@ -157,11 +137,10 @@ public class TwigParserResult extends ParserResult {
     }
 
     public static class Block {
-
-        CharSequence function;
-        int offset;
-        int length;
-        CharSequence extra;
+        private final CharSequence function;
+        private final int offset;
+        private final int length;
+        private final CharSequence extra;
 
         public Block(CharSequence function, int offset, int length, CharSequence extra) {
             this.function = function;

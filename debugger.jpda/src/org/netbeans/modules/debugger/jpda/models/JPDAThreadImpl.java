@@ -1058,6 +1058,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             //System.err.println("resume("+getName()+") suspended = false");
             suspended = false;
             suspendedNoFire = false;
+            debugger.setCurrentSuspendedNoFireThread(null);
             methodInvokingDisabledUntilResumed = false;
         }
     }
@@ -1144,6 +1145,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             }
             if (resumed) {
                 suspendedNoFire = false;
+                debugger.setCurrentSuspendedNoFireThread(null);
             }
         } finally {
             accessLock.writeLock().unlock();
@@ -1215,6 +1217,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                 suspendCount = 1; // Suppose
             }
             suspendedNoFire = true;
+            debugger.setCurrentSuspendedNoFireThread(this);
             loggerS.fine("["+threadName+"]: (notifySuspendedNoFire() END) suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
         } finally {
             accessLock.writeLock().unlock();
@@ -1247,6 +1250,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             }
             //System.err.println("notifySuspended("+getName()+") suspendCount = "+suspendCount+", var suspended = "+suspended);
             suspendedNoFire = false;
+            debugger.setCurrentSuspendedNoFireThread(null);
             if ((!suspended || suspendedNoFire && doFire) && isThreadSuspended()) {
                 //System.err.println("  setting suspended = true");
                 suspended = true;
@@ -1790,7 +1794,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                     if (monitorInfos != null && monitorInfos.size() > 0) {
                         List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
                         for (com.sun.jdi.MonitorInfo monitorInfo : monitorInfos) {
-                            mis.add(createMonitorInfo(monitorInfo));
+                            MonitorInfo mi = createMonitorInfo(monitorInfo);
+                            if (mi != null) {
+                                mis.add(mi);
+                            }
                         }
                         return Collections.unmodifiableList(mis);
                     }

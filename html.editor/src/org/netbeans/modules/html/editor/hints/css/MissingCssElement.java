@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.editor.hints.css;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -56,23 +57,35 @@ import org.openide.filesystems.FileObject;
  */
 public class MissingCssElement extends Hint {
 
+    private final HintContext hintContext;
+    private List<HintFix> computedFixes;
+    
     public MissingCssElement(Rule rule, String msg, HtmlRuleContext context, OffsetRange range, HintContext hintContext) {
         super(rule,
                 msg,
                 context.getFile(),
                 range,
-                createFixes(context, hintContext),
+                Collections.<HintFix>emptyList(),
                 10);
+        this.hintContext = hintContext;
     }
 
-    private static List<HintFix> createFixes(HtmlRuleContext context, HintContext hintContext) {
+    @Override
+    public synchronized List<HintFix> getFixes() {
+        if(computedFixes == null) {
+            computedFixes = createFixes();
+        }
+        return Collections.unmodifiableList(computedFixes);
+    }
+    
+    private List<HintFix> createFixes() {
         List<HintFix> fixes = new ArrayList<>();
-        FileObject sourceFile = context.getFile();
+        FileObject sourceFile = getFile();
 
-        if (hintContext.getElement2files().get(hintContext.getElementName()) != null) {
+        if (hintContext.getElement2files().get(hintContext.getPureElementName()) != null) {
             //1) if the class is found in one of the stylesheets in the project:
             //      * add "Import stylesheet" hintfix
-            for (FileObject file : hintContext.getElement2files().get(hintContext.getElementName())) {
+            for (FileObject file : hintContext.getElement2files().get(hintContext.getPureElementName())) {
                 fixes.add(new AddStylesheetLinkHintFix(sourceFile, file));
             }
         } else {
@@ -99,10 +112,7 @@ public class MissingCssElement extends Hint {
                             true,
                             true));
             }
-            
-            
         }
-
 
         return fixes;
     }

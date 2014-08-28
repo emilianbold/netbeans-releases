@@ -46,6 +46,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.ReturnTree;
 import static com.sun.source.doctree.DocTree.Kind.AUTHOR;
 import static com.sun.source.doctree.DocTree.Kind.DEPRECATED;
 import static com.sun.source.doctree.DocTree.Kind.EXCEPTION;
@@ -286,16 +287,14 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             final Trees trees = workingCopy.getTrees();
             Element el = trees.getElement(getCurrentPath());
             el = resolveAnonymousClassConstructor(el, tree, trees);
-            if (el!=null) {
-                if (isMethodMatch(el, p)) {
-                    List<ExpressionTree> arguments = getNewArguments(tree.getArguments(), false, constructor);
-                    NewClassTree nju = make.NewClass(tree.getEnclosingExpression(),
-                            (List<ExpressionTree>)tree.getTypeArguments(),
-                            tree.getIdentifier(),
-                            arguments,
-                            tree.getClassBody());
-                    rewrite(tree, nju);
-                }
+            if (isMethodMatch(el, p)) {
+                List<ExpressionTree> arguments = getNewArguments(tree.getArguments(), false, constructor);
+                NewClassTree nju = make.NewClass(tree.getEnclosingExpression(),
+                        (List<ExpressionTree>)tree.getTypeArguments(),
+                        tree.getIdentifier(),
+                        arguments,
+                        tree.getClassBody());
+                rewrite(tree, nju);
             }
         }
         return super.visitNewClass(tree, p);
@@ -314,9 +313,14 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             Map<String, ParamTree> oldParams = new HashMap<>();
             ParamTree fake = new FakaParamTree();
             int index = 0;
+            ReturnTree returnTree;
             for (DocTree docTree : blockTags) {
                 if(docTree.getKind() != DocTree.Kind.PARAM || ((ParamTree) docTree).isTypeParameter()) {
-                    newTags.add(docTree);
+                    if(docTree.getKind() == DocTree.Kind.RETURN) {
+                        returnTree = (ReturnTree) docTree;
+                    } else {
+                        newTags.add(docTree);
+                    }
                     if(TagComparator.compareTag(fake, docTree) != TagComparator.HIGHER) {
                         index++;
                     }
@@ -340,6 +344,26 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                 }
                 newTags.add(index++, tag);
             }
+            // @Return
+            String returnTypeString;
+            TypeMirror returnType = ((ExecutableElement)el).getReturnType();
+            if (this.returnType == null) {
+                if (returnType != null && returnType.getKind() != TypeKind.VOID) {
+                    returnTypeString = returnType.toString();
+                } else {
+                    returnTypeString = null;
+                }
+            } else {
+                if(this.returnType.equals("void")) {
+                    returnTypeString = null;
+                } else {
+                    returnTypeString = this.returnType;
+                }
+            }
+            if(returnTypeString != null) {
+                newTags.add(make.DocReturn(Collections.singletonList(make.Text("the " + returnTypeString))));
+            }
+            
             rewrite(path.getLeaf(), node, make.DocComment(node.getFirstSentence(), node.getBody(), newTags));
         }
         return node;
@@ -451,32 +475,30 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         if ((constructorRefactoring || !workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) && !compatible) {
             ExecutableElement method = (ExecutableElement) p;
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
-            if (el!=null) {
-                if (isMethodMatch(el, method)) {
-                    if(newModifiers != null) {
-                        checkNewModifier(getCurrentPath(), method);
+            if (isMethodMatch(el, method)) {
+                if(newModifiers != null) {
+                    checkNewModifier(getCurrentPath(), method);
+                }
+                boolean passThrough = false;
+                TreePath enclosingMethod = JavaPluginUtils.findMethod(getCurrentPath());
+                if(enclosingMethod != null) {
+                    Element enclosingElement = workingCopy.getTrees().getElement(enclosingMethod);
+                    if(isMethodMatch(enclosingElement, method)) {
+                        passThrough = true;
                     }
-                    boolean passThrough = false;
-                    TreePath enclosingMethod = JavaPluginUtils.findMethod(getCurrentPath());
-                    if(enclosingMethod != null) {
-                        Element enclosingElement = workingCopy.getTrees().getElement(enclosingMethod);
-                        if(isMethodMatch(enclosingElement, method)) {
-                            passThrough = true;
-                        }
-                    }
-                    List<ExpressionTree> arguments = getNewArguments(tree.getArguments(), passThrough, method);
-                    
-                    MethodInvocationTree nju = make.MethodInvocation(
-                            (List<ExpressionTree>)tree.getTypeArguments(),
-                            newName != null ? make.setLabel(tree.getMethodSelect(), newName) : tree.getMethodSelect(),
-                            arguments);
-                    
-                    if (constructorRefactoring && workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
-                        rewriteSyntheticConstructor(nju);
-                    } else {
-                        // rewrite existing super(); statement
-                        rewrite(tree, nju);
-                    }
+                }
+                List<ExpressionTree> arguments = getNewArguments(tree.getArguments(), passThrough, method);
+
+                MethodInvocationTree nju = make.MethodInvocation(
+                        (List<ExpressionTree>)tree.getTypeArguments(),
+                        newName != null ? make.setLabel(tree.getMethodSelect(), newName) : tree.getMethodSelect(),
+                        arguments);
+
+                if (constructorRefactoring && workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+                    rewriteSyntheticConstructor(nju);
+                } else {
+                    // rewrite existing super(); statement
+                    rewrite(tree, nju);
                 }
             }
         }
@@ -717,6 +739,9 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     }
 
     private boolean isMethodMatch(Element method, Element p) {
+        if(method == null) {
+            return false;
+        }
         if(compatible) {
             return (method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR) && method == p;
         } else if ((method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR) && allMethods !=null) {
@@ -776,16 +801,14 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     final TreePath path = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), node);
                     if(path != null) {
                         Element el = workingCopy.getTrees().getElement(path);
-                        if (el!=null) {
-                            if (isMethodMatch(el, p)) {
-                                List<ExpressionTree> arguments = getNewArguments(node.getArguments(), false, p);
-                                MethodInvocationTree nju = make.MethodInvocation(
-                                        (List<ExpressionTree>)node.getTypeArguments(),
-                                        newName != null ? make.setLabel(node.getMethodSelect(), newName) : node.getMethodSelect(),
-                                        arguments);
-                                original2Translated.put(node, nju);
-                                changed = true;
-                            }
+                        if (isMethodMatch(el, p)) {
+                            List<ExpressionTree> arguments = getNewArguments(node.getArguments(), false, p);
+                            MethodInvocationTree nju = make.MethodInvocation(
+                                    (List<ExpressionTree>)node.getTypeArguments(),
+                                    newName != null ? make.setLabel(node.getMethodSelect(), newName) : node.getMethodSelect(),
+                                    arguments);
+                            original2Translated.put(node, nju);
+                            changed = true;
                         }
                     }
                     return super.visitMethodInvocation(node, p) || changed;
@@ -836,16 +859,14 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     final TreePath path = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), node);
                     if(path != null) {
                         Element el = workingCopy.getTrees().getElement(path);
-                        if (el!=null) {
-                            if (isMethodMatch(el, p)) {
-                                List<ExpressionTree> arguments = getNewArguments(node.getArguments(), false, p);
-                                MethodInvocationTree nju = make.MethodInvocation(
-                                        (List<ExpressionTree>)node.getTypeArguments(),
-                                        newName != null ? make.setLabel(node.getMethodSelect(), newName) : node.getMethodSelect(),
-                                        arguments);
-                                original2Translated.put(node, nju);
-                                changed = true;
-                            }
+                        if (isMethodMatch(el, p)) {
+                            List<ExpressionTree> arguments = getNewArguments(node.getArguments(), false, p);
+                            MethodInvocationTree nju = make.MethodInvocation(
+                                    (List<ExpressionTree>)node.getTypeArguments(),
+                                    newName != null ? make.setLabel(node.getMethodSelect(), newName) : node.getMethodSelect(),
+                                    arguments);
+                            original2Translated.put(node, nju);
+                            changed = true;
                         }
                     }
                     return super.visitMethodInvocation(node, p) || changed;

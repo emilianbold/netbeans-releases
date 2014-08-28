@@ -72,6 +72,20 @@ modules are added and managed.
 </answer>
 
 <answer id="arch-usecases">
+     <a onclick="target='_blank'" href="https://leanpub.com/nbp4beginners">
+     <img src="http://wiki.apidesign.org/images/0/03/NetBeansPlatformForBeginners.jpg"
+        style="float: right"
+          width="60" height="70" alt="Cover of NetBeans Platform for Beginners book"/>
+     </a>
+    For general overview of the concepts, 
+    together with code samples, see chapter 2, 
+    of <a onclick="target='_blank'" href="https://leanpub.com/nbp4beginners">NetBeans Platform for Beginners</a> 
+    by Jason Wexbridge and Walter Nyland.
+    
+    Gory technical details are explained on <a href="@TOP@/org/openide/modules/doc-files/api.html">
+    API overview page                                         
+    </a>. Other interesting topic(s) follow:
+    
 	<usecase id="classpath" name="How a classpath of my module is constructed?" >
     The NetBeans is defacto a container that manages individual module's 
     lifecycle and other runtime aspects. One of the important things is 

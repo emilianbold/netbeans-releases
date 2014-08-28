@@ -49,7 +49,10 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -60,48 +63,67 @@ import org.netbeans.modules.netserver.SocketFramework;
  * @author ads
  *
  */
-abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSHandler<T> 
-    implements WebSocketChanelHandler 
+abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSHandler<T>
+    implements WebSocketChanelHandler
 {
 
     protected static final String SALT = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";     // NOI18N
-    
-    
+
+
+    protected static final byte FINISH_BYTE = Integer.valueOf("10000000",     // NOI18N
+        2).byteValue();
+
+    protected static final byte CONT_BYTE = Integer.valueOf("00000000",     // NOI18N
+        2).byteValue();
+
     /**
      * FIN bit is set and opcode is text ( equals 1 )
      */
     protected static final byte FIRST_BYTE_MESSAGE = Integer.valueOf("10000001",     // NOI18N
             2).byteValue();
-    
+
+    protected static final byte FIRST_CONT_BYTE_MESSAGE = Integer.valueOf("00000001",     // NOI18N
+            2).byteValue();
+
     /**
      * FIN bit is set and opcode is close connection ( equals 8 )
      */
     protected static final byte CLOSE_CONNECTION_BYTE = Integer.valueOf("10001000",     // NOI18N
             2).byteValue();
-    
+
     /**
      * FIN bit is set and opcode is binary ( equals 2 )
      */
     protected static final byte FIRST_BYTE_BINARY = Integer.valueOf("10000010",     // NOI18N
             2).byteValue();
 
+    protected static final byte FIRST_CONT_BYTE_BINARY = Integer.valueOf("00000010",     // NOI18N
+            2).byteValue();
+
     /*
-     * Message max length which is marked in the message with 126 code in the 
-     * "Extended payload length" section 
+     * Message max length which is marked in the message with 126 code in the
+     * "Extended payload length" section
      */
-    protected static final int LENGTH_LEVEL  = 0x10000;  
-    
+    protected static final int LENGTH_LEVEL  = 0x10000;
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractWSHandler7.class.getName());
+
+    private final AtomicReference<byte[]> readData = new AtomicReference<byte[]>();
+
+    private final AtomicInteger prevFrameType = new AtomicInteger();
+
     AbstractWSHandler7(T t){
         super( t );
         myRandom = new Random( hashCode() );
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.common.websocket.WebSocketChanelHandler#read(java.nio.ByteBuffer)
      */
     @Override
-    public void read( ByteBuffer byteBuffer ) throws IOException {
+    public void read(ByteBuffer byteBuffer) throws IOException {
         SocketChannel socketChannel = (SocketChannel) getKey().channel();
+
         while (true) {
             byteBuffer.clear();
             byteBuffer.limit(1);
@@ -109,8 +131,7 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
             if (size == -1) {
                 close();
                 return;
-            }
-            else if (size == 0) {
+            } else if (size == 0) {
                 return;
             }
             byteBuffer.flip();
@@ -119,19 +140,57 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
                 // connection close
                 close();
                 return;
-            }
-            else if (leadingByte == FIRST_BYTE_MESSAGE
-                    || leadingByte == FIRST_BYTE_BINARY)
-            {
+            } else if (leadingByte == FIRST_BYTE_MESSAGE
+                    || leadingByte == FIRST_BYTE_BINARY) {
+                prevFrameType.set(0);
+                readData.set(null);
+                // TODO : rewrite to the new methods returning byte[]
                 if (!readFinalFrame( byteBuffer, socketChannel, leadingByte)){
                     return;
                 }
-                else {
-                    continue;
+            } else if (leadingByte == FIRST_CONT_BYTE_MESSAGE
+                    || leadingByte == FIRST_CONT_BYTE_BINARY
+                    || leadingByte == CONT_BYTE) {
+
+                if (leadingByte == FIRST_CONT_BYTE_MESSAGE) {
+                    prevFrameType.set(1);
+                } else if (leadingByte == FIRST_CONT_BYTE_BINARY) {
+                    prevFrameType.set(2);
                 }
-            }
-            else {
-                // TODO : handle frame sequence, ping frame
+
+                byte[] data = readFrame(byteBuffer, socketChannel, prevFrameType.get());
+                byte[] current = readData.get();
+                if (current == null) {
+                    readData.set(data);
+                } else {
+                    byte[] newData = new byte[current.length + data.length];
+                    System.arraycopy(current, 0, newData, 0, current.length);
+                    System.arraycopy(data, 0, newData, current.length, data.length);
+                    readData.set(newData);
+                }
+
+            } else if (leadingByte == FINISH_BYTE) {
+                byte[] current = readData.get();
+                int currentFrameType = prevFrameType.get();
+                byte[] data = readFrame(byteBuffer, socketChannel, currentFrameType);
+                if (current == null) {
+                    LOGGER.log(Level.INFO, "The previous data has been null");
+                    if (data != null) {
+                        readDelegate(data, currentFrameType);
+                    }
+                } else {
+                    byte[] newData = new byte[current.length + data.length];
+                    System.arraycopy(current, 0, newData, 0, current.length);
+                    System.arraycopy(data, 0, newData, current.length, data.length);
+                    readDelegate(newData, currentFrameType);
+                }
+                prevFrameType.set(0);
+                readData.set(null);
+            } else {
+                // TODO : handle ping frame
+                prevFrameType.set(0);
+                readData.set(null);
+                LOGGER.log(Level.INFO, "Unhandled frame {0}", leadingByte);
             }
         }
     }
@@ -162,19 +221,19 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
         }
         else {
             startBytesCount = 1;
-            
+
         }
         byte[] result = new byte[data.length+lengthBytes.length+startBytesCount];
         result[0] = FIRST_BYTE_MESSAGE;
         System.arraycopy(lengthBytes, 0, result, 1, lengthBytes.length);
         /*
          *  Don't fill mask at all. XOR with 0 mask doesn't change the value
-         *  XXX: data could be masked 
+         *  XXX: data could be masked
          */
         System.arraycopy( data, 0 , result, lengthBytes.length+startBytesCount, data.length);
         return result;
     }
-    
+
     protected byte[] mask( byte[] maskedMessage , boolean hasMask) {
         if (hasMask) {
             byte[] result = new byte[maskedMessage.length - 4];
@@ -188,7 +247,7 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
             return maskedMessage;
         }
     }
-    
+
     protected String generateAcceptKey(String key ){
         StringBuilder builder = new StringBuilder( key );
         builder.append(SALT);
@@ -200,19 +259,19 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
         catch (NoSuchAlgorithmException e) {
             WebSocketServerImpl.LOG.log(Level.WARNING, null , e);
             return null;
-        } 
+        }
     }
-    
+
     /*
-     * Method could be used in {@link #createTextFrame(String)} for setting 
+     * Method could be used in {@link #createTextFrame(String)} for setting
      * mask ( currently trivial static mask is used ) instead of {@link #isClient()}
-     * method usage and for 16 bit sec-websocket key in initial WS client request   
-     * 
+     * method usage and for 16 bit sec-websocket key in initial WS client request
+     *
      */
     protected Random getRandom(){
         return myRandom;
     }
-    
+
     private boolean readFinalFrame( ByteBuffer byteBuffer,
             SocketChannel socketChannel, byte leadingByte) throws IOException
     {
@@ -234,7 +293,7 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
         }
         byteBuffer.flip();
         byte masknLength = byteBuffer.get();
-        boolean hasMask =masknLength<0; 
+        boolean hasMask =masknLength<0;
         if ( !verifyMask(hasMask) ){
             close();
             return false;
@@ -279,14 +338,80 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
             }
             byteBuffer.flip();
             long longLength = byteBuffer.getLong();
-            return readData(byteBuffer, socketChannel, frameType, longLength , 
+            return readData(byteBuffer, socketChannel, frameType, longLength ,
                     hasMask);
         }
         return true;
     }
 
+    private byte[] readFrame(ByteBuffer byteBuffer, SocketChannel socketChannel,
+            int frameType) throws IOException {
+
+        byteBuffer.clear();
+        byteBuffer.limit(1);
+        int size;
+        do {
+            size = socketChannel.read(byteBuffer);
+            if (size == -1) {
+                close();
+                return null;
+            }
+        } while (size == 0 && !isStopped());
+        if (isStopped()) {
+            close();
+            return null;
+        }
+        byteBuffer.flip();
+        byte masknLength = byteBuffer.get();
+        boolean hasMask = masknLength < 0;
+        if (!verifyMask(hasMask)) {
+            close();
+            return null;
+        }
+        int length = masknLength & 0x7F;
+        if (length < 126) {
+            return readFrameData(byteBuffer, socketChannel, frameType, length, hasMask);
+        } else if (length == 126) {
+            byteBuffer.clear();
+            byteBuffer.limit(2);
+            do {
+                size = socketChannel.read(byteBuffer);
+                if (size == -1) {
+                    close();
+                    return null;
+                }
+            } while (byteBuffer.position() < byteBuffer.limit() && !isStopped());
+            if (isStopped()) {
+                close();
+                return null;
+            }
+            byteBuffer.flip();
+            length = byteBuffer.getShort() & 0xFFFF;
+            return readFrameData(byteBuffer, socketChannel, frameType, length, hasMask);
+        } else { // length == 127
+            assert length == 127 : length;
+            byteBuffer.clear();
+            byteBuffer.limit(8);
+            do {
+                size = socketChannel.read(byteBuffer);
+                if (size == -1) {
+                    close();
+                    return null;
+                }
+            } while (byteBuffer.position() < byteBuffer.limit() && !isStopped());
+            if (isStopped()) {
+                close();
+                return null;
+            }
+            byteBuffer.flip();
+            long longLength = byteBuffer.getLong();
+            return readFrameDataCheck(byteBuffer, socketChannel, frameType, longLength,
+                    hasMask);
+        }
+    }
+
     private boolean readData( ByteBuffer byteBuffer,
-            SocketChannel socketChannel, int frameType, int length , 
+            SocketChannel socketChannel, int frameType, int length ,
             boolean hasMask) throws IOException
     {
         byteBuffer.clear();
@@ -299,8 +424,20 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
             return false;
         }
         readDelegate(mask( result, hasMask), frameType);
-        
+
         return true;
+    }
+
+    private byte[] readFrameData(ByteBuffer byteBuffer,
+            SocketChannel socketChannel, int frameType, int length,
+            boolean hasMask) throws IOException {
+        byteBuffer.clear();
+        int frameSize = hasMask ? length + 4 : length;
+        if (frameSize < 0) {
+            return readFrameDataCheck(byteBuffer, socketChannel, frameType, (long) length, hasMask);
+        }
+        byte[] result = mask(readData(byteBuffer, socketChannel, frameSize), hasMask);
+        return result;
     }
 
     private byte[] readData( ByteBuffer byteBuffer,
@@ -324,7 +461,7 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
             redBytes += red;
             if (redBytes%byteBuffer.capacity() == 0){
                 byteBuffer.flip();
-                byteBuffer.get( result , fullBufferCount*byteBuffer.capacity(), 
+                byteBuffer.get( result , fullBufferCount*byteBuffer.capacity(),
                         byteBuffer.limit());
                 fullBufferCount++;
                 byteBuffer.clear();
@@ -343,9 +480,9 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
         byteBuffer.get( result , savedBytes, size - savedBytes);
         return result;
     }
-    
+
     private boolean readData(ByteBuffer byteBuffer,
-            SocketChannel socketChannel, int frameType, long length , 
+            SocketChannel socketChannel, int frameType, long length ,
             boolean hasMask ) throws IOException
     {
         int shift = (int)(length>>32);
@@ -358,18 +495,30 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
         }
         return true;
     }
-    
+
+    private byte[] readFrameDataCheck(ByteBuffer byteBuffer,
+            SocketChannel socketChannel, int frameType, long length ,
+            boolean hasMask ) throws IOException
+    {
+        int shift = (int)(length>>32);
+        if ( shift != 0 ){
+            throw new RuntimeException("Data frame is too big. " +
+                    "Cannot handle it. Implementation should be rewritten.");
+        }
+        return readFrameData(byteBuffer, socketChannel, frameType, (int)length , hasMask );
+    }
+
     /**
      * XXX: method could be changed to method which generate random mask.
      * In the latter case this mask should be applied on data in <code>createTextFrame</code> method
      * @return
      */
     protected abstract boolean isClient();
-    
+
     protected abstract void readDelegate( byte[] bytes , int dataType ) ;
-    
+
     protected abstract boolean verifyMask( boolean hasMask ) throws IOException ;
-    
+
     private Random myRandom;
-    
+
 }

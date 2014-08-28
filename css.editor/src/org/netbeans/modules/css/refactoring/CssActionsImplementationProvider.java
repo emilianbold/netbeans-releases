@@ -52,9 +52,10 @@ import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -65,6 +66,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -74,7 +76,6 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
@@ -89,7 +90,7 @@ import org.openide.windows.TopComponent;
  *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = ActionsImplementationProvider.class, position = 1033)
+@ServiceProvider(service = ActionsImplementationProvider.class, position = 1050)
 public class CssActionsImplementationProvider extends ActionsImplementationProvider {
 
     private static final RequestProcessor RP = new RequestProcessor(CssActionsImplementationProvider.class);
@@ -106,11 +107,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
         //check if the file is a file with .css extension or represents
         //an opened file which code embeds a css content on the caret position
         Node node = nodes.iterator().next();
-        if (isCssFile(node) || isRefactorableEditorElement(node)) {
-            return true;
-        }
-
-        return false; //we are not interested in refactoring this object/s
+        return isCssFile(node) || isRefactorableEditorElement(node); 
 
     }
 
@@ -152,10 +149,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
         //check if the file is a file with .css extension or represents
         //an opened file which code embeds a css content on the caret position
         Node node = nodes.iterator().next();
-        if (isCssFile(node) || isRefactorableEditorElement(node)) {
-            return true;
-        }
-        return false;
+        return isCssFile(node) || isRefactorableEditorElement(node);
     }
 
     @Override
@@ -195,64 +189,35 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
         return CssLanguage.CSS_MIME_TYPE.equals(fo.getMIMEType());
     }
 
+    /*
+    * We can't access the parser here as we may (or always are?) be called
+     * in the EDT.
+     */
     private static boolean isRefactorableEditorElement(final Node node) {
-        class Context {
+        final AtomicBoolean result = new AtomicBoolean(false);
+        Mutex.EVENT.readAccess(new Runnable() {
 
-            public int caret;
-            public Document document;
-        }
-        final Context context = Mutex.EVENT.readAccess(new Action<Context>() {
             @Override
-            public Context run() {
+            public void run() {
                 EditorCookie ec = getEditorCookie(node);
                 if (isFromEditor(ec)) {
-                    Context context = new Context();
-                    context.document = ec.getDocument();
+                    //check if there's css code at the offset
+                    final StyledDocument document = ec.getDocument();
                     JEditorPane pane = ec.getOpenedPanes()[0];
-                    context.caret = pane.getCaretPosition();
-                    return context;
-                } else {
-                    return null;
+                    final int caret = pane.getCaretPosition();
+                    document.render(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            result.set(null != LexerUtils.getTokenSequence(document, caret, CssTokenId.language(), true));
+                        }
+                    });
                 }
             }
+            
         });
-        if (context == null) {
-            return false;
-        }
-        Source source = Source.create(context.document);
-        final AtomicBoolean res = new AtomicBoolean(false);
-        try {
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, "text/css");
-                    if (cssRi != null) {
-                        CssParserResult result = (CssParserResult) cssRi.getParserResult();
-                        int embeddedCaret = result.getSnapshot().getEmbeddedOffset(context.caret);
-                        org.netbeans.modules.css.lib.api.Node leaf = NodeUtil.findNonTokenNodeAtOffset(result.getParseTree(), embeddedCaret);
-                        if (leaf != null) {
-                            switch (leaf.type()) {
-                                case resourceIdentifier:
-                                case elementName:
-                                case cssClass:
-                                case cssId:
-                                case hexColor:
-                                    res.set(true);
-                                    break;
-                                default:
-                                    res.set(false);
-                            }
-                        }
-                    }
 
-                }
-            });
-            return res.get();
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        return false;
+        return result.get();
     }
 
     private static FileObject getFileObjectFromNode(Node node) {
@@ -274,7 +239,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
         return node.getLookup().lookup(EditorCookie.class);
     }
 
-    public static abstract class NodeToFileTask extends UserTask implements Runnable {
+    private static abstract class NodeToFileTask extends UserTask implements Runnable {
 
         private final Node node;
         private CssElementContext context;
@@ -343,7 +308,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
         protected abstract RefactoringUI createRefactoringUI(CssElementContext context);
     }
 
-    public static abstract class TextComponentTask extends UserTask implements Runnable {
+    private static abstract class TextComponentTask extends UserTask implements Runnable {
 
         private final Document document;
         private final int caretOffset;

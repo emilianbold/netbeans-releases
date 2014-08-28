@@ -82,7 +82,13 @@ public class CPOnSaveHook implements OnSaveTask.Factory {
 
                         @Override
                         public void run() {
-                            CssPreprocessorType type = CssPreprocessorType.find(fileObject.getMIMEType());
+                            String mimeType = fileObject.getMIMEType();
+                            CssPreprocessorType type = CssPreprocessorType.find(mimeType);
+                            if (type == null) {
+                                // #244470
+                                LOG.log(Level.WARNING, "Cannot find CssPreprocessorType for MIME type {0} (filename: {1})", new Object[] {mimeType, fileObject.getNameExt()});
+                                return;
+                            }
                             CssPreprocessorUtils.processSavedFile(project, type);
                             LOG.log(Level.INFO, "processSavedFile called for {0} type on project {1}.", new Object[]{type.getDisplayName(), project.getProjectDirectory().getPath()});
                         }

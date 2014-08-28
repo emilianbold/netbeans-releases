@@ -310,6 +310,10 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             String documentation = ((JsDocumentationElement) element).getDocumentation();
             return documentation != null ? Documentation.create(documentation) : null;
         }
+        
+        if (OffsetRange.NONE.equals(element.getOffsetRange(info))) {
+            return Documentation.create(NbBundle.getMessage(JsCodeCompletion.class, "MSG_ItemFromUsageDoc"));
+        }
 
         return Documentation.create(NbBundle.getMessage(JsCodeCompletion.class, "MSG_DocNotAvailable"));
     }
@@ -429,12 +433,15 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 if (lastChar == '@') { //NOI18N
                     return QueryType.COMPLETION;
                 }
+            } else if (currentTokenId == JsTokenId.STRING && lastChar == '/') {
+                return QueryType.COMPLETION;
             } else {
                 switch (lastChar) {
                     case '.': //NOI18N
                         if (OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionAfterDot()) {
                             return QueryType.COMPLETION;
                         }
+                        break;
                     default:
                         if (OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionFull()) {
                             if (!Character.isWhitespace(lastChar) && CHARS_NO_AUTO_COMPLETE.indexOf(lastChar) == -1) {
@@ -500,6 +507,19 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         List<String> expChain = ModelUtils.resolveExpressionChain(request.result.getSnapshot(), request.anchor, false);
         if (!expChain.isEmpty()) {
             Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
+            
+            FileObject fo = request.result.getSnapshot().getSource().getFileObject();
+            if (fo != null) {
+                long start = System.currentTimeMillis();
+                Collection<IndexedElement> fromUsages = JsIndex.get(request.result.getSnapshot().getSource().getFileObject()).getUsagesFromExpression(expChain);
+                for (IndexedElement indexedElement : fromUsages) {
+                    if (!fo.equals(indexedElement.getFileObject()) || !indexedElement.getName().equals(request.prefix)) { 
+                        addPropertyToMap(request, addedItems, indexedElement);
+                    }
+                }
+                long end = System.currentTimeMillis();
+                LOGGER.log(Level.FINE, String.format("Counting cc based on usages took: %dms", (end - start)));
+            }
             addedItems.putAll(toAdd);
         }
     }
@@ -546,6 +566,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 addObjectPropertiesFromIndex(typeUsage.getType(), jsIndex, request, addedProperties);
             }
         }
+        boolean isPublic = lastResolvedObjects.isEmpty();
         for (JsObject resolved : lastResolvedObjects) {
             if(!isFunction && resolved.getJSKind().isFunction()) {
                 isFunction = true;
@@ -554,6 +575,11 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             if (!resolved.isDeclared()) {
                 // if the object is not defined here, look to the index as well
                 addObjectPropertiesFromIndex(resolved.getFullyQualifiedName(), jsIndex, request, addedProperties);
+                isPublic = true;
+            } else {
+                if (!resolved.getModifiers().contains(Modifier.PRIVATE)) {
+                    isPublic = true;
+                }
             }
         }
 
@@ -563,18 +589,20 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
 
         addObjectPropertiesFromIndex("Object", jsIndex, request, addedProperties); //NOI18N
 
-        // now look to the index again for declared item outside
-        StringBuilder fqn = new StringBuilder();
-        for (int i = expChain.size() - 1; i > -1; i--) {
-            fqn.append(expChain.get(--i));
-            fqn.append('.');
-        }
-        if (fqn.length() > 0) {
-            Collection<IndexedElement> indexResults = jsIndex.getPropertiesWithPrefix(fqn.toString().substring(0, fqn.length() - 1), request.prefix);
-            for (IndexedElement indexedElement : indexResults) {
-                if (!indexedElement.isAnonymous()
-                        && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
-                    addPropertyToMap(request, addedProperties, indexedElement);
+        if (isPublic) {
+            // now look to the index again for declared item outside
+            StringBuilder fqn = new StringBuilder();
+            for (int i = expChain.size() - 1; i > -1; i--) {
+                fqn.append(expChain.get(--i));
+                fqn.append('.');
+            }
+            if (fqn.length() > 0) {
+                Collection<IndexedElement> indexResults = jsIndex.getPropertiesWithPrefix(fqn.toString().substring(0, fqn.length() - 1), request.prefix);
+                for (IndexedElement indexedElement : indexResults) {
+                    if (!indexedElement.isAnonymous()
+                            && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
+                        addPropertyToMap(request, addedProperties, indexedElement);
+                    }
                 }
             }
         }
@@ -984,7 +1012,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         int bracketIndex = prefix.lastIndexOf("[") + 1; //NOI18N
         int columnIndex = prefix.lastIndexOf(":") + 1; //NOI18N
         int parenIndex = prefix.lastIndexOf("(") + 1; //NOI18N
-        return (Math.max(0, Math.max(hashIndex, Math.max(dotIndex, Math.max(parenIndex,Math.max(columnIndex, Math.max(bracketIndex, spaceIndex)))))));
+        // for file code completion
+        int slashIndex = prefix.lastIndexOf('/') + 1; //NOI18N
+        return (Math.max(0, Math.max(hashIndex, Math.max(dotIndex, Math.max(parenIndex,Math.max(columnIndex, Math.max(bracketIndex, Math.max(spaceIndex, slashIndex))))))));
     }
 
 }

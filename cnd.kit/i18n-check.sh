@@ -7,6 +7,7 @@
 WORKSPACE=$1
 LOG=$2
 MAILTO=$3
+PRODUCT_VERSION=$4
 
 WORKSPACE=${WORKSPACE:-..};
 LOG=${LOG:-${WORKSPACE}/i18n-check.log};
@@ -34,8 +35,8 @@ cnt=`cat ${LOG} | wc -l`
 if [ ${cnt} -gt 0 ]; then
 	echo "I18n check FAILED"
 	if [ -n "${MAILTO}" ]; then
-		mailx -s "I18n check FAILED" -r "${MAILTO}" "${MAILTO}" < ${LOG}
+		mailx -s "I18n check FAILED - ${PRODUCT_VERSION}" -r "${MAILTO}" "${MAILTO}" < ${LOG}
 	fi
 else
-	echo "I18n check SUCCEEDED - no warnings"
+	echo "I18n check SUCCEEDED - no warnings - ${PRODUCT_VERSION}"
 fi

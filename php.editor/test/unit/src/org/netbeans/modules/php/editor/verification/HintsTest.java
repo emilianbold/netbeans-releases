@@ -311,4 +311,28 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new IntroduceSuggestion(), "testIssue241824.php", "(new \\MyFoo(\"Whatever can be here\"))->notMyFnc()^;");
     }
 
+    public void testArraySyntaxSuggestion_01() throws Exception {
+        checkHints(new ArraySyntaxSuggestion(), "testArraySyntaxSuggestion.php", "$foo = ar^ray(");
+    }
+
+    public void testArraySyntaxSuggestion_02() throws Exception {
+        checkHints(new ArraySyntaxSuggestion(), "testArraySyntaxSuggestion.php", "11, ^22,");
+    }
+
+    public void testArraySyntaxSuggestion_03() throws Exception {
+        checkHints(new ArraySyntaxSuggestion(), "testArraySyntaxSuggestion.php", "2, ^3);");
+    }
+
+    public void testArraySyntaxSuggestion_04() throws Exception {
+        checkHints(new ArraySyntaxSuggestion(), "testArraySyntaxSuggestion.php", "$boo = a^rray(");
+    }
+
+    public void testArraySyntaxSuggestion_05() throws Exception {
+        checkHints(new ArraySyntaxSuggestion(), "testArraySyntaxSuggestion.php", "\"sdf\" => array(^1, 2, 3)");
+    }
+
+    public void testArraySyntaxSuggestion_06() throws Exception {
+        checkHints(new ArraySyntaxSuggestion(), "testArraySyntaxSuggestion.php", ")^; //huhu");
+    }
+
 }

@@ -227,7 +227,10 @@ public final class J2MEProjectProperties {
         PROP_PLATFORM_CONFIGURATION,
         PROP_PLATFORM_PROFILE,
         PROP_PLATFORM_APIS,
-        PROP_PLATFORM_BOOTCLASSPATH
+        PROP_PLATFORM_BOOTCLASSPATH,
+        MANIFEST_OTHERS,
+        MANIFEST_JAD,
+        MANIFEST_MANIFEST
     };
 
     //PlatformDevicesPanel
@@ -638,6 +641,8 @@ public final class J2MEProjectProperties {
             }
         }
 
+        storeAttributesToRunConfigs();
+
         //Store run configs
         storeRunConfigs(RUN_CONFIGS, projectProperties, privateProperties);
         EditableProperties ep = project.getUpdateHelper().getProperties("nbproject/private/config.properties");
@@ -679,13 +684,9 @@ public final class J2MEProjectProperties {
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        Object[] dataDelegates = ATTRIBUTES_TABLE_MODEL.getDataDelegates();
-        for (int i = 0; i < dataDelegates.length; i++) {
-            projectProperties.put(ATTRIBUTES_PROPERTY_NAMES[i], encode(dataDelegates[i]));
-        }
 
         //J2MEMIDletsPanel
-        dataDelegates = MIDLETS_TABLE_MODEL.getDataDelegates();
+        Object[] dataDelegates = MIDLETS_TABLE_MODEL.getDataDelegates();
         for (int i = 0; i < dataDelegates.length; i++) {
             projectProperties.put(MIDLETS_PROPERTY_NAMES[i], encode(dataDelegates[i]));
         }
@@ -1146,6 +1147,22 @@ public final class J2MEProjectProperties {
             project.getUpdateHelper().putProperties(sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
             if (privatePropsChanged) {                              //Definition file is written, only when changed
                 project.getUpdateHelper().putProperties(privatePath, privateCfgProps);
+            }
+        }
+    }
+
+    public void storeAttributesToRunConfigs() {
+        HashMap[] dataDelegatesAttributes = ATTRIBUTES_TABLE_MODEL.getDataDelegates();
+        for (int i = 0; i < dataDelegatesAttributes.length; i++) {
+            for (Map.Entry<String, Map<String, String>> entry : RUN_CONFIGS.entrySet()) {
+                String value = encode(dataDelegatesAttributes[i].get(entry.getKey()));
+                if (entry.getKey() != null
+                        && RUN_CONFIGS.get(null).get(ATTRIBUTES_PROPERTY_NAMES[i]).equals(value)) {
+                    value = null;
+                }
+                if (entry.getValue() != null) {
+                    entry.getValue().put(ATTRIBUTES_PROPERTY_NAMES[i], value);
+                }
             }
         }
     }

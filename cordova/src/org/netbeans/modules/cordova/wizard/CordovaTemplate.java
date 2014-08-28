@@ -120,7 +120,6 @@ public class CordovaTemplate implements SiteTemplateImplementation {
 
     @Override
     public void configure(ProjectProperties projectProperties) {
-        projectProperties.setConfigFolder("config");//NOI18N
         projectProperties.setSiteRootFolder("www");//NOI18N
         projectProperties.setTestFolder("test");//NOI18N
     }

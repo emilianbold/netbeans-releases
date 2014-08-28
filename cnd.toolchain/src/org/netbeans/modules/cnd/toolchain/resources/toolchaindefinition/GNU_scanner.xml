@@ -61,6 +61,12 @@ made subject to such option by the copyright holder.
         <change_directory pattern="cd\s+((&quot;[^&quot;]*&quot;|'[^']*'|\.|[^\s;&amp;])+)"/>
         <making_all_in_directory pattern="Making all in (.*)"/>
         <stack_header pattern="^In file included from ([A-Z]:[^:$]*|[^:$]*):([^:^,]*)"/>
+        <stack_header pattern="^([a-zA-Z]:[^:$]*|[^:$]*): In instantiation of"/>
         <stack_next pattern="^                 from ([A-Z]:[^:$]*|[^:$]*):([^:^,]*)"/>
+        <stack_next pattern="^([a-zA-Z]:[^:$]*|[^:$]*):([0-9]+):[0-9]*[:]*   instantiated from.*"/>
+        <stack_next pattern="^([a-zA-Z]:[^:$]*|[^:$]*):([0-9]+):[0-9]*[:]*   required from.*"/>
     </scanner>
 </toolchaindefinition>
+
+
+

@@ -108,7 +108,7 @@ public class MacroExpansionUsagesTestCase extends MacroExpansionDocProviderImplB
 
             BaseDocument doc2 = (BaseDocument)createExpandedContextDocument(doc, currentFile);
             assertNotNull(doc2);
-            mp.expand(doc, 0, doc.getLength(), doc2, new AtomicBoolean(false), false);
+            mp.expand(doc, 0, doc.getLength(), doc2, new AtomicBoolean(false));
             int[][] res = mp.getUsages(doc2, offset);
             if (res != null) {
                 streamOut.println("Usages: "); // NOI18N

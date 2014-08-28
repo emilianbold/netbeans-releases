@@ -67,9 +67,11 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.branch.CherryPickAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.diff.ExportCommitAction;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.revert.RevertCommitAction;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -102,8 +104,11 @@ public class RepositoryRevision {
     private final File repositoryRoot;
     private final File[] selectionRoots;
     private String preferredRevision;
+    private final SearchExecutor.Mode mode;
 
-    RepositoryRevision (GitRevisionInfo message, File repositoryRoot, File[] selectionRoots, Set<GitTag> tags, Set<GitBranch> branches, File dummyFile, String dummyFileRelativePath) {
+    RepositoryRevision (GitRevisionInfo message, File repositoryRoot, File[] selectionRoots,
+            Set<GitTag> tags, Set<GitBranch> branches, File dummyFile, String dummyFileRelativePath,
+            SearchExecutor.Mode mode) {
         this.message = message;
         this.repositoryRoot = repositoryRoot;
         this.selectionRoots = selectionRoots;
@@ -114,6 +119,7 @@ public class RepositoryRevision {
         if (dummyFile != null && dummyFileRelativePath != null) {
             dummyEvents.add(new Event(dummyFile, dummyFileRelativePath));
         }
+        this.mode = mode;
     }
 
     public Event[] getEvents() {
@@ -137,7 +143,7 @@ public class RepositoryRevision {
         text.append("\t"); //NOI18N
         text.append(getLog().getAuthor()); // NOI18N
         text.append("\n"); // NOI18N
-        text.append(getLog().getShortMessage());
+        text.append(getLog().getFullMessage());
         return text.toString();
     }
 
@@ -228,6 +234,21 @@ public class RepositoryRevision {
             }
         });
         if (getLog().getParents().length < 2) {
+            if (!isInCurrentBranch()) {
+                actions.add(new AbstractAction(NbBundle.getMessage(CherryPickAction.class, "LBL_CherryPickAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        final String revision = getLog().getRevision();
+                        Utils.post(new Runnable() {
+
+                            @Override
+                            public void run () {
+                                SystemAction.get(CherryPickAction.class).cherryPick(repositoryRoot, revision);
+                            }
+                        });
+                    }
+                });
+            }
             actions.add(new AbstractAction(NbBundle.getMessage(ExportCommitAction.class, "LBL_ExportCommitAction_PopupName")) { //NOI18N
                 @Override
                 public void actionPerformed (ActionEvent e) {
@@ -235,13 +256,15 @@ public class RepositoryRevision {
                     action.exportCommit(repositoryRoot, getLog().getRevision());
                 }
             });
-            actions.add(new AbstractAction(NbBundle.getMessage(RevertCommitAction.class, "LBL_RevertCommitAction_PopupName")) { //NOI18N
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    RevertCommitAction action = SystemAction.get(RevertCommitAction.class);
-                    action.revert(repositoryRoot, selectionRoots, getLog().getRevision());
-                }
-            });
+            if (mode != SearchExecutor.Mode.REMOTE_IN) {
+                actions.add(new AbstractAction(NbBundle.getMessage(RevertCommitAction.class, "LBL_RevertCommitAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        RevertCommitAction action = SystemAction.get(RevertCommitAction.class);
+                        action.revert(repositoryRoot, selectionRoots, getLog().getRevision());
+                    }
+                });
+            }
         }
         return actions.toArray(new Action[actions.size()]);
     }
@@ -270,6 +293,16 @@ public class RepositoryRevision {
             preferredRevision = preferredRevision.length() > 7 ? preferredRevision.substring(0, 7) : preferredRevision;
         }
         return preferredRevision;
+    }
+    
+    private boolean isInCurrentBranch () {
+        GitBranch activeBranch = RepositoryInfo.getInstance(repositoryRoot).getActiveBranch();
+        for (GitBranch b : getLog().getBranches().values()) {
+            if (activeBranch.getName().equals(b.getName()) || activeBranch.getId().equals(b.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     public class Event implements Comparable<Event> {

@@ -95,10 +95,12 @@ public final class WindowsSupport {
     public void init() {
         init(null);
 
-        if (activeShell == null) {
-            log.fine("WindowsSupport: no shell found"); // NOI18N
-        } else {
-            log.log(Level.FINE, "WindowsSupport: found {0} shell in {1}", new Object[]{activeShell.type, activeShell.bindir.getAbsolutePath()}); // NOI18N
+        if (Utilities.isWindows()) {
+            if (activeShell == null) {
+                log.fine("WindowsSupport: no shell found"); // NOI18N
+            } else {
+                log.log(Level.FINE, "WindowsSupport: found {0} shell in {1}", new Object[]{activeShell.type, activeShell.bindir.getAbsolutePath()}); // NOI18N
+            }
         }
     }
 

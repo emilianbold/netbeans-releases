@@ -421,7 +421,11 @@ public class ComputeImports {
                 if (mit.getMethodSelect() == tree) {
                     List<TypeMirror> params = new ArrayList<TypeMirror>();
                     for (ExpressionTree realParam : mit.getArguments()) {
-                        params.add(info.getTrees().getTypeMirror(new TreePath(getCurrentPath().getParentPath(), realParam)));
+                        TypeMirror tm = info.getTrees().getTypeMirror(new TreePath(getCurrentPath().getParentPath(), realParam));
+                        if (tm != null && tm.getKind() == TypeKind.NONE && realParam.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                            tm = info.getTypes().getNullType();
+                        }
+                        params.add(tm);
                     }
                     this.hints.add(new MethodParamsHint(tree.getName().toString(), params));
                 }
@@ -791,7 +795,7 @@ public class ComputeImports {
                             currentFormal = formal.next();
                         
                         if (!info.getTypes().isAssignable(info.getTypes().erasure(currentReal), info.getTypes().erasure(currentFormal))) {
-                            if (((ExecutableElement) c).isVarArgs() && !formal.hasNext()) {
+                            if (((ExecutableElement) c).isVarArgs() && !formal.hasNext() && currentFormal.getKind() == TypeKind.ARRAY) {
                                 currentFormal = ((ArrayType) currentFormal).getComponentType();
                                 
                                 if (!info.getTypes().isAssignable(info.getTypes().erasure(currentReal), info.getTypes().erasure(currentFormal))) {

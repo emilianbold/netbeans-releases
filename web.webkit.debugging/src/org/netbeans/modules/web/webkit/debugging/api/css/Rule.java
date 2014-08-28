@@ -93,6 +93,8 @@ public class Rule {
         }
         if (rule.containsKey("ruleId")) { // NOI18N
             id = new RuleId((JSONObject)rule.get("ruleId")); // NOI18N
+        } else if (rule.containsKey("styleSheetId")) { // NOI18N
+            id = new RuleId((String)rule.get("styleSheetId")); // NOI18N
         }
         sourceURL = (String)rule.get("sourceURL"); // NOI18N
         if (rule.containsKey("sourceLine")) { // NOI18N
@@ -173,7 +175,11 @@ public class Rule {
      * @return URL of the parent stylesheet.
      */
     public String getSourceURL() {
-        return sourceURL;
+        String url = sourceURL;
+        if (url == null && parentStyleSheet != null) {
+            url = parentStyleSheet.getHeader().getSourceURL();
+        }
+        return url;
     }
 
     /**
@@ -268,7 +274,7 @@ public class Rule {
             return false;
         }
         RuleId ruleId = getId();
-        if (ruleId == null) {
+        if (ruleId == null || ruleId.getOrdinal() == -1) {
             return (this == object);
         } else {
             Rule other = (Rule)object;
@@ -279,7 +285,7 @@ public class Rule {
     @Override
     public int hashCode() {
         RuleId ruleId = getId();
-        return (ruleId == null) ? super.hashCode() : ruleId.hashCode();
+        return (ruleId == null || ruleId.getOrdinal() == -1) ? super.hashCode() : ruleId.hashCode();
     }
 
 }

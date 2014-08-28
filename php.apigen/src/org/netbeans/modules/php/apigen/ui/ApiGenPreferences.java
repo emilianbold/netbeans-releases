@@ -138,11 +138,20 @@ public final class ApiGenPreferences {
     // package private
     static final Property<Object> TARGET = new Property<>("target"); // NOI18N
 
+    private static final String ENABLED = "enabled"; // NOI18N
     private static final String DEFAULT_VALUE = ""; // NOI18N
     private static final String SEPARATOR = ","; // NOI18N
 
 
     private ApiGenPreferences() {
+    }
+
+    public static boolean isEnabled(PhpModule phpModule) {
+        return getPreferences(phpModule).getBoolean(ENABLED, false);
+    }
+
+    public static void setEnabled(PhpModule phpModule, boolean enabled) {
+        getPreferences(phpModule).putBoolean(ENABLED, enabled);
     }
 
     public static String getTarget(PhpModule phpModule, boolean showPanel) {

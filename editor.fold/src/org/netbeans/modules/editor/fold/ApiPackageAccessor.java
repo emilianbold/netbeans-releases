@@ -140,6 +140,8 @@ public abstract class ApiPackageAccessor {
     public abstract void foldUpdateRawIndex(Fold fold, int rawIndexDelta);
 
     public abstract Object foldGetExtraInfo(Fold fold);
+    
+    public abstract void foldSetExtraInfo(Fold fold, Object info);
 
     public abstract void foldStateChangeCollapsedChanged(FoldStateChange fsc);
     

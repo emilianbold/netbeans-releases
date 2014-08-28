@@ -274,6 +274,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         _closeProject(null, platformProject, !TraceFlags.PERSISTENT_REPOSITORY);
     }
 
+    public void closeProject(NativeProject platformProject, boolean cleanRepository) {
+        _closeProject(null, platformProject, cleanRepository);
+    }
+
     public void closeProject(Object platformProject, boolean cleanRepository) {
         _closeProject(null, platformProject, cleanRepository);
     }
@@ -331,7 +335,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         if (prj != null) {
             disposeProject(prj, cleanRepository);
             if (!prj.isArtificial()) {
-                LibraryManager.getInstance(prj.getUnitId()).onProjectClose(prj.getUID());
+                LibraryManager.getInstance(prj.getUnitId()).onProjectClose(prj.getUID(), prj.getUnitId());
             }
         }
 

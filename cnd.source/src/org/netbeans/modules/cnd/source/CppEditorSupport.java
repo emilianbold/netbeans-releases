@@ -115,7 +115,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
         @Override
         public void save() throws IOException {
             CppEditorSupport.this.saveDocument();
-            CppEditorSupport.this.getDataObject().setModified(false);
+            //CppEditorSupport.this.getDataObject().setModified(false);
         }
 
         @Override

@@ -15,6 +15,7 @@
         <j2seproject1:property name="remote.platform.user" value="platforms.${platform.runtime}.platform.auth.username"/>
         <j2seproject1:property name="remote.platform.auth" value="platforms.${platform.runtime}.platform.auth.kind"/>
         <j2seproject1:property name="remote.platform.keyfile" value="platforms.${platform.runtime}.platform.auth.keystore"/>
+        <j2seproject1:property name="remote.platform.exec.decorator" value="platforms.${platform.runtime}.platform.exec.decorator"/>
         <fail unless="remote.platform.home.dir">Must set remote.platform.home.dir</fail>
         <fail unless="remote.platform.work.dir">Must set remote.platform.work.dir</fail>
         <fail unless="remote.platform.host">Must set remote.platform.host</fail>
@@ -41,7 +42,12 @@
            var address = attributes.get("address");
            project.setProperty(attributes.get("property"), address.split(":")[1]);
          ]]>
-      </scriptdef>      
+      </scriptdef>
+      <condition property="remote.platform.exec.prefix" value="'${remote.platform.exec.decorator}' " else="">
+        <not>
+            <equals arg1="${remote.platform.exec.decorator}" arg2="$${platforms.${platform.runtime}.platform.exec.decorator}"/>
+        </not>
+      </condition>
     </target>
     
     <target name="-copy-to-remote-platform">
@@ -54,7 +60,7 @@
                 </scp>
                 <antcall target="profile-rp-calibrate-passwd"/>
                 <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" password="${remote.platform.password}" trust="true" usepty="true"
-                    command="cd '${remote.project.dir}'; '${remote.java.executable}' @{additionaljvmargs} -Dfile.encoding=${runtime.encoding} ${run.jvmargs} ${run.jvmargs.ide} -jar ${remote.dist.jar} ${application.args}"/>
+                    command="cd '${remote.project.dir}'; ${remote.platform.exec.prefix}'${remote.java.executable}' @{additionaljvmargs} -Dfile.encoding=${runtime.encoding} ${run.jvmargs} ${run.jvmargs.ide} -jar ${remote.dist.jar} ${application.args}"/>
             </sequential>
         </macrodef>
         <macrodef name="runwithkey" uri="http://www.netbeans.org/ns/j2se-project/remote-platform/1">
@@ -67,7 +73,7 @@
                 </scp>
                 <antcall target="profile-rp-calibrate-key"/>
                 <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}" trust="true" usepty="true"
-                    command="cd '${remote.project.dir}'; '${remote.java.executable}' @{additionaljvmargs} -Dfile.encoding=${runtime.encoding} ${run.jvmargs} ${run.jvmargs.ide} -jar ${remote.dist.jar} ${application.args}"/>
+                    command="cd '${remote.project.dir}'; ${remote.platform.exec.prefix}'${remote.java.executable}' @{additionaljvmargs} -Dfile.encoding=${runtime.encoding} ${run.jvmargs} ${run.jvmargs.ide} -jar ${remote.dist.jar} ${application.args}"/>
             </sequential>
         </macrodef>
     </target>

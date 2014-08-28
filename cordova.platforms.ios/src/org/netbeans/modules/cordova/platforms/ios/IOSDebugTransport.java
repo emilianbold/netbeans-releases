@@ -266,6 +266,9 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
 
     protected void stop() {
         keepGoing = false;
+        synchronized (init) {
+            init.notifyAll();
+        }
         if (socketListener != null) {
             socketListener.cancel();
         }

@@ -282,7 +282,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                 if (jsObject != null) {
                     int index = type.getType().lastIndexOf('.');
                     int typeLength = (index > -1) ? type.getType().length() - index - 1 : type.getType().length();
-                    ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + typeLength));
+                    ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), jsObject.isAnonymous() ? type.getOffset() : type.getOffset() + typeLength));
                 }
             }
         }

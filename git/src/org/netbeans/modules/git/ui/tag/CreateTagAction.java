@@ -42,6 +42,7 @@
 package org.netbeans.modules.git.ui.tag;
 
 import java.io.File;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
@@ -78,31 +79,56 @@ public class CreateTagAction extends SingleRepositoryAction {
     }
 
     public void createTag (final File repository, String preselectedRevision) {
-        final CreateTag createTag = new CreateTag(repository, preselectedRevision);
+        final CreateTag createTag = new CreateTag(repository, preselectedRevision, "");
         if (createTag.show()) {
             GitProgressSupport supp = new GitProgressSupport() {
                 @Override
                 protected void perform () {
                     try {
-                        GitClient client = getClient();
-                        LOG.log(Level.FINE, "Creating a tag: {0}/{1}", new Object[] { createTag.getTagName(), createTag.getRevision() }); //NOI18N
-                        GitTag tag = client.createTag(createTag.getTagName(), createTag.getRevision(), createTag.getTagMessage(), false, createTag.isForceUpdate(), getProgressMonitor());
-                        log(tag);
+                        new CreateTagProcess(createTag, this, getClient()).call();
                     } catch (GitException ex) {
                         GitClientExceptionHandler.notifyException(ex, true);
                     }
                 }
-
-                private void log (GitTag tag) {
-                    OutputLogger logger = getLogger();
-                    logger.outputLine(NbBundle.getMessage(CreateTagAction.class, "MSG_CreateTagAction.tagCreated", new Object[] { tag.getTagName(), //NOI18N
-                        tag.getTaggedObjectId(),
-                        tag.getTagId(),
-                        tag.getTagger().toString(),
-                        tag.getMessage() }));
-                }
             };
             supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction.progressName")); //NOI18N
         }
-    }    
+    }
+    
+    static class CreateTagProcess implements Callable<GitTag> {
+        
+        private final GitProgressSupport supp;
+        private final CreateTag createTag;
+        private final GitClient client;
+
+        public CreateTagProcess (CreateTag createTag, GitProgressSupport supp, GitClient client) {
+            this.supp = supp;
+            this.createTag = createTag;
+            this.client = client;
+        }
+        
+        @Override
+        public GitTag call () {
+            try {
+                LOG.log(Level.FINE, "Creating a tag: {0}/{1}", new Object[] { createTag.getTagName(), createTag.getRevision() }); //NOI18N
+                GitTag tag = client.createTag(createTag.getTagName(), createTag.getRevision(),
+                        createTag.getTagMessage(), false, createTag.isForceUpdate(), supp.getProgressMonitor());
+                log(tag);
+                return tag;
+            } catch (GitException ex) {
+                GitClientExceptionHandler.notifyException(ex, true);
+            }
+            return null;
+        }
+
+        private void log (GitTag tag) {
+            OutputLogger logger = supp.getLogger();
+            logger.outputLine(NbBundle.getMessage(CreateTagAction.class, "MSG_CreateTagAction.tagCreated", new Object[] { tag.getTagName(), //NOI18N
+                tag.getTaggedObjectId(),
+                tag.getTagId(),
+                tag.getTagger().toString(),
+                tag.getMessage() }));
+        }
+        
+    }
 }

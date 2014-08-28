@@ -76,7 +76,7 @@ import org.openide.util.Parameters;
 public class CachingArchive implements Archive, FileChangeListener {
     
     private static final Logger LOGGER = Logger.getLogger(CachingArchive.class.getName());
-    
+
     private final File archiveFile;
     private final boolean keepOpened;
     private final String pathToRootInArchive;
@@ -188,15 +188,47 @@ public class CachingArchive implements Archive, FileChangeListener {
             return null;
         }
     }
-                      
+
+    @Override
+    public String toString() {
+        return String.format(
+            "%s[archive: %s]",   //NOI18N
+            getClass().getSimpleName(),
+            archiveFile.getAbsolutePath());
+    }
+    //Protected methods --------------------------------------------------------
+    protected void beforeInit() throws IOException {
+    }
+
+    protected short getFlags(@NonNull final String dirname) throws IOException {
+        return 0;
+    }
+
+    protected void afterInit(boolean success) throws IOException {
+    }
+
+    protected ZipFile getArchive(short flags) {
+        return zipFile;
+    }
+
+    protected String getPathToRoot(short flags) {
+        return pathToRootInArchive;
+    }
     // Private methods ---------------------------------------------------------
     
     /*test*/ synchronized Map<String, Folder> doInit() {
         if (folders == null) {
             try {
-                names = new byte[16384];
-                folders = createMap(archiveFile);
-                trunc();
+                boolean success = false;
+                beforeInit();
+                try {
+                    names = new byte[16384];
+                    folders = createMap(archiveFile);
+                    trunc();
+                    success = true;
+                } finally {
+                    afterInit(success);
+                }
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Broken zip file: {0}", archiveFile.getAbsolutePath());
                 LOGGER.log(Level.FINE, null, e);
@@ -250,7 +282,7 @@ public class CachingArchive implements Archive, FileChangeListener {
                     }
                     Folder fld = map.get(dirname);
                     if (fld == null) {
-                        fld = new Folder (true);                
+                        fld = new Folder (true, getFlags(dirname));
                         map.put(new String(dirname).intern(), fld);
                     }
                     if ( basename != null ) {
@@ -267,7 +299,13 @@ public class CachingArchive implements Archive, FileChangeListener {
             ZipFile zip = new ZipFile (file);
             try {
                 for ( Enumeration<? extends ZipEntry> e = zip.entries(); e.hasMoreElements(); ) {
-                    ZipEntry entry = e.nextElement();
+                    ZipEntry entry;
+                    try {
+                        //May throw IllegalArgumentException
+                        entry = e.nextElement();
+                    } catch (IllegalArgumentException iae) {
+                        throw new IOException(iae);
+                    }
                     String name = entry.getName();
                     String dirname;
                     String basename;
@@ -290,7 +328,7 @@ public class CachingArchive implements Archive, FileChangeListener {
                     }
                     Folder fld = map.get(dirname);
                     if (fld == null) {
-                        fld = new Folder(false);                
+                        fld = new Folder(false, getFlags(dirname));
                         map.put(new String(dirname).intern(), fld);
                     }
 
@@ -342,14 +380,18 @@ public class CachingArchive implements Archive, FileChangeListener {
             if (zipFile == null) {
                 if (f.delta == 4) {
                     return FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime);
-                }
-                else {
+                } else {
                     assert f.delta == 6;
                     long offset = join(f.indices[off+5], f.indices[off+4]);
                     return FileObjects.zipFileObject(archiveFile, pkg, baseName, mtime, offset);
                 }
             } else {
-                return FileObjects.zipFileObject( zipFile, pathToRootInArchive, pkg, baseName, mtime);
+                return FileObjects.zipFileObject(
+                    getArchive(f.flags),
+                    getPathToRoot(f.flags),
+                    pkg,
+                    baseName,
+                    mtime);
             }
         }
         return null;
@@ -400,15 +442,19 @@ public class CachingArchive implements Archive, FileChangeListener {
     private static class Folder {
         int[] indices = EMPTY; // off, len, mtimeL, mtimeH
         int idx = 0;
-        private final int delta;
+        final short flags;
+        final short delta;
 
-        public Folder(boolean fast) {
-            if (fast) {
+        public Folder(
+            final boolean fastJar,
+            final short flags) {
+            if (fastJar) {
                 delta = 6;
             }
             else {
                 delta = 4;
             }
+            this.flags = flags;
         }
 
         void appendEntry(CachingArchive outer, String name, long mtime, long offset) {

@@ -51,10 +51,16 @@ import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -167,6 +173,10 @@ public final class EditorFindSupport {
     private List<SPW> historyList = new ArrayList<>();
     private List<RP> replaceList = new ArrayList<>();
 
+    private String cachekey = "";
+    private int[] cacheContent = new int[0];
+    private static final int TIME_LIMIT = 5;
+    
     private EditorFindSupport() {
     }
 
@@ -222,10 +232,15 @@ public final class EditorFindSupport {
      * <p><b>IMPORTANT:</b> This method is public only for keeping backwards
      * compatibility of the {@link org.netbeans.editor.FindSupport} class.
      */
-    public int[] getBlocks(int[] blocks, Document doc,
-                    int startOffset, int endOffset) throws BadLocationException {
-        Map<String, Object> props = getValidFindProperties(null);
-        
+    public synchronized int[] getBlocks(final int[] blocks, final Document doc,
+            int startOffset, int endOffset) throws BadLocationException {
+        final Map<String, Object> props = getValidFindProperties(null);
+
+        String newCacheKey = calculateCacheKey(doc, startOffset, endOffset, props);
+        if (cachekey.equals(newCacheKey)) {
+            return Arrays.copyOf(cacheContent, cacheContent.length);
+        }
+
         boolean blockSearch = Boolean.TRUE.equals(props.get(FIND_BLOCK_SEARCH));
         Position blockSearchStartPos = (Position) props.get(FIND_BLOCK_SEARCH_START);
         Position blockSearchEndPos = (Position) props.get(FIND_BLOCK_SEARCH_END);
@@ -240,7 +255,33 @@ public final class EditorFindSupport {
                 return blocks;
             }
         }
-        return DocumentFinder.findBlocks(doc, startOffset, endOffset, props, blocks);
+
+        final int so = startOffset;
+        final int eo = endOffset;
+        final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        try {
+            executor.submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        cacheContent = DocumentFinder.findBlocks(doc, so, eo, props, blocks);
+                    } catch (BadLocationException ble) {
+                        cacheContent = Arrays.copyOf(blocks, blocks.length);
+                        LOG.log(Level.WARNING, ble.getMessage(), ble);
+                    }
+
+                }
+            }).get(TIME_LIMIT, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+            cacheContent = Arrays.copyOf(blocks, blocks.length);
+            org.netbeans.editor.Utilities.setStatusBoldText(getFocusedTextComponent(), NbBundle.getMessage(EditorFindSupport.class, "slow-search"));
+            LOG.log(Level.INFO, ex.getMessage(), ex);
+        }
+        executor.shutdown();
+
+        cachekey = newCacheKey;
+        return Arrays.copyOf(cacheContent, cacheContent.length);
     }
 
     /** Set find property with specified name and fire change.
@@ -451,14 +492,34 @@ public final class EditorFindSupport {
         }
     }
     
-    private boolean findMatches(String text, Map<String, Object> props) {
+    private int[] findMatches = null;
+    private synchronized boolean findMatches(final String text, final Map<String, Object> props) {
         if(text == null)
             return false;
         try {
-            PlainDocument plainDocument = new PlainDocument();
+            final PlainDocument plainDocument = new PlainDocument();
             plainDocument.insertString(0, text, null);
-            int[] find = DocumentFinder.find(plainDocument, 0, text.length(), props , false);
-            return find != null && find[0] != -1;
+            findMatches = null;
+            final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            try {
+                executor.submit(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        try {
+                            findMatches = DocumentFinder.find(plainDocument, 0, text.length(), props, false);
+                        } catch (BadLocationException ble) {
+                            LOG.log(Level.INFO, ble.getMessage(), ble);
+                        }
+                    }
+                }).get(TIME_LIMIT, TimeUnit.SECONDS);
+            } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+                org.netbeans.editor.Utilities.setStatusBoldText(getFocusedTextComponent(), NbBundle.getMessage(
+                        EditorFindSupport.class, "slow-search"));
+                LOG.log(Level.INFO, ex.getMessage(), ex);
+            }
+            executor.shutdown();
+            return findMatches != null && findMatches[0] != -1;
         } catch (BadLocationException ex) {
             return false;
         }
@@ -548,17 +609,18 @@ public final class EditorFindSupport {
         return (result != null);
     }
 
-    private FindReplaceResult findReplaceInBlock(String replaceExp, JTextComponent c, int startPos, int blockStartPos,
-                             int blockEndPos, Map<String, Object> props, boolean oppositeDir) throws BadLocationException {
+    private FindReplaceResult currentResult = null;
+    private synchronized FindReplaceResult findReplaceInBlock(final String replaceExp, JTextComponent c, int startPos, int blockStartPos,
+                             int blockEndPos, Map<String, Object> props, final boolean oppositeDir) throws BadLocationException {
         if (c != null) {
-            props = getValidFindProperties(props);
-            Document doc = c.getDocument();
+            final Map<String, Object> validProps = getValidFindProperties(props);
+            final Document doc = c.getDocument();
             int pos = -1;
             boolean wrapDone = false;
             String replaced = null;
 
-            boolean back = isBackSearch(props, oppositeDir);
-            Boolean b = (Boolean)props.get(FIND_WRAP_SEARCH);
+            boolean back = isBackSearch(validProps, oppositeDir);
+            Boolean b = (Boolean)validProps.get(FIND_WRAP_SEARCH);
             boolean wrap = (b != null && b.booleanValue());
             int docLen = doc.getLength();
             if (blockEndPos == -1) {
@@ -569,17 +631,38 @@ public final class EditorFindSupport {
             }
 
             int retFind[];
+            final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             while (true) {
                 //pos = doc.find(sf, startPos, back ? blockStartPos : blockEndPos);
-                int off1 = startPos;
-                int off2 = back ? blockStartPos : blockEndPos;
-                FindReplaceResult result = DocumentFinder.findReplaceResult(replaceExp, doc, off1, off2, 
-                       props, oppositeDir);
-                if (result == null){
+                final int off1 = startPos;
+                final int off2 = back ? blockStartPos : blockEndPos;
+                currentResult = null;
+                try {
+                    executor.submit(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            try {
+                                currentResult = DocumentFinder.findReplaceResult(replaceExp, doc, off1, off2,
+                                        validProps, oppositeDir);
+                            } catch (BadLocationException ble) {
+                                LOG.log(Level.WARNING, ble.getMessage(), ble);
+                            }
+
+                        }
+                    }).get(TIME_LIMIT, TimeUnit.SECONDS);
+                } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+                    org.netbeans.editor.Utilities.setStatusBoldText(getFocusedTextComponent(), NbBundle.getMessage(
+                            EditorFindSupport.class, "slow-search"));
+                    LOG.log(Level.INFO, ex.getMessage(), ex);
+                }
+
+                if (currentResult == null) {
+                    executor.shutdown();
                     return null;
                 }
-                retFind = result.getFoundPositions();
-                replaced = result.getReplacedString();
+                retFind = currentResult.getFoundPositions();
+                replaced = currentResult.getReplacedString();
                 if (retFind == null){
                     break;
                 }
@@ -608,12 +691,13 @@ public final class EditorFindSupport {
                 }
 
             }
-
+            executor.shutdown();
             if (pos != -1) {
                 int[] ret = new int[3];
                 ret[0] = pos;
                 ret[1] = retFind[1];
                 ret[2] = wrapDone ? 1 : 0;
+                
                 return new FindReplaceResult(ret, replaced);
             }
         }
@@ -970,6 +1054,26 @@ public final class EditorFindSupport {
             return;
         }
         firePropertyChange(REPLACE_HISTORY_PROP, null, rp);
+    }
+
+    private String calculateCacheKey(Document doc, int startOffset, int endOffset, Map<String, Object> props) {
+        StringBuilder newCacheKey = new StringBuilder();
+        newCacheKey.append("#").append(doc.getLength());
+        newCacheKey.append("#").append(startOffset);
+        newCacheKey.append("#").append(endOffset);
+        newCacheKey.append("#").append(props.get(FIND_WHAT));
+        newCacheKey.append("#").append(props.get(FIND_HIGHLIGHT_SEARCH));
+        newCacheKey.append("#").append(props.get(FIND_INC_SEARCH));
+        newCacheKey.append("#").append(props.get(FIND_BACKWARD_SEARCH));
+        newCacheKey.append("#").append(props.get(FIND_WRAP_SEARCH));
+        newCacheKey.append("#").append(props.get(FIND_MATCH_CASE));
+        newCacheKey.append("#").append(props.get(FIND_SMART_CASE));
+        newCacheKey.append("#").append(props.get(FIND_WHOLE_WORDS));
+        newCacheKey.append("#").append(props.get(FIND_REG_EXP));
+        newCacheKey.append("#").append(props.get(FIND_BLOCK_SEARCH));
+        newCacheKey.append("#").append(props.get(FIND_BLOCK_SEARCH_START));
+        newCacheKey.append("#").append(props.get(FIND_BLOCK_SEARCH_END));
+        return newCacheKey.toString();
     }
     
     public final static class SPW{

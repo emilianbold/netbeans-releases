@@ -191,14 +191,27 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(UnaryNode unaryNode) {
-         if (jdk.nashorn.internal.parser.Token.descType(unaryNode.getToken()) == TokenType.NEW) {
-            exp.add(ST_NEW);
-            SimpleNameResolver snr = new SimpleNameResolver();
-            exp.add(snr.getFQN(unaryNode.rhs()));
-            typeOffset = snr.getTypeOffset();
-            return null;
+        switch (jdk.nashorn.internal.parser.Token.descType(unaryNode.getToken())) {
+            case NEW:
+                exp.add(ST_NEW);
+                SimpleNameResolver snr = new SimpleNameResolver();
+                exp.add(snr.getFQN(unaryNode.rhs()));
+                typeOffset = snr.getTypeOffset();
+                return null;
+            case NOT:
+                add(BOOLEAN_TYPE);
+                return null;
+            case ADD:
+            case SUB:
+            case DECPREFIX:
+            case DECPOSTFIX:
+            case INCPREFIX:
+            case INCPOSTFIX:
+                add(NUMBER_TYPE);
+                return null;
+            default:
+                return super.enter(unaryNode);
         }
-        return super.enter(unaryNode); //To change body of generated methods, choose Tools | Templates.
     }
 
     
@@ -310,6 +323,10 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
                 add(STRING_TYPE);
                 return null;
             }
+            if (isResultNumber(binaryNode)) {
+                add(NUMBER_TYPE);
+                return null;
+            }
             TokenType tokenType = binaryNode.tokenType();
             if (tokenType == TokenType.EQ || tokenType == TokenType.EQ_STRICT
                     || tokenType == TokenType.NE || tokenType == TokenType.NE_STRICT
@@ -333,7 +350,15 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(ReferenceNode rNode) {
-        add(new TypeUsageImpl(Type.FUNCTION, rNode.getReference().getStart(), true));
+        List<? extends Node> path = getPath();
+        boolean functionType = true;
+        if (!path.isEmpty()) {
+            Node lastNode = path.get(path.size() - 1);
+            functionType = !(lastNode instanceof CallNode);
+        }
+        if (functionType) {
+            add(new TypeUsageImpl(Type.FUNCTION, rNode.getReference().getStart(), true));
+        }
         return null;
     }
     
@@ -353,6 +378,25 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
                 bResult = isResultString((BinaryNode) lhs);
             } else if (rhs instanceof BinaryNode) {
                 bResult = isResultString((BinaryNode) rhs);
+            }
+        }
+        return bResult;
+    }
+    
+    private boolean isResultNumber(BinaryNode binaryNode) {
+        boolean bResult = false;
+        TokenType tokenType = binaryNode.tokenType();
+        Node lhs = binaryNode.lhs();
+        Node rhs = binaryNode.rhs();
+        if ((tokenType == TokenType.BIT_OR || tokenType == TokenType.BIT_AND)
+                && ((lhs instanceof LiteralNode && ((LiteralNode) lhs).isNumeric())
+                || (rhs instanceof LiteralNode && ((LiteralNode) rhs).isNumeric()))) {
+            bResult = true;
+        } else {
+            if (lhs instanceof BinaryNode) {
+                bResult = isResultNumber((BinaryNode) lhs);
+            } else if (rhs instanceof BinaryNode) {
+                bResult = isResultNumber((BinaryNode) rhs);
             }
         }
         return bResult;

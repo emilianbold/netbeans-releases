@@ -249,6 +249,42 @@ public final class FileSystemProvider {
         }
         return true; // for other file system, let us return true - or should it be false? 
     }
+    
+    public static boolean isLink(FileSystem fileSystem,  String path) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileSystem)) {
+                return provider.isLink(fileSystem, path);
+            }
+        }
+        return false;
+    }
+
+    public static boolean isLink(ExecutionEnvironment env,  String path) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(env)) {
+                return provider.isLink(env, path);
+            }
+        }
+        return false;
+    }
+
+    public static boolean isLink(FileObject fo) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fo)) {
+                return provider.isLink(fo);
+            }
+        }
+        return false;
+    }
+
+    public static String resolveLink(FileObject fo) throws IOException {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fo)) {
+                return provider.resolveLink(fo);
+            }
+        }
+        return null;        
+    }
 
     public static boolean isAbsolute(String path) {
         if (path == null || path.length() == 0) {
@@ -472,6 +508,17 @@ public final class FileSystemProvider {
             }
         }
         noProvidersWarning(env);
+        return '/';
+    }
+
+    /** Just a convenient shortcut */
+    public static char getFileSeparatorChar(FileObject fileObject) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileObject)) {
+                return provider.getFileSeparatorChar();
+            }
+        }
+        noProvidersWarning(fileObject);
         return '/';
     }
     

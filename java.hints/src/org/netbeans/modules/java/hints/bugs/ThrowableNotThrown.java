@@ -152,9 +152,13 @@ public class ThrowableNotThrown {
 
         ExecutableElement initCause = (ExecutableElement)ctx.getInfo().getElementUtilities().findElement("java.lang.Throwable.initCause(java.lang.Throwable)"); // NOI18N
         if (initCause != null) {
-            ExecutableElement thisMethod = (ExecutableElement)ctx.getInfo().getTrees().getElement(
-                    ctx.getVariables().get("$m")); // NOI18N
-            if (thisMethod != null && thisMethod == initCause || ctx.getInfo().getElements().overrides(thisMethod, initCause, (TypeElement)el)) {
+            Element e = ctx.getInfo().getTrees().getElement(ctx.getVariables().get("$m")); // NOI18N
+            // #246279 possibly e will be an unresolved symbol == a ClassSymbol, which cannot be casted to ExElement.
+            if (e == null || (e.getKind() != ElementKind.CONSTRUCTOR && e.getKind() != ElementKind.METHOD)) {
+                return null;
+            }
+            ExecutableElement thisMethod = (ExecutableElement)e;
+            if (thisMethod == initCause || ctx.getInfo().getElements().overrides(thisMethod, initCause, (TypeElement)el)) {
                 return null;
             }
         }
@@ -277,6 +281,7 @@ public class ThrowableNotThrown {
                         // OK, exception used.
                         return true;
 
+                    case IF:
                     case RETURN:
                         return true;
                         
@@ -335,7 +340,7 @@ public class ThrowableNotThrown {
                         return nct.getArguments().contains(prevLeaf);
                     }
                         
-
+                    case EQUAL_TO: case NOT_EQUAL_TO: case INSTANCE_OF:
                     case PARENTHESIZED:
                     case TYPE_CAST: 
                         // escalate furter

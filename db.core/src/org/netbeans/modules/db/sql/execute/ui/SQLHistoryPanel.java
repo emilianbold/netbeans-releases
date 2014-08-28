@@ -51,8 +51,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.RowFilter.Entry;
@@ -226,19 +228,15 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                         selectedIndex = i;
                     }
                 }
+                Arrays.sort(comboItems);
                 final int selectedIndexFinal = selectedIndex;
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        updateComboBox(comboItems, selectedIndexFinal);
+                        connectionUrlComboBox.setModel(new DefaultComboBoxModel(comboItems));
+                        connectionUrlComboBox.setSelectedIndex(selectedIndexFinal);
                     }
                 });
-            }
-
-            private void updateComboBox(ConnectionHistoryItem[] items,
-                    int selectedIndex) {
-                connectionUrlComboBox.setModel(new DefaultComboBoxModel(items));
-                connectionUrlComboBox.setSelectedIndex(selectedIndex);
             }
         });
     }
@@ -735,7 +733,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
     };
 
-    private static class ConnectionHistoryItem {
+    private static class ConnectionHistoryItem implements Comparable<ConnectionHistoryItem> {
 
         private static final String ALL_URLS = "*";                     //NOI18N
         private String url;
@@ -758,6 +756,8 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                     name = url;
                 }
             }
+            assert(this.name != null);
+            assert(this.url != null);
         }
 
         public String getUrl() {
@@ -768,5 +768,18 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         public String toString() {
             return name;
         }
+
+        @Override
+        public int compareTo(ConnectionHistoryItem o) {
+            boolean o1IsAll = this.url.equals(ALL_URLS);
+            boolean o2IsAll = o.url.equals(ALL_URLS);
+            if(Objects.equals(o1IsAll, o2IsAll)) {
+                return name.compareToIgnoreCase(o.name);
+            } else if (o1IsAll) {
+                return -1;
+            } else {
+                return 1;
+    }
+}
     }
 }

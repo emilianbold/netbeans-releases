@@ -50,6 +50,8 @@ import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
+import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.dircache.DirCacheBuilder;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Repository;
@@ -57,6 +59,7 @@ import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClient.ResetType;
+import org.netbeans.libs.git.GitConflictDescriptor;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
@@ -493,8 +496,35 @@ public class ResetTest extends AbstractGitTestCase {
         res = runExternally(workDir, Arrays.asList("git.cmd", "status", "-s"));
         assertEquals(0, res.size());
     }
+    
+    public void testResetConflict () throws Exception {
+        File file = new File(workDir, "file");
+        write(file, "init");
+        File[] files = new File[] { file };
+        add(files);
+        commit(files);
 
-    // TODO: more tests when branches are implemented
-    // TODO: more tests when tags are implemented
-    // TODO: more tests for conflicts reset
+        DirCache index = repository.lockDirCache();
+        DirCacheBuilder builder = index.builder();
+        DirCacheEntry e = index.getEntry(file.getName());
+        DirCacheEntry e1 = new DirCacheEntry(file.getName(), 1);
+        e1.setCreationTime(e.getCreationTime());
+        e1.setFileMode(e.getFileMode());
+        e1.setLastModified(e.getLastModified());
+        e1.setLength(e.getLength());
+        e1.setObjectId(e.getObjectId());
+        builder.add(e1);
+        builder.finish();
+        builder.commit();
+        
+        GitClient client = getClient(workDir);
+        Map<File, GitStatus> status = client.getStatus(files, NULL_PROGRESS_MONITOR);
+        assertTrue(status.get(file).isConflict());
+        assertEquals(GitConflictDescriptor.Type.BOTH_DELETED, status.get(file).getConflictDescriptor().getType());
+        
+        client.reset(files, "HEAD", true, NULL_PROGRESS_MONITOR);
+        status = client.getStatus(files, NULL_PROGRESS_MONITOR);
+        assertFalse(status.get(file).isConflict());
+    }
+    
 }

@@ -211,11 +211,19 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             if (storage == null) {
                 storage = imap.get(inode);
                 if (storage == null) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "clear not existing for inode={0}:dobj={1}\nimap.get={2} cache.contains={3} cache.size={4}, imap.size={5}\n", 
+                                new Object[] {(Long)inode, dobj, imap.get(inode), cache.contains((Long)inode), cache.size(), imap.size()});
+                    }                     
                     return;
                 }
             }
             storage.clear();
             cache.remove((Long) inode);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "clear for inode={0}:dobj={1}\nimap.get={2} cache.contains={3} cache.size={4}, imap.size={5}\n", 
+                        new Object[] {(Long)inode, dobj, imap.get(inode), cache.contains((Long)inode), cache.size(), imap.size()});
+            }            
         } finally {
             lock.writeLock().unlock();
         }        
@@ -309,7 +317,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                 cosRef = null;
             }
             if (!found) {
-                list.add(createItem(origINode, dao, cos));
+                list.add(createItem(this, origINode, dao, cos));
             }
             if (cosRef == null || cosRef.get() == null) {
                 cosRef = new WeakReference<CloneableOpenSupport>(cos);
@@ -376,12 +384,21 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         public String toString() {
             return cosPath + ":" + list + "->" + cosRef;  // NOI18N
         }
+
+        private void removeItem(StorageItem item) {
+            assert item.removed.get();
+            item.dao.removePropertyChangeListener(item);
+            item.file.removeFileChangeListener(item);
+            synchronized (this) {
+                list.remove(item);
+            }
+        }
     }
 
-    private static StorageItem createItem(long origINode, DataObject dao, CloneableOpenSupport origCOS) {
-        StorageItem out = new COSRedirectorImpl.StorageItem(origINode, dao, origCOS);
-        dao.addPropertyChangeListener(out);
+    private static StorageItem createItem(Storage owner, long origINode, DataObject dao, CloneableOpenSupport origCOS) {
         FileObject primaryFile = dao.getPrimaryFile();
+        StorageItem out = new COSRedirectorImpl.StorageItem(owner, origINode, dao, primaryFile, origCOS);
+        dao.addPropertyChangeListener(out);
         primaryFile.addFileChangeListener(out);
         return out;
     }
@@ -425,9 +442,13 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         private final long origINode;
         private final AtomicBoolean removed = new AtomicBoolean(false);
         private final CloneableOpenSupport origCOS;
+        private final Storage owner;
+        private final FileObject file;
 
-        private StorageItem(long origINode, DataObject dao, CloneableOpenSupport cos) {
+        private StorageItem(Storage owner, long origINode, DataObject dao, FileObject primaryFile, CloneableOpenSupport cos) {
+            this.owner = owner;
             this.dao = dao;
+            this.file = primaryFile;
             this.origINode = origINode;
             this.origCOS = cos;
         }
@@ -472,6 +493,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         @Override
         public void fileDeleted(FileEvent fe) {
             removed.set(true);
+            owner.removeItem(this);
         }
 
         @Override
@@ -496,6 +518,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                         Storage list = instance.findOrCreateINodeList(curINode);
                         list.addDataObject(curINode, dao, origCOS);
                     }
+                    owner.removeItem(this);
                 }
             }
         }

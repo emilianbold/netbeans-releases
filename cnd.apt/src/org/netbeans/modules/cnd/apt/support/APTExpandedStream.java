@@ -76,6 +76,7 @@ import org.openide.util.CharSequences;
  */
 public class APTExpandedStream implements TokenStream, APTTokenStream {
 
+    private static final int MAX_PARAMETERS_SIZE = Integer.getInteger("apt.limit.expanded.params", 1000); // NOI18N
     private final TokenStreamSelector selector = new TokenStreamSelector();
     
     /** callback to be used for macro substitutions */
@@ -263,11 +264,12 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
 		l.add(next);
 		out = new ListBasedTokenStream(l);
 	    }
-        }  
-        APTUtils.LOG.log(Level.INFO, 
+        }
+        if (APTUtils.LOG.isLoggable(Level.INFO)) {
+            APTUtils.LOG.log(Level.INFO, 
                         "token {0} \n was expanded by macro substitution to \n {1}", // NOI18N
                         new Object[] { token, out }); 
-        
+        }
         return out;
     }
 
@@ -301,12 +303,19 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             // use balanced parens for correct detecting of ended parameter 
             int paren = 0;
             // Each parameter is list of tokens
+            int paramCount = 0;
             List<APTToken> param = new ArrayList<APTToken>();
             loop:for (next = nextToken(); !APTUtils.isEOF(next) || continueOnEOF(); next = nextToken()) {
                 switch(next.getType()) {
                     case APTTokenTypes.LPAREN:
                         // add this "(" to parameter
-                        add2Param(param, next);
+                        if (paramCount < MAX_PARAMETERS_SIZE) {
+                            if (add2Param(param, next)) {
+                                paramCount++;
+                            }
+                        } else {
+                            param.clear();
+                        }
                         paren++;
                         break;
                     case APTTokenTypes.RPAREN:
@@ -320,7 +329,13 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                             break loop;
                         } else {
                             // add this ")" to parameter
-                            add2Param(param, next);
+                            if (paramCount < MAX_PARAMETERS_SIZE) {
+                                if (add2Param(param, next)) {
+                                    paramCount++;
+                                }
+                            } else {
+                                param.clear();
+                            }
                             paren--;
                             if (paren < 0) {
                                 throw new RecognitionException("Error on expanding " + token + "\n by macro " + macro + // NOI18N
@@ -336,12 +351,24 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                             param = new ArrayList<APTToken>();
                         } else {
                             // add token to parameter
-                            add2Param(param, next);
+                            if (paramCount < MAX_PARAMETERS_SIZE) {
+                                if (add2Param(param, next)) {
+                                    paramCount++;
+                                }
+                            } else {
+                                param.clear();
+                            }
                         }
                         break;
                     default:
                         // add token to parameter
-                        add2Param(param, next);
+                        if (paramCount < MAX_PARAMETERS_SIZE) {
+                            if (add2Param(param, next)) {
+                                paramCount++;
+                            }
+                        } else {
+                            param.clear();
+                        }
                         break;
                 }
             }         
@@ -355,11 +382,13 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         return params;
     }
     
-    private void add2Param( List<APTToken> param, APTToken next) {
+    private boolean add2Param( List<APTToken> param, APTToken next) {
         // any non comment token is valid in parameters
         if (!APTUtils.isCommentToken(next)) {
             param.add(next);
+            return true;
         }
+        return false;
     }         
     
     private static final int BODY_STREAM = 0;

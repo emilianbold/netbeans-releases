@@ -125,8 +125,9 @@ public class ProvidersAnnotationTest  extends DebuggerApiTestBase {
         {
         l = new Lookup.MetaInf("");
         List<? extends AttachType> list = l.lookup(null, AttachType.class);
-        assertEquals("Wrong looked up object: ", 1, list.size());
+        assertEquals("Wrong looked up object: ", 2, list.size());
         assertEquals("Test", list.get(0).getTypeDisplayName());
+        assertEquals("Test2", list.get(1).getTypeDisplayName());
         assertEquals("No test action provider instance should be created yet!", 0, TestAttachType.INSTANCES.size());
         assertNotNull(list.get(0).getCustomizer());
         assertEquals("One test action provider instance should be created yet!", 1, TestAttachType.INSTANCES.size());
@@ -135,8 +136,9 @@ public class ProvidersAnnotationTest  extends DebuggerApiTestBase {
         l = new Lookup.MetaInf("");
         {
         List<? extends BreakpointType> list = l.lookup(null, BreakpointType.class);
-        assertEquals("Wrong looked up object: ", 1, list.size());
+        assertEquals("Wrong looked up object: ", 2, list.size());
         assertEquals("Test", list.get(0).getTypeDisplayName());
+        assertEquals("Test2", list.get(1).getTypeDisplayName());
         assertEquals("No test action provider instance should be created yet!", 0, TestBreakpointType.INSTANCES.size());
         assertNotNull(list.get(0).getCustomizer());
         assertEquals("One test action provider instance should be created yet!", 1, TestBreakpointType.INSTANCES.size());

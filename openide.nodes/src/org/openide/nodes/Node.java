@@ -841,6 +841,13 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      * <p><strong>This method should return either an HTML display name
      * or null; it should not return the non-HTML display name.</strong>
      * <p>
+     * Note the specified foreground color has to have a high luminescence difference
+     * to the background color in order to be used (displayed).
+     * If not, the specified foreground color will be ignored and the default color will be used.
+     * Luminescence of a color is calculated as following:
+     * <code>(Red value * 299 + Green value * 587 + Blue value * 114) / 1000</code>
+     * and the difference has to be greater or equal to 80.
+     * <p>
      * Note there is no property corresponding to the HTML display name -
      * if it should change, a change in the display name should be fired; this
      * should not be a mechanism for returning anything other than a marked

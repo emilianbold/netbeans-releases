@@ -265,6 +265,24 @@ public class AstUtil {
         }
         return qn;
     }
+    
+    public static AST findTypeNode(AST ast) {
+        AST typeAst = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_TYPE_BUILTIN);
+        if (typeAst == null) {
+            typeAst = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_TYPE_COMPOUND);
+            if (typeAst == null) {
+                typeAst = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_TYPE_DECLTYPE);
+            }
+        }        
+        return typeAst;
+    }
+    
+    public static boolean isTypeNode(AST ast) {
+        return ast != null && 
+            (ast.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
+             ast.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
+             ast.getType() == CPPTokenTypes.CSM_TYPE_DECLTYPE);
+    }
 
     public static boolean hasChildOfType(AST ast, int type) {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
@@ -276,22 +294,30 @@ public class AstUtil {
     }
 
     public static AST findChildOfType(AST ast, int type) {
-        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
+        return findChildOfType(ast, type, null);
+    }
+    
+    public static AST findChildOfType(AST ast, int type, AST stopToken) {
+        for( AST token = ast.getFirstChild(); token != null && token != stopToken; token = token.getNextSibling() ) {
             if( token.getType() == type ) {
                 return token;
             }
         }
         return null;
-    }
+    }    
 
     public static AST findSiblingOfType(AST ast, int type) {
-        for( AST token = ast; token != null; token = token.getNextSibling() ) {
+        return findSiblingOfType(ast, type, null);
+    }
+    
+    public static AST findSiblingOfType(AST ast, int type, AST stopToken) {
+        for( AST token = ast; token != null && token != stopToken; token = token.getNextSibling() ) {
             if( token.getType() == type ) {
                 return token;
             }
         }
         return null;
-    }
+    }    
 
     public static AST findLastSiblingOfType(AST ast, int type) {
         AST result = null;

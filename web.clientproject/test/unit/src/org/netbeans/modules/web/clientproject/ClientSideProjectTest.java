@@ -45,7 +45,6 @@ import java.awt.Component;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
-import java.util.Collection;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.junit.NbTestCase;
@@ -56,14 +55,11 @@ import org.netbeans.modules.web.clientproject.sites.SiteZipPanel;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.test.MockLookup;
 
@@ -91,8 +87,7 @@ public class ClientSideProjectTest extends NbTestCase {
         ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
         ClientSideProjectUtilities.initializeProject(project,
                 "public_html_XX",
-                "test",
-                "config");
+                "test");
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
         assertEquals("site root was created", wd.getFileObject("public_html_XX"), FileUtil.toFileObject(projectProperties.getResolvedSiteRootFolder()));
         ProjectProblemsProvider ppp = project.getLookup().lookup(ProjectProblemsProvider.class);
@@ -108,11 +103,10 @@ public class ClientSideProjectTest extends NbTestCase {
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
         projectProperties.setSiteRootFolder(ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER);
         projectProperties.setTestFolder(ClientSideProjectConstants.DEFAULT_TEST_FOLDER);
-        projectProperties.setConfigFolder(ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
         projectProperties.save();
         ProjectProblemsProvider ppp = project.getLookup().lookup(ProjectProblemsProvider.class);
         assertNotNull("project does have ProjectProblemsProvider", ppp);
-        assertEquals("project does not have any problems", 3, ppp.getProblems().size());
+        assertEquals("project does not have any problems", 2, ppp.getProblems().size());
     }
 
     public void testProjectCreationFromZipTemplate() throws Exception {
@@ -127,8 +121,7 @@ public class ClientSideProjectTest extends NbTestCase {
         sz.configure(pp);
         ClientSideProjectUtilities.initializeProject(project,
                 pp.getSiteRootFolder(),
-                pp.getTestFolder(),
-                pp.getConfigFolder());
+                pp.getTestFolder());
         sz.apply(projectHelper.getProjectDirectory(), pp, ProgressHandleFactory.createHandle("somename"));
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
         assertEquals("site root was created from template", wd.getFileObject("custom_siteroot"), FileUtil.toFileObject(projectProperties.getResolvedSiteRootFolder()));

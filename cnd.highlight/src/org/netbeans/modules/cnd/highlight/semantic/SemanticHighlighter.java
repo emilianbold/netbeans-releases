@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -76,6 +77,7 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -91,6 +93,7 @@ public final class SemanticHighlighter extends HighlighterBase {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
     private static final RequestProcessor RP = new RequestProcessor("SemanticHighlighter profiler",1); //NOI18N
     private static final RequestProcessor WORKER = new RequestProcessor("SemanticHighlighter worker",1); //NOI18N
+    private static final boolean VALIDATE = false;
     private final TaskContext taskContext;
     private final RequestProcessor.Task task;
     
@@ -251,22 +254,51 @@ public final class SemanticHighlighter extends HighlighterBase {
                 mimeType = MIMENames.CPLUSPLUS_MIME_TYPE;
             }
            for (CsmOffsetable block : blocks) {
-                int startOffset = getDocumentOffset(doc, block.getStartOffset());
+                int startOffset = block.getStartOffset();
                 int endOffset = block.getEndOffset();
-
-                endOffset = getDocumentOffset(doc, endOffset == Integer.MAX_VALUE ? doc.getLength() + 1 : endOffset);
-                if (startOffset < doc.getLength() && endOffset > 0) {
+                if (endOffset == Integer.MAX_VALUE) {
+                    endOffset = doc.getLength() + 1;
+                }
+                if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) == null || entity.isCsmFileBased()) {
+                    startOffset = getDocumentOffset(doc, startOffset);
+                    endOffset = getDocumentOffset(doc, endOffset);
+                }
+                if (startOffset < doc.getLength() && startOffset >= 0 && startOffset < endOffset) {
                     final AttributeSet attributes = entity.getAttributes(block, mimeType);
                     if (attributes == null) {
                         assert false : "Color attributes set is not found for MIME "+mimeType+". Document "+doc;
                         return;
                     }
                     addHighlightsToBag(doc, bag, startOffset, endOffset, attributes, entity.getName());
+                    if (VALIDATE) {
+                        // unfortunately check does not work for destructors and operators.
+                        try {
+                            String text = doc.getText(startOffset, endOffset-startOffset);
+                            if (!text.equals(block.getText().toString())) {
+                                System.err.println(getInfo(doc, block, startOffset, endOffset));
+                                System.err.println("Should be "+text); //NOI18N
+                            }
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                } else if (startOffset < doc.getLength() && startOffset >= 0 && startOffset > endOffset) {
+                    // something wrong in transformation table?
+                    CndUtils.assertTrueInConsole(false, getInfo(doc, block, startOffset, endOffset));
                 }
             }
         }
     }
 
+    private String getInfo(Document doc, CsmOffsetable block, int startOffset, int endOffset) {
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
+        String start = Utilities.offsetToLineColumnString((BaseDocument) doc, startOffset);
+        String end = Utilities.offsetToLineColumnString((BaseDocument) doc, endOffset);
+        return "Block ["+block.getStartPosition().getLine()+":"+block.getStartPosition().getColumn()+"-"+ //NOI18N
+                         block.getEndPosition().getLine()+":"+block.getEndPosition().getColumn()+"] "+ //NOI18N
+                         block.getText().toString()+" transformed to ["+start+"-"+end+"] in file "+csmFile.getAbsolutePath(); //NOI18N
+    }
+    
     private void addHighlightsToBag(Document doc, PositionsBag bag, int start, int end, AttributeSet attr, String nameToStateInLog) {
         try {
             if (doc != null) {
@@ -378,9 +410,9 @@ public final class SemanticHighlighter extends HighlighterBase {
     
     private static final class TaskContext implements Runnable {
         private final SemanticHighlighter provider;
-        private InterrupterImpl interrupter;
-        private Document doc;
-        private CountDownLatch latch;
+        private volatile InterrupterImpl interrupter;
+        private volatile Document doc;
+        private volatile CountDownLatch latch;
         private TaskContext(SemanticHighlighter provider) {
             this.provider = provider;
         }

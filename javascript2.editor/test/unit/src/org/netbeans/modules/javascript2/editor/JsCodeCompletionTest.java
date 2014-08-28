@@ -295,4 +295,8 @@ public class JsCodeCompletionTest extends JsCodeCompletionBase {
     public void testIssue242454_01() throws Exception {
         checkCompletion("testfiles/model/issue242454.js", "myLib.^", false);
     }
+    
+    public void testIssue238356_01() throws Exception {
+        checkCompletion("testfiles/completion/issue238356.js", "x.^one;", false);
+    }
 }

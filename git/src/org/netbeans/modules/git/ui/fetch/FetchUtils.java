@@ -42,26 +42,39 @@
 package org.netbeans.modules.git.ui.fetch;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.eclipse.jgit.transport.RefSpec;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
+import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.modules.git.client.GitClient;
+import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.branch.BranchSynchronizer;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.git.utils.LogUtils;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author ondra
  */
-final class FetchUtils {
+public final class FetchUtils {
     
     private static final Set<GitRefUpdateResult> UPDATED_STATUSES = new HashSet<>(Arrays.asList(
             GitRefUpdateResult.FAST_FORWARD,
@@ -70,6 +83,7 @@ final class FetchUtils {
             GitRefUpdateResult.OK,
             GitRefUpdateResult.RENAMED
     ));
+    private static final String TMP_REFS_PREFIX = "netbeans_tmp"; //NOI18N
 
     @Messages({
         "MSG_GetRemoteChangesAction.updates.noChange=No update",
@@ -120,21 +134,104 @@ final class FetchUtils {
         String remoteName = parseRemote(trackedBranch.getName());
         GitRemoteConfig cfg = remoteName == null ? null : remotes.get(remoteName);
         if (cfg == null) {
-            GitUtils.notifyError(errorLabel, Bundle.MSG_Err_noRemote(trackedBranch.getName()));
+            if (errorLabel != null) {
+                GitUtils.notifyError(errorLabel, Bundle.MSG_Err_noRemote(trackedBranch.getName()));
+            }
             return null;
         }
         if (cfg.getUris().isEmpty()) {
-            GitUtils.notifyError(errorLabel, Bundle.MSG_Err_noUri(cfg.getRemoteName()));
+            if (errorLabel != null) {
+                GitUtils.notifyError(errorLabel, Bundle.MSG_Err_noUri(cfg.getRemoteName()));
+            }
             return null;
         }
         if (cfg.getFetchRefSpecs().isEmpty()) {
-            GitUtils.notifyError(errorLabel, Bundle.MSG_Err_noSpecs(cfg.getRemoteName()));
+            if (errorLabel != null) {
+                GitUtils.notifyError(errorLabel, Bundle.MSG_Err_noSpecs(cfg.getRemoteName()));
+            }
             return null;
         }
         return cfg;
     }
     
+    @NbBundle.Messages({
+        "# {0} - branch name", "MSG_FetchUtils.noTrackingBranch=No tracking branch for \"{0}\"",
+        "MSG_FetchUtils.noRemoteConfig=Remote configuration not found",
+        "# {0} - remote name", "MSG_FetchUtils.noRemoteUrl=No remote URL for {0}"
+    })
+    public static Revision fetchToTemp (GitClient client, ProgressMonitor pm, GitBranch branch) throws GitException {
+        if (!branch.isRemote()) {
+            GitBranch trackedBranch = branch.getTrackedBranch();
+            if (trackedBranch == null || !trackedBranch.isRemote()) {
+                throw new GitException(Bundle.MSG_FetchUtils_noTrackingBranch(branch.getName()));
+            }
+            branch = trackedBranch;
+        }
+        GitRemoteConfig cfg = FetchUtils.getRemoteConfigForActiveBranch(branch, RepositoryInfo.getInstance(client.getRepositoryRoot()), null);
+        if (cfg == null) {
+            throw new GitException(Bundle.MSG_FetchUtils_noRemoteConfig());
+        }
+        if (cfg.getUris().isEmpty()) {
+            throw new GitException(Bundle.MSG_FetchUtils_noRemoteUrl(cfg.getRemoteName()));
+        }
+        String remotePeer = findRemotePeer(cfg.getFetchRefSpecs(), branch);
+        if (remotePeer == null) {
+            // try backup, the same name
+            remotePeer = branch.getName().split("/", 0)[1];
+        }
+        client.deleteBranch(TMP_REFS_PREFIX + "/" + remotePeer, true, GitUtils.NULL_PROGRESS_MONITOR);
+        Map<String, GitTransportUpdate> updates = client.fetch(cfg.getUris().get(0), Collections.singletonList("+refs/heads/" + remotePeer + ":refs/" + TMP_REFS_PREFIX + "/" + remotePeer), pm);
+        GitTransportUpdate upd = updates.get(TMP_REFS_PREFIX + "/" + remotePeer);
+        if (upd != null) {
+            client.deleteBranch(upd.getLocalName(), true, GitUtils.NULL_PROGRESS_MONITOR);
+            new File(GitUtils.getGitFolderForRoot(client.getRepositoryRoot()), "refs/" + TMP_REFS_PREFIX).delete();
+            return new Revision(upd.getNewObjectId(), upd.getLocalName());
+        }
+        return null;
+    }
+    
     private FetchUtils() {
         
+    }
+
+    static void syncTrackingBranches (File repository, Map<String, GitTransportUpdate> updates, GitProgressSupport supp) {
+        List<String> branchNames = new ArrayList<>();
+        RepositoryInfo info = RepositoryInfo.getInstance(repository);
+        Map<String, GitBranch> branches = info.getBranches();
+        RepositoryInfo.NBGitConfig cfg = info.getNetbeansConfig();
+        for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
+            GitTransportUpdate update = e.getValue();
+            if (UPDATED_STATUSES.contains(update.getResult())) {
+                if (update.getType() == Type.BRANCH) {
+                    String remoteBranchName = e.getValue().getLocalName();
+                    for (GitBranch b : branches.values())  {
+                        if (!b.isRemote() && !b.isActive() && b.getTrackedBranch() != null
+                                && b.getTrackedBranch().getName().equals(remoteBranchName)
+                                && cfg.getAutoSyncBranch(b.getName())) {
+                            // this branch is not active, is local and tracks the remote branch
+                            branchNames.add(b.getName());
+                        }
+                    }
+                }
+            }
+        }
+        try {
+            new BranchSynchronizer().syncBranches(repository, branchNames.toArray(new String[branchNames.size()]), supp);
+        } catch (GitException ex) {
+            Logger.getLogger(FetchUtils.class.getName()).log(Level.INFO, null, ex);
+        }
+    }
+
+    private static String findRemotePeer (List<String> fetchRefSpecs, GitBranch branch) {
+        for (String refSpec : fetchRefSpecs) {
+            RefSpec spec = new RefSpec(refSpec);
+            if (spec.matchDestination(GitUtils.PREFIX_R_REMOTES + branch.getName())) {
+                if (spec.isWildcard()) {
+                    spec = spec.expandFromDestination(GitUtils.PREFIX_R_REMOTES + branch.getName());
+                }
+                return spec.getSource().substring(GitUtils.PREFIX_R_HEADS.length());
+            }
+        }
+        return null;
     }
 }

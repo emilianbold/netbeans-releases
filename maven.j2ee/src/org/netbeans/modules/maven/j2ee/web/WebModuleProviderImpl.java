@@ -78,7 +78,6 @@ import org.openide.util.Exceptions;
     },
     projectType = {
         "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR // #233476
     }
 )
 public class WebModuleProviderImpl extends BaseEEModuleProvider implements WebModuleProvider {

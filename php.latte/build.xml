@@ -4,7 +4,7 @@
     <import file="../nbbuild/templates/projectized.xml"/>
 <!--    <taskdef name="jflex"
         classname="JFlex.anttask.JFlexTask"
-        classpath="/usr/share/ant/lib/jflex.jar" />-->
+        classpath="/opt/jflex-1.6.0/lib/jflex-1.6.0.jar" />-->
 <!--    <taskdef name="jflex"
         classname="JFlex.anttask.JFlexTask"
         classpath="/Users/Shared/jflex-1.4.3/jflex-1.4.3/lib/JFlex.jar" />-->

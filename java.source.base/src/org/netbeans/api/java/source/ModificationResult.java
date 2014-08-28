@@ -428,10 +428,18 @@ public final class ModificationResult {
             case REMOVE:
                 doc.remove(diff.getStartPosition().getOffset(), diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset());
                 break;
-            case CHANGE:
-                doc.remove(diff.getStartPosition().getOffset(), diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset());
-                doc.insertString(diff.getStartPosition().getOffset(), diff.getNewText(), null);
+            case CHANGE: {
+                // first insert the new content, THEN remove the old one. In situations where the content AFTER the
+                // change is not writable this ordering allows to replace the content, but if we first delete, 
+                // replacement cannot be inserted into the nonwritable area.
+                int delta = diff.getNewText().length();
+                int offs = diff.getStartPosition().getOffset();
+                int removeLen = diff.getEndPosition().getOffset() - offs;
+                
+                doc.insertString(offs, diff.getNewText(), null);
+                doc.remove(delta + offs, removeLen);
                 break;
+            }
         }
     }
 

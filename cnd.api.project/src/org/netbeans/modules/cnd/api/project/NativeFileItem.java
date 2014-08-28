@@ -59,7 +59,7 @@ public interface NativeFileItem {
         CPP(4), CPP11(8),
         F77(5), F90(6), F95(7),
         DEFAULT(9),
-        C11(10);
+        C11(10), CPP14(11);
         private final int flavor;
         
         private LanguageFlavor(int flavor) {
@@ -81,6 +81,7 @@ public interface NativeFileItem {
                 case 8: return CPP11;
                 case 9: return DEFAULT;
                 case 10: return C11;
+                case 11: return CPP14;
                 default: return UNKNOWN;
             }
         }

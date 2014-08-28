@@ -47,6 +47,9 @@ package org.netbeans.modules.j2ee.dd.impl.ejb.annotation;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfig;
@@ -54,35 +57,44 @@ import org.netbeans.modules.j2ee.dd.api.ejb.ActivationConfigProperty;
 
 
 public class ActivationConfigImpl implements ActivationConfig {
-    
+
+    private List<ActivationConfigProperty> properties = new ArrayList<ActivationConfigProperty>();
+
+    @Override
+    public void setActivationConfigProperty(int index, ActivationConfigProperty value) {
+        properties.set(index, value);
+    }
+
+    @Override
+    public ActivationConfigProperty getActivationConfigProperty(int index) {
+        return properties.get(index);
+    }
+
+    @Override
+    public void setActivationConfigProperty(ActivationConfigProperty[] value) {
+        properties = Arrays.asList(value);
+    }
+
+    @Override
+    public ActivationConfigProperty[] getActivationConfigProperty() {
+        return properties.toArray(new ActivationConfigProperty[properties.size()]);
+    }
+
+    @Override
+    public int addActivationConfigProperty(ActivationConfigProperty value) {
+        properties.add(value);
+        return properties.size() - 1;
+    }
+
+    @Override
+    public int sizeActivationConfigProperty() {
+        return properties.size();
+    }
+
     public Object clone() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
-    public void setActivationConfigProperty(int index, ActivationConfigProperty value) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    public ActivationConfigProperty getActivationConfigProperty(int index) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    public void setActivationConfigProperty(ActivationConfigProperty[] value) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    public ActivationConfigProperty[] getActivationConfigProperty() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    public int addActivationConfigProperty(ActivationConfigProperty value) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    public int sizeActivationConfigProperty() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
+
     public int removeActivationConfigProperty(ActivationConfigProperty value) {
         throw new UnsupportedOperationException("Not supported yet.");
     }

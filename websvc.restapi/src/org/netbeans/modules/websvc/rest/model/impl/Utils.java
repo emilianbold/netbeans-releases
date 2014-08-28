@@ -45,8 +45,6 @@
 package org.netbeans.modules.websvc.rest.model.impl;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -55,15 +53,14 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -219,15 +216,17 @@ public class Utils {
     static boolean isRest(TypeElement type, AnnotationModelHelper helper) {
         boolean isRest = false;
         if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
-
-            if (helper.hasAnnotation(type.getAnnotationMirrors(),
-                    RestConstants.PATH)) { // NOI18N
-                isRest = true;
-            } else {
-                for (Element element : type.getEnclosedElements()) {
-                    if (Utils.hasHttpMethod(element)) {
-                        isRest = true;
-                        break;
+         
+            if (!type.getModifiers().contains(Modifier.ABSTRACT)) {
+                if (helper.hasAnnotation(type.getAnnotationMirrors(),
+                        RestConstants.PATH)) { // NOI18N
+                    isRest = true;
+                } else {
+                    for (Element element : type.getEnclosedElements()) {
+                        if (Utils.hasHttpMethod(element)) {
+                            isRest = true;
+                            break;
+                        }
                     }
                 }
             }

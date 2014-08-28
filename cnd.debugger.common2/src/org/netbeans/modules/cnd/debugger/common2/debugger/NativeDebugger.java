@@ -130,6 +130,10 @@ public interface NativeDebugger {
     public void setInheritedMembers(boolean v);
     public boolean isStaticMembers();
     public void setStaticMembers(boolean v);
+    public boolean isPrettyPrint();
+    public void setPrettyPrint(boolean v);
+
+    public void postPrettyPrint(boolean v);
 
     public void registerStackModel(StackModel model);
     public void postVerboseStack(boolean v);

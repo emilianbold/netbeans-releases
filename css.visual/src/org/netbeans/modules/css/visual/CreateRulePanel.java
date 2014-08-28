@@ -315,9 +315,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
                         AtRuleItem createInAtRule = activeSelectorItem.getCreateInAtRule();
                         if (createInAtRule != null) {
                             atRuleCB.setSelectedItem(createInAtRule);
-                        } else {
-                            atRuleCB.setSelectedIndex(0); //select first
-                        }
+                        } 
                     }
                 }
 
@@ -727,7 +725,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
             //disable the at-rules combobox if there isn't a single at-rule in the choosen stylesheet
             atRuleCB.setEnabled(AT_RULES_MODEL.getSize() > 1);
             
-            atRuleCB.setSelectedIndex(0);
+            if(AT_RULES_MODEL.getSize() > 0) {
+                atRuleCB.setSelectedIndex(0);
+            }
 
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);

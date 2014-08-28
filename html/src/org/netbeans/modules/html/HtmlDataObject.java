@@ -62,6 +62,8 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
@@ -118,8 +120,11 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     //constants used when finding html document content type
     private static final String CHARSET_DECL = "CHARSET="; //NOI18N
     private static final String CHARSET_ATTRIBUTE = "charset"; //NOI18N
+    private static final String META_TAG = "meta"; //NOI18N
     
     private HtmlEditorSupport htmlEditorSupport;
+    
+    private static final Pattern XML_PI_ENCODING_PATTERN = Pattern.compile(".*encoding=\"(.*)\".*");
     
     @MultiViewElement.Registration(
             displayName="#LBL_HTMLEditorTab",
@@ -275,33 +280,51 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         TokenSequence<HTMLTokenId> ts = hi.tokenSequence(HTMLTokenId.language());
         ts.moveStart();
         boolean in_charset_attribute = false;
+        boolean in_meta_tag = false;
         while (ts.moveNext()) {
             Token<HTMLTokenId> token = ts.token();
             switch (token.id()) {
+                case XML_PI:
+                    Matcher matcher = XML_PI_ENCODING_PATTERN.matcher(token.text());
+                    if(matcher.matches()) {
+                        return matcher.group(1);
+                    }
+                case TAG_OPEN:
+                    in_meta_tag = LexerUtils.equals(META_TAG, token.text(), true, true);
+                    break;
+                case TAG_CLOSE_SYMBOL:
+                    //always go out from meta tag if a close tag or close tag symbol '/>' is found 
+                    //as the source may be broken
+                    in_meta_tag = false;
+                    break;
                 case ARGUMENT:
-                    in_charset_attribute = LexerUtils.equals(CHARSET_ATTRIBUTE, token.text(), true, true);
+                    if (in_meta_tag) {
+                        in_charset_attribute = LexerUtils.equals(CHARSET_ATTRIBUTE, token.text(), true, true);
+                    }
                     break;
                 case VALUE:
-                    if (in_charset_attribute) {
-                        //<meta charset="UTF-8">
-                        return WebUtils.unquotedValue(token.text()).toString();
-                    } else {
-                        //<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-                        int charsetOffset = CharSequences.indexOf(token.text(), CHARSET_DECL); //find in uppercase
-                        if (charsetOffset == -1) {
-                            charsetOffset = CharSequences.indexOf(token.text(), CHARSET_DECL.toLowerCase(Locale.ENGLISH)); //find in lowercase
-                        }
-                        if (charsetOffset != -1) {
-                            int charsetEndOffset = charsetOffset + CHARSET_DECL.length();
-                            int endOffset = CharSequences.indexOf(token.text(), ";", charsetEndOffset);
-                            if (endOffset == -1) {
-                                endOffset = CharSequences.indexOf(token.text(), "\"", charsetEndOffset);
+                    if (in_meta_tag) {
+                        if (in_charset_attribute) {
+                            //<meta charset="UTF-8">
+                            return WebUtils.unquotedValue(token.text()).toString();
+                        } else {
+                            //<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+                            int charsetOffset = CharSequences.indexOf(token.text(), CHARSET_DECL); //find in uppercase
+                            if (charsetOffset == -1) {
+                                charsetOffset = CharSequences.indexOf(token.text(), CHARSET_DECL.toLowerCase(Locale.ENGLISH)); //find in lowercase
                             }
-                            if (endOffset == -1) {
-                                endOffset = CharSequences.indexOf(token.text(), "'", charsetEndOffset);
-                            }
-                            if (endOffset != -1 && charsetEndOffset < endOffset) {
-                                return token.text().subSequence(charsetEndOffset, endOffset).toString();
+                            if (charsetOffset != -1) {
+                                int charsetEndOffset = charsetOffset + CHARSET_DECL.length();
+                                int endOffset = CharSequences.indexOf(token.text(), ";", charsetEndOffset);
+                                if (endOffset == -1) {
+                                    endOffset = CharSequences.indexOf(token.text(), "\"", charsetEndOffset);
+                                }
+                                if (endOffset == -1) {
+                                    endOffset = CharSequences.indexOf(token.text(), "'", charsetEndOffset);
+                                }
+                                if (endOffset != -1 && charsetEndOffset < endOffset) {
+                                    return token.text().subSequence(charsetEndOffset, endOffset).toString();
+                                }
                             }
                         }
                     }

@@ -45,20 +45,21 @@
 package org.netbeans.modules.debugger.jpda.ui;
 
 import com.sun.jdi.AbsentInformationException;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.ui.models.BreakpointsNodeModel;
 import org.netbeans.spi.debugger.ContextProvider;
-import java.beans.PropertyChangeEvent;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -142,7 +143,7 @@ PropertyChangeListener {
         }
         JPDABreakpoint breakpoint = (JPDABreakpoint) event.getSource ();
         if (breakpoint.getSuspend() != JPDABreakpoint.SUSPEND_NONE) {
-            getBreakpointsNodeModel ().setCurrentBreakpoint (breakpoint);
+            getBreakpointsNodeModel ().setCurrentBreakpoint (((JPDADebuggerImpl) debugger).getSession(), breakpoint);
         }
         /*
         System.err.println("BP variable = "+event.getVariable());
@@ -233,7 +234,7 @@ PropertyChangeListener {
                 return ;
             }
         }
-        getBreakpointsNodeModel ().setCurrentBreakpoint (null);
+        getBreakpointsNodeModel ().setCurrentBreakpoint (((JPDADebuggerImpl) debugger).getSession(), null);
             
     }
     

@@ -82,6 +82,7 @@ import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
+import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -138,7 +139,8 @@ public class CommentsPanel extends JPanel {
             Jira.LOG.log(Level.INFO, null, nfex);
         }
         String description = issue.getFieldValue(NbJiraIssue.IssueField.DESCRIPTION);
-        String reporter = issue.getRepository().getConfiguration().getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
+        JiraConfiguration rc = issue.getRepository().getConfiguration();
+        String reporter = rc != null ? rc.getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName() : ""; // NOI18N
         NbJiraIssue.Comment[] comments = issue.getComments();
         this.sections = new ArrayList<>(comments.length);
         sections.add(addSection(

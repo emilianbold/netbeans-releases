@@ -94,8 +94,11 @@ public class DwarfNameLookupTableSection extends ElfSection {
         while (bytesToRead > 0) {
             DwarfNameLookupTable table = new DwarfNameLookupTable();
             
+            long before = reader.getFilePointer();
             table.unit_length = reader.readDWlen();
-            bytesToRead -= table.unit_length + 4; // 4 is a size of unit_length itself
+            long after = reader.getFilePointer();
+            long delta = after - before;
+            bytesToRead -= table.unit_length + delta;
 
             table.version = reader.readShort();
             table.debug_info_offset = reader.read3264();

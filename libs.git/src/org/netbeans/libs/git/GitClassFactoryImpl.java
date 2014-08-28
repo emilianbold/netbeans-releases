@@ -193,4 +193,11 @@ final class GitClassFactoryImpl extends GitClassFactory {
         return new GitSubmoduleStatus(status, folder);
     }
 
+    @Override
+    public GitCherryPickResult createCherryPickResult (GitCherryPickResult.CherryPickStatus status,
+            List<File> conflicts, List<File> failures, GitRevisionInfo head,
+            List<GitRevisionInfo> cherryPickedCommits) {
+        return new GitCherryPickResult(status, conflicts, failures, head, cherryPickedCommits);
+    }
+
 }

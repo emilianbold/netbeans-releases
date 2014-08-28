@@ -70,8 +70,8 @@ public final class GCCErrorParser extends ErrorParser {
     private Pattern GCC_DIRECTORY_LEAVE;
     private Pattern GCC_DIRECTORY_CD;
     private Pattern GCC_DIRECTORY_MAKE_ALL;
-    private Pattern GCC_STACK_HEADER;
-    private Pattern GCC_STACK_NEXT;
+    private List<Pattern> GCC_STACK_HEADER = new ArrayList<Pattern>();
+    private List<Pattern> GCC_STACK_NEXT = new ArrayList<Pattern>();
 
     private Stack<FileObject> relativesTo = new Stack<FileObject>();
     private Stack<Integer> relativesLevel = new Stack<Integer>();
@@ -105,11 +105,15 @@ public final class GCCErrorParser extends ErrorParser {
 	    GCC_DIRECTORY_MAKE_ALL = Pattern.compile(scanner.getMakeAllInDirectoryPattern());
 	    patterns.add(GCC_DIRECTORY_MAKE_ALL);
 	}
-	if (scanner.getStackHeaderPattern() != null && scanner.getStackHeaderPattern() != null) {
-	    GCC_STACK_HEADER = Pattern.compile(scanner.getStackHeaderPattern());
-	    patterns.add(GCC_STACK_HEADER);
-	    GCC_STACK_NEXT = Pattern.compile(scanner.getStackNextPattern());
-	    patterns.add(GCC_STACK_NEXT);
+	if (scanner.getStackHeaderPattern().size() > 0 && scanner.getStackHeaderPattern().size() > 0) {
+            for(String pattern : scanner.getStackHeaderPattern()) {
+                GCC_STACK_HEADER.add(Pattern.compile(pattern));
+            }
+	    patterns.addAll(GCC_STACK_HEADER);
+            for(String pattern : scanner.getStackNextPattern()) {
+                GCC_STACK_NEXT.add(Pattern.compile(pattern));
+            }
+	    patterns.addAll(GCC_STACK_NEXT);
 	}
 	for(ScannerPattern s : scanner.getPatterns()){
 	    Pattern pattern = Pattern.compile(s.getPattern());
@@ -182,10 +186,11 @@ public final class GCCErrorParser extends ErrorParser {
             Results res = new Results();
             for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
                 StackIncludeItem item = it.next();
-                res.add(item.line, null);
+                res.add(item.line, listenerRegistry.register(item.fo, item.lineNumber, false, item.getMessage())); // NOI18N
             }
             errorInludes.clear();
             res.add(line, null);
+            return res;
         }
         return null;
     }
@@ -255,16 +260,18 @@ public final class GCCErrorParser extends ErrorParser {
             }
             return ErrorParserProvider.NO_RESULT;
         }
-        if (m.pattern() == GCC_STACK_NEXT || m.pattern() == GCC_STACK_HEADER) {
+        if (GCC_STACK_NEXT.contains(m.pattern()) || GCC_STACK_HEADER.contains(m.pattern())) {
             try {
                 String file = m.group(1);
-                Integer lineNumber = Integer.valueOf(m.group(2));
-                FileObject relativeDir = relativesTo.peek();
-                if (relativeDir != null) {
-                    FileObject fo = resolveRelativePath(relativeDir, file);
-                    if (fo != null && fo.isValid()) {
-                        errorInludes.add(new StackIncludeItem(fo, line, lineNumber - 1));
-                        return new Results();
+                if (m.groupCount() >= 2){
+                    Integer lineNumber = Integer.valueOf(m.group(2));
+                    FileObject relativeDir = relativesTo.peek();
+                    if (relativeDir != null) {
+                        FileObject fo = resolveRelativePath(relativeDir, file);
+                        if (fo != null && fo.isValid()) {
+                            errorInludes.add(new StackIncludeItem(fo, line, lineNumber - 1));
+                            return new Results();
+                        }
                     }
                 }
             } catch (NumberFormatException e) {
@@ -284,7 +291,7 @@ public final class GCCErrorParser extends ErrorParser {
                 if(file == null || !file.matches(".*\\.pc")) { // NOI18N 
                     file = m.group(1);
                     lineNumber = Integer.valueOf(m.group(2));
-                    if (m.groupCount()<= 4) {
+                    if (m.groupCount()>= 4) {
                         description = m.group(4);
                     }
                 } else {
@@ -310,8 +317,7 @@ public final class GCCErrorParser extends ErrorParser {
                         for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
                             StackIncludeItem item = it.next();
                             if (item.fo != null) {
-                                res.add(item.line, listenerRegistry.register(item.fo, item.lineNumber, important,
-                                        NbBundle.getMessage(GCCErrorParser.class, "HINT_IncludedFrom"))); // NOI18N
+                                res.add(item.line, listenerRegistry.register(item.fo, item.lineNumber, important, item.getMessage()));
                             } else {
                                 res.add(item.line, null);
                             }
@@ -359,15 +365,23 @@ public final class GCCErrorParser extends ErrorParser {
 
     private static class StackIncludeItem {
 
-        private FileObject fo;
-        private String line;
-        private int lineNumber;
+        private final FileObject fo;
+        private final String line;
+        private final int lineNumber;
 
         private StackIncludeItem(FileObject fo, String line, int lineNumber) {
             super();
             this.fo = fo;
             this.line = line;
             this.lineNumber = lineNumber;
+        }
+        
+        private String getMessage() {
+            if (line.indexOf("instantiation of") >= 0 || line.indexOf("instantiated from") >=0 || line.indexOf("instantiated from") >= 0) { //NOI18N
+                //TODO move to scanner
+                return NbBundle.getMessage(GCCErrorParser.class, "HINT_InstantiatedFrom"); //NOI18N
+            }
+            return NbBundle.getMessage(GCCErrorParser.class, "HINT_IncludedFrom"); //NOI18N
         }
     }
 }

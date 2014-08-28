@@ -131,7 +131,8 @@ public class BroadCatchBlock {
       description = "#DESC_BroadCatch",
       category = "rules15",
       customizerProvider = CF.class,
-      suppressWarnings = { "BroadCatchBlock", "TooBroadCatch" }
+      suppressWarnings = { "BroadCatchBlock", "TooBroadCatch" },
+      enabled = false
     )
     @TriggerPatterns({
         @TriggerPattern("try { $statements$; } catch $catches$"),

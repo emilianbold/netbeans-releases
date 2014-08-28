@@ -148,7 +148,8 @@ public class RemoteObject extends AbstractObject {
         switch (getType()) {
             case STRING: return (String)getValue();
             case NUMBER: 
-                Number n = (Number)getValue();
+                Object n = getValue();
+                // java.lang.Number, or "NaN".
                 if (n == null) {
                     return "";
                 }

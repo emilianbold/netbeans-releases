@@ -50,6 +50,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -142,8 +143,9 @@ public class AngularDoc {
             File tmpFile = new File(tmpFileName);
             try (Writer writer = new OutputStreamWriter(new FileOutputStream(tmpFile), "UTF-8")) { // NOI18N
                 writer.append("<!doctype html><html><head><title>AngularJS documentation</title></head><body>");
-                Utils.loadURL(url, writer, null);
+                Utils.loadURL(url, writer, Charset.forName("UTF-8"));
                 writer.append("</body></html>");
+                writer.close();
                 tmpFile.renameTo(cacheFile);
             } finally {
                 if (tmpFile.exists()) {

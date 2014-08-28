@@ -46,9 +46,6 @@ package org.netbeans.modules.git.ui.history;
 import java.awt.EventQueue;
 import java.io.File;
 import org.netbeans.libs.git.GitException;
-import java.text.SimpleDateFormat;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.*;
 import java.util.logging.Level;
 import org.netbeans.libs.git.GitBranch;
@@ -60,7 +57,9 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.fetch.FetchUtils;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 import org.openide.util.NbBundle;
@@ -71,13 +70,6 @@ import org.openide.util.NbBundle;
  * @author Maros Sandor
  */
 class SearchExecutor extends GitProgressSupport {
-
-    static final DateFormat [] dateFormats = new DateFormat[] {
-        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z"),  // NOI18N
-        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),  // NOI18N
-        new SimpleDateFormat("yyyy-MM-dd HH:mm"),  // NOI18N
-        new SimpleDateFormat("yyyy-MM-dd") // NOI18N
-    };
     
     private final SearchHistoryPanel    master;
     private final int limitRevisions;
@@ -91,6 +83,16 @@ class SearchExecutor extends GitProgressSupport {
     static final int DEFAULT_LIMIT = 10;
     static final int UNLIMITTED = -1;
     private final SearchCriteria sc;
+    private final Mode mode;
+    private final String branchName;
+    private String errMessage;
+    private String excludedCommitId;
+    
+    enum Mode {
+        LOCAL,
+        REMOTE_IN,
+        REMOTE_OUT
+    }
 
     @NbBundle.Messages({
         "MSG_IllegalSearchArgument.bothBranchAndTo=Cannot set both Branch and To parameters.\n"
@@ -100,29 +102,25 @@ class SearchExecutor extends GitProgressSupport {
         this.master = master;
         assert EventQueue.isDispatchThread();
         SearchCriteriaPanel criteria = master.getCriteria();
-        from = parseDate(criteria.getFrom());
-        fromRevision = from == null ? criteria.getFrom() : null;
-        to = parseDate(criteria.getTo());
-        String branch = criteria.getBranch();
-        if (branch == null) {
-            toRevision = to == null ? criteria.getTo() : null;
-        } else {
-            toRevision = branch;
-            if (to == null && criteria.getTo() != null) {
-                throw new IllegalArgumentException(Bundle.MSG_IllegalSearchArgument_bothBranchAndTo());
-            }
-        }
+        from = criteria.getFrom();
+        fromRevision = criteria.getFromRevision();
+        to = criteria.getTo();
+        toRevision = criteria.getToRevision();
         username = criteria.getUsername();
         message = criteria.getCommitMessage();
         int limit = criteria.getLimit();
         limitRevisions = limit <= 0 ? UNLIMITTED : limit;
         showMerges = criteria.isIncludeMerges();
+        branchName = criteria.getBranch();
+        mode = criteria.getMode();
 
         sc = new SearchCriteria();
         File[] files = master.getRoots();
-        sc.setFiles(files);
-        if (files != null && files.length == 1 && files[0].isFile()) {
-            sc.setFollowRenames(true);
+        if (files != null && files.length > 0 && !files[0].equals(getRepositoryRoot())) {
+            sc.setFiles(files);
+            if (files.length == 1 && files[0].isFile()) {
+                sc.setFollowRenames(true);
+            }
         }
         sc.setUsername(username);
         sc.setMessage(message);
@@ -134,19 +132,75 @@ class SearchExecutor extends GitProgressSupport {
     }    
         
     @Override
+    @NbBundle.Messages({
+        "# {0} - branch name", "MSG_SearchExecutor.err.branchDoesNotExist=Branch \"{0}\" does not exist.",
+        "# {0} - branch name", "MSG_SearchExecutor.err.noTrackedBranch=Please push branch \"{0}\" first"
+                + " and set its remote tracking.",
+        "MSG_SearchExecutor.progress.fetching=Checking remote repository",
+        "MSG_SearchExecutor.progress.searching=Searching for commits"
+    })
     public void perform () {
+        errMessage = null;
         if (isCanceled()) {
             return;
         }
         try {
+            switch (mode) {
+                case REMOTE_IN:
+                    Map<String, GitBranch> branches = getClient().getBranches(true, getProgressMonitor());
+                    GitBranch branch = branches.get(this.branchName);
+                    if (branch == null) {
+                        errMessage = Bundle.MSG_SearchExecutor_err_branchDoesNotExist(branchName);
+                        setResults(Collections.<RepositoryRevision>emptyList());
+                        return;
+                    }
+                    setDisplayName(Bundle.MSG_SearchExecutor_progress_fetching());
+                    Revision fetchedHead = null;
+                    try {
+                        fetchedHead = FetchUtils.fetchToTemp(getClient(), getProgressMonitor(), branch);
+                    } catch (GitException ex) {
+                        errMessage = ex.getMessage();
+                    }
+                    if (fetchedHead == null) {
+                        setResults(Collections.<RepositoryRevision>emptyList());
+                        return;
+                    }
+                    excludedCommitId = branch.getId();
+                    sc.setRevisionTo(fetchedHead.getCommitId());
+                    break;
+                case REMOTE_OUT:
+                    branches = getClient().getBranches(true, getProgressMonitor());
+                    branch = branches.get(this.branchName);
+                    if (branch == null) {
+                        errMessage = Bundle.MSG_SearchExecutor_err_branchDoesNotExist(branchName);
+                        setResults(Collections.<RepositoryRevision>emptyList());
+                        return;
+                    }
+                    GitBranch tracked = branch.getTrackedBranch();
+                    if (tracked == null || !tracked.isRemote()) {
+                        errMessage = Bundle.MSG_SearchExecutor_err_noTrackedBranch(branchName);
+                        setResults(Collections.<RepositoryRevision>emptyList());
+                        return;
+                    }
+                    excludedCommitId = tracked.getId();
+                    sc.setRevisionFrom(tracked.getName());
+                    break;
+            }
+            setDisplayName(Bundle.MSG_SearchExecutor_progress_searching());
             List<RepositoryRevision> results = search(limitRevisions, getClient(), getProgressMonitor());
             setResults(results);
         } catch (GitException.MissingObjectException ex) {
             Git.LOG.log(Level.INFO, "Missing object for roots: {0}", Arrays.asList(master.getRoots())); //NOI18N
             GitClientExceptionHandler.notifyException(ex, true);
+            setResults(Collections.<RepositoryRevision>emptyList());
         } catch (GitException ex) {
             GitClientExceptionHandler.notifyException(ex, true);
+            setResults(Collections.<RepositoryRevision>emptyList());
         }
+    }
+    
+    String getErrorMessage () {
+        return errMessage;
     }
 
     List<RepositoryRevision> search (int limit, GitClient client, ProgressMonitor monitor) throws GitException {
@@ -171,6 +225,9 @@ class SearchExecutor extends GitProgressSupport {
         }
         for (int i = 0; i < logMessages.length && !monitor.isCanceled(); ++i) {
             GitRevisionInfo logMessage = logMessages[i];
+            if (logMessage.getRevision().equals(excludedCommitId)) {
+                continue;
+            }
             RepositoryRevision rev;
             Set<GitBranch> branches = new HashSet<GitBranch>();
             Set<GitTag> tags = new HashSet<GitTag>();
@@ -184,7 +241,8 @@ class SearchExecutor extends GitProgressSupport {
                     tags.add(t);
                 }
             }
-            rev = new RepositoryRevision(logMessage, master.getRepository(), master.getRoots(), tags, branches, dummyFile, dummyFileRelativePath);
+            rev = new RepositoryRevision(logMessage, master.getRepository(), master.getRoots(),
+                    tags, branches, dummyFile, dummyFileRelativePath, mode);
             results.add(rev);
         }
         return results;
@@ -202,17 +260,5 @@ class SearchExecutor extends GitProgressSupport {
                 }
             }
         });
-    }
-
-    private Date parseDate (String strDate) {
-        Date date = null;
-        if (strDate != null) {
-            for (DateFormat fd : dateFormats) {
-                try {
-                    date = fd.parse(strDate);
-                } catch (ParseException ex) { }
-            }
-        }
-        return date;
     }
 }

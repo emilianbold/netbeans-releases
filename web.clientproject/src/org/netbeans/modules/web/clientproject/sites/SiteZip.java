@@ -138,8 +138,7 @@ public class SiteZip implements SiteTemplateImplementation {
                     try {
                         templateProperties.load(zipEntryInputStream);
                         projectProperties.setSiteRootFolder(templateProperties.getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER))
-                                .setTestFolder(templateProperties.getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER))
-                                .setConfigFolder(templateProperties.getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER));
+                                .setTestFolder(templateProperties.getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER));
                     } catch (IOException ex) {
                         LOGGER.log(Level.WARNING, "Error while reading file", ex);
                     }

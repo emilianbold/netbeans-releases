@@ -77,4 +77,10 @@ public class JavaScriptLibrarySelectionPanelTest extends NbTestCase {
         assertNull(libraryComparator.compareSameVersions("3.0.0-unk1", "3.0.0-xyz2"));
     }
 
+    @Test
+    public void testSanitizeVersion() {
+        assertEquals("1.0", libraryComparator.sanitize("1.0-beta1"));
+        assertEquals("53", libraryComparator.sanitize("r53"));
+    }
+
 }

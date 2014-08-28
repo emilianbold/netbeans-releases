@@ -71,12 +71,12 @@
             <EchoStatement start='6' end='32'>
                 <ExpressionArrayAccess start='11' end='31'>
                     <ExpressionArrayAccess start='11' end='28'>
-                        <ArrayCreation start='11' end='25'>
+                        <ArrayCreation start='11' end='25' type='NEW'>
                             <ArrayElement start='12' end='18'>
                                 <Key>
                                 </Key>
                                 <Value>
-                                    <ArrayCreation start='12' end='18'>
+                                    <ArrayCreation start='12' end='18' type='NEW'>
                                         <ArrayElement start='13' end='14'>
                                             <Key>
                                             </Key>

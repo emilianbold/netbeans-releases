@@ -47,7 +47,7 @@ import org.openide.nodes.PropertySupport;
 
 /**
  *
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class SimplePropertySupport extends PropertySupport<String> {
     private String value;

@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
@@ -52,6 +53,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.InvalidObjectException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -68,12 +70,14 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.modules.debugger.jpda.models.ShortenedStrings;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -178,6 +182,22 @@ class ValuePropertyEditor implements ExPropertyEditor {
         return pe;
     }
     
+    /**
+     * Test if the property editor can act on the provided value. We can never be sure. :-(
+     * @param propertyEditor
+     * @param valueMirror
+     * @return the property editor, or <code>null</code>
+     */
+    private static PropertyEditor testPropertyEditorOnValue(PropertyEditor propertyEditor, Object valueMirror) {
+        propertyEditor.setValue(valueMirror);
+        Object value = propertyEditor.getValue();
+        if (value != valueMirror && (value == null || !value.equals(valueMirror))) {
+            // Returns something that we did not set. Give up.
+            return null;
+        }
+        return propertyEditor;
+    }
+    
     @Override
     public void setValue(Object value) {
         logger.log(Level.FINE, "ValuePropertyEditor.setValue({0})", value);
@@ -219,6 +239,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
                 }
             }
             PropertyEditor propertyEditor = findPropertyEditor(clazz);
+            propertyEditor = testPropertyEditorOnValue(propertyEditor, valueMirror);
             if (propertyEditor == null) {
                 clazz = String.class;
                 propertyEditor = findPropertyEditor(clazz);
@@ -347,6 +368,17 @@ class ValuePropertyEditor implements ExPropertyEditor {
 
     @Override
     public Component getCustomEditor() {
+        //System.err.println("ValuePropertyEditor.getCustomEditor() delegateValue = "+delegateValue);
+        if (delegateValue instanceof String) {
+            ShortenedStrings.StringInfo shortenedInfo = ShortenedStrings.getShortenedInfo((String) delegateValue);
+            //System.err.println("  shortenedInfo = "+shortenedInfo);
+            if (shortenedInfo != null) {
+                // There is a risk that the String and it's UI does not fit into the memory,
+                // or that it'd be too sluggish.
+                Component delegateCustomEditor = delegatePropertyEditor.getCustomEditor();
+                return new BigStringCustomEditor(delegateCustomEditor, shortenedInfo);
+            }
+        }
         return delegatePropertyEditor.getCustomEditor();
     }
 
@@ -364,6 +396,23 @@ class ValuePropertyEditor implements ExPropertyEditor {
         env.addVetoableChangeListener(validate);
         if (delegatePropertyEditor instanceof ExPropertyEditor) {
             //System.out.println("  attaches to "+delegatePropertyEditor);
+            if (delegateValue instanceof String) {
+                ShortenedStrings.StringInfo shortenedInfo = ShortenedStrings.getShortenedInfo((String) delegateValue);
+                if (shortenedInfo != null) {
+                    // The value is too large, do not allow editing!
+                    FeatureDescriptor desc = env.getFeatureDescriptor();
+                    if (desc instanceof Node.Property){
+                        Node.Property prop = (Node.Property)desc;
+                        // Need to make it uneditable
+                        try {
+                            Method forceNotEditableMethod = prop.getClass().getDeclaredMethod("forceNotEditable");
+                            forceNotEditableMethod.setAccessible(true);
+                            forceNotEditableMethod.invoke(prop);
+                        } catch (Exception ex){}
+                        //editable = prop.canWrite();
+                    }
+                }
+            }
             ((ExPropertyEditor) delegatePropertyEditor).attachEnv(env);
             this.env = env;
         }
@@ -388,7 +437,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
         logger.log(Level.FINE, "ValuePropertyEditor.removePropertyChangeListener({0})", listener);
         delegatePropertyEditor.removePropertyChangeListener(listener);
     }
-    
+
     private class Validate implements VetoableChangeListener {
 
         @Override

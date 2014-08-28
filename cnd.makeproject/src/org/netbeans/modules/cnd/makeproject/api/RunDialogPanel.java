@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -557,7 +558,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
+            // don't report cancellation exception
         }
         if (oSFamily != null) {
             switch (oSFamily) {
@@ -1058,7 +1059,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (CancellationException ex) {
-                Exceptions.printStackTrace(ex);
+                // don't report cancellation exception
             }
             if (java != null) {
                 execute = ProcessUtils.execute(executionEnvironment, projectCreator.getPath()
@@ -1133,6 +1134,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             if (extension != null) {
                 Map<String, Object> map = new HashMap<>();
                 map.put("DW:buildResult", getExecutablePath()); // NOI18N
+                map.put("DW:resolveLinks", CommonUtilities.resolveSymbolicLinks()); // NOI18N
                 map.put("DW:consolidationLevel", "file"); // NOI18N
                 map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
                 IteratorExtension.ProjectKind kind = ((ProjectKindItem)projectKind.getSelectedItem()).kind;

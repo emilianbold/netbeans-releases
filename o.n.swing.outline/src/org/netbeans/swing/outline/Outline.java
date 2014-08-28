@@ -58,6 +58,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EventObject;
@@ -214,6 +215,9 @@ import org.netbeans.swing.etable.ETableColumnModel;
 public class Outline extends ETable {
     //XXX plenty of methods missing here - add/remove tree expansion listeners,
     //better path info/queries, etc.
+    
+    // Tooltips larger than this are screwed up.
+    private static final int MAX_TOOLTIP_LENGTH = 1000;
     
     private boolean initialized = false;
     private Boolean cachedRootVisible = null;
@@ -442,6 +446,12 @@ public class Outline extends ETable {
             if (tipText == null)
                 tipText = getToolTipText();
 
+            if (tipText != null) {
+                tipText = tipText.trim();
+                if (tipText.length() > MAX_TOOLTIP_LENGTH) {
+                    tipText = tipText.substring(0, MAX_TOOLTIP_LENGTH) + "...";
+                }
+            }
             return tipText;
         } finally {
             putClientProperty("ComputingTooltip", Boolean.FALSE);
@@ -489,6 +499,7 @@ public class Outline extends ETable {
             if (c != null) {
                 TableModel model = getModel();
                 int noRows = model.getRowCount();
+                //System.err.println("sortAndFilter: Number of rows = "+noRows);
                 List<RowMapping> rows = new ArrayList<RowMapping>();
                 synchronized (tempSortMapLock) {
                     if (tempSortMap != null) {
@@ -499,6 +510,7 @@ public class Outline extends ETable {
                         if (acceptByQuickFilter(model, i)) {
                             TreePath tp = getLayoutCache().getPathForRow(i);
                             RowMapping rm = new RowMapping(i, model, this);
+                            //System.err.println("               RowMapping("+i+") = "+rm);
                             tsm.put(tp, rm);
                             rows.add(rm);
                         }
@@ -515,8 +527,13 @@ public class Outline extends ETable {
                     res[i] = rmi;
                     invRes[rmi] = i;
                 }
+                int[] oldRes = sortingPermutation;
+                int[] oldInvRes = inverseSortingPermutation;
+                //System.err.println(" SETTING PERMUTATION = "+Arrays.toString(res));
+                //System.err.println(" SETTING INV.PERMUT. = "+Arrays.toString(invRes));
                 sortingPermutation = res;
                 inverseSortingPermutation = invRes;
+                //adjustSelectedRows(oldRes, oldInvRes, res, invRes);
             }
         }
     }

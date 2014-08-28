@@ -140,10 +140,6 @@ public class UtilitiesTest extends NbTestCase {
         performShortNameTest("package test; public class Test { public void t() { | }}", "new Object[0]", "...new Object[...]");
     }
 
-    public void testNameGuessKeywordNoShortName2() throws Exception {
-        assertEquals("aDo", Utilities.adjustName("do"));
-    }
-
     public void testToConstantName() {
         assertEquals("SOME_CONSTANT", Utilities.toConstantName("someConstant"));
         assertEquals("SOME_HTML_CONSTANT", Utilities.toConstantName("someHTMLConstant"));

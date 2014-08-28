@@ -63,9 +63,12 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -75,8 +78,11 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.CoverageProviderImpl;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.bower.BowerProblemProvider;
+import org.netbeans.modules.web.clientproject.node.NpmProblemProvider;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
@@ -92,7 +98,6 @@ import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
 import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -108,8 +113,11 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.search.SearchInfoDefinition;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
@@ -117,9 +125,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.WindowManager;
 import org.openide.windows.WindowSystemEvent;
 import org.openide.windows.WindowSystemListener;
@@ -146,7 +154,7 @@ public class ClientSideProject implements Project {
     final AntProjectHelper projectHelper;
     private final ReferenceHelper referenceHelper;
     private final PropertyEvaluator eval;
-    private final DynamicProjectLookup lookup;
+    private final Lookup lookup;
     private final AntProjectListener antProjectListenerImpl = new AntProjectListenerImpl();
     volatile String name;
     private RefreshOnSaveListener refreshOnSaveListener;
@@ -211,10 +219,6 @@ public class ClientSideProject implements Project {
         referenceHelper = new ReferenceHelper(helper, configuration, eval);
         projectBrowserProvider = new ClientSideProjectBrowserProvider(this);
         lookup = createLookup(configuration);
-        ClientProjectEnhancedBrowserImplementation ebi = getEnhancedBrowserImpl();
-        if (ebi != null) {
-            lookup.setConfigurationProvider(ebi.getProjectConfigurationProvider());
-        }
         eval.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -227,10 +231,6 @@ public class ClientSideProject implements Project {
                     }
                     projectEnhancedBrowserImpl = null;
                     projectWebBrowser = null;
-                    ebi = getEnhancedBrowserImpl();
-                    if (ebi != null) {
-                        lookup.setConfigurationProvider(ebi.getProjectConfigurationProvider());
-                    }
                     projectBrowserProvider.activeBrowserHasChanged();
                 }
             }
@@ -289,32 +289,80 @@ public class ClientSideProject implements Project {
         return !ClientSideProjectProperties.ProjectServer.EXTERNAL.name().equalsIgnoreCase(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER));
     }
 
-    @CheckForNull
-    public FileObject getSiteRootFolder() {
-        String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
-        if (s == null) {
-            s = ""; //NOI18N
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "ClientSideProject.error.broken=<html>Project <b>{0}</b> is broken, resolve project problems first."
+    })
+    public boolean isBroken(boolean showCustomizer) {
+        boolean broken = getSourcesFolder() == null
+                && getSiteRootFolder() == null;
+        if (broken
+                && showCustomizer) {
+            NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                    Bundle.ClientSideProject_error_broken(getName()), NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(descriptor);
+            ProjectProblems.showCustomizer(this);
         }
-        if (s.length() == 0) {
-            return getProjectDirectory();
-        }
-        return projectHelper.resolveFileObject(s);
+        return broken;
     }
 
-    public FileObject getTestsFolder() {
+    @CheckForNull
+    public FileObject getSourcesFolder() {
+        String sourceFolder = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SOURCE_FOLDER);
+        if (sourceFolder == null) {
+            return null;
+        }
+        if (sourceFolder.isEmpty()) {
+            return getProjectDirectory();
+        }
+        return projectHelper.resolveFileObject(sourceFolder);
+    }
+
+    @CheckForNull
+    public FileObject getSiteRootFolder() {
+        String siteRootFolder = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
+        if (siteRootFolder == null) {
+            return null;
+        }
+        if (siteRootFolder.isEmpty()) {
+            return getProjectDirectory();
+        }
+        return projectHelper.resolveFileObject(siteRootFolder);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "ClientSideProject.chooser.tests.title=Select Unit Tests folder ({0})",
+        "ClientSideProject.props.saving=Saving project metadata...",
+    })
+    @CheckForNull
+    public FileObject getTestsFolder(boolean showFileChooser) {
         String tests = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
         if (tests == null || tests.trim().length() == 0) {
+            if (showFileChooser) {
+                final File folder = new FileChooserBuilder(ClientSideProject.class)
+                        .setTitle(Bundle.ClientSideProject_chooser_tests_title(ProjectUtils.getInformation(this).getDisplayName()))
+                        .setDirectoriesOnly(true)
+                        .setDefaultWorkingDirectory(FileUtil.toFile(getProjectDirectory()))
+                        .forceUseOfDefaultWorkingDirectory(true)
+                        .showOpenDialog();
+                if (folder != null) {
+                    ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(ClientSideProject.this);
+                            projectProperties.setTestFolder(folder.getAbsolutePath());
+                            projectProperties.save();
+                        }
+                    }, Bundle.ClientSideProject_props_saving(), new AtomicBoolean(), false);
+                    FileObject fo = FileUtil.toFileObject(folder);
+                    assert fo != null : "FileObject should be found for " + folder;
+                    return fo;
+                }
+            }
             return null;
         }
         return getProjectDirectory().getFileObject(tests);
-    }
-
-    public FileObject getConfigFolder() {
-        String config = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
-        if (config == null || config.trim().length() == 0) {
-            return null;
-        }
-        return getProjectDirectory().getFileObject(config);
     }
 
     public String getStartFile() {
@@ -410,7 +458,7 @@ public class ClientSideProject implements Project {
                 projectHelper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
     }
 
-    private DynamicProjectLookup createLookup(AuxiliaryConfiguration configuration) {
+    private Lookup createLookup(AuxiliaryConfiguration configuration) {
         FileEncodingQueryImplementation fileEncodingQuery =
                 new FileEncodingQueryImpl(getEvaluator(), ClientSideProjectConstants.PROJECT_ENCODING);
         Lookup base = Lookups.fixed(new Object[] {
@@ -438,15 +486,17 @@ public class ClientSideProject implements Project {
                new ClientSideModuleImpl(this),
                ProjectPropertiesProblemProvider.createForProject(this),
                CssPreprocessors.getDefault().createProjectProblemsProvider(this),
+               NpmProblemProvider.create(this),
+               BowerProblemProvider.create(this),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                new TemplateAttributesProviderImpl(projectHelper, fileEncodingQuery),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
-                    ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
+                    ClientSideProjectConstants.PROJECT_TEST_FOLDER),
                projectBrowserProvider,
                new ProjectDirectoriesProviderImpl(),
+               new CoverageProviderImpl(this),
        });
-       return new DynamicProjectLookup(this,
-               LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup"));
+       return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup");
     }
 
     void recompileSources(CssPreprocessor cssPreprocessor) {
@@ -457,25 +507,6 @@ public class ClientSideProject implements Project {
         }
         // force recompiling
         CssPreprocessors.getDefault().process(cssPreprocessor, this, siteRootFolder);
-    }
-
-    private static class DynamicProjectLookup extends ProxyLookup {
-        private Lookup base;
-        private ClientSideProject project;
-
-        private DynamicProjectLookup(ClientSideProject project, Lookup base) {
-            super(base);
-            this.project = project;
-            this.base = base;
-        }
-
-        public void setConfigurationProvider(ProjectConfigurationProvider provider) {
-            if (provider == null) {
-                setLookups(base);
-            } else {
-                setLookups(base, Lookups.fixed(provider));
-            }
-        }
     }
 
     ClassPath getSourceClassPath() {
@@ -592,16 +623,25 @@ public class ClientSideProject implements Project {
             if (jsTestingProvider != null) {
                 jsTestingProvider.projectOpened(project);
             }
+            FileObject projectDirectory = project.getProjectDirectory();
             // usage logging
-            FileObject cordova = project.getProjectDirectory().getFileObject(".cordova"); // NOI18N
+            FileObject cordova = projectDirectory.getFileObject(".cordova"); // NOI18N
             if (cordova == null) {
-                cordova = project.getProjectDirectory().getFileObject("hooks"); // NOI18N 
+                cordova = projectDirectory.getFileObject("hooks"); // NOI18N
             }
+            FileObject testsFolder = project.getTestsFolder(false);
+
+            boolean hasGrunt = projectDirectory.getFileObject("Gruntfile.js") != null;
+            boolean hasBower = projectDirectory.getFileObject("bower.json") !=null;
+            boolean hasPackage = projectDirectory.getFileObject("package.json") !=null;
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
                     new Object[] {
                         browserId,
-                        project.getTestsFolder() != null && project.getTestsFolder().getChildren().length > 0 ? "YES" : "NO", // NOI18N
+                        testsFolder != null && testsFolder.getChildren().length > 0 ? "YES" : "NO", // NOI18N
                         cordova != null && cordova.isFolder() ? "YES" : "NO", // NOI18N
+                        hasGrunt ? "YES" : "NO", // NOI18N
+                        hasBower ? "YES" : "NO", // NOI18N
+                        hasPackage ? "YES" : "NO", // NOI18N
                     });
         }
 
@@ -626,7 +666,6 @@ public class ClientSideProject implements Project {
             assert siteRootFolder == null : "Should not be listening to " + siteRootFolder;
             FileObject siteRoot = project.getSiteRootFolder();
             if (siteRoot == null) {
-                // broken project
                 return;
             }
             siteRootFolder = FileUtil.toFile(siteRoot);
@@ -761,8 +800,7 @@ public class ClientSideProject implements Project {
 
         private static final Set<String> WATCHED_PROPERTIES = new HashSet<String>(Arrays.asList(
                 ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
-                ClientSideProjectConstants.PROJECT_TEST_FOLDER,
-                ClientSideProjectConstants.PROJECT_CONFIG_FOLDER));
+                ClientSideProjectConstants.PROJECT_TEST_FOLDER));
 
         private final ClientSideProject project;
         // @GuardedBy("this")
@@ -820,7 +858,7 @@ public class ClientSideProject implements Project {
 
         private FileObject[] getRoots() {
             List<FileObject> roots = new ArrayList<FileObject>();
-            addRoots(roots, project.getSiteRootFolder(), project.getConfigFolder(), project.getTestsFolder());
+            addRoots(roots, project.getSiteRootFolder(), project.getTestsFolder(false));
             return roots.toArray(new FileObject[roots.size()]);
         }
 
@@ -888,13 +926,8 @@ public class ClientSideProject implements Project {
     private final class ProjectDirectoriesProviderImpl implements ProjectDirectoriesProvider {
 
         @Override
-        public FileObject getConfigDirectory() {
-            return ClientSideProject.this.getConfigFolder();
-        }
-
-        @Override
-        public FileObject getTestDirectory() {
-            return ClientSideProject.this.getTestsFolder();
+        public FileObject getTestDirectory(boolean showFileChooser) {
+            return ClientSideProject.this.getTestsFolder(showFileChooser);
         }
 
     }

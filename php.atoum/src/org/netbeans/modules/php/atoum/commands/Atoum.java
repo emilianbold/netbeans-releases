@@ -99,6 +99,7 @@ public final class Atoum {
     public static final String ATOUM_FILE_NAME = "atoum"; // NOI18N
     public static final String BOOTSTRAP_FILE_NAME = ".bootstrap.atoum.php"; // NOI18N
     public static final String CONFIGURATION_FILE_NAME = ".atoum.php"; // NOI18N
+    private static final String COVERAGE_SCRIPT_RELATIVE_PATH = "scripts/coverage.php"; //NOI18N
 
     public static final Pattern LINE_PATTERN = Pattern.compile("(.+):(\\d+)"); // NOI18N
 
@@ -111,8 +112,19 @@ public final class Atoum {
     private static final String INIT_PARAM = "--init"; // NOI18N
     private static final String XDEBUG_CONFIG_PARAM = "-xc"; // NOI18N
     private static final String IDE_KEY_PARAM = "idekey=%s"; // NOI18N
+    private static final String OUTPUT_PARAM = "--output"; //NOI18N
+    private static final String USE_PARAM = "--use"; //NOI18N
+    private static final String COVERAGE_PARAM = "coverage"; //NOI18N
+
+    private static final File COVERAGE_LOG;
 
     private final String atoumPath;
+
+
+    static {
+        String logDirName = System.getProperty("java.io.tmpdir"); // NOI18N
+        COVERAGE_LOG = new File(logDirName, "nb-atoum-coverage.xml"); // NOI18N
+    }
 
 
     private Atoum(String atoum) {
@@ -209,15 +221,38 @@ public final class Atoum {
     }
 
     @CheckForNull
+    public File getCoverageLog() {
+        if (COVERAGE_LOG.isFile()) {
+            return COVERAGE_LOG;
+        }
+        return null;
+    }
+
+    @CheckForNull
     public Integer runTests(PhpModule phpModule, TestRunInfo runInfo, final TestSession testSession) throws TestRunException {
-        PhpExecutable atoum = getExecutable(phpModule, getOutputTitle(runInfo));
+        boolean coverageEnabled = runInfo.isCoverageEnabled();
+        // executable
+        String command = atoumPath;
+        boolean phar = atoumPath.toLowerCase().contains(".phar"); // NOI18N
+        if (coverageEnabled) {
+            if (!phar) {
+                File atoumDir = new File(atoumPath)
+                        .getParentFile() // bin/
+                        .getParentFile(); // atoum dir
+                command = new File(atoumDir, COVERAGE_SCRIPT_RELATIVE_PATH).getAbsolutePath();
+                assert new File(command).isFile() : "Coverage script should exist: " + command;
+            }
+        }
+        PhpExecutable atoum = getExecutable(command, phpModule, getOutputTitle(runInfo));
+        // params
         List<String> params = new ArrayList<>();
-        addBootstrap(phpModule, params);
-        addConfiguration(phpModule, params);
-        params.add(TAP_FORMAT_PARAM);
-        if (runInfo.isCoverageEnabled()) {
-            // XXX add coverage params once atoum supports it
-            LOGGER.info("Atoum currently does not support code coverage via command line");
+        if (coverageEnabled) {
+            if (phar) {
+                params.add(USE_PARAM);
+                params.add(COVERAGE_PARAM);
+            }
+            params.add(OUTPUT_PARAM);
+            params.add(COVERAGE_LOG.getAbsolutePath());
         }
         // custom tests
         List<TestRunInfo.TestInfo> customTests = runInfo.getCustomTests();
@@ -240,15 +275,20 @@ public final class Atoum {
             params.add(XDEBUG_CONFIG_PARAM);
             params.add(String.format(IDE_KEY_PARAM, Lookup.getDefault().lookup(PhpOptions.class).getDebuggerSessionId()));
         }
-        for (FileObject startFile : runInfo.getStartFiles()) {
-            if (startFile.isData()) {
-                params.add(FILE_PARAM);
-            } else {
-                params.add(DIRECTORY_PARAM);
-            }
-            params.add(FileUtil.toFile(startFile).getAbsolutePath());
-        }
+        addStartFile(runInfo, params);
+        params.add(TAP_FORMAT_PARAM);
+        addBootstrap(phpModule, params);
+        addConfiguration(phpModule, params);
         atoum.additionalParameters(params);
+        // run
+        if (coverageEnabled) {
+            // delete the old file
+            if (COVERAGE_LOG.isFile()) {
+                if (!COVERAGE_LOG.delete()) {
+                    LOGGER.info("Cannot delete atoum coverage log file");
+                }
+            }
+        }
         try {
             if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
                 return atoum.runAndWait(getDescriptor(), new ParsingFactory(testSession), "Running atoum tests..."); // NOI18N
@@ -299,10 +339,14 @@ public final class Atoum {
     }
 
     private PhpExecutable getExecutable(PhpModule phpModule, String title) {
+        return getExecutable(atoumPath, phpModule, title);
+    }
+
+    private PhpExecutable getExecutable(String command, PhpModule phpModule, String title) {
         // backward compatibility, simply return the first test directory
         FileObject testDirectory = phpModule.getTestDirectory(null);
         assert testDirectory != null : "Test directory not found for " + phpModule.getName();
-        return new PhpExecutable(atoumPath)
+        return new PhpExecutable(command)
                 .optionsSubcategory(AtoumOptionsPanelController.OPTIONS_SUB_PATH)
                 .workDir(FileUtil.toFile(testDirectory))
                 .redirectErrorStream(true)
@@ -363,6 +407,17 @@ public final class Atoum {
         if (AtoumPreferences.isConfigurationEnabled(phpModule)) {
             params.add(CONFIGURATION_PARAM);
             params.add(AtoumPreferences.getConfigurationPath(phpModule));
+        }
+    }
+
+    private void addStartFile(TestRunInfo runInfo, List<String> params) {
+        for (FileObject startFile : runInfo.getStartFiles()) {
+            if (startFile.isData()) {
+                params.add(FILE_PARAM);
+            } else {
+                params.add(DIRECTORY_PARAM);
+            }
+            params.add(FileUtil.toFile(startFile).getAbsolutePath());
         }
     }
 

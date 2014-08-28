@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.editor.overridden;
 
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -131,7 +132,7 @@ public class GoToImplementationTest extends NbTestCase {
         
         prepareTest("test/Test.java", code.replace("|", ""));
         
-        Element element = GoToImplementation.resolveTarget(info, info.getSnapshot().getSource().getDocument(true), caret);
+        Element element = GoToImplementation.resolveTarget(info, info.getSnapshot().getSource().getDocument(true), caret, new AtomicBoolean());
         String elementText = element != null ? info.getElementUtilities().getElementName(element, true).toString() : null;
         
         assertEquals(golden, elementText);

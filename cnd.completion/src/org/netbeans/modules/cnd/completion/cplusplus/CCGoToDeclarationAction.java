@@ -44,8 +44,6 @@
 package org.netbeans.modules.cnd.completion.cplusplus;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
@@ -55,7 +53,10 @@ import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider;
+import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.LineHyperlinkProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.NbBundle;
 
@@ -117,6 +118,8 @@ public class CCGoToDeclarationAction extends BaseAction {
                 return true;
             } else if (new CsmHyperlinkProvider().isHyperlinkPoint(doc, offset, HyperlinkType.GO_TO_DECLARATION)) {
                 return true;
+            } else if (new LineHyperlinkProvider().isHyperlinkPoint(doc, offset, HyperlinkType.GO_TO_DECLARATION)) {
+                return true;
             }
         }
         return false;
@@ -138,8 +141,10 @@ public class CCGoToDeclarationAction extends BaseAction {
                     int offset = target.getSelectionStart();
                     // first try include provider
                     if (!new CsmIncludeHyperlinkProvider().goToInclude(doc, target, offset, HyperlinkType.GO_TO_DECLARATION)) {
-                        // if failed => try identifier provider
-                        new CsmHyperlinkProvider().goToDeclaration(doc, target, offset, HyperlinkType.GO_TO_DECLARATION);
+                        if (!new LineHyperlinkProvider().goToLine(doc, target, offset, HyperlinkType.GO_TO_DECLARATION)) {
+                            // if failed => try identifier provider
+                            new CsmHyperlinkProvider().goToDeclaration(doc, target, offset, HyperlinkType.GO_TO_DECLARATION);
+                        }
                     }
                 }
             }

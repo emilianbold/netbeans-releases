@@ -45,9 +45,12 @@
 package org.netbeans.modules.web.clientproject.grunt;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -58,6 +61,7 @@ import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
@@ -68,6 +72,7 @@ import org.openide.windows.InputOutput;
 public final class GruntfileExecutor implements Runnable {
 
     private final List<String> targetNames;
+    private String allTargets;
     private final String displayName;
     private final FileObject gruntFile;
 
@@ -80,11 +85,19 @@ public final class GruntfileExecutor implements Runnable {
     })
     public GruntfileExecutor (FileObject gruntFile, String[] targets) {
         targetNames = ((targets == null) ? null : Arrays.asList(targets));
+        
+        allTargets = "";
+        for (String t:targets) {
+            allTargets+=t;
+            allTargets+=" ";
+        }
+        allTargets = allTargets.trim();
+        
         this.gruntFile = gruntFile;
 
         Project owner = FileOwnerQuery.getOwner(gruntFile);
         if (owner!=null) {
-            displayName = Bundle.TXT_GruntTabTitle(ProjectUtils.getInformation(owner).getDisplayName(), targets[0]);
+            displayName = Bundle.TXT_GruntTabTitle(ProjectUtils.getInformation(owner).getDisplayName(), allTargets);
         } else {
             displayName = gruntFile.getName();
         }
@@ -113,20 +126,33 @@ public final class GruntfileExecutor implements Runnable {
                 ExternalProcessBuilder pb;
                 if (Utilities.isWindows()) {
                     pb = new ExternalProcessBuilder("cmd");
-                    pb= pb.addArgument("/C grunt --no-color " + targetNames.get(0));
+                    pb= pb.addArgument("/C grunt --no-color " + allTargets);
                 } else if (Utilities.isMac()) {
                     pb = new ExternalProcessBuilder("/bin/bash");
                     pb = pb.addArgument("-lc");
-                    pb = pb.addArgument("grunt --no-color " + targetNames.get(0));
+                    pb = pb.addArgument("grunt --no-color " + allTargets);
                 } else {
                     pb = new ExternalProcessBuilder("grunt");
                     pb = pb.addArgument("--no-color");
-                    pb = pb.addArgument(targetNames.get(0));
+                    pb = pb.addArgument(allTargets);
                 }
 
                 pb = pb.workingDirectory(FileUtil.toFile(gruntFile.getParent()));
                 pb = pb.redirectErrorStream(true);
-                return pb.call();
+                try {
+                    return pb.call();
+                } catch (IOException ioe) {
+                    if (!Utilities.isWindows() && !Utilities.isMac()) {
+                        //grunt not found on path on Linux. Run bash and try run 
+                        //grunt inside bash. It will at least do output to user
+                        pb = new ExternalProcessBuilder("/bin/bash");
+                        pb = pb.addArgument("-lc");
+                        pb = pb.addArgument("grunt --no-color " + allTargets);
+                        return pb.call();
+                    } else {
+                        throw ioe;
+                    }
+                }
             }
 
         };
@@ -135,7 +161,16 @@ public final class GruntfileExecutor implements Runnable {
         desc = desc.showProgress(true);
         desc = desc.frontWindow(true);
         desc = desc.controllable(true);
+        desc = desc.charset(StandardCharsets.UTF_8);        
         ExecutionService execution = ExecutionService.newService(creator, desc, displayName);
-        execution.run();
+        try {
+            execution.run().get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            //ignore. Task was cancelled by use.
+        }
     }
 }

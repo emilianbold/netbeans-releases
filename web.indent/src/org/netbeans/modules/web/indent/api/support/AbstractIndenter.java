@@ -55,7 +55,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -66,6 +69,7 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.web.indent.api.embedding.VirtualSource;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.web.indent.api.LexUtilities;
 import org.openide.util.Exceptions;
@@ -97,9 +101,29 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
     public AbstractIndenter(Language<T1> language, Context context) {
         this.language = language;
         this.context = context;
-        indentationSize = IndentUtils.indentLevelSize(getDocument());
+        indentationSize = indentLevelSize(getDocument(), language.mimeType());
         formattingContext = new IndenterFormattingContext(getDocument());
     }
+    
+    //copied from org.netbeans.modules.editor.indent.api.IndentUtils as we need
+    //to pass a second parameter to the CodeStylePreferences.get(doc) method.
+    private static int indentLevelSize(Document doc, String mimeType) {
+        Preferences prefs = CodeStylePreferences.get(doc, mimeType).getPreferences();
+        int indentLevel = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
+        
+        if (indentLevel < 0) {
+            boolean expandTabs = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, true);
+            if (expandTabs) {
+                indentLevel = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+            } else {
+                indentLevel = prefs.getInt(SimpleValueNames.TAB_SIZE, 8);
+            }
+        }
+
+        assert indentLevel >= 0 : "Invalid indentLevelSize " + indentLevel + " for " + doc; //NOI18N
+        return indentLevel;
+    }
+
 
     public final IndenterFormattingContext createFormattingContext() {
         return formattingContext;
@@ -524,7 +548,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
             if (cmds.size() != l.lineIndent.size()) {
                 l.lineIndent = cmds;
                 if (cmds.isEmpty()) {
-                    cmds.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, l.offset));
+                    cmds.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, l.offset, getIndentationSize()));
                 }
             }
         }
@@ -602,7 +626,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 }
                 l.lineIndent = kept;
                 if (l.lineIndent.isEmpty()) {
-                    l.lineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, l.offset));
+                    l.lineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, l.offset, getIndentationSize()));
                 }
                 if (removed.size() > 0) {
                     // should go to beginning of line:
@@ -656,7 +680,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     pairs.add(new LineCommandsPair(l.index+1, nextLine));
                 }
                 l.lineIndent = new ArrayList<IndentCommand>();
-                l.lineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, l.offset));
+                l.lineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, l.offset, getIndentationSize()));
                 newLines.add(l);
             } else {
                 newLines.add(l);
@@ -853,13 +877,13 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 if (ic.getType() == IndentCommand.Type.CONTINUE) {
                     if (firstContinue) {
                         if (ic.getFixedIndentSize() != -1) {
-                            IndentCommand ic2 = new IndentCommand(IndentCommand.Type.INDENT, ic.getLineOffset());
+                            IndentCommand ic2 = new IndentCommand(IndentCommand.Type.INDENT, ic.getLineOffset(), getIndentationSize());
                             ic2.setFixedIndentSize(ic.getFixedIndentSize());
                             ic2.setWasContinue();
                             commands.add(ic2);
                             fixedIndentContinue = true;
                         } else {
-                            IndentCommand ic2 = new IndentCommand(IndentCommand.Type.INDENT, ic.getLineOffset());
+                            IndentCommand ic2 = new IndentCommand(IndentCommand.Type.INDENT, ic.getLineOffset(), getIndentationSize());
                             ic2.setWasContinue();
                             commands.add(ic2);
                             //commands.add(new IndentCommand(IndentCommand.Type.INDENT, ic.getLineOffset()));
@@ -883,9 +907,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                             listToAddTo = list;
                         }
                         if (fixedIndentContinue) {
-                            listToAddTo.add(new IndentCommand(IndentCommand.Type.RETURN, ic.getLineOffset()));
+                            listToAddTo.add(new IndentCommand(IndentCommand.Type.RETURN, ic.getLineOffset(), getIndentationSize()));
                         } else {
-                            listToAddTo.add(new IndentCommand(IndentCommand.Type.RETURN, ic.getLineOffset()));
+                            listToAddTo.add(new IndentCommand(IndentCommand.Type.RETURN, ic.getLineOffset(), getIndentationSize()));
                             //listToAddTo.add(new IndentCommand(IndentCommand.Type.RETURN, ic.getLineOffset()));
                         }
                         inContinue = false;
@@ -898,7 +922,7 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                 }
             }
             if (commands.isEmpty()) {
-                IndentCommand ic2 = new IndentCommand(IndentCommand.Type.NO_CHANGE, l.lineStartOffset);
+                IndentCommand ic2 = new IndentCommand(IndentCommand.Type.NO_CHANGE, l.lineStartOffset, getIndentationSize());
                 if (inContinue) {
                     ic2.setWasContinue();
                 }
@@ -1433,7 +1457,8 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
                     if (ii.getFixedIndentSize() != -1) {
                         thisLineIndent = ii.getFixedIndentSize();
                     } else {
-                        thisLineIndent += indentationSize;
+                        thisLineIndent += ii.getIndentationSize() != -1 ?
+                                ii.getIndentationSize() : indentationSize;
                     }
                     break;
 
@@ -1784,9 +1809,9 @@ abstract public class AbstractIndenter<T1 extends TokenId> {
         line.lineStartOffset = line.offset;
         line.lineEndOffset = Utilities.getRowEnd(getDocument(), line.offset);
         line.lineIndent = new ArrayList<IndentCommand>();
-        line.lineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, line.offset));
+        line.lineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, line.offset, getIndentationSize()));
         line.preliminaryNextLineIndent = new ArrayList<IndentCommand>();
-        line.preliminaryNextLineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, line.offset));
+        line.preliminaryNextLineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, line.offset, getIndentationSize()));
 
         return line;
     }

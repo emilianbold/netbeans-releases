@@ -69,6 +69,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
     private LayerWidget mainLayer;
     private LayerWidget connectionLayer;
     private Router router;
+    private Router orthogonalRouter;
     private SceneLayout sceneLayout;
 
     private WidgetAction moveAction = ActionFactory.createMoveAction();
@@ -93,7 +94,9 @@ public class CallGraphScene extends GraphScene<Function,Call> {
         addChild(mainLayer);
         connectionLayer = new LayerWidget (this);
         addChild(connectionLayer);
-        router = RouterFactory.createOrthogonalSearchRouter (mainLayer, connectionLayer);
+        router = new RelativePathRouter(connectionLayer);
+        orthogonalRouter = RouterFactory.createOrthogonalSearchRouter(/*mainLayer, connectionLayer*/);
+
         defaultItalicFont = new Font(getDefaultFont().getName(),
                               Font.ITALIC, getDefaultFont().getSize());
         getActions().addAction(popupAction);
@@ -243,7 +246,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
     private void addLoopEdge(Call edge, Function targetNode) {
         ConnectionWidget connection = (ConnectionWidget)addEdge(edge);
         Widget w = findWidget(targetNode);
-        connection.setRouter(router);
+        connection.setRouter(orthogonalRouter);
         MyVMDNodeAnchor anchor = new MyVMDNodeAnchor(w);
         setEdgeSource(edge, targetNode);
         connection.setSourceAnchor(anchor);
@@ -291,6 +294,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
         connection.getActions().addAction(hoverAction);
         connection.getActions().addAction(ActionFactory.createEditAction(new EdgeEditProvider(edge)));
         connectionLayer.addChild(connection);
+        connection.setRouter(router);
         return connection;
     }
 

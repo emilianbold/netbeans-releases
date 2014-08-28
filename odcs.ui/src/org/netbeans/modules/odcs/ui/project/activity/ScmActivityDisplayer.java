@@ -53,6 +53,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.project.LinkLabel;
 import org.netbeans.modules.odcs.ui.spi.VCSAccessor;
@@ -67,7 +68,7 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
     private ScmActivity activity;
     private final String scmUrl;
     private final ProjectHandle<ODCSProject> projectHandle;
-    private Action openIDEAction;
+    private Action openAction;
 
     public ScmActivityDisplayer(ScmActivity activity, ProjectHandle<ODCSProject> projectHandle, String scmUrl, int maxWidth) {
         super(activity.getActivityDate(), maxWidth);
@@ -127,22 +128,22 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
         if (!url.endsWith("/")) { //NOI18N
             url += "/"; //NOI18N
         }
-        url += activity.getCommit().getRepository() + "/" + activity.getCommit().getCommitId(); //NOI18N
+        url += activity.getCommit().getRepository() + "/commit/" + activity.getCommit().getCommitId(); //NOI18N
         return url;
     }
 
     private Action getOpenIDEAction() {
-        if (openIDEAction == null) {
-            openIDEAction = new OpenInIDEAction(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_OpenIDE"));
+        if (openAction == null) {
+            openAction = new OpenAction(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_OpenIDE"));
         }
-        return openIDEAction;
+        return openAction;
     }
 
-    private class OpenInIDEAction extends AbstractAction {
+    private class OpenAction extends AbstractAction {
 
-        private VCSAccessor accessor;
+        private final VCSAccessor accessor;
 
-        public OpenInIDEAction(String name) {
+        public OpenAction(String name) {
             super(name);
             accessor = VCSAccessor.getDefault();
         }
@@ -154,15 +155,16 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
                     @Override
                     public void run() {
                         Action action = accessor.getOpenHistoryAction(projectHandle,
-                        activity.getCommit().getRepository(),
-                        activity.getCommit().getCommitId());
+                                                                      activity.getCommit().getRepository(),
+                                                                      activity.getCommit().getCommitId());
+                        if (action == null) {
+                            action = getOpenBrowserAction(getCommitUrl());
+                        }
                         final ActionListener fAction = action;
-                        EventQueue.invokeLater(new Runnable() {
+                        UIUtils.runInAWT(new Runnable() {
                             @Override
                             public void run() {
-                                if (fAction != null) {
-                                    fAction.actionPerformed(e);
-                                }
+                                fAction.actionPerformed(e);
                             }
                         });
                     }

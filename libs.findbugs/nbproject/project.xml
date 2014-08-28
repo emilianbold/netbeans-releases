@@ -64,44 +64,36 @@
                 <package>javax.annotation.meta</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/asm-3.3.jar</runtime-relative-path>
-                <binary-origin>external/asm-3.3.jar</binary-origin>
+                <runtime-relative-path>ext/jFormatString.jar</runtime-relative-path>
+                <binary-origin>external/jFormatString.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/asm-commons-3.3.jar</runtime-relative-path>
-                <binary-origin>external/asm-commons-3.3.jar</binary-origin>
+                <runtime-relative-path>ext/commons-lang-2.6.jar</runtime-relative-path>
+                <binary-origin>external/commons-lang-2.6.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/asm-tree-3.3.jar</runtime-relative-path>
-                <binary-origin>external/asm-tree-3.3.jar</binary-origin>
+                <runtime-relative-path>ext/jaxen-1.1.6.jar</runtime-relative-path>
+                <binary-origin>external/jaxen-1.1.6.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/commons-lang-2.4.jar</runtime-relative-path>
-                <binary-origin>external/commons-lang-2.4.jar</binary-origin>
+                <runtime-relative-path>ext/findbugs.jar</runtime-relative-path>
+                <binary-origin>external/findbugs.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/dom4j-1.6.1.jar</runtime-relative-path>
                 <binary-origin>external/dom4j-1.6.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/bcel-2.0.0.jar</runtime-relative-path>
-                <binary-origin>external/bcel-2.0.0.jar</binary-origin>
+                <runtime-relative-path>ext/asm-debug-all-5.0.2.jar</runtime-relative-path>
+                <binary-origin>external/asm-debug-all-5.0.2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/findbugs-2.0.0.jar</runtime-relative-path>
-                <binary-origin>external/findbugs-2.0.0.jar</binary-origin>
+                <runtime-relative-path>ext/bcel-6.0-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>external/bcel-6.0-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxen-1.1.1.jar</runtime-relative-path>
-                <binary-origin>external/jaxen-1.1.1.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jFormatString-2.0.0.jar</runtime-relative-path>
-                <binary-origin>external/jFormatString-2.0.0.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jsr305-2.0.0.jar</runtime-relative-path>
-                <binary-origin>external/jsr305-2.0.0.jar</binary-origin>
+                <runtime-relative-path>ext/jsr305.jar</runtime-relative-path>
+                <binary-origin>external/jsr305.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

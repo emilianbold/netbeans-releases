@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -110,15 +111,40 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     private String importantFlags;
     
     DwarfSource(CompilationUnitInterface cu, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard standard, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase, CompileLineStorage storage) throws IOException{
-        language = lang;
-        this.grepBase = grepBase;
-        this.standard = standard;
-        this.storage = storage;
-        this.compilerSettings = compilerSettings;
+        this(lang, standard, grepBase, storage, compilerSettings);
         initCompilerSettings(compilerSettings, lang);
         initSourceSettings(cu, lang);
     }
 
+    public DwarfSource(LanguageKind language, LanguageStandard standard, Map<String, GrepEntry> grepBase, CompileLineStorage storage, CompilerSettings compilerSettings) {
+        this.language = language;
+        this.standard = standard;
+        this.grepBase = grepBase;
+        this.storage = storage;
+        this.compilerSettings = compilerSettings;
+    }
+
+    static DwarfSource relocateDerivedSourceFile(DwarfSource derived, String originalFile) {
+        DwarfSource original = new DwarfSource(derived.language, derived.standard, derived.grepBase, derived.storage, derived.compilerSettings);
+        original.compilePath = derived.compilePath;
+        original.fullName = originalFile;
+        original.userIncludes = new ArrayList(derived.userIncludes);
+        original.userFiles = new ArrayList(derived.userFiles);
+        original.includedFiles = new HashSet(derived.includedFiles);
+        original.normilizeProvider = derived.normilizeProvider;
+        original.sourceName = PathUtilities.getBaseName(originalFile);
+        original.systemIncludes = new ArrayList(derived.systemIncludes);
+        original.haveSystemIncludes = derived.haveSystemIncludes;
+        original.userMacros = new HashMap(derived.userMacros);
+        original.undefinedMacros = new ArrayList(derived.undefinedMacros);
+        original.systemMacros = new HashMap(derived.systemMacros);
+        original.haveSystemMacros = derived.haveSystemMacros;
+        original.compilerName = derived.compilerName;
+        original.handler = derived.handler;
+        original.importantFlags = derived.importantFlags;
+        return original;
+    }
+    
     private void countFileName(CompilationUnitInterface cu) throws IOException {
         fullName = cu.getSourceFileAbsolutePath();
         fullName = fixFileName(fullName);

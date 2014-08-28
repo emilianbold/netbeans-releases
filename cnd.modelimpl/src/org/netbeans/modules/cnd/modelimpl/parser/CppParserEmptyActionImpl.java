@@ -57,6 +57,10 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
         files = new ArrayDeque<>();
         files.push(file);
     }
+    
+    CppParserEmptyActionImpl() {
+        files = new ArrayDeque<>();
+    }
 
     @Override
     public boolean type_specifier_already_present(TokenStream input) {        

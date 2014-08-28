@@ -56,13 +56,22 @@ import org.openide.util.Exceptions;
  * @author Radek Matous
  */
 public class ParameterImpl implements Parameter {
-    private String name;
-    private String defaultValue;
-    private List<QualifiedName> types;
-    private OffsetRange range;
-    private boolean isRawType;
+    private final String name;
+    private final String defaultValue;
+    private final List<QualifiedName> types;
+    private final OffsetRange range;
+    private final boolean isRawType;
+    private final boolean isReference;
+    private final boolean isVariadic;
 
-    public ParameterImpl(String name, String defaultValue, List<QualifiedName> types, boolean isRawType, OffsetRange range) {
+    public ParameterImpl(
+            String name,
+            String defaultValue,
+            List<QualifiedName> types,
+            boolean isRawType,
+            OffsetRange range,
+            boolean isReference,
+            boolean isVariadic) {
         this.name = name;
         this.defaultValue = defaultValue;
         if (types == null) {
@@ -72,6 +81,8 @@ public class ParameterImpl implements Parameter {
         }
         this.range = range;
         this.isRawType = isRawType;
+        this.isReference = isReference;
+        this.isVariadic = isVariadic;
     }
 
     @NonNull
@@ -92,8 +103,18 @@ public class ParameterImpl implements Parameter {
     }
 
     @Override
+    public boolean isReference() {
+        return isReference;
+    }
+
+    @Override
+    public boolean isVariadic() {
+        return isVariadic;
+    }
+
+    @Override
     public List<QualifiedName> getTypes() {
-        return types;
+        return new ArrayList<>(types);
     }
 
     @Override
@@ -117,9 +138,11 @@ public class ParameterImpl implements Parameter {
         sb.append(isRawType ? 1 : 0);
         sb.append(":"); //NOI18N
         String defValue = getDefaultValue();
-        if (defValue != null) {
-            sb.append(encode(defValue));
-        }
+        sb.append(encode(defValue));
+        sb.append(":"); //NOI18N
+        sb.append(isReference ? 1 : 0);
+        sb.append(":"); //NOI18N
+        sb.append(isVariadic ? 1 : 0);
         return sb.toString();
     }
 
@@ -139,9 +162,18 @@ public class ParameterImpl implements Parameter {
                             qualifiedNames.add(QualifiedName.create(type));
                         }
                     }
-                    boolean isRawType = Integer.parseInt(parts[2]) > 0 ? true : false;
+                    boolean isRawType = Integer.parseInt(parts[2]) > 0;
                     String defValue = (parts.length > 3) ? parts[3] : "";
-                    parameters.add(new ParameterImpl(paramName, (defValue.length() != 0) ? decode(defValue) : null, qualifiedNames, isRawType, OffsetRange.NONE));
+                    boolean isReference = Integer.parseInt(parts[4]) > 0;
+                    boolean isVariadic = Integer.parseInt(parts[5]) > 0;
+                    parameters.add(new ParameterImpl(
+                            paramName,
+                            (defValue.length() != 0) ? decode(defValue) : null,
+                            qualifiedNames,
+                            isRawType,
+                            OffsetRange.NONE,
+                            isReference,
+                            isVariadic));
                 }
             }
         }

@@ -113,4 +113,22 @@ public class JUnitOutputListenerProviderTest {
         
     }
 
+    @Test
+    public void testIsFullJavaId() {
+        assertTrue("This is a java FQN", JUnitOutputListenerProvider.isFullJavaId("org.netbeans.modules.MyClass"));
+        assertTrue("This is a java FQN", JUnitOutputListenerProvider.isFullJavaId("o.n.m.MyClass"));
+        assertTrue("This is a java FQN", JUnitOutputListenerProvider.isFullJavaId("a.b.c"));
+        assertTrue("This is a java FQN", JUnitOutputListenerProvider.isFullJavaId("aa.aa.a"));
+        assertFalse("This is not a java FQN", JUnitOutputListenerProvider.isFullJavaId("org.netbeans.modules.MyClass."));
+        assertFalse("This is not a java FQN", JUnitOutputListenerProvider.isFullJavaId("a.b. c"));
+    }
+
+    @Test
+    public void testTestSuiteStats() {
+        assertTrue("This is a test suite stats", JUnitOutputListenerProvider.isTestSuiteStats("Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.054 sec - in com.mycompany.mavenproject5.NewClass2Test"));
+        assertFalse("This is not a test suite stats", JUnitOutputListenerProvider.isTestSuiteStats("Tests run: 5, Failures: 0, Errors: 0, Aborted: 0, Time elapsed: 5.054 sec - in com.mycompany.mavenproject5.NewClass2Test"));
+        assertTrue("Correct test suite", JUnitOutputListenerProvider.getTestSuiteFromStats("Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.054 sec - in com.mycompany.mavenproject5.NewClass2Test").equals("com.mycompany.mavenproject5.NewClass2Test"));
+        assertFalse("Wrong test suite", JUnitOutputListenerProvider.getTestSuiteFromStats("Tests run: 5, Failures: 0, Errors: 0, Aborted: 0, Time elapsed: 5.054 sec") != null);
+    }
+
 }

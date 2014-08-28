@@ -143,16 +143,36 @@ public class ELPreprocessorTest extends TestCase {
     public void testAmpAmp() {
         String source = "#{myBean.property &amp;&amp; myBean.secondproperty}";
         String result = "#{myBean.property && myBean.secondproperty}";
-        
+
         ELPreprocessor elp = new ELPreprocessor(source, ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);
-        
-        
+
+        String preprocessed = elp.getPreprocessedExpression();
+        assertNotNull(preprocessed);
+        assertEquals(result, preprocessed);
+    }
+
+    public void testAmpAmpAfterString1() {
+        String source = "#{x=='A' &amp;&amp; y==null}";
+        String result = "#{x=='A' && y==null}";
+
+        ELPreprocessor elp = new ELPreprocessor(source, ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);
+
+        String preprocessed = elp.getPreprocessedExpression();
+        assertNotNull(preprocessed);
+        assertEquals(result, preprocessed);
+    }
+
+    public void testAmpAmpAfterString2() {
+        String source = "#{x=='A'&amp;&amp; y==null}";
+        String result = "#{x=='A'&& y==null}";
+
+        ELPreprocessor elp = new ELPreprocessor(source, ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);
         
         String preprocessed = elp.getPreprocessedExpression();
         assertNotNull(preprocessed);
         assertEquals(result, preprocessed);
     }
-    
+
     public void testOffsetsConversionAmp() {
         String source = "#{myBean.property &amp; myBean.secondproperty}";
         //               01234567890123456789012345678901234567890123456789

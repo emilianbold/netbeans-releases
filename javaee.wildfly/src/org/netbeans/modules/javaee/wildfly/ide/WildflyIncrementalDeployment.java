@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013 Red Hat, inc.
+ * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyIncrementalDeployment extends IncrementalDeployment implements IncrementalDeployment2 {
 
@@ -102,20 +102,45 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
     @Override
     public File getDirectoryForNewApplication(Target target, J2eeModule app, ModuleConfiguration configuration) {
         String baseName = app.getUrl();
+        if(baseName.indexOf(File.separatorChar) >= 0) {
+            baseName = baseName.substring(baseName.lastIndexOf(File.separatorChar) +1, baseName.length());
+        }
+        String extension = getExtension(app.getType());
         try {
-            if(app.getArchive()!= null) {
-                if(baseName.isEmpty()) {
+            if (app.getArchive() != null) {
+                if (baseName.isEmpty()) {
                     baseName = app.getArchive().getNameExt();
                 }
-                String extension = app.getArchive().getExt();
-                if(!baseName.endsWith(extension)) {
-                    baseName = baseName + '.' + extension;
-                }
+                extension = '.' + app.getArchive().getExt();
             }
+            baseName = addExtension(baseName, extension);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         return new File(this.deploymentDir, baseName);
+    }
+
+    private String addExtension(final String baseName, final String extension) {
+        if (!baseName.endsWith(extension)) {
+            return baseName + extension;
+        }
+        return baseName;
+    }
+
+    private String getExtension(final J2eeModule.Type type) {
+        if (J2eeModule.Type.WAR == type) {
+            return ".war";
+        }
+        if (J2eeModule.Type.RAR == type) {
+            return ".rar";
+        }
+        if (J2eeModule.Type.EJB == type) {
+            return ".jar";
+        }
+        if (J2eeModule.Type.EAR == type) {
+            return ".ear";
+        }
+        return ".jar";
     }
 
     @Override
@@ -145,7 +170,7 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
 
     @Override
     public ProgressObject initialDeploy(Target target, DeploymentContext context) {
-        return deployer.deploy(target, context.getModule().getType(), context.getModuleFile());
+        return initialDeploy(target, context.getModule(), null, context.getModuleFile());
     }
 
     @Override
@@ -153,7 +178,7 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
         File moduleFile;
         try {
             moduleFile = new File(dm.getClient().getDeploymentDirectory(), module.getModuleID());
-             return deployer.redeploy(module, moduleFile);
+            return deployer.redeploy(module, moduleFile);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -173,8 +198,8 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
         if (!redeploy) {
             WildflyProgressObject progress = new WildflyProgressObject(module);
             progress.fireProgressEvent(module, new WildflyDeploymentStatus(
-                    ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
-                    NbBundle.getMessage(WildflyIncrementalDeployment.class, "MSG_Deployment_Completed")));
+                                    ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
+                                    NbBundle.getMessage(WildflyIncrementalDeployment.class, "MSG_Deployment_Completed")));
             return progress;
         }
         return null;

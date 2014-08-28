@@ -60,6 +60,7 @@ import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
 /**
@@ -140,7 +141,7 @@ public class OpenFilesSearchScopeProvider extends SearchScopeDefinitionProvider 
             LinkedHashSet<FileObject> result = new LinkedHashSet<FileObject>();
             for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
                 DataObject dob = tc.getLookup().lookup(DataObject.class);
-                if (dob != null && isFromEditorWindow(dob)) {
+                if (tc.isOpened() && dob != null && isFromEditorWindow(dob, tc)) {
                     FileObject primaryFile = dob.getPrimaryFile();
                     if (primaryFile != null) {
                         result.add(primaryFile);
@@ -150,14 +151,16 @@ public class OpenFilesSearchScopeProvider extends SearchScopeDefinitionProvider 
             return result;
         }
 
-        protected boolean isFromEditorWindow(DataObject dobj) {
+        protected boolean isFromEditorWindow(DataObject dobj,
+                final TopComponent tc) {
             final EditorCookie editor = dobj.getLookup().lookup(
                     EditorCookie.class);
             if (editor != null) {
                 return Mutex.EVENT.readAccess(new Action<Boolean>() {
                     @Override
                     public Boolean run() {
-                        return NbDocument.findRecentEditorPane(editor) != null;
+                        return (tc instanceof CloneableTopComponent) // #246597
+                                || NbDocument.findRecentEditorPane(editor) != null;
                     }
                 });
             }

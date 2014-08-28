@@ -50,6 +50,15 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.websvc.restlib</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.eclipselink</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.29</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.jaxb.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -68,62 +77,36 @@ made subject to such option by the copyright holder.
                 <package>org.glassfish.jersey.client</package>
                 <package>org.glassfish.jersey.client.filter</package>
                 <package>org.glassfish.jersey.client.spi</package>
-                <package>org.glassfish.jersey.jackson</package>
-                <package>org.glassfish.jersey.jettison</package>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxrs-2.0/javax.ws.rs-api-2.0.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/asm-all-repackaged-2.1.88.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/cglib-2.1.88.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/asm-all-repackaged-2.2.0-b21.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jersey2/ext/guava-14.0.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/hk2-api-2.1.88.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/hk2-api-2.2.0-b21.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/hk2-locator-2.1.88.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/hk2-locator-2.2.0-b21.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/hk2-utils-2.1.88.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/hk2-utils-2.2.0-b21.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jersey2/ext/javax.annotation-api-1.2.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jersey2/ext/javax.inject-2.1.88.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/javax.inject-2.2.0-b21.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jersey2/jersey-client.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jersey2/jersey-common.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jersey2/extensions/jackson-core-asl-1.9.11.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jersey2/extensions/jackson-jaxrs-1.9.11.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jersey2/extensions/jackson-mapper-asl-1.9.11.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jersey2/extensions/jackson-xc-1.9.11.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jersey2/extensions/jersey-media-json-jackson-2.0.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jersey2/extensions/jersey-media-json-jettison-2.0.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jersey2/extensions/jettison-1.3.3.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

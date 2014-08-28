@@ -47,6 +47,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard.layer;
 import javax.swing.JTextField;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.WizardUtils;
@@ -76,12 +77,16 @@ final class LayerPanel extends BasicWizardIterator.Panel {
     
     @Override protected void storeToDataModel() {}
 
-    @Messages("already_layer=This project already has an XML layer.")
+    @Messages({"already_layer=This project already has an XML layer.",
+            "no manifest_exists=No manifest.mf file exists."})
     @Override protected void readFromDataModel() {
         createdFiles.setText(WizardUtils.generateTextAreaContent(cmf.getCreatedPaths()));
         modifiedFiles.setText(WizardUtils.generateTextAreaContent(cmf.getModifiedPaths()));
+        NbModuleProvider provider = data.getProject().getLookup().lookup(NbModuleProvider.class);
         if (LayerHandle.forProject(data.getProject()).getLayerFile() != null) {
             setError(already_layer());
+        } else if(provider.getManifestFile() == null) {
+            setError(no_manifest_exists());
         } else {
             markValid();
         }

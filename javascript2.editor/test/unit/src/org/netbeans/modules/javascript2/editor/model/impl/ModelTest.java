@@ -154,7 +154,7 @@ public class ModelTest extends ModelTestBase {
 
         JsObject global = model.getGlobalObject();
 
-        JsObject object = global.getProperty("Anonym$0");
+        JsObject object = global.getProperty("propertyWithNewAnonym$0");
         assertEquals(JsElement.Kind.ANONYMOUS_OBJECT, object.getJSKind());
 
         JsObject property = object.getProperty("model");
@@ -225,6 +225,10 @@ public class ModelTest extends ModelTestBase {
     
     public void testIssue242454() throws Exception {
         checkModel("testfiles/model/issue242454.js");
+    }
+    
+    public void testIssue244861() throws Exception {
+        checkModel("testfiles/markoccurences/issue244861.js");
     }
     
     public void testPersonRevert() throws Exception {

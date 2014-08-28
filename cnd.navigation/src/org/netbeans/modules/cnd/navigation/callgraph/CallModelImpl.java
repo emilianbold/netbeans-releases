@@ -117,6 +117,11 @@ public class CallModelImpl implements CallModel {
     }
 
     @Override
+    public boolean isRootVisible() {
+        return true;
+    }
+
+    @Override
     public String getName() {
         return name;
     }
@@ -131,6 +136,11 @@ public class CallModelImpl implements CallModel {
                 name = f.getName().toString();
             }
         }
+    }
+
+    @Override
+    public void update() {
+        //do nothing 
     }
 
     /**

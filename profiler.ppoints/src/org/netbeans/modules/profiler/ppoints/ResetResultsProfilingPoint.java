@@ -56,7 +56,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;

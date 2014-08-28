@@ -52,13 +52,11 @@ import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.NetigsoFramework;
 import org.netbeans.SetupHid;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.openide.util.Lookup;
 import org.osgi.framework.launch.Framework;
 
 /**
@@ -74,6 +72,7 @@ public class IntegrationTest extends NbTestCase {
     }
 
     public static Test suite() {
+        NetigsoUtil.downgradeJDK();
         return
             NbModuleSuite.emptyConfiguration().addTest(
                 IntegrationTest.class

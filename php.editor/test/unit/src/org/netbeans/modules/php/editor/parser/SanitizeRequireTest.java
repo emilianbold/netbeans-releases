@@ -53,7 +53,7 @@ import org.netbeans.modules.php.editor.parser.GSFPHPParser.Context;
  */
 public class SanitizeRequireTest extends PHPTestBase {
 
-    private String phpOpenDelimiter = "<?php\n";
+    private static final String PHP_OPEN_DELIMITER = "<?php\n";
 
     public SanitizeRequireTest(String testName) {
         super(testName);
@@ -70,378 +70,378 @@ public class SanitizeRequireTest extends PHPTestBase {
     }
 
     public void testRequireOnceWithUglyWhitespaces() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require_once  \t    \n      \"\" ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require_once  \t    \n      \"\";";
 
         execute(original, expected);
     }
 
     public void testRequireWithSpaceAndTwoQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require \"\" ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require \"\";";
 
         execute(original, expected);
     }
 
     public void testRequireWithSpaceAndOneQuote() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require \"  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require \"\";";
 
         execute(original, expected);
     }
 
     public void testRequireWithSpaceAndOpenCloseParentheseAndTwoQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require (\"\") ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require (\"\");";
 
         execute(original, expected);
     }
 
     public void testRequireWithSpaceAndOpenParentheseAndTwoQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require (\"\"  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require (\"\");";
 
         execute(original, expected);
     }
 
     public void testRequireWithSpaceAndOpenParentheseAndOneQuote() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require (\"   ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require (\"\");";
 
         execute(original, expected);
     }
 
     public void testRequireWithSpaceAndTwoSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require '' ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require '';";
 
         execute(original, expected);
     }
 
     public void testRequireWithSpaceAndOneSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require '  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require '';";
 
         execute(original, expected);
     }
 
     public void testRequireWithSpaceAndOpenCloseParentheseAndTwoSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require ('') ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require ('');";
 
         execute(original, expected);
     }
 
     public void testRequireWithSpaceAndOpenParentheseAndTwoSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require (''  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require ('');";
 
         execute(original, expected);
     }
 
     public void testRequireWithSpaceAndOpenParentheseAndOneSingleQuote() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require ('   ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require ('');";
 
         execute(original, expected);
     }
 
     public void testRequireWithTwoQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require\"\" ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require\"\";";
 
         execute(original, expected);
     }
 
     public void testRequireWithOneQuote() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require\"  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require\"\";";
 
         execute(original, expected);
     }
 
     public void testRequireWithOpenCloseParentheseAndTwoQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require(\"\") ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require(\"\");";
 
         execute(original, expected);
     }
 
     public void testRequireWithOpenParentheseAndTwoQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require(\"\"  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require(\"\");";
 
         execute(original, expected);
     }
 
     public void testRequireWithOpenParentheseAndOneQuote() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require(\"   ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require(\"\");";
 
         execute(original, expected);
     }
 
     public void testRequireWithTwoSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require'' ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require'';";
 
         execute(original, expected);
     }
 
     public void testRequireWithOneSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require'  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require'';";
 
         execute(original, expected);
     }
 
     public void testRequireWithOpenCloseParentheseAndTwoSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require('') ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require('');";
 
         execute(original, expected);
     }
 
     public void testRequireWithOpenParentheseAndTwoSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require(''  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require('');";
 
         execute(original, expected);
     }
 
     public void testRequireWithOpenParentheseAndOneSingleQuote() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "require('   ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "require('');";
 
         execute(original, expected);
     }
 
     public void testIncludeOnceWithUglyWhitespaces() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include_once\t    \n      \"\" ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include_once\t    \n      \"\";";
 
         execute(original, expected);
     }
 
     public void testIncludeWithSpaceAndTwoQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include \"\" ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include \"\";";
 
         execute(original, expected);
     }
 
     public void testIncludeWithSpaceAndOneQuote() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include \"  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include \"\";";
 
         execute(original, expected);
     }
 
     public void testIncludeWithSpaceAndOpenCloseParentheseAndTwoQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include (\"\") ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include (\"\");";
 
         execute(original, expected);
     }
 
     public void testIncludeWithSpaceAndOpenParentheseAndTwoQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include (\"\"  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include (\"\");";
 
         execute(original, expected);
     }
 
     public void testIncludeWithSpaceAndOpenParentheseAndOneQuote() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include (\"   ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include (\"\");";
 
         execute(original, expected);
     }
 
     public void testIncludeWithSpaceAndTwoSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include '' ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include '';";
 
         execute(original, expected);
     }
 
     public void testIncludeWithSpaceAndOneSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include '  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include '';";
 
         execute(original, expected);
     }
 
     public void testIncludeWithSpaceAndOpenCloseParentheseAndTwoSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include ('') ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include ('');";
 
         execute(original, expected);
     }
 
     public void testIncludeWithSpaceAndOpenParentheseAndTwoSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include (''  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include ('');";
 
         execute(original, expected);
     }
 
     public void testIncludeWithSpaceAndOpenParentheseAndOneSingleQuote() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include ('   ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include ('');";
 
         execute(original, expected);
     }
 
     public void testIncludeWithTwoQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include\"\" ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include\"\";";
 
         execute(original, expected);
     }
 
     public void testIncludeWithOneQuote() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include\"  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include\"\";";
 
         execute(original, expected);
     }
 
     public void testIncludeWithOpenCloseParentheseAndTwoQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include(\"\") ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include(\"\");";
 
         execute(original, expected);
     }
 
     public void testIncludeWithOpenParentheseAndTwoQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include(\"\"  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include(\"\");";
 
         execute(original, expected);
     }
 
     public void testIncludeWithOpenParentheseAndOneQuote() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include(\"   ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include(\"\");";
 
         execute(original, expected);
     }
 
     public void testIncludeWithTwoSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include'' ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include'';";
 
         execute(original, expected);
     }
 
     public void testIncludeWithOneSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include'  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include'';";
 
         execute(original, expected);
     }
 
     public void testIncludeWithOpenCloseParentheseAndTwoSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include('') ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include('');";
 
         execute(original, expected);
     }
 
     public void testIncludeWithOpenParentheseAndTwoSingleQuotes() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include(''  ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include('');";
 
         execute(original, expected);
     }
 
     public void testIncludeWithOpenParentheseAndOneSingleQuote() throws Exception {
-        String original = phpOpenDelimiter +
+        String original = PHP_OPEN_DELIMITER +
                 "include('   ";
-        String expected = phpOpenDelimiter +
+        String expected = PHP_OPEN_DELIMITER +
                 "include('');";
 
         execute(original, expected);
@@ -453,7 +453,7 @@ public class SanitizeRequireTest extends PHPTestBase {
         doc.insertString(0, original, null);
         Context context = new GSFPHPParser.Context(Source.create(doc).createSnapshot(), -1);
 
-        parser.sanitizeRequireAndInclude(context, phpOpenDelimiter.length(), original.length());
+        parser.sanitizeRequireAndInclude(context, PHP_OPEN_DELIMITER.length(), original.length());
 
         assertEquals(expected, context.getSanitizedSource());
     }

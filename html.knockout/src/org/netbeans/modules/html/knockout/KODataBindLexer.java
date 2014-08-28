@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.html.knockout;
 
+import org.netbeans.modules.html.knockout.api.KODataBindTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;

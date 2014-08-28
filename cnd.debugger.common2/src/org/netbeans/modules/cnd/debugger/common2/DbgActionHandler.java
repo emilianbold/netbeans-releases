@@ -98,7 +98,7 @@ public class DbgActionHandler implements ProjectActionHandler {
         // find dbugger using ndi and kill it
         for (NativeDebugger debugger: NativeDebuggerManager.get().nativeDebuggers()) {
             if (ndi == debugger.getNDI()) {
-                debugger.postKill();
+                debugger.shutDown();
                 break;
             }
         }

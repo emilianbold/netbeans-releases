@@ -85,7 +85,7 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
     }
 
     public static  boolean appliesTo(FileObject fobj) {
-        return !CodeUtils.isPhp54(fobj) && !CodeUtils.isPhp55(fobj);
+        return !CodeUtils.isPhp54(fobj) && !CodeUtils.isPhp55(fobj) && !CodeUtils.isPhp56(fobj);
     }
 
     private static class CheckVisitor extends DefaultVisitor {

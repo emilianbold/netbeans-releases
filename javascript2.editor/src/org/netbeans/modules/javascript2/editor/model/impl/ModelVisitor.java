@@ -63,7 +63,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +76,8 @@ import jdk.nashorn.internal.ir.ForNode;
 import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -91,6 +95,7 @@ import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.JsWith;
 import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.ModelFactory;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
@@ -145,10 +150,11 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                         || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
                     current = current.getParent();
-                    if (ModelUtils.PROTOTYPE.equals(current.getName())) {
-                        current = current.getParent();
-                    }
                     property = current.getProperty(iNode.getName());
+                    if (property == null && ModelUtils.PROTOTYPE.equals(current.getName())) {
+                        current = current.getParent();
+                        property = current.getProperty(iNode.getName());
+                    }
                 }
                 if (property == null && current.getParent() == null) {
                     // probably we are in global space and there is used this
@@ -581,6 +587,23 @@ public class ModelVisitor extends PathNodeVisitor {
                     // It can be only if it's in a function
                     isPrivate = functionStack.size() > 1;
                 }
+                if (name != null && !name.isEmpty() && !functionNode.isAnonymous()) {
+                    // we need to create just referenci to non anonymous function
+                    // example MyObject.method = function method(){}
+                    DeclarationScope currentScope = modelBuilder.getCurrentDeclarationScope();
+                    JsObject originalFunction = null;
+                    String functionName = functionNode.getIdent() != null ? functionNode.getIdent().getName() : functionNode.getName();
+                    while (originalFunction == null && currentScope != null) {
+                        originalFunction = ((JsObject)currentScope).getProperty(functionName);
+                        currentScope = currentScope.getParentScope();
+                    }
+                    if (originalFunction != null) {
+                        JsObjectImpl jsObject = ModelUtils.getJsObject(modelBuilder, name, true);
+                        JsFunctionReference jsFunctionReference = new JsFunctionReference(jsObject.getParent(), jsObject.getDeclarationName(), (JsFunction)originalFunction, true, jsObject.getModifiers());
+                        jsObject.getParent().addProperty(jsObject.getName(), jsFunctionReference);
+                        return null;
+                    }
+                }
             }
         }
 
@@ -595,7 +618,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 end = parserResult.getSnapshot().getText().length();
             }
             previousUsage = (modelBuilder.getCurrentDeclarationScope()).getProperty(functionNode.getIdent().getName());
-            if ( previousUsage != null && previousUsage.isDeclared()) {
+            if ( previousUsage != null && previousUsage.isDeclared() && previousUsage instanceof JsFunction) {
                 // the function is alredy there
                 return null;
             }
@@ -887,9 +910,10 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             } else if (lastVisited instanceof CallNode || lastVisited instanceof LiteralNode.ArrayLiteralNode
-                    || lastVisited instanceof ReturnNode) {
+                    || lastVisited instanceof ReturnNode || lastVisited instanceof AccessNode) {
                 // probably an anonymous array as a parameter of a function call
                 // or array in an array: var a = [['a', 10], ['b', 20]];
+                // or [1,2,3].join();
                 treatAsAnonymous = true;
             }
             if (!isDeclaredInParent) {
@@ -1038,7 +1062,18 @@ public class ModelVisitor extends PathNodeVisitor {
                                 alreadyThere = ModelUtils.getJsObjectByName(modelBuilder.getCurrentDeclarationFunction(), name.getName());
                             }
                         } else {
-                            alreadyThere = ModelUtils.getJsObject(modelBuilder, fqName, true);
+                            if (fqName.size() == 1) {
+                                Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationScope());
+                                for (JsObject variable : variables) {
+                                    if (variable.getName().equals(name.getName())) {
+                                        alreadyThere = variable;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (alreadyThere == null) {
+                                alreadyThere = ModelUtils.getJsObject(modelBuilder, fqName, true);
+                            }
                         }
                     }
                      
@@ -1203,10 +1238,24 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
-
     public Node enter(VarNode varNode) {
-         if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode
-                 || varNode.getInit() instanceof LiteralNode.ArrayLiteralNode)) {
+        Node init = varNode.getInit();
+        ReferenceNode rNode = null;
+        if (init instanceof ReferenceNode) {
+            rNode = (ReferenceNode)init;
+        } else if (init instanceof BinaryNode) {
+            // this should handle cases like 
+            // var prom  = another.prom = function prom() {}
+            BinaryNode bNode = (BinaryNode)init;
+            while (bNode.rhs() instanceof BinaryNode ) {
+                bNode = (BinaryNode)bNode.rhs();
+            }
+            if (bNode.rhs() instanceof ReferenceNode) {
+                 rNode = (ReferenceNode) bNode.rhs();
+            }
+        }
+         if (!(init instanceof ObjectNode || rNode != null
+                 || init instanceof LiteralNode.ArrayLiteralNode)) {
             JsObject parent = modelBuilder.getCurrentObject();
             parent = canBeSingletonPattern(1) ? resolveThis(parent) : parent;
             if (parent instanceof CatchBlockImpl) {
@@ -1259,11 +1308,11 @@ public class ModelVisitor extends PathNodeVisitor {
                 JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
                 variable.setDeprecated(docHolder.isDeprecated(varNode));
                 variable.setDocumentation(docHolder.getDocumentation(varNode));
-                if (varNode.getInit() instanceof IdentNode) {
-                    addOccurrence((IdentNode)varNode.getInit(), variable.getName());
+                if (init instanceof IdentNode) {
+                    addOccurrence((IdentNode)init, variable.getName());
                 }
                 modelBuilder.setCurrentObject(variable);
-                Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, varNode.getInit());
+                Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, init);
                 if (modelBuilder.getCurrentWith() != null) {
                     ((JsWithObjectImpl)modelBuilder.getCurrentWith()).addObjectWithAssignment(variable);
                 }
@@ -1277,7 +1326,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
-        } else if(varNode.getInit() instanceof ObjectNode) {
+        } else if(init instanceof ObjectNode) {
             JsObjectImpl function = modelBuilder.getCurrentDeclarationFunction();
             Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
             if (name != null) {
@@ -1293,10 +1342,9 @@ public class ModelVisitor extends PathNodeVisitor {
                     modelBuilder.setCurrentObject(variable);
                 }
             }
-        } else if (varNode.getInit() instanceof ReferenceNode) {
-            ReferenceNode rnode = (ReferenceNode)varNode.getInit();
-            if (rnode.getReference() != null && rnode.getReference() instanceof FunctionNode) {
-                FunctionNode fnode = (FunctionNode)rnode.getReference();
+        } else if (rNode != null) {
+            if (rNode.getReference() != null && rNode.getReference() instanceof FunctionNode) {
+                FunctionNode fnode = (FunctionNode)rNode.getReference();
                 if (!fnode.isAnonymous()) {
                     // we expect case like: var prom = function name () {}
                     JsObjectImpl function = modelBuilder.getCurrentDeclarationFunction();
@@ -1503,9 +1551,16 @@ public class ModelVisitor extends PathNodeVisitor {
             if (modelBuilder.getCurrentWith() == null) {
                 Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationFunction());
                 for(JsObject variable : variables) {
-                    if (variable.getName().equals(name.getName()) && (variable.getModifiers().contains(Modifier.PRIVATE) || variable instanceof ParameterObject)) {
-                        object = (JsObjectImpl)variable;
-                        break;
+                    if (variable.getName().equals(name.getName()) ) {
+                        if (variable instanceof ParameterObject || variable.getModifiers().contains(Modifier.PRIVATE)) {
+                            object = (JsObjectImpl)variable;
+                            break;
+                        }
+                        DeclarationScope variableDS = ModelUtils.getDeclarationScope(variable);
+                        if (!variableDS.equals(modelBuilder.getCurrentDeclarationScope())) {
+                            object = (JsObjectImpl)variable;
+                            break;
+                        }
                     }
                 }
                 if (object == null) {
@@ -1528,6 +1583,15 @@ public class ModelVisitor extends PathNodeVisitor {
         } else {
             JsObject current = modelBuilder.getCurrentDeclarationFunction();
             object = (JsObjectImpl)resolveThis(current);
+            if (object != null) {
+                // find out, whether is not defined in prototype
+                if (object.getProperty(fqn.get(1).getName()) == null) {
+                    JsObject prototype = object.getProperty(ModelUtils.PROTOTYPE);
+                    if (prototype != null && prototype.getProperty(fqn.get(1).getName()) != null) {
+                        object = prototype;
+                    }
+                }
+            }
         }
         
         if (object != null) {

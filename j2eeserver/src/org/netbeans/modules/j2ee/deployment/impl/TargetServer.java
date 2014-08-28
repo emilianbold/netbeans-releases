@@ -57,23 +57,15 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
-import org.openide.filesystems.FileUtil;
-
-import javax.enterprise.deploy.shared.ModuleType;
-
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.openide.util.NbBundle;
-import org.openide.filesystems.FileObject;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.Mode;
@@ -82,6 +74,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
@@ -91,9 +84,13 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment2;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Encapsulates a set of ServerTarget(s), provides a wrapper for deployment
@@ -146,7 +143,7 @@ public class TargetServer {
         }
 
         incremental = instance.getIncrementalDeployment();
-        if (incremental != null && !checkServiceImplementations()) 
+        if (incremental != null && !checkServiceImplementations())
             incremental = null;
 
         try {
@@ -196,7 +193,7 @@ public class TargetServer {
             return false;
         }
 
-        if (deployable == null || null == deployable.getContentDirectory() || !instance.getIncrementalDeployment().canFileDeploy(targetz[0], deployable)) 
+        if (deployable == null || null == deployable.getContentDirectory() || !instance.getIncrementalDeployment().canFileDeploy(targetz[0], deployable))
             return false;
 
         return true;
@@ -642,7 +639,7 @@ public class TargetServer {
         ModuleConfigurationProvider mcp = dtarget.getModuleConfigurationProvider();
         if (mcp != null)
             deployable = mcp.getJ2eeModule(null);
-        boolean hasDirectory = (dtarget.getModule().getContentDirectory() != null);
+    boolean hasDirectory = (dtarget.getModule().getContentDirectory() != null);
 
         // undeploy if necessary
         if (undeployTMIDs.size() > 0) {
@@ -810,7 +807,7 @@ public class TargetServer {
         if (!instance.isRunning()) {
             return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
         }
-            
+
         if (!DeployOnSaveManager.isServerStateSupported(instance)) {
             return DeployOnSaveManager.DeploymentState.SERVER_STATE_UNSUPPORTED;
         }
@@ -828,7 +825,7 @@ public class TargetServer {
         if (dtarget.getTargetModules() == null) {
             return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
         }
-        
+
         TargetModule[] modules;
         try {
             modules = getDeploymentDirectoryModules();

@@ -228,6 +228,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             final Map<String, Object> map = new HashMap<>();
             map.put("DW:buildResult", controller.getWizardStorage().getBinaryPath().getPath()); // NOI18N
+            map.put("DW:resolveLinks", CommonUtilities.resolveSymbolicLinks()); // NOI18N
             if (env.isRemote()) {
                 map.put("DW:fileSystem", fileSystem); // NOI18N
             }
@@ -462,6 +463,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                         final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
                         final Map<String, Object> map = new HashMap<>();
                         map.put("DW:buildResult", entry.getValue()); // NOI18N
+                        map.put("DW:resolveLinks", Boolean.TRUE); // NOI18N
                         if (env.isRemote()) {
                             map.put("DW:fileSystem", fileSystem); // NOI18N
                         }
@@ -579,7 +581,12 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             if (ldPath.indexOf(';')>0) {
                 pathSepararor = ";"; // NOI18N
             }
-            for(String search :  ldPath.split(pathSepararor)) {  // NOI18N
+            Set<String> visited = new HashSet<String>();
+            for(String search :  ldPath.split(pathSepararor)) {
+                if (visited.contains(search)) {
+                    continue;
+                }
+                visited.add(search);
                 FileObject file = fileSystem.findResource(search+"/"+dll);
                 if (file != null && file.isValid() && file.isData()) {
                     String path = file.getPath();
@@ -936,12 +943,8 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
 
     private String selectBinaryFile(String path) {
         FileFilter[] filters = FileFilterFactory.getBinaryFilters(fileSystem);
-        if (path.isEmpty() && HostInfoUtils.isHostInfoAvailable(env)) { 
-            try {  
-                path = HostInfoUtils.getHostInfo(env).getUserDir();
-            } catch (    IOException | ConnectionManager.CancellationException ex) {
-                // reporting doesn't has much sense here
-            }
+        if (path.isEmpty()) { 
+            path = SelectModePanel.getDefaultDirectory(env);
         }
         JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
                 controller.getWizardDescriptor(),

@@ -520,7 +520,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     }
     
     
-    private static class MyBeanTreeView extends BeanTreeView {
+    private class MyBeanTreeView extends BeanTreeView {
         public boolean getScrollOnExpand() {
             return tree.getScrollsOnExpand();
 }

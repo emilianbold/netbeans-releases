@@ -71,7 +71,7 @@
                         <Identifier start='7' end='13' name='lambda'/>
                     </Variable>
                     <LambdaFunctionDeclaration start='16' end='67' isReference='false'>
-                        <FormalParameter start='26' end='33' isMandatory='false'>
+                        <FormalParameter start='26' end='33' isMandatory='true' isVariadic='false'>
                             <ParametrType>
                             </ParametrType>
                             <ParametrName>
@@ -82,7 +82,7 @@
                             <DefaultValue>
                             </DefaultValue>
                         </FormalParameter>
-                        <FormalParameter start='35' end='42' isMandatory='false'>
+                        <FormalParameter start='35' end='42' isMandatory='true' isVariadic='false'>
                             <ParametrType>
                             </ParametrType>
                             <ParametrName>

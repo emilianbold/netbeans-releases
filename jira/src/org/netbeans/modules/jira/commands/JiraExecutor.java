@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -54,7 +55,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.autoupdate.JiraAutoupdate;
-import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.XMLRPC;
 import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -81,11 +81,14 @@ public class JiraExecutor {
     private static final String REPOSITORY                              = "repository";                    // NOI18N
     private static final String MIDAIR_COLLISION                        = "mid-air collision occurred while submitting to"; // NOI18N
     private static final String HOST_NOT_FOUND_ERROR                    = "host not found"; //NOI18N
-    private static final String REFRESH_REPO_CONF                    = "refresh repository configuration"; //NOI18N
+    private static final String REFRESH_REPO_CONF                       = "refresh repository configuration"; //NOI18N
+    
+    private static final String KENAI_CAPTCHA_ERROR_REST                = "A message body reader for Java class org.codehaus.jettison.json.JSONObject, and Java type class org.codehaus.jettison.json.JSONObject, and MIME media type text/html;charset=UTF-8 was not found"; //NOI18N
+    private static final String KENAI_CAPTCHA_ERROR_XMLRPC              = "Due to multiple failed login attempts, you have been temporarily banned from using the remote API"; //NOI18N
 
     private final JiraRepository repository;
 
-    private final static Set<String> notifyOnceErrors = new HashSet<>(1);
+    private final static Set<String> notifyOnceErrors = Collections.synchronizedSet(new HashSet<String>(1));
     
     public JiraExecutor(JiraRepository repository) {
         this.repository = repository;
@@ -112,7 +115,7 @@ public class JiraExecutor {
                 if (ensureConfiguration) {
                     repository.getConfiguration(); // XXX hack
                 }
-
+                
                 if(checkVersion) {
                     checkAutoupdate();
                 }
@@ -208,7 +211,7 @@ public class JiraExecutor {
             Jira.LOG.log(Level.SEVERE, "Exception in JIRA autoupdate check.", t);
         }
     }
-
+    
     private static abstract class ExceptionHandler {
 
         protected String erroMsg;
@@ -236,6 +239,11 @@ public class JiraExecutor {
             if(errormsg != null) {
                 errormsg = MessageFormat.format(errormsg, repository.getDisplayName());
                 return new DefaultHandler(ex, errormsg, executor, repository);
+            }
+            errormsg = getKenaiCaptchaError(ex);
+            if(errormsg != null && repository instanceof KenaiRepository) {
+                errormsg = MessageFormat.format(errormsg, repository.getUrl());
+                return new CaptchaHandler(ex, errormsg, executor, repository);
             }
             return new DefaultHandler(ex, null, executor, repository);
         }
@@ -268,6 +276,18 @@ public class JiraExecutor {
                 msg = msg.trim().toLowerCase();
                 if(msg.startsWith(MIDAIR_COLLISION)) {
                     return NbBundle.getMessage(JiraExecutor.class, "MSG_MID-AIR_COLLISION");
+                }
+            }
+            return null;
+        }
+        
+        private static String getKenaiCaptchaError(WrapperException ex) {
+            String msg = getMessage(ex);
+            if(msg != null) {
+                if(msg.contains(KENAI_CAPTCHA_ERROR_REST) ||
+                   msg.contains(KENAI_CAPTCHA_ERROR_XMLRPC)) 
+                {
+                    return NbBundle.getMessage(JiraExecutor.class, "MSG_KENAI_CAPTCHA");
                 }
             }
             return null;
@@ -404,6 +424,41 @@ public class JiraExecutor {
                     notifyError(ex, repository);
                 }
                 return false;
+            }
+        }
+        
+        private static class CaptchaHandler extends ExceptionHandler {
+            public CaptchaHandler(WrapperException ex, String msg, JiraExecutor executor, JiraRepository repository) {
+                super(ex, msg, executor, repository);
+            }
+            @Override
+            String getMessage() {
+                return erroMsg;
+            }
+            @Override
+            protected boolean handle() {
+                if(notifyOnceErrors.contains(erroMsg)) {
+                    return false;
+                }
+                notifyOnceErrors.add(erroMsg);
+                
+                final HtmlPanel p = new HtmlPanel();
+                String label = NbBundle.getMessage(JiraExecutor.class, "MSG_ServerResponse", new Object[] {repository.getDisplayName()}); // NOI18N
+                p.setHtml(repository.getUrl(), erroMsg, label);
+                p.setSameColor();
+                DialogDescriptor dialogDescriptor = 
+                        new DialogDescriptor(
+                            p,
+                            NbBundle.getMessage(JiraExecutor.class, "CTL_ServerResponse"), // NOI18N
+                            true,
+                            new Object[] {NotifyDescriptor.CANCEL_OPTION},
+                            NotifyDescriptor.CANCEL_OPTION,
+                            DialogDescriptor.DEFAULT_ALIGN,
+                            null,
+                            null);
+
+                DialogDisplayer.getDefault().notify(dialogDescriptor);
+                return true;
             }
         }
     }

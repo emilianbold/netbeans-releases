@@ -887,10 +887,16 @@ public class OutlineView extends JScrollPane {
                     outline.getSelectionModel().addSelectionInterval(i, i);
                     if (firstSelection == -1) {
                         firstSelection = i;
+                        // Select the rows in the tree column
+                        int treeColumn = outline.convertColumnIndexToView(0);
+                        outline.getColumnModel().getSelectionModel().setSelectionInterval(treeColumn, treeColumn);
                     }
                 }
             }
         }
+//        System.err.println("\nOutlineView.synchronizeSelectedNodes("+java.util.Arrays.toString(arr)+"): "+
+//                           "columnModel = "+outline.getColumnModel()+", column selection model = "+outline.getColumnModel().getSelectionModel()+
+//                           ", column lead selection index = "+outline.getColumnModel().getSelectionModel().getLeadSelectionIndex()+"\n");
         if (scroll && (firstSelection >= 0)) {
             JViewport v = getViewport();
             if (v != null) {
@@ -1382,7 +1388,11 @@ public class OutlineView extends JScrollPane {
 
         @Override
         public void valueChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {
+            if (listSelectionEvent.getValueIsAdjusting()) {
+                return ;
+            }
             int selectedRows[] = outline.getSelectedRows();
+            //System.err.println("TableSelectionListener.valueChanged(): selected rows = "+Arrays.toString(selectedRows));
             ArrayList<Node> selectedNodes = new ArrayList<Node> (selectedRows.length);
             for (int i = 0; i < selectedRows.length;i++) {
                 Node n = getNodeFromRow(selectedRows[i]);
@@ -1390,6 +1400,7 @@ public class OutlineView extends JScrollPane {
                     selectedNodes.add(n);
                 }
             }
+            //System.err.println("  => selectedNodes = "+selectedNodes);
             callSelectionChanged(selectedNodes.toArray (new Node[selectedNodes.size ()]));
         }
 

@@ -295,10 +295,12 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                     if (nodes.length > 0) {
                         syncTable.setColumns(tableColumns);
                         setVersioningComponent(syncTable.getComponent());
+                        syncTable.focus();
                     } else {
                         /* #126311: Optimize UI for Large repos
                         parentTopComponent.setBranchTitle(branchTitle); */
                         setVersioningComponent(noContentComponent);
+                        noContentComponent.requestFocusInWindow();
                     }
                     syncTable.setTableModel(nodes);
                     btnCommit.setEnabled(nodes.length > 0);
@@ -321,8 +323,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
         java.util.List<HgFileNode> fnodes = new LinkedList<HgFileNode>();
         for (File file : files) {
-            if(repositories.contains(mercurial.getRepositoryRoot(file))) {
-                fnodes.add(new HgFileNode(file));
+            File repository = mercurial.getRepositoryRoot(file);
+            if(repositories.contains(repository)) {
+                fnodes.add(new HgFileNode(repository, file));
             }
         }
         SyncFileNode [] nodes = new SyncFileNode[fnodes.size()];
@@ -472,6 +475,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
     
     void focus() {
+        requestFocusInWindow();
         syncTable.focus();
     }
     

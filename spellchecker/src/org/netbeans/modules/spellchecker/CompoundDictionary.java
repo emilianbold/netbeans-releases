@@ -43,6 +43,7 @@ import org.netbeans.modules.spellchecker.spi.dictionary.ValidityType;
  */
 public class CompoundDictionary implements Dictionary {
 
+    private static final Logger LOGGER = Logger.getLogger(CompoundDictionary.class.getName());
     private Dictionary[] delegates;
     
     private CompoundDictionary(Dictionary... delegates) {
@@ -58,8 +59,9 @@ public class CompoundDictionary implements Dictionary {
         
         for (Dictionary d : delegates) {
             ValidityType thisResult = d.validateWord(word);
-            
-            Logger.getLogger(CompoundDictionary.class.getName()).log(Level.FINE, "validating word \"{0}\" using dictionary {1}, result: {2}", new Object[] {word, d.toString(), thisResult});
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "validating word \"{0}\" using dictionary {1}, result: {2}", new Object[] {word, d.toString(), thisResult});
+            }
 
             if (thisResult == ValidityType.VALID || thisResult == ValidityType.BLACKLISTED) {
                 return thisResult;

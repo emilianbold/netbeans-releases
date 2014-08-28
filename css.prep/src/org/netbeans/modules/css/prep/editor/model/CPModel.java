@@ -88,7 +88,8 @@ public class CPModel {
         "@mixin",
         "@return",
         "@warn",
-        "@while"
+        "@while",
+        "@at-root"
     });
 
     public static CPModel getModel(CssParserResult result) {
@@ -263,6 +264,7 @@ public class CPModel {
                         break;
 
                     case cp_variable_declaration:
+                    case sass_map: //also represents a variable declaration
                         in_cp_variable_declaration = true;
 
                         _visitChildren(this, node);

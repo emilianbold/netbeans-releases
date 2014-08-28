@@ -412,6 +412,10 @@ public final class Fold {
     Object getExtraInfo() {
         return extraInfo;
     }
+    
+    void setExtraInfo(Object info) {
+        this.extraInfo = info;
+    }
 
     /**
      * Get index of the given child fold in this fold.

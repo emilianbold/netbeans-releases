@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
@@ -71,10 +72,10 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
  */
 public class ChildrenUpdater {
     private static final boolean traceEvents = Boolean.getBoolean("cnd.classview.key-events"); // NOI18N
-    private Map<CsmProject, Map<PersistentKey, UpdatebleHost>> map =
+    private final Map<CsmProject, Map<PersistentKey, UpdatebleHost>> map =
             new HashMap<CsmProject, Map<PersistentKey, UpdatebleHost>>();
 
-    private Set<ProjectsKeyArray> projectListeners = new HashSet<ProjectsKeyArray>();
+    private final Set<ProjectsKeyArray> projectListeners = new HashSet<ProjectsKeyArray>();
     //private Map<Map, ProjectsKeyArray> projectListeners = new HashMap<Map, ProjectsKeyArray>();
 
     public ChildrenUpdater() {
@@ -153,23 +154,28 @@ public class ChildrenUpdater {
     }
 
     public void update(SmartChangeEvent e){
-        if (map.size() == 0) {
+        if (map.isEmpty()) {
             return;
         }
-        for (Map.Entry<CsmProject,SmartChangeEvent.Storage> entry : e.getChangedProjects().entrySet()){
-            CsmProject project = entry.getKey();
-            try {
-                if (map.containsKey(project) && project.isValid()) {
-                    synchronized (getLock(project)) {
-                        SmartChangeEvent.Storage storage = entry.getValue();
-                        update(project, storage);
+        CsmCacheManager.enter();
+        try {
+            for (Map.Entry<CsmProject,SmartChangeEvent.Storage> entry : e.getChangedProjects().entrySet()){
+                CsmProject project = entry.getKey();
+                try {
+                    if (map.containsKey(project) && project.isValid()) {
+                        synchronized (getLock(project)) {
+                            SmartChangeEvent.Storage storage = entry.getValue();
+                            update(project, storage);
+                        }
                     }
+                } catch (AssertionError ex){
+                    ex.printStackTrace(System.err);
+                } catch (Exception ex){
+                    ex.printStackTrace(System.err);
                 }
-            } catch (AssertionError ex){
-                ex.printStackTrace();
-            } catch (Exception ex){
-                ex.printStackTrace();
             }
+        } finally {
+            CsmCacheManager.leave();
         }
     }
     

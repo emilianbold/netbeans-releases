@@ -938,27 +938,29 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     public LineInfo getLineInfo(int line) {
-        LineInfo info = (LineInfo) linesToInfos.get(line);
-        if (info != null) {
-            int lineLength = length(line);
-            if (lineLength > info.getEnd()) {
-                // This is an input
-                info.addSegment(lineLength, OutputKind.IN, null, null, null, false);
-            }
-            return info;
-        } else {
-            // The last line can contain input
-            if (line == getLineCount() - 1) {
-                LineInfo li = new LineInfo(this);
-                try {
-                    li.addSegment(getLine(line).length(), OutputKind.OUT, null, null, null, false);
-                } catch (IOException e) {
-                    LOG.log(Level.INFO, null, e);
+        synchronized (readLock()) {
+            LineInfo info = (LineInfo) linesToInfos.get(line);
+            if (info != null) {
+                int lineLength = length(line);
+                if (lineLength > info.getEnd()) {
+                    // This is an input
+                    info.addSegment(lineLength, OutputKind.IN, null, null, null, false);
                 }
-                li.addSegment(length(line), OutputKind.IN, null, null, null, false);
-                return li;
+                return info;
             } else {
-                return new LineInfo(this, length(line));
+                // The last line can contain input
+                if (line == getLineCount() - 1) {
+                    LineInfo li = new LineInfo(this);
+                    try {
+                        li.addSegment(getLine(line).length(), OutputKind.OUT, null, null, null, false);
+                    } catch (IOException e) {
+                        LOG.log(Level.INFO, null, e);
+                    }
+                    li.addSegment(length(line), OutputKind.IN, null, null, null, false);
+                    return li;
+                } else {
+                    return new LineInfo(this, length(line));
+                }
             }
         }
     }

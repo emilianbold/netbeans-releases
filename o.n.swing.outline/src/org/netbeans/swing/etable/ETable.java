@@ -111,6 +111,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.*;
+import org.netbeans.swing.outline.DefaultOutlineModel;
 
 /**
  * Extended JTable (ETable) adds these features to JTable:
@@ -1117,6 +1118,8 @@ public class ETable extends JTable {
         for (int i = 0; i < rows.length; i++) {
             modelRows[i] = convertRowIndexToModel(rows[i]);
         }
+        //System.err.println("getSelectedRowsInModel() sets new rows from view: "+
+        //        Arrays.toString(rows)+" to model rows: "+Arrays.toString(modelRows));
         sr.rowsInModel = modelRows;
         ListSelectionModel rsm = getSelectionModel();
         sr.anchorInView = rsm.getAnchorSelectionIndex();
@@ -1130,6 +1133,7 @@ public class ETable extends JTable {
      * Selects given rows (the rows coordinates are the model's space).
      */
     private void changeSelectionInModel(SelectedRows selectedRows/*int selectedRows[]*/, int selectedColumn) {
+        //System.err.println("changeSelectionInModel("+selectedRows+")");
         boolean wasAutoScroll = getAutoscrolls();
         setAutoscrolls(false);
         DefaultListSelectionModel rsm = (DefaultListSelectionModel) getSelectionModel();
@@ -1144,10 +1148,11 @@ public class ETable extends JTable {
         
         Arrays.sort(selectedRows.rowsInView);
         //System.err.println("OrigSelectedRows in view = "+Arrays.toString(selectedRows.rowsInView));
-        int[] newRowsInView = new int[selectedRows.rowsInView.length];
+        int[] newRowsInView = new int[selectedRows.rowsInModel.length];
         int n = getModel().getRowCount();
         for (int i = 0; i < selectedRows.rowsInModel.length; i++) {
-            if ((selectedRows.rowsInModel[i] < 0) || (selectedRows.rowsInModel[i] >= n)) {
+            if (i < selectedRows.rowsInView.length &&
+                ((selectedRows.rowsInView[i] < 0) || (selectedRows.rowsInView[i] >= n))) {
                 newRowsInView[i] = -1;
                 continue;
             }
@@ -1227,6 +1232,93 @@ public class ETable extends JTable {
         }
     }
     
+    private void updateSelectedLines(int[] currentLineSelections,
+                                     int currentLeadRow, int currentAnchorRow,
+                                     int[] newLineSelections,
+                                     int newLeadRow, int newAnchorRow) {
+        //System.err.println("updateSelectedLines("+Arrays.toString(currentLineSelections)+" => "+
+        //                   Arrays.toString(newLineSelections));
+        boolean wasAutoScroll = getAutoscrolls();
+        setAutoscrolls(false);
+        DefaultListSelectionModel rsm = (DefaultListSelectionModel) getSelectionModel();
+        rsm.setValueIsAdjusting(true);
+        ListSelectionModel csm = getColumnModel().getSelectionModel();
+        csm.setValueIsAdjusting(true);
+
+        //System.err.println("Orig lead and anchor selection indexes: "+rsm.getLeadSelectionIndex()+", "+rsm.getAnchorSelectionIndex());
+
+        //int leadRow = convertRowIndexToView(selectedRows.leadInModel);
+        //int anchorRow = convertRowIndexToView(selectedRows.anchorInModel);
+        
+        int i = 0;
+        int j = 0;
+        while (i < currentLineSelections.length || j < newLineSelections.length) {
+            int selected = (i < currentLineSelections.length) ? currentLineSelections[i] : Integer.MAX_VALUE;
+            int toSelect = (j < newLineSelections.length) ? newLineSelections[j] : Integer.MAX_VALUE;
+            if (selected == toSelect) {
+                i++;
+                j++;
+                continue;
+            }
+            if (selected < toSelect) {
+                if (selected > -1) {
+                    int selected2 = selected;
+                    while ((i + 1) < currentLineSelections.length && currentLineSelections[i+1] == (selected2 + 1) && (selected2 + 1) < toSelect) {
+                        selected2++;
+                        i++;
+                    }
+                    rsm.removeSelectionInterval(selected, selected2);
+                    //System.err.println("  removing selection ("+selected+", "+selected2+")");
+                }
+                i++;
+            } else {
+                if (toSelect > -1) {
+                    int toSelect2 = toSelect;
+                    while ((j + 1) < newLineSelections.length && newLineSelections[j + 1] == (toSelect2 + 1) && (toSelect2 + 1) < selected) {
+                        toSelect2++;
+                        j++;
+                    }
+                    rsm.addSelectionInterval(toSelect, toSelect2);
+                    //System.err.println("  adding selection ("+toSelect+", "+toSelect2+")");
+                }
+                j++;
+            }
+        }
+        
+        if (newAnchorRow != currentAnchorRow) {
+            //System.err.println("  Setting anchor selection index: "+anchorRow);
+            rsm.setAnchorSelectionIndex(newAnchorRow);
+        }
+        if (newLeadRow != currentLeadRow) {
+            if (newLeadRow == -1) {
+                for (int k = 0; k < newLineSelections.length; k++) {
+                    if (newLineSelections[k] == -1) {
+                        while((k + 1) < newLineSelections.length && newLineSelections[k+1] == -1) {
+                            k++;
+                        }
+                        if ((k + 1) < newLineSelections.length) {
+                            newLeadRow = newLineSelections[k+1];
+                            break;
+                        }
+                        if (k > 0) {
+                            newLeadRow = newLineSelections[0];
+                            break;
+                        }
+                    }
+                }
+            }
+            //System.err.println("  Setting lead selection index: "+leadRow);
+            // DO NOT CALL setLeadSelectionIndex() as it screws up selection!
+            rsm.moveLeadSelectionIndex(newLeadRow);
+        }
+         
+        rsm.setValueIsAdjusting(false);
+        csm.setValueIsAdjusting(false);
+        if (wasAutoScroll) {
+            setAutoscrolls(true);
+        }
+    }
+    
     /**
      * This method update mouse listener on the scrollPane if it is needed.
      * It also recomputes the model of searchCombo. Both actions are needed after
@@ -1256,6 +1348,10 @@ public class ETable extends JTable {
         }
     }
     
+    private SelectedRows selectedRowsWhenTableChanged = null;
+    private int[][] sortingPermutationsWhenTableChanged = null;
+    private int selectedColumnWhenTableChanged = -1;
+    
     /**
      * If the table data model is changed we reset (and then recompute)
      * the sorting permutation and the row count. The selection is restored
@@ -1271,40 +1367,57 @@ public class ETable extends JTable {
             return;
         }
 
-        if (e.getType() == TableModelEvent.INSERT) {
-            SelectedRows selectedRows = getSelectedRowsInModel();
-            int[] wasSelectedRows = selectedRows.rowsInModel;
-            int wasSelectedColumn = getSelectedColumn();
-            resetPermutation ();
-            filteredRowCount = -1;
-            super.tableChanged(e);
-            if (selectedRows.rowsInModel.length > 0) {
-                int first = e.getFirstRow();
-                int count = e.getLastRow() - e.getFirstRow() + 1;
-                if (count >= 0) {
+        boolean areMoreEventsPending = false;
+        Object source = e.getSource();
+        if (source instanceof DefaultOutlineModel) {
+            areMoreEventsPending = ((DefaultOutlineModel) source).areMoreEventsPending();
+        }
+        //System.err.println("tableChanged("+e+"): e.type = "+e.getType()+", first row = "+e.getFirstRow()+", last row = "+e.getLastRow()+
+        //                   ", areMoreEventsPending = "+areMoreEventsPending);
+        if (e.getType() == TableModelEvent.INSERT ||
+            e.getType() == TableModelEvent.DELETE) {
+            
+            if (selectedRowsWhenTableChanged == null) {
+                selectedRowsWhenTableChanged = getSelectedRowsInModel();
+                sortingPermutationsWhenTableChanged = new int[2][];
+                sortingPermutationsWhenTableChanged[0] = sortingPermutation;
+                sortingPermutationsWhenTableChanged[1] = inverseSortingPermutation;
+                selectedColumnWhenTableChanged = getSelectedColumn();
+                resetPermutation();
+                filteredRowCount = -1;
+                //System.err.println("selected rows in model = "+Arrays.toString(selectedRowsWhenTableChanged.rowsInModel));
+            }
+            int[] invSortPermutation = sortingPermutationsWhenTableChanged[1];
+            TableModelEvent se = e;
+            if (invSortPermutation != null) {
+                int fr = e.getFirstRow();
+                if (fr >= 0 && fr < invSortPermutation.length) {
+                    fr = invSortPermutation[fr];
+                }
+                int lr = e.getLastRow();
+                if (lr >= 0 && lr < invSortPermutation.length) {
+                    lr = invSortPermutation[lr];
+                }
+                se = new TableModelEvent((TableModel) e.getSource(), fr, lr, e.getColumn(), e.getType());
+            }
+            super.tableChanged(se);
+            int first = e.getFirstRow();
+            int last = e.getLastRow();
+            if (first > last) {
+                int r = last;
+                last = first;
+                first = r;
+            }
+            int count = last - first + 1;
+            if (count > 0) {
+                int[] wasSelectedRows = selectedRowsWhenTableChanged.rowsInModel;
+                if (e.getType() == TableModelEvent.INSERT) {
                     for (int i = 0; i < wasSelectedRows.length; i++) {
                         if (wasSelectedRows[i] >= first) {
                             wasSelectedRows[i] += count;
                         }
                     }
-                }
-            }
-            changeSelectionInModel(selectedRows, wasSelectedColumn);
-            return;
-        }
-
-        if (e.getType() == TableModelEvent.DELETE) {
-            SelectedRows selectedRows = getSelectedRowsInModel();
-            int[] wasSelectedRows = selectedRows.rowsInModel;
-            int wasSelectedColumn = getSelectedColumn();
-            resetPermutation ();
-            filteredRowCount = -1;
-            super.tableChanged(e);
-            if (wasSelectedRows.length > 0) {
-                int first = e.getFirstRow();
-                int count = e.getLastRow() - e.getFirstRow() + 1;
-                int last = e.getLastRow();
-                if (count >= 0) {
+                } else {
                     for (int i = 0; i < wasSelectedRows.length; i++) {
                         if (wasSelectedRows[i] >= first) {
                             if (wasSelectedRows[i] <= last) {
@@ -1316,8 +1429,18 @@ public class ETable extends JTable {
                     }
                 }
             }
-            changeSelectionInModel(selectedRows, wasSelectedColumn);
-            return;
+            if (!areMoreEventsPending) {
+                //System.err.println(" => after all events selecting Rows = "+selectedRowsWhenTableChanged);
+                if (selectedRowsWhenTableChanged.rowsInModel.length > 0) {
+                    selectedRowsWhenTableChanged.rowsInView = getSelectedRows(); // Actual selected rows in the view
+                    //System.err.println("     adjusted selected rows to "+selectedRowsWhenTableChanged);
+                    changeSelectionInModel(selectedRowsWhenTableChanged, selectedColumnWhenTableChanged);
+                }
+                selectedRowsWhenTableChanged = null;
+                sortingPermutationsWhenTableChanged = null;
+                selectedColumnWhenTableChanged = -1;
+            }
+            return ;
         }
 
         int modelColumn = e.getColumn();
@@ -1364,6 +1487,7 @@ public class ETable extends JTable {
             SelectedRows selectedRows = getSelectedRowsInModel();
             int wasSelectedColumn = getSelectedColumn();
         
+            //System.err.println("NEEDS TOTAL REFRESH: selectedRows = "+selectedRows);
             resetPermutation ();
             filteredRowCount = -1;
             super.tableChanged(new TableModelEvent(getModel()));
@@ -1378,6 +1502,19 @@ public class ETable extends JTable {
 
     private void resetPermutation () {
         assert SwingUtilities.isEventDispatchThread () : "Do resetting of permutation only in AWT queue!";
+        /*
+        System.err.print(" PERMUT. RESET, old PERMUT. = ");
+        if (sortingPermutation == null) {
+            System.err.println("null");
+        } else {
+            System.err.println(Arrays.toString(sortingPermutation));
+        }
+        System.err.print("                old INV. P. = ");
+        if (inverseSortingPermutation == null) {
+            System.err.println("null");
+        } else {
+            System.err.println(Arrays.toString(inverseSortingPermutation));
+        }*/
         sortingPermutation = null;
         inverseSortingPermutation = null;
     }
@@ -1734,11 +1871,75 @@ public class ETable extends JTable {
                     res[i] = rmi;
                     invRes[rmi] = i;
                 }
+                int[] oldRes = sortingPermutation;
+                int[] oldInvRes = inverseSortingPermutation;
+                //System.err.println(" SETTING PERMUTATION = "+Arrays.toString(res));
+                //System.err.println(" SETTING INV.PERMUT. = "+Arrays.toString(invRes));
                 sortingPermutation = res;
                 inverseSortingPermutation = invRes;
+                //adjustSelectedRows(oldRes, oldInvRes, res, invRes);
             }
         }
     }
+    
+    /**
+     * Adjusts selected rows when sorting changes.
+     *
+    protected final void adjustSelectedRows(int[] oldSortingPermutation, int[] oldInverseSortingPermutation,
+                                            int[] newSortingPermutation, int[] newInverseSortingPermutation) {
+        if (true) return ;
+        int[] oldSelectedRows = getSelectedRows();
+        int n = oldSelectedRows.length;
+        //System.err.println("adjustSelectedRows("+n+")");
+        if (n == 0) {
+            return ;
+        }
+        int[] newSelectedRows = new int[n];
+        System.arraycopy(oldSelectedRows, 0, newSelectedRows, 0, n);
+        for (int i = 0; i < n; i++) {
+            int vr = oldSelectedRows[i];
+            int mr;
+            if (oldSortingPermutation == null) {
+                mr = vr;
+            } else {
+                mr = oldSortingPermutation[vr];
+            }
+            vr = newInverseSortingPermutation[mr];
+            newSelectedRows[i] = vr;
+        }
+        ListSelectionModel rsm = getSelectionModel();
+        int oldAnchor = rsm.getAnchorSelectionIndex();
+        int oldLead = rsm.getLeadSelectionIndex();
+        int newAnchor;
+        if (oldAnchor < 0) {
+            newAnchor = oldAnchor;
+        } else {
+            int mr;
+            if (oldSortingPermutation == null) {
+                mr = oldAnchor;
+            } else {
+                mr = oldSortingPermutation[oldAnchor];
+            }
+            newAnchor = newInverseSortingPermutation[mr];
+        }
+        int newLead;
+        if (oldLead < 0) {
+            newLead = oldLead;
+        } else {
+            int mr;
+            if (oldSortingPermutation == null) {
+                mr = oldLead;
+            } else {
+                mr = oldSortingPermutation[oldLead];
+            }
+            newLead = newInverseSortingPermutation[mr];
+        }
+        
+        updateSelectedLines(oldSelectedRows, oldLead, oldAnchor,
+                            newSelectedRows, newLead, newAnchor);
+        
+    }
+    */
     
     /**
      * Determines whether the given row should be displayed or not.
@@ -2321,6 +2522,9 @@ public class ETable extends JTable {
          * @since 1.19
          */
         public Object getTransformedValue(int column) {
+            if (column >= model.getColumnCount()) { // #239045
+                return null;
+            }
             if (table == null) {
                 throw new IllegalStateException("The table was not set.");
             }
@@ -2681,7 +2885,18 @@ public class ETable extends JTable {
         public void actionPerformed(ActionEvent e) {
             int row = getSelectedRow();
             int col = getSelectedColumn();
-            editCellAt(row, col, e);
+            int[] selectedRows = getSelectedRows();
+            boolean edited = editCellAt(row, col, e);
+            if (!edited) {
+                for (int r : selectedRows) {
+                    if (r != row) {
+                        edited = editCellAt(r, col, e);
+                        if (edited) {
+                            break;
+                        }
+                    }
+                }
+            }
         }
         
         @Override
@@ -2938,6 +3153,14 @@ public class ETable extends JTable {
         int leadInModel;
         int[] rowsInView;
         int[] rowsInModel;
+
+        @Override
+        public String toString() {
+            return "SelectedRows[anchorInView="+anchorInView+", anchorInModel="+anchorInModel+
+                    ", leadInView="+leadInView+", leadInModel="+leadInModel+
+                    ", rowsInView="+Arrays.toString(rowsInView)+", rowsInModel="+Arrays.toString(rowsInModel)+"]";
+        }
+        
     }
     
     // JDK 6 methods added to JTable:

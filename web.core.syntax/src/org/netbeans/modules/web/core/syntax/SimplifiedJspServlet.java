@@ -179,7 +179,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
             return;
         }
 
-        processIncludes();
+        processIncludes(true, null);
 
         //XXX The InputAttribute from the document are not copied to the following TokenHierarchy,
         //the JspLexer behaviour may seem to be inaccurate in some cases!
@@ -196,7 +196,7 @@ public class SimplifiedJspServlet extends JSPProcessor {
          */
         do {
             Token<JspTokenId> token = tokenSequence.token();
-
+            String tokenText = token.text() == null ? "" : CharSequenceUtilities.toString(token.text()).trim(); //NOI18N
             if (token.id() == JspTokenId.SCRIPTLET) {
                 int blockStart = token.offset(tokenHierarchy);
                 // workaround for #172594
@@ -227,6 +227,8 @@ public class SimplifiedJspServlet extends JSPProcessor {
                         buff.add(snapshot.create(" ; ", "text/x-java"));
                     }
                 }
+            } else if (token.id() == JspTokenId.TAG && "include".equals(tokenText)) {
+                processIncludes(false, getIncludedPath(tokenSequence));
             }
         } while (tokenSequence.moveNext());
 
@@ -447,7 +449,6 @@ public class SimplifiedJspServlet extends JSPProcessor {
     protected void processIncludedFile(IncludedJSPFileProcessor includedJSPFileProcessor) {
         implicitImports.add(snapshot.create(includedJSPFileProcessor.getImports(), "text/x-java"));
         declarations.add(snapshot.create(includedJSPFileProcessor.getDeclarations(), "text/x-java"));
-        //TODO: is it necessary?
         scriptlets.add(snapshot.create(includedJSPFileProcessor.getScriptlets(), "text/x-java"));
     }
 
@@ -511,6 +512,24 @@ public class SimplifiedJspServlet extends JSPProcessor {
         }
         
         return embedding;
+    }
+
+    private String getIncludedPath(TokenSequence<JspTokenId> tokenSequence) {
+        String filePath = null;
+        boolean afterFile = false;
+        while (tokenSequence.moveNext()) {
+            Token token = tokenSequence.token();
+            if (token.id() == JspTokenId.SYMBOL && "%>".equals(token.text())) { //NOI18N
+                break;
+            } else if (token.id() == JspTokenId.ATTRIBUTE) {
+                afterFile = "file".equals(token.text()); //NOI18N
+            } else if (afterFile && token.id() == JspTokenId.ATTR_VALUE) {
+                filePath = CharSequenceUtilities.toString(token.text());
+                filePath = filePath.replaceAll("[\"' ]", ""); //NOI18N
+                break;
+            }
+        }
+        return filePath;
     }
 
     @Deprecated

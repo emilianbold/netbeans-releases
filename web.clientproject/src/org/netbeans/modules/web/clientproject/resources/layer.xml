@@ -121,6 +121,16 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                     <file name="org-netbeans-modules-csl-core-GsfDataLoader.instance"/>
                 </folder> 
             </folder>
+            <folder name="bower+x-json">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-csl-core-GsfDataLoader.instance"/>
+                </folder> 
+            </folder>
+            <folder name="package+x-json">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-csl-core-GsfDataLoader.instance"/>
+                </folder> 
+            </folder>
         </folder>
     </folder>
     <folder name="Navigator">
@@ -162,6 +172,8 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestProject.instance"/>
                     <attr name="position" intvalue="720"/>
                 </file>
+
+                <!-- ??? - code coverage [dynamic] -->
 
                 <file name="sep-3.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>

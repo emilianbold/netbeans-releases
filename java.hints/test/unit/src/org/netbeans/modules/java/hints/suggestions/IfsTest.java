@@ -82,20 +82,20 @@ public class IfsTest {
                               "        if\n" +
                               "        // A\n" +
                               "        (!args[0].isEmpty())\n" +
-                              "        // B\n" +
+                              "        // D\n" +
                               "        {//4\n" +
                               "            //5\n" +
                               "            System.err.println(\"2\");\n" +
                               "            //6\n" +
-                              "        } \n" +
+                              "        } //E\n" +
                               "        // C\n" +
                               "        else\n" +
-                              "        // D\n" +
+                              "        // B\n" +
                               "        { //1\n" +
                               "            //2\n" +
                               "            System.err.println(\"1\");\n" +
                               "            //3\n" +
-                              "        } //E\n" +
+                              "        }\n" +
                               "    }\n" +
                               "}\n");
     }

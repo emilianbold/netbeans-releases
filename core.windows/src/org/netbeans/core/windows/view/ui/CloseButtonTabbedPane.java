@@ -49,6 +49,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
@@ -73,6 +75,11 @@ import org.openide.windows.TopComponent;
  *
  */
 final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeListener {
+    
+    private Action scrollLeftAction;
+    private Action scrollRightAction;
+    
+    private static final boolean IS_AQUA_LAF = "Aqua".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
 
     CloseButtonTabbedPane() {
             // close tab via middle button
@@ -113,7 +120,20 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
                 }
             }
 
-
+            });
+            
+            //mouse wheel scrolling
+            addMouseWheelListener(new MouseWheelListener() {
+                @Override
+                public void mouseWheelMoved(MouseWheelEvent e) {
+                    if( e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL ) {
+                        if( e.getWheelRotation() < 0 ) {
+                            scrollTabsLeft();
+                        } else {
+                            scrollTabsRight();
+                        }
+                    }
+                }
             });
         //Bugfix #28263: Disable focus.
         setFocusable(false);
@@ -184,9 +204,32 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
         if( null != a && !(a instanceof MyNavigateAction) ) {
             am.put("navigatePageDown", new MyNavigateAction(a));
         }
+        scrollRightAction = am.get("scrollTabsForwardAction"); //NOI18N
+        scrollLeftAction = am.get("scrollTabsBackwardAction"); //NOI18N
     }
-
-
+    
+    private void scrollTabsLeft() {
+        if( IS_AQUA_LAF ) {
+            int selIndex = getSelectedIndex();
+            if( selIndex > 0 ) {
+                setSelectedIndex(selIndex-1);
+            }
+        } else if( null != scrollLeftAction && scrollLeftAction.isEnabled() ) {
+            scrollLeftAction.actionPerformed(new ActionEvent(this, 0, "")); //NOI18N
+        }
+    }
+    
+    private void scrollTabsRight() {
+        if( IS_AQUA_LAF ) {
+            int selIndex = getSelectedIndex();
+            if( selIndex < getTabCount()-1 ) {
+                setSelectedIndex(selIndex+1);
+            }
+        } else if( null != scrollRightAction && scrollRightAction.isEnabled() ) {
+            scrollRightAction.actionPerformed(new ActionEvent(this, 0, "")); //NOI18N
+        }
+    }
+    
     @Override
     public void removeTabAt(int index) {
         Component c = getComponentAt(index);
@@ -202,7 +245,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
                 return true;
             }
         }
-        if( version.startsWith("1.6.0") && isAquaLaF() )
+        if( version.startsWith("1.6.0") && IS_AQUA_LAF )
             return true;
         return false;
     }
@@ -269,7 +312,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
             if( (isWindowsVistaLaF() || isWindowsXPLaF() || isWindowsLaF()) && i == getSelectedIndex() ) {
                 b.x -= 3;
                 b.y -= 2;
-            } else if( isWindowsXPLaF() || isWindowsLaF() || isAquaLaF() ) {
+            } else if( isWindowsXPLaF() || isWindowsLaF() || IS_AQUA_LAF ) {
                 b.x -= 2;
             } else if( isGTKLaF() && i == getSelectedIndex() ) {
                 b.x -= 1;
@@ -278,7 +321,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
             if( i == getTabCount()-1 ) {
                 if( isMetalLaF() )
                     b.x--;
-                else if( isAquaLaF() ) 
+                else if( IS_AQUA_LAF ) 
                     b.x -= 3;
             }
             return new Rectangle(b.x + b.width - 13,
@@ -304,10 +347,6 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
     private boolean isWindowsLaF () {
         String lfID = UIManager.getLookAndFeel().getID();
         return lfID.endsWith("Windows"); //NOI18N
-    }
-    
-    private static boolean isAquaLaF() {
-        return "Aqua".equals( UIManager.getLookAndFeel().getID() );
     }
     
     private boolean isMetalLaF () {

@@ -175,6 +175,7 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
     }
 
     private static final String CONSTRUCTOR_NAME = "<init>";
+    private static final String ERR_NAME = "<error>";
     
     public static BreadCrumbsNodeImpl createBreadcrumbs(BreadCrumbsNodeImpl parent, final CompilationInfo info, TreePath path, boolean elseSection) {
         final Trees trees = info.getTrees();
@@ -400,6 +401,12 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
             
             if (nct.getClassBody() == ct) {
                 return simpleName(nct.getIdentifier());
+            }
+        } else if (path.getParentPath().getLeaf() == path.getCompilationUnit()) {
+            ExpressionTree pkg = path.getCompilationUnit().getPackageName();
+            String pkgName = pkg != null ? pkg.toString() : null;
+            if (pkgName != null && !pkgName.contentEquals(ERR_NAME)) {
+                return pkgName + '.' + ct.getSimpleName().toString();
             }
         }
         

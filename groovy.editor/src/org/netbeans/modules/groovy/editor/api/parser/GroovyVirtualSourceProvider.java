@@ -83,6 +83,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -157,13 +158,16 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                     ParserManager.parse(Collections.singleton(source), new UserTask() {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
-                            GroovyParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
+                            Parser.Result parseResult = resultIterator.getParserResult();
+                            if (parseResult != null) {
+                                GroovyParserResult result = ASTUtils.getParseResult(parseResult);
 
-                            ASTRoot astRootElement = result.getRootElement();
-                            if (astRootElement != null) {
-                                ModuleNode moduleNode = astRootElement.getModuleNode();
-                                if (moduleNode != null) {
-                                    resultList.addAll(moduleNode.getClasses());
+                                ASTRoot astRootElement = result.getRootElement();
+                                if (astRootElement != null) {
+                                    ModuleNode moduleNode = astRootElement.getModuleNode();
+                                    if (moduleNode != null) {
+                                        resultList.addAll(moduleNode.getClasses());
+                                    }
                                 }
                             }
                         }

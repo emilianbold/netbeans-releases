@@ -555,24 +555,23 @@ public final class Source implements Lookup.Provider {
         this.peFwd = new ParserEventForward();
         this.sourceEnv = Utilities.createEnvironment(this, ctrl);
     }
-
-    private static Source _get(String mimeType, FileObject fileObject, Lookup context) {
+    
+    @NonNull
+    private static Source _get(
+            @NonNull final String mimeType,
+            @NonNull final FileObject fileObject, 
+            @NonNull final Lookup context) {
         assert mimeType != null;
         assert fileObject != null;
-        
-        synchronized (Source.class) {
-            Reference<Source> sourceRef = instances.get(fileObject);
-            Source source = sourceRef == null ? null : sourceRef.get();
 
-            if (source == null) {
+        synchronized (Source.class) {
+            final Reference<Source> sourceRef = instances.get(fileObject);
+            Source source = sourceRef == null ? null : sourceRef.get();
+            if (source == null || !mimeType.equals(source.getMimeType())) {
                 source = new Source(mimeType, null, fileObject, context);
-                instances.put(fileObject, new WeakReference<Source>(source));
+                instances.put(fileObject, new WeakReference<>(source));
             }
             assert source.context == context;
-            // XXX: we may want to update the mime type to the one from the document,
-            // but I'm not sure what would that mean for the rest of the infrastructure.
-            // It would probably need to throw everything (?) away and start from scratch.
-
             return source;
         }
     }

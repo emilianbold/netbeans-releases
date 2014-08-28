@@ -123,6 +123,11 @@ public class DwarfDiscoveryTest  extends NbTestCase {
                 "libhello3lib.so", "libhello4lib.so","libstdc++.so.6", "libm.so.6", "libgcc_s.so.1", "libc.so.6");
     }
 
+    public void testDll_Sparc64_studio() {
+        dumpDlls("/org/netbeans/modules/cnd/dwarfdiscovery/projects/Subproject_sparc64/main/dist/Debug/OracleSolarisStudio-Solaris-Sparc/main",
+                "libhello3lib.so", "libhello4lib.so","libCstd.so.1", "libCrun.so.1", "libm.so.2", "libc.so.1");
+    }
+
     public void testDll_Ubuntu1010_x64_gcc() {
         dumpDlls("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc/main/dist/Debug/GNU-Linux-x86/main",
                 "libhello3lib.so", "libhello4lib.so","libstdc++.so.6", "libm.so.6", "libgcc_s.so.1", "libc.so.6");
@@ -353,16 +358,21 @@ public class DwarfDiscoveryTest  extends NbTestCase {
             public boolean mergeProjectProperties() {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
+
+            @Override
+            public boolean resolveSymbolicLinks() {
+                return false;
+            }
         }, null);
         String compilerName = canAnalyze.getCompilerName();
         String sourceRoot = canAnalyze.getSourceRoot();
         Position mainFunctionPosition = canAnalyze.getMainFunction();
-        System.err.println(compilerName);
-        System.err.println(sourceRoot);
-        System.err.println(mainFunctionPosition);
+        //System.err.println(compilerName);
+        //System.err.println(sourceRoot);
+        //System.err.println(mainFunctionPosition);
         if (canAnalyze.getErrors() != null && canAnalyze.getErrors().size() > 0) {
             for(String error : canAnalyze.getErrors()) {
-            System.err.print(error);
+                //System.err.print(error);
             }
             assert true;
         }
@@ -418,12 +428,17 @@ public class DwarfDiscoveryTest  extends NbTestCase {
             public boolean mergeProjectProperties() {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
+
+            @Override
+            public boolean resolveSymbolicLinks() {
+                return false;
+            }
         }, null, null);
         assertEquals(1, analyze.size());
         Configuration conf = analyze.get(0);
         assertEquals(sources.length, conf.getSourcesConfiguration().size());
         for (SourceFileProperties file : conf.getSourcesConfiguration()) {
-            System.err.println(file.getItemPath());
+            //System.err.println(file.getItemPath());
             boolean match = false;
             for(String x : sources) {
                 if (x.equals(file.getItemName())) {
@@ -455,7 +470,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
             }
         }
         assertNotNull(res);
-        System.err.println(res);
+        //System.err.println(res);
         assertEquals(dlls.length, res.getDlls().size());
         int i = 0;
         for(String dll: res.getDlls()) {

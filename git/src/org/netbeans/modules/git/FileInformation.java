@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.git;
 
+import java.awt.Color;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.EnumSet;
@@ -355,6 +356,11 @@ public class FileInformation extends FileNodeInformation {
     @Override
     public String annotateNameHtml(String name) {
         return ((Annotator) Git.getInstance().getVCSAnnotator()).annotateNameHtml(name, this, null);
+    }
+
+    @Override
+    public Color getAnnotatedColor () {
+        return ((Annotator) Git.getInstance().getVCSAnnotator()).getAnnotatedColor(this);
     }
 
     @Override

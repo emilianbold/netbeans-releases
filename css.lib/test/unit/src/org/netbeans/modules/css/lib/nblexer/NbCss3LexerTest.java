@@ -222,4 +222,30 @@ public class NbCss3LexerTest extends NbTestCase {
         LexerTestUtilities.checkTokenDump(this, "testfiles/less/testIssue240701.less.txt",
                 CssTokenId.language());
     }
+    
+    public void testIssue238864() throws Exception {
+//        LexerTestUtilities.checkTokenDump(this, "testfiles/scss/large_empty.scss.txt",
+//                CssTokenId.language());
+        int LINES = 10 * 1000;
+        
+        StringBuilder source = new StringBuilder();
+        for(int i = 0; i < LINES; i++) {
+            source.append('\n');
+        }
+        
+        TokenHierarchy th = TokenHierarchy.create(source, CssTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+        
+        assertTrue(ts.moveNext());
+        Token token = ts.token();
+        
+        assertEquals(token.id(), CssTokenId.NL);
+        assertEquals(ts.offset(), 0);
+        assertEquals(token.length(), LINES);
+        
+        assertFalse(ts.moveNext());
+       
+    }
+    
 }

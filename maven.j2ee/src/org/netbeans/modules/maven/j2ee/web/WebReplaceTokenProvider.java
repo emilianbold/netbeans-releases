@@ -164,31 +164,24 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
             if (relPath == null) {
                 // run servlet
                 if ("text/x-java".equals(fo.getMIMEType())) { //NOI18N
-                    String executionUri = (String) fo.getAttribute(ATTR_EXECUTION_URI);
-                    if (executionUri != null) {
-                        relPath = executionUri;
-                    } else {
-                        WebModule webModule = WebModule.getWebModule(fo);
-                        String[] urlPatterns = getServletMappings(webModule, fo);
-                        if (urlPatterns != null && urlPatterns.length > 0) {
-                            ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns, null, true);
-                            DialogDescriptor desc = new DialogDescriptor(uriPanel,
-                                    NbBundle.getMessage(WebReplaceTokenProvider.class, "TTL_setServletExecutionUri"));
-                            Object res = DialogDisplayer.getDefault().notify(desc);
-                            if (res.equals(NotifyDescriptor.YES_OPTION)) {
-                                relPath = uriPanel.getServletUri(); //NOI18N
-                                try {
-                                    fo.setAttribute(ATTR_EXECUTION_URI, uriPanel.getServletUri());
-                                } catch (IOException ex) {
-                                }
-                            } else if (res.equals(NotifyDescriptor.CANCEL_OPTION)) {
-                                replaceMap.put(WEB_PATH, null);
-                                return replaceMap;
+                    WebModule webModule = WebModule.getWebModule(fo);
+                    String[] urlPatterns = getServletMappings(webModule, fo);
+                    if (urlPatterns != null && urlPatterns.length > 0) {
+                        ServletUriPanel uriPanel = new ServletUriPanel(urlPatterns, null, true);
+                        DialogDescriptor desc = new DialogDescriptor(uriPanel,
+                                NbBundle.getMessage(WebReplaceTokenProvider.class, "TTL_setServletExecutionUri"));
+                        Object res = DialogDisplayer.getDefault().notify(desc);
+                        if (res.equals(NotifyDescriptor.YES_OPTION)) {
+                            relPath = uriPanel.getServletUri(); //NOI18N
+                            try {
+                                fo.setAttribute(ATTR_EXECUTION_URI, uriPanel.getServletUri());
+                            } catch (IOException ex) {
                             }
+                        } else if (res.equals(NotifyDescriptor.CANCEL_OPTION)) {
+                            replaceMap.put(WEB_PATH, null);
+                            return replaceMap;
                         }
-
                     }
-
                 }
 
             }

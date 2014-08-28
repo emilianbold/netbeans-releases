@@ -2786,7 +2786,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         //    res.add(lib);
         //}
         if (!isArtificial()) {
-            for (CsmUID<CsmProject> library : getLibraryManager().getLirariesKeys(getUID())) {
+            for (CsmUID<CsmProject> library : getLibraryManager().getLirariesKeys(getUID(), getUnitId())) {
                 res.add(RepositoryUtils.UIDtoKey(library));
             }
         }
@@ -3725,7 +3725,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.libraryManager = LibraryManager.getInstance(this.getUnitId());
     }
 
-    public int getUnitId() {
+    public final int getUnitId() {
         return unitId;
     }
 

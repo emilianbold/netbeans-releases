@@ -78,7 +78,8 @@ public enum GitRepositoryState {
             public String toString () { return Utils.getBundle(GitRepositoryState.class).getString("LBL_RepositoryInfo_Safe"); } //NOI18N
 	},
 
-	/** An unfinished merge or cherry-picking. Must resolve or reset before continuing normally
+	/**
+     * An unfinished merge. Must resolve or reset before continuing normally
 	 */
 	MERGING {
             @Override
@@ -104,6 +105,37 @@ public enum GitRepositoryState {
             public boolean canCommit () { return true; }
             @Override
             public String toString () { return Utils.getBundle(GitRepositoryState.class).getString("LBL_RepositoryInfo_Merged"); } //NOI18N
+	},
+
+	/**
+     * An unfinished cherry-pick. Must resolve or reset before continuing normally
+     * @since 1.27
+	 */
+	CHERRY_PICKING {
+            @Override
+            public boolean canCheckout () { return false; }
+            @Override
+            public boolean canResetHead () { return true; }
+            @Override
+            public boolean canCommit () { return false; }
+            @Override
+            public String toString () { return Utils.getBundle(GitRepositoryState.class).getString("LBL_RepositoryInfo_CherryPicking"); } //NOI18N
+	},
+
+	/**
+	 * A cherry-picked commit where all conflicts have been resolved. The index does not
+	 * contain any unmerged paths and the repository requires a commit.
+     * @since 1.27
+	 */
+	CHERRY_PICKING_RESOLVED {
+            @Override
+            public boolean canCheckout () { return true; }
+            @Override
+            public boolean canResetHead () { return true; }
+            @Override
+            public boolean canCommit () { return true; }
+            @Override
+            public String toString () { return Utils.getBundle(GitRepositoryState.class).getString("LBL_RepositoryInfo_CherryPickingResolved"); } //NOI18N
 	},
 
 	/**
@@ -178,11 +210,13 @@ public enum GitRepositoryState {
                 case BISECTING:
                     return GitRepositoryState.BISECTING;
                 case MERGING:
-                case CHERRY_PICKING:
                 case REVERTING:
                     return GitRepositoryState.MERGING;
-                case MERGING_RESOLVED:
+                case CHERRY_PICKING:
+                    return GitRepositoryState.CHERRY_PICKING;
                 case CHERRY_PICKING_RESOLVED:
+                    return GitRepositoryState.CHERRY_PICKING_RESOLVED;
+                case MERGING_RESOLVED:
                 case REVERTING_RESOLVED:
                     return GitRepositoryState.MERGING_RESOLVED;
                 case REBASING:

@@ -83,11 +83,11 @@ public class JsCodeCompletionBase extends JsTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.init();
-        List lookupAll = new ArrayList();
-        lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
-        MockLookup.setInstances(new ClassPathProviderImpl());
-        MockLookup.setInstances(lookupAll.toArray());
+////        MockLookup.init();
+//        List lookupAll = new ArrayList();
+//        lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
+//        MockLookup.setInstances(new ClassPathProviderImpl());
+//        MockLookup.setInstances(lookupAll.toArray());
         OpenProjects.getDefault().getOpenProjects();
         OptionsUtils.forLanguage(getPreferredLanguage().getLexerLanguage()).autoCompletionTypeResolution();
         OptionsUtils.forLanguage(getPreferredLanguage().getLexerLanguage()).setTestTypeResolution(true);

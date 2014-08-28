@@ -49,6 +49,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 //import org.netbeans.jemmy.util.Dumper;
@@ -116,6 +117,7 @@ public class testInsertGetterAndSetter extends insert
     jtTree.clickOnPath( jtTree.findPath( "a" ) );
     jtTree.clickOnPath( jtTree.findPath( "b" ) );
     jtTree.clickOnPath( jtTree.findPath( "d" ) );
+    new JCheckBoxOperator(jdGenerator, "Use Public Modifier").push();
 
     JButtonOperator jbOk = new JButtonOperator( jdGenerator, "OK" );
     jbOk.pushNoBlock( );

@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.callgraph.impl;
 
 import org.netbeans.modules.cnd.callgraph.support.ExportAction;
@@ -49,9 +48,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -62,31 +60,38 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
+import org.netbeans.modules.cnd.callgraph.api.ui.Catalog;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphActionEDTRunnable;
 import org.netbeans.modules.cnd.callgraph.impl.CallGraphScene.LayoutKind;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.ListView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 import org.openide.windows.TopComponent;
 
@@ -97,7 +102,7 @@ import org.openide.windows.TopComponent;
 public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider  {
 
     private ExplorerManager explorerManager = new ExplorerManager();
-    private AbstractNode root;
+    private final AbstractNode root;
     private List<Action> actions;
     private CallModel model;
     private boolean showGraph;
@@ -108,36 +113,59 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     public static final String IS_SHOW_OVERRIDING = "CallGraphIsShowOverriding"; // NOI18N
     public static final String IS_SHOW_PARAMETERS = "CallGraphIsShowParameters"; // NOI18N
     public static final String INITIAL_LAYOUT = "CallGraphLayout"; // NOI18N
-    
+
     private CallGraphScene scene;
     private final transient FocusTraversalPolicy newPolicy;
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
+    private static final int MAX_EXPANDED_TREE_NODES = 1000;
     private AtomicBoolean isSetDividerLocation = new AtomicBoolean(false);
-    
+    private static final RequestProcessor RP = new RequestProcessor("CallGraphPanel", 2);//NOI18N
+    private final CallGraphUI graphUI;
+    private final Catalog messagesCatalog;    
+    final ShowOverridingAction showOverridingAction;
+    private final Icon overridingIcon = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/show_overriding.gif"));
+
     /** Creates new form CallGraphPanel */
-    public CallGraphPanel(boolean showGraph) {
+    public CallGraphPanel(CallGraphUI graphUI) {
+        this.graphUI = graphUI;
+        messagesCatalog = graphUI == null || graphUI.getCatalog() == null ? new DefaultCatalog() : graphUI.getCatalog();
+        showOverridingAction = new ShowOverridingAction();        
         initComponents();
         isCalls = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_CALLS, true);
         isShowOverriding = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_SHOW_OVERRIDING, false);
         isShowParameters = NbPreferences.forModule(CallGraphPanel.class).getBoolean(IS_SHOW_PARAMETERS, false);
         getTreeView().setRootVisible(false);
         Children.Array children = new Children.SortedArray();
-        this.showGraph = showGraph;
+        this.showGraph = graphUI == null ? false : graphUI.showGraph();
         actions = new ArrayList<Action>();
         actions.add(new RefreshAction());
-        actions.add(new FocusOnAction());
+        actions.add(new FocusOnAction());        
         actions.add(null);
         actions.add(new WhoIsCalledAction());
         actions.add(new WhoCallsAction());
-        actions.add(new ShowOverridingAction());
+        actions.add((showOverridingAction));
         actions.add(null);
-        actions.add(new ShowFunctionParameters());
+        actions.add(new ShowFunctionParameters());        
         if (showGraph) {
             scene = new CallGraphScene();
             ExportAction exportAction = new ExportAction(scene, this);
             actions.add(exportAction);
             scene.setExportAction(exportAction);
+        }
+        actions.add(null);
+        actions.add(new ExpandAction());
+        actions.add(new ExpandAllAction());        
+        //add all actions from the provider
+        if (graphUI != null) {
+            actions.addAll(graphUI.getActions(new CallGraphActionEDTRunnable() {
+
+                @Override
+                public void run() {
+                    updateButtons();
+                    update();
+                }
+            }));
         }
         root = new AbstractNode(children){
             @Override
@@ -181,7 +209,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
             jToolBar1.setBackground(macBackground);
         }
     }
-    
+
     private void initGraph() {
         JComponent view = scene.createView();
         graphView.setViewportView(view);
@@ -203,7 +231,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         }
         graphView.setFocusable(false);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -223,21 +251,24 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         graphView = new JScrollPane();
         jSplitPane2 = new javax.swing.JSplitPane();
         treeView = new BeanTreeView();
-        contextPanel = new ContextPanel();
+        contextPanel = new ContextPanel(graphUI);
 
         setFocusCycleRoot(true);
+        setName("Form"); // NOI18N
         setLayout(new java.awt.BorderLayout());
 
         jToolBar1.setFloatable(false);
         jToolBar1.setOrientation(javax.swing.SwingConstants.VERTICAL);
         jToolBar1.setRollover(true);
         jToolBar1.setFocusable(false);
+        jToolBar1.setName("jToolBar1"); // NOI18N
 
         refresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/refresh.png"))); // NOI18N
-        refresh.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "RefreshActionTooltip")); // NOI18N
+        refresh.setToolTipText(getMessage("RefreshActionTooltip"));
         refresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         refresh.setMaximumSize(new java.awt.Dimension(28, 28));
         refresh.setMinimumSize(new java.awt.Dimension(28, 28));
+        refresh.setName("refresh"); // NOI18N
         refresh.setPreferredSize(new java.awt.Dimension(28, 28));
         refresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         refresh.addActionListener(new java.awt.event.ActionListener() {
@@ -248,10 +279,11 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         jToolBar1.add(refresh);
 
         focusOn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/focus_on.png"))); // NOI18N
-        focusOn.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "FocusOnActionTooltip")); // NOI18N
+        focusOn.setToolTipText(getMessage("FocusOnActionTooltip"));
         focusOn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         focusOn.setMaximumSize(new java.awt.Dimension(28, 28));
         focusOn.setMinimumSize(new java.awt.Dimension(28, 28));
+        focusOn.setName("focusOn"); // NOI18N
         focusOn.setPreferredSize(new java.awt.Dimension(28, 28));
         focusOn.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         focusOn.addActionListener(new java.awt.event.ActionListener() {
@@ -261,14 +293,16 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         });
         jToolBar1.add(focusOn);
 
+        jSeparator1.setName("jSeparator1"); // NOI18N
         jSeparator1.setSeparatorSize(new java.awt.Dimension(0, 4));
         jToolBar1.add(jSeparator1);
 
         calls.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/who_is_called.png"))); // NOI18N
-        calls.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CallsActionTooltip")); // NOI18N
+        calls.setToolTipText(getMessage("CallsActionTooltip"));
         calls.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         calls.setMaximumSize(new java.awt.Dimension(28, 28));
         calls.setMinimumSize(new java.awt.Dimension(28, 28));
+        calls.setName("calls"); // NOI18N
         calls.setPreferredSize(new java.awt.Dimension(28, 28));
         calls.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         calls.addActionListener(new java.awt.event.ActionListener() {
@@ -279,10 +313,11 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         jToolBar1.add(calls);
 
         callers.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/who_calls.png"))); // NOI18N
-        callers.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CallersActionTooltip")); // NOI18N
+        callers.setToolTipText(getMessage("CallersActionTooltip"));
         callers.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         callers.setMaximumSize(new java.awt.Dimension(28, 28));
         callers.setMinimumSize(new java.awt.Dimension(28, 28));
+        callers.setName("callers"); // NOI18N
         callers.setPreferredSize(new java.awt.Dimension(28, 28));
         callers.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         callers.addActionListener(new java.awt.event.ActionListener() {
@@ -293,11 +328,12 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         jToolBar1.add(callers);
 
         overriding.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/show_overriding.gif"))); // NOI18N
-        overriding.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CallGraphPanel.overriding.toolTipText")); // NOI18N
+        overriding.setToolTipText(getMessage("ShowOverridingTooltip"));
         overriding.setFocusable(false);
         overriding.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         overriding.setMaximumSize(new java.awt.Dimension(28, 28));
         overriding.setMinimumSize(new java.awt.Dimension(28, 28));
+        overriding.setName("overriding"); // NOI18N
         overriding.setPreferredSize(new java.awt.Dimension(28, 28));
         overriding.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         overriding.addActionListener(new java.awt.event.ActionListener() {
@@ -312,23 +348,31 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         jSplitPane1.setDividerLocation(200);
         jSplitPane1.setResizeWeight(0.5);
         jSplitPane1.setFocusable(false);
+        jSplitPane1.setName(""); // NOI18N
         jSplitPane1.setOneTouchExpandable(true);
 
+        graphView.setToolTipText("");
         graphView.setFocusable(false);
+        graphView.setName(""); // NOI18N
         jSplitPane1.setRightComponent(graphView);
-        graphView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "pictorial.part")); // NOI18N
-        graphView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "pictorial.part")); // NOI18N
+        graphView.getAccessibleContext().setAccessibleName(null);
+        graphView.getAccessibleContext().setAccessibleDescription(null);
 
+        jSplitPane2.setDividerLocation(-10);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(1.0);
         jSplitPane2.setFocusable(false);
-        jSplitPane2.setLeftComponent(treeView);
-        treeView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_TreeView_AN")); // NOI18N
-        treeView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_TreeView_AD")); // NOI18N
+        jSplitPane2.setName(""); // NOI18N
 
+        treeView.setName("treeView"); // NOI18N
+        jSplitPane2.setLeftComponent(treeView);
+        treeView.getAccessibleContext().setAccessibleName(getMessage("CGP_TreeView_AN"));
+        treeView.getAccessibleContext().setAccessibleDescription(getMessage("CGP_TreeView_AD"));
+
+        contextPanel.setName("contextPanel"); // NOI18N
         jSplitPane2.setRightComponent(contextPanel);
-        contextPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AM")); // NOI18N
-        contextPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AD")); // NOI18N
+        contextPanel.getAccessibleContext().setAccessibleName(getMessage("CGP_ListView_AM"));
+        contextPanel.getAccessibleContext().setAccessibleDescription(getMessage("CGP_ListView_AD"));
 
         jSplitPane1.setLeftComponent(jSplitPane2);
 
@@ -354,48 +398,47 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     }//GEN-LAST:event_callersActionPerformed
 
 private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_focusOnActionPerformed
-        Node[] nodes = getExplorerManager().getSelectedNodes();
+    Node[] nodes = getExplorerManager().getSelectedNodes();
         if (nodes == null || nodes.length != 1){
-            return;
-        }
-        Node node = nodes[0];
+        return;
+    }
+    Node node = nodes[0];
         if (node instanceof FunctionRootNode){
-            update();
+        update();
         } else if (node instanceof CallNode){
             Call call = ((CallNode)node).getCall();
-            if (isCalls) {
-                model.setRoot(call.getCallee());
-            } else {
-                model.setRoot(call.getCaller());
-            }
-            setName(model.getName());
-            setToolTipText(getName()+" - "+NbBundle.getMessage(getClass(), "CTL_CallGraphTopComponent")); // NOI18N
-            Container parent = getParent();
-            while (parent != null) {
-                if (parent instanceof JTabbedPane) {
-                    int i = ((JTabbedPane) parent).getSelectedIndex();
-                    if (i >=0) {
-                        ((JTabbedPane) parent).setTitleAt(i, getName() + "  "); // NOI18N
-                    }
-                    break;
-                } else if (parent instanceof TopComponent) {
-                    ((TopComponent) parent).setName(getToolTipText()); // NOI18N
-                    break;
-                }
-            }
-            update();
+        if (isCalls) {
+            model.setRoot(call.getCallee());
+        } else {
+            model.setRoot(call.getCaller());
         }
+        setName(model.getName());
+            setToolTipText(getName()+" - "+getMessage("CTL_CallGraphTopComponent")); // NOI18N
+        Container parent = getParent();
+        while (parent != null) {
+            if (parent instanceof JTabbedPane) {
+                int i = ((JTabbedPane) parent).getSelectedIndex();
+                    if (i >=0) {
+                    ((JTabbedPane) parent).setTitleAt(i, getName() + "  "); // NOI18N
+                }
+                break;
+            } else if (parent instanceof TopComponent) {
+                ((TopComponent) parent).setName(getToolTipText()); // NOI18N
+                break;
+            }
+        }
+        update();
+    }
 }//GEN-LAST:event_focusOnActionPerformed
 
 private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_overridingActionPerformed
-    setShowOverriding(!isShowOverriding);
+    showOverridingAction.actionPerformed(evt);
+    
 }//GEN-LAST:event_overridingActionPerformed
 
     private void setShowOverriding(boolean showOverriding){
         isShowOverriding = showOverriding;
-        NbPreferences.forModule(CallGraphPanel.class).putBoolean(IS_SHOW_OVERRIDING, isShowOverriding);
-        updateButtons();
-        update();
+        NbPreferences.forModule(CallGraphPanel.class).putBoolean(IS_SHOW_OVERRIDING, isShowOverriding);        
     }
 
     private void setShowParameters(boolean showParameters){
@@ -417,13 +460,17 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         callers.setSelected(!isCalls);
         overriding.setSelected(isShowOverriding);
     }
-    
+
+    private String getMessage(String key, Object ... parameters) {
+        return messagesCatalog.getMessage(key, parameters);
+    }
+
     public void setModel(CallModel model) {
         this.model = model;
         updateButtons();
         update();
     }
-
+           
     private synchronized void update() {
         final CallGraphState state = new CallGraphState(model, scene, actions);
         if (showGraph) {
@@ -432,40 +479,70 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         if (showGraph) {
             scene.clean();
         }
-        final Function function = model.getRoot();
-        if (function != null){
-            final Children children = root.getChildren();
-            if (!Children.MUTEX.isReadAccess()){
-                Children.MUTEX.writeAccess(new Runnable(){
+        //model.getRoot() can be too expensive to invoke it in UI thread
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                final Function function = model.getRoot();
+                SwingUtilities.invokeLater(new Runnable() {
+
                     @Override
                     public void run() {
-                        children.remove(children.getNodes());
-                        final Node node = new FunctionRootNode(function, state, isCalls);
-                        children.add(new Node[]{node});
-                        try {
-                            getExplorerManager().setSelectedNodes(new Node[]{node});
-                        } catch (PropertyVetoException ex) {
-                        }
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                getTreeView().expandNode(node);
+                        if (function != null) {
+                            final Children children = root.getChildren();
+                            if (!Children.MUTEX.isReadAccess()) {
+                                Children.MUTEX.writeAccess(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        children.remove(children.getNodes());
+                                        Node selectedNode = null;
+                                        //if root of the model is invisible
+                                        if (!model.isRootVisible()) {
+                                            List<Call> childrenList = isCalls ? model.getCallees(function) : model.getCallers(function);
+                                            Node[] functions = new Node[childrenList.size()];
+                                            for (int i = 0; i < childrenList.size(); i++) {
+                                                Call call = childrenList.get(i);
+                                                Function f = isCalls ? call.getCallee() : call.getCaller();
+                                                functions[i] = new FunctionRootNode(f, state, isCalls);
+                                            }
+                                            if (functions.length > 0) {
+                                                selectedNode = functions[0];
+                                            }
+                                            children.add(functions);
+                                        } else {
+                                            selectedNode = new FunctionRootNode(function, state, isCalls);
+                                            children.add(new Node[]{selectedNode});
+                                        }
+                                        final Node node = selectedNode;
+                                        try {
+                                            getExplorerManager().setSelectedNodes(new Node[]{node});
+                                        } catch (PropertyVetoException ex) {
+                                        }
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                getTreeView().expandNode(node);
+                                            }
+                                        });
+                                    }
+                                });
                             }
-                        });
+                        } else {
+                            final Children children = root.getChildren();
+                            if (!Children.MUTEX.isReadAccess()) {
+                                Children.MUTEX.writeAccess(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        children.remove(children.getNodes());
+                                    }
+                                });
+                            }
+                        }
                     }
                 });
-            }
-        } else {
-            final Children children = root.getChildren();
-            if (!Children.MUTEX.isReadAccess()){
-                Children.MUTEX.writeAccess(new Runnable(){
-                    @Override
-                    public void run() {
-                        children.remove(children.getNodes());
-                    }
-                });
-            }
-        }
+            }            
+        });
     }
 
     @Override
@@ -479,7 +556,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         super.requestFocusInWindow();
         return treeView.requestFocusInWindow();
     }
-    
+
     public final BeanTreeView getTreeView(){
         return (BeanTreeView)treeView;
     }
@@ -497,7 +574,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     public HelpCtx getHelpCtx() {
         return new HelpCtx("CallGraphView"); // NOI18N
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton callers;
     private javax.swing.JToggleButton calls;
@@ -512,13 +589,13 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JButton refresh;
     private javax.swing.JScrollPane treeView;
     // End of variables declaration//GEN-END:variables
-    
+
     private final class RefreshAction extends AbstractAction implements Presenter.Popup {
         private final JMenuItem menuItem;
         public RefreshAction() {
-            putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "RefreshAction"));  // NOI18N
+            putValue(Action.NAME, getMessage("RefreshAction"));  // NOI18N
             putValue(Action.SMALL_ICON, refresh.getIcon());
-            menuItem = new JMenuItem(this); 
+            menuItem = new JMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
@@ -536,12 +613,12 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private final class WhoCallsAction extends AbstractAction implements Presenter.Popup {
         private final JRadioButtonMenuItem menuItem;
         public WhoCallsAction() {
-            putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "CallersAction"));  // NOI18N
+            putValue(Action.NAME, getMessage("CallersAction"));  // NOI18N
             putValue(Action.SMALL_ICON, callers.getIcon());
-            menuItem = new JRadioButtonMenuItem(this); 
+            menuItem = new JRadioButtonMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
- 
+
         @Override
         public void actionPerformed(ActionEvent e) {
             setDirection(false);
@@ -557,12 +634,12 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private final class WhoIsCalledAction extends AbstractAction implements Presenter.Popup {
         private final JRadioButtonMenuItem menuItem;
         public WhoIsCalledAction() {
-            putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "CallsAction"));  // NOI18N
+            putValue(Action.NAME, getMessage( "CallsAction"));  // NOI18N
             putValue(Action.SMALL_ICON, calls.getIcon());
-            menuItem = new JRadioButtonMenuItem(this); 
+            menuItem = new JRadioButtonMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
- 
+
         @Override
         public void actionPerformed(ActionEvent e) {
             setDirection(true);
@@ -575,18 +652,32 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
     }
 
-    private final class ShowOverridingAction extends AbstractAction implements Presenter.Popup {
+    private final class ShowOverridingAction extends org.netbeans.modules.cnd.callgraph.api.ui.CallGraphAction implements Presenter.Popup {
         private final JCheckBoxMenuItem menuItem;
         public ShowOverridingAction() {
-            putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "ShowOverridingAction"));  // NOI18N
-            putValue(Action.SMALL_ICON, overriding.getIcon());
+            super(new CallGraphActionEDTRunnable() {
+
+                @Override
+                public void run() {                    
+                    updateButtons();
+                    update();
+                }
+            });
+            putValue(Action.NAME, getMessage( "ShowOverridingAction"));  // NOI18N
+            putValue(Action.SMALL_ICON, overridingIcon);
             menuItem = new JCheckBoxMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void doNonEDTAction() {
             setShowOverriding(!isShowOverriding);
+            model.update();
+        }
+
+        @Override
+        public void doEDTAction() {
+        
         }
 
         @Override
@@ -599,7 +690,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private final class ShowFunctionParameters extends AbstractAction implements Presenter.Popup {
         private final JCheckBoxMenuItem menuItem;
         public ShowFunctionParameters() {
-            putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "ShowFunctionSignature"));  // NOI18N
+            putValue(Action.NAME, getMessage("ShowFunctionSignature"));  // NOI18N
             menuItem = new JCheckBoxMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
@@ -619,9 +710,9 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private final class FocusOnAction extends AbstractAction implements Presenter.Popup {
         private final JMenuItem menuItem;
         public FocusOnAction() {
-            putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "FocusOnAction"));  // NOI18N
+            putValue(Action.NAME, getMessage("FocusOnAction"));  // NOI18N
             putValue(Action.SMALL_ICON, focusOn.getIcon());
-            menuItem = new JMenuItem(this); 
+            menuItem = new JMenuItem(this);
             Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
@@ -635,11 +726,162 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             return menuItem;
         }
     }
+    
+    private void expandAllImpl(final Node n) {
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                expandAllWorker(n);
+            }
+
+        });
+    }
+    
+    private void expandAllWorker(Node n) {
+        final AtomicBoolean canceled = new AtomicBoolean(false);
+        ProgressHandle progress = ProgressHandleFactory.createHandle(getMessage("ExpandAll"), new Cancellable() {  // NOI18N
+            
+            @Override
+            public boolean cancel() {
+                canceled.set(true);
+                return true;
+            }
+        });
+        progress.start();
+        try {
+            List<List<Node>> list = new ArrayList<List<Node>>();
+            expandAllImpl(progress, canceled, n, list);
+            int count = 0;
+            for(int i = 0; i < list.size(); i++) {
+                for(Node node : list.get(i)) {
+                    getTreeView().expandNode(node);
+                    count++;
+                    if (count >= MAX_EXPANDED_TREE_NODES) {
+                        int allCount = 0;
+                        for(int j = 0; j < list.size(); j++) {
+                            allCount += list.get(j).size();
+                        }
+                        StatusDisplayer.getDefault().setStatusText(getMessage("ExpandedLimitWarning", count, allCount, i, list.size(), allCount));
+                        return;
+                    }
+                }
+            }
+        } finally {
+            progress.finish();
+        }
+    }
+    
+    private void expandAllImpl(ProgressHandle progress, AtomicBoolean canceled, Node node, List<List<Node>> list) {
+        int level = 0;
+        if (list.size() < level+1) {
+            list.add(new ArrayList<Node>());
+        }
+        list.get(level).add(node);
+        while(true) {
+            level++;
+            if (list.size() < level+1) {
+                list.add(new ArrayList<Node>());
+            }
+            List<Node> prev = list.get(level-1);
+            if (prev.isEmpty()) {
+                return;
+            }
+            for(Node n : prev) {
+                updateProgress(progress, list);
+                Children children = n.getChildren();
+                if (canceled.get()) {
+                    return;
+                }
+                if (children != null) {
+                    if (children instanceof CallChildren) {
+                        ((CallChildren) children).init();
+                    }
+                    if (canceled.get()) {
+                        return;
+                    }
+                    for (Node subNode : children.getNodes()) {
+                        list.get(level).add(subNode);
+                        updateProgress(progress, list);
+                        if (canceled.get()) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private void updateProgress(ProgressHandle progress, List<List<Node>> list) {
+        int count = 0;
+        for(int i = 0; i < list.size(); i++) {
+            count += list.get(i).size();
+        }
+        if (count%100 == 0) {
+            progress.progress(getMessage("ExpandedProgress", count, list.size()));  // NOI18N
+        }
+    }   
+    
+    private final class ExpandAction extends AbstractAction implements Presenter.Popup {
+        private final JMenuItem menuItem;
+        public ExpandAction() {
+            putValue(Action.NAME, getMessage("Expand"));  // NOI18N
+            menuItem = new JMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }     
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Node[] nodes = getExplorerManager().getSelectedNodes();
+            if (nodes == null || nodes.length == 0){
+                getTreeView().expandAll();                
+            } else {
+                getTreeView().expandNode(nodes[0]);
+            }
+        }
+
+        @Override
+        public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }    
+
+    private final class ExpandAllAction extends AbstractAction implements Presenter.Popup {
+        private final JMenuItem menuItem;
+        public ExpandAllAction() {
+            putValue(Action.NAME, getMessage("ExpandAll"));  // NOI18N
+            menuItem = new JMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }     
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Node[] nodes = getExplorerManager().getSelectedNodes();
+            if (nodes == null || nodes.length == 0){
+                expandAllImpl(root);
+            } else {
+                expandAllImpl(nodes[0]);
+            }
+        }
+
+        @Override
+        public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }
 
     private static final class ContextPanel extends JPanel implements ExplorerManager.Provider {
         private final ExplorerManager managerCtx = new ExplorerManager();
         private final ListView listView = new ListView();
-        private ContextPanel(){
+        private final CallGraphUI graphUI;
+
+        private ContextPanel(CallGraphUI graphUI){
+            this.graphUI = graphUI;
+            initDefaultView();
+        }
+
+        private void initDefaultView() {
+            removeAll();
             listView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AM")); // NOI18N
             listView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AD")); // NOI18N
             setLayout(new java.awt.BorderLayout());
@@ -647,7 +889,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             listView.setFocusable(false);
             listView.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         }
-        
+
         @Override
         public ExplorerManager getExplorerManager() {
             return managerCtx;
@@ -658,18 +900,65 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             super.requestFocusInWindow();
             return listView.requestFocusInWindow();
         }
-        
-        private void setRootContent(CallNode node){
-            Collection<Node> list;
-            if (node == null) {
-                list = Collections.<Node>emptyList();
-            } else {
-                list = new ArrayList<Node>(1);
-                Call call = node.getCall();
-                list.add(new CallContext(call));
-            }
-            CallContextRoot root = new CallContextRoot(new ContextList(list));
+
+        private void setRootContent(final CallNode node){
+            //allow implementator to implement call as a node
+            initDefaultView();
+            Collection<Node> list = new ArrayList<Node>(1);
+            list.add(new CallContext(new LoadingNode()));
+            Node root  = new CallContextRoot(new ContextList(list));
             getExplorerManager().setRootContext(root);
+            revalidate();
+            RP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    Collection<Node> list;
+                    Node root;
+                    if (node == null) {
+                        list = Collections.<Node>emptyList();
+                        root  = new CallContextRoot(new ContextList(list));
+                    } else {
+                        list = new ArrayList<Node>(1);
+                        Call call = node.getCall();
+                        final JPanel contextPanel = graphUI == null ? null : graphUI.getContextPanel(call);
+                        if (contextPanel != null) {
+                            SwingUtilities.invokeLater(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    removeAll();
+                                    setLayout(new java.awt.BorderLayout());
+                                    add(contextPanel, java.awt.BorderLayout.CENTER);
+                                    revalidate();
+
+                                }
+                            });
+                            return;
+                        } else {
+                            if (call instanceof Node) {
+                                root = (Node)call;
+
+                            } else {
+                                list.add(new CallContext(call));
+                                root  = new CallContextRoot(new ContextList(list));
+                            }
+                        }
+                    }
+                    final Node rootNode = root;
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            initDefaultView();
+                            getExplorerManager().setRootContext(rootNode);
+                            revalidate();
+                        }
+                    });
+
+                }
+            });
+
         }
         private static final class ContextList extends Children.Array {
             private ContextList(Collection<Node> nodes){
@@ -710,14 +999,22 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 }
                 return super.getShortDescription();
             }
-    
+
             @Override
             public Action[] getActions(boolean context) {
                 return new Action[0];
             }
+
+            @Override
+            public Image getIcon(int type) {
+                if (call instanceof Node) {
+                    return ((Node)call).getIcon(type);
+                }
+                return super.getIcon(type);
+            }
         }
     }
-    
+
     public static class MyOwnFocusTraversalPolicy extends FocusTraversalPolicy {
         private final ArrayList<Component> order;
         private final Container panel;

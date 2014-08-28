@@ -49,7 +49,7 @@
         <Statements>
             <EchoStatement start='6' end='24'>
                 <ExpressionArrayAccess start='11' end='23'>
-                    <ArrayCreation start='11' end='20'>
+                    <ArrayCreation start='11' end='20' type='NEW'>
                         <ArrayElement start='12' end='13'>
                             <Key>
                             </Key>

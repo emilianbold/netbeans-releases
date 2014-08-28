@@ -46,15 +46,16 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,10 +76,15 @@ public class FullRemoteSyncFactory extends BaseSyncFactory {
     }
 
     @Override
-    public RemoteSyncWorker createNew(Project project, PrintWriter out, PrintWriter err) {
+    public RemoteSyncWorker createNew(Lookup.Provider project, PrintWriter out, PrintWriter err) {
         ExecutionEnvironment execEnv = RemoteProjectSupport.getExecutionEnvironment(project);
+        RemoteProject rp = project.getLookup().lookup(RemoteProject.class);
+        if (rp == null) {
+            return null;
+        }
+        final FileObject projDirFO = rp.getSourceBaseDirFileObject();
         FileSystem fileSystem = RemoteFileUtil.getProjectSourceFileSystem(project);
-        return new FullRemoteSyncWorker(execEnv, out, err, Collections.singletonList(FSPath.toFSPath(project.getProjectDirectory())));
+        return new FullRemoteSyncWorker(execEnv, out, err, Collections.singletonList(FSPath.toFSPath(projDirFO)));
     }
 
     @Override

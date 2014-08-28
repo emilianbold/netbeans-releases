@@ -40,5 +40,17 @@ echo is_numeric($foo)
     // HINT
     : $_GET[""];
 
+// OK
+echo is_null($_GET['foo']);
+
+// OK
+echo is_nan($_GET['foo']);
+
+// OK
+echo is_real($_GET['foo']);
+
+// OK
+echo is_scalar($_GET['foo']);
+
 //END
 ?>

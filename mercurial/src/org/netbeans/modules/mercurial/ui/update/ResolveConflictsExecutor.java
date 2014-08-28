@@ -62,6 +62,7 @@ import org.netbeans.api.diff.*;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.util.Utils;
@@ -164,20 +165,16 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
                 Mercurial.LOG.log(Level.INFO, null, ex);
             }
             if (parentRevisions != null && parentRevisions.size() > 1) {
-                leftFileRevision = parentRevisions.get(0).getRevisionNumber();
-                rightFileRevision = parentRevisions.get(1).getRevisionNumber();
+                leftFileRevision = formatRevision(parentRevisions.get(0));
+                rightFileRevision = formatRevision(parentRevisions.get(1));
             }
         }
         if (leftFileRevision == null || leftFileRevision.equals(file.getAbsolutePath() + ORIG_SUFFIX)
                 || leftFileRevision.equals(LOCAL)){
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
-        } else {
-            leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleRevision", leftFileRevision); // NOI18N
         }
         if (rightFileRevision == null || rightFileRevision.equals(file.getAbsolutePath() + ORIG_SUFFIX)) {
             rightFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
-        } else {
-            rightFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleRevision", rightFileRevision); // NOI18N
         }
         
         final StreamSource s1;
@@ -404,6 +401,18 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
 
     public void run() {
         throw new RuntimeException("Not implemented"); // NOI18N
+    }
+
+    private static final int MAX_LEN = 40;
+    private static String formatRevision (HgLogMessage revision) {
+        StringBuilder sb = new StringBuilder(100);
+        String branch = revision.getBranches().length == 0 ? HgBranch.DEFAULT_NAME : revision.getBranches()[0];
+        sb.append(revision.getRevisionNumber()).append(" (").append(branch).append(") ");
+        sb.append(revision.getShortMessage());
+        if (sb.length() > MAX_LEN) {
+            sb.delete(MAX_LEN, sb.length());
+        }
+        return sb.toString();
     }
     
 

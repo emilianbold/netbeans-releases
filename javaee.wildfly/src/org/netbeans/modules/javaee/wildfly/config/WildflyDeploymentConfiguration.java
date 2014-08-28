@@ -76,7 +76,7 @@ public abstract class WildflyDeploymentConfiguration
     //cached data object for the server-specific configuration file (initialized by the subclasses)
     protected DataObject deploymentDescriptorDO;
 
-    private final WildflyPluginUtils.Version version;
+    protected final WildflyPluginUtils.Version version;
 
     //the directory with resources - supplied by the configuration support in the construction time
     private File resourceDir;

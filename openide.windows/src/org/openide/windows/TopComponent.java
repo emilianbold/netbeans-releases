@@ -1175,7 +1175,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
                 ActionEvent ev = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, Utilities.keyToString(ks));
                 action.actionPerformed(ev);
             } else {
-                Toolkit.getDefaultToolkit().beep();
+                Utilities.disabledActionBeep();
             }
 
             return true;

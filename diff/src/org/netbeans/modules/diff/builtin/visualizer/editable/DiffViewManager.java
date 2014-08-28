@@ -152,6 +152,7 @@ class DiffViewManager implements ChangeListener {
         
         JScrollBar leftScrollBar = leftContentPanel.getScrollPane().getVerticalScrollBar();
         JScrollBar rightScrollBar = rightContentPanel.getScrollPane().getVerticalScrollBar();
+        boolean repaint = true;
         if (e.getSource() == leftContentPanel.getScrollPane().getVerticalScrollBar().getModel()) {
             int value = leftScrollBar.getValue();
             leftContentPanel.getActionsScrollPane().getVerticalScrollBar().setValue(value);
@@ -168,17 +169,36 @@ class DiffViewManager implements ChangeListener {
                 doSmartScroll = !smartScrollDisabled[0];
             }
             if (doSmartScroll && valueChanged) {
-                smartScroll();
-                master.updateCurrentDifference();
+                // let the viewport update its visible area
+                final Rectangle prevVisRect = rightContentPanel.getScrollPane().getViewport().getViewRect();
+                repaint = false;
+                EventQueue.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run () {
+                        smartScroll(true);
+                        Rectangle visRect = rightContentPanel.getScrollPane().getViewport().getViewRect();
+                        Boolean down = null;
+                        if (visRect.y > prevVisRect.y) {
+                            down = true;
+                        } else if (visRect.y < prevVisRect.y) {
+                            down = false;
+                        }
+                        master.updateCurrentDifference(down);
+                        master.getMyDivider().repaint();
+                    }
+                });
             }
         }
-        master.getMyDivider().repaint();
+        if (repaint) {
+            master.getMyDivider().repaint();
+        }
         myScrollEvent = false;
     }
     
-    public void scroll() {
+    void scroll (boolean checkFileEdge) {
         myScrollEvent = true;
-        smartScroll();
+        smartScroll(checkFileEdge);
         master.getMyDivider().repaint();
         myScrollEvent = false;
     }
@@ -495,80 +515,25 @@ class DiffViewManager implements ChangeListener {
      * 
      * 5. scroll the other document proportionally
      */ 
-    private void smartScroll() {
+    private void smartScroll (boolean checkFileEdge) {
         DiffContentPanel rightPane = master.getEditorPane2();
         DiffContentPanel leftPane = master.getEditorPane1();        
         
         int [] map = scrollMap.getScrollMap(rightPane.getEditorPane().getSize().height, master.getDiffSerial());
         
         int rightOffet = rightPane.getScrollPane().getVerticalScrollBar().getValue();
-        if (rightOffet >= map.length) return;
-        leftPane.getScrollPane().getVerticalScrollBar().setValue(map[rightOffet]);
-    }
-
-    private int computeLeftOffsetToMatchDifference(DifferencePosition differenceMatchStart, int rightOffset, Rectangle[] positions) {
-        Rectangle leftStartRect = positions[0], leftEndRect = positions[1], rightStartRect = positions[2], rightEndRect = positions[3];
-        Difference diff = differenceMatchStart.getDiff();
-        boolean matchStart = differenceMatchStart.isStart();
-        
-        int value;
-        int valueSecond;
-        if (matchStart) {
-            value = leftStartRect.y + leftStartRect.height;        // kde zacina prva, 180
-            valueSecond = rightStartRect.y + rightStartRect.height; // kde by zacinala druha, napr. 230
+        if (checkFileEdge && rightOffet == 0) {
+            leftPane.getScrollPane().getVerticalScrollBar().setValue(0);
         } else {
-            if (diff.getType() == Difference.ADD) {
-                value = leftStartRect.y;        // kde zacina prva, 180
-                if (rightStartRect.y == 0) {
-                    value -= rightStartRect.height;
-                }
-                valueSecond = rightEndRect.y + rightStartRect.height; // kde by zacinala druha, napr. 230
-            } else {
-                value = leftEndRect.y + leftEndRect.height;        // kde zacina prva, 180
-                if (diff.getType() == Difference.DELETE) {
-                    value += leftStartRect.height;
-                    valueSecond = rightStartRect.y + rightStartRect.height; // kde by zacinala druha, napr. 230
-                } else {
-                    valueSecond = rightEndRect.y + rightEndRect.height; // kde by zacinala druha, napr. 230
-                }
+            int halfScreen = rightPane.getScrollPane().getVerticalScrollBar().getVisibleAmount() / 2;
+            rightOffet += halfScreen;
+            if (checkFileEdge && rightOffet + halfScreen >= rightPane.getScrollPane().getVerticalScrollBar().getMaximum()) {
+                rightOffet = map.length - 1;
             }
+            if (rightOffet >= map.length) return;
+            leftPane.getScrollPane().getVerticalScrollBar().setValue(map[rightOffet]
+                    - leftPane.getScrollPane().getVerticalScrollBar().getVisibleAmount() / 2);
         }
-
-        // druha je na 400
-        int secondOffset = rightOffset - valueSecond;
-        
-        value += secondOffset;
-        if (diff.getType() == Difference.ADD) value += rightStartRect.height;
-        if (diff.getType() == Difference.DELETE) value -= leftStartRect.height;
-        
-        return value;
-    }
-    
-    private int findDifferenceToMatch (int rightOffset, int rightViewportHeight, DecoratedDifference [] diffs, int index) {
-        int candidateIndex = -1;
-        // start the loop with the last used index, it will speed-up things
-        for (; index < diffs.length; ++index) {
-            DecoratedDifference dd = diffs[index];
-            if (dd.getTopRight() > rightOffset + rightViewportHeight) break;
-            if (dd.getBottomRight() != -1) {
-                if (dd.getBottomRight() <= rightOffset) continue;
-            } else {
-                if (dd.getTopRight() <= rightOffset) continue;
-            }
-            if (candidateIndex > -1) {
-                DecoratedDifference candidate = diffs[candidateIndex];
-                if (candidate.getDiff().getType() == Difference.DELETE) {
-                    candidateIndex = index;
-                } else if (candidate.getTopRight() < rightOffset) { 
-                    candidateIndex = index;
-                } else if (dd.getTopRight() <= rightOffset + rightViewportHeight / 2) { 
-                    candidateIndex = index;
-                }
-            } else {
-                candidateIndex = index;
-            }
-        }
-        return candidateIndex;
     }
 
     double getScrollFactor() {
@@ -736,82 +701,77 @@ class DiffViewManager implements ChangeListener {
         }
 
         private int [] compute() {
-            DiffContentPanel rightPane = master.getEditorPane2();
-
-            int rightViewportHeight = rightPane.getScrollPane().getViewport().getViewRect().height; 
-
             int [] scrollMap = new int[rightPanelHeightCached];
+            if (rightPanelHeightCached == 0) {
+                return scrollMap;
+            }
 
             EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(leftContentPanel.getEditorPane());
             if (editorUI == null) return scrollMap;
 
-            int lastOffset = 0;
             View rootLeftView = Utilities.getDocumentView(leftContentPanel.getEditorPane());
             View rootRightView = Utilities.getDocumentView(rightContentPanel.getEditorPane());
             if (rootLeftView == null || rootRightView == null) return scrollMap;
-            HashMap<Difference, Rectangle[]> positionsPerDiff = new HashMap<Difference, Rectangle[]>(getDecorations().length);
 
             DecoratedDifference [] diffs = getDecorations();
-            int lastDiffIndex = 0;
-            for (int rightOffset = 0; rightOffset < rightPanelHeightCached; rightOffset+=5) { // count position for every fifth pix, others are linearly interpolated
-                DifferencePosition dpos = null;
-                int leftOffset;
-                // find diff for every fifth pix
-                int candidateIndex = diffs.length == 0 ? -1 : findDifferenceToMatch(rightOffset, rightViewportHeight, diffs, lastDiffIndex);
-                if (candidateIndex > -1) {
-                    lastDiffIndex = candidateIndex;
-                    DecoratedDifference candidate = diffs[candidateIndex];
-                    boolean matchStart = candidate.getTopRight() > rightOffset + rightViewportHeight / 2;
-                    if (candidate.getDiff().getType() == Difference.DELETE && candidate.getTopRight() < rightOffset + rightViewportHeight * 4 / 5) matchStart = false;
-                    if (candidate.getDiff().getType() == Difference.DELETE && candidate == diffs[diffs.length -1]) matchStart = false;
-                    dpos = new DifferencePosition(candidate.getDiff(), matchStart);
+            
+            scrollMap[0] = 0;
+            scrollMap[rightPanelHeightCached - 1] = master.getEditorPane1().getEditorPane().getSize().height;
+            int lastOffset = 0;
+            boolean lastDelete = false;
+            for (int i = 0; i < diffs.length; ++i) {
+                DecoratedDifference ddiff = diffs[i];
+                int topLeft = ddiff.getTopLeft();
+                int topRight = ddiff.getTopRight();
+                int bottomLeft = ddiff.getBottomLeft();
+                int bottomRight = ddiff.getBottomRight();
+                if (topRight >= scrollMap.length || bottomRight >= scrollMap.length) {
+                    Logger.getLogger(DiffViewManager.class.getName()).log(Level.FINE, "Skipping temporary diff highlights");
+                    break;
                 }
-
-                if (dpos == null) {
-                    leftOffset = lastOffset + rightOffset;
-                } else {
-                    Difference diff = dpos.getDiff();
-                    Rectangle[] positions = positionsPerDiff.get(diff);
-                    if (positions == null) {
-                        positions = new Rectangle[4];
-                        positions[0] = getRectForView(leftContentPanel.getEditorPane(), rootLeftView, diff.getFirstStart() - 1, false);
-                        positions[1] = getRectForView(leftContentPanel.getEditorPane(), rootLeftView, diff.getFirstEnd() - 1, true);
-                        positions[2] = getRectForView(rightContentPanel.getEditorPane(), rootRightView, diff.getSecondStart() - 1, false);
-                        positions[3] = getRectForView(rightContentPanel.getEditorPane(), rootRightView, diff.getSecondEnd() - 1, true);
-                        positionsPerDiff.put(diff, positions);
+                scrollMap[topRight] = topLeft;
+                if (bottomLeft == -1) {
+                    bottomLeft = topLeft;
+                }
+                if (bottomRight == -1) {
+                    // DELETE, handle separately to make the transition smooth
+                    scrollMap[topRight] = topLeft;
+                    interpolate(scrollMap, lastOffset, topRight);
+                    lastOffset = Math.max(lastOffset, lastDelete
+                            ? (topRight + lastOffset) / 2
+                            : topRight - 150);
+                    int newLastOffset = rightPanelHeightCached - 1;
+                    if (i < diffs.length - 1) {
+                        newLastOffset = diffs[i + 1].topRight;
+                        scrollMap[newLastOffset] = diffs[i + 1].topLeft;
                     }
-                    leftOffset = computeLeftOffsetToMatchDifference(dpos, rightOffset, positions);
-                    lastOffset = leftOffset - rightOffset;
-                }
-                // now try to interpolate for next 4 positions
-                int maxIndex = Math.min(rightPanelHeightCached - rightOffset, 5);
-                for (int i = 0; i <  maxIndex; ++i) {
-                    scrollMap[rightOffset + i] = leftOffset + i;
+                    scrollMap[topRight] = bottomLeft;
+                    interpolate(scrollMap, topRight, newLastOffset);
+                    
+                    newLastOffset = Math.min((topRight + newLastOffset) / 2, topRight + 150);
+                    interpolate(scrollMap, lastOffset, newLastOffset);
+                    lastOffset = newLastOffset;
+                    lastDelete = true;
+                } else {
+                    scrollMap[bottomRight] = bottomLeft;
+                    interpolate(scrollMap, lastOffset, topRight);
+                    interpolate(scrollMap, topRight, bottomRight);
+                    lastOffset = bottomRight;
+                    lastDelete = false;
                 }
             }
-            scrollMap = smooth(scrollMap);
+            interpolate(scrollMap, lastOffset, rightPanelHeightCached - 1);
             return scrollMap;
         }
 
-        private int[] smooth(int[] map) {
-            int [] newMap = new int [map.length];
-            int leftShift = 0;
-            float correction = 0.0f;
-            for (int i = 0; i < map.length; i++) {
-                int leftOffset = map[i];
-                int requestedShift = leftOffset - i; 
-                if (requestedShift > leftShift) {
-                    if (correction > requestedShift - leftShift) correction = requestedShift - leftShift;
-                    leftShift += correction;
-                    correction += 0.02f;
-                } else if (requestedShift < leftShift) {
-                    leftShift -= 1;
-                } else {
-                    correction = 1.0f;
+        private void interpolate (int[] scrollMap, int start, int end) {
+            if (end > start) {
+                int rightHeight = end - start;
+                int leftHeight = scrollMap[end] - scrollMap[start];
+                for (int pos = 1; pos < end - start; ++pos) {
+                    scrollMap[pos + start] = (leftHeight * pos) / rightHeight + scrollMap[start];
                 }
-                newMap[i] = i + leftShift;
             }
-            return newMap;
         }
     }
 

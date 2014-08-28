@@ -70,7 +70,6 @@ public class RefactorMoveClassDialogTest extends PerformanceTestCase {
     public RefactorMoveClassDialogTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 2000;
     }
 
     /**
@@ -82,7 +81,6 @@ public class RefactorMoveClassDialogTest extends PerformanceTestCase {
     public RefactorMoveClassDialogTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 2000;
     }
 
     public static Test suite() {

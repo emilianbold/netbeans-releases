@@ -83,7 +83,12 @@ public class SuppressWarningsCompletion implements Processor {
         }
 
         for (HintMetadata hm : RulesManager.getInstance().readHints(null, null, null).keySet()) {//XXX: hack
-            keys.addAll(hm.suppressWarnings);
+            for (String sw : hm.suppressWarnings) {
+                if (sw == null || sw.length() == 0) {
+                    break;
+                }
+                keys.add(sw);
+            }
         }
         
         List<Completion> result = new LinkedList<Completion>();
@@ -127,7 +132,7 @@ public class SuppressWarningsCompletion implements Processor {
         }
 
         public CompletionImpl(String value, String message) {
-            this.value = value;
+            this.value = '\"' + value + '\"';
             this.message = message;
         }
 

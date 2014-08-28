@@ -50,12 +50,14 @@ package org.netbeans.modules.jumpto.file;
 
 import java.awt.Image;
 import java.beans.BeanInfo;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.actions.Editable;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
@@ -91,10 +93,10 @@ public class FileDescription extends FileDescriptor {
     private final String ownerPath;
     private final Project project; // Project the file belongs to
     private final int lineNr;
-
-    private Icon icon;
-    private String projectName;
-    private Icon projectIcon;
+    private volatile Icon icon;
+    private volatile String projectName;
+    private volatile Icon projectIcon;
+    private volatile ProjectInformation projectInfo;
 
     public FileDescription(
             @NonNull final FileObject file,
@@ -115,15 +117,17 @@ public class FileDescription extends FileDescriptor {
     }
 
     @Override
-    public synchronized Icon getIcon() {
-        if ( icon == null ) {
-            DataObject od = getDataObject();
-            Image i = od == null ? // #187973
+    @NonNull
+    public Icon getIcon() {
+        Icon res = icon;
+        if (res == null) {
+            final DataObject od = getDataObject();
+            final Image img = od == null ? // #187973
                 UNKNOWN_PROJECT_ICON.getImage() :
                 od.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
-            icon = new ImageIcon( i );
+            res = icon = new ImageIcon(img);
         }
-        return icon;
+        return res;
     }
 
     @Override
@@ -132,19 +136,29 @@ public class FileDescription extends FileDescriptor {
     }
 
     @Override
-    public synchronized String getProjectName() {
-        if ( projectName == null ) {
-            initProjectInfo();
+    @NonNull
+    public String getProjectName() {
+        String res = projectName;
+        if (res == null) {
+            final ProjectInformation pi = getProjectInfo();
+            res = projectName = pi == null ?
+                "" :    //NOI18N
+                pi.getDisplayName();
         }
-        return projectName;
+        return res;
     }
 
     @Override
-    public synchronized Icon getProjectIcon() {
-        if ( projectIcon == null ) {
-            initProjectInfo();
+    @NonNull
+    public Icon getProjectIcon() {
+        Icon res = projectIcon;
+        if ( res == null ) {
+            final ProjectInformation pi = getProjectInfo();
+            res = projectIcon = pi == null ?
+                UNKNOWN_PROJECT_ICON :
+                pi.getIcon();
         }
-        return projectIcon;
+        return res;
     }
 
 
@@ -199,19 +213,20 @@ public class FileDescription extends FileDescriptor {
         }
     }
 
-    private void initProjectInfo() {
+    @CheckForNull
+    private ProjectInformation getProjectInfo() {
         // Issue #167198: A file may not belong to any project.
         // Hence, FileOwnerQuery.getOwner(file) can return null as a project,
         // and fileDescription.project will be null too.
         // But! We should not call ProjectUtils.getInformation(null).
-        if(project != null) {
-            ProjectInformation pi = ProjectUtils.getInformation( project );
-            projectName = pi.getDisplayName();
-            projectIcon = pi.getIcon();
+        if(project == null) {
+            return null;
         }
-        else {
-            projectName = "";   //NOI18N
-            projectIcon = UNKNOWN_PROJECT_ICON;
+        ProjectInformation res = projectInfo;
+        if (res == null) {
+            //Don't use slow ProjectUtils.getInformation
+            res = projectInfo = project.getLookup().lookup(ProjectInformation.class);
         }
+        return res;
     }
 }

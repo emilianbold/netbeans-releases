@@ -59,13 +59,17 @@ public class StyleSheetBody {
     private final List<Rule> rules;
     /** Text of the stylesheet (if available). */
     private final String text;
+    /** Header of the style-sheet. */
+    private final StyleSheetHeader styleSheetHeader;
 
     /**
      * Creates a new {@code StyleSheetBody} that corresponds to the given JSONObject.
      *
+     * @param header header of the style-sheet.
      * @param body JSONObject describing the body of the stylesheet.
      */
-    StyleSheetBody(JSONObject body) {
+    StyleSheetBody(StyleSheetHeader header, JSONObject body) {
+        styleSheetHeader = header;
         styleSheetId = (String)body.get("styleSheetId"); // NOI18N
         JSONArray cssRules = (JSONArray)body.get("rules"); // NOI18N
         rules = new ArrayList<Rule>(cssRules.size());
@@ -79,12 +83,34 @@ public class StyleSheetBody {
     }
 
     /**
+     * Creates a new {@code StyleSheetBody}.
+     *
+     * @param header header of the style-sheet.
+     * @param text text of the style-sheet.
+     */
+    StyleSheetBody(StyleSheetHeader header, String text) {
+        this.styleSheetHeader = header;
+        this.styleSheetId = header.getStyleSheetId();
+        this.text = text;
+        this.rules = Collections.EMPTY_LIST;
+    }
+
+    /**
      * Returns the identifier of the stylesheet.
      *
      * @return identifier of the stylesheet.
      */
     public String getStyleSheetId() {
         return styleSheetId;
+    }
+
+    /**
+     * Returns the header of the style-sheet.
+     * 
+     * @return header of the style-sheet.
+     */
+    public StyleSheetHeader getHeader() {
+        return styleSheetHeader;
     }
 
     /**

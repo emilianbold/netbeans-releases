@@ -41,12 +41,15 @@
  */
 package org.netbeans.modules.cordova.updatetask;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.ExecTask;
 import org.apache.tools.ant.types.Environment;
@@ -134,17 +137,38 @@ public class PluginTask extends Task {
         exec.execute();
 
         String plugins = getProject().getProperty("cordova.current.plugins");
-        final int startPar = plugins.indexOf("[");
-        if (startPar < 0) {
-            //empty
-            return;
+        if (compareCordovaVersion("3.5.0") >= 0) {
+            try {
+                BufferedReader r = new BufferedReader(new StringReader(plugins));
+                String line;
+                while((line=r.readLine()) != null) {
+                    if (line.startsWith("No plugins added")) {
+                        break;
+                    }
+                    currentPlugins.add(new CordovaPlugin(line.substring(0, line.indexOf(" ")), ""));
+                }
+            } catch (IOException ex) {
+                log(ex, Project.MSG_ERR);
+            }
+        } else {
+            final int startPar = plugins.indexOf("[");
+            if (startPar < 0) {
+                //empty
+                return;
+            }
+            plugins = plugins.substring(startPar + 1, plugins.lastIndexOf("]")).trim();
+            StringTokenizer tokenizer = new StringTokenizer(plugins, ",");
+            while (tokenizer.hasMoreTokens()) {
+                String name = tokenizer.nextToken().trim();
+                currentPlugins.add(new CordovaPlugin(name.substring(name.indexOf("'") + 1, name.lastIndexOf("'")), ""));
+            }
         }
-        plugins = plugins.substring(startPar + 1, plugins.lastIndexOf("]")).trim();
-        StringTokenizer tokenizer = new StringTokenizer(plugins, ",");
-        while (tokenizer.hasMoreTokens()) {
-            String name = tokenizer.nextToken().trim();
-            currentPlugins.add(new CordovaPlugin(name.substring(name.indexOf("'") + 1, name.lastIndexOf("'")), ""));
-        }
+    }
+
+    private int compareCordovaVersion(String version) {
+        String current = getProject().getProperty("cordova.version").trim();
+        String currentApi=current.substring(0, current.indexOf("-"));
+        return currentApi.compareTo(version);
     }
 
     private void installPlugins(Set<CordovaPlugin> pluginsToInstall) {
@@ -189,4 +213,5 @@ public class PluginTask extends Task {
             exec.execute();
         }
     }
+
 }

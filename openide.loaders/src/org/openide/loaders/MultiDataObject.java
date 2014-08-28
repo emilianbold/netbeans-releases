@@ -192,15 +192,17 @@ public class MultiDataObject extends DataObject {
      * @return secondary object
      */
     /* package-private */ Map<FileObject,Entry> getSecondary() {
+        HashMap<FileObject,Entry> ret;
         synchronized (secondaryCreationLock) {
             if (secondary == null) {
                 secondary = new HashMap<FileObject,Entry>(4);
             }
-            if (ERR.isLoggable(Level.FINE)) {
-                ERR.fine("getSecondary for " + this + " is " + secondary); // NOI18N
-            }
-            return secondary;
+            ret = secondary;
         }
+        if (ERR.isLoggable(Level.FINE)) {
+            ERR.fine("getSecondary for " + this + " is " + secondary); // NOI18N
+        }
+        return ret;
     }
     
     /* Getter for copy action.
@@ -636,7 +638,9 @@ public class MultiDataObject extends DataObject {
     /* Renames all entries and changes their files to new ones.
     */
     protected FileObject handleRename (String name) throws IOException {
+        Map<String, Object> templateAttrs = getTemplateAttrs();
         getPrimaryEntry ().changeFile (getPrimaryEntry().rename (name));
+        setTemplateAttrs(templateAttrs);
 
         Map<FileObject,Entry> add = null;
 
@@ -694,6 +698,64 @@ public class MultiDataObject extends DataObject {
         }
 
         return getPrimaryEntry ().getFile ();
+    }
+
+    /**
+     * Get template attributes that can be set later again, for example after
+     * renaming of a template. If this data object is not a template, this
+     * method does nothing and returns null.
+     *
+     * @see #copyTemplateAttributes(FileObject, FileObject)
+     * @return Map of template attributes from this data object, or null if this
+     * data object does not represent a template.
+     */
+    private Map<String, Object> getTemplateAttrs() {
+        if (isTemplate()) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            FileObject fo = getPrimaryFile();
+            Enumeration<String> attributes = fo.getAttributes();
+            while (attributes.hasMoreElements()) {
+                String key = attributes.nextElement();
+                if (key.startsWith("template")) { //NOI18N
+                    Object val = fo.getAttribute(key);
+                    if (val != null) {
+                        map.put(key, val);
+                    }
+                }
+            }
+            for (String key : TEMPLATE_ATTRIBUTES) {
+                Object val = fo.getAttribute(key);
+                if (val != null) {
+                    map.put(key, val);
+                }
+            }
+            return map;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Set template attributes on this data object. If this data object is not a
+     * template, or the {@code attrs} argument is null, this method does
+     * nothing.
+     *
+     * @param attrs Map of template attributes, or null.
+     * @see #copyTemplateAttributes(FileObject, FileObject)
+     * @see #getTemplateAttrs()
+     * @throws IOException
+     */
+    private void setTemplateAttrs(Map<String, Object> attrs)
+            throws IOException {
+        if (attrs != null && isTemplate()) {
+            FileObject fo = getPrimaryFile();
+            for (Map.Entry<String, Object> entry : attrs.entrySet()) {
+                if (entry.getValue() != null
+                        && fo.getAttribute(entry.getKey()) == null) {
+                    fo.setAttribute(entry.getKey(), entry.getValue());
+                }
+            }
+        }
     }
 
     /** Moves primary and secondary files to a new folder.

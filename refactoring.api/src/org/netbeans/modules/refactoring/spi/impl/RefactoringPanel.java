@@ -1290,29 +1290,31 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
 
     private static class ProgressL implements ProgressListener {
         
-        private ProgressHandle handle;
-        private Dialog d;
+        private final ProgressHandle handle;
+        private final Dialog d;
+
+        public ProgressL() {
+            final String lab = NbBundle.getMessage(RefactoringPanel.class, "LBL_RefactorProgressLabel");
+            handle = ProgressHandleFactory.createHandle(lab);
+            JComponent progress = ProgressHandleFactory.createProgressComponent(handle);
+            JPanel component = new JPanel();
+            component.setLayout(new BorderLayout());
+            component.setBorder(new EmptyBorder(12,12,11,11));
+            JLabel label = new JLabel(lab);
+            label.setBorder(new EmptyBorder(0, 0, 6, 0));
+            component.add(label, BorderLayout.NORTH);
+            component.add(progress, BorderLayout.CENTER);
+            DialogDescriptor desc = new DialogDescriptor(component, NbBundle.getMessage(RefactoringPanel.class, "LBL_RefactoringInProgress"), true, new Object[]{}, null, 0, null, null);
+            desc.setLeaf(true);
+            d = DialogDisplayer.getDefault().createDialog(desc);
+            ((JDialog) d).setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        }
         
         @Override
         public void start(final ProgressEvent event) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    final String lab = NbBundle.getMessage(RefactoringPanel.class, "LBL_RefactorProgressLabel");
-                    handle = ProgressHandleFactory.createHandle(lab);
-                    JComponent progress = ProgressHandleFactory.createProgressComponent(handle);
-                    JPanel component = new JPanel();
-                    component.setLayout(new BorderLayout());
-                    component.setBorder(new EmptyBorder(12,12,11,11));
-                    JLabel label = new JLabel(lab);
-                    label.setBorder(new EmptyBorder(0, 0, 6, 0));
-                    component.add(label, BorderLayout.NORTH);
-                    component.add(progress, BorderLayout.CENTER);
-                    DialogDescriptor desc = new DialogDescriptor(component, NbBundle.getMessage(RefactoringPanel.class, "LBL_RefactoringInProgress"), true, new Object[]{}, null, 0, null, null);
-                    desc.setLeaf(true);
-                    d = DialogDisplayer.getDefault().createDialog(desc);
-                    ((JDialog) d).setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-                    
                     handle.start(event.getCount());
                     d.setVisible(true);
                 }

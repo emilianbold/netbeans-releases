@@ -95,6 +95,7 @@ import org.netbeans.modules.subversion.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumn;
+import org.netbeans.swing.etable.ETableColumnModel;
 
 /**
  * Controls the {@link #getComponent() tsble} that displays nodes
@@ -252,12 +253,28 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
      */ 
     final void setColumns(String [] columns) {
         if (Arrays.equals(columns, tableColumns)) return;
-        setModelProperties(columns);
-        tableColumns = columns;
         TableColumnModel cModel = table.getColumnModel();
         int columnCount = cModel.getColumnCount();
+        Object sorted = "";
+        boolean asc = true;
         for (int i = 0; i < columnCount; ++i) {
-            ((ETableColumn) cModel.getColumn(i)).setNestedComparator(NodeComparator);
+            ETableColumn col = (ETableColumn) cModel.getColumn(i);
+            if (col.isSorted()) {
+                sorted = col.getIdentifier();
+                asc = col.isAscending();
+            }
+        }
+        
+        setModelProperties(columns);
+        tableColumns = columns;
+        cModel = table.getColumnModel();
+        columnCount = cModel.getColumnCount();
+        for (int i = 0; i < columnCount; ++i) {
+            ETableColumn col = (ETableColumn) cModel.getColumn(i);
+            col.setNestedComparator(NodeComparator);
+            if (sorted.equals(col.getIdentifier())) {
+                ((ETableColumnModel) cModel).setColumnSorted(col, asc, 1);
+            }
         }
         setDefaultColumnSizes();        
     }

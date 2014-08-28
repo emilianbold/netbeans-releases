@@ -143,11 +143,11 @@ public class TldProxyLibraryDescriptor implements LibraryDescriptor {
         docBuilder.setEntityResolver(UserCatalog.getDefault().getEntityResolver()); //we count on TaglibCatalog from web.core module
         Document doc = docBuilder.parse(is);
 
-        //usually the default taglib prefix
-        Node tagLib = FaceletsLibraryDescriptor.getNodeByName(doc, "taglib"); //NOI18N
-        String prefix = getTextContent(tagLib, "short-name"); //NOI18N
-        String uri = getTextContent(tagLib, "uri"); //NOI18N
-        String displayName = getTextContent(tagLib, "display-name"); //NOI18N
+//        //usually the default taglib prefix
+//        Node tagLib = FaceletsLibraryDescriptor.getNodeByName(doc, "taglib"); //NOI18N
+//        String prefix = getTextContent(tagLib, "short-name"); //NOI18N
+//        String uri = getTextContent(tagLib, "uri"); //NOI18N
+//        String displayName = getTextContent(tagLib, "display-name"); //NOI18N
 
         //scan the <tag> nodes content - the tag descriptions
         NodeList tagNodes = doc.getElementsByTagName("tag"); //NOI18N

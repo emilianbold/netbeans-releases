@@ -2,8 +2,8 @@ Code completion result for source line:
 |jQuery.event.customEvent.test();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CONSTRUCTO $()                             [PUBLIC]   jquery-api.xml
-CONSTRUCTO jQuery()                        [PUBLIC]   jquery-api.xml
+CONSTRUCTO $()                             [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+CONSTRUCTO jQuery()                        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
 CLASS      formatter                       [PUBLIC]   jQueryFragment01.js
 CLASS      jQuery                          [PRIVATE]  jQueryFragment01.js
 VARIABLE   arguments: Arguments            [PRIVATE]  jQueryFragment01.js

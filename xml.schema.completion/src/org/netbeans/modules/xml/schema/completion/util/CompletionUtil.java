@@ -982,7 +982,7 @@ public class CompletionUtil {
         do {
             token = tokenSequence.token();
             TokenId tokenID = token.id();
-            if (tokenID.equals(XMLTokenId.TAG)) {
+            if (tokenID.equals(XMLTokenId.TAG) || tokenID.equals(XMLTokenId.TEXT)) {
                 String tokenText = token.text().toString();
                 if ((tokenText == null) || tokenText.isEmpty()) continue;
 
@@ -1089,7 +1089,7 @@ public class CompletionUtil {
                 }
                 break;
             }
-            if (token.id() == XMLTokenId.TAG) {
+            if (token.id() == XMLTokenId.TAG || token.id() == XMLTokenId.TEXT) {
                 if (token.text().charAt(0) == '<') {
                     break;
                 }
@@ -1102,7 +1102,7 @@ public class CompletionUtil {
         if (token == null) return false;
 
         TokenId tokenID = token.id();
-        if (tokenID.equals(XMLTokenId.TAG)) {
+        if (tokenID.equals(XMLTokenId.TAG) || tokenID.equals(XMLTokenId.TEXT)) {
             String tokenText = token.text().toString();
             if ((! isEndTagPrefix(token)) && tokenText.startsWith(TAG_FIRST_CHAR)) {
                 return true;
@@ -1128,7 +1128,7 @@ public class CompletionUtil {
         if (token == null) return false;
 
         TokenId tokenID = token.id();
-        if (tokenID.equals(XMLTokenId.TAG)) {
+        if (tokenID.equals(XMLTokenId.TAG) || tokenID.equals(XMLTokenId.TEXT)) {
             String tokenText = token.text().toString();
             if (tokenText.startsWith(END_TAG_PREFIX)) {
                 return true;

@@ -72,7 +72,7 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
     private final RevisionDialogController revisionPicker;
     private JButton okButton;
     private DialogDescriptor dd;
-    private boolean revisionValid = true;
+    private boolean revisionValid = false;
     private String msgInvalidName;
     private boolean branchNameRecommended = true;
     private String branchName;
@@ -177,6 +177,7 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
 
     @NbBundle.Messages({
         "MSG_CheckoutRevision.errorBranchNameEmpty=No branch name entered",
+        "MSG_CheckoutRevision.errorInvalidBranchName=Invalid branch name",
         "MSG_CheckoutRevision.errorBranchExists=A branch with the given name already exists",
         "# {0} - branch name",
         "MSG_CheckoutRevision.errorParentExists=Cannot create branch under already existing \"{0}\""
@@ -186,6 +187,8 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
         branchName = panel.branchNameField.getText();
         if (branchName.isEmpty()) {
             msgInvalidName = Bundle.MSG_CheckoutRevision_errorBranchNameEmpty();
+        } else if (!GitUtils.isValidBranchName(branchName)) {
+            msgInvalidName = Bundle.MSG_CheckoutRevision_errorInvalidBranchName();
         } else if (branches.containsKey(branchName)) {
             msgInvalidName = Bundle.MSG_CheckoutRevision_errorBranchExists();
         } else {

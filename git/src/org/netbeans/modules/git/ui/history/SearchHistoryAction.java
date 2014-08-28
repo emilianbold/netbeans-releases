@@ -82,14 +82,17 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
     }
     
     public static void openSearch(final File repository, final File[] roots, final String contextName) {
+        openSearch(repository, roots, getActiveBranchName(repository), contextName);
+    }
+    
+    public static void openSearch (final File repository, final File[] roots, final String branchName, final String contextName) {
         final String title = NbBundle.getMessage(SearchHistoryTopComponent.class, "LBL_SearchHistoryTopComponent.title", contextName);
-        final String activeBranch = getActiveBranchName(repository);
         final RepositoryInfo info = RepositoryInfo.getInstance(repository);
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run () {
                 SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repository, info, roots);
-                tc.setBranch(activeBranch);
+                tc.setBranch(branchName);
                 tc.setDisplayName(title);
                 tc.open();
                 tc.requestActive();

@@ -57,7 +57,6 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
-import org.netbeans.modules.cnd.remote.sync.ZipSyncFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
@@ -110,15 +109,6 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase 
         buildProject(makeProject, buildCommand, 60*60*24*7, TimeUnit.SECONDS);
         time = System.currentTimeMillis() - time;
         System.err.printf("PROJECT=%s HOST=%s TRANSPORT=%s TIME=%d seconds\n", projectPath, getTestExecutionEnvironment(), sync, time/1000);
-    }
-
-    @If(section=SECTION, key = "test.build")
-    @ForAllEnvironments(section = SECTION)
-    public void testBuildRfsParameterized() throws Exception {
-        RcFile rcFile = NativeExecutionTestSupport.getRcFile();
-        String sync = rcFile.get(SECTION,"sync", ZipSyncFactory.ID);
-        String buildCommand = rcFile.get(SECTION, "build-command", ActionProvider.COMMAND_BUILD);
-        doTest("project", sync, buildCommand);
     }
 
     @If(section=SECTION, key = "measure.plain.copy")

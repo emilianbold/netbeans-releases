@@ -1215,6 +1215,7 @@ public class JavacParser extends Parser {
                             break;
                         }
                     }
+                    // PENDING - changed method lbrace/rbrace handling ?
                     positions.clear();
                     if (changedMethod!=null) {
                         positions.add (changedMethod);

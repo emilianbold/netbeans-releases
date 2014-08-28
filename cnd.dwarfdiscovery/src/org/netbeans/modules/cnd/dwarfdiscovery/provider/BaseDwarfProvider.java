@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -383,7 +384,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return sum;
     }
     
-    protected ApplicableImpl sizeComilationUnit(String objFileName, Set<String> dlls, boolean findMain){
+    protected ApplicableImpl sizeComilationUnit(ProjectProxy project, String objFileName, Set<String> dlls, boolean findMain){
         int res = 0;
         int sunStudio = 0;
         Dwarf dump = null;
@@ -409,7 +410,6 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                     foundDebug++;
                     String path = cu.getSourceFileAbsolutePath();
-                    incrementRoot(path, realRoots);
                     path = myCommpilerSettings.getNormalizedPath(path);
                     if (!CndFileUtils.isExistingFile(path)) {
                         String fileFinder = Dwarf.fileFinder(objFileName, path);
@@ -442,6 +442,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         continue;
                     }
                     incrementRoot(path, roots);
+                    if (project.resolveSymbolicLinks()) {
+                        String resolvedLink = DiscoveryUtils.resolveSymbolicLink(path);
+                        if (resolvedLink != null) {
+                            incrementRoot(resolvedLink, roots);
+                        }
+                    }
                     String compilerName = DwarfSource.extractCompilerName(cu, language);
                     if (compilerName != null) {
                         AtomicInteger count = compilers.get(compilerName);
@@ -699,6 +705,21 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                             continue;
                         }
                         source.process(cu);
+                        if (project.resolveSymbolicLinks()) {
+                            String resolvedLink = DiscoveryUtils.resolveSymbolicLink(name);
+                            if (resolvedLink != null) {
+                                old = map.get(resolvedLink);
+                                if (old != null && old.getUserInludePaths().size() > 0) {
+                                    if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                                        DwarfSource.LOG.log(Level.FINE, "Linked compilation unit already exist. Skip {0}", resolvedLink);  // NOI18N
+                                    }
+                                    // do not process processed item
+                                }
+                                DwarfSource original = DwarfSource.relocateDerivedSourceFile(source, resolvedLink);
+                                list.add(original);
+                                continue;
+                            }
+                        }
                         list.add(source);
                     }
                 }

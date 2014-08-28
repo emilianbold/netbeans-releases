@@ -57,9 +57,25 @@ import org.netbeans.spi.debugger.ui.Controller;
  *
  * @author Vladimir Voskresensky
  */
-@AttachType.Registration(displayName="#GdbDebuggerEngine")
 public final class GdbAttachType extends AttachType {
+    private static final boolean isOssTooolchainOnly = Boolean.valueOf(System.getProperty("oss.toolchain.only", "false")); // NOI18N
+    private static final boolean forceGDB = Boolean.valueOf(System.getProperty("oss.force.gdb", "false")); // NOI18N
+    
+    private static GdbAttachType INSTANCE = null;
+    
     private Reference<AttachPanel> customizerRef = new WeakReference<AttachPanel>(null);
+    
+    @AttachType.Registration(displayName = "#GdbDebuggerEngine") // NOI18N
+    public static synchronized AttachType get() {
+        if (INSTANCE == null)  {
+            INSTANCE = new GdbAttachType();
+        }
+        
+        return INSTANCE;
+    }
+
+    private GdbAttachType() {
+    }
 
     public JComponent getCustomizer() {
         EngineType et = GdbEngineCapabilityProvider.getGdbEngineType();
@@ -76,5 +92,21 @@ public final class GdbAttachType extends AttachType {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public String getTypeDisplayName() {
+        if (isEnabled()) {
+            return Catalog.get("GdbDebuggerEngine"); // NOI18N
+        }
+        
+        return null;
+    }
+    
+    private boolean isEnabled() {
+        if (forceGDB) {
+            return true;
+        }
+        return !isOssTooolchainOnly;
     }
 }

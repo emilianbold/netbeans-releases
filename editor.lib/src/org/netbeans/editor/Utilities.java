@@ -794,8 +794,9 @@ public class Utilities {
                 doc.runAtomicAsUser (new Runnable () {
                     public @Override void run () {
                         try {
-                            doc.remove(offset, orig.length);
-                            doc.insertString(offset, new String(changed), null);
+                            Position pos = doc.createPosition(offset);
+                            doc.remove(pos.getOffset(), orig.length);
+                            doc.insertString(pos.getOffset(), new String(changed), null);
                         } catch (BadLocationException ex) {
                             badLocationExceptions [0] = ex;
                         }

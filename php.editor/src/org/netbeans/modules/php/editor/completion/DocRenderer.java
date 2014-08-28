@@ -284,7 +284,7 @@ final class DocRenderer {
 
                 header.appendText(CodeUtils.getParamDisplayName(param));
 
-                if (param.getDefaultValue() != null) {
+                if (param.isOptional()) {
                     header.type(true);
                     header.appendText("=");
 
@@ -382,7 +382,7 @@ final class DocRenderer {
                 }
             }
 
-            returnValue.append(composeReturnValue(methodTag.getTypes(), null));
+            returnValue.append(composeTypesAndDescription(methodTag.getTypes(), null));
 
             phpDoc.append(composeFunctionDoc(description, params.toString(), returnValue.toString(), null));
         }
@@ -398,11 +398,10 @@ final class DocRenderer {
                     params.append(composeParameterLine((PHPDocVarTypeTag) tag));
                 } else if (kind.equals(PHPDocTag.Type.RETURN)) {
                     PHPDocTypeTag returnTag = (PHPDocTypeTag) tag;
-                    returnValue.append(composeReturnValue(returnTag.getTypes(), returnTag.getDocumentation()));
+                    returnValue.append(composeTypesAndDescription(returnTag.getTypes(), returnTag.getDocumentation()));
                 } else if (kind.equals(PHPDocTag.Type.VAR)) {
                     PHPDocTypeTag typeTag = (PHPDocTypeTag) tag;
-                    String type = composeType(typeTag.getTypes());
-                    others.append(processPhpDoc(String.format("<tr><th align=\"left\">Type:</th><td>%s</td></tr>", type))); //NOI18N
+                    others.append(composeTypesAndDescription(typeTag.getTypes(), typeTag.getDocumentation()));
                 } else if (kind.equals(PHPDocTag.Type.DEPRECATED)) {
                     String oline = String.format("<tr><th align=\"left\">%s</th><td>%s</td></tr>%n", //NOI18N
                             processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getDocumentation(), "")); //NOI18N
@@ -501,16 +500,16 @@ final class DocRenderer {
             "Type=Type",
             "Description=Description"
         })
-        private String composeReturnValue(List<PHPDocTypeNode> types, String documentation) {
+        private String composeTypesAndDescription(List<PHPDocTypeNode> types, String description) {
             StringBuilder returnValue = new StringBuilder();
             if (types != null && types.size() > 0) {
-                returnValue.append(String.format("<tr><td>&nbsp;</td><td><b>%s:</b></td><td>%s</td></tr>", //NOI18N
+                returnValue.append(String.format("<tr><th align=\"left\">%s:</th><td>%s</td></tr>", //NOI18N
                         Bundle.Type(), composeType(types)));
             }
 
-            if (documentation != null && documentation.length() > 0) {
-                returnValue.append(String.format("<tr><td>&nbsp;</td><td valign=\"top\"><b>%s:</b></td><td>%s</td></tr>", //NOI18N
-                        Bundle.Description(), processPhpDoc(documentation)));
+            if (description != null && description.length() > 0) {
+                returnValue.append(String.format("<tr><th align=\"left\" valign=\"top\">%s:</th><td>%s</td></tr>", //NOI18N
+                        Bundle.Description(), processPhpDoc(description)));
             }
             return returnValue.toString();
         }

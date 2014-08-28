@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.api.project;
 
 import javax.swing.event.ChangeListener;
+import org.openide.util.Pair;
 
 /**
  *
@@ -54,6 +55,7 @@ public interface CodeAssistance {
     }
     boolean hasCodeAssistance(NativeFileItem item);    
     State getCodeAssistanceState(NativeFileItem item);
+    Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> getStartFileLanguageFlavour(NativeFileItem item);
     void addChangeListener(ChangeListener listener);
     void removeChangeListener(ChangeListener listener);
 }
