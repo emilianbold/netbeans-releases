@@ -110,6 +110,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         LifecycleManager.getDefault().saveAll();
         if (COMMAND_RUN_SINGLE.equals(command)
                 || COMMAND_RUN.equals(command)) {
+            assert !project.isJsLibrary() : "JS library project cannot be run: " + project.getName();
             project.logBrowserUsage();
         }
         // XXX sorry no idea how to do this correctly
@@ -204,6 +205,12 @@ public class ClientSideProjectActionProvider implements ActionProvider {
 
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+        if (COMMAND_RUN_SINGLE.equals(command)
+                || COMMAND_RUN.equals(command)) {
+            if (project.isJsLibrary()) {
+                return false;
+            }
+        }
         ActionProvider ap = getActionProvider();
         if (ap != null && isSupportedAction(command, ap)) {
             return ap.isActionEnabled(command, context);
