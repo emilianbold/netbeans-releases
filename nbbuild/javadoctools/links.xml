@@ -224,3 +224,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-core-multitabs}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-core-multitabs"/>
 <link href="${javadoc.docs.org-netbeans-api-maven}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-maven"/>
 <link href="${javadoc.docs.org-netbeans-api-html4j}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-html4j"/>
+<link href="http://bits.netbeans.org/html4j/0.9/" offline="false" />

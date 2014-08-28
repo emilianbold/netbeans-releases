@@ -49,7 +49,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /** Registers an action to open an HTML (possibly with
- * <em>DukeScript</em> integration). Typical usage
+ * {@link net.java.html.json.Model HTML for Java} integration). Typical usage
  * is shown and described
  * <a href="http://hg.netbeans.org/html4j/nb/file/b60f695fc6f8/demo/html-test/src/main/java/org/netbeans/demo/html/test/HelloModel.java">here</a>.
  *
