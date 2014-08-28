@@ -135,9 +135,19 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             description="../resources/NewClientSideLibraryDescription.html",
             iconBase=ClientSideProject.JS_LIBRARY_PROJECT_ICON,
             position=200)
-    @NbBundle.Messages("ClientSideProjectWizardIterator.newLibrary.displayName=JS Library")
+    @NbBundle.Messages("ClientSideProjectWizardIterator.newLibrary.displayName=JavaScript Library")
     public static ClientSideProjectWizardIterator newLibraryProject() {
         return new ClientSideProjectWizardIterator(new NewJsLibraryProjectWizard());
+    }
+
+    @TemplateRegistration(folder="Project/ClientSide",
+            displayName="#ClientSideProjectWizardIterator.existingLibrary.displayName",
+            description="../resources/ExistingClientSideLibraryDescription.html",
+            iconBase=ClientSideProject.JS_LIBRARY_PROJECT_ICON,
+            position=210)
+    @NbBundle.Messages("ClientSideProjectWizardIterator.existingLibrary.displayName=JavaScript Library with Existing Sources")
+    public static ClientSideProjectWizardIterator existingLibraryProject() {
+        return new ClientSideProjectWizardIterator(new ExistingJsLibraryProjectWizard());
     }
 
     public static ClientSideProjectWizardIterator newProjectWithExtender() {
@@ -575,7 +585,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public Panel<WizardDescriptor>[] createPanels() {
             @SuppressWarnings({"unchecked", "rawtypes"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
-                new ExistingClientSideProjectPanel(),
+                new ExistingClientSideProjectPanel(false),
             };
             return panels;
         }
@@ -693,6 +703,70 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             DataFolder dataFolder = DataFolder.findFolder(sources);
             DataObject dataIndex = DataObject.find(indexTemplate);
             return dataIndex.createFromTemplate(dataFolder, "main").getPrimaryFile(); // NOI18N
+        }
+
+    }
+
+    public static final class ExistingJsLibraryProjectWizard implements Wizard {
+
+        public static final String SOURCE_ROOT = "SOURCE_ROOT"; // NOI18N
+
+
+        @Override
+        public Panel<WizardDescriptor>[] createPanels() {
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
+                new ExistingClientSideProjectPanel(true),
+            };
+            return panels;
+        }
+
+        @Override
+        public String getTitle() {
+            return Bundle.ClientSideProjectWizardIterator_existingLibrary_displayName();
+        }
+
+        @Override
+        public boolean hasSiteRoot() {
+            return false;
+        }
+
+        @NbBundle.Messages("ExistingJsLibraryProjectWizard.step.createProject=Name and Location")
+        @Override
+        public String[] createSteps() {
+            return new String[] {
+                Bundle.ExistingJsLibraryProjectWizard_step_createProject(),
+            };
+        }
+
+        @Override
+        public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
+            File sourceFolder = (File) wizardDescriptor.getProperty(SOURCE_ROOT);
+            assert sourceFolder != null;
+            ClientSideProjectUtilities.initializeProject(project, sourceFolder.getAbsolutePath(), null, findTestFolder(project.getProjectDirectory()));
+            return null;
+        }
+
+        @Override
+        public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir, FileObject siteRoot) {
+            LOGGER.warning("Not implemented yet");
+        }
+
+        @Override
+        public void uninitialize(WizardDescriptor wizardDescriptor) {
+            wizardDescriptor.putProperty(SOURCE_ROOT, null);
+        }
+
+        @CheckForNull
+        private String findTestFolder(FileObject projectDir) {
+            for (String name : new String[]{"test", "spec"}) { // NOI18N
+                FileObject folder = projectDir.getFileObject(name);
+                if (folder != null
+                        && folder.isFolder()) {
+                    return FileUtil.toFile(folder).getAbsolutePath();
+                }
+            }
+            return null;
         }
 
     }
