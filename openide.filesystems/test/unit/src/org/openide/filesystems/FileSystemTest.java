@@ -84,7 +84,7 @@ public class FileSystemTest extends NbTestCase {
         Lookup lkp = fs.findExtrasFor(c);
         assertNotNull(lkp);
         Collection<? extends Action> extraAct = lkp.lookupAll(Action.class);
-        assertEquals("one action", extraAct.size(), 1);
+        assertEquals("one action", 1, extraAct.size());
         
         assertSame("The same action is returned", actions[0], extraAct.iterator().next());
     }
@@ -94,7 +94,6 @@ public class FileSystemTest extends NbTestCase {
             setRootDirectory(f);
         }
 
-        @Override
         public SystemAction[] getActions(Set<FileObject> foSet) {
             return new SystemAction[] {
                 SystemAction.get(MyAction.class)
@@ -103,12 +102,10 @@ public class FileSystemTest extends NbTestCase {
     }
     
     public static final class MyAction extends CallbackSystemAction {
-        @Override
         public String getName() {
             return "My test";
         }
 
-        @Override
         public HelpCtx getHelpCtx() {
             return HelpCtx.DEFAULT_HELP;
         }

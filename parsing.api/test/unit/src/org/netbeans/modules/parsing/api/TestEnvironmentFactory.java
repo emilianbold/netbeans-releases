@@ -119,6 +119,10 @@ public class TestEnvironmentFactory implements EnvironmentFactory {
 
     @Override
     public Parser findMimeParser(Lookup context, String mimeType) {
+        ParserFactory f = MimeLookup.getLookup(mimeType).lookup(ParserFactory.class);
+        if (f != null) {
+            return f.createParser(Collections.<Snapshot>emptyList());
+        }
         return MimeLookup.getDefault().lookup(ParserFactory.class).createParser(Collections.<Snapshot>emptyList());
     }
 

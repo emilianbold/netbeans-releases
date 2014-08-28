@@ -53,6 +53,8 @@ import javax.swing.text.Position;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
+import org.netbeans.modules.editor.lib2.document.ExpectedDocument;
+import org.netbeans.modules.editor.lib2.document.TestEditorDocument;
 
 /**
  * Sync positions creation in both tested and expected document.

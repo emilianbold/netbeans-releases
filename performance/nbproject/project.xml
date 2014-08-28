@@ -161,7 +161,7 @@ made subject to such option by the copyright holder.
                         <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.java.source</code-name-base>
+                        <code-name-base>org.netbeans.modules.java.source.base</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -196,8 +196,14 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
                     </test-dependency>
+                    <!--
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    -->
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectuiapi.base</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -228,7 +234,7 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.java.source</code-name-base>
+                        <code-name-base>org.netbeans.modules.java.source.base</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
