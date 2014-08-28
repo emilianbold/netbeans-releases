@@ -41,7 +41,6 @@
  */
 package org.netbeans.spi.project.support.ant;
 
-import com.sun.javafx.beans.annotations.NonNull;
 import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.api.project.libraries.*;
@@ -77,7 +76,7 @@ public abstract class ReferenceHelperCompat {
      * @return copy handler
      * @since org.netbeans.modules.project.ant/1 1.41
      */
-    public LibraryChooser.LibraryImportHandler getLibraryChooserImportHandler(final @NonNull URL librariesLocation) {
+    public LibraryChooser.LibraryImportHandler getLibraryChooserImportHandler(final URL librariesLocation) {
         try {
             return CustomizerUtilities.getLibraryChooserImportHandler(BaseUtilities.toFile(librariesLocation.toURI()));
         } catch (URISyntaxException ex) {
