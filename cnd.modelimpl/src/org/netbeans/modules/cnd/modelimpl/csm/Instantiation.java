@@ -1900,25 +1900,27 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                     }
                 } 
                 
-                if (CsmKindUtilities.isTypedef(resolved) && CsmKindUtilities.isClassMember(resolved)) {
-                    CsmMember tdMember = (CsmMember)resolved;
-                    if (isTemplateScope(tdMember.getContainingClass())) {
-                        resolved = new Typedef((CsmTypedef)resolved, instantiation);
-                        return resolved;
+                if (instantiation != null && !canSkipInstantiation(resolved, instantiation.getMapping())) {
+                    if (CsmKindUtilities.isTypedef(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                        CsmMember tdMember = (CsmMember)resolved;
+                        if (isTemplateScope(tdMember.getContainingClass())) {
+                            resolved = new Typedef((CsmTypedef)resolved, instantiation);
+                            return resolved;
+                        }
                     }
-                }
-                if (CsmKindUtilities.isTypeAlias(resolved) && CsmKindUtilities.isClassMember(resolved)) {
-                    CsmMember taMember = (CsmMember)resolved;
-                    if (isTemplateScope(taMember.getContainingClass())) {
-                        resolved = new MemberTypeAlias((CsmTypeAlias)resolved, instantiation);
-                        return resolved;
+                    if (CsmKindUtilities.isTypeAlias(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                        CsmMember taMember = (CsmMember)resolved;
+                        if (isTemplateScope(taMember.getContainingClass())) {
+                            resolved = new MemberTypeAlias((CsmTypeAlias)resolved, instantiation);
+                            return resolved;
+                        }
                     }
-                }
-                if (CsmKindUtilities.isClass(resolved) && CsmKindUtilities.isClassMember(resolved)) {
-                    CsmMember tdMember = (CsmMember)resolved;
-                    if (isTemplateScope(tdMember.getContainingClass())) {
-                        resolved = new Class((CsmClass)resolved, instantiation.getMapping());
-                        return resolved;
+                    if (CsmKindUtilities.isClass(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                        CsmMember tdMember = (CsmMember)resolved;
+                        if (isTemplateScope(tdMember.getContainingClass())) {
+                            resolved = new Class((CsmClass)resolved, instantiation.getMapping());
+                            return resolved;
+                        }
                     }
                 }
             }
