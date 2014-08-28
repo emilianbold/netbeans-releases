@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.project;
+package org.netbeans.modules.java.project.ui;
 
 import java.awt.Component;
 import javax.swing.DefaultComboBoxModel;

@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.project;
+package org.netbeans.modules.java.project.ui;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

@@ -69,7 +69,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.java.project.PackageDisplayUtils;
+import org.netbeans.modules.java.project.ui.PackageDisplayUtils;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;

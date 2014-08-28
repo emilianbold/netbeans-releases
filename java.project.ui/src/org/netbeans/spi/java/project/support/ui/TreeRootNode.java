@@ -67,7 +67,7 @@ import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.java.project.PackageDisplayUtils;
+import org.netbeans.modules.java.project.ui.PackageDisplayUtils;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;

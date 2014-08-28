@@ -46,8 +46,8 @@ package org.netbeans.spi.java.project.support.ui.templates;
 
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.project.JavaTargetChooserPanel;
-import org.netbeans.modules.java.project.NewJavaFileWizardIterator;
+import org.netbeans.modules.java.project.ui.JavaTargetChooserPanel;
+import org.netbeans.modules.java.project.ui.NewJavaFileWizardIterator;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.WizardDescriptor;
 import org.netbeans.api.templates.TemplateRegistration;
