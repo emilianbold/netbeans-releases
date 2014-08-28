@@ -247,7 +247,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         if (CsmKindUtilities.isMethod(refObject)) {
             CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) refObject);
 //            CsmVisibility vis = ((CsmMember)refObject).getVisibility();
-            String functionDisplayName = method.getSignature().toString();
+            String functionDisplayName = CsmDisplayUtilities.htmlize(method.getSignature().toString());
             methodDeclaringClass = method.getContainingClass();
             String displayClassName = methodDeclaringClass.getName().toString();
             labelText = getString("DSC_MethodUsages", functionDisplayName, displayClassName); // NOI18N
