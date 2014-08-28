@@ -99,7 +99,7 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                     token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
                     tokenId = token.id();
                     if (tokenId == JsTokenId.IDENTIFIER && REQUIRE.equals(token.text().toString())) {
-                        System.out.println("nabidnout seznam knihoven");
+//                        System.out.println("nabidnout seznam knihoven");
                         result.addAll((new NodeJsCompletionItem.FilenameSupport()).getItems(ccContext.getParserResult().getSnapshot().getSource().getFileObject(), eOffset, ".." + prefix));
                     }
                 } else {
@@ -108,7 +108,7 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                         tokenId = token.id();
                     }
                     if (tokenId == JsTokenId.OPERATOR_ASSIGNMENT) {
-                        System.out.println("nabidnout require()");
+//                        System.out.println("nabidnout require()");
                         if (prefix.isEmpty() || REQUIRE.startsWith(prefix)) {
                             result.add(NodeJsCompletionItem.createNodeJsItem(new NodeJsCompletionDataItem(REQUIRE, null, "require('${cursor}')"), ElementKind.METHOD, eOffset - prefix.length()));
                         }
