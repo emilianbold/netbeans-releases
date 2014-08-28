@@ -61,6 +61,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
@@ -384,7 +386,9 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
 
         @NbBundle.Messages({
             "# {0} - template name",
-            "CreateSiteTemplate.info.templateCreated=Template {0} successfully created."
+            "CreateSiteTemplate.info.templateCreating=Creating template {0}...",
+            "# {0} - template name",
+            "CreateSiteTemplate.info.templateCreated=Template {0} successfully created.",
         })
         @Override
         public Set<FileObject> instantiate() throws IOException {
@@ -394,17 +398,22 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
             if (!name.endsWith(".zip")) { //NOI18N
                 name += ".zip"; //NOI18N
             }
-            File f = new File(panel.comp.getTemplateFolder(), name);
-            if (f.exists()) {
-                if (DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Confirmation(Bundle.CreateSiteTemplate_Error4(f.getAbsolutePath()))) != NotifyDescriptor.YES_OPTION) {
-                    return null;
+            ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.CreateSiteTemplate_info_templateCreating(name));
+            try {
+                progressHandle.start();
+                File f = new File(panel.comp.getTemplateFolder(), name);
+                if (f.exists()) {
+                    if (DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Confirmation(Bundle.CreateSiteTemplate_Error4(f.getAbsolutePath()))) != NotifyDescriptor.YES_OPTION) {
+                        return null;
+                    }
                 }
+                createZipFile(f, p, panel.comp.manager.getRootContext());
+                StatusDisplayer.getDefault().setStatusText(Bundle.CreateSiteTemplate_info_templateCreated(name));
+            } finally {
+                progressHandle.finish();
             }
-            createZipFile(f, p, panel.comp.manager.getRootContext());
-            StatusDisplayer.getDefault().setStatusText(Bundle.CreateSiteTemplate_info_templateCreated(name));
-            ClientSideProjectUtilities.logUsage(CreateSiteTemplate.class, "USG_PROJECT_HTML5_SAVE_AS_TEMPLATE", // NOI18N
-                    null);
+            ClientSideProjectUtilities.logUsage(CreateSiteTemplate.class, "USG_PROJECT_HTML5_SAVE_AS_TEMPLATE", null); // NOI18N
             return null;
         }
 
@@ -673,12 +682,9 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         if (!templateFile.exists()) {
             templateFile.createNewFile();
         }
-        ZipOutputStream str = new ZipOutputStream(new FileOutputStream(templateFile));
-        try {
+        try (ZipOutputStream str = new ZipOutputStream(new FileOutputStream(templateFile))) {
             writeProjectMetadata(str, project);
             writeChildren(str, project.getProjectDirectory(), project.getSiteRootFolder(), rootNode.getChildren());
-        } finally {
-            str.close();
         }
         SiteZip.registerTemplate(templateFile);
     }
@@ -688,14 +694,26 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         str.putNextEntry(ze);
         EditableProperties ep = new EditableProperties(false);
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
+        FileObject projectDirectory = project.getProjectDirectory();
+        FileObject siteRootFolder = project.getSiteRootFolder();
         String siteRoot;
-        if (isSiteRootExternal(project.getProjectDirectory(), project.getSiteRootFolder())) {
+        if (!ClientSideProjectUtilities.isParentOrItself(projectDirectory, siteRootFolder)) {
             siteRoot = ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER;
         } else {
             siteRoot = projectProperties.getSiteRootFolder().get();
         }
         if (siteRoot != null) {
             ep.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
+        }
+        FileObject sourceFolder = project.getSourcesFolder();
+        String sources;
+        if (!ClientSideProjectUtilities.isParentOrItself(projectDirectory, sourceFolder)) {
+            sources = ClientSideProjectConstants.DEFAULT_SOURCE_FOLDER;
+        } else {
+            sources = projectProperties.getSourceFolder().get();
+        }
+        if (sources != null) {
+            ep.setProperty(ClientSideProjectConstants.PROJECT_SOURCE_FOLDER, sources);
         }
         String testFolder = projectProperties.getTestFolder().get();
         if (testFolder != null) {
@@ -734,14 +752,6 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 writeChildren(str, projectDirectory, siteRoot, node.getChildren());
             }
         }
-    }
-
-    private static boolean isSiteRootExternal(FileObject projectDirectory, FileObject siteRootFolder) {
-        if (projectDirectory.equals(siteRootFolder)
-                || FileUtil.isParentOf(projectDirectory, siteRootFolder)) {
-            return false;
-        }
-        return true;
     }
 
     private static String getRelativePath(FileObject projectDirectory, FileObject siteRoot, FileObject fo) {

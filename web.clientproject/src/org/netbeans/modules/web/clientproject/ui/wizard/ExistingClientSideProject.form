@@ -19,19 +19,19 @@
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="projectDirectoryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="siteRootLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="folderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="projectNameLabel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="siteRootTextField" max="32767" attributes="0"/>
+                          <Component id="folderTextField" max="32767" attributes="0"/>
                           <Component id="projectDirectoryTextField" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="siteRootBrowseButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="folderBrowseButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="projectDirectoryBrowseButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -44,9 +44,9 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="siteRootLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="siteRootTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="siteRootBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="folderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="folderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="folderBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -64,26 +64,24 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="siteRootLabel">
+    <Component class="javax.swing.JLabel" name="folderLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="siteRootTextField"/>
+          <ComponentRef name="folderTextField"/>
         </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/wizard/Bundle.properties" key="ExistingClientSideProject.siteRootLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
+        <Property name="text" type="java.lang.String" value="FOLDER:" noResource="true"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="siteRootTextField">
+    <Component class="javax.swing.JTextField" name="folderTextField">
     </Component>
-    <Component class="javax.swing.JButton" name="siteRootBrowseButton">
+    <Component class="javax.swing.JButton" name="folderBrowseButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/wizard/Bundle.properties" key="ExistingClientSideProject.siteRootBrowseButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/wizard/Bundle.properties" key="ExistingClientSideProject.folderBrowseButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="siteRootBrowseButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="folderBrowseButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="projectNameLabel">

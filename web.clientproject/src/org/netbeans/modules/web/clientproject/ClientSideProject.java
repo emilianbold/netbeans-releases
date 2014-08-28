@@ -138,7 +138,7 @@ import org.w3c.dom.Text;
 
 @AntBasedProjectRegistration(
     type=ClientSideProjectType.TYPE,
-    iconResource=ClientSideProject.PROJECT_ICON,
+    iconResource=ClientSideProject.HTML5_PROJECT_ICON,
     sharedNamespace=ClientSideProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=ClientSideProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
@@ -147,7 +147,9 @@ public class ClientSideProject implements Project {
     static final Logger LOGGER = Logger.getLogger(ClientSideProject.class.getName());
 
     @StaticResource
-    public static final String PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/projecticon.png"; // NOI18N
+    public static final String HTML5_PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/html5-project.png"; // NOI18N
+    @StaticResource
+    public static final String JS_LIBRARY_PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/js-library-project.png"; // NOI18N
 
     final UsageLogger projectBrowserUsageLogger = UsageLogger.projectBrowserUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
 
@@ -541,7 +543,8 @@ public class ClientSideProject implements Project {
 
         @Override
         public Icon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(ClientSideProject.PROJECT_ICON));
+            String icon = isJsLibrary() ? ClientSideProject.JS_LIBRARY_PROJECT_ICON : ClientSideProject.HTML5_PROJECT_ICON;
+            return new ImageIcon(ImageUtilities.loadImage(icon));
         }
 
         @Override

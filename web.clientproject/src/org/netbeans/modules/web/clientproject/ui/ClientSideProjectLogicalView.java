@@ -362,7 +362,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             "# {0} - project directory",
             "ClientSideProjectNode.project.description=HTML5 application in {0}",
             "# {0} - project directory",
-            "ClientSideProjectNode.library.description=JS library in {0}",
+            "ClientSideProjectNode.library.description=JavaScript library in {0}",
         })
         @Override
         public String getShortDescription() {
