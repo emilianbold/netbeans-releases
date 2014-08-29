@@ -39,17 +39,18 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javascript2.nodejs.editor;
 
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.spi.DeclarationFinder;
-import org.netbeans.modules.javascript2.nodejs.ModuleLocator;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -57,10 +58,22 @@ import org.netbeans.modules.javascript2.nodejs.ModuleLocator;
  */
 @DeclarationFinder.Registration(priority = 13)
 public class NodeJsDeclarationFinder implements DeclarationFinder {
-
+    
+    
+    
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
-//        System.out.println("findDeclaraion");
+        Snapshot snapshot = info.getSnapshot();
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot, caretOffset);
+        Token<? extends JsTokenId> pathToken = getModeluPath(ts, caretOffset);
+        if (pathToken != null) {
+            System.out.println(pathToken.text().toString());
+            String module = pathToken.text().toString();
+            FileObject moduleFO = NodeJsUtils.findModuleFile(snapshot.getSource().getFileObject(), module);
+            if (moduleFO != null) {
+                return new DeclarationLocation(moduleFO, 0);
+            }
+        }
         return DeclarationLocation.NONE;
     }
 
@@ -68,18 +81,38 @@ public class NodeJsDeclarationFinder implements DeclarationFinder {
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
         final OffsetRange[] value = new OffsetRange[1];
         value[0] = OffsetRange.NONE;
-        
+
         doc.render(new Runnable() {
 
             @Override
             public void run() {
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
-                if (ts != null && NodeJsUtils.isModuleName(ts, caretOffset)) {
-                    
+                Token<? extends JsTokenId> path = getModeluPath(ts, caretOffset);
+                if (path != null) {
+                    value[0] = new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
                 }
             }
         });
         return value[0];
     }
-    
+
+    private Token<? extends JsTokenId> getModeluPath(TokenSequence<? extends JsTokenId> ts, final int offset) {
+        Token<? extends JsTokenId> path = null;
+        if (ts != null && NodeJsContext.findContext(ts, offset) == NodeJsContext.MODULE_PATH) {
+            ts.move(offset);
+            ts.moveNext();
+            Token<? extends JsTokenId> token = ts.token();
+            if (token.id() == JsTokenId.STRING_END) {
+                ts.movePrevious();
+                token = ts.token();
+            }
+            if (token.id() == JsTokenId.STRING) {
+                String text = token.text().toString();
+                if (text != null && !text.isEmpty()) {
+                    path = token;
+                }
+            }
+        }
+        return path;
+    }
 }
