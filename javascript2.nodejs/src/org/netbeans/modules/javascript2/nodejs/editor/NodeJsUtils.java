@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.javascript2.nodejs.editor;
 
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -51,12 +51,111 @@ import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
  */
 public class NodeJsUtils {
     public static String REQUIRE_METHOD_NAME = "require"; // NOI18N
+    public static String NODE_MODULES_NAME = "node_modules"; // NOI18N
+    public static String PACKAGE_NAME = "package"; //NOI18N
+    public static String INDEX_NAME = "index"; //NOI18N
     
-    public static boolean isModuleName(TokenSequence<? extends JsTokenId> ts, final int offset) {
-        ts.move(offset);
-        if (ts.moveNext() && ts.token().id() == JsTokenId.STRING) {
-            
+    public static String JS_EXT = ".js"; //NOI18N
+    public static String JSON_EXT = ".json"; //NOI18N
+    public static String NODE_EXT = ".node"; //NOI18N
+    
+    public static FileObject findModuleFile(FileObject fromModule, String modulePath) {
+        if (modulePath == null || modulePath.isEmpty()) {
+            // do nothing in such case
+            return null;
         }
-        return false;
+        char firstChar = modulePath.charAt(0);
+        FileObject resultFO = null;
+        // we should now recognize, whether the identifier is a core module
+        // if (coreModule) return null;
+        if (firstChar == '/' || firstChar == '.' ) {
+            resultFO = findModuleAsFile(fromModule, modulePath);
+            if (resultFO == null) {
+                resultFO = findModuleAsFolder(fromModule, modulePath);
+            }
+            if (resultFO != null) {
+                // we don't want to show .node files (binary files)
+                return NODE_EXT.equals(resultFO.getExt()) ? null : resultFO;
+            }
+        }
+        
+        resultFO = findNodeModule(fromModule, modulePath);
+        if (resultFO != null) {
+            // we don't want to show .node files (binary files)
+            return NODE_EXT.equals(resultFO.getExt()) ? null : resultFO;
+        }
+        return null;
+    }
+    
+    private static FileObject findModuleAsFile (final FileObject fromModule, final String module) {
+        FileObject parentFO = fromModule.getParent();
+        if (parentFO != null) {
+            FileObject resultFO = parentFO.getFileObject(module);
+            if (resultFO != null && !resultFO.isFolder()) {
+                return resultFO;
+            }
+            resultFO = parentFO.getFileObject(module + JS_EXT);
+            if (resultFO != null && !resultFO.isFolder()) {
+                return resultFO;
+            }
+            resultFO = parentFO.getFileObject(module + JSON_EXT);
+            if (resultFO != null && !resultFO.isFolder()) {
+                return resultFO;
+            }
+            resultFO = parentFO.getFileObject(module + NODE_EXT);
+            if (resultFO != null && !resultFO.isFolder()) {
+                return resultFO;
+            }
+        }
+        return null;
+    }
+    
+    private static FileObject findModuleAsFolder(final FileObject fromModule, final String module) {
+        FileObject parentFO = fromModule.getParent();
+        if (parentFO == null) {
+            return null;
+        }
+        FileObject moduleFolderFO = parentFO.getFileObject(module);
+        if (moduleFolderFO != null && moduleFolderFO.isFolder()) {
+            FileObject packageFO = moduleFolderFO.getFileObject(PACKAGE_NAME + JSON_EXT);
+            FileObject resultFO = null;
+            if (packageFO != null && !packageFO.isFolder()) {
+                
+                // need to parser package.json
+                // find "main" field
+                // resultFO = findModuleAsFile (module + main field value)
+                if (resultFO != null) {
+                    return resultFO;
+                }
+            }
+            resultFO = parentFO.getFileObject(module + "/" + INDEX_NAME + JS_EXT);
+            if (resultFO != null && !resultFO.isFolder()) {
+                return resultFO;
+            }
+            resultFO = parentFO.getFileObject(module + "/" + INDEX_NAME + NODE_EXT);
+            if (resultFO != null && !resultFO.isFolder()) {
+                return resultFO;
+            }
+        }
+        return null;
+    }
+    
+    private static FileObject findNodeModule(final FileObject fromModule, final String module) {
+        FileObject parentFolder = fromModule.getParent();
+        // we have to go through parent/node_modules/modulePath
+        while (parentFolder != null) {
+            FileObject nodeModulesFO = parentFolder.getFileObject(NODE_MODULES_NAME);
+            if (nodeModulesFO != null) {
+                FileObject resultFO = findModuleAsFile(nodeModulesFO, module);
+                if (resultFO == null) {
+                    resultFO = findModuleAsFolder(nodeModulesFO, module);
+                }
+                if (resultFO != null) {
+                    return resultFO;
+                }
+            }
+            parentFolder = parentFolder.getParent();
+        }
+        return null;
     }
 }

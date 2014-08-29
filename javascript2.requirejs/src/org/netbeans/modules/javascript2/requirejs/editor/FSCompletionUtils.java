@@ -304,7 +304,7 @@ public class FSCompletionUtils {
         if (parent != null && !path.isEmpty()) {
             while (parent != null && parent.getPath().contains(projectDirectoryPath)) {
                 targetFO = parent.getFileObject(path);
-                if (targetFO != null) {
+                if (targetFO != null && !targetFO.isFolder()) {
                     return targetFO;
                 }
                 targetFO = parent.getFileObject(path + ".js");
