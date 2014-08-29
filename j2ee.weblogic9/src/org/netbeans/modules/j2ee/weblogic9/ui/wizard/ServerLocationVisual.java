@@ -42,6 +42,8 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
 import java.awt.Cursor;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -102,6 +104,22 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         if (loc != null) { // NOI18N
             locationField.setText(loc);
         }
+
+        // XXX
+        localRadioButton.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                fireChangeEvent();
+            }
+        });
+        remoteRadioButton.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                fireChangeEvent();
+            }
+        });
     }
 
     public boolean valid(WizardDescriptor wizardDescriptor) {
@@ -146,6 +164,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         // set the server root in the parent instantiating iterator
         instantiatingIterator.setServerRoot(location);
         instantiatingIterator.setServerVersion(VersionBridge.getVersion(version));
+        instantiatingIterator.setRemote(remoteRadioButton.isSelected());
 
         // everything seems ok
         return true;
