@@ -180,9 +180,9 @@ public class ODCSRepository implements PropertyChangeListener {
             }
             
             setCredentials(user, psswd, null, null);
-        }
-    }
-
+                }
+            }
+            
     private void cancelQueries() {
         final List<ODCSQuery> tmpQueries = new LinkedList<>();
         synchronized (QUERIES_LOCK) {
@@ -405,14 +405,34 @@ public class ODCSRepository implements PropertyChangeListener {
             
             if (queries == null && isLoggedIn()) {
                 queries = new HashSet<>();
+                
+                // predefined
                 initializePredefinedQueries();
                 queries.addAll(predefinedQueries.values());
-                ODCS.getInstance().getRequestProcessor().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        requestRemoteSavedQueries();
+
+                if(ODCS.LOG.isLoggable(Level.FINER)) {
+                    for (ODCSQuery q : queries) {
+                        ODCS.LOG.log(Level.FINER, "added predefined query {0} to repository {1}", new Object[]{q.getDisplayName(), getDisplayName()});
                     }
-                });
+                }
+                
+                // remote
+                List<ODCSQuery> remoteQueries = new ArrayList<>();
+                ensureCredentials();
+                RepositoryConfiguration conf = getRepositoryConfiguration(false);
+                if (conf != null) {
+                    List<SavedTaskQuery> savedQueries = conf.getSavedTaskQueries();
+                    for (SavedTaskQuery sq : savedQueries) {
+                        ODCSQuery q = ODCSQuery.createSaved(this, sq);
+                        remoteQueries.add(q);
+
+                        ODCS.LOG.log(Level.FINER, "added remote query {0} to repository {1}", new Object[]{sq.getName(), getDisplayName()});
+                    }
+                }
+        
+                if(queries != null && !remoteQueries.isEmpty() && isLoggedIn()) {
+                    queries.addAll(remoteQueries);
+                }
             } 
             
             if(queries != null) {
@@ -423,28 +443,6 @@ public class ODCSRepository implements PropertyChangeListener {
         return ret;
     }
     
-    private void requestRemoteSavedQueries () {
-        List<ODCSQuery> remoteQueries = new ArrayList<>();
-        ensureCredentials();
-        RepositoryConfiguration conf = getRepositoryConfiguration(false);
-        if (conf != null) {
-            List<SavedTaskQuery> savedQueries = conf.getSavedTaskQueries();
-            for (SavedTaskQuery sq : savedQueries) {
-                ODCSQuery q = ODCSQuery.createSaved(this, sq);
-                remoteQueries.add(q);
-
-                ODCS.LOG.log(Level.FINER, "added remote query {0} to repository {1}", new Object[]{sq.getName(), getDisplayName()});
-            }
-        }
-        
-        if(!remoteQueries.isEmpty() && isLoggedIn()) {
-            synchronized (QUERIES_LOCK) {
-                queries.addAll(remoteQueries);
-            }
-            fireQueryListChanged();
-        }
-    }
-
     private void initializePredefinedQueries () {
         if (predefinedQueries == null) {
             Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<>(PredefinedTaskQuery.class);
@@ -670,7 +668,7 @@ public class ODCSRepository implements PropertyChangeListener {
                || q != getPredefinedQuery(PredefinedTaskQuery.RECENT))
             && !isLoggedIn();
     }
-    
+
     public class Cache {
         private final Map<String, Reference<ODCSIssue>> issues = new HashMap<>();
         
