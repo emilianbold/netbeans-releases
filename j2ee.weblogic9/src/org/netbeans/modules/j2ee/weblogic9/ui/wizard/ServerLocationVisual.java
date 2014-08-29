@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
+import java.awt.Cursor;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JFileChooser;
@@ -57,7 +60,9 @@ import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.weblogic.common.api.Version;
 import org.netbeans.modules.weblogic.common.api.WebLogicLayout;
 import org.openide.WizardDescriptor;
+import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -313,6 +318,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         locationLabel = new javax.swing.JLabel();
         locationField = new javax.swing.JTextField();
         locationBrowseButton = new javax.swing.JButton();
+        downloadLabel = new javax.swing.JLabel();
 
         locationLabel.setLabelFor(locationField);
         org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.locationLabel.text")); // NOI18N
@@ -324,6 +330,19 @@ public class ServerLocationVisual extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(downloadLabel, org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.downloadLabel.text")); // NOI18N
+        downloadLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                downloadLabelMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                downloadLabelMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                downloadLabelMouseExited(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -331,9 +350,10 @@ public class ServerLocationVisual extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(locationLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(locationField, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
+                .addComponent(locationField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(locationBrowseButton))
+            .addComponent(downloadLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -342,7 +362,8 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                     .addComponent(locationLabel)
                     .addComponent(locationField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(locationBrowseButton))
-                .addGap(0, 275, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(downloadLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         locationField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ACSD_ServerLocationPanel_locationField")); // NOI18N
@@ -353,8 +374,26 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         showFileChooser();
     }//GEN-LAST:event_locationBrowseButtonActionPerformed
 
+    private void downloadLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_downloadLabelMouseEntered
+        downloadLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_downloadLabelMouseEntered
+
+    private void downloadLabelMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_downloadLabelMouseExited
+        downloadLabel.setCursor(Cursor.getDefaultCursor());
+    }//GEN-LAST:event_downloadLabelMouseExited
+
+    private void downloadLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_downloadLabelMouseClicked
+        try {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(
+                    new URL("http://www.oracle.com/technetwork/middleware/weblogic/downloads/index.html")); // NOI18N
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }//GEN-LAST:event_downloadLabelMouseClicked
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel downloadLabel;
     private javax.swing.JButton locationBrowseButton;
     private javax.swing.JTextField locationField;
     private javax.swing.JLabel locationLabel;
