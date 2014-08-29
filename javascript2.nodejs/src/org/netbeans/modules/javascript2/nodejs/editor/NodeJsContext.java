@@ -39,22 +39,40 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javascript2.nodejs.editor;
 
+import java.util.Arrays;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 
 /**
  *
  * @author Petr Pisl
  */
 public enum NodeJsContext {
-    
-    MODULE_NAME,
+
+    MODULE_PATH,
     UNKNOWN;
-    
+
     public static NodeJsContext findContext(TokenSequence<? extends JsTokenId> ts, final int offset) {
+        ts.move(offset);
+        if (ts.moveNext()) {
+            Token<? extends JsTokenId> token = ts.token();
+            if (token.id() == JsTokenId.STRING || token.id() == JsTokenId.STRING_END) {
+                token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
+                        JsTokenId.STRING_BEGIN, JsTokenId.STRING, JsTokenId.STRING_END, JsTokenId.OPERATOR_COMMA));
+                if (token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
+                    token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
+                    if (token.id() == JsTokenId.IDENTIFIER) {
+                        if (NodeJsUtils.REQUIRE_METHOD_NAME.equals(token.text().toString())) {
+                            return MODULE_PATH;
+                        }
+                    }
+                }
+            }
+        }
         return UNKNOWN;
     }
 }
