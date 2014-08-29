@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,25 +34,20 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -72,13 +61,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
- * The first panel of the custom wizard used to register new server instance.
- * User is required to enter the local server's installation directory at this
- * phase.
  *
- * @author Kirill Sorokin
+ * @author Petr Hejl
  */
-public class ServerLocationVisual extends JPanel {
+public class ServerLocationVisual extends javax.swing.JPanel {
 
     private static final FilenameFilter SERVER_FILTER = new FilenameFilter() {
 
@@ -99,13 +85,18 @@ public class ServerLocationVisual extends JPanel {
 
         // register the supplied listener
         //addChangeListener(listener);
-
         // set the panel's name
-         setName(NbBundle.getMessage(ServerPropertiesPanel.class,
+        setName(NbBundle.getMessage(ServerPropertiesPanel.class,
                 "SERVER_LOCATION_STEP"));        // NOI18N
 
         // init the GUI
-        init();
+        initComponents();
+
+        locationField.addKeyListener(new ServerLocationVisual.LocationKeyListener());
+        String loc = WLPluginProperties.getLastServerRoot();
+        if (loc != null) { // NOI18N
+            locationField.setText(loc);
+        }
     }
 
     public boolean valid(WizardDescriptor wizardDescriptor) {
@@ -125,7 +116,7 @@ public class ServerLocationVisual extends JPanel {
 
         File serverRoot = FileUtil.normalizeFile(new File(location));
 
-        serverRoot = findServerLocation(serverRoot , wizardDescriptor);
+        serverRoot = findServerLocation(serverRoot, wizardDescriptor);
         if (serverRoot == null) {
             return false;
         }
@@ -144,7 +135,6 @@ public class ServerLocationVisual extends JPanel {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
             return false;
         }
-
 
         WLPluginProperties.setLastServerRoot(location);
 
@@ -185,76 +175,7 @@ public class ServerLocationVisual extends JPanel {
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // JPanel section
-    ////////////////////////////////////////////////////////////////////////////
-    private JButton locationBrowseButton;
-    private JLabel locationLabel;
-    private JTextField locationField;
-    private JPanel formattingPanel;
-
-    /**
-     * Inits the GUI components
-     */
-    private void init() {
-        // we use the GridBagLayout so we need the GridBagConstraints to
-        // properly place the components
-        GridBagConstraints gridBagConstraints;
-
-        // initialize the components
-        locationLabel = new JLabel();
-        locationField = new JTextField();
-        locationBrowseButton = new JButton();
-        formattingPanel = new JPanel();
-
-        // set the desired layout
-        setLayout(new GridBagLayout());
-
-        // add server installation directory field label
-        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, NbBundle.getMessage(ServerLocationVisual.class, "LBL_SERVER_LOCATION")); // NOI18N
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = GridBagConstraints.EAST;
-        locationLabel.setLabelFor(locationField);
-        add(locationLabel, gridBagConstraints);
-
-        // add server installation directory field
-        locationField.setColumns(10);
-        locationField.addKeyListener(new LocationKeyListener());
-        String loc = WLPluginProperties.getLastServerRoot();
-        if (loc != null) { // NOI18N
-            locationField.setText(loc);
-        }
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(0, 10, 0, 10);
-        locationField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerLocationVisual.class, "ACSD_ServerLocationPanel_locationField")); // NOI18N
-        add(locationField, gridBagConstraints);
-
-        // add server installation directory field browse button
-        org.openide.awt.Mnemonics.setLocalizedText(locationBrowseButton, NbBundle.getMessage(ServerLocationVisual.class, "LBL_BROWSE_BUTTON"));  // NOI18N
-        locationBrowseButton.addActionListener(new BrowseActionListener());
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        locationBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerLocationVisual.class, "ACSD_ServerLocationPanel_locationBrowseButton")); // NOI18N
-        add(locationBrowseButton, gridBagConstraints);
-
-        // add the empty panel, that will take up all the remaining space
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-        gridBagConstraints.weighty = 1.0;
-        add(formattingPanel, gridBagConstraints);
-    }
-
-     private String getInstallLocation() {
+    private String getInstallLocation() {
         return locationField.getText();
     }
 
@@ -333,6 +254,7 @@ public class ServerLocationVisual extends JPanel {
      * @author Kirill Sorokin
      */
     private class LocationKeyListener extends KeyAdapter {
+
         /**
          * This method is called when a user presses a key on the keyboard
          */
@@ -349,41 +271,23 @@ public class ServerLocationVisual extends JPanel {
     }
 
     /**
-     * Simple listener that reacts on the user's clicking the Browse button
-     *
-     * @author Kirill Sorokin
-     */
-    private class BrowseActionListener implements ActionListener {
-        /**
-         * this methos is called when a user clicks Browse and show the file
-         * chooser dialog in response
-         */
-        public void actionPerformed(ActionEvent event) {
-            showFileChooser();
-        }
-    }
-
-    /**
      * An extension of the FileFilter class that is setup to accept only
      * directories.
      *
      * @author Kirill Sorokin
      */
     private static class DirectoryFileFilter extends FileFilter {
+
         /**
          * This method is called when it is needed to decide whether a chosen
          * file meets the filter's requirements
          *
          * @return true if the file meets the requirements, false otherwise
          */
+        @Override
         public boolean accept(File file) {
             // if the file exists and it's a directory - accept it
-            if (file.exists() && file.isDirectory()) {
-                return true;
-            }
-
-            // in all other cases - refuse
-            return false;
+            return file.exists() && file.isDirectory();
         }
 
         /**
@@ -391,8 +295,68 @@ public class ServerLocationVisual extends JPanel {
          *
          * @return group name
          */
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(ServerLocationVisual.class, "DIRECTORIES_FILTER_NAME"); // NOI18N
         }
     }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        locationLabel = new javax.swing.JLabel();
+        locationField = new javax.swing.JTextField();
+        locationBrowseButton = new javax.swing.JButton();
+
+        locationLabel.setLabelFor(locationField);
+        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.locationLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(locationBrowseButton, org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.locationBrowseButton.text")); // NOI18N
+        locationBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                locationBrowseButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(locationLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(locationField, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(locationBrowseButton))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(locationLabel)
+                    .addComponent(locationField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(locationBrowseButton))
+                .addGap(0, 275, Short.MAX_VALUE))
+        );
+
+        locationField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ACSD_ServerLocationPanel_locationField")); // NOI18N
+        locationBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ACSD_ServerLocationPanel_locationBrowseButton")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void locationBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationBrowseButtonActionPerformed
+        showFileChooser();
+    }//GEN-LAST:event_locationBrowseButtonActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton locationBrowseButton;
+    private javax.swing.JTextField locationField;
+    private javax.swing.JLabel locationLabel;
+    // End of variables declaration//GEN-END:variables
 }
