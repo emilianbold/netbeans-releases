@@ -140,7 +140,10 @@ public abstract class ParsingFoldSupport extends TaskFactory implements FoldMana
         class R extends UserTask implements Runnable {
             public void run() {
                 try {
-                    ParserManager.parse(Collections.singleton(Source.create(file)), this);
+                    Source source = Source.create(file);
+                    if (source != null) {
+                        ParserManager.parse(Collections.singleton(source), this);
+                    }
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
