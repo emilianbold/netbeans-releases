@@ -249,7 +249,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
         final String here = (String) ctx[0];
         final String ns = (String) ctx[1];
         Attributes attrs = (Attributes) ctx[2];
-        if (!expectedNS.equals(ns)) {
+        if (expectedNS == null || !expectedNS.equals(ns)) {
             throw new SAXException("Invalid librray descriptor namespace"); // NOI18N
         }
         if (DESCRIPTION.equals(here)) {
