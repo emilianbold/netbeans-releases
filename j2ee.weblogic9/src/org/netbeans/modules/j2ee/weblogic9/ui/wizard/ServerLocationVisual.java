@@ -315,10 +315,14 @@ public class ServerLocationVisual extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        domainButtonGroup = new javax.swing.ButtonGroup();
         locationLabel = new javax.swing.JLabel();
         locationField = new javax.swing.JTextField();
         locationBrowseButton = new javax.swing.JButton();
         downloadLabel = new javax.swing.JLabel();
+        domainLabel = new javax.swing.JLabel();
+        localRadioButton = new javax.swing.JRadioButton();
+        remoteRadioButton = new javax.swing.JRadioButton();
 
         locationLabel.setLabelFor(locationField);
         org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.locationLabel.text")); // NOI18N
@@ -343,6 +347,15 @@ public class ServerLocationVisual extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(domainLabel, org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.domainLabel.text")); // NOI18N
+
+        domainButtonGroup.add(localRadioButton);
+        localRadioButton.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(localRadioButton, org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.localRadioButton.text")); // NOI18N
+
+        domainButtonGroup.add(remoteRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(remoteRadioButton, org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.remoteRadioButton.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -350,10 +363,19 @@ public class ServerLocationVisual extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(locationLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(locationField, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
+                .addComponent(locationField, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(locationBrowseButton))
             .addComponent(downloadLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(domainLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(remoteRadioButton)
+                            .addComponent(localRadioButton))))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -363,7 +385,13 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                     .addComponent(locationField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(locationBrowseButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(downloadLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(downloadLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(domainLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(localRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(remoteRadioButton))
         );
 
         locationField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ACSD_ServerLocationPanel_locationField")); // NOI18N
@@ -393,9 +421,13 @@ public class ServerLocationVisual extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup domainButtonGroup;
+    private javax.swing.JLabel domainLabel;
     private javax.swing.JLabel downloadLabel;
+    private javax.swing.JRadioButton localRadioButton;
     private javax.swing.JButton locationBrowseButton;
     private javax.swing.JTextField locationField;
     private javax.swing.JLabel locationLabel;
+    private javax.swing.JRadioButton remoteRadioButton;
     // End of variables declaration//GEN-END:variables
 }
