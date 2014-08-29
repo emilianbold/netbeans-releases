@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -160,11 +161,12 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         Map<String, String> props = new HashMap<String, String>();
         props.put(WLPluginProperties.SERVER_ROOT_ATTR, serverRoot);
         props.put(WLPluginProperties.DOMAIN_ROOT_ATTR, domainRoot);
-        props.put(WLPluginProperties.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
         props.put(WLPluginProperties.DOMAIN_NAME, domainName);
         props.put(WLPluginProperties.PORT_ATTR, port);
         props.put(WLPluginProperties.HOST_ATTR, host);
-        props.put(WLPluginProperties.REMOTE_ATTR, Boolean.FALSE.toString());
+        props.put(WLPluginProperties.REMOTE_ATTR, Boolean.toString(remote));
+        props.put(WLPluginProperties.DEBUGGER_PORT_ATTR,
+                debugPort == null || debugPort.isEmpty() ? DEFAULT_DEBUGGER_PORT : debugPort);
         
         if (Utilities.isMac()) {
             props.put(WLPluginProperties.MEM_OPTS, DEFAULT_MAC_MEM_OPTS);
@@ -180,9 +182,13 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      * Helper method for decorating error message as HTML. Workaround for line wrap.
      */
     /*package*/ static String decorateMessage(String message) {
-        return message == null
-            ? null
-            : "<html>" + message.replaceAll("<",  "&lt;").replaceAll(">",  "&gt;") + "</html>"; // NIO18N
+        if (message == null) {
+            return null;
+        }
+        if (message.toUpperCase(Locale.ENGLISH).startsWith("<HTML>")) {
+            return message;
+        }
+        return "<html>" + message.replaceAll("<",  "&lt;").replaceAll(">",  "&gt;") + "</html>"; // NIO18N
     }
     // the main and additional instance properties
     private String serverRoot;
@@ -192,7 +198,9 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     private String url;
     private String domainName;
     private String port;
+    private String debugPort;
     private String host;
+    private boolean remote;
     private Version serverVersion;
 
 
@@ -315,6 +323,22 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      */
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean isRemote() {
+        return remote;
+    }
+
+    public void setRemote(boolean remote) {
+        this.remote = remote;
+    }
+
+    public String getDebugPort() {
+        return debugPort;
+    }
+
+    public void setDebugPort(String debugPort) {
+        this.debugPort = debugPort;
     }
 
     public Version getServerVersion() {

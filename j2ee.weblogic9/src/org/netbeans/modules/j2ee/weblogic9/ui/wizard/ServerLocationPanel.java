@@ -43,7 +43,8 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
 import java.awt.Component;
-import java.util.Vector;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -55,10 +56,13 @@ import org.openide.util.HelpCtx;
  */
 public class ServerLocationPanel  implements WizardDescriptor.Panel, ChangeListener {
 
+    private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
+
     private ServerLocationVisual component;
+
     private WizardDescriptor wizard;
+
     private transient WLInstantiatingIterator instantiatingIterator;
-    private Vector listeners = new Vector();
 
     public ServerLocationPanel(WLInstantiatingIterator instantiatingIterator) {
         this.instantiatingIterator = instantiatingIterator;
@@ -94,28 +98,16 @@ public class ServerLocationPanel  implements WizardDescriptor.Panel, ChangeListe
     }
 
     public void removeChangeListener(ChangeListener listener) {
-        if (listeners != null) {
-            synchronized (listeners) {
-                listeners.remove(listener);
-            }
-        }
+        listeners.remove(listener);
     }
 
     public void addChangeListener(ChangeListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
+        listeners.add(listener);
     }
 
     private void fireChangeEvent(ChangeEvent event) {
-        Vector targetListeners;
-        synchronized (listeners) {
-            targetListeners = (Vector) listeners.clone();
-        }
-
-        for (int i = 0; i < targetListeners.size(); i++) {
-            ChangeListener listener = (ChangeListener) targetListeners.elementAt(i);
-            listener.stateChanged(event);
+        for (ChangeListener l : listeners) {
+            l.stateChanged(event);
         }
     }
 
