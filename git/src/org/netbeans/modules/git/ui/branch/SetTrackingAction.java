@@ -76,34 +76,37 @@ public class SetTrackingAction extends SingleRepositoryAction {
         }
     }
 
+    public void setupTrackedBranch (final File repository, final String branchName, String currentTrackedBranch) {
+        SelectTrackedBranch selectBranch = new SelectTrackedBranch(repository, branchName, currentTrackedBranch);
+        if (selectBranch.open()) {
+            setupTrackedBranchImmediately(repository, branchName, selectBranch.getSelectedBranch());
+        }
+    }
+    
     @NbBundle.Messages({
         "LBL_SetTrackingAction.progressName=Setting Tracked Branch",
         "# {0} - branch name", "# {1} - tracked branch name",
         "MSG_SetTrackingAction.result=Branch \"{0}\" marked to track branch \"{1}\""
     })
-    public void setupTrackedBranch (final File repository, final String branchName, String currentTrackedBranch) {
-        final SelectTrackedBranch selectBranch = new SelectTrackedBranch(repository, branchName, currentTrackedBranch);
-        if (selectBranch.open()) {
-            GitProgressSupport supp = new GitProgressSupport() {
-                @Override
-                protected void perform () {
-                    try {
-                        GitClient client = getClient();
-                        String targetBranch = selectBranch.getSelectedBranch();
-                        client.updateTracking(branchName, targetBranch, getProgressMonitor());
-                        log(branchName, targetBranch);
-                    } catch (GitException ex) {
-                        GitClientExceptionHandler.notifyException(ex, true);
-                    }
+    public void setupTrackedBranchImmediately (final File repository, final String branchName, final String targetBranch) {
+        GitProgressSupport supp = new GitProgressSupport() {
+            @Override
+            protected void perform () {
+                try {
+                    GitClient client = getClient();
+                    client.updateTracking(branchName, targetBranch, getProgressMonitor());
+                    log(branchName, targetBranch);
+                } catch (GitException ex) {
+                    GitClientExceptionHandler.notifyException(ex, true);
                 }
+            }
 
-                private void log (String branchName, String targetBranchName) {
-                    OutputLogger logger = getLogger();
-                    logger.outputLine(Bundle.MSG_SetTrackingAction_result(branchName, targetBranchName));
-                }
-            };
-            supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_SetTrackingAction_progressName());
-        }
+            private void log (String branchName, String targetBranchName) {
+                OutputLogger logger = getLogger();
+                logger.outputLine(Bundle.MSG_SetTrackingAction_result(branchName, targetBranchName));
+            }
+        };
+        supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_SetTrackingAction_progressName());
     }
 
 }

@@ -75,7 +75,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.eclipse.jgit.lib.Repository;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
@@ -1106,7 +1105,7 @@ public final class GitUtils {
     }
 
     public static boolean isValidRefName (String refName) {
-        return Repository.isValidRefName(refName);
+        return JGitUtils.isValidRefName(refName);
     }
 
     public static boolean isValidTagName (String tagName) {

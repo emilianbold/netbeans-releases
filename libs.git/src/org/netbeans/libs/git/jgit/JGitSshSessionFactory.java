@@ -158,7 +158,7 @@ public class JGitSshSessionFactory extends JschConfigSessionFactory {
     protected Session createSession (Host hc, String user, String host, int port, FS fs) throws JSchException {
         Session session = super.createSession(hc, user, host, port, fs);
         try {
-            List<Proxy> proxies = ProxySelector.getDefault().select(new URI("ssh",
+            List<Proxy> proxies = ProxySelector.getDefault().select(new URI("socket",
                     null,
                     host,
                     port == -1 ? 22 : port,
