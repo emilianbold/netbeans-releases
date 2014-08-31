@@ -78,7 +78,7 @@ import org.openide.util.lookup.Lookups;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "ProfileElementNavigatorAction_Name=Profile...",
+    "ProfileElementNavigatorAction_Name=Profile",
     "ProfileElementNavigatorAction_ProblemProfilingElement=Cannot profile selected element. This can happen for items placed in directory other than project sources directory (typically /src and /web). If so, please select appropriate item in project sources directory."
 })
 @ActionID(id = "org.netbeans.modules.profiler.nbimpl.actions.ProfileElementNavigatorAction", category = "Profile")
