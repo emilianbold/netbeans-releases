@@ -39,41 +39,45 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.openide.filesystems;
 
-import java.util.Set;
+import java.util.Arrays;
 import javax.swing.Action;
+import org.openide.modules.PatchFor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- * Stub for backwards compatibility. The real implementation which bridges
- * in system actions moved to openide.filesystems.compat8
+ * Retained compatibility with 8.0.1, bridges System actions to the 
+ * fileset's Lookup.
  * 
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author sdedic
  */
-final class FileExtrasLkp extends AbstractLookup {
-    final FileSystem fs;
+@PatchFor(FileExtrasLkp.class)
+public class CompatFileExtrasLkp extends AbstractLookup {
     private final InstanceContent ic;
-    final Set<FileObject> set;
 
-    public FileExtrasLkp(FileSystem fs, Set<FileObject> set) {
-        this(fs, new InstanceContent(), set);
+    public CompatFileExtrasLkp() {
+        this(new InstanceContent());
     }
-    private FileExtrasLkp(FileSystem fs, InstanceContent content, Set<FileObject> set) {
+    private CompatFileExtrasLkp(InstanceContent content) {
         super(content);
-        this.fs = fs;
         this.ic = content;
-        this.set = set;
+    }
+    
+    FileExtrasLkp compat() {
+        return (FileExtrasLkp)(Object)this;
+    }
+    
+    FileSystemCompat fsCompat(FileSystem fs) {
+        return (FileSystemCompat)(Object)fs;
     }
 
     @Override @SuppressWarnings("deprecation")
     protected void beforeLookup(Template<?> template) {
         if (Action.class.isAssignableFrom(template.getType())) {
-//            ic.set(Arrays.asList(fs.getActions(set)), null);
+            ic.set(Arrays.asList(
+                    fsCompat(compat().fs).getActions(compat().set)), null);
         }
     }
-    
-    
 }
