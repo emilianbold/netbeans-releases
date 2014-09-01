@@ -335,14 +335,16 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (btnBugs!=null) {
-                    component.remove(btnBugs);
+                synchronized( LOCK ) {
+                    if (btnBugs!=null) {
+                        component.remove(btnBugs);
+                    }
+                    btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug)); // NOI18N
+                    btnBugs.putClientProperty("MM.Closing", true);
+                    btnBugs.setHorizontalTextPosition(JLabel.LEFT);
+                    btnBugs.setToolTipText(bug.getToolTipText());
+                    component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 }
-                btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug)); // NOI18N
-                btnBugs.putClientProperty("MM.Closing", true);
-                btnBugs.setHorizontalTextPosition(JLabel.LEFT);
-                btnBugs.setToolTipText(bug.getToolTipText());
-                component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 updateDetailsVisible();
             }
         });
@@ -444,20 +446,22 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (btnBuilds != null) {
-                    component.remove(btnBuilds);
-                }
-                if (buildHandle != null) {
-                    Action action = buildHandle.getDefaultAction();
-                    Icon actionIcon = (Icon) action.getValue(Action.SMALL_ICON);
-                    String actionName = (String) action.getValue(Action.NAME);
-                    btnBuilds = new LinkButton(actionName, actionIcon, action);
-                    btnBuilds.setHorizontalTextPosition(JLabel.LEFT);
-                    btnBuilds.setVerticalAlignment(JButton.CENTER);
-                    btnBuilds.setToolTipText(tooltipText);
-                    component.add(btnBuilds, new GridBagConstraints(5, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
-                } else {
-                    btnBuilds = null;
+                synchronized( LOCK ) {
+                    if (btnBuilds != null) {
+                        component.remove(btnBuilds);
+                    }
+                    if (buildHandle != null) {
+                        Action action = buildHandle.getDefaultAction();
+                        Icon actionIcon = (Icon) action.getValue(Action.SMALL_ICON);
+                        String actionName = (String) action.getValue(Action.NAME);
+                        btnBuilds = new LinkButton(actionName, actionIcon, action);
+                        btnBuilds.setHorizontalTextPosition(JLabel.LEFT);
+                        btnBuilds.setVerticalAlignment(JButton.CENTER);
+                        btnBuilds.setToolTipText(tooltipText);
+                        component.add(btnBuilds, new GridBagConstraints(5, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+                    } else {
+                        btnBuilds = null;
+                    }
                 }
                 if (component != null) {
                     updateDetailsVisible();
