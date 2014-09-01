@@ -89,7 +89,8 @@ public class LookupBasedJavaSourceTaskFactoryTest extends NbTestCase {
     }
     
     public void testFactoryListensOnLookupChanges() throws Exception {
-        int[] changeCount = new int[1];
+        // PENDING - correct ?
+        int[] changeCount = new int[] { 1 };
         LookupBasedJavaSourceTaskFactory factory = new LookupBasedJavaSourceTaskFactoryImpl(changeCount);
         ChangeableLookup lookup = new ChangeableLookup();
         

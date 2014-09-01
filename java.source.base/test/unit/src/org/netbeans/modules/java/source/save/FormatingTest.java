@@ -413,6 +413,7 @@ public class FormatingTest extends NbTestCase {
         final int[] counter = new int[]{0};
         Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putInt("text-limit-width", 20);
+        preferences.putInt("blankLinesAfterEnumHeader", 1);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             @Override

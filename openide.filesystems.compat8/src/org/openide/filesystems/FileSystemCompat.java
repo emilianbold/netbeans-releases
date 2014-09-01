@@ -42,10 +42,20 @@
 
 package org.openide.filesystems;
 
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.net.URL;
 import java.util.Set;
+import org.omg.CORBA.Environment;
+import static org.openide.filesystems.FileSystem.LOG;
+import org.openide.filesystems.FileSystem.Status;
 import org.openide.modules.PatchFor;
+import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -233,5 +243,90 @@ public abstract class FileSystemCompat {
     protected boolean isPersistent() {
         return false;
     }
+    
+    static {
+        try {
+            Field f = FileSystem.class.getDeclaredField("SFS_STATUS"); // NOI18N
+            f.setAccessible(true);
+            FileSystem.Status del = (FileSystem.Status)f.get(null);
+            f.set(null, new SystemStatus(del));
+        } catch (NoSuchFieldException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
+    /**
+     * Enhancement of the default SFS_Status, loads image through ImageUtilities.
+     */
+    private static class SystemStatus implements FileSystem.Status {
+        private final FileSystem.Status delegate;
+
+        public SystemStatus(Status delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public String annotateName(String name, Set<? extends FileObject> files) {
+            return delegate.annotateName(name, files);
+        }
+
+        @Override
+        public Image annotateIcon(Image im, int type, Set<? extends FileObject> files) {
+            for (FileObject fo : files) {
+                Image img = annotateIcon(fo, type);
+                if (img != null) {
+                    return img;
+                }
+            }
+            return im;
+        }
+
+        private Image annotateIcon(FileObject fo, int type) {
+            String attr = null;
+            if (type == BeanInfo.ICON_COLOR_16x16) {
+                attr = "SystemFileSystem.icon"; // NOI18N
+            } else if (type == BeanInfo.ICON_COLOR_32x32) {
+                attr = "SystemFileSystem.icon32"; // NOI18N
+            }
+            if (attr != null) {
+                Object value = fo.getAttribute(attr);
+                if (value != null) {
+                    if (value instanceof URL) {
+                        return Toolkit.getDefaultToolkit().getImage((URL) value);
+                    } else if (value instanceof Image) {
+                        // #18832
+                        return (Image) value;
+                    } else {
+                        LOG.warning("Attribute " + attr + " on " + fo + " expected to be a URL or Image; was: " + value);
+                    }
+                }
+            }
+            String base = (String) fo.getAttribute("iconBase"); // NOI18N
+            if (base != null) {
+                if (type == BeanInfo.ICON_COLOR_16x16) {
+                    return ImageUtilities.loadImage(base, true);
+                } else if (type == BeanInfo.ICON_COLOR_32x32) {
+                    return ImageUtilities.loadImage(insertBeforeSuffix(base, "_32"), true); // NOI18N
+                }
+            }
+            return null;
+        }
+
+
+        private static String insertBeforeSuffix(String path, String toInsert) {
+            String withoutSuffix = path;
+            String suffix = ""; // NOI18N
+            if (path.lastIndexOf('.') >= 0) {
+                withoutSuffix = path.substring(0, path.lastIndexOf('.'));
+                suffix = path.substring(path.lastIndexOf('.'), path.length());
+            }
+            return withoutSuffix + toInsert + suffix;
+        }
+    }
 }

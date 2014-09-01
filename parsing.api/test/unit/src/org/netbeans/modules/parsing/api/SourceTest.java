@@ -232,6 +232,7 @@ public class SourceTest extends ParsingTestBase {
     }
 
     public void testMimeTypeChange() throws IOException {
+        clearWorkDir();
         final FileObject file = createFileObject("empty.foo", "", "\n");
         final Source source = Source.create(file);
         assertNotNull("No Source for " + file, source);
