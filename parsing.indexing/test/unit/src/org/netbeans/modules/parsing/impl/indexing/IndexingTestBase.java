@@ -119,14 +119,14 @@ public class IndexingTestBase extends NbTestCase {
     }
     
     protected Class[] getMockServices() {
-        return new Class[] { MockMimeLookup.class, TestEnvironmentFactory.class, FooPathRecognizer.class, EmbeddedPathRecognizer.class };
+        return new Class[] { MockMimeLookup.class, TestEnvironmentFactory.class, TestEditorMimeTypesImpl.class, FooPathRecognizer.class, EmbeddedPathRecognizer.class };
     }
     
     protected void getAdditionalServices(List<Class> clazz) {
     }
     
     protected Lookup createTestServices() {
-        return Lookups.fixed(new TestEnvironmentFactory());
+        return Lookups.fixed(new TestEnvironmentFactory(), new TestEditorMimeTypesImpl());
     }
 
 }

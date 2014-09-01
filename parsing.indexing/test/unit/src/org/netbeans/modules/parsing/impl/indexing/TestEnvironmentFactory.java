@@ -155,19 +155,6 @@ public class TestEnvironmentFactory implements EnvironmentFactory {
     public <T> T runPriorityIO(Callable<T> r) throws Exception {
         return r.call();
     }
-    
-    private static final Set<String> TEST_MIME_TYPES = 
-            new HashSet<String>(Arrays.asList(new String[]{
-                "text/x-java",
-                "text/x-foo",
-                EmbeddedPathRecognizer.EMB_MIME,
-                FooPathRecognizer.FOO_MIME
-    }));
-    
-    @Override
-    public Set<String> findSupportedMIMETypes() {
-        return TEST_MIME_TYPES;
-    }
 
     static class Env extends SourceEnvironment {
 
