@@ -147,7 +147,9 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
             buildHandles.add(new HudsonJobHandle(hi, job.getName(), job));
         }
         bl.setBuildHandles(buildHandles);
-        CACHE.put(bl, new Object());
+        synchronized (CACHE) {
+            CACHE.put(bl, new Object());
+        }
         return new LinkedList<JobHandle>(
                 onlyWatched ? bl.getWatchedJobHandles() : buildHandles);
     }
@@ -192,16 +194,18 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
     private List<JobHandle> findBuildHandlesInCache(
             ProjectHandle<ODCSProject> projectHandle, boolean onlyWatched) {
 
-        for (final BuildsListener listener : CACHE.keySet()) {
-            if (listener.projectHandle.get() == projectHandle
-                    && projectHandle.getTeamProject().getBuildUrl().equals(
-                    listener.instance.getUrl())) {
-                synchronized (listener) {
-                    listener.checkJobList(); //update job list
-                    return new LinkedList<JobHandle>(
-                            onlyWatched
-                            ? listener.getWatchedJobHandles()
-                            : listener.buildHandles);
+        synchronized (CACHE) {
+            for (final BuildsListener listener : CACHE.keySet()) {
+                if (listener.projectHandle.get() == projectHandle
+                        && projectHandle.getTeamProject().getBuildUrl().equals(
+                        listener.instance.getUrl())) {
+                    synchronized (listener) {
+                        listener.checkJobList(); //update job list
+                        return new LinkedList<JobHandle>(
+                                onlyWatched
+                                ? listener.getWatchedJobHandles()
+                                : listener.buildHandles);
+                    }
                 }
             }
         }
@@ -568,7 +572,9 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
             if (isUserLoggedOutEvent(evt)
                     || "close".equals(evt.getPropertyName())) { //NOI18N
                 removeHudsonAndClean();
-                CACHE.clear();
+                synchronized (CACHE) {
+                    CACHE.clear();
+                }
             } else if (evt.getPropertyName().equals(
                     DashboardSupport.PROP_REFRESH_REQUEST)) {
                 HudsonManager.synchronizeInstance(instance);
@@ -612,7 +618,9 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
                 buildHandles.clear();
             }
             projectHandle.clear();
-            CACHE.remove(this);
+            synchronized (CACHE) {
+                CACHE.remove(this);
+            }
         }
 
         /**
