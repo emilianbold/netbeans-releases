@@ -151,8 +151,12 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         props.put(WLPluginProperties.PORT_ATTR, port);
         props.put(WLPluginProperties.HOST_ATTR, host);
         props.put(WLPluginProperties.REMOTE_ATTR, Boolean.toString(remote));
-        props.put(WLPluginProperties.DEBUGGER_PORT_ATTR,
-                debugPort == null || debugPort.isEmpty() ? DEFAULT_DEBUGGER_PORT : debugPort);
+        props.put(WLPluginProperties.REMOTE_DEBUG_ENABLED, Boolean.toString(remoteDebug));
+        if (remoteDebug) {
+            props.put(WLPluginProperties.DEBUGGER_PORT_ATTR, debugPort);
+        } else {
+            props.put(WLPluginProperties.DEBUGGER_PORT_ATTR, DEFAULT_DEBUGGER_PORT);
+        }
         
         if (Utilities.isMac()) {
             props.put(WLPluginProperties.MEM_OPTS, DEFAULT_MAC_MEM_OPTS);
@@ -187,6 +191,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     private String debugPort;
     private String host;
     private boolean remote;
+    private boolean remoteDebug;
     private Version serverVersion;
 
 
@@ -317,6 +322,14 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
 
     public void setRemote(boolean remote) {
         this.remote = remote;
+    }
+
+    public boolean isRemoteDebug() {
+        return remoteDebug;
+    }
+
+    public void setRemoteDebug(boolean remoteDebug) {
+        this.remoteDebug = remoteDebug;
     }
 
     public String getDebugPort() {

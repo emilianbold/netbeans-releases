@@ -110,6 +110,7 @@ public final class WLPluginProperties {
     public static final String REMOTE_ATTR = "remote";                 // NOI18N
     public static final String DEBUGGER_PORT_ATTR = "debuggerPort";    // NOI18N
     public static final String DOMAIN_NAME = "domainName";          // NOI18N
+    public static final String REMOTE_DEBUG_ENABLED = "remoteDebug"; // NOI18N
 
     public static final String VENDOR   = "vendor";                 // NOI18N
     public static final String JAVA_OPTS="java_opts";               // NOI18N

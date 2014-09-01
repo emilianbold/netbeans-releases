@@ -191,6 +191,7 @@ public class ServerRemotePropertiesVisual extends javax.swing.JPanel {
         instantiatingIterator.setDomainName(null);
         instantiatingIterator.setHost(host);
         instantiatingIterator.setRemote(true);
+        instantiatingIterator.setRemoteDebug(debugModeCheckBox.isSelected());
         return true; 
     }
     
