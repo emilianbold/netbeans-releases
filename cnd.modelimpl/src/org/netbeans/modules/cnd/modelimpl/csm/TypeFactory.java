@@ -616,6 +616,11 @@ public class TypeFactory {
         }
 
         @Override
+        public boolean hasInstantiationParams() {
+            return type.hasInstantiationParams();
+        }
+
+        @Override
         public List<CsmSpecializationParameter> getInstantiationParams() {
             return type.getInstantiationParams();
         }
