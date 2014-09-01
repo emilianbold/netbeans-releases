@@ -144,6 +144,14 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
                 }
             }
         };
+        dashboard.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(DashboardSupport.PROP_OPENED_PROJECTS.equals(evt.getPropertyName())) {
+                    scheduleUpdateBuilds();
+                }
+            }
+        });
         this.project = project;
         this.canOpen = canOpen;
         this.closeAction = closeAction;
@@ -351,6 +359,17 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
     }
 
     private void scheduleUpdateBuilds() {
+        ProjectHandle<ODCSProject>[] prjs = dashboard.getProjects(true);
+        boolean isInDasboard = false;
+        for (ProjectHandle<ODCSProject> prj : prjs) {
+            if(prj.getId().equals(project.getId())) {
+                isInDasboard = true;
+                break;
+            }
+        }
+        if(!isInDasboard) {
+            return;
+        }
         issuesRP.post(new Runnable() {
             @Override
             public void run() {

@@ -123,7 +123,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     private final ArrayList<ProjectHandle<P>> memberProjects = new ArrayList<>(50);
     private final ArrayList<ProjectHandle<P>> otherProjects = new ArrayList<>(50);
     
-    private final ProjectHistoryList projectHistory = new ProjectHistoryList();
+    private final ProjectHistoryList projectHistory = ProjectHistoryList.create();
     private WeakReference<SelectionList> selectionListRef;
 
     private ErrorNode errorNode;
@@ -131,6 +131,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     private static final Map<TeamServer, OneProjectDashboard> dashboardMap = new WeakHashMap<>(3);
     
     private static final String PREF_SYNC_MODE = "team.dashboard.sync.mode"; // NOI18N
+    private static final String PREF_PROJECT_HISTORY = "team.dashboard.project.history"; // NOI18N
     
     public enum SyncMode {
         PREF_ALL,
@@ -1490,19 +1491,43 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
 
         private final static int MAX_HISTORY_SIZE = Integer.getInteger("team.dashboard.recentProjectsCount", 10); // NOI18N
 
-        public ProjectHistoryList() {
-            super(MAX_HISTORY_SIZE);
+        static ProjectHistoryList create() {
+            String histString = getPrefs().get(PREF_PROJECT_HISTORY, null); 
+            LinkedList l = new LinkedList();
+            if(histString != null) {
+                String[] strs = histString.split("<=>");
+                for (String str : strs) {
+                    l.add(str);
+                }       
+            }     
+            return new ProjectHistoryList(l);
+        }
+        
+        private ProjectHistoryList(Collection c) {
+            super(c);
         }
         
         @Override
-        public boolean add(String e) {
-            while(contains(e)) {
-                remove(e);
+        public boolean add(String projectId) {
+            synchronized(this) {
+                while(contains(projectId)) {
+                    remove(projectId);
+                }
+                while(size() >= MAX_HISTORY_SIZE) {
+                    remove(0);
+                }
+                boolean ret = super.add(projectId); 
+                if(ret) {
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < size() - 1; i++) {
+                        sb.append(get(i));
+                        sb.append("<=>");
+                    }
+                    sb.append(projectId);
+                    getPrefs().put(PREF_PROJECT_HISTORY, sb.toString());
+                }
+                return ret;  
             }
-            while(size() >= MAX_HISTORY_SIZE) {
-                remove(0);
-            }
-            return super.add(e); 
         }
         
         @Override

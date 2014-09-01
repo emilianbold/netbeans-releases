@@ -311,6 +311,28 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         }
     }
 
+    private static DashboardSupport<ODCSProject> getDashboard(ODCSServer odcsServer) {
+        return odcsServer != null ?
+                ODCSUiServer.forServer(odcsServer).getDashboard() :
+                null;
+                
+    }            
+    
+    private static boolean isAlive(ProjectHandle<ODCSProject> projectHandle) {
+        if(projectHandle != null) {
+            DashboardSupport<ODCSProject> dashboard = getDashboard(projectHandle.getTeamProject().getServer());
+            if(dashboard != null) {
+                ProjectHandle<ODCSProject>[] prjs = dashboard.getProjects(true);
+                for (ProjectHandle<ODCSProject> prj : prjs) {
+                    if(prj.getId().equals(projectHandle.getId())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
     private static class HudsonJobHandle extends JobHandle {
 
         private final HudsonInstance hudsonInstance;
@@ -578,6 +600,11 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
             } else if (evt.getPropertyName().equals(
                     DashboardSupport.PROP_REFRESH_REQUEST)) {
                 HudsonManager.synchronizeInstance(instance);
+            } else if (DashboardSupport.PROP_OPENED_PROJECTS.equals(evt.getPropertyName())) {
+                ProjectHandle<ODCSProject> ph = projectHandle.get();
+                if(!isAlive(projectHandle.get())) {
+                    removeHudsonAndClean();
+                }
             } else if (projectHandle.get() == null) {
                 cleanup();
             }
@@ -784,14 +811,10 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         }
 
         private void initRefreshListener() {
-            ODCSServer odcsServer = server.get();
-            if (odcsServer != null) {
-                DashboardSupport<ODCSProject> dashboard =
-                        ODCSUiServer.forServer(odcsServer).getDashboard();
-                if (dashboard != null) {
-                    dashboard.addPropertyChangeListener(
-                            WeakListeners.propertyChange(this, dashboard));
-                }
+            DashboardSupport<ODCSProject> dashboard = getDashboard(server.get());
+            if (dashboard != null) {
+                dashboard.addPropertyChangeListener(
+                        WeakListeners.propertyChange(this, dashboard));
             }
         }
 
