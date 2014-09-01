@@ -528,7 +528,7 @@ final class ModuleListParser {
     }
 
     private static File fixFxRtJar(File resultBin, String nball) {
-        if (!resultBin.exists() && resultBin.getPath().contains("${java.home}/lib/ext/jfxrt.jar")) {
+        if (resultBin.getPath().replace(File.separatorChar, '/').endsWith("${java.home}/lib/ext/jfxrt.jar") && !resultBin.exists()) {
             String jhm = System.getProperty("java.home");
             resultBin = new File(new File(new File(new File(jhm), "lib"), "ext"), "jfxrt.jar");
             if (!resultBin.exists()) {
