@@ -48,11 +48,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -151,10 +149,5 @@ public final class DataObjectEnvFactory implements EnvironmentFactory {
     @Override
     public SourceEnvironment createEnvironment(Source src, SourceControl control) {
         return new EventSupport(control);
-    }
-
-    @Override
-    public Set<String> findSupportedMIMETypes() {
-        return EditorSettings.getDefault().getAllMimeTypes();
     }
 }

@@ -43,7 +43,6 @@
 package org.netbeans.modules.parsing.implspi;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -123,11 +122,4 @@ public interface EnvironmentFactory {
      * @throws Exception propagated from the executed code
      */
     public abstract <T> T runPriorityIO (final Callable<T> r) throws Exception;
-    
-    /**
-     * Collects MIME types known to the system.
-     * 
-     * @return all MIME types defined by the system.
-     */
-    public abstract @NonNull Set<String> findSupportedMIMETypes();
 }

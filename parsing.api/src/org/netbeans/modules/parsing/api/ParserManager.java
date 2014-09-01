@@ -43,15 +43,14 @@
 package org.netbeans.modules.parsing.api;
 
 import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Future;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.document.EditorMimeTypes;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.impl.*;
 import org.netbeans.modules.parsing.spi.LowMemoryWatcher;
@@ -402,19 +401,6 @@ public final class ParserManager {
     public static boolean isParsing() {
         return Utilities.holdsParserLock();
     }
-    
-    /*tests*/ static Set<String> allMimeTypes;
-
-    /**
-     * Retrieves all known MIME types. Note: the set of MIME types does not update
-     * if modules are enabled or disabled.
-     * 
-     * @return set of MIME types.
-     */
-    public static Set<String> getAllMimeTypes () {
-        return allMimeTypes != null ? allMimeTypes : 
-                Utilities.getAllMimeTypes();
-    }
 
     /**
      * Determines if the MIME type can be parsed. Rejects unknown MIME types (must be amongst {@link #getAllMimeTypes}.
@@ -424,7 +410,9 @@ public final class ParserManager {
      * @return true, if the MIME type can be parsed.
      */
     public static boolean canBeParsed(String mimeType) {
-        if (mimeType == null || "content/unknown".equals(mimeType) || !getAllMimeTypes().contains(mimeType)) { //NOI18N
+        if (mimeType == null ||
+            "content/unknown".equals(mimeType) ||    //NOI18N
+            !EditorMimeTypes.getDefault().getSupportedMimeTypes().contains(mimeType)) {
             return false;
         }
 

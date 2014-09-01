@@ -59,7 +59,7 @@ import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.api.editor.document.EditorMimeTypes;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.TopologicalSortException;
@@ -77,7 +77,9 @@ public final class Util {
         Boolean.getBoolean("disable.reversedeps.fastpath"); //NOI18N
 
     public static Set<String> getAllMimeTypes () {
-        return allMimeTypes != null ? allMimeTypes : ParserManager.getAllMimeTypes();
+        return allMimeTypes != null ?
+            allMimeTypes :
+            EditorMimeTypes.getDefault().getSupportedMimeTypes();
     }
 
     public static boolean canBeParsed(String mimeType) {

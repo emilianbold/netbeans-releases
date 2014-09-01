@@ -271,8 +271,4 @@ public class Utilities {
             return null;
         }
     }
-    
-    public static Set<String> getAllMimeTypes() {
-        return getEnvFactory().findSupportedMIMETypes();
-    }
 }

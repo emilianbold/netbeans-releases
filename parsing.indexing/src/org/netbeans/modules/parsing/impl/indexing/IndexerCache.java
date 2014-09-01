@@ -69,8 +69,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.editor.document.EditorMimeTypes;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.SourceIndexerFactory;
@@ -362,7 +362,8 @@ public abstract class IndexerCache <T extends SourceIndexerFactory> {
     private IndexerCache(Class<T> type) {
         this.type = type;
         this.infoFileName = "last-known-" + type.getSimpleName() + ".properties"; //NOI18N
-        EditorSettings.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(tracker, EditorSettings.getDefault()));
+        final EditorMimeTypes mimeTypes = EditorMimeTypes.getDefault();
+        mimeTypes.addPropertyChangeListener(WeakListeners.propertyChange(tracker, mimeTypes));
     }
 
     /**
@@ -737,7 +738,7 @@ public abstract class IndexerCache <T extends SourceIndexerFactory> {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName() == null || EditorSettings.PROP_MIME_TYPES.equals(evt.getPropertyName())) {
+            if (evt.getPropertyName() == null || EditorMimeTypes.PROP_SUPPORTED_MIME_TYPES.equals(evt.getPropertyName())) {
                 task.schedule(123);
             }
         }
