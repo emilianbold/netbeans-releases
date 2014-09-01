@@ -52,19 +52,24 @@ import org.netbeans.modules.cnd.api.model.CsmClassifierBasedTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterImpl.TypeBasedSpecializationParameterBuilder;
+import static org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer.getClosestNamespaceInfo;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionsFactory;
+import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -73,6 +78,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.MutableObject;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
@@ -88,20 +94,25 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         
     private CsmSpecializationParameter defaultValue;
 
-        
     public TemplateParameterImpl(AST ast, CharSequence name, CsmFile file, CsmScope scope, boolean variadic, boolean global) {
-        super(file, getStartOffset(ast), getEndOffset(ast));
+        this(ast, name, getStartOffset(ast), getEndOffset(ast), file, scope, variadic, global);
+    }
+        
+    public TemplateParameterImpl(AST ast, CharSequence name, int startOffset, int endOffset, CsmFile file, CsmScope scope, boolean variadic, boolean global) {
+        super(file, startOffset, endOffset);
                 
         CsmSpecializationParameter value = null;
         if (checkExplicitType(ast)) {
             this.typeBased = false;
-            AST expressionAst = AstUtil.findSiblingOfType(ast.getFirstChild(), CPPTokenTypes.CSM_EXPRESSION);
+            AST expressionAst = AstUtil.findSiblingOfType(ast.getFirstChild(), CPPTokenTypes.CSM_EXPRESSION, AstUtil.findSiblingOfType(ast, CPPTokenTypes.COMMA));
             if (expressionAst != null) {
                 CsmExpression expr = ExpressionsFactory.create(expressionAst, file, scope);
                 value = ExpressionBasedSpecializationParameterImpl.create(expr.getText(), scope, file, expr.getStartOffset(), expr.getEndOffset(), true);
             }
         } else {
             this.typeBased = true;
+            AST assign = AstUtil.findSiblingOfType(ast, CPPTokenTypes.ASSIGNEQUAL, AstUtil.findSiblingOfType(ast, CPPTokenTypes.COMMA));
+            value = createDefaultValue(ast, assign, file, scope, global);
         }
         
         this.name = NameCache.getManager().getString(name);
@@ -114,14 +125,6 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         this.defaultValue = variadic ? VARIADIC : value;
     }
 
-    public TemplateParameterImpl(AST ast, CharSequence name, CsmFile file, CsmScope scope, boolean global, AST defaultValue) {
-        this(ast, name, file, scope, false, global);
-        CsmType type = TypeFactory.createType(defaultValue, file, null, 0);
-        if(type != null) {
-            this.defaultValue = new TypeBasedSpecializationParameterImpl(type, scope);
-        }
-    }
-    
     private TemplateParameterImpl(CharSequence name, TemplateDescriptor templateDescriptor, TypeBasedSpecializationParameterImpl defaultValue,  boolean variadic, CsmScope scope, CsmFile file, int startOffset, int endOffset, boolean typeBased) {
         super(file, startOffset, endOffset);
         this.name = NameCache.getManager().getString(name);
@@ -227,6 +230,43 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         return typeBased;
     }
    
+    private static CsmTypeBasedSpecializationParameter createDefaultValue(AST ast, AST assign, CsmFile file, CsmScope scope, boolean global) {
+        if (assign != null && assign.getType() == CPPTokenTypes.ASSIGNEQUAL) {
+            if (assign.getNextSibling() != null) {
+                CsmType type = null;
+                AST typeAst = assign.getNextSibling();
+                if (typeAst.getType() == CPPTokenTypes.LITERAL_typename && typeAst.getNextSibling() != null) {
+                    typeAst = typeAst.getNextSibling();
+                }
+                if (typeAst.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
+                        || typeAst.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
+                    type = TypeFactory.createType(typeAst, file, null, 0);
+                } else if (typeAst.getType() == CPPTokenTypes.LITERAL_struct
+                        || typeAst.getType() == CPPTokenTypes.LITERAL_class
+                        || typeAst.getType() == CPPTokenTypes.LITERAL_union) {      
+                    // This is for types like DDD in the next code:
+                    //  template<typename TAG = struct DDD>
+                    //  struct copy {};                                  
+                    type = TypeFactory.createType(typeAst, file, null, 0);
+                    
+                    MutableObject<CsmNamespace> targetScope = new MutableObject<>();
+                    MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<>();
+                    
+                    // TODO: need fileContent here
+                    getClosestNamespaceInfo(scope, file, null, OffsetableBase.getStartOffset(ast), targetScope, targetDefinitionContainer); 
+                    
+                    FakeAST fakeParent = new FakeAST();
+                    fakeParent.setType(CPPTokenTypes.CSM_GENERIC_DECLARATION);
+                    fakeParent.addChild(typeAst);                                    
+                    ClassForwardDeclarationImpl.create(fakeParent, file, targetScope.value, targetDefinitionContainer.value, global);
+                }
+                if (type != null) {
+                    return new TypeBasedSpecializationParameterImpl(type, scope);
+                }
+            }
+        }
+        return null;
+    }
     
     public static class TemplateParameterBuilder extends SimpleDeclarationBuilder {
 

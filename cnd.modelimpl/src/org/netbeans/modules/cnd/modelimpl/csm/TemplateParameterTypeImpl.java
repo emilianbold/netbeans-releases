@@ -178,6 +178,11 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
     }
 
     @Override
+    public boolean hasInstantiationParams() {
+        return type.hasInstantiationParams();
+    }
+
+    @Override
     public boolean isInstantiation() {
         return type.isInstantiation();
     }
