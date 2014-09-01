@@ -2055,10 +2055,22 @@ public class Reformatter implements ReformatTask {
                     space();
                     scan(elseStat, p);
                 } else {
-                    redundantIfBraces = cs.redundantIfBraces();
-                    if (redundantIfBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
-                        redundantIfBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
-                    wrapStatement(cs.wrapIfStatement(), redundantIfBraces, cs.spaceBeforeElseLeftBrace() ? 1 : 0, elseStat);
+                    WrapStyle wrapElse;
+                    boolean preserveNewLine = true;
+                    if (cs.specialElseIf() && elseStat.getKind() == Tree.Kind.BLOCK
+                            && ((BlockTree)elseStat).getStatements().size() == 1
+                            && ((BlockTree)elseStat).getStatements().get(0).getKind() == Tree.Kind.IF) {
+                        redundantIfBraces = CodeStyle.BracesGenerationStyle.ELIMINATE;
+                        wrapElse = CodeStyle.WrapStyle.WRAP_NEVER;
+                        preserveNewLine = false;
+                        lastIndent -= indentSize;
+                    } else {
+                        redundantIfBraces = cs.redundantIfBraces();
+                        if (redundantIfBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
+                            redundantIfBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
+                        wrapElse = cs.wrapIfStatement();
+                    }
+                    wrapStatement(wrapElse, redundantIfBraces, cs.spaceBeforeElseLeftBrace() ? 1 : 0, preserveNewLine, elseStat);
                 }
             }
             return true;
@@ -3516,6 +3528,10 @@ public class Reformatter implements ReformatTask {
         }
 
         private int wrapTree(CodeStyle.WrapStyle wrapStyle, int alignIndent, int spacesCnt, Tree tree) {
+            return wrapTree(wrapStyle, alignIndent, spacesCnt, true, tree);
+        }
+
+        private int wrapTree(CodeStyle.WrapStyle wrapStyle, int alignIndent, int spacesCnt, boolean preserveNewLine, Tree tree) {
             int ret = -1;
             int oldLast = lastIndent;
             try {
@@ -3546,7 +3562,7 @@ public class Reformatter implements ReformatTask {
                                 if (alignIndent >= 0) {
                                     indent = continuationIndent ? alignIndent - continuationIndentSize : alignIndent;
                                 }
-                                spaces(spacesCnt, true);
+                                spaces(spacesCnt, preserveNewLine);
                                 ret = col;
                                 scan(tree, null);
                             } finally {
@@ -3578,7 +3594,7 @@ public class Reformatter implements ReformatTask {
                             if (alignIndent >= 0) {
                                 indent = continuationIndent ? alignIndent - continuationIndentSize : alignIndent;
                             }
-                            spaces(spacesCnt, true);
+                            spaces(spacesCnt, preserveNewLine);
                             ret = col;
                             scan(tree, null);
                         } finally {
@@ -3779,6 +3795,10 @@ public class Reformatter implements ReformatTask {
         }
 
         private boolean wrapStatement(CodeStyle.WrapStyle wrapStyle, CodeStyle.BracesGenerationStyle bracesGenerationStyle, int spacesCnt, StatementTree tree) {
+            return wrapStatement(wrapStyle, bracesGenerationStyle, spacesCnt, true, tree);
+        }
+
+        private boolean wrapStatement(CodeStyle.WrapStyle wrapStyle, CodeStyle.BracesGenerationStyle bracesGenerationStyle, int spacesCnt, boolean preserveNewLine, StatementTree tree) {
             if (tree.getKind() == Tree.Kind.EMPTY_STATEMENT) {
                 scan(tree, null);
                 return true;
@@ -3797,7 +3817,7 @@ public class Reformatter implements ReformatTask {
                             addDiff(new Diff(start, tokens.offset(), null));
                             int old = indent;
                             indent = lastIndent + indentSize;
-                            wrapTree(wrapStyle, -1, spacesCnt, stat);
+                            wrapTree(wrapStyle, -1, spacesCnt, preserveNewLine, stat);
                             indent = old;
                             accept(RBRACE);
                             tokens.moveIndex(tokens.index() - 2);
@@ -3831,7 +3851,7 @@ public class Reformatter implements ReformatTask {
             }
             int old = indent;
             indent = lastIndent + indentSize;
-            wrapTree(wrapStyle, -1, spacesCnt, tree);
+            wrapTree(wrapStyle, -1, spacesCnt, preserveNewLine, tree);
             indent = old;
             return false;
         }
