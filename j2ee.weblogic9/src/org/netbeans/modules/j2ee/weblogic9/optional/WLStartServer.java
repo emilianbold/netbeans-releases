@@ -94,9 +94,9 @@ public final class WLStartServer extends StartServer {
 
     @Override
     public ServerDebugInfo getDebugInfo(Target target) {
-        return new ServerDebugInfo(dm.getHost(), new Integer(
+        return new ServerDebugInfo(dm.getHost(), Integer.valueOf(
                 dm.getInstanceProperties().getProperty(
-                WLPluginProperties.DEBUGGER_PORT_ATTR)).intValue());
+                WLPluginProperties.DEBUGGER_PORT_ATTR)));
     }
 
     @Override
@@ -106,13 +106,15 @@ public final class WLStartServer extends StartServer {
 
     @Override
     public boolean isDebuggable(Target target) {
-        if (!isServerInDebug(dm.getUri())) {
+        if (!dm.isRemote() && !isServerInDebug(dm.getUri())) {
             return false;
         }
         if (!isRunning()) {
             return false;
         }
-        return !dm.isRemote();
+        // XXX
+        return !dm.isRemote()
+                || Boolean.valueOf(dm.getInstanceProperties().getProperty(WLPluginProperties.REMOTE_DEBUG_ENABLED));
     }
 
     @Override
