@@ -1488,7 +1488,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     
     private static class ProjectHistoryList extends ArrayList<String> {
 
-        private final static int MAX_HISTORY_SIZE = 20;
+        private final static int MAX_HISTORY_SIZE = Integer.getInteger("team.dashboard.recentProjectsCount", 10); // NOI18N
 
         public ProjectHistoryList() {
             super(MAX_HISTORY_SIZE);
