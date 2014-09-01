@@ -43,14 +43,16 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
+import java.awt.Component;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -108,22 +110,6 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      */
     public void initialize(WizardDescriptor wizardDescriptor) {
         this.wizardDescriptor = wizardDescriptor;
-
-        for (int i = 0; i < this.getPanels().length; i++)
-        {
-            Object c = panels[i].getComponent();
-
-            if (c instanceof JComponent)
-            {
-                JComponent jc = (JComponent) c;
-                // Step #.
-                jc.putClientProperty(
-                    WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
-
-                // Step name (actually the whole list for reference).
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
-            }
-        }
     }
 
     /**
@@ -247,9 +233,9 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         this.serverRoot = serverRoot;
 
         // reinit the instances list
-        if (serverPropertiesPanel != null) {
-            serverPropertiesPanel.getVisual().updateInstancesList();
-            serverPropertiesPanel.getVisual().updateJpa2Button();
+        if (serverLocalPanel != null) {
+            serverLocalPanel.getVisual().updateInstancesList();
+            serverLocalPanel.getVisual().updateJpa2Button();
         }
     }
 
@@ -355,18 +341,17 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     /**
      * The steps names for the wizard: Server Location & Instance properties
      */
-    private String[] steps = new String[]
-    {
-        NbBundle.getMessage(ServerPropertiesPanel.class, "SERVER_LOCATION_STEP"),  // NOI18N
-        NbBundle.getMessage(ServerPropertiesPanel.class, "SERVER_PROPERTIES_STEP") // NOI18N
+    private final String[] steps = new String[] {
+        NbBundle.getMessage(WLInstantiatingIterator.class, "SERVER_LOCATION_STEP"),  // NOI18N
+        NbBundle.getMessage(WLInstantiatingIterator.class, "SERVER_PROPERTIES_STEP") // NOI18N
     };
 
     /**
      * The wizard's panels
      */
-    private WizardDescriptor.Panel[] panels;
     private ServerLocationPanel serverLocationPanel;
-    private ServerPropertiesPanel serverPropertiesPanel;
+    private ServerLocalPanel serverLocalPanel;
+    private ServerRemotePanel serverRemotePanel;
 
     /**
      * Index of the currently shown panel
@@ -377,6 +362,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      * Tells whether the wizard has previous panels. Basically controls the
      * Back button
      */
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
@@ -386,6 +372,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      * If the previous panel is not available a NoSuchElementException will be
      * thrown.
      */
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -397,8 +384,9 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      * Tells whether the wizard has next panels. Basically controls the
      * Next button
      */
+    @Override
     public boolean hasNext() {
-        return index < panels.length - 1;
+        return index < 1;
     }
 
     /**
@@ -406,6 +394,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      * If the next panel is not available a NoSuchElementException will be
      * thrown.
      */
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -418,25 +407,76 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      *
      * @return current panel of the wizard
      */
+    @Override
     public WizardDescriptor.Panel current() {
-        getPanels();
-        return panels[index];
-    }
-
-    protected final WizardDescriptor.Panel[] getPanels() {
-        if (panels == null) {
-            panels = createPanels();
+        switch (index) {
+            case 0:
+               return getLocationPanel();
+            case 1:
+                if (isRemote()) {
+                    return getRemotePanel();
+                } else {
+                    return getLocalPanel();
+                }
+            default:
+                throw new IllegalStateException();
         }
-        return panels;
     }
 
-    protected WizardDescriptor.Panel[] createPanels() {
-
-        serverLocationPanel = new ServerLocationPanel(this);
-        serverPropertiesPanel = new ServerPropertiesPanel( this);
-
-        return new WizardDescriptor.Panel[] { serverLocationPanel, serverPropertiesPanel };
+    private WizardDescriptor.Panel getLocationPanel() {
+        if (serverLocationPanel == null) {
+            serverLocationPanel = new ServerLocationPanel(this);
+            initComponent(serverLocationPanel.getComponent(), 0);
+        }
+        return serverLocationPanel;
     }
+
+    private WizardDescriptor.Panel getLocalPanel() {
+        if (serverLocalPanel == null) {
+            serverLocalPanel = new ServerLocalPanel(this);
+            initComponent(serverLocalPanel.getComponent(), 1);
+            if (serverLocalPanel != null) {
+                serverLocalPanel.getVisual().updateInstancesList();
+                serverLocalPanel.getVisual().updateJpa2Button();
+            }
+        }
+        return serverLocalPanel;
+    }
+
+    private WizardDescriptor.Panel getRemotePanel() {
+        if (serverRemotePanel == null) {
+            serverRemotePanel = new ServerRemotePanel(this);
+            initComponent(serverRemotePanel.getComponent(), 1);
+        }
+        return serverRemotePanel;
+    }
+
+    private void initComponent(Component c, int step) {
+        if (c instanceof JComponent) {
+            JComponent jc = (JComponent) c;
+            // Step #.
+            jc.putClientProperty(
+                WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, step);
+
+            // Step name (actually the whole list for reference).
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+        }
+    }
+
+//    protected final WizardDescriptor.Panel[] getPanels() {
+//        if (panels == null) {
+//            panels = createPanels();
+//        }
+//        return panels;
+//    }
+//
+//    protected WizardDescriptor.Panel[] createPanels() {
+//
+//        serverLocationPanel = new ServerLocationPanel(this);
+//        serverPropertiesPanel = new ServerPropertiesPanel( this);
+//
+//        return new WizardDescriptor.Panel[] { serverLocationPanel, serverPropertiesPanel };
+//    }
 
 
     ////////////////////////////////////////////////////////////////////////////
@@ -445,19 +485,16 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     /**
      * The registered listeners
      */
-    private Vector listeners = new Vector();
+    private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
 
     /**
      * Removes an already registered listener in a synchronized manner
      *
      * @param listener a listener to be removed
      */
+    @Override
     public void removeChangeListener(ChangeListener listener) {
-        if (listeners != null) {
-            synchronized (listeners) {
-                listeners.remove(listener);
-            }
-        }
+        listeners.remove(listener);
     }
 
     /**
@@ -465,10 +502,9 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      *
      * @param listener a listener to be registered
      */
+    @Override
     public void addChangeListener(ChangeListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
+        listeners.add(listener);
     }
 
     /**
@@ -477,35 +513,8 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      * @param event the event to be passed to the listeners
      */
     private void fireChangeEvent(ChangeEvent event) {
-        // copy the registered listeners, to avoid conflicts if the listeners'
-        // list changes
-        Vector targetListeners;
-        synchronized (listeners) {
-            targetListeners = (Vector) listeners.clone();
-        }
-
-        // notify each listener of the event
-        for (int i = 0; i < targetListeners.size(); i++) {
-            ChangeListener listener = (ChangeListener) targetListeners.elementAt(i);
-            listener.stateChanged(event);
+        for (ChangeListener l : listeners) {
+            l.stateChanged(event);
         }
     }
-
-    /**
-     * A simple listener that only notifies the parent iterator of all the
-     * events that come to it
-     *
-     * @author Kirill Sorokin
-     */
-    private class IteratorListener implements ChangeListener {
-        /**
-         * Notifies the parent iterator of the supplied event
-         *
-         * @param event the event to be passed to the parent iterator
-         */
-        public void stateChanged(ChangeEvent event) {
-            fireChangeEvent(event);
-        }
-    }
-
 }

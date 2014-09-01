@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hejl
  */
-public class ServerPropertiesVisual extends javax.swing.JPanel {
+public class ServerLocalVisual extends javax.swing.JPanel {
 
     private transient WLInstantiatingIterator instantiatingIterator;
 
@@ -98,13 +98,13 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
      *      the hierarchy
      * @param instantiatingIterator the parent instantiating iterator
      */
-    public ServerPropertiesVisual(WLInstantiatingIterator instantiatingIterator) {
+    public ServerLocalVisual(WLInstantiatingIterator instantiatingIterator) {
         // save the instantiating iterator
         this.instantiatingIterator = instantiatingIterator;
 
         // set the panel's name
         setName(NbBundle.getMessage(
-                ServerPropertiesPanel.class, "SERVER_PROPERTIES_STEP") );  // NOI18N
+                ServerLocalVisual.class, "SERVER_PROPERTIES_STEP") );  // NOI18N
 
         initComponents();
         
@@ -112,45 +112,14 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
 
             @Override
             public void keyReleased(KeyEvent e) {
-                if (localDomainRadioButton.isSelected()) {
-                    fireChangeEvent();
-                }
+                fireChangeEvent();
             }
         });
         localInstancesCombo.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (localDomainRadioButton.isSelected()) {
-                    fireChangeEvent();
-                }
-            }
-        });
-        hostNameTextField.addKeyListener(new KeyAdapter() {
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (remoteDomainRadioButton.isSelected()) {
-                    fireChangeEvent();
-                }
-            }
-        });
-        adminPortTextField.addKeyListener(new KeyAdapter() {
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (remoteDomainRadioButton.isSelected()) {
-                    fireChangeEvent();
-                }
-            }
-        });
-        debugPortTextField.addKeyListener(new KeyAdapter() {
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (remoteDomainRadioButton.isSelected()) {
-                    fireChangeEvent();
-                }
+                fireChangeEvent();
             }
         });
         usernameField.addKeyListener(new KeyAdapter() {
@@ -167,38 +136,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                 fireChangeEvent();
             }
         });
-        localDomainRadioButton.addItemListener(new ItemListener() {
-
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    localInstancesCombo.setEnabled(true);
-                    browseButton.setEnabled(true);
-                } else if (e.getStateChange() == ItemEvent.DESELECTED) {
-                    localInstancesCombo.setEnabled(false);
-                    browseButton.setEnabled(false);
-                }
-                updateJpa2Button();
-                fireChangeEvent();
-            }
-        });
-        remoteDomainRadioButton.addItemListener(new ItemListener() {
-
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    hostNameTextField.setEnabled(true);
-                    adminPortTextField.setEnabled(true);
-                    debugPortTextField.setEnabled(true);
-                } else if (e.getStateChange() == ItemEvent.DESELECTED) {
-                    hostNameTextField.setEnabled(false);
-                    adminPortTextField.setEnabled(false);
-                    debugPortTextField.setEnabled(false);
-                }
-                updateJpa2Button();
-                fireChangeEvent();
-            }
-        });
     }
     
     public boolean valid(WizardDescriptor wizardDescriptor) {
@@ -207,142 +144,81 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
 
-
-        if (remoteDomainRadioButton.isSelected()) {
-            String host = hostNameTextField.getText();
-            
-            if (host == null || host.trim().isEmpty()) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_EMPTY_HOST"))); // NOI18N
-                return false;
-            }
-            
-            String strPort = adminPortTextField.getText();
-            int port;
-            try {
-                port = Integer.parseInt(strPort);
-            } catch (NumberFormatException ex) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_NON_NUMERIC_PORT"))); // NOI18N
-                return false;
-            }
-            String debugPort = debugPortTextField.getText();
-            if (!debugPort.isEmpty()) {
-                try {
-                    Integer.parseInt(debugPort);
-                } catch (NumberFormatException ex) {
-                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                            WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_NON_NUMERIC_PORT"))); // NOI18N
-                    return false;
-                }
-            }
-            
-            if (InstanceProperties.getInstanceProperties(getUrl(host, port)) != null) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_ALREADY_REGISTERED"))); // NOI18N
-                return false;
-            } else if (passwordField.getPassword().length <= 0) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
-            } else {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "MSG_RegisterRemote"))); // NOI18N
-            }
-
-            // save the data to the parent instantiating iterator
-            instantiatingIterator.setUrl(getUrl(host, port));
-            instantiatingIterator.setDomainRoot(null);
-            instantiatingIterator.setUsername(usernameField.getText());
-            instantiatingIterator.setPassword(new String(passwordField.getPassword()));
-            instantiatingIterator.setPort(Integer.toString(port));
-            instantiatingIterator.setDebugPort(debugPort);
-            instantiatingIterator.setDomainName(null);
-            instantiatingIterator.setHost(host);
-            instantiatingIterator.setRemote(true);
-            return true;
+        // perhaps we could use just strings in combo
+        // not sure about the domain with same name - use directory ?
+        Object item = localInstancesCombo.getEditor().getItem();
+        Instance instance;
+        if (item instanceof Instance) {
+            instance = (Instance) item;
         } else {
-        
-            // perhaps we could use just strings in combo
-            // not sure about the domain with same name - use directory ?
-            Object item = localInstancesCombo.getEditor().getItem();
-            Instance instance;
-            if (item instanceof Instance) {
-                instance = (Instance) item;
-            } else {
-                instance = getServerInstance(item.toString().trim());
-            }
-            if (instance == null) {
-                String value = item.toString().trim();
-                for (Instance inst : instances) {
-                    if (value.equals(inst.getDomainName())) {
-                        instance = inst;
-                        break;
-                    }
+            instance = getServerInstance(item.toString().trim());
+        }
+        if (instance == null) {
+            String value = item.toString().trim();
+            for (Instance inst : instances) {
+                if (value.equals(inst.getDomainName())) {
+                    instance = inst;
+                    break;
                 }
             }
-
-            // check the profile root directory for validity
-            if (instance == null || !isValidDomainRoot(instance.getDomainPath())) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_INVALID_DOMAIN_ROOT"))); // NOI18N
-                return false;
-            }
-
-            if (InstanceProperties.getInstanceProperties(getUrl(instance)) != null) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_ALREADY_REGISTERED"))); // NOI18N
-                return false;
-            }
-
-            if (instance.getDomainVersion() != null
-                    && instantiatingIterator.getServerVersion() != null
-                    && !instantiatingIterator.getServerVersion().equals(instance.getDomainVersion())) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(
-                                ServerPropertiesVisual.class, "ERR_INVALID_DOMAIN_VERSION"))); // NOI18N
-                return false;
-            }
-
-            if (instance.isProductionModeEnabled()){
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(
-                                ServerPropertiesVisual.class, "WARN_PRODUCTION_MODE"))); // NOI18N
-            }
-
-            // show a hint for sample domain
-            if (instance.getName().startsWith("examples") && passwordField.getPassword().length <= 0) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_EMPTY_SAMPLE_PASSWORD"))); // NOI18N
-            } else if (passwordField.getPassword().length <= 0) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
-            } else {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting", instance.getDomainName()))); // NOI18N
-            }
-
-            // save the data to the parent instantiating iterator
-            instantiatingIterator.setUrl(getUrl(instance));
-            instantiatingIterator.setDomainRoot(instance.getDomainPath());
-            instantiatingIterator.setUsername(usernameField.getText());
-            instantiatingIterator.setPassword(new String(passwordField.getPassword()));
-            instantiatingIterator.setPort(Integer.toString(instance.getPort()));
-            instantiatingIterator.setDomainName(instance.getDomainName());
-            instantiatingIterator.setHost(instance.getHost());
-            instantiatingIterator.setRemote(false);
-            return true;
         }
+
+        // check the profile root directory for validity
+        if (instance == null || !isValidDomainRoot(instance.getDomainPath())) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalVisual.class, "ERR_INVALID_DOMAIN_ROOT"))); // NOI18N
+            return false;
+        }
+
+        if (InstanceProperties.getInstanceProperties(getUrl(instance)) != null) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalVisual.class, "ERR_ALREADY_REGISTERED"))); // NOI18N
+            return false;
+        }
+
+        if (instance.getDomainVersion() != null
+                && instantiatingIterator.getServerVersion() != null
+                && !instantiatingIterator.getServerVersion().equals(instance.getDomainVersion())) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(
+                            ServerLocalVisual.class, "ERR_INVALID_DOMAIN_VERSION"))); // NOI18N
+            return false;
+        }
+
+        if (instance.isProductionModeEnabled()){
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(
+                            ServerLocalVisual.class, "WARN_PRODUCTION_MODE"))); // NOI18N
+        }
+
+        // show a hint for sample domain
+        if (instance.getName().startsWith("examples") && passwordField.getPassword().length <= 0) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalVisual.class, "ERR_EMPTY_SAMPLE_PASSWORD"))); // NOI18N
+        } else if (passwordField.getPassword().length <= 0) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
+        } else {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting", instance.getDomainName()))); // NOI18N
+        }
+
+        // save the data to the parent instantiating iterator
+        instantiatingIterator.setUrl(getUrl(instance));
+        instantiatingIterator.setDomainRoot(instance.getDomainPath());
+        instantiatingIterator.setUsername(usernameField.getText());
+        instantiatingIterator.setPassword(new String(passwordField.getPassword()));
+        instantiatingIterator.setPort(Integer.toString(instance.getPort()));
+        instantiatingIterator.setDomainName(instance.getDomainName());
+        instantiatingIterator.setHost(instance.getHost());
+        instantiatingIterator.setRemote(false);
+        return true;
     }
 
     private String getUrl(Instance instance) {
         return WLDeploymentFactory.URI_PREFIX + instance.getHost()
                 + ":" + instance.getPort() + ":" + instantiatingIterator.getServerRoot() // NOI18N;
                 + ":" + instance.getDomainPath(); // NOI18N;
-    }
-    
-    private String getUrl(String host, int port) {
-        return WLDeploymentFactory.URI_PREFIX + host
-                + ":" + port + ":" + instantiatingIterator.getServerRoot(); // NOI18N
     }
 
     /**
@@ -443,7 +319,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     public void updateJpa2Button() {
         File root = new File(instantiatingIterator.getServerRoot());
         support = new WLJpa2SwitchSupport(root);
-        boolean statusVisible = localDomainRadioButton.isSelected() && support.isSwitchSupported();
+        boolean statusVisible = support.isSwitchSupported();
         boolean buttonVisible = statusVisible
                 && !support.isEnabledViaSmartUpdate();
 
@@ -455,11 +331,11 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     
     private void updateJpa2Status() {
         if (support.isEnabled() || support.isEnabledViaSmartUpdate()) {
-            jpa2Status.setText(NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2Status.enabledText"));
-            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.disableText"));
+            jpa2Status.setText(NbBundle.getMessage(ServerLocalVisual.class, "ServerPropertiesVisual.jpa2Status.enabledText"));
+            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerLocalVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.disableText"));
         } else {
-            jpa2Status.setText(NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2Status.disabledText"));
-            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.enableText"));
+            jpa2Status.setText(NbBundle.getMessage(ServerLocalVisual.class, "ServerPropertiesVisual.jpa2Status.disabledText"));
+            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerLocalVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.enableText"));
         }         
     }    
 
@@ -497,7 +373,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        domainButtonGroup = new javax.swing.ButtonGroup();
         localInstancesLabel = new javax.swing.JLabel();
         localInstancesCombo = new javax.swing.JComboBox(new javax.swing.DefaultComboBoxModel(getServerInstances().toArray()));
         usernameLabel = new javax.swing.JLabel();
@@ -509,97 +384,59 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         jpa2SwitchLabel = new javax.swing.JLabel();
         jpa2Status = new javax.swing.JLabel();
         jpa2SwitchButton = new javax.swing.JButton();
-        localDomainRadioButton = new javax.swing.JRadioButton();
-        remoteDomainRadioButton = new javax.swing.JRadioButton();
-        hostNameLabel = new javax.swing.JLabel();
-        hostNameTextField = new javax.swing.JTextField();
-        adminPortLabel = new javax.swing.JLabel();
-        adminPortTextField = new javax.swing.JTextField();
-        debugPortLabel = new javax.swing.JLabel();
-        debugPortTextField = new javax.swing.JTextField();
-        debugModeCheckBox = new javax.swing.JCheckBox();
 
         localInstancesLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         localInstancesLabel.setLabelFor(localInstancesCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(localInstancesLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "LBL_LOCAL_INSTANCE")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(localInstancesLabel, org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "LBL_LOCAL_INSTANCE")); // NOI18N
 
         localInstancesCombo.setEditable(true);
         localInstancesCombo.addItemListener(new LocalInstancesItemListener());
 
         usernameLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         usernameLabel.setLabelFor(usernameField);
-        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "LBL_USERNAME")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "LBL_USERNAME")); // NOI18N
 
         usernameField.setColumns(15);
         usernameField.setText("weblogic"); // NOI18N
 
         passwordLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         passwordLabel.setLabelFor(passwordField);
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "LBL_PASSWORD")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "LBL_PASSWORD")); // NOI18N
 
         passwordField.setColumns(15);
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ServerLocalVisual.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
 
-        explanationLabel.setText(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.explanationLabel.text")); // NOI18N
+        explanationLabel.setText(org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ServerLocalVisual.explanationLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchLabel, org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ServerLocalVisual.jpa2SwitchLabel.text")); // NOI18N
 
-        jpa2Status.setText(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2Status.disabledText")); // NOI18N
+        jpa2Status.setText(org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ServerPropertiesVisual.jpa2Status.disabledText")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchButton, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.enableText")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchButton, org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.enableText")); // NOI18N
         jpa2SwitchButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jpa2SwitchButtonActionPerformed(evt);
             }
         });
 
-        domainButtonGroup.add(localDomainRadioButton);
-        localDomainRadioButton.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(localDomainRadioButton, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.localDomainRadioButton.text")); // NOI18N
-
-        domainButtonGroup.add(remoteDomainRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(remoteDomainRadioButton, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.remoteDomainRadioButton.text")); // NOI18N
-
-        hostNameLabel.setLabelFor(hostNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(hostNameLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.hostNameLabel.text")); // NOI18N
-
-        hostNameTextField.setEnabled(false);
-
-        adminPortLabel.setLabelFor(adminPortTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(adminPortLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.adminPortLabel.text")); // NOI18N
-
-        adminPortTextField.setColumns(5);
-        adminPortTextField.setText(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.adminPortTextField.text")); // NOI18N
-        adminPortTextField.setEnabled(false);
-
-        debugPortLabel.setLabelFor(debugPortTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(debugPortLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.debugPortLabel.text")); // NOI18N
-
-        debugPortTextField.setColumns(5);
-        debugPortTextField.setEnabled(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(debugModeCheckBox, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.debugModeCheckBox.text")); // NOI18N
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addComponent(localInstancesLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(localInstancesCombo, 0, 1, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(browseButton))
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(localDomainRadioButton)
-                    .addComponent(remoteDomainRadioButton)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jpa2SwitchLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jpa2Status)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jpa2SwitchButton))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(passwordLabel)
@@ -607,45 +444,19 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(113, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(explanationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                            .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(hostNameLabel)
-                                    .addComponent(adminPortLabel))
-                                .addGap(15, 15, 15)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(hostNameTextField)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(adminPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(0, 0, Short.MAX_VALUE))))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(localInstancesLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(localInstancesCombo, 0, 241, Short.MAX_VALUE)))
+                        .addComponent(jpa2SwitchLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jpa2Status)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(debugModeCheckBox)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(21, 21, 21)
-                                .addComponent(debugPortLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(debugPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                        .addComponent(jpa2SwitchButton)))
+                .addGap(0, 113, Short.MAX_VALUE))
+            .addComponent(explanationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(localDomainRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(localInstancesLabel)
                     .addComponent(browseButton)
@@ -653,22 +464,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(explanationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(remoteDomainRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(hostNameLabel)
-                    .addComponent(hostNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(adminPortLabel)
-                    .addComponent(adminPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(debugModeCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(debugPortLabel)
-                    .addComponent(debugPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(usernameLabel)
                     .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -676,16 +471,16 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(passwordLabel)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jpa2SwitchLabel)
                     .addComponent(jpa2Status)
                     .addComponent(jpa2SwitchButton)))
         );
 
-        localInstancesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_localInstancesCombo")); // NOI18N
-        usernameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_usernameField")); // NOI18N
-        passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_passwordField")); // NOI18N
+        localInstancesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ACSD_ServerPropertiesPanel_localInstancesCombo")); // NOI18N
+        usernameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ACSD_ServerPropertiesPanel_usernameField")); // NOI18N
+        passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ACSD_ServerPropertiesPanel_passwordField")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
@@ -715,25 +510,15 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel adminPortLabel;
-    private javax.swing.JTextField adminPortTextField;
     private javax.swing.JButton browseButton;
-    private javax.swing.JCheckBox debugModeCheckBox;
-    private javax.swing.JLabel debugPortLabel;
-    private javax.swing.JTextField debugPortTextField;
-    private javax.swing.ButtonGroup domainButtonGroup;
     private javax.swing.JLabel explanationLabel;
-    private javax.swing.JLabel hostNameLabel;
-    private javax.swing.JTextField hostNameTextField;
     private javax.swing.JLabel jpa2Status;
     private javax.swing.JButton jpa2SwitchButton;
     private javax.swing.JLabel jpa2SwitchLabel;
-    private javax.swing.JRadioButton localDomainRadioButton;
     private javax.swing.JComboBox localInstancesCombo;
     private javax.swing.JLabel localInstancesLabel;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
-    private javax.swing.JRadioButton remoteDomainRadioButton;
     private javax.swing.JTextField usernameField;
     private javax.swing.JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables

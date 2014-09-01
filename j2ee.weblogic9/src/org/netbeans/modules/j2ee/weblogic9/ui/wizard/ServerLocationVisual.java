@@ -93,7 +93,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         // register the supplied listener
         //addChangeListener(listener);
         // set the panel's name
-        setName(NbBundle.getMessage(ServerPropertiesPanel.class,
+        setName(NbBundle.getMessage(ServerLocationVisual.class,
                 "SERVER_LOCATION_STEP"));        // NOI18N
 
         // init the GUI
