@@ -233,9 +233,9 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         this.serverRoot = serverRoot;
 
         // reinit the instances list
-        if (serverLocalPanel != null) {
-            serverLocalPanel.getVisual().updateInstancesList();
-            serverLocalPanel.getVisual().updateJpa2Button();
+        if (serverPropertiesPanel instanceof ServerLocalPanel) {
+            ((ServerLocalPanel) serverPropertiesPanel).getVisual().updateInstancesList();
+            ((ServerLocalPanel) serverPropertiesPanel).getVisual().updateJpa2Button();
         }
     }
 
@@ -350,8 +350,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      * The wizard's panels
      */
     private ServerLocationPanel serverLocationPanel;
-    private ServerLocalPanel serverLocalPanel;
-    private ServerRemotePanel serverRemotePanel;
+    private WizardDescriptor.Panel serverPropertiesPanel;
 
     /**
      * Index of the currently shown panel
@@ -413,11 +412,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
             case 0:
                return getLocationPanel();
             case 1:
-                if (isRemote()) {
-                    return getRemotePanel();
-                } else {
-                    return getLocalPanel();
-                }
+                return getPropertiesPanel();
             default:
                 throw new IllegalStateException();
         }
@@ -431,23 +426,27 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         return serverLocationPanel;
     }
 
-    private WizardDescriptor.Panel getLocalPanel() {
-        if (serverLocalPanel == null) {
-            serverLocalPanel = new ServerLocalPanel(this);
-            initComponent(serverLocalPanel.getComponent(), 1);
-            if (serverLocalPanel != null) {
-                serverLocalPanel.getVisual().updateInstancesList();
-                serverLocalPanel.getVisual().updateJpa2Button();
-            }
+    private WizardDescriptor.Panel getPropertiesPanel() {
+        if ((isRemote() && (serverPropertiesPanel instanceof ServerRemotePanel))
+                || !isRemote() && (serverPropertiesPanel instanceof ServerLocalPanel)) {
+            return serverPropertiesPanel;
         }
+
+        serverPropertiesPanel = isRemote() ? createRemotePanel() : createLocalPanel();
+        return serverPropertiesPanel;
+    }
+
+    private WizardDescriptor.Panel createLocalPanel() {
+        ServerLocalPanel serverLocalPanel = new ServerLocalPanel(this);
+        initComponent(serverLocalPanel.getComponent(), 1);
+        serverLocalPanel.getVisual().updateInstancesList();
+        serverLocalPanel.getVisual().updateJpa2Button();
         return serverLocalPanel;
     }
 
-    private WizardDescriptor.Panel getRemotePanel() {
-        if (serverRemotePanel == null) {
-            serverRemotePanel = new ServerRemotePanel(this);
-            initComponent(serverRemotePanel.getComponent(), 1);
-        }
+    private WizardDescriptor.Panel createRemotePanel() {
+        ServerRemotePanel serverRemotePanel = new ServerRemotePanel(this);
+        initComponent(serverRemotePanel.getComponent(), 1);
         return serverRemotePanel;
     }
 
@@ -462,21 +461,6 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
         }
     }
-
-//    protected final WizardDescriptor.Panel[] getPanels() {
-//        if (panels == null) {
-//            panels = createPanels();
-//        }
-//        return panels;
-//    }
-//
-//    protected WizardDescriptor.Panel[] createPanels() {
-//
-//        serverLocationPanel = new ServerLocationPanel(this);
-//        serverPropertiesPanel = new ServerPropertiesPanel( this);
-//
-//        return new WizardDescriptor.Panel[] { serverLocationPanel, serverPropertiesPanel };
-//    }
 
 
     ////////////////////////////////////////////////////////////////////////////
