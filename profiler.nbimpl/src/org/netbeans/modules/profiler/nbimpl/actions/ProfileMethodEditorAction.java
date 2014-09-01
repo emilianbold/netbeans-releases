@@ -66,7 +66,7 @@ import org.openide.util.lookup.Lookups;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "ProfileMethodEditorAction_Name=Profile Method...",
+    "ProfileMethodEditorAction_Name=Profile Method",
     "ProfileMethodEditorAction_NoMethodFoundAtPosition=No method found at current position.",
     "ProfileMethodEditorAction_CannotAddAbstractNativeProfilingRoot=Cannot profile abstract or native method.",
     "ProfileMethodEditorAction_ProblemProfilingMethod=Cannot profile selected method. This can happen for items placed in directory other than project sources directory (typically /src and /web). If so, please select appropriate item in project sources directory."

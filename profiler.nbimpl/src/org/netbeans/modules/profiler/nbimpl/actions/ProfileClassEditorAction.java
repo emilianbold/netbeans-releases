@@ -66,7 +66,7 @@ import org.openide.util.lookup.Lookups;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "ProfileClassEditorAction_Name=Profile Class...",
+    "ProfileClassEditorAction_Name=Profile Class",
     "ProfileClassEditorAction_NoClassFoundAtPosition=No class found at current position.",
     "ProfileClassEditorAction_ProblemProfilingClass=Cannot profile selected class. This can happen for items placed in directory other than project sources directory (typically /src and /web). If so, please select appropriate item in project sources directory."
 })
