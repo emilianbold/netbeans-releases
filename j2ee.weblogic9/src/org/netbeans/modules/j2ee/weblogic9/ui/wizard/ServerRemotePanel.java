@@ -45,6 +45,7 @@ package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 import java.awt.Component;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -52,66 +53,94 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author thuy
+ * @author Petr Hejl
  */
-public class ServerLocationPanel  implements WizardDescriptor.Panel, ChangeListener {
+public class ServerRemotePanel implements WizardDescriptor.Panel, ChangeListener {
 
     private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
 
-    private ServerLocationVisual component;
+    private final AtomicBoolean isValidating = new AtomicBoolean();
+
+    private ServerRemoteVisual component;
 
     private WizardDescriptor wizard;
 
     private transient WLInstantiatingIterator instantiatingIterator;
 
-    public ServerLocationPanel(WLInstantiatingIterator instantiatingIterator) {
+    public ServerRemotePanel (WLInstantiatingIterator instantiatingIterator) {
         this.instantiatingIterator = instantiatingIterator;
     }
 
+    @Override
     public Component getComponent() {
-         if (component == null) {
-            component = new ServerLocationVisual(instantiatingIterator);
+        if (component == null) {
+            component = new ServerRemoteVisual(instantiatingIterator);
             component.addChangeListener(this);
         }
         return component;
     }
 
-     private ServerLocationVisual getVisual() {
-        return (ServerLocationVisual) getComponent();
+    public  ServerRemoteVisual getVisual() {
+        return (ServerRemoteVisual) getComponent();
     }
 
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx("j2eeplugins_registering_app_server_weblogic_location"); // NOI18N
+         return new HelpCtx("j2eeplugins_registering_app_server_weblogic_properties"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
-        return getVisual().valid(wizard);
+        if (isValidating.compareAndSet(false, true)) {
+            try {
+                return getVisual().valid(wizard);
+            } finally {
+                isValidating.set(false);
+            }
+        }
+        return true;
     }
 
+    @Override
     public void readSettings(Object settings) {
         if (wizard == null) {
             wizard = (WizardDescriptor) settings;
         }
     }
 
+    @Override
     public void storeSettings(Object settings) {
+
     }
 
-    public void removeChangeListener(ChangeListener listener) {
-        listeners.remove(listener);
-    }
-
+    /**
+     * Adds a listener
+     *
+     * @param listener the listener to be added
+     */
+    @Override
     public void addChangeListener(ChangeListener listener) {
         listeners.add(listener);
     }
 
-    private void fireChangeEvent(ChangeEvent event) {
-        for (ChangeListener l : listeners) {
-            l.stateChanged(event);
-        }
+    /**
+     * Removes a registered listener
+     *
+     * @param listener the listener to be removed
+     */
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        listeners.remove(listener);
     }
 
-    public void stateChanged(ChangeEvent ev) {
-        fireChangeEvent(ev);
+    @Override
+    public void stateChanged(ChangeEvent event) {
+        fireChangeEvent(event);
+    }
+
+    private void fireChangeEvent(ChangeEvent event) {
+        for (ChangeListener listener : listeners) {
+            listener.stateChanged(event);
+        }
     }
 }
