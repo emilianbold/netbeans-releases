@@ -779,20 +779,23 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
         
         private String toString(StringBuilder out, int indent) {
-            indent(out, indent).append("INSTANTIATION OF "); // NOI18N
             String instName = this.getClass().getSimpleName()+"@"+System.identityHashCode(this);//NOI18N
-            out.append(instName).append(":\n");// NOI18N
-            if (inheritance instanceof Inheritance) {
-                ((Inheritance) inheritance).toString(out, indent + 2);
-            } else {
-                indent(out, indent + 2);
-                out.append(inheritance);
-            }
-            out.append("\n");// NOI18N
-            indent(out, indent).append("WITH TYPE:\n"); // NOI18N
+            indent(out, indent)
+                    .append("INSTANTIATION OF INHERITANCE ") // NOI18N  
+                    .append(instName)
+                    .append("WITH TYPE:\n"); // NOI18N
+            ////////////////////////////////////////////////////////////////////
+            // Commented out because the only valuable thing here is type
+//            out.append(instName).append(":\n");// NOI18N
+//            if (inheritance instanceof Inheritance) {
+//                ((Inheritance) inheritance).toString(out, indent + 2);
+//            } else {
+//                indent(out, indent + 2);
+//                out.append(inheritance);
+//            }
+            ////////////////////////////////////////////////////////////////////
             ((Type)type).toString(out, indent + 2);
             out.append("\n");// NOI18N
-            indent(out, indent).append("END OF ").append(instName);// NOI18N
             return out.toString();
         }
     }
@@ -1720,6 +1723,11 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         @Override
         public boolean isInstantiation() {
             return instantiatedType.isInstantiation();
+        }
+
+        @Override
+        public boolean hasInstantiationParams() {
+            return instantiatedType.hasInstantiationParams();
         }
 
         private boolean isRecursion(CsmType type, int i){
