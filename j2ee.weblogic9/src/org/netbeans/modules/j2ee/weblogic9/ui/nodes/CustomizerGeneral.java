@@ -49,6 +49,8 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import java.awt.Font;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -140,6 +142,24 @@ class CustomizerGeneral extends javax.swing.JPanel {
         updateJpa2Status();
 
         noteChangesLabel.setVisible(!manager.isRemote());
+
+        if (manager.isRemote()) {
+            addAncestorListener(new AncestorListener() {
+
+                @Override
+                public void ancestorRemoved(AncestorEvent event) {
+                    manager.getInstanceProperties().refreshServerInstance();
+                }
+
+                @Override
+                public void ancestorAdded(AncestorEvent event) {
+                }
+
+                @Override
+                public void ancestorMoved(AncestorEvent event) {
+                }
+            });
+        }
     }
 
     private void updateJpa2Status() {

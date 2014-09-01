@@ -60,6 +60,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -207,6 +209,24 @@ class CustomizerJVM extends javax.swing.JPanel {
         vmOptions.setEnabled(!manager.isRemote());
         memoryOptions.setEnabled(!manager.isRemote());
         noteChangesLabel.setVisible(!manager.isRemote());
+
+        if (manager.isRemote()) {
+            addAncestorListener(new AncestorListener() {
+
+                @Override
+                public void ancestorRemoved(AncestorEvent event) {
+                    manager.getInstanceProperties().refreshServerInstance();
+                }
+
+                @Override
+                public void ancestorAdded(AncestorEvent event) {
+                }
+
+                @Override
+                public void ancestorMoved(AncestorEvent event) {
+                }
+            });
+        }
     }
 
     /** This method is called from within the constructor to
