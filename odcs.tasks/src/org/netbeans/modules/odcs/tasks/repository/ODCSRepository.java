@@ -586,8 +586,18 @@ public class ODCSRepository implements PropertyChangeListener {
         RepositoryConfiguration configuration = null;
         try {
             configuration = client.getRepositoryConfiguration(forceRefresh, new NullProgressMonitor());
-        } catch (CoreException | NullPointerException ex) {
-            ODCS.LOG.log(Level.WARNING, "Trying to access " + getUrl() + " resulted in an exception:", ex);
+        } catch (CoreException | RuntimeException ex) {
+            Throwable t = ex.getCause();
+            String msg = t != null ? t.getMessage() : ex.getMessage();
+            Level level;
+            if(msg != null) {
+                level = Level.INFO;
+                ODCSExecutor.notifyErrorMessage(msg);
+            } else {
+                level = Level.WARNING;
+            }
+            ODCS.LOG.log(level, "Trying to access " + getUrl() + " resulted in an exception:", ex);
+            
         }
         return configuration;
     }
