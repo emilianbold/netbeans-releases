@@ -42,18 +42,14 @@
 package org.netbeans.modules.profiler.nbimpl;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Properties;
-import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
-import org.netbeans.modules.profiler.HeapDumpWatch;
 import org.netbeans.modules.profiler.ProfilerModule;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
 import org.netbeans.modules.profiler.spi.LoadGenPlugin;
-import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -70,6 +66,18 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
     
     public void storeProfilingProperties(Properties props) {
         getActionSupport().setProperties(props);
+    }
+    
+    // Emits PROFILING_INACTIVE event to all listeners in case the profiling session
+    // is not started/running after [millis], even though this is not a state change.
+    // Used to detect & notify that non-observable starting of profiling session failed.
+    public void checkAliveAfter(int millis) {
+        if (getProfilingState() == PROFILING_INACTIVE) ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+            public void run() {
+                if (getProfilingState() == PROFILING_INACTIVE)
+                    fireProfilingStateChange(PROFILING_IN_TRANSITION, PROFILING_INACTIVE);
+            }
+        }, millis);
     }
 
     @Override
