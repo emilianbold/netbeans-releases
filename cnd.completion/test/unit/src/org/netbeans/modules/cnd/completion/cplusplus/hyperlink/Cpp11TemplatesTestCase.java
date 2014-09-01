@@ -120,4 +120,33 @@ public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
         performTest("bug246683.cpp", 21, 26, "bug246683.cpp", 11, 9);
         performTest("bug246683.cpp", 22, 25, "bug246683.cpp", 14, 9);
     }    
+    
+    public void testBug246517_2() throws Exception {
+        // Bug 246517 - Cannot resolve elements of std::tuple
+        performTest("bug246517_2.cpp", 78, 18, "bug246517_2.cpp", 73, 9);
+        performTest("bug246517_2.cpp", 80, 18, "bug246517_2.cpp", 73, 9);
+        performTest("bug246517_2.cpp", 82, 18, "bug246517_2.cpp", 68, 9);
+        performTest("bug246517_2.cpp", 84, 18, "bug246517_2.cpp", 73, 9);
+        performTest("bug246517_2.cpp", 86, 18, "bug246517_2.cpp", 68, 9);
+        performTest("bug246517_2.cpp", 88, 18, "bug246517_2.cpp", 68, 9);
+        performTest("bug246517_2.cpp", 90, 18, "bug246517_2.cpp", 68, 9);
+        performTest("bug246517_2.cpp", 92, 18, "bug246517_2.cpp", 73, 9);
+        performTest("bug246517_2.cpp", 94, 18, "bug246517_2.cpp", 68, 9);
+        performTest("bug246517_2.cpp", 96, 18, "bug246517_2.cpp", 73, 9);
+        
+        performTest("bug246517_2.cpp", 102, 18, "bug246517_2.cpp", 68, 9);
+        performTest("bug246517_2.cpp", 104, 18, "bug246517_2.cpp", 73, 9);
+        performTest("bug246517_2.cpp", 106, 18, "bug246517_2.cpp", 68, 9);
+        performTest("bug246517_2.cpp", 108, 18, "bug246517_2.cpp", 68, 9);
+        performTest("bug246517_2.cpp", 110, 18, "bug246517_2.cpp", 73, 9);
+        performTest("bug246517_2.cpp", 112, 18, "bug246517_2.cpp", 73, 9);
+        performTest("bug246517_2.cpp", 114, 18, "bug246517_2.cpp", 73, 9);
+        performTest("bug246517_2.cpp", 116, 18, "bug246517_2.cpp", 68, 9);
+        performTest("bug246517_2.cpp", 118, 18, "bug246517_2.cpp", 73, 9);
+        performTest("bug246517_2.cpp", 120, 18, "bug246517_2.cpp", 68, 9);      
+        
+        performTest("bug246517_2.cpp", 131, 24, "bug246517_2.cpp", 68, 9);
+        performTest("bug246517_2.cpp", 145, 24, "bug246517_2.cpp", 68, 9);
+        performTest("bug246517_2.cpp", 162, 22, "bug246517_2.cpp", 73, 9);    
+    } 
 }
