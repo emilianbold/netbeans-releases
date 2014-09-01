@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.wizard;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
@@ -67,7 +69,7 @@ public class ServerRemoteVisual extends javax.swing.JPanel {
     private transient WLInstantiatingIterator instantiatingIterator;
 
     private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
-    
+
     /**
      * Creates a new instance of the ServerPropertiesVisual. It initializes all
      * the GUI components that appear on the panel.
@@ -99,6 +101,13 @@ public class ServerRemoteVisual extends javax.swing.JPanel {
 
             @Override
             public void keyReleased(KeyEvent e) {
+                fireChangeEvent();
+            }
+        });
+        debugModeCheckBox.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
                 fireChangeEvent();
             }
         });
@@ -148,8 +157,9 @@ public class ServerRemoteVisual extends javax.swing.JPanel {
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemoteVisual.class, "ERR_NON_NUMERIC_PORT"))); // NOI18N
             return false;
         }
+
         String debugPort = debugPortTextField.getText();
-        if (!debugPort.isEmpty()) {
+        if (debugModeCheckBox.isSelected()) {
             try {
                 Integer.parseInt(debugPort);
             } catch (NumberFormatException ex) {
@@ -264,6 +274,11 @@ public class ServerRemoteVisual extends javax.swing.JPanel {
         debugPortTextField.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(debugModeCheckBox, org.openide.util.NbBundle.getMessage(ServerRemoteVisual.class, "ServerRemoteVisual.debugModeCheckBox.text")); // NOI18N
+        debugModeCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                debugModeCheckBoxItemStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -326,6 +341,14 @@ public class ServerRemoteVisual extends javax.swing.JPanel {
         usernameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerRemoteVisual.class, "ACSD_ServerPropertiesPanel_usernameField")); // NOI18N
         passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerRemoteVisual.class, "ACSD_ServerPropertiesPanel_passwordField")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void debugModeCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_debugModeCheckBoxItemStateChanged
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+            debugPortTextField.setEnabled(true);
+        } else if (evt.getStateChange() == ItemEvent.DESELECTED) {
+            debugPortTextField.setEnabled(false);
+        }
+    }//GEN-LAST:event_debugModeCheckBoxItemStateChanged
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

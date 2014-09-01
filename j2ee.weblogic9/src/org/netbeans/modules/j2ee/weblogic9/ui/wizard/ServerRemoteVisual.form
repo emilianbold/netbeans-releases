@@ -199,6 +199,9 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/weblogic9/ui/wizard/Bundle.properties" key="ServerRemoteVisual.debugModeCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="debugModeCheckBoxItemStateChanged"/>
+      </Events>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
