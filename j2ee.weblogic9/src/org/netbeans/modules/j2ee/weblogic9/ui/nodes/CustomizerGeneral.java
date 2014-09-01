@@ -138,6 +138,8 @@ class CustomizerGeneral extends javax.swing.JPanel {
         jpa2Status.setVisible(statusVisible);
         jpa2SwitchButton.setVisible(buttonVisible);
         updateJpa2Status();
+
+        noteChangesLabel.setVisible(!manager.isRemote());
     }
 
     private void updateJpa2Status() {
@@ -170,7 +172,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
         passwordField = new javax.swing.JPasswordField();
         showButton = new javax.swing.JButton();
         serverPortLabel = new javax.swing.JLabel();
-        NoteChangesLabel = new javax.swing.JLabel();
+        noteChangesLabel = new javax.swing.JLabel();
         serverPort = new javax.swing.JTextField();
         jpa2SwitchLabel = new javax.swing.JLabel();
         jpa2Status = new javax.swing.JLabel();
@@ -206,7 +208,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
         serverPortLabel.setLabelFor(serverPort);
         org.openide.awt.Mnemonics.setLocalizedText(serverPortLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_ServerPort")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(NoteChangesLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_Note")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(noteChangesLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_Note")); // NOI18N
 
         serverPort.setEditable(false);
 
@@ -236,7 +238,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(NoteChangesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(noteChangesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(domainNameLabel)
@@ -312,7 +314,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
                     .addComponent(jpa2Status)
                     .addComponent(jpa2SwitchButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(NoteChangesLabel)
+                .addComponent(noteChangesLabel)
                 .addContainerGap())
         );
 
@@ -335,8 +337,8 @@ class CustomizerGeneral extends javax.swing.JPanel {
         showButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_ShowButton")); // NOI18N
         serverPortLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_ServerPort")); // NOI18N
         serverPortLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_ServerPort")); // NOI18N
-        NoteChangesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_Note")); // NOI18N
-        NoteChangesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_Note")); // NOI18N
+        noteChangesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_Note")); // NOI18N
+        noteChangesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_Note")); // NOI18N
         serverPort.getAccessibleContext().setAccessibleName(serverPortLabel.getAccessibleContext().getAccessibleName());
         serverPort.getAccessibleContext().setAccessibleDescription(serverPortLabel.getAccessibleContext().getAccessibleDescription());
     }// </editor-fold>//GEN-END:initComponents
@@ -376,7 +378,6 @@ class CustomizerGeneral extends javax.swing.JPanel {
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel NoteChangesLabel;
     private javax.swing.JLabel adminInfoLabel;
     private javax.swing.JTextField domainFolder;
     private javax.swing.JLabel domainFolderLabel;
@@ -385,6 +386,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
     private javax.swing.JLabel jpa2Status;
     private javax.swing.JButton jpa2SwitchButton;
     private javax.swing.JLabel jpa2SwitchLabel;
+    private javax.swing.JLabel noteChangesLabel;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JTextField serverHost;

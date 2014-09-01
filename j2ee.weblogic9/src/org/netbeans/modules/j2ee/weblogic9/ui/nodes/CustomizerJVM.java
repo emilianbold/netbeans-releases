@@ -167,6 +167,24 @@ class CustomizerJVM extends javax.swing.JPanel {
                 new PropertyDocumentListener(manager, WLPluginProperties.MEM_OPTS, 
                         memoryOptions));
 
+        debugModeCheckBox.setEnabled(manager.isRemote());
+        debugModeCheckBox.setSelected(!manager.isRemote()
+                || Boolean.valueOf(manager.getInstanceProperties().getProperty(WLPluginProperties.REMOTE_DEBUG_ENABLED)));
+        debugModeCheckBox.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    portSpinner.setEnabled(true);
+                    manager.getInstanceProperties().setProperty(WLPluginProperties.REMOTE_DEBUG_ENABLED, Boolean.TRUE.toString());
+                } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+                    portSpinner.setEnabled(false);
+                    manager.getInstanceProperties().setProperty(WLPluginProperties.REMOTE_DEBUG_ENABLED, Boolean.FALSE.toString());
+                }
+            }
+        });
+
+        portSpinner.setEnabled(!manager.isRemote() || debugModeCheckBox.isSelected());
         final SpinnerNumberModel debugPortModel = new SpinnerNumberModel(
                 Integer.parseInt(manager.getInstanceProperties().getProperty(WLPluginProperties.DEBUGGER_PORT_ATTR)), 0, 65535, 1);
         debugPortModel.addChangeListener(new ChangeListener() {
@@ -188,6 +206,7 @@ class CustomizerJVM extends javax.swing.JPanel {
         vendorName.setEnabled(!manager.isRemote());
         vmOptions.setEnabled(!manager.isRemote());
         memoryOptions.setEnabled(!manager.isRemote());
+        noteChangesLabel.setVisible(!manager.isRemote());
     }
 
     /** This method is called from within the constructor to
@@ -210,9 +229,9 @@ class CustomizerJVM extends javax.swing.JPanel {
         memoryOptions = new javax.swing.JTextField();
         memoryOptionsLabel = new javax.swing.JLabel();
         memoryOptionsCommentLabel = new javax.swing.JLabel();
-        debuggerLabel = new javax.swing.JLabel();
         portLabel = new javax.swing.JLabel();
         portSpinner = new javax.swing.JSpinner();
+        debugModeCheckBox = new javax.swing.JCheckBox();
 
         javaHomeLabel.setLabelFor(javaHome);
         org.openide.awt.Mnemonics.setLocalizedText(javaHomeLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_JavaHome")); // NOI18N
@@ -234,9 +253,9 @@ class CustomizerJVM extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(memoryOptionsCommentLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_VmMemoryOptionsComment")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(debuggerLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "CustomizerJVM.debuggerLabel.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "CustomizerJVM.portLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(debugModeCheckBox, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "CustomizerJVM.debugModeCheckBox.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -245,6 +264,9 @@ class CustomizerJVM extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(noteChangesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(vendorLabel)
@@ -265,14 +287,13 @@ class CustomizerJVM extends javax.swing.JPanel {
                         .addGap(12, 12, 12))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(noteChangesLabel)
-                            .addComponent(debuggerLabel)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(12, 12, 12)
+                                .addGap(21, 21, 21)
                                 .addComponent(portLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(portSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                .addComponent(portSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(debugModeCheckBox))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -297,9 +318,9 @@ class CustomizerJVM extends javax.swing.JPanel {
                     .addComponent(memoryOptions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(memoryOptionsCommentLabel)
-                .addGap(17, 17, 17)
-                .addComponent(debuggerLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(debugModeCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(portLabel)
                     .addComponent(portSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -330,7 +351,7 @@ class CustomizerJVM extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel debuggerLabel;
+    private javax.swing.JCheckBox debugModeCheckBox;
     private javax.swing.JTextField javaHome;
     private javax.swing.JLabel javaHomeLabel;
     private javax.swing.JTextField memoryOptions;
