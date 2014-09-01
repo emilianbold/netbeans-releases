@@ -55,33 +55,33 @@ import org.openide.util.HelpCtx;
  *
  * @author Petr Hejl
  */
-public class ServerLocalPanel implements WizardDescriptor.Panel, ChangeListener {
+public class ServerRemotePropertiesPanel implements WizardDescriptor.Panel, ChangeListener {
 
     private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
 
     private final AtomicBoolean isValidating = new AtomicBoolean();
 
-    private ServerLocalVisual component;
+    private ServerRemotePropertiesVisual component;
 
     private WizardDescriptor wizard;
 
     private transient WLInstantiatingIterator instantiatingIterator;
 
-    public ServerLocalPanel (WLInstantiatingIterator instantiatingIterator) {
+    public ServerRemotePropertiesPanel (WLInstantiatingIterator instantiatingIterator) {
         this.instantiatingIterator = instantiatingIterator;
     }
 
     @Override
     public Component getComponent() {
         if (component == null) {
-            component = new ServerLocalVisual(instantiatingIterator);
+            component = new ServerRemotePropertiesVisual(instantiatingIterator);
             component.addChangeListener(this);
         }
         return component;
     }
 
-    public  ServerLocalVisual getVisual() {
-        return (ServerLocalVisual) getComponent();
+    public  ServerRemotePropertiesVisual getVisual() {
+        return (ServerRemotePropertiesVisual) getComponent();
     }
 
     @Override

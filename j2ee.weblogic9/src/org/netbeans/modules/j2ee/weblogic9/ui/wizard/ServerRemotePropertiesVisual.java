@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hejl
  */
-public class ServerRemoteVisual extends javax.swing.JPanel {
+public class ServerRemotePropertiesVisual extends javax.swing.JPanel {
 
     private transient WLInstantiatingIterator instantiatingIterator;
 
@@ -80,13 +80,13 @@ public class ServerRemoteVisual extends javax.swing.JPanel {
      *      the hierarchy
      * @param instantiatingIterator the parent instantiating iterator
      */
-    public ServerRemoteVisual(WLInstantiatingIterator instantiatingIterator) {
+    public ServerRemotePropertiesVisual(WLInstantiatingIterator instantiatingIterator) {
         // save the instantiating iterator
         this.instantiatingIterator = instantiatingIterator;
 
         // set the panel's name
         setName(NbBundle.getMessage(
-                ServerRemoteVisual.class, "SERVER_PROPERTIES_STEP") );  // NOI18N
+                ServerRemotePropertiesVisual.class, "SERVER_PROPERTIES_STEP") );  // NOI18N
 
         initComponents();
         
@@ -144,7 +144,7 @@ public class ServerRemoteVisual extends javax.swing.JPanel {
 
         if (host == null || host.trim().isEmpty()) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemoteVisual.class, "ERR_EMPTY_HOST"))); // NOI18N
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ERR_EMPTY_HOST"))); // NOI18N
             return false;
         }
 
@@ -154,7 +154,7 @@ public class ServerRemoteVisual extends javax.swing.JPanel {
             port = Integer.parseInt(strPort);
         } catch (NumberFormatException ex) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemoteVisual.class, "ERR_NON_NUMERIC_PORT"))); // NOI18N
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ERR_NON_NUMERIC_PORT"))); // NOI18N
             return false;
         }
 
@@ -164,21 +164,21 @@ public class ServerRemoteVisual extends javax.swing.JPanel {
                 Integer.parseInt(debugPort);
             } catch (NumberFormatException ex) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemoteVisual.class, "ERR_NON_NUMERIC_PORT"))); // NOI18N
+                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ERR_NON_NUMERIC_PORT"))); // NOI18N
                 return false;
             }
         }
 
         if (InstanceProperties.getInstanceProperties(getUrl(host, port)) != null) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemoteVisual.class, "ERR_ALREADY_REGISTERED"))); // NOI18N
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ERR_ALREADY_REGISTERED"))); // NOI18N
             return false;
         } else if (passwordField.getPassword().length <= 0) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemoteVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
         } else {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemoteVisual.class, "MSG_RegisterRemote"))); // NOI18N
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemotePropertiesVisual.class, "MSG_RegisterRemote"))); // NOI18N
         }
 
         // save the data to the parent instantiating iterator
@@ -247,33 +247,33 @@ public class ServerRemoteVisual extends javax.swing.JPanel {
 
         usernameLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         usernameLabel.setLabelFor(usernameField);
-        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(ServerRemoteVisual.class, "LBL_USERNAME")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(ServerRemotePropertiesVisual.class, "LBL_USERNAME")); // NOI18N
 
         usernameField.setColumns(15);
         usernameField.setText("weblogic"); // NOI18N
 
         passwordLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         passwordLabel.setLabelFor(passwordField);
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(ServerRemoteVisual.class, "LBL_PASSWORD")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(ServerRemotePropertiesVisual.class, "LBL_PASSWORD")); // NOI18N
 
         passwordField.setColumns(15);
 
         hostNameLabel.setLabelFor(hostNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(hostNameLabel, org.openide.util.NbBundle.getMessage(ServerRemoteVisual.class, "ServerRemoteVisual.hostNameLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(hostNameLabel, org.openide.util.NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ServerRemotePropertiesVisual.hostNameLabel.text")); // NOI18N
 
         adminPortLabel.setLabelFor(adminPortTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(adminPortLabel, org.openide.util.NbBundle.getMessage(ServerRemoteVisual.class, "ServerRemoteVisual.adminPortLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(adminPortLabel, org.openide.util.NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ServerRemotePropertiesVisual.adminPortLabel.text")); // NOI18N
 
         adminPortTextField.setColumns(5);
-        adminPortTextField.setText(org.openide.util.NbBundle.getMessage(ServerRemoteVisual.class, "ServerRemoteVisual.adminPortTextField.text")); // NOI18N
+        adminPortTextField.setText(org.openide.util.NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ServerRemotePropertiesVisual.adminPortTextField.text")); // NOI18N
 
         debugPortLabel.setLabelFor(debugPortTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(debugPortLabel, org.openide.util.NbBundle.getMessage(ServerRemoteVisual.class, "ServerRemoteVisual.debugPortLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(debugPortLabel, org.openide.util.NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ServerRemotePropertiesVisual.debugPortLabel.text")); // NOI18N
 
         debugPortTextField.setColumns(5);
         debugPortTextField.setEnabled(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(debugModeCheckBox, org.openide.util.NbBundle.getMessage(ServerRemoteVisual.class, "ServerRemoteVisual.debugModeCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(debugModeCheckBox, org.openide.util.NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ServerRemotePropertiesVisual.debugModeCheckBox.text")); // NOI18N
         debugModeCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 debugModeCheckBoxItemStateChanged(evt);
@@ -338,8 +338,8 @@ public class ServerRemoteVisual extends javax.swing.JPanel {
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
-        usernameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerRemoteVisual.class, "ACSD_ServerPropertiesPanel_usernameField")); // NOI18N
-        passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerRemoteVisual.class, "ACSD_ServerPropertiesPanel_passwordField")); // NOI18N
+        usernameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ACSD_ServerPropertiesPanel_usernameField")); // NOI18N
+        passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ACSD_ServerPropertiesPanel_passwordField")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void debugModeCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_debugModeCheckBoxItemStateChanged

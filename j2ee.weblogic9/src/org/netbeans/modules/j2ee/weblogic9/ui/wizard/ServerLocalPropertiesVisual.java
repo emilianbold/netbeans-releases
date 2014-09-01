@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hejl
  */
-public class ServerLocalVisual extends javax.swing.JPanel {
+public class ServerLocalPropertiesVisual extends javax.swing.JPanel {
 
     private transient WLInstantiatingIterator instantiatingIterator;
 
@@ -98,13 +98,13 @@ public class ServerLocalVisual extends javax.swing.JPanel {
      *      the hierarchy
      * @param instantiatingIterator the parent instantiating iterator
      */
-    public ServerLocalVisual(WLInstantiatingIterator instantiatingIterator) {
+    public ServerLocalPropertiesVisual(WLInstantiatingIterator instantiatingIterator) {
         // save the instantiating iterator
         this.instantiatingIterator = instantiatingIterator;
 
         // set the panel's name
         setName(NbBundle.getMessage(
-                ServerLocalVisual.class, "SERVER_PROPERTIES_STEP") );  // NOI18N
+                ServerLocalPropertiesVisual.class, "SERVER_PROPERTIES_STEP") );  // NOI18N
 
         initComponents();
         
@@ -166,13 +166,13 @@ public class ServerLocalVisual extends javax.swing.JPanel {
         // check the profile root directory for validity
         if (instance == null || !isValidDomainRoot(instance.getDomainPath())) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalVisual.class, "ERR_INVALID_DOMAIN_ROOT"))); // NOI18N
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ERR_INVALID_DOMAIN_ROOT"))); // NOI18N
             return false;
         }
 
         if (InstanceProperties.getInstanceProperties(getUrl(instance)) != null) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalVisual.class, "ERR_ALREADY_REGISTERED"))); // NOI18N
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ERR_ALREADY_REGISTERED"))); // NOI18N
             return false;
         }
 
@@ -181,23 +181,23 @@ public class ServerLocalVisual extends javax.swing.JPanel {
                 && !instantiatingIterator.getServerVersion().equals(instance.getDomainVersion())) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(
-                            ServerLocalVisual.class, "ERR_INVALID_DOMAIN_VERSION"))); // NOI18N
+                            ServerLocalPropertiesVisual.class, "ERR_INVALID_DOMAIN_VERSION"))); // NOI18N
             return false;
         }
 
         if (instance.isProductionModeEnabled()){
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(
-                            ServerLocalVisual.class, "WARN_PRODUCTION_MODE"))); // NOI18N
+                            ServerLocalPropertiesVisual.class, "WARN_PRODUCTION_MODE"))); // NOI18N
         }
 
         // show a hint for sample domain
         if (instance.getName().startsWith("examples") && passwordField.getPassword().length <= 0) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalVisual.class, "ERR_EMPTY_SAMPLE_PASSWORD"))); // NOI18N
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ERR_EMPTY_SAMPLE_PASSWORD"))); // NOI18N
         } else if (passwordField.getPassword().length <= 0) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
         } else {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting", instance.getDomainName()))); // NOI18N
@@ -331,11 +331,11 @@ public class ServerLocalVisual extends javax.swing.JPanel {
     
     private void updateJpa2Status() {
         if (support.isEnabled() || support.isEnabledViaSmartUpdate()) {
-            jpa2Status.setText(NbBundle.getMessage(ServerLocalVisual.class, "ServerPropertiesVisual.jpa2Status.enabledText"));
-            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerLocalVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.disableText"));
+            jpa2Status.setText(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerPropertiesVisual.jpa2Status.enabledText"));
+            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.disableText"));
         } else {
-            jpa2Status.setText(NbBundle.getMessage(ServerLocalVisual.class, "ServerPropertiesVisual.jpa2Status.disabledText"));
-            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerLocalVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.enableText"));
+            jpa2Status.setText(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerPropertiesVisual.jpa2Status.disabledText"));
+            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.enableText"));
         }         
     }    
 
@@ -387,38 +387,38 @@ public class ServerLocalVisual extends javax.swing.JPanel {
 
         localInstancesLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         localInstancesLabel.setLabelFor(localInstancesCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(localInstancesLabel, org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "LBL_LOCAL_INSTANCE")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(localInstancesLabel, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "LBL_LOCAL_INSTANCE")); // NOI18N
 
         localInstancesCombo.setEditable(true);
         localInstancesCombo.addItemListener(new LocalInstancesItemListener());
 
         usernameLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         usernameLabel.setLabelFor(usernameField);
-        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "LBL_USERNAME")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "LBL_USERNAME")); // NOI18N
 
         usernameField.setColumns(15);
         usernameField.setText("weblogic"); // NOI18N
 
         passwordLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         passwordLabel.setLabelFor(passwordField);
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "LBL_PASSWORD")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "LBL_PASSWORD")); // NOI18N
 
         passwordField.setColumns(15);
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ServerLocalVisual.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
 
-        explanationLabel.setText(org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ServerLocalVisual.explanationLabel.text")); // NOI18N
+        explanationLabel.setText(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.explanationLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchLabel, org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ServerLocalVisual.jpa2SwitchLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchLabel, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2SwitchLabel.text")); // NOI18N
 
-        jpa2Status.setText(org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ServerPropertiesVisual.jpa2Status.disabledText")); // NOI18N
+        jpa2Status.setText(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerPropertiesVisual.jpa2Status.disabledText")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchButton, org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.enableText")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchButton, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.enableText")); // NOI18N
         jpa2SwitchButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jpa2SwitchButtonActionPerformed(evt);
@@ -478,9 +478,9 @@ public class ServerLocalVisual extends javax.swing.JPanel {
                     .addComponent(jpa2SwitchButton)))
         );
 
-        localInstancesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ACSD_ServerPropertiesPanel_localInstancesCombo")); // NOI18N
-        usernameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ACSD_ServerPropertiesPanel_usernameField")); // NOI18N
-        passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalVisual.class, "ACSD_ServerPropertiesPanel_passwordField")); // NOI18N
+        localInstancesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ACSD_ServerPropertiesPanel_localInstancesCombo")); // NOI18N
+        usernameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ACSD_ServerPropertiesPanel_usernameField")); // NOI18N
+        passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ACSD_ServerPropertiesPanel_passwordField")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed

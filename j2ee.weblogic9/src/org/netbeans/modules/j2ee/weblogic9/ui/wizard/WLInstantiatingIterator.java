@@ -233,9 +233,9 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         this.serverRoot = serverRoot;
 
         // reinit the instances list
-        if (serverPropertiesPanel instanceof ServerLocalPanel) {
-            ((ServerLocalPanel) serverPropertiesPanel).getVisual().updateInstancesList();
-            ((ServerLocalPanel) serverPropertiesPanel).getVisual().updateJpa2Button();
+        if (serverPropertiesPanel instanceof ServerLocalPropertiesPanel) {
+            ((ServerLocalPropertiesPanel) serverPropertiesPanel).getVisual().updateInstancesList();
+            ((ServerLocalPropertiesPanel) serverPropertiesPanel).getVisual().updateJpa2Button();
         }
     }
 
@@ -427,8 +427,8 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     }
 
     private WizardDescriptor.Panel getPropertiesPanel() {
-        if ((isRemote() && (serverPropertiesPanel instanceof ServerRemotePanel))
-                || !isRemote() && (serverPropertiesPanel instanceof ServerLocalPanel)) {
+        if ((isRemote() && (serverPropertiesPanel instanceof ServerRemotePropertiesPanel))
+                || !isRemote() && (serverPropertiesPanel instanceof ServerLocalPropertiesPanel)) {
             return serverPropertiesPanel;
         }
 
@@ -437,7 +437,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     }
 
     private WizardDescriptor.Panel createLocalPanel() {
-        ServerLocalPanel serverLocalPanel = new ServerLocalPanel(this);
+        ServerLocalPropertiesPanel serverLocalPanel = new ServerLocalPropertiesPanel(this);
         initComponent(serverLocalPanel.getComponent(), 1);
         serverLocalPanel.getVisual().updateInstancesList();
         serverLocalPanel.getVisual().updateJpa2Button();
@@ -445,7 +445,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     }
 
     private WizardDescriptor.Panel createRemotePanel() {
-        ServerRemotePanel serverRemotePanel = new ServerRemotePanel(this);
+        ServerRemotePropertiesPanel serverRemotePanel = new ServerRemotePropertiesPanel(this);
         initComponent(serverRemotePanel.getComponent(), 1);
         return serverRemotePanel;
     }
