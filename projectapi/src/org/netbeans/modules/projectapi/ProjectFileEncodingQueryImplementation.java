@@ -70,11 +70,15 @@ public class ProjectFileEncodingQueryImplementation extends FileEncodingQueryImp
         }
         FileEncodingQueryImplementation delegate = p.getLookup().lookup(FileEncodingQueryImplementation.class);
         if (delegate == null) {
-            LOG.log(Level.FINE, "{0}: no FEQI in {1}", new Object[] {file, p});
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "{0}: no FEQI in {1}", new Object[] {file, p});
+            }
             return null;
         }
         Charset encoding = delegate.getEncoding(file);
-        LOG.log(Level.FINE, "{0}: got {1} from {2}", new Object[] {file, encoding, delegate});
+        if (LOG.isLoggable(Level.FINE)) {
+           LOG.log(Level.FINE, "{0}: got {1} from {2}", new Object[] {file, encoding, delegate});
+        }
         return encoding;
     }
 
