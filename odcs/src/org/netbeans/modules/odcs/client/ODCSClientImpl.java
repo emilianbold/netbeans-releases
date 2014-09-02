@@ -29,7 +29,7 @@ import org.netbeans.modules.team.commons.LogUtils;
 
 public class ODCSClientImpl implements ODCSClient {
     
-    private final String url;
+    private final String url;   
     private final PasswordAuthentication pa;
     private final HttpClient httpClient = new HttpClient(WebUtil.getConnectionManager());
     
@@ -65,8 +65,14 @@ public class ODCSClientImpl implements ODCSClient {
 
     @Override
     public List<Project> getMyProjects() throws ODCSException {
-        QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(ProjectRelationship.MEMBER, null));
-        return r != null ? r.getResultPage() : null;
+        try {
+            QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(ProjectRelationship.MEMBER, null));
+            return r != null ? r.getResultPage() : null;
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
+        } catch (RuntimeException ex) {
+            throw new ODCSException(ex);
+        }    
     }
 
     @Override
