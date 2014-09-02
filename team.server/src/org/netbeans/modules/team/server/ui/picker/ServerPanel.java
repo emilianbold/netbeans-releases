@@ -265,10 +265,22 @@ class ServerPanel extends JPanel {
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         if( isOnline() ) {
-                            server.logout();
-                            removeAll();
-                            rebuild();
-                            PopupWindow.pack();
+                            RP.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    server.logout();
+                                    if( PopupWindow.isShowing() ) {
+                                        runInAWT( new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                removeAll();
+                                                rebuild();
+                                                PopupWindow.pack();
+                                            }
+                                        });
+                                    }
+                                }
+                            });
                         } else {
                             doLogin();
                         }
