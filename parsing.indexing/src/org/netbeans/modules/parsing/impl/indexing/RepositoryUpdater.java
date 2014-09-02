@@ -1130,7 +1130,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 Pair<URL, FileObject> root = getOwningSourceRoot(doc);
                 if (root != null) {
                     if (root.second() == null) {
-                        final FileObject file = Util.getFileObject(doc);
+                        final FileObject file = Utilities.getFileObject(doc);
                         assert file == null || !file.isValid() : "Expecting both owningSourceRootUrl=" + root.first() + " and owningSourceRoot=" + root.second(); //NOI18N
                         return;
                     }                    
@@ -1154,7 +1154,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         reindex = lastDirtyVersion != null;
                     }
 
-                    FileObject docFile = Util.getFileObject(doc);
+                    FileObject docFile = Utilities.getFileObject(doc);
                     LOGGER.log(Level.FINE, "{0}: version={1}, lastIndexerVersion={2}, lastDirtyVersion={3}, openedInEditor={4} => reindex={5}", new Object [] {
                         docFile.getPath(), version, lastIndexedVersion, lastDirtyVersion, openedInEditor, reindex
                     });
@@ -1384,7 +1384,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 activeDocument.putProperty(PROP_LAST_DIRTY_VERSION, version);
 
                 if (markDirty) {
-                    FileObject docFile = Util.getFileObject(document);
+                    FileObject docFile = Utilities.getFileObject(document);
                     // An active document was modified, we've indexed that document berfore,
                     // so mark it dirty
                     if (LOGGER.isLoggable(Level.FINE)) {
@@ -1462,7 +1462,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
             } else {
                 // an odd event, maybe we could just ignore it
-                FileObject f = Util.getFileObject(document);
+                FileObject f = Utilities.getFileObject(document);
                 Collection<URL> c = Collections.singleton(f.toURL());
                 addIndexingJob(
                     root.first(),
@@ -1583,7 +1583,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         synchronized (lastOwningSourceRootCacheLock) {
             if (fileOrDoc instanceof Document) {
                 doc = (Document) fileOrDoc;
-                file = Util.getFileObject(doc);
+                file = Utilities.getFileObject(doc);
                 if (file == null) {
                     return null;
                 }
@@ -1980,7 +1980,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         Map<FileObject, Document> f2d = new HashMap<>();
         for(JTextComponent jtc : EditorRegistry.componentList()) {
             Document d = jtc.getDocument();
-            FileObject f = Util.getFileObject(d);
+            FileObject f = Utilities.getFileObject(d);
             if (f != null) {
                 f2d.put(f, d);
             }

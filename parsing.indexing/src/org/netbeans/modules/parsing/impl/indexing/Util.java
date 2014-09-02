@@ -228,17 +228,6 @@ public final class Util {
         return false;
     }
 
-    public static FileObject getFileObject(Document doc) {
-        Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
-        if (sdp instanceof FileObject) {
-            return (FileObject)sdp;
-        }
-        if (sdp instanceof DataObject) {
-            return ((DataObject)sdp).getPrimaryFile();
-        }
-        return null;
-    }
-
     public static boolean isParentOf(
             @NonNull final File folder,
             @NonNull final File file) {
