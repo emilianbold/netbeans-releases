@@ -319,7 +319,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-cnd-makeproject-ui-actions-BuildPackageAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.buildPackageAction"/>            
             </file>                           
--            <file name="org-netbeans-modules-cnd-makeproject-ui-actions-DebugAction.instance">
+            <file name="org-netbeans-modules-cnd-makeproject-ui-actions-DebugAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.debugAction"/>            
             </file>                           
             <file name="org-netbeans-modules-cnd-makeproject-ui-actions-StepIntoAction.instance">
