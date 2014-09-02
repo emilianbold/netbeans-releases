@@ -45,10 +45,14 @@ package org.netbeans.modules.parsing.impl.indexing.errors;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.URL;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -56,6 +60,7 @@ import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.Pair;
 
 /**
@@ -91,7 +96,6 @@ public class Utilities {
 
     public static Iterable<? extends FileObject> findIndexedRootsUnderDirectory(Project p, FileObject bigRoot) {
         List<FileObject> result = new LinkedList<FileObject>();
-        
         try {
             Iterable<? extends FileObject> roots = CacheFolder.findRootsWithCacheUnderFolder(bigRoot);
 
@@ -105,10 +109,20 @@ public class Utilities {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.FINE, null, ex);
+            Logger.getLogger(Utilities.class.getName()).log(Level.FINE, null, ex);
         }
-
         return result;
+    }
+
+    public static boolean isBadgesEnabled() {
+        return true;
+    }
+
+    static void refreshAnnotations(@NonNull final Set<URL> toRefresh) {
+        final Collection<? extends FileAnnotationsRefresh> refreshables = Lookup.getDefault().lookupAll(FileAnnotationsRefresh.class);
+        for (FileAnnotationsRefresh refreshable : refreshables) {
+            refreshable.refresh(toRefresh);
+        }
     }
 
     private Utilities() {}

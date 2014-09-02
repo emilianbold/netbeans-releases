@@ -41,11 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.parsing.impl.indexing.errors;
+package org.netbeans.modules.parsing.ui.indexing.errors;
 
 import java.awt.Image;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -59,6 +58,8 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -67,6 +68,9 @@ import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.impl.indexing.errors.FileAnnotationsRefresh;
+import org.netbeans.modules.parsing.impl.indexing.errors.TaskCache;
+import org.netbeans.modules.parsing.impl.indexing.errors.Utilities;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -83,30 +87,37 @@ import static org.openide.util.ImageUtilities.assignToolTipToImage;
 import static org.openide.util.ImageUtilities.loadImage;
 import static org.openide.util.ImageUtilities.mergeImages;
 import static org.openide.util.NbBundle.getMessage;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Jan Lahoda
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class, position=100)
-public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusListener*/ {
+@ServiceProviders({
+@ServiceProvider(service=FileAnnotationsRefresh.class, position=100),
+@ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class, position=100)
+})
+public class ErrorAnnotator extends AnnotationProvider implements FileAnnotationsRefresh {
 
     private static final Logger LOG = Logger.getLogger(ErrorAnnotator.class.getName());
 
-    private static final String ERROR_BADGE_URL = "org/netbeans/modules/parsing/impl/resources/error-badge.gif";
-    
+    @StaticResource
+    private static final String ERROR_BADGE_URL = "org/netbeans/modules/parsing/ui/resources/error-badge.gif";
+
     public ErrorAnnotator() {
     }
 
+    @Override
     public String annotateName(String name, Set files) {
         return null;
     }
-    
+
     @Override
     public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-        if (!Settings.isBadgesEnabled())
+        if (!Utilities.isBadgesEnabled()) {
             return null;
-        
+        }
         boolean inError = false;
         boolean singleFile = files.size() == 1;
 
@@ -118,7 +129,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
             for (Object o : files) {
                 if (o instanceof FileObject) {
                     FileObject f = (FileObject) o;
-                    
+
                     if (f.isFolder()) {
                         singleFile = false;
                         if (isInError(f, true, !inError)) {
@@ -137,9 +148,9 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                 }
             }
         }
-        
+
         Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.FINE, "files={0}, in error={1}", new Object[] {files, inError});
-        
+
         if (inError) {
             //badge:
             URL errorBadgeIconURL = ErrorAnnotator.class.getResource("/" + ERROR_BADGE_URL);
@@ -151,13 +162,11 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
             Image i = mergeImages(icon, singleFile ? assignToolTipToImage(errorBadge, errorBadgeSingleTP) : assignToolTipToImage(errorBadge, errorBadgeFolderTP), 0, 8);
             Iterator<? extends AnnotationProvider> it = Lookup.getDefault().lookupAll(AnnotationProvider.class).iterator();
             boolean found = false;
-            
+
             while (it.hasNext()) {
                 AnnotationProvider p = it.next();
-                
                 if (found) {
                     Image res = p.annotateIcon(i, iconType, files);
-                    
                     if (res != null) {
                         return res;
                     }
@@ -165,31 +174,32 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                     found = p == this;
                 }
             }
-            
             return i;
         }
-        
         return null;
     }
 
+    @Override
     public String annotateNameHtml(String name, Set files) {
         return null;
     }
 
+    @Override
     public Action[] actions(Set files) {
         return null;
     }
 
+    @Override
     public InterceptionListener getInterceptionListener() {
         return null;
     }
-    
+
     public void updateAllInError() {
         try {
             File[] roots = File.listRoots();
             for (File root : roots) {
                 FileObject rootFO = FileUtil.toFileObject(root);
-                
+
                 if (rootFO != null) {
                     fireFileStatusChanged(new FileStatusEvent(rootFO.getFileSystem(), true, false));
                 }
@@ -199,11 +209,12 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         }
     }
 
+    @Override
     @org.netbeans.api.annotations.common.SuppressWarnings(
     value="DMI_COLLECTION_OF_URLS",
     justification="URLs have never host part")
-    public synchronized void updateInError(Set<URL> urls)  {
-        Set<FileObject> toRefresh = new HashSet<FileObject>();
+    public synchronized void refresh(@NonNull final Set<URL> urls)  {
+        Set<FileObject> toRefresh = new HashSet<>();
         for (Iterator<FileObject> it = knownFiles2Error.keySet().iterator(); it.hasNext(); ) {
             FileObject f = it.next();
             final URL furl = f.toURL();
@@ -230,43 +241,31 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
             LOG.log(Level.INFO, ex.getMessage(), ex);
         }
     }
-    
-    public static ErrorAnnotator getAnnotator() {
-        for (AnnotationProvider ap : Lookup.getDefault().lookupAll(AnnotationProvider.class)) {
-            if (ap.getClass() == ErrorAnnotator.class) {
-                return (ErrorAnnotator) ap;
-            }
-        }
-        
-        return null;
-    }
-    
+
     private static final int IN_ERROR_REC = 1;
     private static final int IN_ERROR_NONREC = 2;
     private static final int INVALID = 4;
-    
     private Map<FileObject, Integer> knownFiles2Error = new WeakHashMap<FileObject, Integer>();
-    
+
     private void enqueue(FileObject file) {
         if (toProcess == null) {
             toProcess = new LinkedList<FileObject>();
             WORKER.schedule(50);
         }
-        
         toProcess.add(file);
     }
-    
+
     private synchronized boolean isInError(FileObject file, boolean recursive, boolean forceValue) {
         boolean result = false;
         Integer i = knownFiles2Error.get(file);
 
         if (i != null) {
             result = (i & (recursive ? IN_ERROR_REC : IN_ERROR_NONREC)) != 0;
-            
+
             if ((i & INVALID) == 0)
                 return result;
         }
-        
+
         if (!forceValue) {
             if (i == null) {
                 knownFiles2Error.put(file, null);
@@ -277,21 +276,22 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         enqueue(file);
         return result;
     }
-    
+
     private long cumulativeTime;
     private Collection<FileObject> toProcess = null;
 
     private final RequestProcessor WORKER_THREAD = new RequestProcessor("ErrorAnnotator worker", 1);
     private final RequestProcessor.Task WORKER = WORKER_THREAD.create(new Runnable() {
+        @Override
         public void run() {
             long startTime = System.currentTimeMillis();
             Collection<FileObject> toProcess;
-            
+
             synchronized (ErrorAnnotator.this) {
                 toProcess = ErrorAnnotator.this.toProcess;
                 ErrorAnnotator.this.toProcess = null;
             }
-            
+
             for (FileObject f : toProcess) {
                 synchronized (ErrorAnnotator.this) {
                     Integer currentState = knownFiles2Error.get(f);
@@ -309,7 +309,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                     recError = nonRecError = TaskCache.getDefault().isInError(f, true);
                 } else {
                     ClassPath source = Utilities.getSourceClassPathFor (f);
-                    
+
                     if (source == null) {
                         //presumably not under an indexed root:
                         Project p = FileOwnerQuery.getOwner(f);
@@ -327,7 +327,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
 
                 Integer value = (recError ? IN_ERROR_REC : 0) | (nonRecError ? IN_ERROR_NONREC : 0);
                 boolean stateChanged;
-                
+
                 synchronized (ErrorAnnotator.this) {
                     Integer origInteger = knownFiles2Error.get(f);
                     int orig;
@@ -346,9 +346,8 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                     fireFileStatusChanged(Collections.singleton(f));
                 }
             }
-            
+
             long endTime = System.currentTimeMillis();
-            
             Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.FINE, "time spent in error annotations computation: {0}, cumulative time: {1}", new Object[] {(endTime - startTime), (cumulativeTime += (endTime - startTime))});
         }
     });
@@ -360,7 +359,6 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
             FileSystem fs = f.getFileSystem();
             if (!system2RecursiveListener.containsKey(fs)) {
                 FileChangeListener l = new RootAddedDeletedListener();
-                
                 system2RecursiveListener.put(fs, l);
                 fs.addFileChangeListener(l);
             }
@@ -409,13 +407,13 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
 
                         toRefresh.add(current);
                         toRefresh.add(current = new URL(current, ".")); //NOI18N
-                        
+
                         for (int depth = current.getPath().split("/").length - 1; depth > 0; depth--) {  //NOI18N
                             current = new URL(current, ".."); //NOI18N
                             toRefresh.add(current);
                         }
 
-                        updateInError(toRefresh);
+                        refresh(toRefresh);
                     } catch (MalformedURLException ex) {
                         LOG.log(Level.FINE, null, ex);
                     }
@@ -423,5 +421,4 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
             });
         }
     }
-    
 }

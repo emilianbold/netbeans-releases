@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.parsing.impl.indexing.errors;
+
+import java.net.URL;
+import java.util.Set;
 
 /**
  *
- * @author lahvac
+ * @author Tomas Zezula
  */
-public class Settings {
-
-    public static boolean isBadgesEnabled() {
-        return true;
-    }
-
+public interface FileAnnotationsRefresh {
+    void refresh(Set<URL> toRefresh);
 }

@@ -555,12 +555,8 @@ public class TaskCache {
     }
 
     private static void doRefresh(TransactionContext c) {
-        if (Settings.isBadgesEnabled() && !c.toRefresh.isEmpty()) {
-            ErrorAnnotator an = ErrorAnnotator.getAnnotator();
-
-            if (an != null) {
-                an.updateInError(c.toRefresh);
-            }
+        if (Utilities.isBadgesEnabled() && !c.toRefresh.isEmpty()) {
+            Utilities.refreshAnnotations(c.toRefresh);
         }
 
         for (URL root : c.rootsToRefresh) {
