@@ -362,6 +362,10 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                         co.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         CompilationUnitTree cut = co.getCompilationUnit();
                         for (Tree t: cut.getTypeDecls()) {
+                            if (t.getKind() == Tree.Kind.EMPTY_STATEMENT) {
+                                // syntax errors
+                                continue;
+                            }
                             TreePathHandle handle = TreePathHandle.create(TreePath.getPath(cut, t), co);
                             if (!containsHandle(handle, co)) {
                                 grips.add(handle);
