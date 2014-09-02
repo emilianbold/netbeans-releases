@@ -88,8 +88,8 @@ public final class WebLogicConfiguration {
 
         if (domainHome != null) {
             id = serverHome + ":" + domainHome;
-            // FIXME file
-            config = DomainConfiguration.getInstance(new File(domainHome, "config" + File.separator + "config.xml"), true);
+            // FIXME null config
+            config = DomainConfiguration.getInstance(domainHome, true);
         } else {
             id = host + ":" + port;
             config = null;
@@ -176,6 +176,14 @@ public final class WebLogicConfiguration {
             return null;
         }
         return config.getAdminServer();
+    }
+
+    @NullUnknown
+    public File getLogFile() {
+        if (config == null) {
+            return null;
+        }
+        return config.getLogFile();
     }
 
     @CheckForNull

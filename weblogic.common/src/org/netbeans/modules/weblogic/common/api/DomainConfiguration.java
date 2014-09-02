@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -68,7 +69,7 @@ import org.xml.sax.SAXException;
  *
  * @author Petr Hejl
  */
-public class DomainConfiguration {
+public final class DomainConfiguration {
 
     private static final Logger LOGGER = Logger.getLogger(DomainConfiguration.class.getName());
 
@@ -100,6 +101,14 @@ public class DomainConfiguration {
     private static final  Pattern ADMIN_SERVER_PATTERN =
             Pattern.compile("(?:[a-z]+\\:)?admin-server-name"); // NOI18N
 
+    private static final  Pattern LOG_PATTERN =
+            Pattern.compile("(?:[a-z]+\\:)?log"); // NOI18N
+
+    private static final  Pattern FILE_NAME_PATTERN =
+            Pattern.compile("(?:[a-z]+\\:)?file-name"); // NOI18N
+
+    private final File domain;
+
     private final File domainConfig;
 
     // GuardedBy("this")
@@ -123,12 +132,22 @@ public class DomainConfiguration {
     // GuardedBy("this")
     private boolean production;
 
-    private DomainConfiguration(File domainConfig) {
+    // GuardedBy("this")
+    private File logFile;
+
+    private DomainConfiguration(File domain, File domainConfig) {
+        this.domain = domain;
         this.domainConfig = domainConfig;
     }
 
-    static DomainConfiguration getInstance(File domainConfig, boolean listen) {
-        DomainConfiguration instance = new DomainConfiguration(domainConfig);
+    @CheckForNull
+    static DomainConfiguration getInstance(File domain, boolean listen) {
+        File domainConfig = WebLogicLayout.getDomainConfigFile(domain);
+        if (domainConfig == null) {
+            return null;
+        }
+
+        DomainConfiguration instance = new DomainConfiguration(domain, domainConfig);
         if (listen) {
             instance.init();
         }
@@ -162,6 +181,10 @@ public class DomainConfiguration {
 
     public synchronized String getAdminURL() {
         return "t3://" + host + ":" + port; // NOI18N
+    }
+
+    public synchronized File getLogFile() {
+        return logFile;
     }
 
     private void init() {
@@ -200,6 +223,18 @@ public class DomainConfiguration {
                     production = Boolean.parseBoolean(domainProduction);
                 } else if (ADMIN_SERVER_PATTERN.matcher(child.getNodeName()).matches()) {
                     adminServer = child.getFirstChild().getNodeValue();
+                } else if (LOG_PATTERN.matcher(child.getNodeName()).matches()) {
+                    NodeList nl = child.getChildNodes();
+                    // iterate over the children
+                    for (int k = 0; k < nl.getLength(); k++) {
+                        Node ch = nl.item(k);
+
+                        if (FILE_NAME_PATTERN.matcher(ch.getNodeName()).matches()) {
+                            String value = ch.getFirstChild().getNodeValue();
+                            logFile = new File(value);
+                            break;
+                        }
+                    }
                 } else if (SERVER_PATTERN.matcher(child.getNodeName()).matches()) {
                     NodeList nl = child.getChildNodes();
 
@@ -267,6 +302,19 @@ public class DomainConfiguration {
             } else {
                 host = DEFAULT_HOST;
                 port = DEFAULT_PORT;
+            }
+
+            if (logFile == null) {
+                logFile = new File("logs" + File.separator + name + ".log"); // NOI18N
+            }
+            if (!logFile.isAbsolute()) {
+                if (admin != null) {
+                    // it is relative to servers
+                    logFile = new File(domain, "servers" + File.separator + admin.getName() + File.separator + logFile.getPath()); // NOI18N
+                } else {
+                    // FIXME is there a better heuristic ?
+                    logFile = new File(domain, "servers" + File.separator + "AdminServer" + File.separator + logFile.getPath()); // NOI18N
+                }
             }
         } catch (IOException | ParserConfigurationException | SAXException e) {
             LOGGER.log(Level.INFO, null, e);

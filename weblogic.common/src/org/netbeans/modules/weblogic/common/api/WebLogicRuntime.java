@@ -511,9 +511,8 @@ public final class WebLogicRuntime {
         String name = config.getDomainName();
         String admin = config.getDomainAdminServer();
 
-        if (admin != null && name != null) {
-            File logFile = new File(config.getDomainHome(),
-                    "servers" + File.separator + admin + File.separator + "logs" + File.separator + name + ".log"); // NOI18N
+        File logFile = config.getLogFile();
+        if (logFile != null) {
             final StringBuilder sb = new StringBuilder();
             return InputReaderTask.newTask(InputReaders.forFile(logFile, Charset.defaultCharset()),
                     InputProcessors.bridge(new LineProcessor() {

@@ -115,7 +115,12 @@ public final class WebLogicLayout {
         if (config.isRemote()) {
             return null;
         }
-        return FileUtil.normalizeFile(new File(config.getDomainHome(),
+        return getDomainConfigFile(config.getDomainHome());
+    }
+
+    @CheckForNull
+    public static File getDomainConfigFile(File domain) {
+        return FileUtil.normalizeFile(new File(domain,
                 "config" + File.separator + "config.xml")); // NOI18N
     }
 
@@ -170,17 +175,13 @@ public final class WebLogicLayout {
 
     @CheckForNull
     public static DomainConfiguration getDomainConfiguration(String domainPath) {
-        String configPath = domainPath + File.separator + "config" + File.separator + "config.xml"; // NOI18N
-
-        File config = new File(configPath);
-        if (!config.exists()){
+        DomainConfiguration ret = DomainConfiguration.getInstance(new File(domainPath), false);
+        if (ret == null) {
             LOGGER.log(Level.FINE, "Domain config file "
                     + "is not found. Probably server configuration was "
                     + "changed externally"); // NOI18N
-            return null;
         }
-
-        return DomainConfiguration.getInstance(config, false);
+        return ret;
     }
 
     public static boolean isSupportedLayout(File candidate){
