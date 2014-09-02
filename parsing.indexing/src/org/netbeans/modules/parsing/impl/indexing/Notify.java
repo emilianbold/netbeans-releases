@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.io.IOException;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LockManager {
+public abstract class Notify {
+    private static final Runnable NOP = new Runnable() {
+        @Override
+        public void run() {
+        }
+    };
 
-    private static final ReadWriteLock lock = new ReentrantReadWriteLock();
-
-    public static interface ExceptionAction<T> {
-        public T run () throws IOException, InterruptedException;
-    }
-
-    public static <T> T readLock (final ExceptionAction<T> action) throws IOException, InterruptedException {
-        lock.readLock().lock();
-        try {
-            return action.run();
-        } finally {
-            lock.readLock().unlock();
+    @NonNull
+    public static Runnable showStatus(@NonNull final String message) {
+        final Notify notify = Lookup.getDefault().lookup(Notify.class);
+        if (notify != null) {
+            return notify.showStatusImpl(message);
+        } else {
+            return NOP;
         }
     }
 
-    public static <T> T writeLock (final ExceptionAction<T> action) throws IOException, InterruptedException {
-        lock.writeLock().lock();
-        try {
-            return action.run();
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
+    @NonNull
+    protected abstract Runnable showStatusImpl(@NonNull String message);
 }
