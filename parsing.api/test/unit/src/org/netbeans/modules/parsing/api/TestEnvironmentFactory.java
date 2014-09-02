@@ -43,8 +43,12 @@
 package org.netbeans.modules.parsing.api;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -69,7 +73,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = EnvironmentFactory.class, position = 50000)
 public class TestEnvironmentFactory implements EnvironmentFactory {
-
+    private static Map<String,Reference<Parser>> cachedParsers = new HashMap<String,Reference<Parser>>();
+    
     @Override
     public Class<? extends Scheduler> findStandardScheduler(String schedulerName) {
         return null;
@@ -103,12 +108,23 @@ public class TestEnvironmentFactory implements EnvironmentFactory {
     }
 
     @Override
-    public Parser findMimeParser(Lookup context, String mimeType) {
+    public synchronized Parser findMimeParser(Lookup context, String mimeType) {
+        Reference<Parser> rp = cachedParsers.get(mimeType);
+        Parser p = null;
+        if (rp != null) {
+            p = rp.get();
+        }
+        if (p != null) {
+            return p;
+        }
         ParserFactory f = MimeLookup.getLookup(mimeType).lookup(ParserFactory.class);
         if (f != null) {
-            return f.createParser(Collections.<Snapshot>emptyList());
+            p = f.createParser(Collections.<Snapshot>emptyList());
+        } else {
+            p = MimeLookup.getDefault().lookup(ParserFactory.class).createParser(Collections.<Snapshot>emptyList());
         }
-        return MimeLookup.getDefault().lookup(ParserFactory.class).createParser(Collections.<Snapshot>emptyList());
+        cachedParsers.put(mimeType, new WeakReference<>(p));
+        return p;
     }
 
     @Override

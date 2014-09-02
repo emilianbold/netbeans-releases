@@ -972,16 +972,6 @@ public abstract class FileSystem implements Serializable {
             return null;
         }
 
-        private String insertBeforeSuffix(String path, String toInsert) {
-            String withoutSuffix = path;
-            String suffix = ""; // NOI18N
-            if (path.lastIndexOf('.') >= 0) {
-                withoutSuffix = path.substring(0, path.lastIndexOf('.'));
-                suffix = path.substring(path.lastIndexOf('.'), path.length());
-            }
-            return withoutSuffix + toInsert + suffix;
-        }
-
     };
 
 }

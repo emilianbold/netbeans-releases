@@ -211,10 +211,12 @@ public class PatchedPublicProcessor extends AbstractProcessor {
                     break;
                 }
             }
+            /*
             if (!defaultCtorFound) {
                 processingEnv.getMessager().printMessage(Kind.ERROR, "Class " + t.getQualifiedName().toString() + " has no default constructor", e);
                 continue CLAZZ;
             }
+            */
             String superName = processingEnv.getElementUtils().getBinaryName(t).toString();
             
             TypeMirror patchSuperClass = t.getSuperclass();
