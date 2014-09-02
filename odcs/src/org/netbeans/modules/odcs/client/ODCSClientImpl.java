@@ -29,7 +29,7 @@ import org.netbeans.modules.team.commons.LogUtils;
 
 public class ODCSClientImpl implements ODCSClient {
     
-    private final String url;
+    private final String url;   
     private final PasswordAuthentication pa;
     private final HttpClient httpClient = new HttpClient(WebUtil.getConnectionManager());
     
@@ -38,6 +38,7 @@ public class ODCSClientImpl implements ODCSClient {
     private ProfileWebServiceClient profileServiceClient;
     private ScmServiceClient scmServiceClient;
     private TaskServiceClient tasksServiceClient;
+    private final MockUpODCSClient mockDelegate;
     
     public ODCSClientImpl(String url, PasswordAuthentication pa) {
         if (!url.endsWith("/")) { //NOI18N
@@ -50,11 +51,17 @@ public class ODCSClientImpl implements ODCSClient {
         if(LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "Initialized ODCSClient for {0} u: {1} p:{2}", new Object[]{url, pa.getUserName(), LogUtils.getPasswordLog(pa.getPassword())});
         }
+        
+        mockDelegate = "http://mockingbird/".equals(url) ? new MockUpODCSClient() : null;
     }
 
     @Override
     public Profile getCurrentProfile() throws ODCSException {
         try {
+            if(mockDelegate != null) {
+                return mockDelegate.getCurrentProfile();
+            }
+            
             return getProfileClient().getCurrentProfile();
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
@@ -65,13 +72,27 @@ public class ODCSClientImpl implements ODCSClient {
 
     @Override
     public List<Project> getMyProjects() throws ODCSException {
-        QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(ProjectRelationship.MEMBER, null));
-        return r != null ? r.getResultPage() : null;
+        try {
+            if(mockDelegate != null) {
+                return mockDelegate.getMyProjects();
+            }
+            
+            QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(ProjectRelationship.MEMBER, null));
+            return r != null ? r.getResultPage() : null;
+        } catch (WrappedCheckedException e) {
+            throw new ODCSException(e.getCause());
+        } catch (RuntimeException ex) {
+            throw new ODCSException(ex);
+        }    
     }
 
     @Override
     public Project getProjectById (String projectId) throws ODCSException {
         try {
+            if(mockDelegate != null) {
+                return mockDelegate.getProjectById(projectId);
+            }
+                        
             return getProfileClient().getProjectByIdentifier(projectId);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
@@ -83,6 +104,10 @@ public class ODCSClientImpl implements ODCSClient {
     @Override
     public List<ProjectActivity> getRecentActivities(String projectId) throws ODCSException {
         try {
+            if(mockDelegate != null) {
+                return mockDelegate.getRecentActivities(projectId);
+            }
+                        
             return getActivityClient().getRecentActivity(projectId);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
@@ -94,6 +119,10 @@ public class ODCSClientImpl implements ODCSClient {
     @Override
     public List<ProjectActivity> getRecentShortActivities(String projectId) throws ODCSException {
         try {
+            if(mockDelegate != null) {
+                return mockDelegate.getRecentShortActivities(projectId);
+            }
+            
             return getActivityClient().getShortActivityList(projectId);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
@@ -105,6 +134,10 @@ public class ODCSClientImpl implements ODCSClient {
     @Override
     public List<ScmRepository> getScmRepositories(String projectId) throws ODCSException {
         try {
+            if(mockDelegate != null) {
+                return mockDelegate.getScmRepositories(projectId);
+            }
+            
             return getScmClient(projectId).getScmRepositories();
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
@@ -116,6 +149,10 @@ public class ODCSClientImpl implements ODCSClient {
     @Override
     public boolean isWatchingProject(String projectId) throws ODCSException {
         try {
+            if(mockDelegate != null) {
+                return mockDelegate.isWatchingProject(projectId);
+            }
+            
             return getProfileClient().isWatchingProject(projectId);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
@@ -126,10 +163,15 @@ public class ODCSClientImpl implements ODCSClient {
 
     @Override
     public List<Project> searchProjects(String pattern) throws ODCSException {
+        if(pattern != null && "".equals(pattern.trim())) {
+            pattern = null;
+        }
+        
         try {
-            if(pattern != null && "".equals(pattern.trim())) {
-                pattern = null;
+            if(mockDelegate != null) {
+                return mockDelegate.searchProjects(pattern);
             }
+            
             ProjectsQuery q = new ProjectsQuery(pattern, null);
             q.setProjectRelationship(ProjectRelationship.ALL);
             QueryResult<Project> r = getProfileClient().findProjects(q);
@@ -144,6 +186,10 @@ public class ODCSClientImpl implements ODCSClient {
     @Override
     public void unwatchProject(String projectId) throws ODCSException {
         try {
+            if(mockDelegate != null) {
+                mockDelegate.unwatchProject(projectId);
+            }
+            
             getProfileClient().unwatchProject(projectId);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
@@ -155,6 +201,10 @@ public class ODCSClientImpl implements ODCSClient {
     @Override
     public void watchProject(String projectId) throws ODCSException {
         try {
+            if(mockDelegate != null) {
+                mockDelegate.watchProject(projectId);
+            }
+            
             getProfileClient().watchProject(projectId);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
@@ -166,6 +216,10 @@ public class ODCSClientImpl implements ODCSClient {
     @Override
     public List<Project> getWatchedProjects () throws ODCSException {
         try {
+            if(mockDelegate != null) {
+                return mockDelegate.getWatchedProjects();
+            }
+            
             QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(ProjectRelationship.WATCHER, null));
             return r != null ? r.getResultPage() : null;
         } catch (WrappedCheckedException e) {
@@ -178,6 +232,10 @@ public class ODCSClientImpl implements ODCSClient {
     @Override
     public Project createProject (Project project) throws ODCSException {
         try {
+            if(mockDelegate != null) {
+                return mockDelegate.createProject(project);
+            }
+            
             return getProfileClient().createProject(project);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
@@ -189,6 +247,10 @@ public class ODCSClientImpl implements ODCSClient {
     @Override
     public SavedTaskQuery createQuery(String projectId, com.tasktop.c2c.server.tasks.domain.SavedTaskQuery query) throws ODCSException {
         try {
+            if(mockDelegate != null) {
+                return mockDelegate.createQuery(projectId, query);
+            }
+            
             return getTasksClient(projectId).createQuery(query);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
@@ -200,6 +262,10 @@ public class ODCSClientImpl implements ODCSClient {
     @Override
     public SavedTaskQuery updateQuery(String projectId, com.tasktop.c2c.server.tasks.domain.SavedTaskQuery query) throws ODCSException {
         try {
+            if(mockDelegate != null) {
+                return mockDelegate.updateQuery(projectId, query);
+            }
+                    
             return getTasksClient(projectId).updateQuery(query);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
@@ -211,6 +277,10 @@ public class ODCSClientImpl implements ODCSClient {
     @Override
     public void deleteQuery(String projectId, Integer queryId) throws ODCSException {
         try {
+            if(mockDelegate != null) {
+                mockDelegate.deleteQuery(projectId, queryId);
+            }
+            
             getTasksClient(projectId).deleteQuery(queryId);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
@@ -222,6 +292,10 @@ public class ODCSClientImpl implements ODCSClient {
     @Override
     public RepositoryConfiguration getRepositoryContext(String projectId) throws ODCSException {
         try {
+            if(mockDelegate != null) {
+                return mockDelegate.getRepositoryContext(projectId);
+            }            
+            
             return getTasksClient(projectId).getRepositoryContext();
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
