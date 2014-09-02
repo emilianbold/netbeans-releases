@@ -69,6 +69,7 @@
                 <friend>com.oracle.tools.ide.binary.dependencies.cm</friend>
                 <friend>com.oracle.tools.ide.projectless.impl</friend>
                 <friend>com.sun.tools.analytics.codemodel.bridge</friend>
+                <friend>com.sun.tools.tuxedo.completion</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.discovery</friend>
