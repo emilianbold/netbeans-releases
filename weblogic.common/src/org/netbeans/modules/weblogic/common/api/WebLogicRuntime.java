@@ -636,8 +636,6 @@ public final class WebLogicRuntime {
 
         private final WebLogicConfiguration config;
 
-        private File logFile;
-
         private InputReaders.FileInput current;
 
         public LogFileProvider(WebLogicConfiguration config) {
@@ -647,8 +645,7 @@ public final class WebLogicRuntime {
         @Override
         public InputReaders.FileInput getFileInput() {
             File fresh = config.getLogFile();
-            if (logFile == null || !logFile.equals(fresh)) {
-                logFile = fresh;
+            if (current == null || !current.getFile().equals(fresh)) {
                 current = new InputReaders.FileInput(fresh, Charset.forName("UTF-8")); // NOI18N
             }
             return current;
