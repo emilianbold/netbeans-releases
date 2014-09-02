@@ -302,7 +302,7 @@ public class JdbcRetriever implements JdbcChildrenFactory.Retriever {
 
         private final List<String> jndiNames = new LinkedList<String>();
 
-        private String content;
+        private final StringBuilder content = new StringBuilder();
 
         private String name;
 
@@ -311,7 +311,7 @@ public class JdbcRetriever implements JdbcChildrenFactory.Retriever {
         @Override
         public void startElement(String uri, String localName, String qName,
                 Attributes attributes) throws SAXException {
-            content = null;
+            content.setLength(0);
             if (DATA_SOURCE_PARAMS.equals(getUnprefixedName(qName))) {
                 dataSourceParamsStarted = true;
             }
@@ -321,18 +321,18 @@ public class JdbcRetriever implements JdbcChildrenFactory.Retriever {
         public void endElement(String uri, String localName, String qName)
                 throws SAXException {
             if (name == null && "name".equals(getUnprefixedName(qName))) { // NOI18N
-                name = content;
+                name = content.toString();
             } else if (DATA_SOURCE_PARAMS.equals(getUnprefixedName(qName))) { // NOI18N
                 dataSourceParamsStarted = false;
             } else if ( dataSourceParamsStarted
                     && "jndi-name".equals(getUnprefixedName(qName))) { // NOI18N
-                jndiNames.add( content );
+                jndiNames.add(content.toString());
             }
         }
 
         @Override
         public void characters(char[] ch, int start, int length) {
-            content = new String(ch, start, length);
+            content.append(ch, start, length);
         }
 
         String getName() {

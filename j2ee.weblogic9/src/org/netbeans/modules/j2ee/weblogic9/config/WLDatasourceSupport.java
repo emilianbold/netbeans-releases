@@ -738,9 +738,9 @@ public class WLDatasourceSupport {
 
         private final File configDir;
 
-        private JdbcResource resource;
+        private final StringBuilder value = new StringBuilder();
 
-        private String value;
+        private JdbcResource resource;
 
         public JdbcSystemResourceHandler(File configDir) {
             this.configDir = configDir;
@@ -748,7 +748,7 @@ public class WLDatasourceSupport {
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) {
-            value = null;
+            value.setLength(0);
             if ("jdbc-system-resource".equals(qName)) { // NOI18N
                 resource = new JdbcResource(configDir, true);
             }
@@ -764,17 +764,17 @@ public class WLDatasourceSupport {
                 resources.add(resource);
                 resource = null; 
             } else if("name".equals(qName)) { // NOI18N
-                resource.setName(value);
+                resource.setName(value.toString());
             } else if ("taget".equals(qName)) { // NOI18N
-                resource.setTarget(value);
+                resource.setTarget(value.toString());
             } else if ("descriptor-file-name".equals(qName)) { // NOI18N
-                resource.setFile(value);
+                resource.setFile(value.toString());
             }
         }
 
         @Override
         public void characters(char[] ch, int start, int length) {
-            value = new String(ch, start, length);
+            value.append(ch, start, length);
         }
 
         public List<JdbcResource> getResources() {
@@ -788,9 +788,9 @@ public class WLDatasourceSupport {
 
         private final File domainDir;
 
-        private JdbcResource resource;
+        private final StringBuilder value = new StringBuilder();
 
-        private String value;
+        private JdbcResource resource;
 
         private boolean isJdbc;
 
@@ -800,7 +800,7 @@ public class WLDatasourceSupport {
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) {
-            value = null;
+            value.setLength(0);
             if ("app-deployment".equals(qName)) { // NOI18N
                 resource = new JdbcResource(domainDir, false);
             }
@@ -819,13 +819,13 @@ public class WLDatasourceSupport {
                 isJdbc = false;
                 resource = null;
             } else if("name".equals(qName)) { // NOI18N
-                resource.setName(value);
+                resource.setName(value.toString());
             } else if ("taget".equals(qName)) { // NOI18N
-                resource.setTarget(value);
+                resource.setTarget(value.toString());
             } else if ("source-path".equals(qName)) { // NOI18N
-                resource.setFile(value);
+                resource.setFile(value.toString());
             } else if ("module-type".equals(qName)) { // NOI18N
-                if ("jdbc".equals(value)) {
+                if ("jdbc".equals(value.toString())) {
                     isJdbc = true;
                 }
             }
@@ -833,7 +833,7 @@ public class WLDatasourceSupport {
 
         @Override
         public void characters(char[] ch, int start, int length) {
-            value = new String(ch, start, length);
+            value.append(ch, start, length);
         }
 
         public List<JdbcResource> getResources() {

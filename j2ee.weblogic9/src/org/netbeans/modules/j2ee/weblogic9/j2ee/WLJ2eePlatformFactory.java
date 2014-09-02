@@ -926,7 +926,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         private String defaultJPAProvider;
 
-        private String value;
+        private final StringBuilder value = new StringBuilder();
 
         private boolean start;
 
@@ -936,7 +936,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes attributes) throws SAXException {
-            value = null;
+            value.setLength(0);
             if ("default-jpa-provider".equals(qName)) { // NOI18N
                 start = true;
             }
@@ -949,14 +949,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             }
 
             if ("default-jpa-provider".equals(qName)) { // NOI18N
-                defaultJPAProvider = value;
+                defaultJPAProvider = value.toString();
                 start = false;
             }
         }
 
         @Override
         public void characters(char[] ch, int start, int length) {
-            value = new String(ch, start, length);
+            value.append(ch, start, length);
         }
 
         public String getDefaultJPAProvider() {

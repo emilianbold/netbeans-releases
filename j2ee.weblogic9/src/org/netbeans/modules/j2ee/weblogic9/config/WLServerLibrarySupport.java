@@ -396,9 +396,9 @@ public class WLServerLibrarySupport {
 
         private final File domainDir;
 
-        private Library library;
+        private final StringBuilder value = new StringBuilder();
 
-        private String value;
+        private Library library;
 
         public LibraryHandler(File domainDir) {
             this.domainDir = domainDir;
@@ -406,7 +406,7 @@ public class WLServerLibrarySupport {
 
         @Override
         public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes attributes) throws SAXException {
-            value = null;
+            value.setLength(0);
             if ("library".equals(qName)) { // NOI18N
                 library = new Library(domainDir);
             }
@@ -422,7 +422,7 @@ public class WLServerLibrarySupport {
                 libraries.add(library);
                 library = null;
             } else if("name".equals(qName)) { // NOI18N
-                String[] splitted = value.split("#"); // NOI18N
+                String[] splitted = value.toString().split("#"); // NOI18N
                 if (splitted.length > 1) {
                     library.setName(splitted[0]);
                     splitted = splitted[1].split("@"); // NOI18N
@@ -431,18 +431,18 @@ public class WLServerLibrarySupport {
                         library.setImplementationVersion(Version.fromJsr277NotationWithFallback(splitted[1]));
                     }
                 } else {
-                    library.setName(value);
+                    library.setName(value.toString());
                 }
             } else if ("target".equals(qName)) { // NOI18N
-                library.setTarget(value);
+                library.setTarget(value.toString());
             } else if ("source-path".equals(qName)) { // NOI18N
-                library.setFile(value);
+                library.setFile(value.toString());
             }
         }
 
         @Override
         public void characters(char[] ch, int start, int length) {
-            value = new String(ch, start, length);
+            value.append(ch, start, length);
         }
 
         public List<Library> getLibraries() {
