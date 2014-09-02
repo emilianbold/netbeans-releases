@@ -84,12 +84,16 @@ public final class VersioningQuery {
         
         for (VersioningQueryImplementation vqi : implementations.allInstances()) {
             if(vqi.isManaged(uri)) {
-                LOG.log(Level.FINE, "{0} is VCS managed", new Object[] {uri}); // NOI18N
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "{0} is VCS managed", new Object[] {uri}); // NOI18N
+                }
                 return true;
             }
         }
         
-        LOG.log(Level.FINE, "{0} isn't managed by any VCS", new Object[] {uri}); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "{0} isn't managed by any VCS", new Object[] {uri}); // NOI18N
+        }
         return false;
     }
 
@@ -117,12 +121,16 @@ public final class VersioningQuery {
         for (VersioningQueryImplementation vqi : implementations.allInstances()) {
             final String remoteLocation = vqi.getRemoteLocation(uri);
             if(remoteLocation != null) {
-                LOG.log(Level.FINE, "{0}: received remote location {1}", new Object[] {uri, remoteLocation}); // NOI18N
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "{0}: received remote location {1}", new Object[] {uri, remoteLocation}); // NOI18N
+                }
                 return remoteLocation;
             }
         }
         
-        LOG.log(Level.FINE, "{0}: received no remote location", new Object[] {uri}); // NOI18N
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "{0}: received no remote location", new Object[] {uri}); // NOI18N
+        }
         return null;        
     }
 }

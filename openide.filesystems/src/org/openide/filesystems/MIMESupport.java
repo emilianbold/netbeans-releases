@@ -739,9 +739,11 @@ final class MIMESupport extends Object {
             int recommendedIncrease = Math.max(64, Math.min(8192, currLen));
             int newLen = Math.max(requiredLen, currLen + recommendedIncrease);
             if (newLen > 64) {
-                ERR.log(Level.FINE, "CachedInputStream buffer length " //NOI18N
-                        + "for {0} will be increased to {1}", //NOI18N
-                        new Object[]{fileObject, newLen});
+                if (ERR.isLoggable(Level.FINE)) {
+                    ERR.log(Level.FINE, "CachedInputStream buffer length " //NOI18N
+                            + "for {0} will be increased to {1}", //NOI18N
+                            new Object[]{fileObject, newLen});
+                }
             }
             return newLen;
         }
