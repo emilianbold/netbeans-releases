@@ -728,7 +728,9 @@ public final class PathRegistry implements Runnable {
                     }
                     assert !newSR.containsKey(binRoot);
                     newSR.put(binRoot,sr);
-                    LOGGER.log(Level.FINE, "{0}: preferSources={1}", new Object[] { binRoot, sr.preferSources() }); //NOI18N
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "{0}: preferSources={1}", new Object[] { binRoot, sr.preferSources() }); //NOI18N
+                    }
                     final Set<URL> cacheURLs = new LinkedHashSet<URL> (); //LinkedSet to protect against wrong SFBQ but keep ordering
                     final Collection<? extends URL> srcRoots = getSources(sr, cacheURLs, request.unknownRoots);
                     if (srcRoots.isEmpty()) {
@@ -818,7 +820,9 @@ public final class PathRegistry implements Runnable {
             rootsWithId.add(root);
         }
         
-        LOGGER.log(Level.FINE, "Root {0} associated with {1}", new Object [] { root, tcp.getPathIds() });
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Root {0} associated with {1}", new Object [] { root, tcp.getPathIds() });
+        }
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(
@@ -855,7 +859,9 @@ public final class PathRegistry implements Runnable {
                 rootsWithId.add(root);
             }
 
-            LOGGER.log(Level.FINE, "Root {0} associated with {1}", new Object [] { root, tcp.getPathIds() });
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Root {0} associated with {1}", new Object [] { root, tcp.getPathIds() });
+            }
         }
     }
 
@@ -894,8 +900,10 @@ public final class PathRegistry implements Runnable {
             this.changes.add(new PathRegistryEvent.Change(eventKind, pathKind, pathId, paths));
         }
 
-        LOGGER.log(Level.FINE, "resetCacheAndFire: eventKind={0}, pathKind={1}, pathId={2}, paths={3}",
-            new Object [] { eventKind, pathKind, pathId, paths }); // NOI18N
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "resetCacheAndFire: eventKind={0}, pathKind={1}, pathId={2}, paths={3}",
+                new Object [] { eventKind, pathKind, pathId, paths }); // NOI18N
+        }
         scheduleFirer(paths);
     }
 

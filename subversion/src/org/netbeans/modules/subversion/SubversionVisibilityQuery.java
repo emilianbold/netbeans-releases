@@ -71,7 +71,9 @@ public class SubversionVisibilityQuery extends VCSVisibilityQuery implements Ver
     @Override
     public boolean isVisible(File file) {
         long t = System.currentTimeMillis();
-        Subversion.LOG.log(Level.FINE, "isVisible {0}", new Object[] { file });
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, "isVisible {0}", new Object[] { file });
+        }
         boolean ret = true;
         try {
     

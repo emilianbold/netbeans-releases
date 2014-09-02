@@ -113,7 +113,9 @@ public class SourceLevelQuery {
                         LOGGER.log(Level.WARNING, "#83994: Ignoring bogus source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi}); //NOI18N
                         continue;
                     }
-                    LOGGER.log(Level.FINE, "Found source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});     //NOI18N
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.log(Level.FINE, "Found source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});     //NOI18N
+                    }
                     return s;
                 }
             }
@@ -125,7 +127,9 @@ public class SourceLevelQuery {
                     LOGGER.log(Level.WARNING, "#83994: Ignoring bogus source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});
                     continue;
                 }
-                LOGGER.log(Level.FINE, "Found source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Found source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});
+                }
                 return s;
             }
         }
@@ -148,7 +152,9 @@ public class SourceLevelQuery {
         for (SourceLevelQueryImplementation2 sqi : implementations2.allInstances()) {
             final SourceLevelQueryImplementation2.Result result = sqi.getSourceLevel(javaFile);
             if (result != null) {
-                LOGGER.log(Level.FINE, "Found source level {0} for {1} from {2}", new Object[] {result, javaFile, sqi}); //NOI18N
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Found source level {0} for {1} from {2}", new Object[] {result, javaFile, sqi}); //NOI18N
+                }
                 return new Result(result);
             }
         }

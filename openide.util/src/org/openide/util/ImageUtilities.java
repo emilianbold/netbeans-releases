@@ -407,7 +407,9 @@ public final class ImageUtilities {
             if (currentLoader == Thread.currentThread()) {
                 currentLoader = toReturn;
             }
-            ERR.fine("Loader computed: " + currentLoader); // NOI18N
+            if (ERR.isLoggable(Level.FINE)) {
+                ERR.fine("Loader computed: " + currentLoader); // NOI18N
+            }
             return toReturn;
         } else { if (!noLoaderWarned) {
                 noLoaderWarned = true;
@@ -594,7 +596,9 @@ public final class ImageUtilities {
 
 //                Image img2 = toBufferedImage(result);
 
-                ERR.log(Level.FINE, "loading icon {0} = {1}", new Object[] {n, result});
+                if (ERR.isLoggable(Level.FINE)) {
+                    ERR.log(Level.FINE, "loading icon {0} = {1}", new Object[] {n, result});
+                }
                 name = new String(name).intern(); // NOPMD
                 result = ToolTipImage.createNew("", result, url);
                 cache.put(name, new ActiveRef<String>(result, cache, name));
