@@ -39,11 +39,10 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.parsing.indexing.ui;
+package org.netbeans.modules.parsing.ui.indexing;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
@@ -56,10 +55,9 @@ import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 
 public final class RefreshAllIndexes implements ActionListener {
-    
+
     private static final Logger LOG = Logger.getLogger(RefreshAllIndexes.class.getName());
 
     private final List<DataObject> context;
@@ -71,7 +69,7 @@ public final class RefreshAllIndexes implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent ev) {
         final Collection<? extends URL> sources = PathRegistry.getDefault().getSources();
-        final Set<FileObject> roots = new HashSet<FileObject>();
+        final Set<FileObject> roots = new HashSet<>();
         for (DataObject dobj : context) {
             FileObject root = findRoot(dobj.getPrimaryFile(), sources);
             if (root != null) {

@@ -83,7 +83,6 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.util.Collections;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import javax.swing.text.Document;
@@ -206,7 +205,7 @@ public class Utilities {
     public static FileObject getFileObject(Document doc) {
         return getEnvFactory().findFileObject(doc);
     }
-    
+
     /**
      * Finds the nearest caller outside the parsing API.
      * Some additional classes can be also excluded.

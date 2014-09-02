@@ -40,11 +40,13 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing;
+package org.netbeans.modules.parsing.ui.indexing;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.LogContext;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,7 +59,10 @@ public final class ScanForExternalChanges extends AbstractAction {
         super(NbBundle.getMessage(ScanForExternalChanges.class, "ScanForExternalChanges_name")); //NOI18N
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
+        //Cannot use IndexingManager API as it needs log
+        //the ScanForExternalChanges into special UI logger.
         RepositoryUpdater.getDefault().refreshAll(
                 false,
                 false,
@@ -74,6 +79,4 @@ public final class ScanForExternalChanges extends AbstractAction {
     public void setEnabled(boolean newValue) {
         // ignore, the action is only enabled when there is no scan in progress
     }
-
-
 }
