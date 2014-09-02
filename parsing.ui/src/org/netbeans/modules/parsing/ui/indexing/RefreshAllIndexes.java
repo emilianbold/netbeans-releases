@@ -54,14 +54,15 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 public final class RefreshAllIndexes implements ActionListener {
 
     private static final Logger LOG = Logger.getLogger(RefreshAllIndexes.class.getName());
 
-    private final List<FileObject> context;
+    private final List<DataObject> context;
 
-    public RefreshAllIndexes(List<FileObject> context) {
+    public RefreshAllIndexes(List<DataObject> context) {
         this.context = context;
     }
 
@@ -69,8 +70,8 @@ public final class RefreshAllIndexes implements ActionListener {
     public void actionPerformed(ActionEvent ev) {
         final Collection<? extends URL> sources = PathRegistry.getDefault().getSources();
         final Set<FileObject> roots = new HashSet<>();
-        for (FileObject fo : context) {
-            FileObject root = findRoot(fo, sources);
+        for (DataObject dobj : context) {
+            FileObject root = findRoot(dobj.getPrimaryFile(), sources);
             if (root != null) {
                 roots.add(root);
             }

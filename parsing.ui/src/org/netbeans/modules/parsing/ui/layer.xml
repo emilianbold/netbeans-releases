@@ -16,7 +16,7 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
                 <attr name="noIconInMenu" boolvalue="false"/>
                 <attr name="selectionType" stringvalue="ANY"/>
-                <attr name="type" stringvalue="org.openide.filesystems.FileObject"/>
+                <attr name="type" stringvalue="org.openide.loaders.DataObject"/>
                 <attr name="asynchronous" boolvalue="true"/>
             </file>
         </folder>
