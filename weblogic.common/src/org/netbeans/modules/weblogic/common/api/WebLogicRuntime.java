@@ -508,43 +508,36 @@ public final class WebLogicRuntime {
             return InputReaderTask.newTask(new RemoteLogInputReader(config, nonProxy), InputProcessors.bridge(processor));
         }
 
-        String name = config.getDomainName();
-        String admin = config.getDomainAdminServer();
+        final StringBuilder sb = new StringBuilder();
+        return InputReaderTask.newTask(InputReaders.forFileInputProvider(new LogFileProvider(config)),
+                InputProcessors.bridge(new LineProcessor() {
 
-        File logFile = config.getLogFile();
-        if (logFile != null) {
-            final StringBuilder sb = new StringBuilder();
-            return InputReaderTask.newTask(InputReaders.forFile(logFile, Charset.defaultCharset()),
-                    InputProcessors.bridge(new LineProcessor() {
-
-                        @Override
-                        public void processLine(String line) {
-                            Matcher m = LOG_PARSING_PATTERN.matcher(line);
-                            if (m.matches()) {
-                                sb.append(m.group(1)).append(" "); // NOI18N
-                                sb.append(m.group(2)).append(" "); // NOI18N
-                                sb.append(m.group(3)).append(" "); // NOI18N
-                                sb.append(m.group(11)).append(" "); // NOI18N
-                                sb.append(m.group(12)).append(" "); // NOI18N
-                                processor.processLine(sb.toString());
-                                sb.setLength(0);
-                            } else {
-                                processor.processLine(line);
-                            }
+                    @Override
+                    public void processLine(String line) {
+                        Matcher m = LOG_PARSING_PATTERN.matcher(line);
+                        if (m.matches()) {
+                            sb.append(m.group(1)).append(" "); // NOI18N
+                            sb.append(m.group(2)).append(" "); // NOI18N
+                            sb.append(m.group(3)).append(" "); // NOI18N
+                            sb.append(m.group(11)).append(" "); // NOI18N
+                            sb.append(m.group(12)).append(" "); // NOI18N
+                            processor.processLine(sb.toString());
+                            sb.setLength(0);
+                        } else {
+                            processor.processLine(line);
                         }
+                    }
 
-                        @Override
-                        public void reset() {
-                            processor.reset();
-                        }
+                    @Override
+                    public void reset() {
+                        processor.reset();
+                    }
 
-                        @Override
-                        public void close() {
-                            processor.close();
-                        }
-                    }));
-        }
-        return null;
+                    @Override
+                    public void close() {
+                        processor.close();
+                    }
+                }));
     }
 
     private static void configureEnvironment(Environment environment, Map<String, String> variables) {
@@ -636,6 +629,30 @@ public final class WebLogicRuntime {
     public static interface RunningCondition {
 
         boolean isRunning();
+
+    }
+
+    private static class LogFileProvider implements InputReaders.FileInput.Provider {
+
+        private final WebLogicConfiguration config;
+
+        private File logFile;
+
+        private InputReaders.FileInput current;
+
+        public LogFileProvider(WebLogicConfiguration config) {
+            this.config = config;
+        }
+
+        @Override
+        public InputReaders.FileInput getFileInput() {
+            File fresh = config.getLogFile();
+            if (logFile == null || !logFile.equals(fresh)) {
+                logFile = fresh;
+                current = new InputReaders.FileInput(fresh, Charset.forName("UTF-8")); // NOI18N
+            }
+            return current;
+        }
 
     }
 
