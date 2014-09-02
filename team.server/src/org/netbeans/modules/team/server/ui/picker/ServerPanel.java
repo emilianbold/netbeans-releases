@@ -602,7 +602,7 @@ class ServerPanel extends JPanel {
             }
         } );
 
-        @NbBundle.Messages({"CTL_SyncMode=Keep services online"})        
+        @NbBundle.Messages({"CTL_SyncMode=Auto Synchronize Services"})        
         public SyncMenu() {
             super(Bundle.CTL_SyncMode());
             add( syncOnlySelected );
