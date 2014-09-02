@@ -119,7 +119,9 @@ public final class ProgressHandle {
      * @since org.netbeans.api.progress/1 1.9
      */
     public void suspend(String message) {
-        LOG.log(Level.FINE, "{0}: {1}", new Object[] {internal.getDisplayName(), message});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "{0}: {1}", new Object[] {internal.getDisplayName(), message});
+        }
         internal.toSilent(message);
     }
     
@@ -180,7 +182,9 @@ public final class ProgressHandle {
      * @param workunit a cumulative number of workunits completed so far
      */
     public void progress(String message, int workunit) {
-        LOG.log(Level.FINE, "{0}: {1}", new Object[] {internal.getDisplayName(), message});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "{0}: {1}", new Object[] {internal.getDisplayName(), message});
+        }
         internal.progress(message, workunit);
     }
     

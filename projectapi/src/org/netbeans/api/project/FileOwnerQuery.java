@@ -101,7 +101,9 @@ public class FileOwnerQuery {
         for (FileOwnerQueryImplementation q : getInstances()) {
             Project p = q.getOwner(file);
             if (p != null) {
-                LOG.log(Level.FINE, "getOwner({0}) -> {1} @{2} from {3}", new Object[] {file, p, p.hashCode(), q});
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "getOwner({0}) -> {1} @{2} from {3}", new Object[] {file, p, p.hashCode(), q});
+                }
                 return p == UNOWNED ? null : p;
             }
         }
@@ -132,7 +134,9 @@ public class FileOwnerQuery {
         for (FileOwnerQueryImplementation q : getInstances()) {
             Project p = q.getOwner(uri);
             if (p != null) {
-                LOG.log(Level.FINE, "getOwner({0}) -> {1} from {2}", new Object[] {uri, p, q});
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "getOwner({0}) -> {1} from {2}", new Object[] {uri, p, q});
+                }
                 return p == UNOWNED ? null : p;
             }
         }
@@ -207,7 +211,9 @@ public class FileOwnerQuery {
      * @see <a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/support/ant/SourcesHelper.html"><code>SourcesHelper</code></a>
      */
     public static void markExternalOwner(FileObject root, Project owner, int algorithm) throws IllegalArgumentException {
-        LOG.log(Level.FINE, "markExternalOwner({0}, {1}, {2})", new Object[] {root, owner, algorithm});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "markExternalOwner({0}, {1}, {2})", new Object[] {root, owner, algorithm});
+        }
         switch (algorithm) {
         case EXTERNAL_ALGORITHM_TRANSIENT:
             // XXX check args
@@ -244,7 +250,9 @@ public class FileOwnerQuery {
      * @see <a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/support/ant/SourcesHelper.html"><code>SourcesHelper</code></a>
      */
     public static void markExternalOwner(URI root, Project owner, int algorithm) throws IllegalArgumentException {
-        LOG.log(Level.FINE, "markExternalOwner({0}, {1}, {2})", new Object[] {root, owner, algorithm});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "markExternalOwner({0}, {1}, {2})", new Object[] {root, owner, algorithm});
+        }
         switch (algorithm) {
         case EXTERNAL_ALGORITHM_TRANSIENT:
             // XXX check args
