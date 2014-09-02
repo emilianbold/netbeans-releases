@@ -2766,7 +2766,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             return false;
                         }
 
-                        if (!Util.canBeParsed(mimeType)) {
+                        if (!ParserManager.canBeParsed(mimeType)) {
                             continue;
                         }
 
@@ -4157,7 +4157,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                             return false;
                                         }
 
-                                        if (!Util.canBeParsed(mimeType)) {
+                                        if (!ParserManager.canBeParsed(mimeType)) {
                                             continue;
                                         }
 

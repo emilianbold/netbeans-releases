@@ -49,8 +49,6 @@ import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.openide.awt.StatusDisplayer;
-import org.openide.awt.StatusDisplayer.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -449,7 +447,7 @@ import org.openide.util.BaseUtilities;
         r.setResourceBundleName(LogContext.class.getPackage().getName() + ".Bundle"); //NOI18N
         r.setLoggerName(LOG.getName());
         if (cancel) {
-            final Message msg = StatusDisplayer.getDefault().setStatusText("Please wait while the scan cancel report is being produced", StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+            final Runnable msg = Notify.showStatus("Please wait while the scan cancel report is being produced");
             threadDump = createThreadDump();
             updaterThreadAlive = false;
             RP.post(new Runnable() {
@@ -480,7 +478,7 @@ import org.openide.util.BaseUtilities;
                     if ("oneshot".equals(System.getProperty(RepositoryUpdater.PROP_SAMPLING))) { // NOI18N
                         System.getProperties().remove(RepositoryUpdater.PROP_SAMPLING); // NOI18N
                     }
-                    msg.clear(0);
+                    msg.run();
                     LOG.log(r);
                 }
 

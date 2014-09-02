@@ -56,12 +56,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.document.EditorMimeTypes;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.BaseUtilities;
 
@@ -80,48 +77,6 @@ public final class Util {
         return allMimeTypes != null ?
             allMimeTypes :
             EditorMimeTypes.getDefault().getSupportedMimeTypes();
-    }
-
-    public static boolean canBeParsed(String mimeType) {
-        if (mimeType == null || "content/unknown".equals(mimeType) || !Util.getAllMimeTypes().contains(mimeType)) { //NOI18N
-            return false;
-        }
-
-        int slashIdx = mimeType.indexOf('/'); //NOI18N
-        assert slashIdx != -1 : "Invalid mimetype: '" + mimeType + "'"; //NOI18N
-
-        String type = mimeType.substring(0, slashIdx);
-        if (type.equals("application")) { //NOI18N
-            if (!mimeType.equals("application/x-httpd-eruby") && !mimeType.equals("application/xml-dtd")) { //NOI18N
-                return false;
-            }
-        } else if (!type.equals("text")) { //NOI18N
-            return false;
-        }
-
-//            if (allLanguagesParsersCount == -1) {
-//                Collection<? extends ParserFactory> allLanguagesParsers = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(ParserFactory.class);
-//                allLanguagesParsersCount = allLanguagesParsers.size();
-//            }
-//            Collection<? extends ParserFactory> parsers = MimeLookup.getLookup(mimeType).lookupAll(ParserFactory.class);
-//            if (parsers.size() - allLanguagesParsersCount > 0) {
-//                return true;
-//            }
-//
-//            // Ideally we should check that there are EmbeddingProviders registered for the
-//            // mimeType, but let's assume that if there are TaskFactories they are either
-//            // ordinary scheduler tasks or EmbeddingProviders. The former would most likely
-//            // mean that there is also a Parser and would have been caught in the previous check.
-//            if (allLanguagesTasksCount == -1) {
-//                Collection<? extends TaskFactory> allLanguagesTasks = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(TaskFactory.class);
-//                allLanguagesTasksCount = allLanguagesTasks.size();
-//            }
-//            Collection<? extends TaskFactory> tasks = MimeLookup.getLookup(mimeType).lookupAll(TaskFactory.class);
-//            if (tasks.size() - allLanguagesTasksCount > 0) {
-//                return true;
-//            }
-
-        return true;
     }
 
     public static StackTraceElement findCaller(StackTraceElement[] elements, Object... classesToFilterOut) {
@@ -243,8 +198,8 @@ public final class Util {
         //Create inverse dependencies
         final Map<URL, Collection<URL>> inverseDeps = findReverseDependencies(deps);
         //Collect dependencies
-        final Set<URL> result = new HashSet<URL>();
-        final LinkedList<URL> todo = new LinkedList<URL> ();
+        final Set<URL> result = new HashSet<>();
+        final LinkedList<URL> todo = new LinkedList<> ();
         todo.add (thisSourceRoot);
         while (!todo.isEmpty()) {
             final URL u = todo.removeFirst();
