@@ -612,8 +612,10 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         CsmClassifier specialization = null;
         if (CsmKindUtilities.isTemplate(classifier) && !CsmKindUtilities.isSpecialization(classifier)) {
             List<CsmTemplateParameter> templateParams = ((CsmTemplate) classifier).getTemplateParameters();
+            List<ProjectBase> projects = null;
+            List<CsmOffsetableDeclaration> visibleSpecs = null;
             if (params.size() == templateParams.size() && CsmKindUtilities.isClass(classifier)) {
-                List<ProjectBase> projects = collectProjects(contextFile);
+                projects = collectProjects(contextFile);
                 if (!projects.isEmpty()) {
                     // try to find full specialization of class
                     CsmClass cls = (CsmClass) classifier;
@@ -634,7 +636,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     
                     // try to find partial specialization of class
                     if (specialization == null) {
-                        List<CsmOffsetableDeclaration> visibleSpecs = collectVisibleSpecializations(cls, projects, contextFile);
+                        visibleSpecs = collectVisibleSpecializations(cls, projects, contextFile);
                         specialization = findBestSpecialization(visibleSpecs, paramsInfo, cls);
                     }
                 }
@@ -642,9 +644,13 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             if (specialization == null && isClassForward(classifier)) {
                 // try to find specialization of class forward
                 CsmClass cls = (CsmClass) classifier;
-                List<ProjectBase> projects = collectProjects(contextFile);
-                List<CsmOffsetableDeclaration> specs = collectVisibleSpecializations(cls, projects, contextFile);
-                for (CsmOffsetableDeclaration decl : specs) {
+                if (projects == null) {
+                    projects = collectProjects(contextFile);
+                }
+                if (visibleSpecs == null) {
+                    visibleSpecs = collectVisibleSpecializations(cls, projects, contextFile);
+                }
+                for (CsmOffsetableDeclaration decl : visibleSpecs) {
                     if (decl instanceof ClassImplSpecialization) {
                         ClassImplSpecialization spec = (ClassImplSpecialization) decl;
                         specialization = spec;

@@ -770,6 +770,11 @@ public class OperatorGenerator implements CodeGenerator {
                 }
 
                 @Override
+                public boolean hasInstantiationParams() {
+                    return false;
+                }
+
+                @Override
                 public List<CsmSpecializationParameter> getInstantiationParams() {
                     return Collections.emptyList();
                 }
