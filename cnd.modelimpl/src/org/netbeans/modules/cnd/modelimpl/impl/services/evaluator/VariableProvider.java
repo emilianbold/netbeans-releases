@@ -274,11 +274,10 @@ public class VariableProvider {
                                 AST ast = parser.getAST();
 
                                 CsmType type = TypeFactory.createType(ast, variableFile, null, 0, this.scope);
-                                if(CsmKindUtilities.isInstantiation(decl)) {
+                                if (scope != null) {
+                                    type = TemplateUtils.checkTemplateType(type, scope);
+                                } else if (CsmKindUtilities.isInstantiation(decl)) {
                                     type = checkTemplateType(type, (Instantiation)decl);
-                                }
-                                for (CsmTemplateParameter csmTemplateParameter : mapping.keys()) {
-                                    type = TemplateUtils.checkTemplateType(type, csmTemplateParameter.getScope());
                                 }
 
                                 if (CsmKindUtilities.isTemplateParameterType(type)) {
@@ -423,11 +422,11 @@ public class VariableProvider {
     }
 
     private CsmType checkTemplateType(CsmType type, CsmInstantiation inst) {
+        if (CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
+            type = checkTemplateType(type, (Instantiation)inst.getTemplateDeclaration());
+        }
         for (CsmTemplateParameter csmTemplateParameter : inst.getMapping().keySet()) {
             type = TemplateUtils.checkTemplateType(type, csmTemplateParameter.getScope());
-        }
-        if(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
-            type = checkTemplateType(type, (Instantiation)inst.getTemplateDeclaration());
         }
         return type;
     }
