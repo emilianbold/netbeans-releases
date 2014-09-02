@@ -260,7 +260,7 @@ public class DOMNode extends AbstractNode {
      * @return {@code true} if it should be a leaf node, {@code false} otherwise.
      */
     private static boolean shouldBeLeaf(Node node) {
-        if (node.getContentDocument() != null) {
+        if (node.getContentDocument() != null || !node.getShadowRoots().isEmpty()) {
             return false;
         }
         List<Node> subNodes = node.getChildren();
@@ -338,6 +338,9 @@ public class DOMNode extends AbstractNode {
             Node contentDocument = node.getContentDocument();
             if (contentDocument != null) {
                 keys.add(contentDocument.getNodeId());
+            }
+            for (Node shadowRoot : node.getShadowRoots()) {
+                keys.add(shadowRoot.getNodeId());
             }
             setKeys(keys);
             // Issue 230038: make sure the node for the key is up to date

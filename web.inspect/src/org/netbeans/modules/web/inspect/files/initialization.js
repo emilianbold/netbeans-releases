@@ -169,6 +169,12 @@ NetBeans.insertGlassPane = function() {
         while (element.getAttribute(self.ATTR_ARTIFICIAL)) { 
             element = element.parentNode;
         }
+        if (element.shadowRoot) {
+            var elementInShadowDOM = element.shadowRoot.elementFromPoint(event.pageX - window.pageXOffset, event.pageY - window.pageYOffset);
+            if (elementInShadowDOM) {
+                element = elementInShadowDOM;
+            }
+        }
         canvas.style.visibility = 'visible';
         return element;
     };

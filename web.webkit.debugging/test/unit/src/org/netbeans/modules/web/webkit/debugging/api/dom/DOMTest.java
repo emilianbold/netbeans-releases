@@ -393,6 +393,12 @@ public class DOMTest {
         @Override
         public void characterDataModified(Node node) {}
 
+        @Override
+        public void shadowRootPushed(Node host, Node shadowRoot) {}
+
+        @Override
+        public void shadowRootPopped(Node host, Node shadowRoot) {}
+
     }
 
     /**
