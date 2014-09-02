@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.java.source.tasklist;
 
-import org.netbeans.modules.parsing.impl.indexing.errors.ErrorAnnotator;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
