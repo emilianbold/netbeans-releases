@@ -54,7 +54,7 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
  *
  * @author Petr Pisl
  */
-@FunctionInterceptor.Registration(priority = 200)
+@FunctionInterceptor.Registration(priority = 370)
 public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
 
     private static Pattern METHOD_NAME = Pattern.compile("require");
