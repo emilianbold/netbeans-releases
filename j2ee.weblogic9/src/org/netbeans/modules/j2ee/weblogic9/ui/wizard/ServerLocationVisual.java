@@ -66,6 +66,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -144,6 +145,16 @@ public class ServerLocationVisual extends javax.swing.JPanel {
             return false;
         }
         location = serverRoot.getPath();
+
+        File weblogicJar = WebLogicLayout.getWeblogicJar(serverRoot);
+        if (!weblogicJar.exists()) {
+            File packed = new File(serverRoot, "server/lib/weblogic.jar.pack");
+            if (packed.isFile()) {
+                String msg = NbBundle.getMessage(ServerLocationVisual.class, "ERR_INVALID_CONFIGURE", Utilities.isWindows() ? "cmd" : "sh");  // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
+                return false;
+            }
+        }
 
         Version version = WebLogicLayout.getServerVersion(serverRoot);
 
