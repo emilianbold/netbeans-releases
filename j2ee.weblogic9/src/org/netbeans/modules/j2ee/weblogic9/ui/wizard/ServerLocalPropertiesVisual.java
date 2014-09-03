@@ -319,9 +319,9 @@ public class ServerLocalPropertiesVisual extends javax.swing.JPanel {
     public void updateJpa2Button() {
         File root = new File(instantiatingIterator.getServerRoot());
         support = new WLJpa2SwitchSupport(root);
-        boolean statusVisible = support.isSwitchSupported();
-        boolean buttonVisible = statusVisible
-                && !support.isEnabledViaSmartUpdate();
+        boolean statusVisible = true;//support.isSwitchSupported();
+        boolean buttonVisible = true;//statusVisible
+                //&& !support.isEnabledViaSmartUpdate();
 
         jpa2SwitchLabel.setVisible(statusVisible);
         jpa2Status.setVisible(statusVisible);
@@ -331,11 +331,11 @@ public class ServerLocalPropertiesVisual extends javax.swing.JPanel {
     
     private void updateJpa2Status() {
         if (support.isEnabled() || support.isEnabledViaSmartUpdate()) {
-            jpa2Status.setText(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerPropertiesVisual.jpa2Status.enabledText"));
-            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.disableText"));
+            jpa2Status.setText(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2Status.enabledText"));
+            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2SwitchButton.disableText"));
         } else {
-            jpa2Status.setText(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerPropertiesVisual.jpa2Status.disabledText"));
-            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.enableText"));
+            jpa2Status.setText(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2Status.disabledText"));
+            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2SwitchButton.enableText"));
         }         
     }    
 
@@ -416,9 +416,9 @@ public class ServerLocalPropertiesVisual extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchLabel, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2SwitchLabel.text")); // NOI18N
 
-        jpa2Status.setText(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerPropertiesVisual.jpa2Status.disabledText")); // NOI18N
+        jpa2Status.setText(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2Status.disabledText")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchButton, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.enableText")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchButton, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2SwitchButton.enableText")); // NOI18N
         jpa2SwitchButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jpa2SwitchButtonActionPerformed(evt);
@@ -437,22 +437,20 @@ public class ServerLocalPropertiesVisual extends javax.swing.JPanel {
                 .addComponent(browseButton))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(passwordLabel)
-                            .addComponent(usernameLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jpa2SwitchLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jpa2Status)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jpa2SwitchButton)))
-                .addGap(0, 113, Short.MAX_VALUE))
+                    .addComponent(passwordLabel)
+                    .addComponent(usernameLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 204, Short.MAX_VALUE))
             .addComponent(explanationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jpa2SwitchLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jpa2Status)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jpa2SwitchButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
