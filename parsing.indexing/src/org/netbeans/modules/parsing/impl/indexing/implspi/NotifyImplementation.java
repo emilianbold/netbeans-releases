@@ -39,15 +39,15 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.parsing.impl.indexing.errors;
+package org.netbeans.modules.parsing.impl.indexing.implspi;
 
-import java.net.URL;
-import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface FileAnnotationsRefresh {
-    void refresh(Set<URL> toRefresh);
+public interface NotifyImplementation {
+    @NonNull
+    Runnable showStatus(@NonNull String message);
 }

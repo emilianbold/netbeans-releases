@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.impl.indexing.errors;
 
+import org.netbeans.modules.parsing.impl.indexing.implspi.FileAnnotationsRefresh;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;

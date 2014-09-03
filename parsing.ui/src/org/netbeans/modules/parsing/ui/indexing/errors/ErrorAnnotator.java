@@ -68,7 +68,7 @@ import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
-import org.netbeans.modules.parsing.impl.indexing.errors.FileAnnotationsRefresh;
+import org.netbeans.modules.parsing.impl.indexing.implspi.FileAnnotationsRefresh;
 import org.netbeans.modules.parsing.impl.indexing.errors.TaskCache;
 import org.netbeans.modules.parsing.impl.indexing.errors.Utilities;
 import org.openide.filesystems.FileChangeAdapter;

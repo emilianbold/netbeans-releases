@@ -39,35 +39,15 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.parsing.impl.indexing;
+package org.netbeans.modules.parsing.impl.indexing.implspi;
 
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.parsing.impl.indexing.implspi.NotifyImplementation;
-import org.openide.util.Lookup;
+import java.net.URL;
+import java.util.Set;
 
 /**
  *
  * @author Tomas Zezula
  */
-final class Notify {
-
-    private static final Runnable NOP = new Runnable() {
-        @Override
-        public void run() {
-        }
-    };
-
-    private Notify() {
-        throw new IllegalStateException("No instance allowed"); //NOI18N
-    }
-
-    @NonNull
-    static Runnable showStatus(@NonNull final String message) {
-        final NotifyImplementation notify = Lookup.getDefault().lookup(NotifyImplementation.class);
-        if (notify != null) {
-            return notify.showStatus(message);
-        } else {
-            return NOP;
-        }
-    }
+public interface FileAnnotationsRefresh {
+    void refresh(Set<URL> toRefresh);
 }

@@ -42,7 +42,7 @@
 package org.netbeans.modules.parsing.ui.indexing;
 
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.parsing.impl.indexing.Notify;
+import org.netbeans.modules.parsing.impl.indexing.implspi.NotifyImplementation;
 import org.openide.awt.StatusDisplayer;
 import org.openide.awt.StatusDisplayer.Message;
 import org.openide.util.lookup.ServiceProvider;
@@ -51,14 +51,14 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Tomas Zezula
  */
-@ServiceProvider(service = Notify.class, position = 1000)
-public final class NotifyImpl extends Notify {
+@ServiceProvider(service = NotifyImplementation.class, position = 1000)
+public final class NotifyImpl implements NotifyImplementation {
 
     private static final int NOW = 0;
 
     @Override
     @NonNull
-    protected Runnable showStatusImpl(@NonNull final String message) {
+    public Runnable showStatus(@NonNull final String message) {
         final Message msg = StatusDisplayer.getDefault().setStatusText(
             message,
             StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
