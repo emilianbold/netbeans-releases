@@ -56,7 +56,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarFile;
@@ -77,6 +76,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.netbeans.modules.weblogic.common.api.WebLogicLayout;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -95,8 +95,6 @@ import org.xml.sax.SAXException;
  * @author Ivan Sidorkin
  */
 public final class WLPluginProperties {
-
-    public static final String WEBLOGIC_JAR = "server/lib/weblogic.jar"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(WLPluginProperties.class.getName());
 
@@ -265,16 +263,10 @@ public final class WLPluginProperties {
         String server = (String) manager.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
         if (server != null) {
             File serverFile = new File(server);
-            return getWeblogicJar(serverFile);
+            return WebLogicLayout.getWeblogicJar(serverFile);
         }
         return null;
-    }
-    
-    @NonNull
-    public static File getWeblogicJar(File serverFile) {
-        File weblogicJar = FileUtil.normalizeFile(new File(serverFile, WEBLOGIC_JAR));
-        return weblogicJar;
-    }    
+    }   
     
     /**
      * Gets the list of registered domains according to the given server
@@ -424,7 +416,7 @@ public final class WLPluginProperties {
             return new File[] {};
         }
 
-        File weblogicJar = WLPluginProperties.getWeblogicJar(serverRoot);
+        File weblogicJar = WebLogicLayout.getWeblogicJar(serverRoot);
         if (!weblogicJar.exists()) {
             LOGGER.log(Level.INFO, "File {0} does not exist for {1}",
                     new Object[] {weblogicJar.getAbsolutePath(), manager.getUri()});
@@ -484,7 +476,7 @@ public final class WLPluginProperties {
     }
 
     public static Version getServerVersion(File serverRoot) {
-        File weblogicJar = WLPluginProperties.getWeblogicJar(serverRoot);
+        File weblogicJar = WebLogicLayout.getWeblogicJar(serverRoot);
         if (!weblogicJar.exists()) {
             return null;
         }

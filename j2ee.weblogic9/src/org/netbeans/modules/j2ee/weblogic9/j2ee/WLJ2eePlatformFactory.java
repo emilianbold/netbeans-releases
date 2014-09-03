@@ -94,6 +94,7 @@ import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
+import org.netbeans.modules.weblogic.common.api.WebLogicLayout;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -177,7 +178,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         List<URL> list = new ArrayList<URL>();
         try {
             // the WLS jar is intentional
-            File weblogicFile = new File(platformRoot, WLPluginProperties.WEBLOGIC_JAR);
+            File weblogicFile = WebLogicLayout.getWeblogicJar(platformRoot);
             if (weblogicFile.exists()) {
                 addFileToList(list, weblogicFile);
             }
