@@ -279,6 +279,7 @@ public class Node {
         if (shadowRoots == null) {
             shadowRoots = new LinkedList<Node>();
         }
+        shadowRoot.parent = this;
         shadowRoots.add(shadowRoot);
     }
 
