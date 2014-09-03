@@ -294,10 +294,10 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
     @Override
     public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
         final boolean b = lookup.lookup(ExplorerContext.class)!=null;
-        if (packages.length == 1) {
+        if (packages != null && packages.length == 1) {
             return new SafeDeleteUI(packages[0], b);
         }
-        if (handles.length == 0 || (files!=null && files.length > 1)) {
+        if (handles != null && handles.length == 0 || (files!=null && files.length > 1)) {
             return new SafeDeleteUI(files, Arrays.asList(handles), b);
         }
         
