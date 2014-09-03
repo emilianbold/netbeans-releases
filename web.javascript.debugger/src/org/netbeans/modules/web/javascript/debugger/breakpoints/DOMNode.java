@@ -719,6 +719,14 @@ public final class DOMNode {
         public void characterDataModified(Node node) {
             // Ignored
         }
+
+        @Override
+        public void shadowRootPushed(Node host, Node shadowRoot) {
+        }
+
+        @Override
+        public void shadowRootPopped(Node host, Node shadowRoot) {
+        }
         
         private class Notify implements Runnable {
             
