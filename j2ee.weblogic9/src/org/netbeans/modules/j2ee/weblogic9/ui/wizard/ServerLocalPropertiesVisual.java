@@ -319,9 +319,9 @@ public class ServerLocalPropertiesVisual extends javax.swing.JPanel {
     public void updateJpa2Button() {
         File root = new File(instantiatingIterator.getServerRoot());
         support = new WLJpa2SwitchSupport(root);
-        boolean statusVisible = true;//support.isSwitchSupported();
-        boolean buttonVisible = true;//statusVisible
-                //&& !support.isEnabledViaSmartUpdate();
+        boolean statusVisible = support.isSwitchSupported();
+        boolean buttonVisible = statusVisible
+                && !support.isEnabledViaSmartUpdate();
 
         jpa2SwitchLabel.setVisible(statusVisible);
         jpa2Status.setVisible(statusVisible);
