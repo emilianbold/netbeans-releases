@@ -393,7 +393,7 @@ public final class WebLogicLayout {
         // read the list file line by line fetching out the domain paths
         try {
             // create a new reader for the FileInputStream
-            lnr = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+            lnr = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")); // NOI18N
 
             // read the lines
             String line;

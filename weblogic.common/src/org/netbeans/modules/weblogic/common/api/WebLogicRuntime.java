@@ -45,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -610,8 +611,8 @@ public final class WebLogicRuntime {
             try {
                 socket.connect(new InetSocketAddress(host, port), timeout); // NOI18N
                 socket.setSoTimeout(timeout);
-                try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                try (PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true); // NOI18N
+                        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"))) { // NOI18N
                     out.println("GET " + path + " HTTP/1.1\nHost:\n"); // NOI18N
                     String line = in.readLine();
                     return "HTTP/1.1 200 OK".equals(line) // NOI18N
