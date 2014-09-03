@@ -53,20 +53,20 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.weblogic9.VersionBridge;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLJpa2SwitchSupport;
+import org.netbeans.modules.weblogic.common.api.DomainConfiguration;
+import org.netbeans.modules.weblogic.common.api.WebLogicLayout;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hejl
  */
-public class ServerPropertiesVisual extends javax.swing.JPanel {
+public class ServerLocalPropertiesVisual extends javax.swing.JPanel {
 
     private transient WLInstantiatingIterator instantiatingIterator;
 
@@ -98,13 +98,13 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
      *      the hierarchy
      * @param instantiatingIterator the parent instantiating iterator
      */
-    public ServerPropertiesVisual(WLInstantiatingIterator instantiatingIterator) {
+    public ServerLocalPropertiesVisual(WLInstantiatingIterator instantiatingIterator) {
         // save the instantiating iterator
         this.instantiatingIterator = instantiatingIterator;
 
         // set the panel's name
         setName(NbBundle.getMessage(
-                ServerPropertiesPanel.class, "SERVER_PROPERTIES_STEP") );  // NOI18N
+                ServerLocalPropertiesVisual.class, "SERVER_PROPERTIES_STEP") );  // NOI18N
 
         initComponents();
         
@@ -144,11 +144,10 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
 
-
         // perhaps we could use just strings in combo
         // not sure about the domain with same name - use directory ?
         Object item = localInstancesCombo.getEditor().getItem();
-        Instance instance = null;
+        Instance instance;
         if (item instanceof Instance) {
             instance = (Instance) item;
         } else {
@@ -167,52 +166,52 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         // check the profile root directory for validity
         if (instance == null || !isValidDomainRoot(instance.getDomainPath())) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_INVALID_DOMAIN_ROOT"))); // NOI18N
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ERR_INVALID_DOMAIN_ROOT"))); // NOI18N
             return false;
         }
 
-        if (instance != null && InstanceProperties.getInstanceProperties(getUrl(instance)) != null) {
+        if (InstanceProperties.getInstanceProperties(getUrl(instance)) != null) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_ALREADY_REGISTERED"))); // NOI18N
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ERR_ALREADY_REGISTERED"))); // NOI18N
             return false;
         }
 
-        if (instance != null && instance.getDomainVersion() != null
+        if (instance.getDomainVersion() != null
                 && instantiatingIterator.getServerVersion() != null
                 && !instantiatingIterator.getServerVersion().equals(instance.getDomainVersion())) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(
-                            ServerPropertiesVisual.class, "ERR_INVALID_DOMAIN_VERSION"))); // NOI18N
+                            ServerLocalPropertiesVisual.class, "ERR_INVALID_DOMAIN_VERSION"))); // NOI18N
             return false;
         }
-        
-        if (instance != null && instance.isProductionModeEnabled()){
+
+        if (instance.isProductionModeEnabled()){
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(
-                            ServerPropertiesVisual.class, "WARN_PRODUCTION_MODE"))); // NOI18N
+                            ServerLocalPropertiesVisual.class, "WARN_PRODUCTION_MODE"))); // NOI18N
         }
 
         // show a hint for sample domain
-        if (instance != null && instance.getName().startsWith("examples")) { // NOI18N
-            if (passwordField.getPassword().length <= 0) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
-                        WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerPropertiesVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
-            }
-        }
-
-        if (instance != null) {
+        if (instance.getName().startsWith("examples") && passwordField.getPassword().length <= 0) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ERR_EMPTY_SAMPLE_PASSWORD"))); // NOI18N
+        } else if (passwordField.getPassword().length <= 0) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                    WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ERR_EMPTY_PASSWORD"))); // NOI18N
+        } else {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting", instance.getDomainName()))); // NOI18N
-
-            // save the data to the parent instantiating iterator
-            instantiatingIterator.setUrl(getUrl(instance));
-            instantiatingIterator.setDomainRoot(instance.getDomainPath());
-            instantiatingIterator.setUsername(usernameField.getText());
-            instantiatingIterator.setPassword(new String(passwordField.getPassword()));
-            instantiatingIterator.setPort(instance.getPort());
-            instantiatingIterator.setDomainName(instance.getDomainName());
-            instantiatingIterator.setHost(instance.getHost());
         }
+
+        // save the data to the parent instantiating iterator
+        instantiatingIterator.setUrl(getUrl(instance));
+        instantiatingIterator.setDomainRoot(instance.getDomainPath());
+        instantiatingIterator.setUsername(usernameField.getText());
+        instantiatingIterator.setPassword(new String(passwordField.getPassword()));
+        instantiatingIterator.setPort(Integer.toString(instance.getPort()));
+        instantiatingIterator.setDomainName(instance.getDomainName());
+        instantiatingIterator.setHost(instance.getHost());
+        instantiatingIterator.setRemote(false);
         return true;
     }
 
@@ -293,32 +292,17 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     }
     
     private Instance getServerInstance(String domainPath) {
-        Properties properties = WLPluginProperties.getDomainProperties(domainPath);
-        if (properties.isEmpty()) {
+        DomainConfiguration config = WebLogicLayout.getDomainConfiguration(domainPath);
+        if (config == null) {
+            return null;
+        }
+        if (config.getAdminServer() == null) {
             return null;
         }
 
-        String name = properties.getProperty(WLPluginProperties.ADMIN_SERVER_NAME);
-        String port = properties.getProperty(WLPluginProperties.PORT_ATTR);
-        String host = properties.getProperty(WLPluginProperties.HOST_ATTR);
-        String domainName = properties.getProperty(WLPluginProperties.DOMAIN_NAME);
-        String versionString = properties.getProperty(WLPluginProperties.DOMAIN_VERSION);
-        Version domainVersion = versionString != null ? Version.fromJsr277OrDottedNotationWithFallback(versionString) : null;
-
-        Boolean isProductionMode = (Boolean)properties.get(
-                WLPluginProperties.PRODUCTION_MODE);
-        if ((name != null) && (!name.equals(""))) { // NOI18N
-            // address and port have minOccurs=0 and are missing in 90
-            // examples server
-            port = (port == null || port.equals("")) // NOI18N
-            ? Integer.toString(WLDeploymentFactory.DEFAULT_PORT)
-                    : port;
-            host = (host == null || host.equals("")) ? "localhost" // NOI18N
-                    : host;
-            return new Instance(name, host, port, domainPath, domainName, domainVersion,
-                    isProductionMode != null && isProductionMode);
-        }
-        return null;
+        return new Instance(config.getAdminServer(), config.getHost(), config.getPort(),
+                domainPath, config.getName(), VersionBridge.getVersion(config.getVersion()),
+                config.isProduction());
     }
 
 
@@ -347,11 +331,11 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
     
     private void updateJpa2Status() {
         if (support.isEnabled() || support.isEnabledViaSmartUpdate()) {
-            jpa2Status.setText(NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2Status.enabledText"));
-            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.disableText"));
+            jpa2Status.setText(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2Status.enabledText"));
+            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2SwitchButton.disableText"));
         } else {
-            jpa2Status.setText(NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2Status.disabledText"));
-            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.enableText"));
+            jpa2Status.setText(NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2Status.disabledText"));
+            Mnemonics.setLocalizedText(jpa2SwitchButton, NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2SwitchButton.enableText"));
         }         
     }    
 
@@ -403,38 +387,38 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
 
         localInstancesLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         localInstancesLabel.setLabelFor(localInstancesCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(localInstancesLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "LBL_LOCAL_INSTANCE")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(localInstancesLabel, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "LBL_LOCAL_INSTANCE")); // NOI18N
 
         localInstancesCombo.setEditable(true);
         localInstancesCombo.addItemListener(new LocalInstancesItemListener());
 
         usernameLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         usernameLabel.setLabelFor(usernameField);
-        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "LBL_USERNAME")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "LBL_USERNAME")); // NOI18N
 
         usernameField.setColumns(15);
         usernameField.setText("weblogic"); // NOI18N
 
         passwordLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         passwordLabel.setLabelFor(passwordField);
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "LBL_PASSWORD")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "LBL_PASSWORD")); // NOI18N
 
         passwordField.setColumns(15);
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
 
-        explanationLabel.setText(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.explanationLabel.text")); // NOI18N
+        explanationLabel.setText(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.explanationLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchLabel, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchLabel, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2SwitchLabel.text")); // NOI18N
 
-        jpa2Status.setText(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2Status.disabledText")); // NOI18N
+        jpa2Status.setText(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2Status.disabledText")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchButton, org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ServerPropertiesVisual.jpa2SwitchButton.enableText")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jpa2SwitchButton, org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ServerLocalPropertiesVisual.jpa2SwitchButton.enableText")); // NOI18N
         jpa2SwitchButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jpa2SwitchButtonActionPerformed(evt);
@@ -448,36 +432,36 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(localInstancesLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(localInstancesCombo, 0, 298, Short.MAX_VALUE)
+                .addComponent(localInstancesCombo, 0, 1, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(browseButton))
-            .addComponent(explanationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jpa2SwitchLabel)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(passwordLabel)
                     .addComponent(usernameLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(passwordField, 0, 0, Short.MAX_VALUE)
-                        .addComponent(usernameField, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE))
-                    .addComponent(jpa2Status))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jpa2SwitchButton)
-                .addContainerGap(53, Short.MAX_VALUE))
+                    .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 204, Short.MAX_VALUE))
+            .addComponent(explanationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jpa2SwitchLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jpa2Status)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jpa2SwitchButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(localInstancesLabel)
-                    .addComponent(localInstancesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(browseButton))
+                    .addComponent(browseButton)
+                    .addComponent(localInstancesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(explanationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(usernameLabel)
                     .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -485,17 +469,16 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(passwordLabel)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jpa2SwitchLabel)
                     .addComponent(jpa2Status)
-                    .addComponent(jpa2SwitchButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jpa2SwitchButton)))
         );
 
-        localInstancesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_localInstancesCombo")); // NOI18N
-        usernameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_usernameField")); // NOI18N
-        passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerPropertiesVisual.class, "ACSD_ServerPropertiesPanel_passwordField")); // NOI18N
+        localInstancesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ACSD_ServerLocalPropertiesPanel_localInstancesCombo")); // NOI18N
+        usernameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ACSD_ServerPropertiesPanel_usernameField")); // NOI18N
+        passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ACSD_ServerPropertiesPanel_passwordField")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
@@ -544,6 +527,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
      */
     private class LocalInstancesItemListener implements ItemListener {
 
+        @Override
         public void itemStateChanged(ItemEvent e) {
             fireChangeEvent();
         }
@@ -572,7 +556,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         /**
          * Instance's port
          */
-        private String port;
+        private int port;
 
         /**
          * Instance's profile directory
@@ -599,7 +583,7 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          * @param port the instance's port
          * @param domainPath the instance's profile path
          */
-        public Instance(String name, String host, String port, String domainPath,
+        public Instance(String name, String host, int port, String domainPath,
                 String domainName, Version domainVersion, boolean isProductionModeEnabled) {
             // save the properties
             this.name = name;
@@ -619,15 +603,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         public String getName() {
             return this.name;
         }
-
-        /**
-         * Setter for the instance's name
-         *
-         * @param the new instance's name
-         */
-        public void setName(String name) {
-            this.name = name;
-        }
         
         /**
          * Getter for the domain name
@@ -636,15 +611,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          */
         public String getDomainName() {
             return this.domainName;
-        }
-
-        /**
-         * Setter for the domain name
-         *
-         * @param the new domain name
-         */
-        public void setDomainName(String name) {
-            domainName = name;
         }
 
         /**
@@ -657,30 +623,12 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         }
 
         /**
-         * Setter for the instance's host
-         *
-         * @param the new instance's host
-         */
-        public void setHost(String host) {
-            this.host = host;
-        }
-
-        /**
          * Getter for the instance's port
          *
          * @return the instance's port
          */
-        public String getPort() {
+        public int getPort() {
             return this.port;
-        }
-
-        /**
-         * Setter for the instance's port
-         *
-         * @param the new instance's port
-         */
-        public void setPort(String port) {
-            this.port = port;
         }
 
         /**
@@ -690,15 +638,6 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
          */
         public String getDomainPath() {
             return this.domainPath;
-        }
-
-        /**
-         * Setter for the instance's profile path
-         *
-         * @param the new instance's profile path
-         */
-        public void setDomainPath(String domainPath) {
-            this.domainPath = domainPath;
         }
         
         /**
@@ -710,22 +649,9 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
         public boolean isProductionModeEnabled(){
             return isProductionModeEnabled;
         }
-        
-        /**
-         * Setter for production mode property.
-         * 
-         * @param productionMode isProductionModeEnabled property value
-         */
-        public void setProductionModeEnabled( boolean productionMode ){
-            isProductionModeEnabled = productionMode;
-        }
 
         public Version getDomainVersion() {
             return domainVersion;
-        }
-
-        public void setDomainVersion(Version domainVersion) {
-            this.domainVersion = domainVersion;
         }
 
         /**

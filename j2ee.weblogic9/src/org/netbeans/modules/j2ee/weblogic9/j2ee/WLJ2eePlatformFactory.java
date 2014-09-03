@@ -94,6 +94,7 @@ import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
+import org.netbeans.modules.weblogic.common.api.WebLogicLayout;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -177,7 +178,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         List<URL> list = new ArrayList<URL>();
         try {
             // the WLS jar is intentional
-            File weblogicFile = new File(platformRoot, WLPluginProperties.WEBLOGIC_JAR);
+            File weblogicFile = WebLogicLayout.getWeblogicJar(platformRoot);
             if (weblogicFile.exists()) {
                 addFileToList(list, weblogicFile);
             }
@@ -513,10 +514,13 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
             // Allow J2EE 1.4 Projects
             profiles.add(Profile.J2EE_14);
-            
+
             // Check for WebLogic Server 10x to allow Java EE 5 Projects
             Version version = dm.getDomainVersion();
-            
+            if (version == null) {
+                version = dm.getServerVersion();
+            }
+
             if (version != null) {
                 if (version.isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
                     profiles.add(Profile.JAVA_EE_5);
@@ -637,6 +641,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public File getDomainHome() {
+            if (dm.isRemote()) {
+                return null;
+            }
+
             File domain = new File(dm.getInstanceProperties().getProperty(
                     WLPluginProperties.DOMAIN_ROOT_ATTR));
             
@@ -671,10 +679,11 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         public LibraryImplementation[] getLibraries(Set<ServerLibraryDependency> libraries) {
             // FIXME cache & listen for file changes
             String domainDir = dm.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
-            assert domainDir != null;
+            assert domainDir != null || dm.isRemote();
             String serverDir = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
             assert serverDir != null;
-            WLServerLibrarySupport support = new WLServerLibrarySupport(new File(serverDir), new File(domainDir));
+            WLServerLibrarySupport support = new WLServerLibrarySupport(new File(serverDir),
+                    domainDir == null ? null : new File(domainDir));
 
             Map<ServerLibrary, List<File>> serverLibraries =  null;
             try {
@@ -918,7 +927,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         private String defaultJPAProvider;
 
-        private String value;
+        private final StringBuilder value = new StringBuilder();
 
         private boolean start;
 
@@ -928,7 +937,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes attributes) throws SAXException {
-            value = null;
+            value.setLength(0);
             if ("default-jpa-provider".equals(qName)) { // NOI18N
                 start = true;
             }
@@ -941,14 +950,14 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             }
 
             if ("default-jpa-provider".equals(qName)) { // NOI18N
-                defaultJPAProvider = value;
+                defaultJPAProvider = value.toString();
                 start = false;
             }
         }
 
         @Override
         public void characters(char[] ch, int start, int length) {
-            value = new String(ch, start, length);
+            value.append(ch, start, length);
         }
 
         public String getDefaultJPAProvider() {
