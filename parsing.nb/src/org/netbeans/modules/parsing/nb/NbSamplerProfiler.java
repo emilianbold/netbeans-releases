@@ -44,21 +44,25 @@ package org.netbeans.modules.parsing.nb;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.implspi.ProfilerSupport;
 import org.netbeans.modules.sampler.Sampler;
+import org.openide.util.Parameters;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author sdedic
  */
-public class NbSamplerProfiler extends ProfilerSupport {
+public final class NbSamplerProfiler extends ProfilerSupport {
     private @NonNull final Sampler profiler;
 
-    private NbSamplerProfiler(Sampler profiler) {
+    private NbSamplerProfiler(@NonNull final Sampler profiler) {
+        Parameters.notNull("profiler", profiler);   //NOI18N
         this.profiler = profiler;
     }
-    
+
     @Override
     public void start() {
         profiler.start();
@@ -73,14 +77,15 @@ public class NbSamplerProfiler extends ProfilerSupport {
     public void stopAndSnapshot(DataOutputStream dos) throws IOException {
         profiler.stopAndWriteTo(dos);
     }
-    
-    public class Factory implements ProfilerSupport.Factory {
 
+    @ServiceProvider(service = ProfilerSupport.Factory.class)
+    public static final class Factory implements ProfilerSupport.Factory {
         @Override
-        public ProfilerSupport create(String id) {
+        @CheckForNull
+        public ProfilerSupport create(@NonNull final String id) {
+            Parameters.notNull("id", id);   //NOI18N
             Sampler s = Sampler.createSampler(id);
             return s != null ? new NbSamplerProfiler(s) : null;
         }
-        
     }
 }
