@@ -203,8 +203,7 @@ public final class WLPluginProperties {
             // may happen during the registration
             return null;
         }
-        return FileUtil.normalizeFile(new File(domainDir + File.separator
-                + "config" + File.separator + "config.xml")); // NOI18N
+        return WebLogicLayout.getDomainConfigFile(new File(domainDir));
     }
 
     @CheckForNull
@@ -504,36 +503,6 @@ public final class WLPluginProperties {
         } catch (IOException e) {
             LOGGER.log(Level.FINE, null, e);
         }
-        return null;
-    }
-
-    public static Version getDomainVersion(InstanceProperties props) {
-        // Domain config file
-        File config = getDomainConfigFile(props);
-
-        // Check if the file exists
-        if (config == null || !config.exists()) {
-            return null;
-        }
-
-        try {
-            InputSource source = new InputSource(new FileInputStream(config));
-            Document d = XMLUtil.parse(source, false, false, null, null);
-
-            // Retrieve domain version
-            if (d.getElementsByTagName("domain-version").getLength() > 0) {
-                String strVersion = d.getElementsByTagName("domain-version").item(0).getTextContent();
-                return  strVersion != null ? Version.fromJsr277OrDottedNotationWithFallback(strVersion) : null;
-            }
-
-        } catch(FileNotFoundException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch(IOException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch(SAXException e) {
-            LOGGER.log(Level.INFO, null, e);
-        }
-
         return null;
     }
 

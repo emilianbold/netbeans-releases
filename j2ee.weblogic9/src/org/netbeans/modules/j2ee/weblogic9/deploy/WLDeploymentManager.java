@@ -92,6 +92,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
 import org.netbeans.modules.j2ee.weblogic9.ServerLogManager;
+import org.netbeans.modules.j2ee.weblogic9.VersionBridge;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
@@ -293,7 +294,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
             return;
         }
         serverVersion = WLPluginProperties.getServerVersion(WLPluginProperties.getServerRoot(this, true));
-        domainVersion = WLPluginProperties.getDomainVersion(instanceProperties);
+        domainVersion = VersionBridge.getVersion(getCommonConfiguration().getDomainVersion());
     }
 
     private <T> T executeAction(final Action<T> action) throws Exception {

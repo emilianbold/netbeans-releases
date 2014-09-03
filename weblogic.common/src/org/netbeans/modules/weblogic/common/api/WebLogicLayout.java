@@ -118,7 +118,7 @@ public final class WebLogicLayout {
         return getDomainConfigFile(config.getDomainHome());
     }
 
-    @CheckForNull
+    @NonNull
     public static File getDomainConfigFile(File domain) {
         return FileUtil.normalizeFile(new File(domain,
                 "config" + File.separator + "config.xml")); // NOI18N
