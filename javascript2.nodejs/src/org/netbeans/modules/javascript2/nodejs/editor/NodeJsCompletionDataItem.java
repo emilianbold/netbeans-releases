@@ -39,75 +39,39 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.nodejs;
 
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.javascript2.nodejs.editor;
 
 /**
  *
  * @author Petr Pisl
  */
-public class NodeJsElement implements ElementHandle {
-
+public class NodeJsCompletionDataItem {
     private final String name;
-    private final ElementKind kind;
+//    private final String type;
     private final String documentation;
+    private final String template;
 
-    public NodeJsElement(String name, String documentation, ElementKind kind) {
+    public NodeJsCompletionDataItem(String name,/* String type,*/ String documentation, String template) {
         this.name = name;
-        this.kind = kind;
+//        this.type = type;
         this.documentation = documentation;
+        this.template = template;
     }
 
-    @Override
-    public FileObject getFileObject() {
-        return null;
-    }
-
-    @Override
-    public String getMimeType() {
-        return "";
-    }
-
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
-    public String getIn() {
-        return "";
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return kind;
-    }
-
-    @Override
-    public Set<Modifier> getModifiers() {
-        return Collections.<Modifier>emptySet();
-    }
-
-    @Override
-    public boolean signatureEquals(ElementHandle handle) {
-        return false;
-    }
-
-    @Override
-    public OffsetRange getOffsetRange(ParserResult result) {
-        return OffsetRange.NONE;
-    }
+//    public String getType() {
+//        return type;
+//    }
 
     public String getDocumentation() {
         return documentation;
     }
 
+    public String getTemplate() {
+        return template;
+    }
 }

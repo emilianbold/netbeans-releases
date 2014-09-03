@@ -39,41 +39,75 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.nodejs.editor;
 
-package org.netbeans.modules.javascript2.nodejs.model;
-
-import java.util.Collection;
-import java.util.regex.Pattern;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
-import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-@FunctionInterceptor.Registration(priority = 200)
-public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
+public class NodeJsElement implements ElementHandle {
 
-    private static Pattern METHOD_NAME = Pattern.compile("require");
-    
-    @Override
-    public Pattern getNamePattern() {
-        return METHOD_NAME;
+    private final String name;
+    private final ElementKind kind;
+    private final String documentation;
+
+    public NodeJsElement(String name, String documentation, ElementKind kind) {
+        this.name = name;
+        this.kind = kind;
+        this.documentation = documentation;
     }
 
     @Override
-    public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
-//        System.out.println("NodeJs require: " + name);
-        if (args.size() == 1) {
-            FunctionArgument theFirst = args.iterator().next();
-            if (theFirst.getKind() == FunctionArgument.Kind.STRING) {
-//                System.out.println("   loading : " + theFirst.getValue());
-                
-            }
-        }
+    public FileObject getFileObject() {
+        return null;
     }
-    
+
+    @Override
+    public String getMimeType() {
+        return "";
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getIn() {
+        return "";
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return kind;
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        return Collections.<Modifier>emptySet();
+    }
+
+    @Override
+    public boolean signatureEquals(ElementHandle handle) {
+        return false;
+    }
+
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return OffsetRange.NONE;
+    }
+
+    public String getDocumentation() {
+        return documentation;
+    }
+
 }

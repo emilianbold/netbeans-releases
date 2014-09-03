@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.nodejs;
+package org.netbeans.modules.javascript2.nodejs.editor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
