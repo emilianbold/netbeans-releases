@@ -881,6 +881,9 @@ public class WebKitPageModel extends PageModel {
                     }
                 }
             }
+        } else if (type == org.w3c.dom.Node.DOCUMENT_FRAGMENT_NODE) {
+            // Shadow root => highlight/select the host
+            result = node.getParent();
         }
         return result;
     }
