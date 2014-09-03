@@ -476,7 +476,7 @@ public class ServerLocalPropertiesVisual extends javax.swing.JPanel {
                     .addComponent(jpa2SwitchButton)))
         );
 
-        localInstancesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ACSD_ServerPropertiesPanel_localInstancesCombo")); // NOI18N
+        localInstancesCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ACSD_ServerLocalPropertiesPanel_localInstancesCombo")); // NOI18N
         usernameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ACSD_ServerPropertiesPanel_usernameField")); // NOI18N
         passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServerLocalPropertiesVisual.class, "ACSD_ServerPropertiesPanel_passwordField")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

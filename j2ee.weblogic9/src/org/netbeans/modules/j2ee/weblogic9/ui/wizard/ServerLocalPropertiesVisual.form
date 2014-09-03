@@ -96,7 +96,7 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/weblogic9/ui/wizard/Bundle.properties" key="ACSD_ServerPropertiesPanel_localInstancesCombo" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/weblogic9/ui/wizard/Bundle.properties" key="ACSD_ServerLocalPropertiesPanel_localInstancesCombo" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <AuxValues>
