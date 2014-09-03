@@ -105,6 +105,7 @@ import org.netbeans.modules.parsing.impl.indexing.friendapi.DownloadedIndexPatch
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
+import org.netbeans.modules.parsing.implspi.ProfilerSupport;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.Index;
@@ -113,7 +114,6 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.*;
 import org.netbeans.modules.project.indexingbridge.IndexingBridge;
-import org.netbeans.modules.sampler.Sampler;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -6572,7 +6572,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
      * The sampler is terminated at the end of the scan Work, and its data is discarded.
      */
     private static class SamplerInvoker implements Runnable, Callable<byte[]> {
-        private volatile Sampler sampler;
+        //@GuardedBy("this")
+        private ProfilerSupport sampler;
         private final String indexerName;
         private RequestProcessor.Task scheduled;
         private final URL root;
@@ -6608,13 +6609,18 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         @Override
-        public synchronized void run() {
-            Sampler newSampler = Sampler.createManualSampler("repoupdater"); // NOI18N
-            if (newSampler != null && currentSampler == this) {
-                newSampler.start();
-                this.sampler = newSampler;
-                LOGGER.log(Level.FINE, "Updater profiling started at {0} because of {1} runnint on {2} more than {3})",  // NOI18N
-                        new Object[] { new Date(), indexerName, root, estimate });
+        public void run() {
+            final ProfilerSupport.Factory factory =  Lookup.getDefault().lookup(ProfilerSupport.Factory.class);
+            if (factory != null) {
+                synchronized (this) {
+                    final ProfilerSupport newSampler = factory.create("repoupdater"); // NOI18N
+                    if (newSampler != null && currentSampler == this) {
+                        newSampler.start();
+                        this.sampler = newSampler;
+                        LOGGER.log(Level.FINE, "Updater profiling started at {0} because of {1} runnint on {2} more than {3})",  // NOI18N
+                                new Object[] { new Date(), indexerName, root, estimate });
+                    }
+                }
             }
         }
 
@@ -6626,7 +6632,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             LOGGER.log(Level.FINE, "Dumping snapshot for {0}", indexerName); // NOI18N
             final ByteArrayOutputStream out = new ByteArrayOutputStream();
             try (DataOutputStream dos = new DataOutputStream(out)) {
-                sampler.stopAndWriteTo(dos);
+                sampler.stopAndSnapshot(dos);
             }
             sampler = null;
             return out.toByteArray();
