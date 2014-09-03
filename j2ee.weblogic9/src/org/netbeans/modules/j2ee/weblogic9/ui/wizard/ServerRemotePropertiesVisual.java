@@ -266,7 +266,7 @@ public class ServerRemotePropertiesVisual extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(adminPortLabel, org.openide.util.NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ServerRemotePropertiesVisual.adminPortLabel.text")); // NOI18N
 
         adminPortTextField.setColumns(5);
-        adminPortTextField.setText(org.openide.util.NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ServerRemotePropertiesVisual.adminPortTextField.text")); // NOI18N
+        adminPortTextField.setText("7001");
 
         debugPortLabel.setLabelFor(debugPortTextField);
         org.openide.awt.Mnemonics.setLocalizedText(debugPortLabel, org.openide.util.NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ServerRemotePropertiesVisual.debugPortLabel.text")); // NOI18N

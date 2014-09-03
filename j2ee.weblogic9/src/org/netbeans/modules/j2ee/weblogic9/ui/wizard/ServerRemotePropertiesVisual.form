@@ -169,9 +169,7 @@
     <Component class="javax.swing.JTextField" name="adminPortTextField">
       <Properties>
         <Property name="columns" type="int" value="5"/>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/weblogic9/ui/wizard/Bundle.properties" key="ServerRemotePropertiesVisual.adminPortTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
+        <Property name="text" type="java.lang.String" value="7001"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="debugPortLabel">
