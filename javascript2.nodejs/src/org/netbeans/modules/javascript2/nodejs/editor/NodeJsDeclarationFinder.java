@@ -56,7 +56,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Pisl
  */
-@DeclarationFinder.Registration(priority = 13)
+@DeclarationFinder.Registration(priority = 16)
 public class NodeJsDeclarationFinder implements DeclarationFinder {
     
     
