@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -64,6 +66,7 @@ import org.netbeans.modules.cnd.apt.structure.APTUndefine;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
+import org.netbeans.modules.cnd.apt.support.spi.APTIndexFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
@@ -79,11 +82,18 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 public final class APTIndexingWalker extends APTWalker {
     private final Set<CharSequence> ids = new HashSet<>();
     private final CndTextIndexKey key;
+    private final APTIndexFilter[] indexFilters;
     
-    public APTIndexingWalker(APTFile apt, CndTextIndexKey key) {
+    public APTIndexingWalker(APTFile apt, CndTextIndexKey key, Collection<? extends APTIndexFilter> extraIndexFilters) {
         super(apt, null);
         assert apt.isTokenized() : "only full APT have to be passed here " + apt.getPath();
         this.key = key;
+        indexFilters = new APTIndexFilter[extraIndexFilters.size() + 1];
+        int i = 0;
+        for (APTIndexFilter f : extraIndexFilters) {
+            indexFilters[i++] = f;
+        }
+        indexFilters[i] = new DefaultIndexFilter();
     }
 
     @Override
@@ -163,14 +173,15 @@ public final class APTIndexingWalker extends APTWalker {
         CndTextIndex.put(key, ids);
     }
 
-    private boolean analyzeToken(APTToken token) {
+    private void analyzeToken(APTToken token) {
         if (token != null && !APTUtils.isEOF(token)) {
-            if (APTUtils.isID(token) || token.getType() == APTTokenTypes.ID_DEFINED) {
-                ids.add(token.getTextID());
-                return true;
+            for (APTIndexFilter filter : indexFilters) {
+                CharSequence indexText = filter.getIndexText(token);
+                if (indexText != null) {
+                    ids.add(indexText);
+                }
             }
         }
-        return false;
     }
 
     private void analyzeList(List<APTToken> tokens) {
@@ -190,6 +201,16 @@ public final class APTIndexingWalker extends APTWalker {
             } catch (TokenStreamException ex) {
 		DiagnosticExceptoins.register(ex);
             }
+        }
+    }
+
+    private static class DefaultIndexFilter implements APTIndexFilter {
+        @Override
+        public CharSequence getIndexText(APTToken token) {
+            if (APTUtils.isID(token) || token.getType() == APTTokenTypes.ID_DEFINED) {
+                return token.getTextID();
+            }
+            return null;
         }
     }
 }
