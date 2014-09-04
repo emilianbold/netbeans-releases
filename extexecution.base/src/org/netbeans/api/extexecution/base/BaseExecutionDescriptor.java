@@ -44,6 +44,7 @@ package org.netbeans.api.extexecution.base;
 
 import java.io.Reader;
 import java.nio.charset.Charset;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -262,7 +263,7 @@ public final class BaseExecutionDescriptor {
          *
          * @return new input processor
          */
-        @NonNull
+        @CheckForNull
         InputProcessor newInputProcessor();
 
     }
@@ -277,6 +278,7 @@ public final class BaseExecutionDescriptor {
          *
          * @return new reader
          */
+        @CheckForNull
         Reader newReader();
     }
 
