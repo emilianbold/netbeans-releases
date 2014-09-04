@@ -53,11 +53,11 @@ import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
  */
 @ObjectInterceptor.Registration(priority=101)
 public class NodeJsObjectInterceptor implements ObjectInterceptor {
-    private static String EXPORTS = "exports"; //NOI18N
-    private static String MODULE = "module"; //NOI18N
+    private final static String EXPORTS = "exports"; //NOI18N
+    private final static String MODULE = "module"; //NOI18N
     
     @Override
-    public void interceptGlobal(JsObject global, ModelElementFactory factory) {
+    public void interceptGlobal(final JsObject global, final ModelElementFactory factory) {
         JsObject exports = global.getProperty(EXPORTS);
         if (exports == null) {
             JsObject module = global.getProperty(MODULE);
