@@ -190,7 +190,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         }
         // html or css file -> return only site root
         SourceGroup[] siteRootGroups = ClientSideProjectUtilities.getSourceGroups(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT);
-        if (allGroups.length != 0) {
+        if (siteRootGroups.length != 0) {
             return siteRootGroups;
         }
         return allGroups;
