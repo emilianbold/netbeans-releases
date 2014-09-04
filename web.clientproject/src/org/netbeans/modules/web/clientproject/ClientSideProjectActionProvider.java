@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.clientproject;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -63,7 +62,6 @@ import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -112,25 +110,15 @@ public class ClientSideProjectActionProvider implements ActionProvider {
     @Override
     public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
         LifecycleManager.getDefault().saveAll();
+        for (PlatformProvider provider : project.getPlatformProviders()) {
+            ActionProvider actionProvider = provider.getActionProvider(project);
+            if (actionProvider != null
+                    && isSupportedAction(command, actionProvider)) {
+                actionProvider.invokeAction(command, context);
+            }
+        }
         if (COMMAND_RUN_SINGLE.equals(command)
                 || COMMAND_RUN.equals(command)) {
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    File script = null;
-                    if (COMMAND_RUN_SINGLE.equals(command)) {
-                        FileObject fo = context.lookup(FileObject.class);
-                        assert fo != null;
-                        script = FileUtil.toFile(fo);
-                        assert script != null : fo;
-                    }
-                    for (PlatformProvider provider : project.getPlatformProviders()) {
-                        if (provider.isRunSupported(project)) {
-                            provider.run(project, script);
-                        }
-                    }
-                }
-            });
             if (project.isJsLibrary()) {
                 return;
             }
@@ -228,14 +216,17 @@ public class ClientSideProjectActionProvider implements ActionProvider {
 
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+        for (PlatformProvider provider : project.getPlatformProviders()) {
+            ActionProvider actionProvider = provider.getActionProvider(project);
+            if (actionProvider != null
+                    && isSupportedAction(command, actionProvider)
+                    && actionProvider.isActionEnabled(command, context)) {
+                return true;
+            }
+        }
         if (COMMAND_RUN_SINGLE.equals(command)
                 || COMMAND_RUN.equals(command)) {
             if (project.isJsLibrary()) {
-                for (PlatformProvider provider : project.getPlatformProviders()) {
-                    if (provider.isRunSupported(project)) {
-                        return true;
-                    }
-                }
                 return false;
             }
         }
