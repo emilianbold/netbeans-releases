@@ -108,6 +108,10 @@ public class DialogsTest {
                     
                     JButton[] arr = Buttons.buttons();
                     assertEquals(arr.length, 2, "Two buttons");
+                    assertEquals(arr[0].getName(), "OK", "id of 1st button parsed");
+                    assertEquals(arr[1].getName(), "Cancel", "id of 2nd button parsed");
+                    assertEquals(arr[0].getText(), "Agree", "text of 1st button parsed");
+                    assertEquals(arr[1].getText(), "Disagree", "text of 2nd button parsed");
                 } catch (Throwable t) {
                     arr[0] = t;
                 } finally {
