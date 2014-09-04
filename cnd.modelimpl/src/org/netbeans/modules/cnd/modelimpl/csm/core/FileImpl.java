@@ -101,6 +101,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.support.spi.APTIndexFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
@@ -632,9 +633,13 @@ public final class FileImpl implements CsmFile,
                     }
                     
                     if (CndTraceFlags.TEXT_INDEX) {
-                         int unitID = getProjectImpl(true).getUnitId();
-                         APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT, getTextIndexKey());
-                         aptIndexingWalker.index();
+                        Collection<? extends APTIndexFilter> indexFilters = Collections.emptyList();
+                        Object pp = getProject().getPlatformProject();
+                        if (pp instanceof NativeProject) {
+                            indexFilters = ((NativeProject) pp).getProject().getLookup().lookupAll(APTIndexFilter.class);
+                        }
+                        APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT, getTextIndexKey(), indexFilters);
+                        aptIndexingWalker.index();
                     }
                     
                     switch (curState) {
