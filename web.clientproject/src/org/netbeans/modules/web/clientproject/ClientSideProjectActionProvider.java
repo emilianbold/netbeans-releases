@@ -112,9 +112,6 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         LifecycleManager.getDefault().saveAll();
         if (COMMAND_RUN_SINGLE.equals(command)
                 || COMMAND_RUN.equals(command)) {
-            if (!project.isJsLibrary()) {
-                project.logBrowserUsage();
-            }
             RP.post(new Runnable() {
                 @Override
                 public void run() {
@@ -125,6 +122,10 @@ public class ClientSideProjectActionProvider implements ActionProvider {
                     }
                 }
             });
+            if (project.isJsLibrary()) {
+                return;
+            }
+            project.logBrowserUsage();
         }
         // XXX sorry no idea how to do this correctly
         if (COMMAND_RENAME.equals(command)) {
