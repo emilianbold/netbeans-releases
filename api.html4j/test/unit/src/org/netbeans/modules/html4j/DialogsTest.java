@@ -53,6 +53,7 @@ import javax.swing.JFrame;
 import net.java.html.BrwsrCtx;
 import net.java.html.boot.fx.FXBrowsers;
 import net.java.html.js.JavaScriptBody;
+import org.netbeans.api.html4j.HTMLDialog;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
@@ -157,4 +158,10 @@ public class DialogsTest {
             + "return prev;\n"
     )
     private static native String setText(String id, String t);
+    
+    
+    @HTMLDialog(url = "simple.html", className = "TestPages") 
+    static void showDialog() {
+        String ret = TestPages.showDialog();
+    }
 }
