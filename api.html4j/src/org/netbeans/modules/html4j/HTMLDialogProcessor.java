@@ -42,8 +42,10 @@
  */
 package org.netbeans.modules.html4j;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.annotation.Annotation;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map;
@@ -62,8 +64,13 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import javax.tools.FileObject;
+import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
 import org.netbeans.api.html4j.HTMLDialog;
+import org.openide.filesystems.annotations.LayerBuilder;
+import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -130,7 +137,15 @@ implements Comparator<ExecutableElement> {
                 
                 for (ExecutableElement ee : elems) {
                     HTMLDialog reg = ee.getAnnotation(HTMLDialog.class);
-                    String url = reg.url();
+                    String url;
+                    try {
+                        final String res = LayerBuilder.absolutizeResource(ee, reg.url());
+                        validateResource(res, ee, reg, "url", false);
+                        url = "nbresloc:/" + res;
+                    } catch (LayerGenerationException ex) {
+                        error("Cannot find resource " + reg.url(), ee);
+                        continue;
+                    }
                     
                     w.append("  public static String ").append(ee.getSimpleName());
                     w.append("(").append(") {\n");
@@ -201,4 +216,43 @@ implements Comparator<ExecutableElement> {
         }
         return id1 - id2;
     }
+    
+    FileObject validateResource(String resource, Element originatingElement, Annotation annotation, String annotationMethod, boolean searchClasspath) throws LayerGenerationException {
+        if (resource.startsWith("/")) {
+            throw new LayerGenerationException("do not use leading slashes on resource paths", originatingElement, processingEnv, annotation, annotationMethod);
+        }
+        if (searchClasspath) {
+            for (JavaFileManager.Location loc : new JavaFileManager.Location[]{StandardLocation.SOURCE_PATH, /* #181355 */ StandardLocation.CLASS_OUTPUT, StandardLocation.CLASS_PATH, StandardLocation.PLATFORM_CLASS_PATH}) {
+                try {
+                    FileObject f = processingEnv.getFiler().getResource(loc, "", resource);
+                    if (loc.isOutputLocation()) {
+                        f.openInputStream().close();
+                    }
+                    return f;
+                } catch (IOException ex) {
+                    continue;
+                }
+            }
+            throw new LayerGenerationException("Cannot find resource " + resource, originatingElement, processingEnv, annotation, annotationMethod);
+        } else {
+            try {
+                try {
+                    FileObject f = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", resource);
+                    f.openInputStream().close();
+                    return f;
+                } catch (FileNotFoundException x) {
+                    try {
+                        FileObject f = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", resource);
+                        f.openInputStream().close();
+                        return f;
+                    } catch (IOException x2) {
+                        throw x;
+                    }
+                }
+            } catch (IOException x) {
+                throw new LayerGenerationException("Cannot find resource " + resource, originatingElement, processingEnv, annotation, annotationMethod);
+            }
+        }
+    }
+    
 }
