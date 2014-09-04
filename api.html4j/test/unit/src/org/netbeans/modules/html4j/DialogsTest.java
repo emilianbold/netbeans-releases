@@ -59,8 +59,8 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 
 /**
- *loader
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ *
+ * @author Jaroslav Tulach
  */
 public class DialogsTest {
     private static final CountDownLatch down = new CountDownLatch(1);
@@ -164,4 +164,10 @@ public class DialogsTest {
     static void showDialog() {
         String ret = TestPages.showDialog();
     }
+
+    @HTMLDialog(url = "http://www.netbeans.org", className = "TestPages") 
+    static void showDialog(int x, String[] y, DialogsTest t) {
+        String ret = TestPages.showDialog(10, y, null);
+    }
+
 }

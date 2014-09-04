@@ -46,6 +46,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map;
@@ -63,6 +65,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
@@ -139,25 +142,44 @@ implements Comparator<ExecutableElement> {
                     HTMLDialog reg = ee.getAnnotation(HTMLDialog.class);
                     String url;
                     try {
-                        final String res = LayerBuilder.absolutizeResource(ee, reg.url());
-                        validateResource(res, ee, reg, "url", false);
-                        url = "nbresloc:/" + res;
-                    } catch (LayerGenerationException ex) {
-                        error("Cannot find resource " + reg.url(), ee);
-                        continue;
+                        URL u = new URL(reg.url());
+                        url = u.toExternalForm();
+                    } catch (MalformedURLException ex2) {
+                        try {
+                            final String res = LayerBuilder.absolutizeResource(ee, reg.url());
+                            validateResource(res, ee, reg, "url", false);
+                            url = "nbresloc:/" + res;
+                        } catch (LayerGenerationException ex) {
+                            error("Cannot find resource " + reg.url(), ee);
+                            continue;
+                        }
+                    }
+                    w.append("  public static String ").append(ee.getSimpleName());
+                    w.append("(");
+                    String sep = "";
+                    for (VariableElement v : ee.getParameters()) {
+                        w.append(sep);
+                        w.append("final ").append(v.asType().toString()).append(" ").append(v.getSimpleName());
+                        sep = ", ";
                     }
                     
-                    w.append("  public static String ").append(ee.getSimpleName());
-                    w.append("(").append(") {\n");
+                    w.append(") {\n");
                     w.append("    return Builder.newDialog(\"").append(url).append("\").\n");
                     w.append("      loadFinished(new Runnable() {\n");
                     w.append("        public void run() {\n");
                     w.append("          ").append(ee.getEnclosingElement().getSimpleName())
-                            .append(".").append(ee.getSimpleName()).append("(").append(");\n");
+                            .append(".").append(ee.getSimpleName()).append("(");
+                    sep = "";
+                    for (VariableElement v : ee.getParameters()) {
+                        w.append(sep);
+                        w.append(v.getSimpleName());
+                        sep = ", ";
+                    }
+                    w.append(");\n");
                     w.append("        }\n");
                     w.append("      }).\n");
                     w.append("      showAndWait();\n");
-                    w.append("  }");
+                    w.append("  }\n");
                 }
                 
                 w.append("}\n");
