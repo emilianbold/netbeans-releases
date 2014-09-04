@@ -107,6 +107,9 @@ implements Comparator<ExecutableElement> {
             if (e.getModifiers().contains(Modifier.PRIVATE)) {
                 error("Method annotated by @HTMLDialog cannot be private", e);
             }
+            if (!ee.getThrownTypes().isEmpty()) {
+                error("Method annotated by @HTMLDialog cannot throw exceptions", e);
+            }
             
             PackageElement pkg = findPkg(ee);
             
