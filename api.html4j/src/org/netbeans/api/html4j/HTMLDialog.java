@@ -46,6 +46,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.netbeans.modules.html4j.HTMLDialogImpl;
 
 /** Generates method that opens an HTML based modal dialog.
  * The method is generated into <code>Pages</code> class in the same package
@@ -70,4 +71,52 @@ public @interface HTMLDialog {
     String url();
     
     String className() default "Pages";
+    
+    /** Rather than using this class directly, consider 
+     * {@link HTMLDialog}. The {@link HTMLDialog} annotation 
+     * generates boilderplate code for you
+     * and can do some compile times checks helping you to warnings
+     * as soon as possible.
+     */
+    public static final class Builder {
+        private final HTMLDialogImpl impl;
+        
+        private Builder(String u) {
+            impl = new HTMLDialogImpl();
+            impl.setUrl(u);
+        }
+
+        /** Starts creation of a new HTML dialog. The page
+         * can contain hidden buttons as described at
+         * {@link HTMLDialog}.
+         * 
+         * @param url URL (usually using <code>nbresloc</code> protocol)
+         *   of the page to display in the dialog.
+         * @return instance of the builder
+         */
+        public static Builder newDialog(String url) {
+            return new Builder(url);
+        }
+        
+        /** Registers a runnable to be executed when the page
+         * becomes ready.
+         * 
+         * @param run runnable to run
+         * @return this builder
+         */
+        public Builder loadFinished(Runnable run) {
+            impl.setOnPageLoad(run);
+            return this;
+        }
+
+        /** Displays the dialog. This method blocks waiting for the
+         * dialog to be shown and closed by the user. 
+         * 
+         * @return 'id' of a selected button element or <code>null</code>
+         *   if the dialog was closed without selecting a button
+         */
+        public String showAndWait() {
+            return impl.showAndWait();
+        }
+    }
 }
