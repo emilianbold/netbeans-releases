@@ -80,6 +80,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsWithObjectImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelExtender;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.javascript2.editor.model.impl.OccurrenceBuilder;
@@ -87,6 +88,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.ParameterObject;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.editor.spi.model.ObjectInterceptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -175,6 +177,11 @@ public final class Model {
                     }
                 }
             }
+            
+            for (ObjectInterceptor objectInterceptor : ModelExtender.getDefault().getObjectInterceptors()) {
+                objectInterceptor.interceptGlobal(visitor.getGlobalObject(), elementFactory);
+            }
+            
             resolveWindowProperties = !resolveWithObjects;
             long end = System.currentTimeMillis();
             if(LOGGER.isLoggable(Level.FINE)) {
