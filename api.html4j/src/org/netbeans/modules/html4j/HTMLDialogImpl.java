@@ -50,7 +50,6 @@ import java.net.URL;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
@@ -63,7 +62,7 @@ import org.openide.util.Lookup;
 
 public final class HTMLDialogImpl implements Runnable {
     private volatile int state;
-    private JFXPanel p;
+    private NbFxPanel p;
     private DialogDescriptor dd;
     private WebView webView;
     
@@ -117,7 +116,7 @@ public final class HTMLDialogImpl implements Runnable {
     }
     
     private void initPanel() {
-        p = new JFXPanel();
+        p = new NbFxPanel();
         dd = new DialogDescriptor(p, "");
         dd.setOptions(new Object[0]);
         state = 1;

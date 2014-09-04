@@ -59,7 +59,6 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
@@ -81,7 +80,7 @@ import org.openide.windows.TopComponent;
 )
 public final class HtmlComponent extends TopComponent  {
     private static final Logger LOG = Logger.getLogger(HtmlComponent.class.getName());
-    private final JFXPanel p = new JFXPanel();
+    private final NbFxPanel p = new NbFxPanel();
     private /* final */ WebView v;
     private final InstanceContent ic;
     private Object value;
