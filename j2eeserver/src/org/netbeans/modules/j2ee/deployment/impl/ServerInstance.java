@@ -1039,7 +1039,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         if (ss == null) {
             return false;
         }
-        return ss.supportsStartDebugging(null);
+        return ss.supportsStartDebugging(null) || ss.isDebuggable(null);
     }
 
     /**

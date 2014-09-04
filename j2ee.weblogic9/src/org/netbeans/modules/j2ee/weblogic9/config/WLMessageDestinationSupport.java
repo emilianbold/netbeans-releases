@@ -500,9 +500,9 @@ public class WLMessageDestinationSupport {
 
         private final File configDir;
 
-        private JmsResource resource;
+        private final StringBuilder value = new StringBuilder();
 
-        private String value;
+        private JmsResource resource;
 
         public JmsSystemResourceHandler(File configDir) {
             this.configDir = configDir;
@@ -510,7 +510,7 @@ public class WLMessageDestinationSupport {
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) {
-            value = null;
+            value.setLength(0);
             if ("jms-system-resource".equals(qName)) { // NOI18N
                 resource = new JmsResource(configDir, true);
             }
@@ -526,19 +526,19 @@ public class WLMessageDestinationSupport {
                 resources.add(resource);
                 resource = null; 
             } else if("name".equals(qName)) { // NOI18N
-                resource.setResourceName(value);
+                resource.setResourceName(value.toString());
             } else if("jndi-name".equals(qName)) { // NOI18N
-                resource.setJndiName(value);
+                resource.setJndiName(value.toString());
             } else if ("taget".equals(qName)) { // NOI18N
-                resource.setTarget(value);
+                resource.setTarget(value.toString());
             } else if ("descriptor-file-name".equals(qName)) { // NOI18N
-                resource.setFile(value);
+                resource.setFile(value.toString());
             }
         }
 
         @Override
         public void characters(char[] ch, int start, int length) {
-            value = new String(ch, start, length);
+            value.append(ch, start, length);
         }
 
         public List<JmsResource> getResources() {
@@ -552,9 +552,9 @@ public class WLMessageDestinationSupport {
 
         private final File domainDir;
 
-        private JmsResource resource;
+        private final StringBuilder value = new StringBuilder();
 
-        private String value;
+        private JmsResource resource;
 
         private boolean isJms;
 
@@ -564,7 +564,7 @@ public class WLMessageDestinationSupport {
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) {
-            value = null;
+            value.setLength(0);
             if ("app-deployment".equals(qName)) { // NOI18N
                 resource = new JmsResource(domainDir, false);
             }
@@ -583,15 +583,15 @@ public class WLMessageDestinationSupport {
                 isJms = false;
                 resource = null;
             } else if("name".equals(qName)) { // NOI18N
-                resource.setResourceName(value);
+                resource.setResourceName(value.toString());
             } else if("jndi-name".equals(qName)) { // NOI18N
-                resource.setJndiName(value);
+                resource.setJndiName(value.toString());
             } else if ("taget".equals(qName)) { // NOI18N
-                resource.setTarget(value);
+                resource.setTarget(value.toString());
             } else if ("source-path".equals(qName)) { // NOI18N
-                resource.setFile(value);
+                resource.setFile(value.toString());
             } else if ("module-type".equals(qName)) { // NOI18N
-                if ("jms".equals(value)) {
+                if ("jms".equals(value.toString())) {
                     isJms = true;
                 }
             }
@@ -599,7 +599,7 @@ public class WLMessageDestinationSupport {
 
         @Override
         public void characters(char[] ch, int start, int length) {
-            value = new String(ch, start, length);
+            value.append(ch, start, length);
         }
 
         public List<JmsResource> getResources() {

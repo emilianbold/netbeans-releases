@@ -204,6 +204,7 @@ public class Customizer extends JTabbedPane {
             return this.getData().size();
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(value="DMI_BLOCKING_METHODS_ON_URL", justification="File URLs only")
         public Object getElementAt(int index) {
             java.util.List list = this.getData();
             URL url = (URL)list.get(index);

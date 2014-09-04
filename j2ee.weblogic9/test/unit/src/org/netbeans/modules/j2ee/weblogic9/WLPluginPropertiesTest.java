@@ -86,23 +86,6 @@ public class WLPluginPropertiesTest extends NbTestCase {
         assertTrue(file.delete());
     }
 
-    public void testGetWeblogicJar() throws Exception {
-        File baseFolder = getWorkDir();
-        File libFolder = new File(baseFolder, "server/lib");
-        libFolder.mkdirs();
-
-        File file = new File(libFolder, "weblogic.jar");
-
-        File wlJar = WLPluginProperties.getWeblogicJar(baseFolder);
-        assertNotNull(wlJar);
-        assertEquals(file, wlJar);
-
-        createJar(file, "Implementation-Version: 9.0.0.0");
-        wlJar = WLPluginProperties.getWeblogicJar(baseFolder);
-        assertNotNull(wlJar);
-        assertEquals(file, wlJar);
-    }
-
     public void testJvmVendor() {
         assertEquals(WLPluginProperties.JvmVendor.SUN,
                 WLPluginProperties.JvmVendor.fromPropertiesString("Sun"));
