@@ -113,6 +113,7 @@ public class DocumentServices {
             factories = factoryMap.get(c);
             if (factories == null) {
                 factories = initDocumentFactories(c);
+                factoryMap.put(c, factories);
             }
         }
         Collection<? extends DocumentServiceFactory<?>> col = factories.allInstances();
