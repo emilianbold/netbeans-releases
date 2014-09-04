@@ -141,6 +141,8 @@ public class DOMNode extends AbstractNode {
             displayName = MessageFormat.format(pattern, tagName, selector);
         } else if (nodeType == org.w3c.dom.Node.DOCUMENT_NODE) {
             displayName = bundle.getString("DOMNode.documentDisplayName"); //NOI18N
+        } else if (nodeType == org.w3c.dom.Node.DOCUMENT_FRAGMENT_NODE) {
+            displayName = bundle.getString("DOMNode.shadowRootDisplayName"); // NOI18N
         } else {
             // Not used by now
             displayName = node.getNodeType() + " " + node.getNodeName() + " " + node.getNodeValue(); // NOI18N
