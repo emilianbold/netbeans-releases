@@ -69,7 +69,7 @@
                         <specification-version>8.0</specification-version>
                     </run-dependency>
                 </dependency>
-                </module-dependencies>
+            </module-dependencies>
             <friend-packages>
                 <friend>com.oracle.tools.ide.binary.dependencies</friend>
                 <friend>com.oracle.tools.ide.binary.dependencies.cm</friend>
@@ -135,6 +135,7 @@
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.remote.impl</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>
+                <friend>org.netbeans.modules.mixeddev</friend>
                 <friend>org.netbeans.modules.remotefs.versioning</friend>
                 <package>org.netbeans.modules.remote.api</package>
                 <package>org.netbeans.modules.remote.api.ui</package>
