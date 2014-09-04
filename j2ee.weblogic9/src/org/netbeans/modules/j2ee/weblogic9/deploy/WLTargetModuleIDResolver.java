@@ -86,6 +86,9 @@ public class WLTargetModuleIDResolver extends TargetModuleIDResolver {
     }
 
     private void addCollisions(String contextRoot, String noSlashContextRoot, List<TargetModuleID> result, TargetModuleID[] candidates) {
+        if (candidates == null) {
+            return;
+        }
         for (int i = 0; i < candidates.length; i++) {
             TargetModuleID tm = candidates[i];
             if (contextRoot.equals(tm.getModuleID()) || noSlashContextRoot.equals(tm.getModuleID())) {
