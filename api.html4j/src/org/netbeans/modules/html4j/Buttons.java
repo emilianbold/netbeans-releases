@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html4j;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
@@ -51,24 +52,54 @@ import net.java.html.js.JavaScriptBody;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class Buttons {
-    @JavaScriptBody(args = {}, body = 
+    private final List<JButton> arr = new ArrayList<>();
+    
+    @JavaScriptBody(args = {}, javacall = true, body = 
+        "var self = this;\n" +
         "var list = window.document.getElementsByTagName('button');\n" +
         "var arr = [];\n" +
+        "function add(target) {\n" +
+        "  var l = function(changes) {\n" +
+        "    var b = target;\n" +
+        "    self.@org.netbeans.modules.html4j.Buttons::changeState(Ljava/lang/String;ZLjava/lang/String;)(b.id, b.disabled, b.innerHTML);\n" +
+        "  }\n" +
+        "  target.addEventListener('DOMSubtreeModified', l, false);\n" +
+        "}\n" +
+        "var l = function(changes) { throw 'Here';\n" +
+        "  for (var i = 0; i < changes.length; i++) {\n" +
+        "    var b = changes[i].target;\n" +
+        "  };\n" +
+        "};\n" +
         "for (var i = 0; i < list.length; i++) {\n" +
         "  var b = list[i];\n" +
         "  if (b.hidden === true) {\n" +
         "    arr.push(b.id);\n" +
         "    arr.push(b.innerHTML);\n" +
         "    arr.push(b.disabled);\n" +
+        "    add(b);\n" +
         "  }\n" +
         "}\n" +
         "return arr;\n"
     )
-    private static native Object[] list();
+    private native Object[] list();
+    
+    final void changeState(final String id, final boolean disabled, final String text) {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                for (JButton b : arr) {
+                    if (b.getName().equals(id)) {
+                        b.setEnabled(!disabled);
+                        b.setText(text);
+                    }
+                }
+            }
+        });
+    }
     
     public static JButton[] buttons() {
-        List<JButton> arr = new ArrayList<>();
-        final Object[] all = list();
+        final Buttons btns = new Buttons();
+        final Object[] all = btns.list();
         for (int i = 0; i < all.length; i += 3) {
             JButton b = new JButton();
             b.setName(all[i].toString());
@@ -76,8 +107,8 @@ final class Buttons {
             if (Boolean.TRUE.equals(all[i + 2])) {
                 b.setEnabled(false);
             }
-            arr.add(b);
+            btns.arr.add(b);
         }
-        return arr.toArray(new JButton[0]);
+        return btns.arr.toArray(new JButton[0]);
     }
 }

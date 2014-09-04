@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html4j;
 
+import java.awt.EventQueue;
 import java.net.URL;
 import java.util.concurrent.CountDownLatch;
 import javafx.application.Platform;
@@ -94,7 +95,8 @@ public class DialogsTest {
     }
 
     @Test public void parseButtons() throws Throwable {
-        final Throwable[] arr = { null };
+        final Throwable[] ex = { null };
+        final JButton[] buttons = { null, null };
         final CountDownLatch done = new CountDownLatch(1);
         ctx.execute(new Runnable() {
             @Override
@@ -115,19 +117,44 @@ public class DialogsTest {
                     
                     assertFalse(arr[0].isEnabled(), "OK is disabled");
                     assertTrue(arr[1].isEnabled(), "Cancel is enabled");
+                    
+                    setDisabled("OK", false);
+                    
+                    String prev = setText("OK", "Fine");
+                    assertEquals(prev, "Agree");
+                    
+                    buttons[0] = arr[0];
+                    buttons[1] = arr[1];
                 } catch (Throwable t) {
-                    arr[0] = t;
+                    ex[0] = t;
                 } finally {
                     done.countDown();
                 }
             }
         });
         done.await();
-        if (arr[0] != null) {
-            throw arr[0];
+        if (ex[0] != null) {
+            throw ex[0];
         }
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                assertEquals(buttons[0].getText(), "Fine", "Text of OK changed");
+                assertTrue(buttons[0].isEnabled(), "OK is now enabled");
+            }
+        });
     }
     
     @JavaScriptBody(args = "b", body = "window.document.getElementsByTagName('body')[0].innerHTML = b;")
     private static native void setBody(String b);
+    
+    @JavaScriptBody(args = { "id", "state" }, body = "window.document.getElementById(id).disabled = state;")
+    private static native void setDisabled(String id, boolean state);
+    
+    @JavaScriptBody(args = { "id", "t" }, body = ""
+            + "var prev = window.document.getElementById(id).innerHTML;\n"
+            + "window.document.getElementById(id).innerHTML = t;\n"
+            + "return prev;\n"
+    )
+    private static native String setText(String id, String t);
 }
