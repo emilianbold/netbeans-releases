@@ -652,6 +652,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             return domain;
         }
 
+        @NonNull
         @Override
         public File getServerHome() {
             File server = new File(getPlatformRoot());
