@@ -46,12 +46,12 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Locale;
 import org.netbeans.modules.html4j.HTMLDialogImpl;
 
 /** Generates method that opens an HTML based modal dialog.
  * The method is generated into <code>Pages</code> class in the same package
  * (unless one changes the name via {@link #className()}) and has the same name,
- * return type
  * and parameters as the method annotated by this annotation. When the method
  * is invoked, it opens a dialog, loads an HTML page into it. When the page is 
  * loaded, it calls back the method annotated by this annotation and passes it
@@ -62,14 +62,32 @@ import org.netbeans.modules.html4j.HTMLDialogImpl;
  * The HTML page may contain invisible <code>&lt;button&gt;</code> elements. If it does so, 
  * those buttons are copied to the dialog frame and displayed underneath the page.
  * Their enabled/disabled state reflects the state of the buttons in the page.
+ * When one of the buttons is selected, the dialog closes and the generated
+ * method returns with 'id' of the selected button (or <code>null</code> if
+ * the dialog was closed).
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.METHOD)
 public @interface HTMLDialog {
+    /** URL of the page to display. Usually relative to the annotated class.
+     * Will be resolved by the annotation processor and converted into
+     * <code>nbresloc</code> protocol - as such the HTML page can be L10Ned
+     * later by adding classical L10N suffixes. E.g. <code>index_cs.html</code>
+     * will take preceedence over <code>index.html</code> if the user is 
+     * running in Czech {@link Locale}.
+     * 
+     * @return relative path the HTML page
+     */
     String url();
     
+    /** Name of the file to generate the method that opens the dialog
+     * into. Class of such name will be generated into the same
+     * package. 
+     * 
+     * @return name of class to generate
+     */
     String className() default "Pages";
     
     /** Rather than using this class directly, consider 
