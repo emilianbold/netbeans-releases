@@ -159,9 +159,9 @@ public class JdbcChildrenFactory extends ChildFactory<ResourceNode> implements R
             this(poolName, jndiNames, null);
         }
 
-        public JDBCDataBean( String poolName , String[] jndiNames , String deploymentName){
+        public JDBCDataBean( String poolName , String[] jndiNames, String deploymentName){
             name = poolName;
-            this.jndiNames = jndiNames;
+            this.jndiNames = jndiNames.clone();
             this.deploymentName = deploymentName;
         }
 

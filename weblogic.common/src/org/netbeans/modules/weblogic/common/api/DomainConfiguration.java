@@ -143,7 +143,7 @@ public final class DomainConfiguration {
     @CheckForNull
     static DomainConfiguration getInstance(File domain, boolean listen) {
         File domainConfig = WebLogicLayout.getDomainConfigFile(domain);
-        if (domainConfig == null) {
+        if (!domainConfig.isFile()) {
             return null;
         }
 

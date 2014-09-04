@@ -51,6 +51,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -540,7 +541,7 @@ public class ServerLocalPropertiesVisual extends javax.swing.JPanel {
      *
      * @author Kirill Sorokin
      */
-    private static class Instance {
+    private static class Instance implements Serializable {
 
         /**
          * Instance's name, it is used a the parameter to the startup/shutdown
