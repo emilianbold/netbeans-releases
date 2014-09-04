@@ -40,14 +40,14 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.spi.jstesting;
+package org.netbeans.modules.web.clientproject.spi;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Provides support for configuring selected JS testing provider (via Project Properties dialog).
- * @since 1.60
+ * Provides support for configuration (typically via Project Properties dialog).
+ * @since 1.67
  */
 public interface CustomizerPanelImplementation {
 
