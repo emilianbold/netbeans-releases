@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.spi.model;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.Collection;
+package org.netbeans.modules.javascript2.nodejs.editor.model;
+
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.javascript2.editor.spi.model.ObjectInterceptor;
+import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
 
 /**
- * The objects are not a part of the model.
- * @author Petr Hejl
+ *
+ * @author Petr Pisl
  */
-public interface ModelInterceptor {
-
-    Collection<JsObject> interceptGlobal(ModelElementFactory factory);
-
-    @Retention(RetentionPolicy.SOURCE)
-    @Target(ElementType.TYPE)
-    public @interface Registration {
-
-        int priority() default 100;
+@ObjectInterceptor.Registration(priority=101)
+public class NodeJsObjectInterceptor implements ObjectInterceptor {
+    private final static String EXPORTS = "exports"; //NOI18N
+    private final static String MODULE = "module"; //NOI18N
+    
+    @Override
+    public void interceptGlobal(final JsObject global, final ModelElementFactory factory) {
+        JsObject exports = global.getProperty(EXPORTS);
+        if (exports == null) {
+            JsObject module = global.getProperty(MODULE);
+            if (module != null) {
+                exports = module.getProperty(EXPORTS);
+            }
+        }
+        if (exports != null) {
+            JsObject newReference = factory.newReference(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX + global.getName(), exports, true);
+            global.addProperty(newReference.getName(), newReference);
+        }
     }
 }

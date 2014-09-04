@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.spi.model;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.Collection;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
+package org.netbeans.modules.javascript2.editor.model.impl;
+
+import java.util.Set;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.javascript2.editor.spi.model.ObjectInterceptor;
+import org.openide.filesystems.annotations.LayerGeneratingProcessor;
+import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * The objects are not a part of the model.
- * @author Petr Hejl
+ *
+ * @author Petr Pisl
  */
-public interface ModelInterceptor {
+@ServiceProvider(service=Processor.class)
+@SupportedAnnotationTypes("org.netbeans.modules.javascript2.editor.spi.model.ObjectInterceptor.Registration") //NOI18N
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
+public class ObjectInterceptorRegistrationProcessor extends LayerGeneratingProcessor {
 
-    Collection<JsObject> interceptGlobal(ModelElementFactory factory);
-
-    @Retention(RetentionPolicy.SOURCE)
-    @Target(ElementType.TYPE)
-    public @interface Registration {
-
-        int priority() default 100;
+    public ObjectInterceptorRegistrationProcessor() {
+        super();
+    }
+    
+    @Override
+    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
+        for (Element element : roundEnv.getElementsAnnotatedWith(ObjectInterceptor.Registration.class)) {
+            layer(element)
+                    .instanceFile(ModelExtender.OBJECT_INTERCEPTORS_PATH, null, ObjectInterceptor.class)
+                    .position(element.getAnnotation(ObjectInterceptor.Registration.class).priority())
+                    .write();
+        }
+        return true;
     }
 }
