@@ -48,7 +48,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /** Generates method that opens an HTML based modal dialog.
- * The method is generated into <code>Dialogs</code> class in the same package
+ * The method is generated into <code>Pages</code> class in the same package
  * (unless one changes the name via {@link #className()}) and has the same name,
  * return type
  * and parameters as the method annotated by this annotation. When the method
@@ -69,5 +69,5 @@ import java.lang.annotation.Target;
 public @interface HTMLDialog {
     String url();
     
-    String className() default "Dialogs";
+    String className() default "Pages";
 }
