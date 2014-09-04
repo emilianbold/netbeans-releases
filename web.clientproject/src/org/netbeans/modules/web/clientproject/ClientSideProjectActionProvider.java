@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -62,6 +63,7 @@ import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -115,9 +117,16 @@ public class ClientSideProjectActionProvider implements ActionProvider {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    File script = null;
+                    if (COMMAND_RUN_SINGLE.equals(command)) {
+                        FileObject fo = context.lookup(FileObject.class);
+                        assert fo != null;
+                        script = FileUtil.toFile(fo);
+                        assert script != null : fo;
+                    }
                     for (PlatformProvider provider : project.getPlatformProviders()) {
                         if (provider.isRunSupported(project)) {
-                            provider.run(project);
+                            provider.run(project, script);
                         }
                     }
                 }
