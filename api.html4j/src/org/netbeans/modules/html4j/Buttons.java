@@ -59,6 +59,7 @@ final class Buttons {
         "  if (b.hidden === true) {\n" +
         "    arr.push(b.id);\n" +
         "    arr.push(b.innerHTML);\n" +
+        "    arr.push(b.disabled);\n" +
         "  }\n" +
         "}\n" +
         "return arr;\n"
@@ -68,10 +69,13 @@ final class Buttons {
     public static JButton[] buttons() {
         List<JButton> arr = new ArrayList<>();
         final Object[] all = list();
-        for (int i = 0; i < all.length; i += 2) {
+        for (int i = 0; i < all.length; i += 3) {
             JButton b = new JButton();
             b.setName(all[i].toString());
             b.setText(all[i + 1].toString());
+            if (Boolean.TRUE.equals(all[i + 2])) {
+                b.setEnabled(false);
+            }
             arr.add(b);
         }
         return arr.toArray(new JButton[0]);

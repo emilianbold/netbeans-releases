@@ -112,6 +112,9 @@ public class DialogsTest {
                     assertEquals(arr[1].getName(), "Cancel", "id of 2nd button parsed");
                     assertEquals(arr[0].getText(), "Agree", "text of 1st button parsed");
                     assertEquals(arr[1].getText(), "Disagree", "text of 2nd button parsed");
+                    
+                    assertFalse(arr[0].isEnabled(), "OK is disabled");
+                    assertTrue(arr[1].isEnabled(), "Cancel is enabled");
                 } catch (Throwable t) {
                     arr[0] = t;
                 } finally {
