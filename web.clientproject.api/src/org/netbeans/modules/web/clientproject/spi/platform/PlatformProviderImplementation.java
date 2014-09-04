@@ -41,14 +41,13 @@
  */
 package org.netbeans.modules.web.clientproject.spi.platform;
 
-import java.io.File;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
+import org.netbeans.spi.project.ActionProvider;
 
 /**
  * Interface for platform provider.
@@ -93,22 +92,12 @@ public interface PlatformProviderImplementation {
     List<URL> getSourceRoots(@NonNull Project project);
 
     /**
-     * Checks whether this provider support "running" the given project.
-     * @param project project to be checked
-     * @return {@code true} if this provider supports "running" the given project, {@code false} otherwise
-     * @see #run(Project)
+     * Get action provider of this provider.
+     * @param project project to be source of the action
+     * @return action provider of this provider, can be {@code null} if not supported
      */
-    boolean isRunSupported(@NonNull Project project);
-
-    /**
-     * Runs the given project.
-     * <p>
-     * This method is always called in a background thread.
-     * @param project the project to be run; never {@code null}
-     * @param script script to be run, can be {@code null} if project should be run
-     * @see #isRunSupported(Project)
-     */
-    void run(@NonNull Project project, @NullAllowed File script);
+    @CheckForNull
+    ActionProvider getActionProvider(@NonNull Project project);
 
     /**
      * Notifies provider that the given project is being opened.
