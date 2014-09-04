@@ -496,6 +496,20 @@ public final class Model {
     }
 
     private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder) {
+        Set<String> alreadyResolved = new HashSet<String>();
+        resolveLocalTypes(object, docHolder, alreadyResolved);
+    }
+    
+    private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder, Set<String> alreadyResolvedObjects) {
+        String fqn = object.getFullyQualifiedName();
+        boolean isTopObject = object.getJSKind() == JsElement.Kind.FILE;
+        if (alreadyResolvedObjects.contains(fqn)) {
+            assert false: "Probably cycle in the javascript model of file: " + object.getFileObject().getPath(); //NOI18N
+            return;
+        }
+        if (!isTopObject) {
+            alreadyResolvedObjects.add(fqn);
+        }
         if(object instanceof JsFunctionImpl) {
             ((JsFunctionImpl)object).resolveTypes(docHolder);
         } else {
@@ -508,14 +522,17 @@ public final class Model {
         ArrayList<String> namesBefore = new ArrayList(object.getProperties().keySet());
         Collections.reverse(copy);  // resolve the properties in revers order (how was added)
         for(JsObject property: copy) {
-            resolveLocalTypes(property, docHolder);
+            resolveLocalTypes(property, docHolder, alreadyResolvedObjects);
         }
         ArrayList<String> namesAfter = new ArrayList(object.getProperties().keySet());
         // it's possible that some properties was moved to the object, then resolve them.
         for (String propertyName : namesAfter) {
             if (!namesBefore.contains(propertyName)) {
-                resolveLocalTypes(object.getProperty(propertyName), docHolder);
+                resolveLocalTypes(object.getProperty(propertyName), docHolder, alreadyResolvedObjects);
             }
+        }
+        if (!isTopObject) {
+            alreadyResolvedObjects.remove(fqn);
         }
     }
 
