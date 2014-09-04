@@ -47,6 +47,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Locale;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.web.WebView;
 import org.netbeans.modules.html4j.HTMLDialogImpl;
 
 /** Generates method that opens an HTML based modal dialog.
@@ -135,6 +137,19 @@ public @interface HTMLDialog {
          */
         public String showAndWait() {
             return impl.showAndWait();
+        }
+        
+        /** Obtains the component from the builder. The parameter
+         * can either be {@link JFXPanel}.<b>class</b> or
+         * {@link WebView}.<b>class</b>. After calling this
+         * method the builder becomes useless.
+         * 
+         * @param <C> requested component type
+         * @param type either {@link JFXPanel} or {@link WebView} class
+         * @return instance of the requested component
+         */
+        public <C> C component(Class<C> type) {
+            return impl.component(type);
         }
     }
 }

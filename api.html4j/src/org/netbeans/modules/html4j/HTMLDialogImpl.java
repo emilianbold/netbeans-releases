@@ -50,6 +50,7 @@ import java.net.URL;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
@@ -178,5 +179,39 @@ public final class HTMLDialogImpl implements Runnable {
         }
         final JButton[] buttons = Buttons.buttons();
         dd.setOptions(buttons);
+    }
+
+    public <C> C component(Class<C> type) {
+        state = -1;
+        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+        if (loader == null) {
+            loader = HTMLDialogImpl.class.getClassLoader();
+        }
+        final URL pageUrl;
+        try {
+            pageUrl = new URL(url);
+        } catch (MalformedURLException ex) {
+            throw new IllegalStateException(ex);
+        }
+        if (type == WebView.class) {
+            WebView wv = new WebView();
+            FXBrowsers.load(wv, pageUrl, onPageLoad, loader);
+            return type.cast(wv);
+        } else if (type == JFXPanel.class) {
+            final JFXPanel p = new JFXPanel();
+            final ClassLoader l = loader;
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    WebView wv = new WebView();
+                    FXBrowsers.load(wv, pageUrl, onPageLoad, l);
+                    Scene s = new Scene(wv);
+                    p.setScene(s);
+                }
+            });
+            return type.cast(p);
+        } else {
+            throw new IllegalStateException("Unsupported type: " + type);
+        }
     }
 }

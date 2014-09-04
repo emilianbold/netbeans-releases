@@ -66,11 +66,13 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.MirroredTypeException;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import org.netbeans.api.html4j.HTMLComponent;
 import org.netbeans.api.html4j.HTMLDialog;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -89,6 +91,7 @@ implements Comparator<ExecutableElement> {
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> hash = new HashSet<>();
         hash.add(HTMLDialog.class.getCanonicalName());
+        hash.add(HtmlComponent.class.getCanonicalName());
         return hash;
     }
     
@@ -109,6 +112,33 @@ implements Comparator<ExecutableElement> {
             }
             if (!ee.getThrownTypes().isEmpty()) {
                 error("Method annotated by @HTMLDialog cannot throw exceptions", e);
+            }
+            
+            PackageElement pkg = findPkg(ee);
+            
+            String fqn = pkg.getQualifiedName() + "." + reg.className();
+            
+            Set<ExecutableElement> elems = names.get(fqn);
+            if (elems == null) {
+                elems = new TreeSet<>(this);
+                names.put(fqn, elems);
+            }
+            elems.add(ee);
+        }
+        for (Element e : re.getElementsAnnotatedWith(HTMLComponent.class)) {
+            HTMLComponent reg = e.getAnnotation(HTMLComponent.class);
+            if (reg == null || e.getKind() != ElementKind.METHOD) {
+                continue;
+            }
+            ExecutableElement ee = (ExecutableElement) e;
+            if (!e.getModifiers().contains(Modifier.STATIC)) {
+                error("Method annotated by @HTMLComponent needs to be static", e);
+            }
+            if (e.getModifiers().contains(Modifier.PRIVATE)) {
+                error("Method annotated by @HTMLComponent cannot be private", e);
+            }
+            if (!ee.getThrownTypes().isEmpty()) {
+                error("Method annotated by @HTMLComponent cannot throw exceptions", e);
             }
             
             PackageElement pkg = findPkg(ee);
@@ -143,46 +173,33 @@ implements Comparator<ExecutableElement> {
                 
                 for (ExecutableElement ee : elems) {
                     HTMLDialog reg = ee.getAnnotation(HTMLDialog.class);
-                    String url;
-                    try {
-                        URL u = new URL(reg.url());
-                        url = u.toExternalForm();
-                    } catch (MalformedURLException ex2) {
-                        try {
-                            final String res = LayerBuilder.absolutizeResource(ee, reg.url());
-                            validateResource(res, ee, reg, "url", false);
-                            url = "nbresloc:/" + res;
-                        } catch (LayerGenerationException ex) {
-                            error("Cannot find resource " + reg.url(), ee);
+                    HTMLComponent comp = ee.getAnnotation(HTMLComponent.class);
+                    if (reg != null) {
+                        String url = findURL(reg.url(), ee);
+                        if (url == null) {
                             continue;
                         }
+                        generateDialog(w, ee, url);
                     }
-                    w.append("  public static String ").append(ee.getSimpleName());
-                    w.append("(");
-                    String sep = "";
-                    for (VariableElement v : ee.getParameters()) {
-                        w.append(sep);
-                        w.append("final ").append(v.asType().toString()).append(" ").append(v.getSimpleName());
-                        sep = ", ";
+                    if (comp != null) {
+                        String url = findURL(comp.url(), ee);
+                        if (url == null) {
+                            continue;
+                        }
+                        String t;
+                        try {
+                            t = comp.type().getName();
+                        } catch (MirroredTypeException ex) {
+                            t = ex.getTypeMirror().toString();
+                        }
+                        if (
+                            !t.equals("javafx.scene.web.WebView") &&
+                            !t.equals("javafx.embed.swing.JFXPanel")
+                        ) {
+                            error("type() can be either WebView.class or JFXPanel.class", ee);
+                        }
+                        generateComponent(w, ee, t, url);
                     }
-                    
-                    w.append(") {\n");
-                    w.append("    return Builder.newDialog(\"").append(url).append("\").\n");
-                    w.append("      loadFinished(new Runnable() {\n");
-                    w.append("        public void run() {\n");
-                    w.append("          ").append(ee.getEnclosingElement().getSimpleName())
-                            .append(".").append(ee.getSimpleName()).append("(");
-                    sep = "";
-                    for (VariableElement v : ee.getParameters()) {
-                        w.append(sep);
-                        w.append(v.getSimpleName());
-                        sep = ", ";
-                    }
-                    w.append(");\n");
-                    w.append("        }\n");
-                    w.append("      }).\n");
-                    w.append("      showAndWait();\n");
-                    w.append("  }\n");
                 }
                 
                 w.append("}\n");
@@ -194,6 +211,84 @@ implements Comparator<ExecutableElement> {
         }
         
         return true;
+    }
+
+    private String findURL(final String relativeURL, ExecutableElement ee) {
+        String url;
+        try {
+            URL u = new URL(relativeURL);
+            url = u.toExternalForm();
+        } catch (MalformedURLException ex2) {
+            try {
+                final String res = LayerBuilder.absolutizeResource(ee, relativeURL);
+                validateResource(res, ee, null, null, false);
+                url = "nbresloc:/" + res;
+            } catch (LayerGenerationException ex) {
+                error("Cannot find resource " + relativeURL, ee);
+                url = null;
+            }
+        }
+        return url;
+    }
+
+    private void generateDialog(Writer w, ExecutableElement ee, String url) throws IOException {
+        w.append("  public static String ").append(ee.getSimpleName());
+        w.append("(");
+        String sep = "";
+        for (VariableElement v : ee.getParameters()) {
+            w.append(sep);
+            w.append("final ").append(v.asType().toString()).append(" ").append(v.getSimpleName());
+            sep = ", ";
+        }
+        
+        w.append(") {\n");
+        w.append("    return Builder.newDialog(\"").append(url).append("\").\n");
+        w.append("      loadFinished(new Runnable() {\n");
+        w.append("        public void run() {\n");
+        w.append("          ").append(ee.getEnclosingElement().getSimpleName())
+                .append(".").append(ee.getSimpleName()).append("(");
+        sep = "";
+        for (VariableElement v : ee.getParameters()) {
+            w.append(sep);
+            w.append(v.getSimpleName());
+            sep = ", ";
+        }
+        w.append(");\n");
+        w.append("        }\n");
+        w.append("      }).\n");
+        w.append("      showAndWait();\n");
+        w.append("  }\n");
+    }
+    
+    private void generateComponent(
+        Writer w, ExecutableElement ee, String type, String url
+    ) throws IOException {
+        w.append("  public static ").append(type).append(" ").append(ee.getSimpleName());
+        w.append("(");
+        String sep = "";
+        for (VariableElement v : ee.getParameters()) {
+            w.append(sep);
+            w.append("final ").append(v.asType().toString()).append(" ").append(v.getSimpleName());
+            sep = ", ";
+        }
+        
+        w.append(") {\n");
+        w.append("    return Builder.newDialog(\"").append(url).append("\").\n");
+        w.append("      loadFinished(new Runnable() {\n");
+        w.append("        public void run() {\n");
+        w.append("          ").append(ee.getEnclosingElement().getSimpleName())
+                .append(".").append(ee.getSimpleName()).append("(");
+        sep = "";
+        for (VariableElement v : ee.getParameters()) {
+            w.append(sep);
+            w.append(v.getSimpleName());
+            sep = ", ";
+        }
+        w.append(");\n");
+        w.append("        }\n");
+        w.append("      }).\n");
+        w.append("      component(").append(type).append(".class);\n");
+        w.append("  }\n");
     }
 
     private void error(final String msg, Element e) {
