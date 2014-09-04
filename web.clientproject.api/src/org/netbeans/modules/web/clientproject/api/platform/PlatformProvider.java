@@ -42,10 +42,12 @@
 package org.netbeans.modules.web.clientproject.api.platform;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
 import org.netbeans.modules.web.clientproject.platform.PlatformProviderAccessor;
@@ -139,13 +141,14 @@ public final class PlatformProvider {
      * <p>
      * This method is always called in a background thread.
      * @param project the project to be run; never {@code null}
+     * @param script script to be run, can be {@code null} if project should be run
      */
-    public void run(@NonNull Project project) {
+    public void run(@NonNull Project project, @NullAllowed File script) {
         Parameters.notNull("project", project); // NOI18N
         if (EventQueue.isDispatchThread()) {
             throw new IllegalStateException("Cannot run in UI thread");
         }
-        delegate.run(project);
+        delegate.run(project, script);
     }
 
     /**

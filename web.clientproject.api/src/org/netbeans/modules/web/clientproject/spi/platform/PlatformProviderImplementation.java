@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.web.clientproject.spi.platform;
 
+import java.io.File;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
 
@@ -103,9 +105,10 @@ public interface PlatformProviderImplementation {
      * <p>
      * This method is always called in a background thread.
      * @param project the project to be run; never {@code null}
+     * @param script script to be run, can be {@code null} if project should be run
      * @see #isRunSupported(Project)
      */
-    void run(@NonNull Project project);
+    void run(@NonNull Project project, @NullAllowed File script);
 
     /**
      * Notifies provider that the given project is being opened.
