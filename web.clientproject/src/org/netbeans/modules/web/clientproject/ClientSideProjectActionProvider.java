@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.grunt.GruntfileExecutor;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
@@ -102,6 +103,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         }
     }
 
+    // XXX this method should _really_ be refactored (will be done once grunt is removed from this module)
     @NbBundle.Messages({
         "LBL_ConfigureGrunt=Action not supported for this configuration.\nDo you want to configure project actions to call Grunt tasks?"
     })
@@ -110,8 +112,19 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         LifecycleManager.getDefault().saveAll();
         if (COMMAND_RUN_SINGLE.equals(command)
                 || COMMAND_RUN.equals(command)) {
-            assert !project.isJsLibrary() : "JS library project cannot be run: " + project.getName();
-            project.logBrowserUsage();
+            if (!project.isJsLibrary()) {
+                project.logBrowserUsage();
+            }
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    for (PlatformProvider provider : project.getPlatformProviders()) {
+                        if (provider.isRunSupported(project)) {
+                            provider.run(project);
+                        }
+                    }
+                }
+            });
         }
         // XXX sorry no idea how to do this correctly
         if (COMMAND_RENAME.equals(command)) {
@@ -208,6 +221,11 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         if (COMMAND_RUN_SINGLE.equals(command)
                 || COMMAND_RUN.equals(command)) {
             if (project.isJsLibrary()) {
+                for (PlatformProvider provider : project.getPlatformProviders()) {
+                    if (provider.isRunSupported(project)) {
+                        return true;
+                    }
+                }
                 return false;
             }
         }

@@ -81,6 +81,8 @@ import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.CoverageProviderImpl;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.bower.BowerProblemProvider;
 import org.netbeans.modules.web.clientproject.node.NpmProblemProvider;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
@@ -426,6 +428,17 @@ public class ClientSideProject implements Project {
         return JsTestingProviders.getDefault().getJsTestingProvider(this, showSelectionPanel);
     }
 
+    public List<PlatformProvider> getPlatformProviders() {
+        List<PlatformProvider> allProviders = PlatformProviders.getDefault().getPlatformProviders();
+        List<PlatformProvider> enabledProviders = new ArrayList<>(allProviders.size());
+        for (PlatformProvider provider : allProviders) {
+            if (provider.isEnabled(this)) {
+                enabledProviders.add(provider);
+            }
+        }
+        return enabledProviders;
+    }
+
     public String getName() {
         if (name == null) {
             ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
@@ -634,6 +647,9 @@ public class ClientSideProject implements Project {
             if (jsTestingProvider != null) {
                 jsTestingProvider.projectOpened(project);
             }
+            for (PlatformProvider platformProvider : PlatformProviders.getDefault().getPlatformProviders()) {
+                platformProvider.projectOpened(project);
+            }
             FileObject projectDirectory = project.getProjectDirectory();
             // usage logging
             FileObject cordova = projectDirectory.getFileObject(".cordova"); // NOI18N
@@ -665,6 +681,9 @@ public class ClientSideProject implements Project {
             JsTestingProvider jsTestingProvider = project.getJsTestingProvider(false);
             if (jsTestingProvider != null) {
                 jsTestingProvider.projectClosed(project);
+            }
+            for (PlatformProvider platformProvider : PlatformProviders.getDefault().getPlatformProviders()) {
+                platformProvider.projectClosed(project);
             }
             // browser
             ClientProjectEnhancedBrowserImplementation enhancedBrowserImpl = project.getEnhancedBrowserImpl();

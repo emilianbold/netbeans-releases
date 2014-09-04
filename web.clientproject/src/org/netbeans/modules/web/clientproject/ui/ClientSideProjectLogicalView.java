@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.File;
+import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,8 +72,10 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.api.BadgeIcon;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.remotefiles.RemoteFilesNodeFactory;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
@@ -237,6 +240,11 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 /** This is the node you actually see in the project tab for the project */
     private static final class ClientSideProjectNode extends AbstractNode implements ChangeListener, PropertyChangeListener {
 
+        @StaticResource
+        private static final String PLACEHOLDER_BADGE_ICON = "org/netbeans/modules/web/clientproject/ui/resources/placeholder-badge.png"; // NOI18N
+        private static final URL PLACEHOLDER_BADGE_URL = ClientSideProjectNode.class.getResource(PLACEHOLDER_BADGE_ICON);
+        private static final String ICON_TOOLTIP = "<img src=\"%s\">&nbsp;%s"; // NOI18N
+
         private final ClientSideProject project;
         private final ProjectInformation projectInfo;
         private final PropertyEvaluator evaluator;
@@ -331,12 +339,30 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.icon2Image(projectInfo.getIcon());
+            return annotateImage(ImageUtilities.icon2Image(projectInfo.getIcon()));
         }
 
         @Override
         public Image getOpenedIcon(int type) {
             return getIcon(type);
+        }
+
+        private Image annotateImage(Image image) {
+            Image badged = image;
+            boolean first = true;
+            for (PlatformProvider provider : project.getPlatformProviders()) {
+                BadgeIcon badgeIcon = provider.getBadgeIcon();
+                if (badgeIcon != null) {
+                    badged = ImageUtilities.addToolTipToImage(badged, String.format(ICON_TOOLTIP, badgeIcon.getUrl(), provider.getDisplayName()));
+                    if (first) {
+                        badged = ImageUtilities.mergeImages(badged, badgeIcon.getImage(), 15, 0);
+                        first = false;
+                    }
+                } else {
+                    badged = ImageUtilities.addToolTipToImage(badged, String.format(ICON_TOOLTIP, PLACEHOLDER_BADGE_URL, provider.getDisplayName()));
+                }
+            }
+            return badged;
         }
 
         @Override
