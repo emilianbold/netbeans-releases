@@ -116,6 +116,18 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                     </file>
                   </folder>
             </folder>
+            <folder name="javascript">
+                <folder name="Actions">
+                    <file name="RunFile.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+                        <attr name="position" intvalue="250"/>
+                    </file>
+                    <file name="webHtml-project-separator-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="251"/>
+                    </file>
+                </folder>
+            </folder>
             <folder name="grunt+javascript">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-csl-core-GsfDataLoader.instance"/>

@@ -67,6 +67,7 @@ public final class FileUtilities {
     private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     private static final String XHTML_MIME_TYPE = "text/xhtml"; // NOI18N
     private static final String CSS_MIME_TYPE = "text/css"; // NOI18N
+    private static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
 
 
     private FileUtilities() {
@@ -89,6 +90,15 @@ public final class FileUtilities {
      */
     public static boolean isCssFile(FileObject file) {
         return CSS_MIME_TYPE.equals(FileUtil.getMIMEType(file, CSS_MIME_TYPE));
+    }
+
+    /**
+     * Check whether the given file is a JavaScript file.
+     * @param file file to be checked
+     * @return {@code true} if the given file is a JavaScript file, {@code false} otherwise
+     */
+    public static boolean isJavaScriptFile(FileObject file) {
+        return JAVASCRIPT_MIME_TYPE.equals(FileUtil.getMIMEType(file, JAVASCRIPT_MIME_TYPE));
     }
 
     /**

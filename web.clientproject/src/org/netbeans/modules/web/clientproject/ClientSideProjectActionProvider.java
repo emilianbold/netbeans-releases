@@ -51,6 +51,7 @@ import org.netbeans.modules.web.clientproject.grunt.GruntfileExecutor;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.spi.project.ActionProvider;
 
@@ -121,6 +122,13 @@ public class ClientSideProjectActionProvider implements ActionProvider {
                 || COMMAND_RUN.equals(command)) {
             if (project.isJsLibrary()) {
                 return;
+            }
+            if (COMMAND_RUN_SINGLE.equals(command)) {
+                FileObject fo = context.lookup(FileObject.class);
+                if (fo != null
+                        && FileUtilities.isJavaScriptFile(fo)) {
+                    return;
+                }
             }
             project.logBrowserUsage();
         }
@@ -227,6 +235,13 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         if (COMMAND_RUN_SINGLE.equals(command)
                 || COMMAND_RUN.equals(command)) {
             if (project.isJsLibrary()) {
+                return false;
+            }
+        }
+        if (COMMAND_RUN_SINGLE.equals(command)) {
+            FileObject fo = context.lookup(FileObject.class);
+            if (fo != null
+                    && FileUtilities.isJavaScriptFile(fo)) {
                 return false;
             }
         }
