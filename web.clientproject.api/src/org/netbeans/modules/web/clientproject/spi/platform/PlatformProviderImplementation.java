@@ -122,6 +122,14 @@ public interface PlatformProviderImplementation {
     void projectClosed(@NonNull Project project);
 
     /**
+     * Notifies provider that it has been enabled/disabled in the given project (so
+     * the provider can, if necessary, adjust UI etc.).
+     * @param project the project, never {@code null}
+     * @param enabled {@code true} if enabled, {@code false} otherwise
+     */
+    void notifyEnabled(@NonNull Project project, boolean enabled);
+
+    /**
      * Attach a listener that is to be notified of changes
      * in this platform providers.
      * @param listener a listener, can be {@code null}

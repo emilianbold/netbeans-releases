@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.platform.PlatformProviderAccessor;
@@ -109,6 +110,34 @@ public final class PlatformProviders {
      */
     public List<PlatformProvider> getPlatformProviders() {
         return new ArrayList<>(platformProviders);
+    }
+
+    /**
+     * Find platform provider for the given {@link PlatformProvider#getIdentifier() identifier}.
+     * @param identifier identifier of platform provider
+     * @return platform provider or {@code null} if not found
+     */
+    @CheckForNull
+    public PlatformProvider findPlatformProvider(@NonNull String identifier) {
+        Parameters.notNull("identifier", identifier); // NOI18N
+        for (PlatformProvider platformProvider : platformProviders) {
+            if (platformProvider.getIdentifier().equals(identifier)) {
+                return platformProvider;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Set given platform provider for the given project.
+     * @param project project to be configured
+     * @param platformProvider platform provider to be set
+     * @see #findPlatformProvider(String)
+     */
+    public void setPlatformProvider(@NonNull Project project, @NonNull PlatformProvider platformProvider) {
+        Parameters.notNull("project", project); // NOI18N
+        Parameters.notNull("platformProvider", platformProvider); // NOI18N
+        platformProvider.notifyEnabled(project, true);
     }
 
     /**

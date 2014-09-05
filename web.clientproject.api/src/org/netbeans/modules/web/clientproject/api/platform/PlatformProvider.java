@@ -166,5 +166,9 @@ public final class PlatformProvider {
         return delegate;
     }
 
-}
+    void notifyEnabled(@NonNull Project project, boolean enabled) {
+        Parameters.notNull("project", project); // NOI18N
+        delegate.notifyEnabled(project, enabled);
+    }
 
+}
