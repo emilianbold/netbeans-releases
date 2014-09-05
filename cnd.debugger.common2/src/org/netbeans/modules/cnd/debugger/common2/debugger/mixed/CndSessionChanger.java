@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarge
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.utils.PsProvider;
-import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
