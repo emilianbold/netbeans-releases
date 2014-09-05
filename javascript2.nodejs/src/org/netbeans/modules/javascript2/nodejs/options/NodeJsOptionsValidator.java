@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,77 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.nodejs;
+package org.netbeans.modules.javascript2.nodejs.options;
 
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.javascript2.nodejs.util.ValidationResult;
+import org.netbeans.modules.javascript2.nodejs.util.ValidationUtils;
 
-/**
- *
- * @author Petr Pisl
- */
-public class NodeJsElement implements ElementHandle {
 
-    private final String name;
-    private final ElementKind kind;
-    private final String documentation;
+public class NodeJsOptionsValidator {
 
-    public NodeJsElement(String name, String documentation, ElementKind kind) {
-        this.name = name;
-        this.kind = kind;
-        this.documentation = documentation;
+    private final ValidationResult result = new ValidationResult();
+
+
+    public NodeJsOptionsValidator validate() {
+        return validate(NodeJsOptions.getInstance().getNode());
     }
 
-    @Override
-    public FileObject getFileObject() {
-        return null;
+    public NodeJsOptionsValidator validate(String node) {
+        ValidationUtils.validateNode(result, node);
+        return this;
     }
 
-    @Override
-    public String getMimeType() {
-        return "";
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getIn() {
-        return "";
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return kind;
-    }
-
-    @Override
-    public Set<Modifier> getModifiers() {
-        return Collections.<Modifier>emptySet();
-    }
-
-    @Override
-    public boolean signatureEquals(ElementHandle handle) {
-        return false;
-    }
-
-    @Override
-    public OffsetRange getOffsetRange(ParserResult result) {
-        return OffsetRange.NONE;
-    }
-
-    public String getDocumentation() {
-        return documentation;
+    public ValidationResult getResult() {
+        return result;
     }
 
 }

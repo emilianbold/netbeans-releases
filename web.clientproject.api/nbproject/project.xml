@@ -247,6 +247,7 @@
                 <friend>org.netbeans.modules.cordova.platforms.ios</friend>
                 <friend>org.netbeans.modules.javascript.jstestdriver</friend>
                 <friend>org.netbeans.modules.javascript.karma</friend>
+                <friend>org.netbeans.modules.javascript2.nodejs</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.platforms.android</friend>
@@ -261,6 +262,7 @@
                 <package>org.netbeans.modules.web.clientproject.api.jslibs</package>
                 <package>org.netbeans.modules.web.clientproject.api.jstesting</package>
                 <package>org.netbeans.modules.web.clientproject.api.network</package>
+                <package>org.netbeans.modules.web.clientproject.api.platform</package>
                 <package>org.netbeans.modules.web.clientproject.api.remotefiles</package>
                 <package>org.netbeans.modules.web.clientproject.api.sites</package>
                 <package>org.netbeans.modules.web.clientproject.api.util</package>

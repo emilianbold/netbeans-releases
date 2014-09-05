@@ -93,6 +93,11 @@ public final class ClientSideProjectGenerator {
         if (jsTestingProvider != null) {
             ClientSideProjectUtilities.setJsTestingProvider(project, jsTestingProvider);
         }
+        // platform provider
+        String platformProvider = properties.getPlatformProvider();
+        if (platformProvider != null) {
+            ClientSideProjectUtilities.setPlatformProvider(project, platformProvider);
+        }
         return project;
     }
 

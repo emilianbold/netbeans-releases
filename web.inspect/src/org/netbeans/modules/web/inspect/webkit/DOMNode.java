@@ -141,6 +141,8 @@ public class DOMNode extends AbstractNode {
             displayName = MessageFormat.format(pattern, tagName, selector);
         } else if (nodeType == org.w3c.dom.Node.DOCUMENT_NODE) {
             displayName = bundle.getString("DOMNode.documentDisplayName"); //NOI18N
+        } else if (nodeType == org.w3c.dom.Node.DOCUMENT_FRAGMENT_NODE) {
+            displayName = bundle.getString("DOMNode.shadowRootDisplayName"); // NOI18N
         } else {
             // Not used by now
             displayName = node.getNodeType() + " " + node.getNodeName() + " " + node.getNodeValue(); // NOI18N
@@ -260,7 +262,7 @@ public class DOMNode extends AbstractNode {
      * @return {@code true} if it should be a leaf node, {@code false} otherwise.
      */
     private static boolean shouldBeLeaf(Node node) {
-        if (node.getContentDocument() != null) {
+        if (node.getContentDocument() != null || !node.getShadowRoots().isEmpty()) {
             return false;
         }
         List<Node> subNodes = node.getChildren();
@@ -338,6 +340,9 @@ public class DOMNode extends AbstractNode {
             Node contentDocument = node.getContentDocument();
             if (contentDocument != null) {
                 keys.add(contentDocument.getNodeId());
+            }
+            for (Node shadowRoot : node.getShadowRoots()) {
+                keys.add(shadowRoot.getNodeId());
             }
             setKeys(keys);
             // Issue 230038: make sure the node for the key is up to date

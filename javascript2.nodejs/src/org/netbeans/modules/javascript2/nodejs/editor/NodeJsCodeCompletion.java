@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.nodejs;
+package org.netbeans.modules.javascript2.nodejs.editor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +62,7 @@ import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
  *
  * @author Petr Pisl
  */
-@CompletionProvider.Registration(priority = 11)
+@CompletionProvider.Registration(priority = 41)
 public class NodeJsCodeCompletion implements CompletionProvider {
 
     private static final String REQUIRE = "require";

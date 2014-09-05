@@ -80,6 +80,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsWithObjectImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelExtender;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.javascript2.editor.model.impl.OccurrenceBuilder;
@@ -87,6 +88,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.ParameterObject;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.editor.spi.model.ObjectInterceptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -175,6 +177,11 @@ public final class Model {
                     }
                 }
             }
+            
+            for (ObjectInterceptor objectInterceptor : ModelExtender.getDefault().getObjectInterceptors()) {
+                objectInterceptor.interceptGlobal(visitor.getGlobalObject(), elementFactory);
+            }
+            
             resolveWindowProperties = !resolveWithObjects;
             long end = System.currentTimeMillis();
             if(LOGGER.isLoggable(Level.FINE)) {
@@ -489,6 +496,20 @@ public final class Model {
     }
 
     private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder) {
+        Set<String> alreadyResolved = new HashSet<String>();
+        resolveLocalTypes(object, docHolder, alreadyResolved);
+    }
+    
+    private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder, Set<String> alreadyResolvedObjects) {
+        String fqn = object.getFullyQualifiedName();
+        boolean isTopObject = object.getJSKind() == JsElement.Kind.FILE;
+        if (alreadyResolvedObjects.contains(fqn)) {
+            assert false: "Probably cycle in the javascript model of file: " + object.getFileObject().getPath(); //NOI18N
+            return;
+        }
+        if (!isTopObject) {
+            alreadyResolvedObjects.add(fqn);
+        }
         if(object instanceof JsFunctionImpl) {
             ((JsFunctionImpl)object).resolveTypes(docHolder);
         } else {
@@ -501,14 +522,17 @@ public final class Model {
         ArrayList<String> namesBefore = new ArrayList(object.getProperties().keySet());
         Collections.reverse(copy);  // resolve the properties in revers order (how was added)
         for(JsObject property: copy) {
-            resolveLocalTypes(property, docHolder);
+            resolveLocalTypes(property, docHolder, alreadyResolvedObjects);
         }
         ArrayList<String> namesAfter = new ArrayList(object.getProperties().keySet());
         // it's possible that some properties was moved to the object, then resolve them.
         for (String propertyName : namesAfter) {
             if (!namesBefore.contains(propertyName)) {
-                resolveLocalTypes(object.getProperty(propertyName), docHolder);
+                resolveLocalTypes(object.getProperty(propertyName), docHolder, alreadyResolvedObjects);
             }
+        }
+        if (!isTopObject) {
+            alreadyResolvedObjects.remove(fqn);
         }
     }
 

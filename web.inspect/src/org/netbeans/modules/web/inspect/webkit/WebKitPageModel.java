@@ -491,6 +491,30 @@ public class WebKitPageModel extends PageModel {
             }
         }
 
+        @Override
+        public void shadowRootPushed(Node host, Node shadowRoot) {
+            synchronized(WebKitPageModel.this) {
+                int hostId = host.getNodeId();
+                updateNodes(shadowRoot);
+                DOMNode domNode = nodes.get(hostId);
+                if (domNode != null) {
+                    domNode.updateChildren(host, shadowRoot);
+                }
+            }
+        }
+
+        @Override
+        public void shadowRootPopped(Node host, Node shadowRoot) {
+            synchronized(WebKitPageModel.this) {
+                int hostId = host.getNodeId();
+                DOMNode domNode = nodes.get(hostId);
+                if (domNode != null) {
+                    domNode.updateChildren(host);
+                }
+                nodes.remove(shadowRoot.getNodeId());
+            }
+        }
+
     }
 
     /**
@@ -544,13 +568,19 @@ public class WebKitPageModel extends PageModel {
         List<Node> subNodes = node.getChildren();
         if (subNodes == null) {
             int nodeType = node.getNodeType();
-            if (nodeType == org.w3c.dom.Node.ELEMENT_NODE || nodeType == org.w3c.dom.Node.DOCUMENT_NODE) {
+            if (nodeType == org.w3c.dom.Node.ELEMENT_NODE
+                    || nodeType == org.w3c.dom.Node.DOCUMENT_NODE
+                    || nodeType == org.w3c.dom.Node.DOCUMENT_FRAGMENT_NODE) {
                 webKit.getDOM().requestChildNodes(nodeId);
             }
         } else {
             for (Node subNode : subNodes) {
                 updateNodes(subNode);
             }
+            updateChildren = true;
+        }
+        for (Node shadowRoot : node.getShadowRoots()) {
+            updateNodes(shadowRoot);
             updateChildren = true;
         }
         final Node contentDocument = node.getContentDocument();
@@ -851,6 +881,9 @@ public class WebKitPageModel extends PageModel {
                     }
                 }
             }
+        } else if (type == org.w3c.dom.Node.DOCUMENT_FRAGMENT_NODE) {
+            // Shadow root => highlight/select the host
+            result = node.getParent();
         }
         return result;
     }

@@ -47,6 +47,7 @@ import java.util.List;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
+import org.netbeans.modules.javascript2.editor.spi.model.ObjectInterceptor;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -61,6 +62,8 @@ public final class ModelExtender {
     public static final String MODEL_INTERCEPTORS_PATH = "JavaScript/Model/ModelInterceptors";
 
     public static final String FUNCTION_INTERCEPTORS_PATH = "JavaScript/Model/FunctionInterceptors";
+    
+    public static final String OBJECT_INTERCEPTORS_PATH = "JavaScript/Model/ObjectInterceptors";
 
     private static final Lookup.Result<ModelInterceptor> MODEL_INTERCEPTORS =
             Lookups.forPath(MODEL_INTERCEPTORS_PATH).lookupResult(ModelInterceptor.class);
@@ -68,6 +71,9 @@ public final class ModelExtender {
     private static final Lookup.Result<FunctionInterceptor> FUNCTION_INTERCEPTORS =
             Lookups.forPath(FUNCTION_INTERCEPTORS_PATH).lookupResult(FunctionInterceptor.class);
 
+    private static final Lookup.Result<ObjectInterceptor> OBJECT_INTERCEPTORS =
+            Lookups.forPath(OBJECT_INTERCEPTORS_PATH).lookupResult(ObjectInterceptor.class);
+    
     private static ModelExtender instance;
 
     private List<JsObject> extendingObjects;
@@ -100,6 +106,16 @@ public final class ModelExtender {
      */
     public List<FunctionInterceptor> getFunctionInterceptors() {
         return new ArrayList<FunctionInterceptor>(FUNCTION_INTERCEPTORS.allInstances());
+    }
+    
+    /**
+     * Get all registered {@link ObjectCallProcessor}s.
+     *
+     * @return a list of all registered {@link ObjectCallProcessor}s; never
+     * null.
+     */
+    public List<ObjectInterceptor> getObjectInterceptors() {
+        return new ArrayList<ObjectInterceptor>(OBJECT_INTERCEPTORS.allInstances());
     }
 
     public synchronized List<? extends JsObject> getExtendingGlobalObjects() {

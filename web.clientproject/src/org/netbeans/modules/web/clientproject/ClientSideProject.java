@@ -81,6 +81,9 @@ import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.CoverageProviderImpl;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvidersListener;
 import org.netbeans.modules.web.clientproject.bower.BowerProblemProvider;
 import org.netbeans.modules.web.clientproject.node.NpmProblemProvider;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
@@ -161,6 +164,7 @@ public class ClientSideProject implements Project {
     volatile String name;
     private RefreshOnSaveListener refreshOnSaveListener;
     private ClassPath sourcePath;
+    volatile ClassPathProviderImpl.PathImpl pathImpl;
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
     private WebBrowser projectWebBrowser;
     private ClientSideProjectBrowserProvider projectBrowserProvider;
@@ -184,6 +188,33 @@ public class ClientSideProject implements Project {
         @Override
         public void processingErrorOccured(Project project, CssPreprocessor cssPreprocessor, String error) {
             // noop
+        }
+    };
+
+    final PlatformProvidersListener platformProvidersListener = new PlatformProvidersListener() {
+
+        @Override
+        public void platformProvidersChanged() {
+            // noop
+        }
+
+        @Override
+        public void propertyChanged(Project project, PlatformProvider platformProvider, PropertyChangeEvent event) {
+            if (ClientSideProject.this.equals(project)) {
+                String propertyName = event.getPropertyName();
+                if (PlatformProvider.PROP_ENABLED.equals(propertyName)) {
+                    Info info = getLookup().lookup(Info.class);
+                    assert info != null;
+                    info.firePropertyChange(ProjectInformation.PROP_ICON);
+                    if (pathImpl != null) {
+                        pathImpl.fireRootsChanged();
+                    }
+                } else if (PlatformProvider.PROP_SOURCE_ROOTS.equals(propertyName)) {
+                    if (pathImpl != null) {
+                        pathImpl.fireRootsChanged();
+                    }
+                }
+            }
         }
     };
 
@@ -426,6 +457,17 @@ public class ClientSideProject implements Project {
         return JsTestingProviders.getDefault().getJsTestingProvider(this, showSelectionPanel);
     }
 
+    public List<PlatformProvider> getPlatformProviders() {
+        List<PlatformProvider> allProviders = PlatformProviders.getDefault().getPlatformProviders();
+        List<PlatformProvider> enabledProviders = new ArrayList<>(allProviders.size());
+        for (PlatformProvider provider : allProviders) {
+            if (provider.isEnabled(this)) {
+                enabledProviders.add(provider);
+            }
+        }
+        return enabledProviders;
+    }
+
     public String getName() {
         if (name == null) {
             ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
@@ -521,7 +563,8 @@ public class ClientSideProject implements Project {
 
     ClassPath getSourceClassPath() {
         if (sourcePath == null) {
-            sourcePath = ClassPathProviderImpl.createProjectClasspath(this);
+            pathImpl = new ClassPathProviderImpl.PathImpl(this);
+            sourcePath = ClassPathProviderImpl.createProjectClasspath(pathImpl);
         }
         return sourcePath;
     }
@@ -634,6 +677,8 @@ public class ClientSideProject implements Project {
             if (jsTestingProvider != null) {
                 jsTestingProvider.projectOpened(project);
             }
+            PlatformProviders.getDefault().addPlatformProvidersListener(project.platformProvidersListener);
+            PlatformProviders.getDefault().projectOpened(project);
             FileObject projectDirectory = project.getProjectDirectory();
             // usage logging
             FileObject cordova = projectDirectory.getFileObject(".cordova"); // NOI18N
@@ -666,6 +711,8 @@ public class ClientSideProject implements Project {
             if (jsTestingProvider != null) {
                 jsTestingProvider.projectClosed(project);
             }
+            PlatformProviders.getDefault().projectClosed(project);
+            PlatformProviders.getDefault().removePlatformProvidersListener(project.platformProvidersListener);
             // browser
             ClientProjectEnhancedBrowserImplementation enhancedBrowserImpl = project.getEnhancedBrowserImpl();
             if (enhancedBrowserImpl != null) {

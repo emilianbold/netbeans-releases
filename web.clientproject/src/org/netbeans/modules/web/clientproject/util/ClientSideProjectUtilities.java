@@ -67,6 +67,8 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -177,6 +179,17 @@ public final class ClientSideProjectUtilities {
             LOGGER.log(Level.WARNING, "JS testing provider {0} was not found", jsTestingProviderIdentifier);
         } else {
             JsTestingProviders.getDefault().setJsTestingProvider(project, testingProvider);
+        }
+    }
+
+    public static void setPlatformProvider(@NonNull Project project, @NonNull String platformProviderIdentifier) {
+        assert project != null;
+        assert platformProviderIdentifier != null;
+        PlatformProvider platformProvider = PlatformProviders.getDefault().findPlatformProvider(platformProviderIdentifier);
+        if (platformProvider == null) {
+            LOGGER.log(Level.WARNING, "platform provider {0} was not found", platformProviderIdentifier);
+        } else {
+            PlatformProviders.getDefault().setPlatformProvider(project, platformProvider);
         }
     }
 

@@ -40,40 +40,38 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript2.nodejs.model;
-
-import java.util.Collection;
-import java.util.regex.Pattern;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
-import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+package org.netbeans.modules.javascript2.nodejs.editor;
 
 /**
  *
  * @author Petr Pisl
  */
-@FunctionInterceptor.Registration(priority = 200)
-public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
+public class NodeJsCompletionDataItem {
+    private final String name;
+//    private final String type;
+    private final String documentation;
+    private final String template;
 
-    private static Pattern METHOD_NAME = Pattern.compile("require");
-    
-    @Override
-    public Pattern getNamePattern() {
-        return METHOD_NAME;
+    public NodeJsCompletionDataItem(String name,/* String type,*/ String documentation, String template) {
+        this.name = name;
+//        this.type = type;
+        this.documentation = documentation;
+        this.template = template;
     }
 
-    @Override
-    public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
-//        System.out.println("NodeJs require: " + name);
-        if (args.size() == 1) {
-            FunctionArgument theFirst = args.iterator().next();
-            if (theFirst.getKind() == FunctionArgument.Kind.STRING) {
-//                System.out.println("   loading : " + theFirst.getValue());
-                
-            }
-        }
+    public String getName() {
+        return name;
     }
-    
+
+//    public String getType() {
+//        return type;
+//    }
+
+    public String getDocumentation() {
+        return documentation;
+    }
+
+    public String getTemplate() {
+        return template;
+    }
 }

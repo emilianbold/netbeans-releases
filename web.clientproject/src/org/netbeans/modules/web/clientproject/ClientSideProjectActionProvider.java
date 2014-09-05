@@ -46,10 +46,12 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.grunt.GruntfileExecutor;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.spi.project.ActionProvider;
 
@@ -102,15 +104,32 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         }
     }
 
+    // XXX this method should _really_ be refactored (will be done once grunt is removed from this module)
     @NbBundle.Messages({
         "LBL_ConfigureGrunt=Action not supported for this configuration.\nDo you want to configure project actions to call Grunt tasks?"
     })
     @Override
     public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
         LifecycleManager.getDefault().saveAll();
+        for (PlatformProvider provider : project.getPlatformProviders()) {
+            ActionProvider actionProvider = provider.getActionProvider(project);
+            if (actionProvider != null
+                    && isSupportedAction(command, actionProvider)) {
+                actionProvider.invokeAction(command, context);
+            }
+        }
         if (COMMAND_RUN_SINGLE.equals(command)
                 || COMMAND_RUN.equals(command)) {
-            assert !project.isJsLibrary() : "JS library project cannot be run: " + project.getName();
+            if (project.isJsLibrary()) {
+                return;
+            }
+            if (COMMAND_RUN_SINGLE.equals(command)) {
+                FileObject fo = context.lookup(FileObject.class);
+                if (fo != null
+                        && FileUtilities.isJavaScriptFile(fo)) {
+                    return;
+                }
+            }
             project.logBrowserUsage();
         }
         // XXX sorry no idea how to do this correctly
@@ -205,9 +224,24 @@ public class ClientSideProjectActionProvider implements ActionProvider {
 
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+        for (PlatformProvider provider : project.getPlatformProviders()) {
+            ActionProvider actionProvider = provider.getActionProvider(project);
+            if (actionProvider != null
+                    && isSupportedAction(command, actionProvider)
+                    && actionProvider.isActionEnabled(command, context)) {
+                return true;
+            }
+        }
         if (COMMAND_RUN_SINGLE.equals(command)
                 || COMMAND_RUN.equals(command)) {
             if (project.isJsLibrary()) {
+                return false;
+            }
+        }
+        if (COMMAND_RUN_SINGLE.equals(command)) {
+            FileObject fo = context.lookup(FileObject.class);
+            if (fo != null
+                    && FileUtilities.isJavaScriptFile(fo)) {
                 return false;
             }
         }

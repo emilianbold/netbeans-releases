@@ -49,7 +49,7 @@ import java.util.Collection;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
- *
+ * The objects are not a part of the model.
  * @author Petr Hejl
  */
 public interface ModelInterceptor {

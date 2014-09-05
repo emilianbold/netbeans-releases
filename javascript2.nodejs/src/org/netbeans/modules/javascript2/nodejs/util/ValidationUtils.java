@@ -39,39 +39,21 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.nodejs.util;
 
-package org.netbeans.modules.javascript2.nodejs;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author Petr Pisl
- */
-public class NodeJsCompletionDataItem {
-    private final String name;
-//    private final String type;
-    private final String documentation;
-    private final String template;
+public final class ValidationUtils {
 
-    public NodeJsCompletionDataItem(String name,/* String type,*/ String documentation, String template) {
-        this.name = name;
-//        this.type = type;
-        this.documentation = documentation;
-        this.template = template;
+    private ValidationUtils() {
     }
 
-    public String getName() {
-        return name;
+    @NbBundle.Messages("ValidationUtils.node.name=Node")
+    public static void validateNode(ValidationResult result, String node) {
+        String warning = ExternalExecutableValidator.validateCommand(node, Bundle.ValidationUtils_node_name());
+        if (warning != null) {
+            result.addWarning(new ValidationResult.Message("node.path", warning)); // NOI18N
+        }
     }
 
-//    public String getType() {
-//        return type;
-//    }
-
-    public String getDocumentation() {
-        return documentation;
-    }
-
-    public String getTemplate() {
-        return template;
-    }
 }
