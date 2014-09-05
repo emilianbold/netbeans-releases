@@ -296,7 +296,7 @@ for (${entryType iterableElementType default="Map.Entry<Object, Object>" editabl
     ${ValType rightSideType default="Object"} ${val newVarName default="val"} = ${entry}.getValue();
 ${selection}${cursor}
 }
-for (Map.Entry<KeyType, ValueType> <b>entry</b> : <b>map</b>.entrySet()) { ...
+for (Map.Entry&lt;KeyType, ValueType&gt; <b>entry</b> : <b>map</b>.entrySet()) { ...
 -----------------------
 forst
 for (${STR_TOK type="java.util.StringTokenizer" default="StringTokenizer" editable=false} ${TOKENIZER newVarName} = new ${STR_TOK}(${STRING instanceof="java.lang.String"}); ${TOKENIZER}.hasMoreTokens();) {
