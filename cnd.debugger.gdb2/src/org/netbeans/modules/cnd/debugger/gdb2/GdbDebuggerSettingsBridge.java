@@ -167,7 +167,9 @@ public final class GdbDebuggerSettingsBridge extends DebuggerSettingsBridge {
         }
     }
     
-    void noteAttached() {
+    @Override
+    protected void noteAttached() {
+        super.noteAttached();
         initialApply(DIRTY_BREAKPOINTS | DIRTY_WATCHES);
     }
     
