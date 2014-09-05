@@ -668,9 +668,7 @@ public class ClientSideProject implements Project {
                 jsTestingProvider.projectOpened(project);
             }
             PlatformProviders.getDefault().addPlatformProvidersListener(project.platformProvidersListener);
-            for (PlatformProvider platformProvider : PlatformProviders.getDefault().getPlatformProviders()) {
-                platformProvider.projectOpened(project);
-            }
+            PlatformProviders.getDefault().projectOpened(project);
             FileObject projectDirectory = project.getProjectDirectory();
             // usage logging
             FileObject cordova = projectDirectory.getFileObject(".cordova"); // NOI18N
@@ -703,9 +701,7 @@ public class ClientSideProject implements Project {
             if (jsTestingProvider != null) {
                 jsTestingProvider.projectClosed(project);
             }
-            for (PlatformProvider platformProvider : PlatformProviders.getDefault().getPlatformProviders()) {
-                platformProvider.projectClosed(project);
-            }
+            PlatformProviders.getDefault().projectClosed(project);
             PlatformProviders.getDefault().removePlatformProvidersListener(project.platformProvidersListener);
             // browser
             ClientProjectEnhancedBrowserImplementation enhancedBrowserImpl = project.getEnhancedBrowserImpl();
