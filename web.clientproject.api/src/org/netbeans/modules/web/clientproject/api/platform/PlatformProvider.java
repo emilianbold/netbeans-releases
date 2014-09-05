@@ -140,24 +140,12 @@ public final class PlatformProvider {
         return delegate.getActionProvider(project);
     }
 
-    /**
-     * Notifies provider that the given project is being opened.
-     * <p>
-     * Provider is notified even if it is not {@link #isEnabled(Project) enabled} in the given project.
-     * @param project project being opened
-     */
-    public void projectOpened(@NonNull Project project) {
+    void projectOpened(@NonNull Project project) {
         Parameters.notNull("project", project); // NOI18N
         delegate.projectOpened(project);
     }
 
-    /**
-     * Notifies provider that the given project is being closed.
-     * <p>
-     * Provider is notified even if it is not {@link #isEnabled(Project) enabled} in the given project.
-     * @param project project being closed
-     */
-    public void projectClosed(@NonNull Project project) {
+    void projectClosed(@NonNull Project project) {
         Parameters.notNull("project", project); // NOI18N
         delegate.projectClosed(project);
     }

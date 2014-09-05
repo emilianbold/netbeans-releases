@@ -141,6 +141,32 @@ public final class PlatformProviders {
     }
 
     /**
+     * Notifies provider that the given project is being opened.
+     * <p>
+     * Provider is notified even if it is not {@link PlatformProvider#isEnabled(Project) enabled} in the given project.
+     * @param project project being opened
+     */
+    public void projectOpened(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
+        for (PlatformProvider platformProvider : platformProviders) {
+            platformProvider.projectOpened(project);
+        }
+    }
+
+    /**
+     * Notifies provider that the given project is being closed.
+     * <p>
+     * Provider is notified even if it is not {@link PlatformProvider#isEnabled(Project) enabled} in the given project.
+     * @param project project being closed
+     */
+    public void projectClosed(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
+        for (PlatformProvider platformProvider : platformProviders) {
+            platformProvider.projectClosed(project);
+        }
+    }
+
+    /**
      * Attach a listener that is to be notified of changes
      * in platform providers.
      * @param listener a listener, can be {@code null}
