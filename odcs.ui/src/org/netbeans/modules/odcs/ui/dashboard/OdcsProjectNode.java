@@ -484,6 +484,9 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
             @Override
             public void run() {
                 synchronized( LOCK ) {
+                    if(component == null) {
+                        return;
+                    }
                     if (btnBuilds != null) {
                         component.remove(btnBuilds);
                     }

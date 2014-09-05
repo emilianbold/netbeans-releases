@@ -586,8 +586,8 @@ class ServerPanel extends JPanel {
     }
     
     @NbBundle.Messages({"CTL_SyncAll=All Projects",
-                        "CTL_SyncOnlySelectedProject=Selected Project",
-                        "CTL_SyncRecentlySelectedProjects=Recently selected Projects"})
+                        "CTL_SyncOnlySelectedProject=Selected Project Only",
+                        "CTL_SyncRecentlySelectedProjects=Recently Selected Projects"})
     private class SyncMenu extends JMenu {
         private final JMenuItem syncAll = new SyncMenuItem(Bundle.CTL_SyncAll(), new ActionListener() {
             @Override
