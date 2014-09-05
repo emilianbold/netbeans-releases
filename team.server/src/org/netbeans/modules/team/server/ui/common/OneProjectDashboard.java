@@ -368,13 +368,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         };
 
         server.addPropertyChangeListener(WeakListeners.propertyChange(serverListener, server));
-        final PasswordAuthentication newValue = server!=null?server.getPasswordAuthentication():null;
-        if (newValue != null) {
-            handleLogin(new LoginHandleImpl(newValue.getUserName()));
-        } else {
-            PasswordAuthentication pa = server.getPasswordAuthentication();
-            this.login = pa == null ? null : new LoginHandleImpl(pa.getUserName());
-        }
     }
     
     @Override
