@@ -62,6 +62,10 @@ public final class PlatformProvider {
      * Property name for changes in enabled state.
      */
     public static final String PROP_ENABLED = PlatformProviderImplementation.PROP_ENABLED;
+    /**
+     * Property name for changes in source roots.
+     */
+    public static final String PROP_SOURCE_ROOTS = PlatformProviderImplementation.PROP_SOURCE_ROOTS;
 
 
     private final PlatformProviderImplementation delegate;

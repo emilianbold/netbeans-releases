@@ -60,6 +60,10 @@ public interface PlatformProviderImplementation {
      * Property name for changes in enabled state.
      */
     String PROP_ENABLED = "ENABLED"; // NOI18N
+    /**
+     * Property name for changes in source roots.
+     */
+    String PROP_SOURCE_ROOTS = "SOURCE_ROOTS"; // NOI18N
 
     /**
      * Returns the <b>non-localized (usually english)</b> identifier of this provider.
