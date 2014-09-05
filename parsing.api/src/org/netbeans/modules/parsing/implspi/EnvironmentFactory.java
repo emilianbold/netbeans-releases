@@ -44,14 +44,12 @@ package org.netbeans.modules.parsing.implspi;
 
 import java.util.Collection;
 import java.util.concurrent.Callable;
-import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -87,17 +85,6 @@ public interface EnvironmentFactory {
     public Parser   findMimeParser(Lookup context, String mimeType);
     
     public Collection<? extends Scheduler> getSchedulers(Lookup context);
-
-    /**
-     * Extracts FileObject instance from the Document. It may require reading an
-     * implementation-dependent property from the Document.
-     *
-     * @param d the document
-     * @return the FileObject or {@code null} if FileObject cannot be found or
-     * is not valid.
-     */
-    @CheckForNull
-    public FileObject findFileObject(@NonNull Document d);
 
     /**
      * Creates an environment for the specified Source.

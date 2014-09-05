@@ -43,8 +43,8 @@
  */
 package org.netbeans.spi.xml.cookies;
 
-import org.openide.ErrorManager;
-import org.openide.util.Lookup;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,25 +60,11 @@ class Util {
     private Util () {
     }
 
-    /** Cached package name. */
-    private String packageName;
     /** Instance package ErrorManager. */
-    private ErrorManager packageErrorManager;
+    private static final Logger LOG = Logger.getLogger(Util.class.getName());
     /** Default debug severity used with ErrorManager. */
-    private static final int DEBUG_SEVERITY = ErrorManager.INFORMATIONAL;
-    
-    /**
-     * @return package name of this instance
-     */
-    private final synchronized String getPackageName () {
-        if ( packageName == null ) {
-            //??? what for classed from default package? -> A: we do not have classes in default package!
-            packageName = this.getClass().getPackage().getName().intern();
-        }
-        return packageName;
-    }
-    
-    
+    private static final Level DEBUG_SEVERITY = Level.INFO;
+
     //
     // String localizing purposes
     //
@@ -137,7 +123,7 @@ class Util {
      * @return true if <code>debug (...)</code> will log something.
      */
     public final boolean isLoggable () {
-        return getErrorManager().isLoggable (DEBUG_SEVERITY);
+        return LOG.isLoggable (DEBUG_SEVERITY);
     }
 
     /**
@@ -147,7 +133,7 @@ class Util {
      */
     public final void debug (String message) {
         if (message == null) return;
-        getErrorManager().log (DEBUG_SEVERITY, message);
+        LOG.log (DEBUG_SEVERITY, message);
     }
 
     /**
@@ -157,7 +143,7 @@ class Util {
      */
     public final void debug (Throwable ex) {
         if (ex == null) return;
-        getErrorManager().notify (DEBUG_SEVERITY, ex);
+        LOG.log (DEBUG_SEVERITY, null, ex);   //NOI18N
     }
 
     /**
@@ -167,24 +153,6 @@ class Util {
      *        but is not logged.
      */
     public final void debug (String message, Throwable ex) {
-        if (ex == null) return;
-        if (message != null) {
-            ex = getErrorManager().annotate(ex, DEBUG_SEVERITY,  message, null, null, null);
-        }
-        debug (ex);
+        LOG.log (DEBUG_SEVERITY, message, ex);   //NOI18N
     }
-
-    /**
-     * Provide an <code>ErrorManager</code> instance named per subclass package.
-     * @return ErrorManager which is default for package where is class
-     * declared .
-     */
-    public final synchronized ErrorManager getErrorManager () {
-        if ( packageErrorManager == null ) {
-            String pack = getPackageName();
-            packageErrorManager = ErrorManager.getDefault().getInstance(pack);
-        }
-        return packageErrorManager;
-    }
-    
 }

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.api;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,6 +55,11 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.spi.editor.document.DocumentFactory;
 import org.netbeans.editor.BaseDocument;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -81,12 +87,42 @@ public class ParsingTestBase extends NbTestCase {
 //        MockLookup.setLookup(
 //                Lookups.metaInfServices(getClass().getClassLoader()),
 //                createTestServices());
-        MockMimeLookup.setInstances(MimePath.EMPTY, new DocumentFactory() {
-            @Override
-            public Document createDocument(String mimeType) {
-                return new BaseDocument(false, mimeType);
-            }
-        });
+        MockMimeLookup.setInstances(
+            MimePath.EMPTY,
+            new DocumentFactory() {
+                @Override
+                public Document createDocument(String mimeType) {
+                    return new BaseDocument(false, mimeType);
+                }
+
+                @Override
+                public Document getDocument(FileObject file) {
+                    try {
+                        final DataObject dobj = DataObject.find(file);
+                        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+                        return ec == null ?
+                            null :
+                            ec.openDocument();
+                    } catch (DataObjectNotFoundException e) {
+                        return null;
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                        return null;
+                    }
+                }
+
+                @Override
+                public FileObject getFileObject(Document document) {
+                    Object sdp = document.getProperty(Document.StreamDescriptionProperty);
+                    if (sdp instanceof FileObject) {
+                        return (FileObject)sdp;
+                    }
+                    if (sdp instanceof DataObject) {
+                        return ((DataObject)sdp).getPrimaryFile();
+                    }
+                    return null;
+                }
+            });
     }
     
     protected Class[] getMockServices() {

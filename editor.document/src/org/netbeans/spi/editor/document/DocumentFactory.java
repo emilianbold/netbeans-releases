@@ -43,6 +43,9 @@
 package org.netbeans.spi.editor.document;
 
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.filesystems.FileObject;
 
 /**
  * Interface to create documents. Implementations should be registered in the
@@ -53,9 +56,27 @@ import javax.swing.text.Document;
  */
 public interface DocumentFactory {
     /**
-     * Creates a document for the given mime type
+     * Creates a document for the given mime type.
      * @param mimeType the MIME type
-     * @return document instance of {@code null}
+     * @return document instance or {@code null}
      */
-    public Document createDocument(String mimeType);
+    @CheckForNull
+    public Document createDocument(@NonNull String mimeType);
+
+    /**
+     * Returns a {@link Document} for the given {@link FileObject}.
+     * @param file the {@link FileObject} to create {@link Document} for
+     * @return the document instance or {@code null}
+     */
+    @CheckForNull
+    public Document getDocument(@NonNull FileObject file);
+
+    /**
+     * Returns a {@link FileObject} for given {@link Document}.
+     * @param document the {@link Document} to find {@link FileObject} for
+     * @return the {@link FileObject} or {@code null}
+     */
+    @CheckForNull
+    public FileObject getFileObject(@NonNull Document document);
+
 }

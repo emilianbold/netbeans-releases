@@ -135,18 +135,6 @@ public class TestEnvironmentFactory implements EnvironmentFactory {
     }
 
     @Override
-    public FileObject findFileObject(Document doc) {
-        Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
-        if (sdp instanceof FileObject) {
-            return (FileObject)sdp;
-        }
-        if (sdp instanceof DataObject) {
-            return ((DataObject)sdp).getPrimaryFile();
-        }
-        return null;
-    }
-
-    @Override
     public SourceEnvironment createEnvironment(Source src, SourceControl control) {
         return new Env(control);
     }

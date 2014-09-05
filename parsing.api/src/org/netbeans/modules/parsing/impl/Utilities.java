@@ -88,6 +88,7 @@ import java.util.concurrent.Callable;
 import javax.swing.text.Document;
 
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.editor.document.EditorDocumentUtils;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.implspi.EnvironmentFactory;
 import org.netbeans.modules.parsing.implspi.SourceControl;
@@ -203,7 +204,7 @@ public class Utilities {
     }
 
     public static FileObject getFileObject(Document doc) {
-        return getEnvFactory().findFileObject(doc);
+        return EditorDocumentUtils.getFileObject(doc);
     }
 
     /**

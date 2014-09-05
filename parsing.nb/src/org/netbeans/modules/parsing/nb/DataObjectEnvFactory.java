@@ -136,11 +136,6 @@ public final class DataObjectEnvFactory implements EnvironmentFactory {
     }
 
     @Override
-    public FileObject findFileObject(Document doc) {
-        return getFileObject(doc);
-    }
-
-    @Override
     public <T> T runPriorityIO (final Callable<T> r) throws Exception {
         assert r != null;
         return ProvidedExtensions.priorityIO(r);

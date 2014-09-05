@@ -45,9 +45,7 @@
 package org.netbeans.api.xml.parsers;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
 
 import org.xml.sax.*;
 
@@ -130,13 +128,12 @@ public class SAXEntityParser implements XMLReader {
 
         String originalSID = entity.getSystemId();
         if (originalSID == null) {
-            ErrorManager err = Util.THIS.getErrorManager();
-            if (err.isLoggable(err.WARNING)) {
+            if (Util.THIS.isLoggable(Level.WARNING)) {
                 StringWriter writer = new StringWriter();
                 PrintWriter out = new PrintWriter(writer);
                 new IllegalArgumentException("WARNING: Missing system ID may cause serious errors while resolving relative references!").printStackTrace(out);  // NOI18N
                 out.flush();
-                err.log(err.WARNING, writer.getBuffer().toString());
+                Util.THIS.debug(Level.WARNING, writer.getBuffer().toString());
             }
         }
         

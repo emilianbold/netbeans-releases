@@ -41,8 +41,17 @@
  */
 package org.netbeans.api.editor.document;
 
+import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.lib2.document.EditorDocumentHandler;
+import org.netbeans.spi.editor.document.DocumentFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  * Utilities operation on top of an editor document.
@@ -51,6 +60,8 @@ import org.netbeans.modules.editor.lib2.document.EditorDocumentHandler;
  * @since 1.58
  */
 public final class EditorDocumentUtils {
+
+    private static final Logger LOG = Logger.getLogger(EditorDocumentUtils.class.getName());
     
     private EditorDocumentUtils() {
         // No instances
@@ -90,7 +101,27 @@ public final class EditorDocumentUtils {
 //    public static void runExclusive(@NonNull Document doc, @NonNull Runnable r) {
         EditorDocumentHandler.runExclusive(doc, r);
     }
-    
+
+    /**
+     * Extracts FileObject instance from the Document. It may require reading an
+     * implementation-dependent property from the Document.
+     *
+     * @param doc the document
+     * @return the FileObject or {@code null} if FileObject cannot be found or
+     * is not valid.
+     */
+    @CheckForNull
+    public static FileObject getFileObject(@NonNull Document doc) {
+        Parameters.notNull("doc", doc); //NOI18N
+        final DocumentFactory df =MimeLookup.getLookup(MimePath.EMPTY).lookup(DocumentFactory.class);
+        if (df != null) {
+            return df.getFileObject(doc);
+        } else {
+            LOG.warning("No DocumentFactory registered in the lookup.");    //NOI18N
+            return null;
+        }
+    }
+
 //    /**
 //     * Reset a possible undo merging so any upcoming edits will be undone separately.
 //     * <br/>

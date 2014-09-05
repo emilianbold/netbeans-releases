@@ -46,15 +46,12 @@ package org.netbeans.api.xml.parsers;
 
 import java.io.*;
 import java.net.URL;
-
+import java.util.logging.Logger;
 import javax.swing.text.Document;
-
+import org.netbeans.api.editor.document.EditorDocumentUtils;
 import org.xml.sax.InputSource;
-
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
+import org.openide.util.Exceptions;
 
 /**
  * Integrate NetBeans widely used Swing's {@link Document} with SAX API's.
@@ -63,6 +60,8 @@ import org.openide.util.Lookup;
  * @author  Petr Kuzel
  */
 public final class DocumentInputSource extends InputSource {
+
+    private static final Logger LOG = Logger.getLogger(DocumentInputSource.class.getName());
 
     private final Document doc;
      
@@ -103,24 +102,20 @@ public final class DocumentInputSource extends InputSource {
      */
     public String getSystemId() {
         
-        String system = super.getSystemId();;
+        String system = super.getSystemId();
         
         // XML module specifics property, promote into this API
 //        String system = (String) doc.getProperty(TextEditorSupport.PROP_DOCUMENT_URL);        
         
         if (system == null) {
-            Object obj = doc.getProperty(Document.StreamDescriptionProperty);        
-            if (obj instanceof DataObject) {
-                        DataObject dobj = (DataObject) obj;
-                        FileObject fo = dobj.getPrimaryFile();
-                        URL url = fo.toURL();
-                        system = url.toExternalForm();
+            final FileObject fo = EditorDocumentUtils.getFileObject(doc);
+            if (fo != null) {
+                URL url = fo.toURL();
+                system = url.toExternalForm();
             } else {
-                ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
-                emgr.log("XML:DocumentInputSource:Unknown stream description:" + obj);
+                LOG.info("XML:DocumentInputSource:No FileObject in stream description.");   //NOI18N
             }
         }
-        
         return system;
     }
         
@@ -139,7 +134,7 @@ public final class DocumentInputSource extends InputSource {
                     str[0] = doc.getText(0, doc.getLength());
                 } catch (javax.swing.text.BadLocationException e) {
                     // impossible
-                    e.printStackTrace();
+                    Exceptions.printStackTrace(e);
                 }
             }
         };
