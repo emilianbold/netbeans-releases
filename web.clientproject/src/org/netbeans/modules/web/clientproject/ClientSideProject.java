@@ -83,6 +83,7 @@ import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvidersListener;
 import org.netbeans.modules.web.clientproject.bower.BowerProblemProvider;
 import org.netbeans.modules.web.clientproject.node.NpmProblemProvider;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
@@ -186,6 +187,25 @@ public class ClientSideProject implements Project {
         @Override
         public void processingErrorOccured(Project project, CssPreprocessor cssPreprocessor, String error) {
             // noop
+        }
+    };
+
+    final PlatformProvidersListener platformProvidersListener = new PlatformProvidersListener() {
+
+        @Override
+        public void platformProvidersChanged() {
+            // noop
+        }
+
+        @Override
+        public void propertyChanged(Project project, PlatformProvider platformProvider, PropertyChangeEvent event) {
+            if (ClientSideProject.this.equals(project)) {
+                if (PlatformProvider.PROP_ENABLED.equals(event.getPropertyName())) {
+                    Info info = getLookup().lookup(Info.class);
+                    assert info != null;
+                    info.firePropertyChange(ProjectInformation.PROP_ICON);
+                }
+            }
         }
     };
 
@@ -647,6 +667,7 @@ public class ClientSideProject implements Project {
             if (jsTestingProvider != null) {
                 jsTestingProvider.projectOpened(project);
             }
+            PlatformProviders.getDefault().addPlatformProvidersListener(project.platformProvidersListener);
             for (PlatformProvider platformProvider : PlatformProviders.getDefault().getPlatformProviders()) {
                 platformProvider.projectOpened(project);
             }
@@ -685,6 +706,7 @@ public class ClientSideProject implements Project {
             for (PlatformProvider platformProvider : PlatformProviders.getDefault().getPlatformProviders()) {
                 platformProvider.projectClosed(project);
             }
+            PlatformProviders.getDefault().removePlatformProvidersListener(project.platformProvidersListener);
             // browser
             ClientProjectEnhancedBrowserImplementation enhancedBrowserImpl = project.getEnhancedBrowserImpl();
             if (enhancedBrowserImpl != null) {
