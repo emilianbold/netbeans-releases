@@ -114,6 +114,19 @@ is the proper place.
   <changes>
 
     <change>
+        <api name="cookies"/>
+        <summary>Split api.xml into api.xml and api.xml.ui</summary>
+        <version major="1" minor="41"/>
+        <date day="5" month="9" year="2014"/>
+        <author login="tzezula"/>
+        <compatibility binary="compatible" source="compatible"/>
+        <description>
+            The <code>org.netbeans.api.xml.cookies</code> and the
+            <code>org.netbeans.spi.xml.cookies</code> packages were moved into
+            a new module <code>api.xml.ui</code>.
+        </description>
+    </change>
+    <change>
         <api name="utils-spi"/>
         <summary>AbstractUtil class removed.</summary>
         <version major="1" minor="0"/>
