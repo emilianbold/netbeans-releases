@@ -291,10 +291,12 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                     break;
                 case PREF_SELECTED:
                     String id = getSelectedProjectId();
-                    ProjectHandle<P> ph = projectById(id);
-                    if(ph != null) {
-                        s.add(ph);
-                    }                    
+                    if( id != null ) {
+                        ProjectHandle<P> ph = projectById(id);
+                        if(ph != null) {
+                            s.add(ph);
+                        }                 
+                    }
                     break;
             }
         }

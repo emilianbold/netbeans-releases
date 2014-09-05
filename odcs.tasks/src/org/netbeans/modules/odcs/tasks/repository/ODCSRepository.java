@@ -165,23 +165,27 @@ public class ODCSRepository implements PropertyChangeListener {
     @Override
     public void propertyChange (PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(TeamAccessor.PROP_LOGIN)) {
+            new RequestProcessor("ODCS Tasks - team logout", 1).post(new Runnable() {
+                @Override
+                public void run() {
+                    String user;
+                    char[] psswd;
+                    PasswordAuthentication pa = getAuthentication(); 
+                    if (pa != null) {
+                        user = pa.getUserName();
+                        psswd = pa.getPassword();
+                    } else {
+                        user = ""; //NOI18N
+                        psswd = new char[0];
 
-            String user;
-            char[] psswd;
-            PasswordAuthentication pa = getAuthentication(); 
-            if (pa != null) {
-                user = pa.getUserName();
-                psswd = pa.getPassword();
-            } else {
-                user = ""; //NOI18N
-                psswd = new char[0];
-                
-                cancelQueries();
-            }
-            
-            setCredentials(user, psswd, null, null);
+                        cancelQueries();
+                    }
+
+                    setCredentials(user, psswd, null, null);
                 }
-            }
+            });
+        }
+    }
             
     private void cancelQueries() {
         final List<ODCSQuery> tmpQueries = new LinkedList<>();
@@ -195,15 +199,10 @@ public class ODCSRepository implements PropertyChangeListener {
             predefinedQueries = null;
         }
         
-        new RequestProcessor("ODCS Tasks - cancel queries", 1).post(new Runnable() {
-            @Override
-            public void run() {
-                for (ODCSQuery q : tmpQueries) {
-                    ODCS.LOG.log(Level.FINE, "Cancelling query: {0}", q.getDisplayName());
-                    q.getController().cancel();
-                }
-            }
-        });
+        for (ODCSQuery q : tmpQueries) {
+            ODCS.LOG.log(Level.FINE, "Cancelling query: {0}", q.getDisplayName());
+            q.getController().cancel();
+        }
     }
 
     public boolean isLoggedIn() {

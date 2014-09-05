@@ -742,8 +742,13 @@ class DiffViewManager implements ChangeListener {
                             : topRight - 150);
                     int newLastOffset = rightPanelHeightCached - 1;
                     if (i < diffs.length - 1) {
-                        newLastOffset = diffs[i + 1].topRight;
-                        scrollMap[newLastOffset] = diffs[i + 1].topLeft;
+                        if (diffs[i + 1].topRight >= scrollMap.length) {
+                            Logger.getLogger(DiffViewManager.class.getName()).log(Level.FINE, "Skipping temporary diff highlights");
+                            break;
+                        } else {
+                            newLastOffset = diffs[i + 1].topRight;
+                            scrollMap[newLastOffset] = diffs[i + 1].topLeft;
+                        }
                     }
                     scrollMap[topRight] = bottomLeft;
                     interpolate(scrollMap, topRight, newLastOffset);
