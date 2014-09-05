@@ -85,11 +85,12 @@ public class ClassPathProviderImpl implements ClassPathProvider {
         return null;
     }
 
-    public static ClassPath createProjectClasspath(ClientSideProject project) {
-        return ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>singletonList(new PathImpl(project)));
+    public static ClassPath createProjectClasspath(PathResourceImplementation pathResourceImplementation) {
+        assert pathResourceImplementation != null;
+        return ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>singletonList(pathResourceImplementation));
     }
 
-    private static class PathImpl implements FilteringPathResourceImplementation {
+    public static class PathImpl implements FilteringPathResourceImplementation {
 
         private final ClientSideProject project;
         private final PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -103,10 +104,14 @@ public class ClassPathProviderImpl implements ClassPathProvider {
                             || ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName())
                             || ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName())
                             || evt.getPropertyName().startsWith("file.reference.")) { // NOI18N
-                        support.firePropertyChange(PathResourceImplementation.PROP_ROOTS, null, null);
+                        fireRootsChanged();
                     }
                 }
             });
+        }
+
+        public void fireRootsChanged() {
+            support.firePropertyChange(PROP_ROOTS, null, null);
         }
 
         @Override

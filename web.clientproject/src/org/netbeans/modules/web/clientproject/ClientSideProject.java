@@ -164,6 +164,7 @@ public class ClientSideProject implements Project {
     volatile String name;
     private RefreshOnSaveListener refreshOnSaveListener;
     private ClassPath sourcePath;
+    volatile ClassPathProviderImpl.PathImpl pathImpl;
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
     private WebBrowser projectWebBrowser;
     private ClientSideProjectBrowserProvider projectBrowserProvider;
@@ -200,10 +201,18 @@ public class ClientSideProject implements Project {
         @Override
         public void propertyChanged(Project project, PlatformProvider platformProvider, PropertyChangeEvent event) {
             if (ClientSideProject.this.equals(project)) {
-                if (PlatformProvider.PROP_ENABLED.equals(event.getPropertyName())) {
+                String propertyName = event.getPropertyName();
+                if (PlatformProvider.PROP_ENABLED.equals(propertyName)) {
                     Info info = getLookup().lookup(Info.class);
                     assert info != null;
                     info.firePropertyChange(ProjectInformation.PROP_ICON);
+                    if (pathImpl != null) {
+                        pathImpl.fireRootsChanged();
+                    }
+                } else if (PlatformProvider.PROP_SOURCE_ROOTS.equals(propertyName)) {
+                    if (pathImpl != null) {
+                        pathImpl.fireRootsChanged();
+                    }
                 }
             }
         }
@@ -554,7 +563,8 @@ public class ClientSideProject implements Project {
 
     ClassPath getSourceClassPath() {
         if (sourcePath == null) {
-            sourcePath = ClassPathProviderImpl.createProjectClasspath(this);
+            pathImpl = new ClassPathProviderImpl.PathImpl(this);
+            sourcePath = ClassPathProviderImpl.createProjectClasspath(pathImpl);
         }
         return sourcePath;
     }
