@@ -91,6 +91,8 @@
                 <friend>com.microchip.mplab.nbide.csmbridge</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.dwarf.lwmodel</friend>
+                <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
+                <friend>com.sun.tools.tuxedo.source</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.folding</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
