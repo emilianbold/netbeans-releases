@@ -45,6 +45,7 @@ import java.net.URL;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
 import org.netbeans.spi.project.ActionProvider;
@@ -54,6 +55,11 @@ import org.netbeans.spi.project.ActionProvider;
  * @since 1.68
  */
 public interface PlatformProviderImplementation {
+
+    /**
+     * Property name for changes in enabled state.
+     */
+    String PROP_ENABLED = "ENABLED"; // NOI18N
 
     /**
      * Returns the <b>non-localized (usually english)</b> identifier of this provider.
@@ -114,5 +120,18 @@ public interface PlatformProviderImplementation {
      * @param project project being closed
      */
     void projectClosed(@NonNull Project project);
+
+    /**
+     * Attach a listener that is to be notified of changes
+     * in this platform providers.
+     * @param listener a listener, can be {@code null}
+     */
+    void addPlatformProviderImplementationListener(@NullAllowed PlatformProviderImplementationListener listener);
+
+    /**
+     * Removes a listener.
+     * @param listener a listener, can be {@code null}
+     */
+    void removePlatformProviderImplementationListener(@NullAllowed PlatformProviderImplementationListener listener);
 
 }

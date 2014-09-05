@@ -41,15 +41,21 @@
  */
 package org.netbeans.modules.web.clientproject.api.platform;
 
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.platform.PlatformProviderAccessor;
 import org.netbeans.modules.web.clientproject.spi.platform.PlatformProviderImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.PlatformProviderImplementationListener;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Parameters;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -72,6 +78,8 @@ public final class PlatformProviders {
     private static final PlatformProviders INSTANCE = new PlatformProviders();
 
     private final List<PlatformProvider> platformProviders = new CopyOnWriteArrayList<>();
+    private final PlatformProvidersListener.Support listenersSupport = new PlatformProvidersListener.Support();
+    private final DelegatingPlatformProviderListener delegatingPlatformProvidersListener = new DelegatingPlatformProviderListener();
 
     static {
         PLATFORM_PROVIDERS.addLookupListener(new LookupListener() {
@@ -103,9 +111,29 @@ public final class PlatformProviders {
         return new ArrayList<>(platformProviders);
     }
 
+    /**
+     * Attach a listener that is to be notified of changes
+     * in platform providers.
+     * @param listener a listener, can be {@code null}
+     */
+    public void addPlatformProvidersListener(@NullAllowed PlatformProvidersListener listener) {
+        listenersSupport.addPlatformProvidersListener(listener);
+    }
+
+    /**
+     * Removes a change listener.
+     * @param listener a listener, can be {@code null}
+     */
+    public void removePlatformProvidersListener(@NullAllowed PlatformProvidersListener listener) {
+        listenersSupport.removePlatformProvidersListener(listener);
+    }
+
     private void initProviders() {
         assert platformProviders.isEmpty() : "Empty providers expected but: " + platformProviders;
         platformProviders.addAll(map(PLATFORM_PROVIDERS.allInstances()));
+        for (PlatformProvider provider : platformProviders) {
+            provider.getDelegate().addPlatformProviderImplementationListener(delegatingPlatformProvidersListener);
+        }
     }
 
     void reinitProviders() {
@@ -113,10 +141,23 @@ public final class PlatformProviders {
             clearProviders();
             initProviders();
         }
+        listenersSupport.firePlatformProvidersChanged();
     }
 
     private void clearProviders() {
         platformProviders.clear();
+    }
+
+    @CheckForNull
+    PlatformProvider findPlatformProvider(PlatformProviderImplementation platformProviderImplementation) {
+        assert platformProviderImplementation != null;
+        for (PlatformProvider provider : platformProviders) {
+            if (provider.getDelegate() == platformProviderImplementation) {
+                return provider;
+            }
+        }
+        assert false : "Cannot find platform provider for implementation: " + platformProviderImplementation.getIdentifier();
+        return null;
     }
 
     //~ Mappers
@@ -127,6 +168,22 @@ public final class PlatformProviders {
             result.add(PlatformProviderAccessor.getDefault().create(provider));
         }
         return result;
+    }
+
+    //~ Inner classes
+
+    private final class DelegatingPlatformProviderListener implements PlatformProviderImplementationListener {
+
+        @Override
+        public void propertyChanged(Project project, PlatformProviderImplementation platformProvider, PropertyChangeEvent event) {
+            Parameters.notNull("platformProvider", platformProvider); // NOI18N
+            Parameters.notNull("event", event); // NOI18N
+            PlatformProvider provider = findPlatformProvider(platformProvider);
+            if (provider != null) {
+                listenersSupport.firePropertyChanged(project, provider, event);
+            }
+        }
+
     }
 
 }

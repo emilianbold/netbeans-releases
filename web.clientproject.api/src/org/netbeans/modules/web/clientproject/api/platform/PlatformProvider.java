@@ -58,6 +58,12 @@ import org.openide.util.Parameters;
  */
 public final class PlatformProvider {
 
+    /**
+     * Property name for changes in enabled state.
+     */
+    public static final String PROP_ENABLED = PlatformProviderImplementation.PROP_ENABLED;
+
+
     private final PlatformProviderImplementation delegate;
 
     static {
@@ -154,6 +160,10 @@ public final class PlatformProvider {
     public void projectClosed(@NonNull Project project) {
         Parameters.notNull("project", project); // NOI18N
         delegate.projectClosed(project);
+    }
+
+    PlatformProviderImplementation getDelegate() {
+        return delegate;
     }
 
 }
