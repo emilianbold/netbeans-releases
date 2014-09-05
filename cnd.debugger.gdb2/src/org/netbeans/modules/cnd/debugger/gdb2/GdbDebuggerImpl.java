@@ -794,15 +794,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             protected void onDone(MIRecord record) {
                 MITList results = record.results();
                 String value = results.getConstValue("value"); // NOI18N
-                value = value.substring(value.indexOf("<") + 1); // NOI18N
-                value = value.substring(0, value.indexOf(">")).trim(); // NOI18N
+                value = value.substring(value.indexOf("}") + 1); // NOI18N
+                value = value.substring(0, value.indexOf("<")).trim(); // NOI18N
                 
                 if (value == null || value.isEmpty()) {
                     value = selectedText;       // fallback
                 }
 
-                if (selectedText != null) {
-                    MiCommandImpl cmd2 = new MiCommandImpl("-break-insert -t " + value) {    //NOI18N
+                if (value != null) {
+                    MiCommandImpl cmd2 = new MiCommandImpl("-break-insert -t *" + value) {    //NOI18N
 
                         @Override
                         protected void onDone(MIRecord record) {
