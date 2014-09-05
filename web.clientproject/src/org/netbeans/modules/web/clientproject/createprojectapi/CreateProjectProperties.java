@@ -44,7 +44,6 @@ package org.netbeans.modules.web.clientproject.createprojectapi;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -76,12 +75,8 @@ public final class CreateProjectProperties {
     private String siteRootFolder;
     private String testFolder;
     private String jsTestingProvider;
+    private String platformProvider;
 
-
-    public CreateProjectProperties() {
-        setSiteRootFolder(ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER);
-        setTestFolder(ClientSideProjectConstants.DEFAULT_TEST_FOLDER);
-    }
 
     /**
      * Get project directory, usually relative path.
@@ -223,6 +218,27 @@ public final class CreateProjectProperties {
      */
     public CreateProjectProperties setJsTestingProvider(@NullAllowed String jsTestingProvider) {
         this.jsTestingProvider = jsTestingProvider;
+        return this;
+    }
+
+    /**
+     * Get platform provider (its identifier).
+     * @return platform provider (its identifier); can be {@code null} if there is no default platform provider
+     * @since 1.62
+     */
+    @CheckForNull
+    public String getPlatformProvider() {
+        return platformProvider;
+    }
+
+    /**
+     * Set platform provider (its identifier), can be {@code null} if there is no default platform provider.
+     * @param platformProvider platform provider (its identifier), can be {@code null} if there is no default platform provider
+     * @return itself
+     * @since 1.62
+     */
+    public CreateProjectProperties setPlatformProvider(@NullAllowed String platformProvider) {
+        this.platformProvider = platformProvider;
         return this;
     }
 
