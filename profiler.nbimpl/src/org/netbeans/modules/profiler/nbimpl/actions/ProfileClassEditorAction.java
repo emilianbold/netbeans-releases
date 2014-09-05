@@ -47,7 +47,9 @@ import org.netbeans.modules.profiler.api.EditorSupport;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
+import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
 import org.netbeans.modules.profiler.v2.ProfilerSession;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -95,20 +97,31 @@ public final class ProfileClassEditorAction extends NodeAction {
                     // Resolve current offset in editor
                     int currentOffsetInEditor = EditorSupport.getCurrentOffset();
                     if (currentOffsetInEditor == -1) return;
+                    
+                    Lookup.Provider project = null;
 
                     // Resolve class at cursor
                     SourceClassInfo resolvedClass = src.resolveClassAtPosition(currentOffsetInEditor, true);
                     if (resolvedClass == null) {
-                        ProfilerDialogs.displayWarning(Bundle.ProfileClassEditorAction_NoClassFoundAtPosition());
-                        return;
+                        // Resolve method at cursor
+                        SourceMethodInfo resolvedMethod = src.resolveMethodAtPosition(currentOffsetInEditor);
+                        if (resolvedMethod != null) {
+                            project = ProjectUtilities.getProject(dobj.getPrimaryFile());
+                            resolvedClass = ProfilerTypeUtils.resolveClass(resolvedMethod.getClassName(), project);
+                        }
+                        
+                        if (resolvedClass == null) {
+                            ProfilerDialogs.displayWarning(Bundle.ProfileClassEditorAction_NoClassFoundAtPosition());
+                            return;
+                        }
                     }
                     
                     // Resolve owner project
-                    Lookup.Provider project = ProjectUtilities.getProject(dobj.getPrimaryFile());
+                    if (project == null) project = ProjectUtilities.getProject(dobj.getPrimaryFile());
                     
                     // Let the ProfilerSession handle the root method
                     Lookup configuration = Lookups.fixed(resolvedClass);
-                    ProfilerSession.findAndConfigure(configuration, project);
+                    ProfilerSession.findAndConfigure(configuration, project, getName());
                 } catch (Exception ex) {
                     ProfilerDialogs.displayWarning(Bundle.ProfileClassEditorAction_ProblemProfilingClass());
                 }
