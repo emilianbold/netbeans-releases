@@ -48,7 +48,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -82,12 +81,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
-import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -313,7 +310,7 @@ public final class WLPluginProperties {
                 javaHomeVendors.put("", getDefaultPlatformHome());
                 return properties;
             }
-            BufferedReader reader = new BufferedReader(new FileReader(file));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
             try {
                 String line;
                 String vendorName = null;
@@ -547,7 +544,7 @@ public final class WLPluginProperties {
         // read the list file line by line fetching out the domain paths
         try {
             // create a new reader for the FileInputStream
-            lnr = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+            lnr = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")); // NOI18N
 
             // read the lines
             String line;
