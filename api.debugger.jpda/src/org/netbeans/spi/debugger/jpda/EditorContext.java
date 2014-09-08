@@ -387,6 +387,7 @@ public abstract class EditorContext {
      * @param bytecodeIndex The bytecode index of this method call
      * @param isNative <code>true</code> when the method is determined as a native
      *                 method by the parser.
+     * @since 2.51
      */
     protected final Operation createMethodOperation(Position startPosition,
                                                     Position endPosition,
@@ -609,7 +610,11 @@ public abstract class EditorContext {
         
         /**
          * Indicates whether the method was determined as native by the parser.
-         * @return 
+         * It can return <code>false</code> for native methods that are resolved
+         * during runtime.
+         * @return <code>true</code> when the method is determined as native by
+         * the parser.
+         * @since 2.51
          */
         public boolean isNative() {
             return isNative;
