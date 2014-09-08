@@ -107,6 +107,8 @@ public class CommentHandlerService implements CommentHandler {
         synchronized (map) {
             CommentSetImpl cs = map.get(tree);
             if (cs == null) {
+                // note - subsequent change to the CommentSetImpl will clone the old (empty) set of comments into CommentSetImpl
+                // optimization NOT to retain empty CSImpls is not possible; the caller may modify the return value.
                 cs = new CommentSetImpl();
                 map.put(tree, cs);
             }
