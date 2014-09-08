@@ -198,7 +198,7 @@ public class StyleSheetNode extends AbstractNode {
             if (pattern != null) {
                 pattern = CSSUtils.normalizeSelector(pattern);
                 String selector = CSSUtils.normalizeSelector(rule.getSelector());
-                include = (selector.indexOf(pattern) != -1);
+                include = selector.contains(pattern);
             }
             return include;
         }
