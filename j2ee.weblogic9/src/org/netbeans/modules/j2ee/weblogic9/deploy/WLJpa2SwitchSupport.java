@@ -72,6 +72,7 @@ import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
 import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
+import org.netbeans.modules.weblogic.common.api.WebLogicLayout;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -222,7 +223,7 @@ public final class WLJpa2SwitchSupport {
             }
 
             // update weblogic.jar
-            File weblogicFile = WLPluginProperties.getWeblogicJar(serverRoot);
+            File weblogicFile = WebLogicLayout.getWeblogicJar(serverRoot);
             JarFile weblogicJarFile = new JarFile(weblogicFile);
             try {
                 Manifest wlManifest = weblogicJarFile.getManifest();
