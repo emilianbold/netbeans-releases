@@ -48,16 +48,25 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 /**
  * Bridge between sessions.
+ * Use this for mixed languages debugging. Any debug session can suggest to change
+ * the debugging session for a debug action. A registered implementation of
+ * {@link SessionChanger} can decide to change the session in order to perform
+ * the given action.
+ * <p/>
+ * In the current implementation, step into action of JPDA debugger is suggested
+ * for a session change only. The support can be extended according to the future
+ * requirements.
  * 
  * @author Martin Entlicher
+ * @since 1.48
  */
 public final class SessionBridge {
     
@@ -107,7 +116,7 @@ public final class SessionBridge {
      * @param properties Properties describing the current state of the current session before the given action.
      *                   The actual properties are specific for the particular session type.
      * @return <code>true</code> when the session is changed and another session
-     *         decided to perform the given action. The call-back will be called later on.<br/>
+     *         decided to perform the given action.<br/>
      *         <code>false</code> when no other session would like to perform this action.
      */
     public boolean suggestChange(Session origin, String action, Map<Object, Object> properties) {
@@ -127,6 +136,19 @@ public final class SessionBridge {
             }
         }
         return false;
+    }
+    
+    /**
+     * Test whether there is some session changer registered for the given action.
+     * @param action An action - a constant from ActionsManager.Action_*
+     * @return <code>true</code> when there is some session changer registered
+     *         for this action, <code>false</code> otherwise.
+     */
+    public boolean isChangerFor(String action) {
+        synchronized (sessionChangers) {
+            Set<SessionChanger> scs = sessionChangers.get(action);
+            return scs != null;
+        }
     }
     
     private void addSessionChangerListener(SessionChanger sc) {
@@ -168,10 +190,28 @@ public final class SessionBridge {
         }
     }
     
+    /**
+     * Implement this interface to handle a debug session change.
+     * Register the implementation via {@link DebuggerServiceRegistration} annotation.
+     */
     public static interface SessionChanger {
         
+        /**
+         * Provide the set of actions that are handled by this implementation.
+         * @return A set of constants from ActionsManager.Action_*
+         */
         Set<String> getActions();
         
+        /**
+         * Called when a session suggests a session change for an action.
+         * @param origin The session suggesting the session change
+         * @param action The action, a constant from ActionsManager.Action_*
+         * @param properties Session-specific properties describing the state
+         *        right before the given action. These are used by a new session
+         *        to complete the given action.
+         * @return A new session, or <code>null<code> when this handler decides
+         *         not to change the debug session for this action.
+         */
         Session changeSuggested(Session origin, String action, Map<Object, Object> properties);
     }
     

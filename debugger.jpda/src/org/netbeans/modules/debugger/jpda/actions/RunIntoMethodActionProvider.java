@@ -570,24 +570,28 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         //ThreadReference tr = jtr.getThreadReference();
         final int depth = jtr.getStackDepth();
         //System.err.println("traceLineForMethod: stepping into native method "+methodClassType+"."+method+" = "+isNative);
-        if (isNative) {
+        if (isNative && SessionBridge.getDefault().isChangerFor((String) ActionsManager.ACTION_STEP_INTO)) {
             Map<Object, Object> properties = new HashMap<Object, Object>();
             properties.put("javaClass", methodClassType);
             properties.put("javaMethod", method);
             Session session = debugger.getSession();
             putConnectionProperties(session, properties);
             final Lock writeLock = jtr.accessLock.writeLock();
+            boolean changed = false;
             writeLock.lock();
-            boolean changed = SessionBridge.getDefault().suggestChange(
-                    session,
-                    (String) ActionsManager.ACTION_STEP_INTO,
-                    properties);
-            if (changed) {
-                writeLock.unlock();
-                jtr.resume();
-                return ;
-            } else {
-                writeLock.unlock();
+            try {
+                changed = SessionBridge.getDefault().suggestChange(
+                            session,
+                            (String) ActionsManager.ACTION_STEP_INTO,
+                            properties);
+            } finally {
+                if (changed) {
+                    writeLock.unlock();
+                    jtr.resume();
+                    return ;
+                } else {
+                    writeLock.unlock();
+                }
             }
         }
         final JPDAStep step = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_INTO);
