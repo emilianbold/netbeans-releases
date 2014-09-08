@@ -104,7 +104,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.modules.java.editor.semantic.Utilities;
+import org.netbeans.modules.java.editor.base.semantic.Utilities;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.netbeans.modules.java.hints.introduce.Flow;
 import org.openide.ErrorManager;

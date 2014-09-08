@@ -103,7 +103,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.java.editor.javadoc.JavadocImports;
+import org.netbeans.modules.java.editor.base.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.options.CodeCompletionPanel;
 import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.filesystems.FileObject;

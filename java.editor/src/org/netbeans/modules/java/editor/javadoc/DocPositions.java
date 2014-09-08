@@ -57,6 +57,7 @@ import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.java.editor.base.javadoc.JavadocCompletionUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**

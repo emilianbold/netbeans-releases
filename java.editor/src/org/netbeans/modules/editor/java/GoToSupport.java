@@ -115,7 +115,7 @@ import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.lib.editor.util.StringEscapeUtils;
-import org.netbeans.modules.java.editor.javadoc.JavadocImports;
+import org.netbeans.modules.java.editor.base.javadoc.JavadocImports;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -665,7 +665,7 @@ public class GoToSupport {
                 case INTERFACE:
                 case METHOD:
                 case VARIABLE:
-                    int[] span = org.netbeans.modules.java.editor.semantic.Utilities.findIdentifierSpan(path, info, info.getDocument());
+                    int[] span = org.netbeans.modules.java.editor.base.semantic.Utilities.findIdentifierSpan(path, info, info.getDocument());
 
                     if (span == null || span[0] == (-1) || span[1] == (-1)) {
                         return false;

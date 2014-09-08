@@ -49,6 +49,7 @@ import java.util.List;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
+import org.netbeans.modules.java.editor.base.javadoc.JavadocTestSupport;
 
 /**
  *

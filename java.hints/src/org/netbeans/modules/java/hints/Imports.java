@@ -45,7 +45,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.completion.Utilities;
-import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
+import org.netbeans.modules.java.editor.base.imports.UnusedImports;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.netbeans.spi.java.hints.HintContext;
@@ -93,7 +93,7 @@ public class Imports {
     @Hint(displayName = "#DN_Imports_UNUSED", description = "#DESC_Imports_UNUSED", category="imports", id="Imports_UNUSED", suppressWarnings={"", "UnusedImport", "UNUSED_IMPORT"})
     @TriggerTreeKind(Kind.COMPILATION_UNIT)
     public static List<ErrorDescription> unusedImport(HintContext ctx) throws IOException {
-        return importMultiHint(ctx, ImportHintKind.UNUSED, SemanticHighlighter.computeUnusedImports(ctx.getInfo()));
+        return importMultiHint(ctx, ImportHintKind.UNUSED, UnusedImports.computeUnusedImports(ctx.getInfo()));
     }
 
     @Hint(displayName = "#DN_Imports_SAME_PACKAGE", description = "#DESC_Imports_SAME_PACKAGE", category="imports", id="Imports_SAME_PACKAGE", suppressWarnings={"", "SamePackageImport"})

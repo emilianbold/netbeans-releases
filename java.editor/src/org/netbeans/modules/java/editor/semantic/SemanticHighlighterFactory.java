@@ -43,8 +43,11 @@
  */
 package org.netbeans.modules.java.editor.semantic;
 
+import org.netbeans.modules.java.editor.base.semantic.SemanticHighlighterBase;
+
 import java.util.Collection;
 import java.util.Collections;
+
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;

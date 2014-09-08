@@ -82,7 +82,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.java.JavaFoldManager;
 import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
-import org.netbeans.modules.java.editor.semantic.Utilities;
+import org.netbeans.modules.java.editor.base.semantic.Utilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldInfo;
 import org.netbeans.spi.editor.fold.FoldOperation;

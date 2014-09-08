@@ -57,8 +57,9 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.java.editor.base.options.MarkOccurencesSettingsNames;
+import org.netbeans.modules.java.editor.base.semantic.MarkOccurrencesHighlighterBase;
 import org.netbeans.modules.java.editor.options.MarkOccurencesSettings;
-import org.netbeans.modules.java.editor.semantic.MarkOccurrencesHighlighter;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -233,7 +234,7 @@ public class MarkOccurrencesTest extends NbTestCase {
     
     class MyTask implements Task<CompilationController> {
     
-        public List<int[]> process(CompilationController parameter, Preferences node, Document doc, int caretPosition,MarkOccurrencesHighlighter moh) {
+        public List<int[]> process(CompilationController parameter, Preferences node, Document doc, int caretPosition,MarkOccurrencesHighlighterBase moh) {
             try {                
                 Method[] methods = moh.getClass().getDeclaredMethods();
                 Method procesImpl = null;
@@ -260,9 +261,9 @@ public class MarkOccurrencesTest extends NbTestCase {
             parameter.toPhase(Phase.RESOLVED);
             foundMarks = null;
             Document doc = getDocument();
-            Constructor c = MarkOccurrencesHighlighter.class.getDeclaredConstructor(FileObject.class);
+            Constructor c = MarkOccurrencesHighlighterBase.class.getDeclaredConstructor(FileObject.class);
             c.setAccessible(true);
-            MarkOccurrencesHighlighter moh = (MarkOccurrencesHighlighter) c.newInstance(fileObject);
+            MarkOccurrencesHighlighterBase moh = (MarkOccurrencesHighlighterBase) c.newInstance(fileObject);
             int caretPosition = CaretAwareJavaSourceTaskFactory.getLastPosition(fileObject);
             Preferences node = MarkOccurencesSettings.getCurrentNode();
             //List<int[]> highlights = moh.processImpl(parameter, node, doc, caretPosition);
@@ -450,86 +451,86 @@ public class MarkOccurrencesTest extends NbTestCase {
     }
 
     public void testOptions() throws Exception {        
-//        setAndFlush(MarkOccurencesSettings.ON_OFF, false);
+//        setAndFlush(MarkOccurencesSettingsNames.ON_OFF, false);
 //        js = openFile("Test.java");
 //        setAndCheck(80, EMPTY);
 //        setAndCheck(205, EMPTY);
-//        setAndFlush(MarkOccurencesSettings.ON_OFF, true);
+//        setAndFlush(MarkOccurencesSettingsNames.ON_OFF, true);
 //        setAndCheck(168, new SimpleMark[]{new SimpleMark(166,170,null)});
 //        closeFile();
         
-        setAndFlush(MarkOccurencesSettings.BREAK_CONTINUE, false);
+        setAndFlush(MarkOccurencesSettingsNames.BREAK_CONTINUE, false);
         js = openFile("Testa.java");
         setAndCheck(162, EMPTY);        
-        setAndFlush(MarkOccurencesSettings.BREAK_CONTINUE, true);        
+        setAndFlush(MarkOccurencesSettingsNames.BREAK_CONTINUE, true);        
         setAndCheck(162, TEST_LABELS1);
         closeFile();
         
-        setAndFlush(MarkOccurencesSettings.CONSTANTS, false);
+        setAndFlush(MarkOccurencesSettingsNames.CONSTANTS, false);
         js = openFile("Test4.java");
         setAndCheck(78, EMPTY);       
-        setAndFlush(MarkOccurencesSettings.CONSTANTS, true);        
+        setAndFlush(MarkOccurencesSettingsNames.CONSTANTS, true);        
         setAndCheck(78, TEST_CONST);
         closeFile();
         
-        setAndFlush(MarkOccurencesSettings.EXCEPTIONS, false);
+        setAndFlush(MarkOccurencesSettingsNames.EXCEPTIONS, false);
         js = openFile("Test6.java");
         setAndCheck(295, new SimpleMark[]{new SimpleMark(73,94,null),new SimpleMark(281,302,null)});        
-        setAndFlush(MarkOccurencesSettings.EXCEPTIONS, true);        
+        setAndFlush(MarkOccurencesSettingsNames.EXCEPTIONS, true);        
         setAndCheck(295, TEST_THROWING1);
         closeFile();
         
-        setAndFlush(MarkOccurencesSettings.EXIT, false);
+        setAndFlush(MarkOccurencesSettingsNames.EXIT, false);
         js = openFile("Test6.java");
         setAndCheck(250,  new SimpleMark[]{new SimpleMark(246,252,null),
                                            new SimpleMark(261,267,null),
                                            new SimpleMark(481,487,null)});
-        setAndFlush(MarkOccurencesSettings.EXIT, true);        
+        setAndFlush(MarkOccurencesSettingsNames.EXIT, true);        
         setAndCheck(250, TEST_EXIT);
         closeFile();
         
-        setAndFlush(MarkOccurencesSettings.FIELDS, false);
+        setAndFlush(MarkOccurencesSettingsNames.FIELDS, false);
         js = openFile("Test3.java");
         setAndCheck(61, EMPTY);
-        setAndFlush(MarkOccurencesSettings.FIELDS, true);
+        setAndFlush(MarkOccurencesSettingsNames.FIELDS, true);
         setAndCheck(61, TEST_FIELD);
         closeFile();
         
-        setAndFlush(MarkOccurencesSettings.IMPLEMENTS, false);
+        setAndFlush(MarkOccurencesSettingsNames.IMPLEMENTS, false);
         js = openFile("Test8.java");
         setAndCheck(60, new SimpleMark[]{new SimpleMark(57,65,null)});
         
-        setAndFlush(MarkOccurencesSettings.IMPLEMENTS, true);
+        setAndFlush(MarkOccurencesSettingsNames.IMPLEMENTS, true);
         setAndCheck(60, TEST_IMPLEMENT1);
         closeFile();
         
-        setAndFlush(MarkOccurencesSettings.LOCAL_VARIABLES, false);
+        setAndFlush(MarkOccurencesSettingsNames.LOCAL_VARIABLES, false);
         js = openFile("Test5.java");
         setAndCheck(109, EMPTY);
-        setAndFlush(MarkOccurencesSettings.LOCAL_VARIABLES, true);
+        setAndFlush(MarkOccurencesSettingsNames.LOCAL_VARIABLES, true);
         setAndCheck(109, TEST_LOCAL1);
         closeFile();
         
-        setAndFlush(MarkOccurencesSettings.METHODS, false);
+        setAndFlush(MarkOccurencesSettingsNames.METHODS, false);
         js = openFile("Test2.java");
         setAndCheck(153, EMPTY);
-        setAndFlush(MarkOccurencesSettings.METHODS, true);
+        setAndFlush(MarkOccurencesSettingsNames.METHODS, true);
         setAndCheck(153, TEST_METHOD);
         closeFile();
         
-        setAndFlush(MarkOccurencesSettings.OVERRIDES, false);
+        setAndFlush(MarkOccurencesSettingsNames.OVERRIDES, false);
         js = openFile("Test9.java");
         setAndCheck(130,new SimpleMark[]{new SimpleMark(77,94,null),
                                            new SimpleMark(124,141,null)
                                         });                 
-        setAndFlush(MarkOccurencesSettings.OVERRIDES, true);
+        setAndFlush(MarkOccurencesSettingsNames.OVERRIDES, true);
         setAndCheck(130, TEST_OVERRIDE);
         closeFile();
         
-        setAndFlush(MarkOccurencesSettings.TYPES, false);
+        setAndFlush(MarkOccurencesSettingsNames.TYPES, false);
         js = openFile("Test.java");
         setAndCheck(66, EMPTY);
-        setAndFlush(MarkOccurencesSettings.TYPES, true);
+        setAndFlush(MarkOccurencesSettingsNames.TYPES, true);
         setAndCheck(66, TEST_TYPE);
         
     }
