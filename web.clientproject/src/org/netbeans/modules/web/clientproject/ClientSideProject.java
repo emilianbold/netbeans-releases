@@ -162,7 +162,6 @@ public class ClientSideProject implements Project {
     private final Lookup lookup;
     private final AntProjectListener antProjectListenerImpl = new AntProjectListenerImpl();
     volatile String name;
-    private RefreshOnSaveListener refreshOnSaveListener;
     private ClassPath sourcePath;
     volatile ClassPathProviderImpl.PathImpl pathImpl;
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
@@ -257,7 +256,6 @@ public class ClientSideProject implements Project {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ClientSideProjectConstants.PROJECT_SELECTED_BROWSER.equals(evt.getPropertyName())) {
                     projectBrowserUsageLogger.reset();
-                    refreshOnSaveListener = null;
                     ClientProjectEnhancedBrowserImplementation ebi = projectEnhancedBrowserImpl;
                     if (ebi != null) {
                         ebi.deactivate();
