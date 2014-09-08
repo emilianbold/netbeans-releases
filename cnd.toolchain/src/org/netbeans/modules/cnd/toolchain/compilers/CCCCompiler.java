@@ -750,9 +750,10 @@ public abstract class CCCCompiler extends AbstractCompiler {
                 checked.add(macro.getFlags());
             }
         }
+        List<String> undefinedAlternatives = new ArrayList<String>();
         if (getPath().endsWith("/g++") || getPath().endsWith("/gcc")) { // NOI18N
             List<String> flags = new ArrayList<String>();
-            getCompilerOutput("-v --help", flags, true); // NOI18N
+            getCompilerOutput("-v --help", flags, undefinedAlternatives, true); // NOI18N
             for(final String flag : flags) {
                 if (!checked.contains(flag)) {
                     allFlags.add(flag);
@@ -761,7 +762,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
             }
         } else if (getPath().endsWith("/CC") || getPath().endsWith("/cc")) { // NOI18N
             List<String> flags = new ArrayList<String>();
-            getCompilerOutput(" -flags", flags, false); // NOI18N
+            getCompilerOutput(" -flags", flags, undefinedAlternatives, false); // NOI18N
             for(final String flag : flags) {
                 if (!checked.contains(flag)) {
                     allFlags.add(flag);
@@ -864,7 +865,11 @@ public abstract class CCCCompiler extends AbstractCompiler {
         LOG.log(Level.FINE, importantFlags.toString());
         importantFlags.setLength(0);
         importantFlags.append("Important flags pattern for compiler: ").append(getPath()).append("\n"); // NOI18N
-        importantFlags.append("        <important_flags flags=\"").append(convertToRegularExpression(importantFlagsList)).append("\"/>"); // NOI18N
+        importantFlags.append("        <important_flags flags=\"").append(convertToRegularExpression(importantFlagsList)).append("\"/>\n"); // NOI18N
+        importantFlags.append("Undefined alternatives:\n"); // NOI18N
+        for(String s :undefinedAlternatives) {
+            importantFlags.append("|"+s+".*"); // NOI18N
+        }
         LOG.log(Level.FINE, importantFlags.toString());
     }
 
@@ -927,7 +932,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
     }
     
     //For testing. Run compiler to obtain flags help.
-    private void getCompilerOutput(String arguments, List<String> options, boolean isGcc) {
+    private void getCompilerOutput(String arguments, List<String> options, List<String> undefinedAlternatives, boolean isGcc) {
         String compilerPath = getPath();
         if (compilerPath == null || compilerPath.length() == 0) {
             return;
@@ -951,12 +956,12 @@ public abstract class CCCCompiler extends AbstractCompiler {
         argsList.addAll(Arrays.asList(arguments.trim().split(" +"))); // NOI18N
         ProcessUtils.ExitStatus execute = ProcessUtils.execute(execEnv, compilerPath, argsList.toArray(new String[argsList.size()]));
         if (execute.isOK()) {
-            discoverFlags(execute.output, options, isGcc);
+            discoverFlags(execute.output, options, undefinedAlternatives, isGcc);
         }
     }
 
     //For testing. Discover compiler flags from compiler help output.
-    protected static void discoverFlags(String output, List<String> options, boolean isGcc) {
+    protected static void discoverFlags(String output, List<String> options, List<String> undefinedAlternatives, boolean isGcc) {
         String[] split = output.split("\n"); // NOI18N
         for(int index = 0; index < split.length; index++) {
             String line = split[index];
@@ -1039,6 +1044,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
                     }
                     options.add(option);
                 } else {
+                    option = option.replace("[,<a>]", ""); // NOI18N
                     if (option.indexOf("<") >= 0) { // NOI18N
                         int i = option.indexOf("<"); // NOI18N
                         int j = option.indexOf(">"); // NOI18N
@@ -1104,6 +1110,8 @@ public abstract class CCCCompiler extends AbstractCompiler {
                         }
                     }
                     if (option.indexOf("<") >= 0) { // NOI18N
+                        //Do not know alternatives, add as important
+                        undefinedAlternatives.add(option.substring(0,option.indexOf("<")));  // NOI18N
                         continue;
                     }
                     if (option.indexOf("{") >= 0) { // NOI18N
