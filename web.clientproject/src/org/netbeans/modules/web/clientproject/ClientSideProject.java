@@ -201,7 +201,8 @@ public class ClientSideProject implements Project {
         public void propertyChanged(Project project, PlatformProvider platformProvider, PropertyChangeEvent event) {
             if (ClientSideProject.this.equals(project)) {
                 String propertyName = event.getPropertyName();
-                if (PlatformProvider.PROP_ENABLED.equals(propertyName)) {
+                if (propertyName == null
+                        || PlatformProvider.PROP_ENABLED.equals(propertyName)) {
                     Info info = getLookup().lookup(Info.class);
                     assert info != null;
                     info.firePropertyChange(ProjectInformation.PROP_ICON);
