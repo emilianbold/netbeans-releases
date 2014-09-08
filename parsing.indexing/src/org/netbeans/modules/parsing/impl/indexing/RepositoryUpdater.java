@@ -68,7 +68,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -76,7 +75,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.AtomicLockEvent;
 import org.netbeans.api.editor.document.AtomicLockListener;
@@ -105,6 +103,7 @@ import org.netbeans.modules.parsing.impl.indexing.friendapi.DownloadedIndexPatch
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
+import org.netbeans.modules.parsing.impl.indexing.implspi.ActiveDocumentProvider;
 import org.netbeans.modules.parsing.implspi.ProfilerSupport;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
@@ -142,7 +141,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Tomas Zezula
  */
 @SuppressWarnings("ClassWithMultipleLoggers")
-public final class RepositoryUpdater implements PathRegistryListener, PropertyChangeListener, DocumentListener, AtomicLockListener {
+public final class RepositoryUpdater implements PathRegistryListener, PropertyChangeListener, DocumentListener, AtomicLockListener, ActiveDocumentProvider.ActiveDocumentListener {
     /**
      * If the task is delayed longer than this constant from its schedule to execution, the previous task's info
      * will be chained to it. If the user cancels the task, the log will also contain the long-blocking predecessor.
@@ -190,7 +189,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 this.indexingActivityInterceptors = Lookup.getDefault().lookupResult(IndexingActivityInterceptor.class);
                 PathRegistry.getDefault().addPathRegistryListener(this);
                 rootsListeners.setListener(sourceRootsListener, binaryRootsListener);
-                EditorRegistry.addPropertyChangeListener(this);
+                activeDocProvider.addActiveDocumentListener(this);
                 IndexerCache.getCifCache().addPropertyChangeListener(this);
                 IndexerCache.getEifCache().addPropertyChangeListener(this);
                 visibilitySupport.start();
@@ -223,7 +222,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                 PathRegistry.getDefault().removePathRegistryListener(this);
                 rootsListeners.setListener(null, null);
-                EditorRegistry.removePropertyChangeListener(this);
+                activeDocProvider.removeActiveDocumentListener(this);
                 visibilitySupport.stop();
                 cancel = true;
             }
@@ -1071,75 +1070,28 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
             return;
         }
+    }
 
-        assert SwingUtilities.isEventDispatchThread() : "Changes in focused editor component should be delivered on AWT"; //NOI18N
-        
-        List<? extends JTextComponent> components = Collections.<JTextComponent>emptyList();
-
-        if (evt.getPropertyName() == null) {
-            components = EditorRegistry.componentList();
-
-        } else if (evt.getPropertyName().equals(EditorRegistry.FOCUS_LOST_PROPERTY) || 
-                   evt.getPropertyName().equals(EditorRegistry.LAST_FOCUSED_REMOVED_PROPERTY))
-        {
-            if (evt.getOldValue() instanceof JTextComponent) {
-                Object newValue = evt.getNewValue();
-                if (!(newValue instanceof JTextComponent) || ((JTextComponent)newValue).getClientProperty("AsTextField") == null) {
-                    JTextComponent jtc = (JTextComponent) evt.getOldValue();
-                    handleActiveDocumentChange(jtc.getDocument(), null);
-                }
-            }
-            
-        } else if (evt.getPropertyName().equals(EditorRegistry.COMPONENT_REMOVED_PROPERTY)) {
-            if (evt.getOldValue() instanceof JTextComponent) {
-                JTextComponent jtc = (JTextComponent) evt.getOldValue();
-                components = Collections.singletonList(jtc);
-            }
-
-        } else if (evt.getPropertyName().equals(EditorRegistry.FOCUS_GAINED_PROPERTY)) {
-            if (evt.getNewValue() instanceof JTextComponent) {
-                JTextComponent jtc = (JTextComponent) evt.getNewValue();
-                if (jtc.getClientProperty("AsTextField") == null) {
-                    handleActiveDocumentChange(null, jtc.getDocument());
-                    JTextComponent activeComponent = activeComponentRef == null ? null : activeComponentRef.get();
-                    if (activeComponent != jtc) {
-                        if (activeComponent != null) {
-                            components = Collections.singletonList(activeComponent);
-                        }
-                        activeComponentRef = new WeakReference<>(jtc);
-                    }
-                }
-            }
-
-        } else if (evt.getPropertyName().equals(EditorRegistry.FOCUSED_DOCUMENT_PROPERTY)) {
-            JTextComponent jtc = EditorRegistry.focusedComponent();
-            if (jtc == null) {
-                jtc = EditorRegistry.lastFocusedComponent();
-            }
-            if (jtc != null) {
-                components = Collections.singletonList(jtc);
-            }
-
-            handleActiveDocumentChange((Document) evt.getOldValue(), (Document) evt.getNewValue());
-        }
-
+    @Override
+    public void activeDocumentChanged(@NonNull final ActiveDocumentProvider.ActiveDocumentEvent event) {
+        handleActiveDocumentChange(event.getDeactivatedDocument(), event.getActivatedDocument());
         Map<URL, FileListWork> jobs = new HashMap<>();
-        if (!components.isEmpty()) {
-            for(JTextComponent jtc : components) {
-                Document doc = jtc.getDocument();
+        final Collection<? extends Document> docs = event.getDocumentsToRefresh();
+        if (!docs.isEmpty()) {
+            for(Document doc : docs) {
                 Pair<URL, FileObject> root = getOwningSourceRoot(doc);
                 if (root != null) {
                     if (root.second() == null) {
                         final FileObject file = Utilities.getFileObject(doc);
                         assert file == null || !file.isValid() : "Expecting both owningSourceRootUrl=" + root.first() + " and owningSourceRoot=" + root.second(); //NOI18N
                         return;
-                    }                    
+                    }
                     long version = DocumentUtilities.getDocumentVersion(doc);
                     Long lastIndexedVersion = (Long) doc.getProperty(PROP_LAST_INDEXED_VERSION);
                     Long lastDirtyVersion = (Long) doc.getProperty(PROP_LAST_DIRTY_VERSION);
                     boolean reindex;
 
-                    boolean openedInEditor = EditorRegistry.componentList().contains(jtc);
+                    boolean openedInEditor = activeDocProvider.getActiveDocuments().contains(doc);
                     if (openedInEditor) {
                         if (lastIndexedVersion == null) {
                             reindex = lastDirtyVersion != null;
@@ -1195,7 +1147,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                 }
             }
-        }       
+        }
         for(FileListWork job : jobs.values()) {
             scheduleWork(job, false);
         }
@@ -1314,17 +1266,26 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private final FileChangeListener binaryRootsListener = new FCL(Boolean.FALSE);
     private final ThreadLocal<Boolean> inIndexer = new ThreadLocal<>();
 
-   private final VisibilitySupport visibilitySupport = VisibilitySupport.create(this, RP);
-   private final SuspendSupport suspendSupport = new SuspendSupport(WORKER);
-   private final AtomicLong scannedRoots2DependenciesLamport = new AtomicLong();
+    private final VisibilitySupport visibilitySupport = VisibilitySupport.create(this, RP);
+    private final SuspendSupport suspendSupport = new SuspendSupport(WORKER);
+    private final AtomicLong scannedRoots2DependenciesLamport = new AtomicLong();
+    private final ActiveDocumentProvider activeDocProvider;
 
     private RepositoryUpdater () {
         LOGGER.log(Level.FINE, "netbeans.indexing.notInterruptible={0}", notInterruptible); //NOI18N
         LOGGER.log(Level.FINE, "netbeans.indexing.recursiveListeners={0}", useRecursiveListeners); //NOI18N
         LOGGER.log(Level.FINE, "FILE_LOCKS_DELAY={0}", FILE_LOCKS_DELAY); //NOI18N
+        this.activeDocProvider = Lookup.getDefault().lookup(ActiveDocumentProvider.class);
+        if (this.activeDocProvider == null) {
+            throw new IllegalStateException("No ActiveDocumentProvider instance in global lookup.");    //NOI18N
+        }
     }
 
     private void handleActiveDocumentChange(Document deactivated, Document activated) {
+        if (deactivated == null && activated == null) {
+            //No change
+            return;
+        }
         Document activeDocument = activeDocumentRef == null ? null : activeDocumentRef.get();
         if (activeDocument != null && deactivated == activeDocument) {
             AtomicLockDocument ald = LineDocumentUtils.as(activeDocument, AtomicLockDocument.class);
@@ -1978,8 +1939,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     // XXX: this should ideally be available directly from EditorRegistry
     private static Map<FileObject, Document> getEditorFiles() {
         Map<FileObject, Document> f2d = new HashMap<>();
-        for(JTextComponent jtc : EditorRegistry.componentList()) {
-            Document d = jtc.getDocument();
+        for(Document d : RepositoryUpdater.getDefault().activeDocProvider.getActiveDocuments()) {
             FileObject f = Utilities.getFileObject(d);
             if (f != null) {
                 f2d.put(f, d);
@@ -3393,13 +3353,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             if (utActiveSrc != null) {
                 return utActiveSrc;
             }
-            final JTextComponent jtc = EditorRegistry.lastFocusedComponent();
-            if (jtc == null) {
-                return null;
-            }
-            Document doc = jtc.getDocument();
-            assert doc != null;
-            return DocumentUtilities.getMimeType(doc) == null ? null : Source.create(doc);
+            final Document doc = RepositoryUpdater.getDefault().activeDocProvider.getActiveDocument();
+            return doc == null ?
+                    null :
+                    DocumentUtilities.getMimeType(doc) == null ?
+                        null :
+                        Source.create(doc);
         }
 
         protected void refreshActiveDocument() {
