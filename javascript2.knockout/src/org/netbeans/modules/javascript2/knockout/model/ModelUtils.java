@@ -39,58 +39,44 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.knockout;
+package org.netbeans.modules.javascript2.knockout.model;
 
-import javax.swing.text.BadLocationException;
-import org.netbeans.junit.AssertionFailedErrorException;
-import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport;
-import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport.Match;
-import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
-import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.javascript2.editor.model.JsArray;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
- * @author marekfukala
+ * @author Petr Pisl
  */
-public class KOHtmlExtensionTest extends CslTestBase {
-    
-    public KOHtmlExtensionTest(String name) {
-        super(name);
-    }
+public class ModelUtils {
+    // TODO this class shouldnot be there. The model utils should be a part
+    // of the editor API. This is copy paste from ModelUtils
 
-    @Override
-    protected String getPreferredMimeType() {
-        return "text/html";
-    }
-
-    @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new HtmlLanguage();
-    }
-    
-    public void testCompletionWithPrefix() {
-        assertCC("<div data-bind=\"t|", Match.EXACT, "text", "textinput", "template");
-        assertCC("<div data-bind=\"tex|", Match.EXACT, "text", "textinput");
-        assertCC("<div data-bind=\"text|", Match.EXACT, "text", "textinput");
-        assertCC("<div data-bind=\"text|:value", Match.EXACT, "text", "textinput");
-        assertCC("<div data-bind=\"text:value, v|", Match.EXACT, "visible", "value");
-    }
-    
-    public void testCompletionWithoutPrefix() {
-        assertCC("<div data-bind=\"|", Match.CONTAINS, "text");
-        assertCC("<div data-bind=\"  |", Match.CONTAINS, "text");
-        assertCC("<div data-bind=\"text:value,|", Match.CONTAINS, "text");
-        assertCC("<div data-bind=\"text:value, |", Match.CONTAINS, "text");
-    }
-    
-    private void assertCC(String documentText, Match type, String... expectedItemsNames)  {
-        try {
-            HtmlCompletionTestSupport.assertItems(getDocument(documentText), expectedItemsNames, type, -1);
-        } catch (BadLocationException | ParseException ex) {
-            throw new AssertionFailedErrorException(ex);
+    public static JsObject findJsObject(JsObject object, int offset) {
+        JsObject jsObject = object;
+        JsObject result = null;
+        JsObject tmpObject = null;
+        if (jsObject.getOffsetRange().containsInclusive(offset)) {
+            result = jsObject;
+            for (JsObject property : jsObject.getProperties().values()) {
+                JsElement.Kind kind = property.getJSKind();
+                if (kind == JsElement.Kind.OBJECT || kind == JsElement.Kind.ANONYMOUS_OBJECT || kind == JsElement.Kind.OBJECT_LITERAL
+                        || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD || kind == JsElement.Kind.CONSTRUCTOR
+                        || kind == JsElement.Kind.WITH_OBJECT) {
+                    tmpObject = findJsObject(property, offset);
+                }
+                if (tmpObject != null) {
+                    if (tmpObject instanceof JsArray) {
+                        tmpObject = null;
+                        result = tmpObject;
+                    } else {
+                        result = tmpObject;
+                        break;
+                    }
+                }
+            }
         }
+        return result;
     }
-    
 }
