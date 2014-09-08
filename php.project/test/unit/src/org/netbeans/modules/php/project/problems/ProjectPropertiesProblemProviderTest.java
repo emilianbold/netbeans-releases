@@ -103,10 +103,13 @@ public class ProjectPropertiesProblemProviderTest extends PhpTestCase {
         final String testDir1 = "nondir";
         final String testDir2 = projectDir + File.separatorChar + "nbproject" + File.separatorChar + "private";
         final String testDir3 = projectDir;
+        final String testDir100 = projectDir;
         Map<String, String> testDirs = new HashMap<>();
-        testDirs.put(PhpProjectProperties.TEST_SRC_DIR + "2", testDir1);
-        testDirs.put(PhpProjectProperties.TEST_SRC_DIR + "3", testDir2);
-        testDirs.put(PhpProjectProperties.TEST_SRC_DIR + "100", testDir3);
+        testDirs.put(PhpProjectProperties.TEST_SRC_DIR + "1", testDir1);
+        testDirs.put(PhpProjectProperties.TEST_SRC_DIR + "2", testDir2);
+        testDirs.put(PhpProjectProperties.TEST_SRC_DIR + "3", testDir3);
+        // ignored, not in a row
+        testDirs.put(PhpProjectProperties.TEST_SRC_DIR + "100", testDir100);
         PhpProjectProperties.save(project, testDirs, Collections.<String, String>emptyMap());
         assertEquals(3, problemsProvider.getProblems().size());
         Set<String> contained = new HashSet<>();
