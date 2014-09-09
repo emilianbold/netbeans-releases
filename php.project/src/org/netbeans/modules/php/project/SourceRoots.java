@@ -88,7 +88,7 @@ public final class SourceRoots {
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
     private final String displayName;
-    private final String propertyPrefix;
+    private final String propertyNumericPrefix;
     private final PropertyChangeSupport support;
     private final ProjectMetadataListener listener;
     private final boolean tests;
@@ -113,7 +113,7 @@ public final class SourceRoots {
         helper = builder.helper;
         evaluator = builder.evaluator;
         displayName = builder.displayName;
-        propertyPrefix = builder.propertyPrefix;
+        propertyNumericPrefix = builder.propertyNumericPrefix;
         tests = builder.tests;
 
         sourceRootProperties = builder.properties;
@@ -172,13 +172,22 @@ public final class SourceRoots {
                 synchronized (SourceRoots.this) {
                     assert Thread.holdsLock(SourceRoots.this);
                     if (sourceRootProperties == null) {
-                        assert propertyPrefix != null : displayName;
+                        assert propertyNumericPrefix != null : displayName;
                         sourceRootProperties = new ArrayList<>();
                         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        for (String key : projectProperties.keySet()) {
-                            if (key.startsWith(propertyPrefix)) {
+                        // #246368
+                        if (projectProperties.containsKey(propertyNumericPrefix)) {
+                            sourceRootProperties.add(propertyNumericPrefix);
+                        }
+                        int i = 1;
+                        while (true) {
+                            String key = propertyNumericPrefix + i;
+                            if (projectProperties.containsKey(key)) {
                                 sourceRootProperties.add(key);
+                            } else if (i > 1) {
+                                break;
                             }
+                            i++;
                         }
                     }
                     return sourceRootProperties.toArray(new String[sourceRootProperties.size()]);
@@ -310,10 +319,10 @@ public final class SourceRoots {
             // in case of change reset local cache
             if (propName == null
                     || (sourceRootProperties != null && sourceRootProperties.contains(propName))
-                    || (propertyPrefix != null && propName.startsWith(propertyPrefix))) {
+                    || (propertyNumericPrefix != null && propName.startsWith(propertyNumericPrefix))) {
                 sourceRoots = null;
                 sourceRootUrls = null;
-                if (propertyPrefix != null) {
+                if (propertyNumericPrefix != null) {
                     sourceRootProperties = null;
                 }
                 sourceRootNames = null;
@@ -421,7 +430,7 @@ public final class SourceRoots {
         final String displayName;
 
         List<String> properties;
-        String propertyPrefix;
+        String propertyNumericPrefix;
         boolean tests;
 
 
@@ -441,8 +450,8 @@ public final class SourceRoots {
             return this;
         }
 
-        public Builder setPropertyPrefix(String propertyPrefix) {
-            this.propertyPrefix = propertyPrefix;
+        public Builder setPropertyNumericPrefix(String propertyNumericPrefix) {
+            this.propertyNumericPrefix = propertyNumericPrefix;
             return this;
         }
 
@@ -452,7 +461,7 @@ public final class SourceRoots {
         }
 
         public SourceRoots build() {
-            assert properties != null || propertyPrefix != null;
+            assert properties != null || propertyNumericPrefix != null;
             return SourceRoots.create(this);
         }
 

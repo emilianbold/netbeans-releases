@@ -893,11 +893,26 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerSet == null) {
             return "";
         }
-        BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
-        if (compilerConfiguration instanceof CCCCompilerConfiguration) {
-            CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
-            return cccCompilerConfiguration.getImportantFlags().getValue();
+        if (makeConfiguration.isMakefileConfiguration()) {
+            BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+            if (compilerConfiguration instanceof CCCCompilerConfiguration) {
+                CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
+                return cccCompilerConfiguration.getImportantFlags().getValue();
+            }
+        } else {
+            AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
+            BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+            if (compilerConfiguration instanceof CCCCompilerConfiguration) {
+                // Get include paths from compiler
+                if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
+                    final String importantFlags = SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
+                    if (importantFlags != null) {
+                        return importantFlags;
+                    }
+                }
+            }
         }
+        
         return "";
     }
     
