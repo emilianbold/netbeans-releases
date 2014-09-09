@@ -60,8 +60,8 @@
   </usecase>
   <usecase id="component" name="Embedding an HTML UI Component">
       Are you satisfied with your HTML UI as used in 
-      <a href="#use-window">windows</a> and
-      <a href="#use-dialogs">dialogs</a>, but you'd like to use it
+      <a href="@TOP@architecture-summary.html#use-window">windows</a> and
+      <a href="@TOP@architecture-summary.html#use-dialog">dialogs</a>, but you'd like to use it
       at a different part of the overall NetBeans UI? Then check
       <a href="@TOP@/org/netbeans/api/html4j/HTMLComponent.html">@HTMLComponent</a>
       annotation.
