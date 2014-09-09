@@ -5,7 +5,7 @@
 
 <api-answers
   question-version="1.29"
-  author="yourname@netbeans.org"
+  author="jtulach@netbeans.org"
 >
 
   &api-questions;
@@ -15,7 +15,7 @@
   <p>
    <api name="HTML4J" category="official" group="java" type="export">
    HTML for Java &amp; NetBeans API provides NetBeans Platform specific bindings over
-   standard <a href="http://bits.netbeans.org/html4j/">HTML for Java</a> API.
+   standard <a href="http://bits.netbeans.org/html4j/" onclick="target='_blank'">HTML for Java</a> API.
    </api>
   </p>
  </answer>
@@ -38,7 +38,7 @@
    in NetBeans Platform. To achieve that it provides specific annotatations
    like <a href="@TOP@/org/netbeans/api/html4j/OpenHTMLRegistration.html">@OpenHTMLRegistration</a>,
    but otherwise it builds on the same usecases as the
-   <a href="http://bits.netbeans.org/html4j/">HTML for Java</a> API.
+   <a onclick="target='_blank'" href="http://bits.netbeans.org/html4j/">HTML for Java</a> API.
   </p>
  </answer>
 
@@ -57,7 +57,7 @@
  <answer id="arch-what">
   <p>
   NetBeans Platform specific bindings over
-   standard <a href="http://bits.netbeans.org/html4j/">HTML for Java</a> API.
+   standard <a onclick="target='_blank'" href="http://bits.netbeans.org/html4j/">HTML for Java</a> API.
   </p>
  </answer>
 
@@ -283,11 +283,12 @@
  <answer id="deploy-dependencies">
   <p>
   The HTML for Java &amp; NetBeans API is a classical NetBeans module. However 
-  it depends on other modules provided by the <a href="http://bits.netbeans.org/html4j">HTML for Java</a>
+  it depends on other modules provided by the 
+  <a onclick="target='_blank'" href="http://bits.netbeans.org/html4j">HTML for Java</a>
   project and those are OSGi bundles. As such, when one decides to use this 
   module, one needs to turn on an OSGi container inside of the NetBeans Platform.
-  It can be either <a href="http://felix.apache.org">Felix</a> or 
-  NetBeans version of <a href="http://wiki.apidesign.org/wiki/Netbinox">Equinox</a>.
+  It can be either <a onclick="target='_blank'" href="http://felix.apache.org">Felix</a> or 
+  NetBeans version of <a onclick="target='_blank'" href="http://wiki.apidesign.org/wiki/Netbinox">Equinox</a>.
   </p>
  </answer>
 

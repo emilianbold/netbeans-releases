@@ -68,7 +68,7 @@ import org.netbeans.modules.html4j.HTMLDialogImpl;
  * method returns with 'id' of the selected button (or <code>null</code> if
  * the dialog was closed).
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.METHOD)
