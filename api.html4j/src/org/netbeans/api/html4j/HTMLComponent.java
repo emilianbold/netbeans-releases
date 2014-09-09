@@ -80,7 +80,7 @@ public @interface HTMLComponent {
      * two types: <em>Swing</em> and <em>JavaFX</em>. 
      * To request Swing component
      * return {@link JFXPanel}.<b>class</b>. To request JavaFX 
-     * component, return {@link WebView}.<b>class</b>.
+     * component, return {@link Node}.<b>class</b>.
      * 
      * @return either {@link JFXPanel} or {@link WebView} class
      */

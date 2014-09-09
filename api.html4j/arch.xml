@@ -14,7 +14,7 @@
  <answer id="arch-overall">
   <p>
    <api name="HTML4J" category="official" group="java" type="export">
-   HTML for Java &amp; NetBeans API provides NetBeans Platform specific bindings over
+   NetBeans Platform specific bindings over
    standard <a href="http://bits.netbeans.org/html4j/" onclick="target='_blank'">HTML for Java</a> API.
    </api>
   </p>
@@ -40,6 +40,32 @@
    but otherwise it builds on the same usecases as the
    <a onclick="target='_blank'" href="http://bits.netbeans.org/html4j/">HTML for Java</a> API.
   </p>
+  <usecase id="window" name="Portable HTML based Window">
+      <a name="use-window"></a>
+      Want to open a live HTML page as a 
+      <a href="@org-openide-windows@/org/openide/windows/TopComponent.html">
+        NetBeans window component</a>? Do you want
+      to use Java to control enabled/disabled state of various HTML elements?
+      Then have a look at
+      <a href="@TOP@/org/netbeans/api/html4j/OpenHTMLRegistration.html">@OpenHTMLRegistration</a>
+      annotation.
+  </usecase>
+  <usecase id="dialog" name="Portable HTML based Dialog">
+      <a name="use-dialog"></a>
+      Want to open a modal dialog filled with an HTML page and block until user
+      makes his choice? 
+      Then have a look at
+      <a href="@TOP@/org/netbeans/api/html4j/HTMLDialog.html">@HTMLDialog</a>
+      annotation.
+  </usecase>
+  <usecase id="component" name="Embedding an HTML UI Component">
+      Are you satisfied with your HTML UI as used in 
+      <a href="#use-window">windows</a> and
+      <a href="#use-dialogs">dialogs</a>, but you'd like to use it
+      at a different part of the overall NetBeans UI? Then check
+      <a href="@TOP@/org/netbeans/api/html4j/HTMLComponent.html">@HTMLComponent</a>
+      annotation.
+  </usecase>
  </answer>
 
 
