@@ -60,6 +60,7 @@ public enum Binding implements KOHelpItem {
     //text and appearance
     visible,
     text,
+    textinput,
     html,
     css,
     style,
@@ -82,6 +83,7 @@ public enum Binding implements KOHelpItem {
     selectedOptions,
     uniqueName,
     //rendering
+    component,
     template;
 
     public static final String DOC_CHARSET = "UTF-8"; //NOI18N
