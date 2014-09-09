@@ -111,6 +111,7 @@ public class V8Debug {
     private long numFrames = -1l;
     private V8Frame[] framesToPrint;
     private String toEvaluate;
+    private Testeable testeable;
     
     private V8Debug(String serverName, int serverPort) throws IOException {
         cc = new ClientConnection(serverName, serverPort);
@@ -586,6 +587,9 @@ public class V8Debug {
     }
     
     private boolean handleResponse(V8Response response) throws IOException {
+        if (testeable != null) {
+            testeable.notifyResponse(response);
+        }
         V8Command internalCommand = internalCommands.remove(response.getRequestSequence());
         String errorMessage = response.getErrorMessage();
         if (errorMessage != null) {
@@ -741,6 +745,9 @@ public class V8Debug {
     }
     
     private boolean handleEvent(V8Event event) {
+        if (testeable != null) {
+            testeable.notifyEvent(event);
+        }
         switch (event.getKind()) {
             case AfterCompile:
                 AfterCompileEventBody aceb = (AfterCompileEventBody) event.getBody();
@@ -879,6 +886,45 @@ public class V8Debug {
         for (String name : argumentRefs.keySet()) {
             System.out.println(name + " = " + argumentRefs.get(name));
         }
+    }
+    
+    final static class TestAccess {
+        
+        static V8Debug createV8Debug(String hostName, int port, Testeable testeable) throws IOException {
+            final V8Debug v8dbg = new V8Debug(hostName, port);
+            v8dbg.testeable = testeable;
+            v8dbg.startCommandLoop();
+            new Thread("Response loop") {
+                @Override
+                public void run() {
+                    try {
+                        v8dbg.responseLoop();
+                    } catch (IOException ex) {
+                        Logger.getLogger(V8Debug.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (ParseException ex) {
+                        Logger.getLogger(V8Debug.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }.start();
+            return v8dbg;
+        }
+        
+        static boolean doCommand(V8Debug v8dbg, String command) throws IOException {
+            return v8dbg.doCommand(command);
+        }
+        
+        static V8Script getScript(V8Debug v8dbg, long id) {
+            return v8dbg.getScript(id);
+        }
+        
+    }
+    
+    static interface Testeable {
+        
+        void notifyResponse(V8Response response);
+        
+        void notifyEvent(V8Event event);
+        
     }
 
 }
