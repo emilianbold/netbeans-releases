@@ -165,9 +165,10 @@ public class DownloadBinaries extends Task {
                                 throw new BuildException("Bad line '" + line + "' in " + manifest, getLocation());
                             }
 
-                            if (hashAndFile[0].contains(":")) {
-                                mavenFile(hashAndFile[0], hashAndFile[1], manifest);
-                            } else {
+//                            if (hashAndFile[0].contains(":")) {
+//                                mavenFile(hashAndFile[0], hashAndFile[1], manifest);
+//                            } else 
+                            {
                                 hashedFile(hashAndFile[0], hashAndFile[1], manifest);
                             }
                         }
