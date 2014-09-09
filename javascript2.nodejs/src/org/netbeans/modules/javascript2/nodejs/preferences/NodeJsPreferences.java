@@ -42,78 +42,56 @@
 
 package org.netbeans.modules.javascript2.nodejs.preferences;
 
-import java.io.File;
-import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.javascript2.nodejs.util.StringUtils;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.javascript2.nodejs.platform.NodeJsPlatformProvider;
+import org.netbeans.modules.javascript2.nodejs.platform.NodeJsSupport;
+import org.netbeans.modules.javascript2.nodejs.util.FileUtils;
 
 /**
  * Project specific Node.js preferences.
  */
 public final class NodeJsPreferences {
 
-
     private static final String ENABLED = "enabled"; // NOI18N
     private static final String NODE_PATH = "node.path"; // NOI18N
 
+    private final NodeJsSupport nodeJsSupport;
+    private final Project project;
 
-    private NodeJsPreferences() {
+
+    public NodeJsPreferences(NodeJsSupport nodeJsSupport, Project project) {
+        assert nodeJsSupport != null;
+        assert project != null;
+        this.nodeJsSupport = nodeJsSupport;
+        this.project = project;
     }
 
-    public static boolean isEnabled(Project project) {
-        return getPreferences(project).getBoolean(ENABLED, false);
+    public boolean isEnabled() {
+        return getPreferences().getBoolean(ENABLED, false);
     }
 
-    public static void setEnabled(Project project, boolean enabled) {
-        getPreferences(project).putBoolean(ENABLED, enabled);
+    public void setEnabled(boolean enabled) {
+        boolean original = isEnabled();
+        getPreferences().putBoolean(ENABLED, enabled);
+        if (original != enabled) {
+            nodeJsSupport.firePropertyChanged(NodeJsPlatformProvider.PROP_ENABLED, original, enabled);
+        }
     }
 
     @CheckForNull
-    public static String getNode(Project project) {
-        return resolvePath(project, getPreferences(project).get(NODE_PATH, null));
+    public String getNode() {
+        return FileUtils.resolvePath(project, getPreferences().get(NODE_PATH, null));
     }
 
-    public static void setNode(Project project, String node) {
-        getPreferences(project).put(NODE_PATH, relativizePath(project, node));
+    public void setNode(String node) {
+        getPreferences().put(NODE_PATH, FileUtils.relativizePath(project, node));
     }
 
-    public static void addPreferenceChangeListener(Project project, PreferenceChangeListener listener) {
-        getPreferences(project).addPreferenceChangeListener(listener);
-    }
-
-    public static void removePreferenceChangeListener(Project project, PreferenceChangeListener listener) {
-        getPreferences(project).removePreferenceChangeListener(listener);
-    }
-
-    private static Preferences getPreferences(final Project project) {
-        assert project != null;
+    private Preferences getPreferences() {
         return ProjectUtils.getPreferences(project, NodeJsPreferences.class, false);
-    }
-
-    private static String relativizePath(Project project, String filePath) {
-        if (!StringUtils.hasText(filePath)) {
-            return ""; // NOI18N
-        }
-        File file = new File(filePath);
-        String path = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), file);
-        if (path == null
-                || path.startsWith("../")) { // NOI18N
-            // cannot be relativized or outside project
-            path = file.getAbsolutePath();
-        }
-        return path;
-    }
-
-    private static String resolvePath(Project project, String filePath) {
-        if (!StringUtils.hasText(filePath)) {
-            return null;
-        }
-        return PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), filePath).getAbsolutePath();
     }
 
 }

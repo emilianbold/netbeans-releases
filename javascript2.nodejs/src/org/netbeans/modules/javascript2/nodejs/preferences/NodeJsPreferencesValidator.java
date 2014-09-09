@@ -43,6 +43,7 @@
 package org.netbeans.modules.javascript2.nodejs.preferences;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript2.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript2.nodejs.util.ValidationResult;
 import org.netbeans.modules.javascript2.nodejs.util.ValidationUtils;
 
@@ -56,7 +57,7 @@ public final class NodeJsPreferencesValidator {
     }
 
     public NodeJsPreferencesValidator validate(Project project) {
-        ValidationUtils.validateNode(result, NodeJsPreferences.getNode(project));
+        ValidationUtils.validateNode(result, NodeJsSupport.forProject(project).getPreferences().getNode());
         return this;
     }
 

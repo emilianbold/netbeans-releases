@@ -49,6 +49,7 @@ import javax.swing.GroupLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript2.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript2.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
@@ -57,7 +58,7 @@ import org.openide.util.NbBundle;
 public final class NodeJsCustomizerPanel extends JPanel {
 
     private final ProjectCustomizer.Category category;
-    private final Project project;
+    private final NodeJsPreferences preferences;
 
     private volatile boolean enabled;
 
@@ -67,7 +68,7 @@ public final class NodeJsCustomizerPanel extends JPanel {
         assert project != null;
 
         this.category = category;
-        this.project = project;
+        preferences = NodeJsSupport.forProject(project).getPreferences();
 
         initComponents();
         init();
@@ -75,7 +76,7 @@ public final class NodeJsCustomizerPanel extends JPanel {
 
     private void init() {
         // init
-        enabled = NodeJsPreferences.isEnabled(project);
+        enabled = preferences.isEnabled();
         enabledCheckBox.setSelected(enabled);
         // listeners
         category.setStoreListener(new ActionListener() {
@@ -98,7 +99,7 @@ public final class NodeJsCustomizerPanel extends JPanel {
     }
 
     void saveData() {
-        NodeJsPreferences.setEnabled(project, enabled);
+        preferences.setEnabled(enabled);
     }
 
     /**
