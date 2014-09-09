@@ -63,6 +63,8 @@ made subject to such option by the copyright holder.
             <file name="javaHint.java" url="../javahint/javaHint.javx"/>
             <file name="javaHintTestApp.java" url="../javahint/javaHintTestApp.javx"/>
             <file name="javaHintTest.java" url="../javahint/javaHintTest.javx"/>
+            <file name="HTML.html" url="../html/HTML.htmx"/>
+            <file name="HTML.java" url="../html/HTML.javx"/>
             <file name="template_myplugin-helpset.xml" url="../javahelp/template_myplugin-helpset.xml"/>
             <file name="template_myplugin.xml" url="../javahelp/template_myplugin.hs"/>
             <file name="template_myplugin-idx.xml" url="../javahelp/template_myplugin-idx.xml"/>
