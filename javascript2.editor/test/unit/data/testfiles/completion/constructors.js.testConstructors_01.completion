@@ -1,12 +1,14 @@
 Code completion result for source line:
-|formatter.println("Car:");
+var hisObject = new |MyObject();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CONSTRUCTO Address                         [PUBLIC]   typeInferenceNew.js
-CONSTRUCTO Car                             [PUBLIC]   typeInferenceNew.js
-CLASS      Context                         [PUBLIC]   typeInferenceNew.js
-CLASS      formatter                       [PUBLIC]   typeInferenceNew.js
-VARIABLE   object: Car                     [PUBLIC]   typeInferenceNew.js
+CONSTRUCTO sheObject(): sheObject          [PRIVATE]  constructors.js
+CLASS      Context                         [PUBLIC]   constructors.js
+METHOD     MyObject(): undefined           [PRIVATE]  constructors.js
+METHOD     yourObject(): undefined         [PRIVATE]  constructors.js
+VARIABLE   address                         [PRIVATE]  constructors.js
+VARIABLE   arguments: Arguments            [PRIVATE]  constructors.js
+VARIABLE   hisObject: MyObject             [PRIVATE]  constructors.js
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null
