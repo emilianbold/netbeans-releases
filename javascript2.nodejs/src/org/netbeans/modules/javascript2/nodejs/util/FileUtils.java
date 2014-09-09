@@ -72,9 +72,19 @@ public final class FileUtils {
     static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
 
     private static final boolean IS_WINDOWS = Utilities.isWindows();
+    private static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
 
 
     private FileUtils() {
+    }
+
+    public static boolean isJavaScriptFile(FileObject file) {
+        assert file != null;
+        return JAVASCRIPT_MIME_TYPE.equals(FileUtil.getMIMEType(file, JAVASCRIPT_MIME_TYPE));
+    }
+
+    public static boolean isJavaScriptFile(File file) {
+        return isJavaScriptFile(FileUtil.toFileObject(file));
     }
 
     public static List<File> sortFiles(Collection<File> files) {
