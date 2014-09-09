@@ -504,7 +504,7 @@ public final class Model {
         String fqn = object.getFullyQualifiedName();
         boolean isTopObject = object.getJSKind() == JsElement.Kind.FILE;
         if (alreadyResolvedObjects.contains(fqn)) {
-            assert false: "Probably cycle in the javascript model of file: " + object.getFileObject().getPath(); //NOI18N
+//            assert false: "Probably cycle in the javascript model of file: " + object.getFileObject().getPath(); //NOI18N
             return;
         }
         if (!isTopObject) {
