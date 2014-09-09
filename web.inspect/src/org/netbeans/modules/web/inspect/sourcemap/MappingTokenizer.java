@@ -197,11 +197,13 @@ class MappingTokenizer implements Iterable<Mapping> {
                 return c - 71;
             } else if (c >= '0' && c <= '9') {
                 return c + 4;
-            } else switch (c) {
-                case '+': return 62;
-                case '/': return 63;
-                case '=': return 0;
-                default: throw new IllegalArgumentException("Illegal character: " + c); // NOI18N
+            } else {
+                switch (c) {
+                    case '+': return 62;
+                    case '/': return 63;
+                    case '=': return 0;
+                    default: throw new IllegalArgumentException("Illegal character: " + c); // NOI18N
+                }
             }
         }
     }
