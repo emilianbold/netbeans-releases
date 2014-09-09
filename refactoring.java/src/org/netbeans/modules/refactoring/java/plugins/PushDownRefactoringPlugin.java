@@ -55,6 +55,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -72,12 +73,12 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
     
     /** Reference to the parent refactoring instance */
     private final PushDownRefactoring refactoring;
-    private TreePathHandle treePathHandle;
+    private final TreePathHandle treePathHandle;
     
     /** Creates a new instance of PushDownRefactoringPlugin */
     public PushDownRefactoringPlugin(PushDownRefactoring refactoring) {
         this.refactoring = refactoring;
-        treePathHandle = refactoring.getSourceType();
+        this.treePathHandle = refactoring.getSourceType();
     }
     
     @Override
@@ -118,12 +119,16 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
             // increase progress (step 2)
             fireProgressListenerStep();
             // #2 - check if there are any members to pull up
+            boolean hasMembers = false;
             for (Element element : el.getEnclosedElements()) {
                 if (element.getKind() != ElementKind.CONSTRUCTOR) {
-                    return null;
+                    hasMembers = true;
+                    break;
                 }
             }
-            precheckProblem = new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_NoMembers")); // NOI18N
+            if(!hasMembers) {
+                precheckProblem = new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_NoMembers")); // NOI18N
+            }
             // increase progress (step 3)
             fireProgressListenerStep();
             return precheckProblem;
@@ -137,9 +142,8 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
         return null;
     }
 
-
     @Override
-    protected Problem fastCheckParameters(CompilationController info) {
+    public Problem fastCheckParameters() {
         // #1 - check whether there are any members to pull up
         if (refactoring.getMembers().length == 0) {
             return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDown_NoMembersSelected")); // NOI18N
@@ -150,24 +154,23 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
     private Set<FileObject> getRelevantFiles(TreePathHandle handle) {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         ClassIndex idx = cpInfo.getClassIndex();
-        Set<FileObject> set = new HashSet<FileObject>();
+        Set<FileObject> set = new HashSet<>();
         set.add(RefactoringUtils.getFileObject(handle));
-        set.addAll(idx.getResources(handle.getElementHandle(), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        set.addAll(idx.getResources(handle.getElementHandle(), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS, ClassIndex.SearchKind.TYPE_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        Set<ElementHandle<TypeElement>> elements = idx.getElements(handle.getElementHandle(), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE));
+        for (ElementHandle<TypeElement> type : elements) {
+            set.addAll(idx.getResources(type, EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.METHOD_REFERENCES, ClassIndex.SearchKind.FIELD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        }
         return set;
-    }    
+    }
     
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         Set<FileObject> a = getRelevantFiles(treePathHandle);
         fireProgressListenerStart(AbstractRefactoring.PREPARE, a.size());
         PushDownTransformer pdt = new PushDownTransformer(refactoring.getMembers()); 
-        TransformTask task = new TransformTask(pdt, treePathHandle);
-        Problem prob = createAndAddElements(a, task, refactoringElements, refactoring);
+        Problem prob = createAndAddElements(a, new TransformTask(pdt, treePathHandle), refactoringElements, refactoring);
         fireProgressListenerStop();
         return prob != null ? prob : pdt.getProblem();
-    }
-
-    protected FileObject getFileObject() {
-        return treePathHandle.getFileObject();
     }
 }
