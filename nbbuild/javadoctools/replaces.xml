@@ -221,3 +221,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-bugtracking@" value="${javadoc.docs.org-netbeans-modules-bugtracking}"/>
 <replacefilter token="@org-netbeans-core-multitabs@" value="${javadoc.docs.org-netbeans-core-multitabs}"/>
 <replacefilter token="@org-netbeans-api-maven@" value="${javadoc.docs.org-netbeans-api-maven}"/>
+<replacefilter token="@org-netbeans-api-html4j@" value="${javadoc.docs.org-netbeans-api-html4j}"/>
