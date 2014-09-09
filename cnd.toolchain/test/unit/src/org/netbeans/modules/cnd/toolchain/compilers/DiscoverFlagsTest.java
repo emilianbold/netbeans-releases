@@ -296,6 +296,84 @@ public class DiscoverFlagsTest {
     }
 
     @Test
+    public void testStudioIgnoredFlag3() {
+        String s = "-xlang=<a>[,<a>]              The set of languages used in the program; <a>={f90,f95,c99}";
+        List<String> res = new ArrayList<String>();
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
+        Assert.assertEquals(3, res.size());
+        Assert.assertEquals("-xlang=f90", res.get(0));
+        Assert.assertEquals("-xlang=f95", res.get(1));
+        Assert.assertEquals("-xlang=c99", res.get(2));
+    }
+    
+    @Test
+    public void testStudioIgnoredFlag4() {
+        String s = "-xprefetch_level[=<n>]        Controls the aggressiveness of the -xprefetch=auto option; <n>={1|2|3}";
+        List<String> res = new ArrayList<String>();
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
+        Assert.assertEquals(4, res.size());
+        Assert.assertEquals("-xprefetch_level", res.get(0));
+        Assert.assertEquals("-xprefetch_level=1", res.get(1));
+        Assert.assertEquals("-xprefetch_level=2", res.get(2));
+        Assert.assertEquals("-xprefetch_level=3", res.get(3));
+    }
+
+    @Test
+    public void testStudioIgnoredFlag5() {
+        String s = "-xO<n>                        Generate optimized code; <n>={1|2|3|4|5}";
+        List<String> res = new ArrayList<String>();
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
+        Assert.assertEquals(5, res.size());
+        Assert.assertEquals("-xO1", res.get(0));
+        Assert.assertEquals("-xO2", res.get(1));
+        Assert.assertEquals("-xO3", res.get(2));
+        Assert.assertEquals("-xO4", res.get(3));
+        Assert.assertEquals("-xO5", res.get(4));
+    }
+    
+    @Test
+    public void testStudioIgnoredFlag6() {
+        String s = "-xcheck[=<a>[,<a>]]           Generate runtime checks for error condition;\n" +
+                   "                              <a>={stkovf,stkovf:diagnose,stkovf:detect,init_local}";
+        List<String> res = new ArrayList<String>();
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
+        Assert.assertEquals(5, res.size());
+        Assert.assertEquals("-xcheck", res.get(0));
+        Assert.assertEquals("-xcheck=stkovf", res.get(1));
+        Assert.assertEquals("-xcheck=stkovf:diagnose", res.get(2));
+        Assert.assertEquals("-xcheck=stkovf:detect", res.get(3));
+        Assert.assertEquals("-xcheck=init_local", res.get(4));
+    }
+
+    @Test
+    public void testStudioIgnoredFlag7() {
+        String s = "-xrestrict[=<f>]              Treat pointer valued function parameters as restricted; <f>={%none,%all,<function-name list>}";
+        List<String> res = new ArrayList<String>();
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
+        Assert.assertEquals(3, res.size());
+        Assert.assertEquals("-xrestrict", res.get(0));
+        Assert.assertEquals("-xrestrict=%none", res.get(1));
+        Assert.assertEquals("-xrestrict=%all", res.get(2));
+    }
+
+    @Test
+    public void testStudioIgnoredFlag8() {
+        String s = "-xpatchpadding[=<a>]          Put space before start of code for hot patching. <a>={fix|patch|<integer>}";
+        List<String> res = new ArrayList<String>();
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
+        Assert.assertEquals(3, res.size());
+        Assert.assertEquals("-xpatchpadding", res.get(0));
+        Assert.assertEquals("-xpatchpadding=fix", res.get(1));
+        Assert.assertEquals("-xpatchpadding=patch", res.get(2));
+    }
+
+    @Test
     public void testGccOrdinaryFlag1() {
         String s = "  -fsched2-use-traces         Does nothing.  Preserved for backward\n" +
             "                              compatibility.";
