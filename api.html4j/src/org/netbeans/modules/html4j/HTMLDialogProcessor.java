@@ -76,7 +76,6 @@ import org.netbeans.api.html4j.HTMLComponent;
 import org.netbeans.api.html4j.HTMLDialog;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerGenerationException;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -193,10 +192,10 @@ implements Comparator<ExecutableElement> {
                             t = ex.getTypeMirror().toString();
                         }
                         if (
-                            !t.equals("javafx.scene.web.WebView") &&
-                            !t.equals("javafx.embed.swing.JFXPanel")
+                            !t.equals("javafx.scene.Node") &&
+                            !t.equals("javax.swing.JComponent")
                         ) {
-                            error("type() can be either WebView.class or JFXPanel.class", ee);
+                            error("type() can be either Node.class or JComponent.class", ee);
                         }
                         generateComponent(w, ee, t, url);
                     }

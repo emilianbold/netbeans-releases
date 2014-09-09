@@ -51,11 +51,13 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.JFXPanel;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebView;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import net.java.html.boot.fx.FXBrowsers;
 import org.openide.*;
 import org.openide.util.Exceptions;
@@ -193,11 +195,11 @@ public final class HTMLDialogImpl implements Runnable {
         } catch (MalformedURLException ex) {
             throw new IllegalStateException(ex);
         }
-        if (type == WebView.class) {
+        if (type == Node.class) {
             WebView wv = new WebView();
             FXBrowsers.load(wv, pageUrl, onPageLoad, loader);
             return type.cast(wv);
-        } else if (type == JFXPanel.class) {
+        } else if (type == JComponent.class) {
             final JFXPanel p = new JFXPanel();
             final ClassLoader l = loader;
             Platform.runLater(new Runnable() {

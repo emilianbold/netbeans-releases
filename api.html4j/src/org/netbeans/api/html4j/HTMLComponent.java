@@ -47,8 +47,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Locale;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.web.WebView;
+import javax.swing.JComponent;
+import javafx.scene.Node;
 
 /** Generates factory method in class specified by {@link #className()}
  * that will return a component of requested {@link #type()} which can
@@ -79,10 +79,10 @@ public @interface HTMLComponent {
     /** The type of component to generate. Currently supports 
      * two types: <em>Swing</em> and <em>JavaFX</em>. 
      * To request Swing component
-     * return {@link JFXPanel}.<b>class</b>. To request JavaFX 
+     * return {@link JComponent}.<b>class</b>. To request JavaFX 
      * component, return {@link Node}.<b>class</b>.
      * 
-     * @return either {@link JFXPanel} or {@link WebView} class
+     * @return either {@link JComponent} or {@link Node} class
      */
     Class<?> type();
     

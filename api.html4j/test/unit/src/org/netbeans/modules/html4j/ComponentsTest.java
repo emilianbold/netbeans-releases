@@ -46,11 +46,12 @@ import java.net.URLStreamHandlerFactory;
 import java.util.concurrent.CountDownLatch;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
+import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.web.WebView;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import org.netbeans.api.html4j.HTMLComponent;
-import org.netbeans.modules.openide.util.ProxyURLStreamHandlerFactory;
 import org.openide.util.Lookup;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
@@ -72,7 +73,7 @@ public class ComponentsTest {
 
     @Test public void loadSwing() throws Exception {
         CountDownLatch cdl = new CountDownLatch(1);
-        JFXPanel p = TestPages.getSwing(10, cdl);
+        JComponent p = TestPages.getSwing(10, cdl);
         JFrame f = new JFrame();
         f.getContentPane().add(p);
         f.pack();
@@ -87,8 +88,8 @@ public class ComponentsTest {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                WebView wv = TestPages.getFX(10, cdl);
-                Scene s = new Scene(wv);
+                Node wv = TestPages.getFX(10, cdl);
+                Scene s = new Scene(new Group(wv));
                 p.setScene(s);
                 done.countDown();
             }
@@ -103,7 +104,7 @@ public class ComponentsTest {
 
     @HTMLComponent(
         url = "simple.html", className = "TestPages",
-        type = JFXPanel.class
+        type = JComponent.class
     ) 
     static void getSwing(int param, CountDownLatch called) {
         assertEquals(param, 10, "Correct value passed in");
@@ -112,7 +113,7 @@ public class ComponentsTest {
 
     @HTMLComponent(
         url = "simple.html", className = "TestPages",
-        type = WebView.class
+        type = Node.class
     ) 
     static void getFX(int param, CountDownLatch called) {
         assertEquals(param, 10, "Correct value passed in");
