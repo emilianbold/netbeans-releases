@@ -140,17 +140,12 @@ public final class V8Script {
         EXTENSION,
         NORMAL;
         
-        public int asInt() {
-            return 0x1 >> ordinal();
-        }
-        
         public static Type valueOf(int i) {
-            for (Type t : values()) {
-                if (t.asInt() == i) {
-                    return t;
-                }
+            if (i >= values().length) {
+                return null;
+            } else {
+                return values()[i];
             }
-            return null;
         }
     }
     
@@ -173,7 +168,7 @@ public final class V8Script {
         public Set<Type> getTypes() {
             Set<Type> types = new HashSet<>();
             for (Type t : Type.values()) {
-                if ((type & t.asInt()) != 0) {
+                if ((type & (0x1 << t.ordinal())) != 0) {
                     types.add(t);
                 }
             }
