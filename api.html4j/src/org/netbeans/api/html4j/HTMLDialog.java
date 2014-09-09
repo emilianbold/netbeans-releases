@@ -49,9 +49,50 @@ import java.lang.annotation.Target;
 import java.util.Locale;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.web.WebView;
+import java.awt.event.ActionEvent;
+import net.java.html.json.Model;
+import net.java.html.json.Property;
 import org.netbeans.modules.html4j.HTMLDialogImpl;
 
-/** Generates method that opens an HTML based modal dialog.
+/** Generates method that opens an HTML based modal dialog. Sample of a typical 
+ * usage follows.
+ * <h4>HTML Page <small>dialog.html</small></h4>
+ * <pre>
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;title&gt;Base question&lt;/title&gt;
+        &lt;meta charset="UTF-8"&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;div&gt;Hello World! How are you?&lt;/div&gt;
+        &lt;-- you need to check the checkbox to enabled the OK button --&gt;
+        &lt;input type="checkbox" data-bind="checked: <em style="color: red">ok</em>"&gt;OK?&lt;br&gt;
+        &lt;-- enabled with checkbox is checked --&gt;
+        &lt;button id='ok' hidden data-bind="enable: <em style="color: red">ok</em>"&gt;Good&lt;/button&gt;
+        &lt;button id='bad' hidden&gt;Bad&lt;/button&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+ * </pre>
+ * <h4>Java Source <small>AskQuestion.java</small></h4>
+ * <pre>
+{@link Model @Model}(className = "AskCtrl", properties = {
+    {@link Property @Property}(name = <em <em style="color: red">"ok"</em>, type = <b>boolean</b>.<b>class</b>)
+})
+<b>public final class</b> AskQuestion <b>implements</b> ActionListener {
+    {@link HTMLDialog @HTMLDialog}(url = "dialog.html") <b>static void</b> showHelloWorld(boolean checked) {
+        <b>new</b> AskCtrl(checked).applyBindings();
+    }
+
+    {@link Override @Override} <b>public void</b> actionPerformed({@link ActionEvent} e) {
+        // shows dialog with a question, checkbox is checked by default
+        // {@link #className() Pages} is automatically generated class 
+        String ret = Pages.showHelloWorld(true);
+        
+        System.out.println("User selected: " + ret);
+    }
+}
+ * </pre>
+ * <p>
  * The method is generated into <code>Pages</code> class in the same package
  * (unless one changes the name via {@link #className()}) and has the same name,
  * and parameters as the method annotated by this annotation. When the method
