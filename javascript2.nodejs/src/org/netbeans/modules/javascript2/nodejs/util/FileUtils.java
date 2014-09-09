@@ -54,6 +54,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -85,6 +87,27 @@ public final class FileUtils {
 
     public static boolean isJavaScriptFile(File file) {
         return isJavaScriptFile(FileUtil.toFileObject(file));
+    }
+
+    public static String relativizePath(Project project, String filePath) {
+        if (!StringUtils.hasText(filePath)) {
+            return ""; // NOI18N
+        }
+        File file = new File(filePath);
+        String path = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), file);
+        if (path == null
+                || path.startsWith("../")) { // NOI18N
+            // cannot be relativized or outside project
+            path = file.getAbsolutePath();
+        }
+        return path;
+    }
+
+    public static String resolvePath(Project project, String filePath) {
+        if (!StringUtils.hasText(filePath)) {
+            return null;
+        }
+        return PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), filePath).getAbsolutePath();
     }
 
     public static List<File> sortFiles(Collection<File> files) {
