@@ -2,19 +2,19 @@ Code completion result for source line:
 ( | )
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CONSTRUCTO Array(element0, element1): Arr  [PUBLIC]   JS Platform
-CONSTRUCTO Boolean(value: Object): Boolea  [PUBLIC]   JS Platform
-CONSTRUCTO Date(): Date                    [PUBLIC]   JS Platform
-CONSTRUCTO Error(): Error                  [PUBLIC]   JS Platform
-CONSTRUCTO EvalError(): Error              [PUBLIC]   JS Platform
-CONSTRUCTO Function(): Function            [PUBLIC]   JS Platform
-CONSTRUCTO Number(value: Object): Number   [PUBLIC]   JS Platform
-CONSTRUCTO Object(): Object                [PUBLIC]   JS Platform
-CONSTRUCTO RangeError(): Error             [PUBLIC]   JS Platform
-CONSTRUCTO ReferenceError(): Error         [PUBLIC]   JS Platform
-CONSTRUCTO RegExp(pattern: String): RegEx  [PUBLIC]   JS Platform
-CONSTRUCTO String(): String                [PUBLIC]   JS Platform
-CONSTRUCTO XMLHttpRequest(): XMLHttpReque  [PUBLIC]   JS Platform
+CONSTRUCTO Array                           [PUBLIC]   JS Platform
+CONSTRUCTO Boolean                         [PUBLIC]   JS Platform
+CONSTRUCTO Date                            [PUBLIC]   JS Platform
+CONSTRUCTO Error                           [PUBLIC]   JS Platform
+CONSTRUCTO EvalError                       [PUBLIC]   JS Platform
+CONSTRUCTO Function                        [PUBLIC]   JS Platform
+CONSTRUCTO Number                          [PUBLIC]   JS Platform
+CONSTRUCTO Object                          [PUBLIC]   JS Platform
+CONSTRUCTO RangeError                      [PUBLIC]   JS Platform
+CONSTRUCTO ReferenceError                  [PUBLIC]   JS Platform
+CONSTRUCTO RegExp                          [PUBLIC]   JS Platform
+CONSTRUCTO String                          [PUBLIC]   JS Platform
+CONSTRUCTO XMLHttpRequest                  [PUBLIC]   JS Platform
 CLASS      AbstractView                    [PUBLIC]   JS Platform
 CLASS      AbstractWorker                  [PUBLIC]   JS Platform
 CLASS      Arguments                       [PUBLIC]   JS Platform
@@ -166,12 +166,12 @@ CLASS      Window                          [PUBLIC]   JS Platform
 CLASS      b                               [PUBLIC]   with3.js
 CLASS      prototype                       [PUBLIC]   JS Platform
 CLASS      z                               [PUBLIC]   with3.js
-METHOD     Image(width: Number, height: N  [PUBLIC,   JS Platform
-METHOD     Option(text: String, value: St  [PUBLIC,   JS Platform
-METHOD     SyntaxError(): Error            [PUBLIC]   JS Platform
-METHOD     TypeError(): Error              [PUBLIC]   JS Platform
-METHOD     URIError(): Error               [PUBLIC]   JS Platform
-METHOD     Worker(uri: String): window.Wo  [PUBLIC,   JS Platform
+METHOD     Image                           [PUBLIC,   JS Platform
+METHOD     Option                          [PUBLIC,   JS Platform
+METHOD     SyntaxError                     [PUBLIC]   JS Platform
+METHOD     TypeError                       [PUBLIC]   JS Platform
+METHOD     URIError                        [PUBLIC]   JS Platform
+METHOD     Worker                          [PUBLIC,   JS Platform
 METHOD     addEventListener(type: String,  [PUBLIC,   JS Platform
 METHOD     alert(): undefined              [PUBLIC,   JS Platform
 METHOD     atob(encodedData: String): Str  [PUBLIC,   JS Platform
