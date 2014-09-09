@@ -1053,7 +1053,18 @@ public abstract class CCCCompiler extends AbstractCompiler {
                             boolean found = false;
                             for(int k= 1; k < splitOption.length; k++) {
                                 if (splitOption[k].startsWith(subtitute+"=")) { // NOI18N
-                                    option = option.substring(0,i)+splitOption[k].substring(subtitute.length()+1)+option.substring(j+1);
+                                    String def = splitOption[k].substring(subtitute.length()+1);
+                                    if (def.startsWith("{")) { // NOI18N
+                                        if (!def.endsWith("}")) { // NOI18N
+                                            for(int d = k+1; d < splitOption.length; d++) {
+                                                def = def+" "+splitOption[d]; // NOI18N
+                                                if (def.endsWith("}")) { // NOI18N
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    option = option.substring(0,i)+def+option.substring(j+1);
                                     found = true;
                                     break;
                                 }
@@ -1090,7 +1101,11 @@ public abstract class CCCCompiler extends AbstractCompiler {
                                     final String[] splitAlternatives = alternatives.split("\\|"); // NOI18N
                                     if (splitAlternatives.length > 1) {
                                         for(String alternative : splitAlternatives) {
-                                            options.add(option.substring(0,i)+alternative);
+                                            if (alternative.startsWith("<")) { // NOI18N
+                                                undefinedAlternatives.add(option.substring(0,i)+alternative);
+                                            } else {
+                                                options.add(option.substring(0,i)+alternative);
+                                            }
                                         }
                                     }
                                     continue;
@@ -1098,7 +1113,11 @@ public abstract class CCCCompiler extends AbstractCompiler {
                                     final String[] splitAlternatives = alternatives.split(","); // NOI18N
                                     if (splitAlternatives.length > 1) {
                                         for(String alternative : splitAlternatives) {
-                                            options.add(option.substring(0,i)+alternative);
+                                            if (alternative.startsWith("<")) { // NOI18N
+                                                undefinedAlternatives.add(option.substring(0,i)+alternative);
+                                            } else {
+                                                options.add(option.substring(0,i)+alternative);
+                                            }
                                         }
                                     }
                                     continue;
@@ -1109,11 +1128,6 @@ public abstract class CCCCompiler extends AbstractCompiler {
                             continue;
                         }
                     }
-                    if (option.indexOf("<") >= 0) { // NOI18N
-                        //Do not know alternatives, add as important
-                        undefinedAlternatives.add(option.substring(0,option.indexOf("<")));  // NOI18N
-                        continue;
-                    }
                     if (option.indexOf("{") >= 0) { // NOI18N
                         int i = option.indexOf("{"); // NOI18N
                         int j = option.lastIndexOf("}"); // NOI18N
@@ -1123,7 +1137,22 @@ public abstract class CCCCompiler extends AbstractCompiler {
                                 final String[] splitAlternatives = alternatives.split("\\|"); // NOI18N
                                 if (splitAlternatives.length > 1) {
                                     for(String alternative : splitAlternatives) {
-                                        options.add(option.substring(0,i)+alternative);
+                                        if (alternative.startsWith("<")) { // NOI18N
+                                            undefinedAlternatives.add(option.substring(0,i)+alternative);
+                                        } else {
+                                            options.add(option.substring(0,i)+alternative);
+                                        }
+                                    }
+                                }
+                            } else if (alternatives.indexOf(",")>0) { // NOI18N
+                                final String[] splitAlternatives = alternatives.split(","); // NOI18N
+                                if (splitAlternatives.length > 1) {
+                                    for(String alternative : splitAlternatives) {
+                                        if (alternative.startsWith("<")) { // NOI18N
+                                            undefinedAlternatives.add(option.substring(0,i)+alternative);
+                                        } else {
+                                            options.add(option.substring(0,i)+alternative);
+                                        }
                                     }
                                 }
                             }
@@ -1142,6 +1171,11 @@ public abstract class CCCCompiler extends AbstractCompiler {
                                 }
                             }
                         }
+                        continue;
+                    }
+                    if (option.indexOf("<") >= 0) { // NOI18N
+                        //Do not know alternatives, add as important
+                        undefinedAlternatives.add(option.substring(0,option.indexOf("<")));  // NOI18N
                         continue;
                     }
                     options.add(option);
