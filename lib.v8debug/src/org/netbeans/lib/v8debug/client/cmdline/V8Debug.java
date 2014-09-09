@@ -917,6 +917,10 @@ public class V8Debug {
             return v8dbg.getScript(id);
         }
         
+        static void send(V8Debug v8dbg, V8Request req) throws IOException {
+            v8dbg.cc.send(req);
+        }
+        
     }
     
     static interface Testeable {
