@@ -447,6 +447,9 @@ public class JSONReader {
     }
     
     private static V8Frame[] getFrames(JSONArray array) {
+        if (array == null) {
+            return new V8Frame[]{};
+        }
         int n = array.size();
         V8Frame[] frames = new V8Frame[n];
         for (int i = 0; i < n; i++) {
