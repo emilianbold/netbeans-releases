@@ -64,7 +64,7 @@ import java.lang.annotation.Target;
  *<b>public final class</b> UICntrl {
  *  {@link org.openide.awt.ActionID @ActionID}(
  *     category = "Tools",
- *     "my.sample.HtmlHelloWorld"
+ *     id = "my.sample.HtmlHelloWorld"
  *  )
  *  {@link org.openide.awt.ActionReferences @ActionReferences}({
  *    {@link org.openide.awt.ActionReference @ActionReference}(path = "Menu/Tools"),
