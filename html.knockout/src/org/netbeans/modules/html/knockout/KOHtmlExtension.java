@@ -377,7 +377,7 @@ public class KOHtmlExtension extends HtmlExtension {
         return false;
     }
 
-    public Collection<KnockoutCustomElement> getAllCustomElements(Project project, String prefix) {
+    private Collection<KnockoutCustomElement> getAllCustomElements(Project project, String prefix) {
         KnockoutIndex knockoutIndex = null;
         try {
             knockoutIndex = KnockoutIndex.get(project);
