@@ -41,6 +41,6 @@
  */
 
 /**
- * Interfaces intended meant for internal use within the java.platform modules.
+ * Interfaces intended for internal use within the java.platform modules.
  */
 package org.netbeans.modules.java.platform.implspi;
