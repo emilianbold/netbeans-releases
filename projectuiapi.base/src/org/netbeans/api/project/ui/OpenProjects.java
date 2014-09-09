@@ -96,7 +96,6 @@ public final class OpenProjects {
     
     private OpenProjects() {
         this.trampoline = BaseUtilities.getOpenProjectsTrampoline();
-//        addPropertyChangeListener( new OpenProjectsListener() );
     }
 
     /**
