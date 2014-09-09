@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.knockout;
+package org.netbeans.modules.javascript2.knockout.index;
 
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.html.lexer.HtmlLexerPlugin;
+import java.net.URL;
 
 /**
  *
- * @author marekfukala
+ * @author Roman Svitanic
  */
-@MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
-public class KOHtmlLexerPlugin extends HtmlLexerPlugin {
+public class KnockoutCustomElement {
 
-    @Override
-    public String createAttributeEmbedding(String elementName, String attributeName) {
-        if (KOUtils.KO_PARAMS_ATTR_NAME.equalsIgnoreCase(attributeName)) {
-            return KOUtils.JAVASCRIPT_MIMETYPE;
-        }
-        return KOUtils.KO_DATA_BIND_ATTR_NAME.equalsIgnoreCase(attributeName)
-                ? KOUtils.KO_DATA_BIND_MIMETYPE
-                : null;
+    private final String name;
+    private final String fqn;
+    private final URL url;
+    private final int offset;
+
+    public KnockoutCustomElement(String name, String fqn, URL url, int offset) {
+        this.name = name;
+        this.fqn = fqn;
+        this.url = url;
+        this.offset = offset;
     }
-    
+
+    public String getName() {
+        return name;
+    }
+
+    public String getFqn() {
+        return fqn;
+    }
+
+    public URL getDeclarationFile() {
+        return url;
+    }
+
+    public int getOffset() {
+        return offset;
+    }
 }
