@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,60 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.html.knockout;
 
-import javax.swing.text.BadLocationException;
-import org.netbeans.junit.AssertionFailedErrorException;
-import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport;
-import org.netbeans.modules.html.editor.completion.HtmlCompletionTestSupport.Match;
-import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
-import org.netbeans.modules.parsing.spi.ParseException;
+import java.io.File;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
+import org.netbeans.modules.javascript2.knockout.index.KnockoutCustomElement;
 
 /**
  *
- * @author marekfukala
+ * @author Roman Svitanic
  */
-public class KOHtmlExtensionTest extends CslTestBase {
-    
-    public KOHtmlExtensionTest(String name) {
-        super(name);
+public class KOTagCompletionItem extends HtmlCompletionItem.Tag {
+
+    private final KnockoutCustomElement element;
+
+    public KOTagCompletionItem(KnockoutCustomElement element, int substitutionOffset) {
+        super(element.getName(), substitutionOffset, null, true);
+        this.element = element;
     }
 
     @Override
-    protected String getPreferredMimeType() {
-        return "text/html";
+    protected ImageIcon getIcon() {
+        return KOUtils.KO_ICON;
     }
 
     @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new HtmlLanguage();
+    public String getHelp() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<h1>"); //NOI18N
+        sb.append(element.getName());
+        sb.append("</h1>"); //NOI18N
+        sb.append("<h2>Custom Knockout element</h2>"); //NOI18N
+        File file = new File(element.getDeclarationFile().toString());
+        sb.append("<p>"); //NOI18N
+        sb.append("Registered in "); //NOI18N
+        sb.append(file.getName());
+        sb.append("</p>"); //NOI18N
+        return sb.toString();
     }
-    
-    public void testCompletionWithPrefix() {
-        assertCC("<div data-bind=\"t|", Match.EXACT, "text", "textinput", "template");
-        assertCC("<div data-bind=\"tex|", Match.EXACT, "text", "textinput");
-        assertCC("<div data-bind=\"text|", Match.EXACT, "text", "textinput");
-        assertCC("<div data-bind=\"text|:value", Match.EXACT, "text", "textinput");
-        assertCC("<div data-bind=\"text:value, v|", Match.EXACT, "visible", "value");
+
+    @Override
+    public boolean hasHelp() {
+        return true;
     }
-    
-    public void testCompletionWithoutPrefix() {
-        assertCC("<div data-bind=\"|", Match.CONTAINS, "text");
-        assertCC("<div data-bind=\"  |", Match.CONTAINS, "text");
-        assertCC("<div data-bind=\"text:value,|", Match.CONTAINS, "text");
-        assertCC("<div data-bind=\"text:value, |", Match.CONTAINS, "text");
-    }
-    
-    private void assertCC(String documentText, Match type, String... expectedItemsNames)  {
-        try {
-            HtmlCompletionTestSupport.assertItems(getDocument(documentText), expectedItemsNames, type, -1);
-        } catch (BadLocationException | ParseException ex) {
-            throw new AssertionFailedErrorException(ex);
-        }
-    }
-    
 }

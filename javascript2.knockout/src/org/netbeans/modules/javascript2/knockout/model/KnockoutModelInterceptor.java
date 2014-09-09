@@ -73,7 +73,7 @@ public class KnockoutModelInterceptor implements ModelInterceptor {
         }
 
         InputStream is = getClass().getClassLoader().getResourceAsStream(
-                "org/netbeans/modules/javascript2/knockout/model/resources/knockout-3.0.0.model"); // NOI18N
+                "org/netbeans/modules/javascript2/knockout/model/resources/knockout-3.2.0.model"); // NOI18N
         try {
             return Collections.singleton(factory.loadGlobalObject(is, Bundle.label_knockout(),
                     new URL("http://knockoutjs.com/documentation/introduction.html")));
