@@ -61,12 +61,21 @@ import org.netbeans.modules.html4j.HTMLDialogImpl;
  * by using {@link net.java.html.json.Model} generated class and calling 
  * <code>applyBindings()</code> on it.
  * <p>
- * The HTML page may contain invisible <code>&lt;button&gt;</code> elements. If it does so, 
+ * The HTML page may contain hidden <code>&lt;button&gt;</code> elements. If it does so, 
  * those buttons are copied to the dialog frame and displayed underneath the page.
  * Their enabled/disabled state reflects the state of the buttons in the page.
  * When one of the buttons is selected, the dialog closes and the generated
  * method returns with 'id' of the selected button (or <code>null</code> if
  * the dialog was closed).
+ * <p>
+ * By default, if the HTML defines no hidden
+ * <code>&lt;button&gt;</code> elements, two buttons are added. One representing
+ * the <quote>OK</quote> choice (with <code>id="OK"</code>) and one representing 
+ * the cancel choice (with <code>null</code> id). Both buttons are always
+ * enabled. One can check the 
+ * return value from the dialog showing method
+ * to be <code>"OK"</code> to know whether the
+ * user approved the dialog.
  *
  * @author Jaroslav Tulach
  */

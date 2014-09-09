@@ -146,6 +146,41 @@ public class DialogsTest {
         });
     }
     
+    @Test public void noDefinedButtonsMeanOKCancel() throws Throwable {
+        final Throwable[] ex = { null };
+        final CountDownLatch done = new CountDownLatch(1);
+        ctx.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String body =
+                        "    <button>Normal button in a text</button>" +
+// no dialog buttons defined:                            
+//                        "    <button hidden=true id='OK' disabled=true>Agree</button>" +
+//                        "    <button hidden=true id='Cancel'>Disagree</button>" +
+                        "";
+                    setBody(body);
+                    
+                    JButton[] arr = Buttons.buttons();
+                    assertEquals(arr.length, 2, "Two buttons");
+                    assertEquals(arr[0].getName(), "OK", "id of 1st default button");
+                    assertEquals(arr[1].getName(), null, "id of 2nd default button");
+                    
+                    assertTrue(arr[0].isEnabled(), "OK is enabled");
+                    assertTrue(arr[1].isEnabled(), "Cancel is enabled");
+                } catch (Throwable t) {
+                    ex[0] = t;
+                } finally {
+                    done.countDown();
+                }
+            }
+        });
+        done.await();
+        if (ex[0] != null) {
+            throw ex[0];
+        }
+    }
+    
     @JavaScriptBody(args = "b", body = "window.document.getElementsByTagName('body')[0].innerHTML = b;")
     private static native void setBody(String b);
     

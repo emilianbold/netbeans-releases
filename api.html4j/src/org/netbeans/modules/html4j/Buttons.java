@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
 import net.java.html.js.JavaScriptBody;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -97,6 +98,10 @@ final class Buttons {
         });
     }
     
+    @NbBundle.Messages({
+        "CTL_OK=OK",
+        "CTL_Cancel=Cancel",
+    })
     public static JButton[] buttons() {
         final Buttons btns = new Buttons();
         final Object[] all = btns.list();
@@ -108,6 +113,12 @@ final class Buttons {
                 b.setEnabled(false);
             }
             btns.arr.add(b);
+        }
+        if (btns.arr.isEmpty()) {
+            JButton ok = new JButton(Bundle.CTL_OK());
+            ok.setName("OK");
+            btns.arr.add(ok);
+            btns.arr.add(new JButton(Bundle.CTL_Cancel()));
         }
         return btns.arr.toArray(new JButton[0]);
     }
