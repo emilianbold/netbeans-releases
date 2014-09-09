@@ -128,7 +128,7 @@ public final class ClientConnection {
                         from = fromPtr[0];
                     }
                 }
-                int length = Math.min(contentLength, n - from);
+                int length = Math.min(contentLength - message.length(), n - from);
                 message.append(new String(buffer, from, length, CHAR_SET));
                 from += length;
                 if (message.length() == contentLength) {
