@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.nodejs.platform;
 
-package org.netbeans.modules.javascript2.nodejs.preferences;
-
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript2.nodejs.platform.NodeJsSupport;
-import org.netbeans.modules.javascript2.nodejs.util.ValidationResult;
-import org.netbeans.modules.javascript2.nodejs.util.ValidationUtils;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
-public final class NodeJsPreferencesValidator {
+public final class NodeJsSourceRoots {
 
-    private final ValidationResult result = new ValidationResult();
+    private static final Logger LOGGER = Logger.getLogger(NodeJsSourceRoots.class.getName());
 
+    private static final List<URL> SOURCE_ROOTS = new CopyOnWriteArrayList<>();
 
-    public ValidationResult getResult() {
-        return result;
+    private final Project project;
+
+    static {
+        List<URL> roots = new ArrayList<>();
+        for (String path : System.getenv("NODE_PATH").split(File.pathSeparator)) { // NOI18N
+            try {
+                roots.add(Utilities.toURI(FileUtil.normalizeFile(new File(path))).toURL());
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+        SOURCE_ROOTS.addAll(roots);
     }
 
-    public NodeJsPreferencesValidator validate(Project project) {
-        ValidationUtils.validateNode(result, NodeJsSupport.forProject(project).getPreferences().getNode());
-        return this;
+
+    public NodeJsSourceRoots(Project project) {
+        assert project != null;
+        this.project = project;
+    }
+
+    public List<URL> getSourceRoots() {
+        return new ArrayList<>(SOURCE_ROOTS);
     }
 
 }

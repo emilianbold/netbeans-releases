@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.webkit.debugging.api.dom;
 
-package org.netbeans.modules.javascript2.nodejs.preferences;
+import java.awt.Image;
+import org.openide.util.Lookup;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript2.nodejs.platform.NodeJsSupport;
-import org.netbeans.modules.javascript2.nodejs.util.ValidationResult;
-import org.netbeans.modules.javascript2.nodejs.util.ValidationUtils;
+/**
+ * Annotator of WebKit nodes. It allows modifications of icons associated
+ * with WebKit nodes. For example, the debugger may add a breakpoint badge
+ * to nodes on which DOM breakpoints are set.
+ *
+ * @author Jan Stola
+ */
+public class NodeAnnotator {
+    /** The only instance of this class. */
+    private static final NodeAnnotator INSTANCE = new NodeAnnotator();
 
-public final class NodeJsPreferencesValidator {
-
-    private final ValidationResult result = new ValidationResult();
-
-
-    public ValidationResult getResult() {
-        return result;
+    /**
+     * Creates a new {@code NodeAnnotator}.
+     */
+    private NodeAnnotator() {
     }
 
-    public NodeJsPreferencesValidator validate(Project project) {
-        ValidationUtils.validateNode(result, NodeJsSupport.forProject(project).getPreferences().getNode());
-        return this;
+    /**
+     * Returns the {@NodeAnnotator} singleton.
+     * 
+     * @return the {@NodeAnnotator} singleton.
+     */
+    public static NodeAnnotator getDefault() {
+        return INSTANCE;
+    }
+
+    /**
+     * Adds a badge to a node.
+     * 
+     * @param node node to add a badge to.
+     * @param badge badge to add.
+     */
+    public void annotate(Node node, Image badge) {
+        for (Impl annotator : Lookup.getDefault().lookupAll(Impl.class)) {
+            annotator.annotate(node, badge);
+        }
+    }
+
+    /**
+     * An implementation of {@NodeAnnotator}. Implementations of this interface
+     * that are present in the global lookup are notified whenever some node
+     * is annotated.
+     */
+    public static interface Impl {
+        /**
+         * Adds a badge to a node.
+         * 
+         * @param node node to add a badge to.
+         * @param badge badge to add.
+         */
+        void annotate(Node node, Image badge);
     }
 
 }
