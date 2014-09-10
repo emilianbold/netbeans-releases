@@ -54,8 +54,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript2.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript2.nodejs.options.NodeJsOptionsValidator;
-import org.netbeans.modules.javascript2.nodejs.preferences.NodeJsPreferences;
+import org.netbeans.modules.javascript2.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript2.nodejs.preferences.NodeJsPreferencesValidator;
+import org.netbeans.modules.javascript2.nodejs.ui.customizer.NodeJsCustomizerProvider;
+import org.netbeans.modules.javascript2.nodejs.ui.options.NodeJsOptionsPanelController;
 import org.netbeans.modules.javascript2.nodejs.util.ExternalExecutable;
 import org.netbeans.modules.javascript2.nodejs.util.StringUtils;
 import org.netbeans.modules.javascript2.nodejs.util.ValidationResult;
@@ -99,8 +101,7 @@ public class NodeExecutable {
                 .getResult();
         if (validateResult(result) != null) {
             if (showOptions) {
-                // XXX
-                OptionsDisplayer.getDefault().open("NodeJs"); // NOI18N
+                OptionsDisplayer.getDefault().open(NodeJsOptionsPanelController.OPTIONS_PATH);
             }
             return null;
         }
@@ -113,7 +114,7 @@ public class NodeExecutable {
 
     @CheckForNull
     public static NodeExecutable forProject(Project project, boolean showCustomizer) {
-        String node = NodeJsPreferences.getNode(project);
+        String node = NodeJsSupport.forProject(project).getPreferences().getNode();
         if (node == null) {
             return getDefault(project, showCustomizer);
         }
@@ -122,8 +123,7 @@ public class NodeExecutable {
                 .getResult();
         if (validateResult(result) != null) {
             if (showCustomizer) {
-                // XXX
-                project.getLookup().lookup(CustomizerProvider2.class).showCustomizer("NodeJs", null);
+                project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(NodeJsCustomizerProvider.CUSTOMIZER_IDENT, null);
             }
             return null;
         }
@@ -164,8 +164,10 @@ public class NodeExecutable {
 
     private ExecutionDescriptor getDescriptor() {
         return new ExecutionDescriptor()
-                .frontWindow(false)
+                .frontWindow(true)
                 .frontWindowOnError(false)
+                .controllable(true)
+                .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true);
     }
