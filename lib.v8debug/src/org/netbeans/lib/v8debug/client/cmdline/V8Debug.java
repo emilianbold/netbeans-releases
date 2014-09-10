@@ -57,6 +57,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.simple.parser.ParseException;
 import org.netbeans.lib.v8debug.V8Body;
 import org.netbeans.lib.v8debug.V8Breakpoint;
 import org.netbeans.lib.v8debug.V8Command;
@@ -88,9 +89,14 @@ import org.netbeans.lib.v8debug.commands.Version;
 import org.netbeans.lib.v8debug.events.AfterCompileEventBody;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
 import org.netbeans.lib.v8debug.events.ExceptionEventBody;
+import org.netbeans.lib.v8debug.vars.ReferenceAndValue;
+import org.netbeans.lib.v8debug.vars.V8Boolean;
+import org.netbeans.lib.v8debug.vars.V8Function;
+import org.netbeans.lib.v8debug.vars.V8Number;
+import org.netbeans.lib.v8debug.vars.V8Object;
 import org.netbeans.lib.v8debug.vars.V8ScriptValue;
+import org.netbeans.lib.v8debug.vars.V8String;
 import org.netbeans.lib.v8debug.vars.V8Value;
-import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -161,7 +167,7 @@ public class V8Debug {
         new Thread() {
             @Override
             public void run() {
-                String line = null;
+                String line;
                 //char[] cbuf = new char[4096];
                 Reader r = new InputStreamReader(System.in);
                 BufferedReader br = new BufferedReader(r);
@@ -881,10 +887,52 @@ public class V8Debug {
         }
         System.out.println(value.getText());
     }
+    
+    private String print(ReferenceAndValue refAndVal) {
+        if (refAndVal.hasValue()) {
+            V8Value value = refAndVal.getValue();
+            if (value.getText() != null) {
+                return value.getText();
+            }
+            switch (value.getType()) {
+                case Boolean:
+                    return Boolean.toString(((V8Boolean) value).getValue());
+                case Function:
+                    String name = ((V8Function) value).getName();
+                    if (name == null || name.isEmpty()) {
+                        name = ((V8Function) value).getInferredName();
+                    }
+                    return name+"()";
+                case Null:
+                    return String.valueOf(null);
+                case Number:
+                    V8Number n = (V8Number) value;
+                    switch (n.getKind()) {
+                        case Double:
+                            return Double.toString(n.getDoubleValue());
+                        case Long:
+                            return Long.toString(n.getLongValue());
+                        default:
+                            throw new IllegalStateException("Unknown kind: "+n.getKind());
+                    }
+                case Object:
+                    V8Object o = (V8Object) value;
+                    return "("+o.getClassName()+")";
+                case String:
+                    return "\""+((V8String) value).getValue()+"\"";
+                case Undefined:
+                    return "undefined";
+                default:
+                    throw new IllegalStateException("Unknown value type: "+value.getType());
+            }
+        } else {
+            return "reference: "+refAndVal.getReference();
+        }
+    }
 
-    private void printValues(Map<String, Long> argumentRefs) {
+    private void printValues(Map<String, ReferenceAndValue> argumentRefs) {
         for (String name : argumentRefs.keySet()) {
-            System.out.println(name + " = " + argumentRefs.get(name));
+            System.out.println(name + " = " + print(argumentRefs.get(name)));
         }
     }
     
@@ -899,9 +947,7 @@ public class V8Debug {
                 public void run() {
                     try {
                         v8dbg.responseLoop();
-                    } catch (IOException ex) {
-                        Logger.getLogger(V8Debug.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (ParseException ex) {
+                    } catch (IOException | ParseException ex) {
                         Logger.getLogger(V8Debug.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }

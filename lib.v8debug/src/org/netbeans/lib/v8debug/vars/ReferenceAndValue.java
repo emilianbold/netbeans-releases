@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -39,60 +39,33 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug.vars;
 
-import java.util.Map;
-import org.netbeans.lib.v8debug.PropertyLong;
+package org.netbeans.lib.v8debug.vars;
 
 /**
  *
  * @author Martin Entlicher
  */
-public class V8Object extends V8Value {
+public final class ReferenceAndValue {
     
-    private final String className;
-    private final PropertyLong constructorFunctionHandle;
-    private final PropertyLong protoObjectHandle;
-    private final PropertyLong prototypeObjectHandle;
-    private final Map<String, ReferenceAndValue> properties;
+    private final long reference;
+    private final V8Value value;
     
-    public V8Object(long handle, String className,
-                    PropertyLong constructorFunctionHandle,
-                    PropertyLong protoObjectHandle, PropertyLong prototypeObjectHandle,
-                    Map<String, ReferenceAndValue> properties, String text) {
-        this(handle, V8Value.Type.Object, className, constructorFunctionHandle,
-             protoObjectHandle, prototypeObjectHandle, properties, text);
+    public ReferenceAndValue(long reference, V8Value value) {
+        this.reference = reference;
+        this.value = value;
+    }
+
+    public long getReference() {
+        return reference;
     }
     
-    protected V8Object(long handle, V8Value.Type type, String className,
-                       PropertyLong constructorFunctionHandle,
-                       PropertyLong protoObjectHandle, PropertyLong prototypeObjectHandle,
-                       Map<String, ReferenceAndValue> properties, String text) {
-        super(handle, type, text);
-        this.className = className;
-        this.constructorFunctionHandle = constructorFunctionHandle;
-        this.protoObjectHandle = protoObjectHandle;
-        this.prototypeObjectHandle = prototypeObjectHandle;
-        this.properties = properties;
+    public boolean hasValue() {
+        return value != null;
     }
 
-    public String getClassName() {
-        return className;
+    public V8Value getValue() {
+        return value;
     }
-
-    public PropertyLong getConstructorFunctionHandle() {
-        return constructorFunctionHandle;
-    }
-
-    public PropertyLong getProtoObjectHandle() {
-        return protoObjectHandle;
-    }
-
-    public PropertyLong getPrototypeObjectHandle() {
-        return prototypeObjectHandle;
-    }
-
-    public Map<String, ReferenceAndValue> getProperties() {
-        return properties;
-    }
+    
 }

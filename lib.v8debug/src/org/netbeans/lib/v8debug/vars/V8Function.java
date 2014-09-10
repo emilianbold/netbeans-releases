@@ -42,6 +42,7 @@
 package org.netbeans.lib.v8debug.vars;
 
 import java.util.Map;
+import org.netbeans.lib.v8debug.PropertyLong;
 
 /**
  *
@@ -54,18 +55,18 @@ public final class V8Function extends V8Object {
     private final String name;
     private final String inferredName;
     private final String source;
-    private final long scriptRef;
+    private final PropertyLong scriptRef;
     private final long scriptId;
-    private final long position;
-    private final long line;
-    private final long column;
+    private final PropertyLong position;
+    private final PropertyLong line;
+    private final PropertyLong column;
     
-    public V8Function(long handle, long constructorFunctionHandle,
-                      long protoObjectHandle, long prototypeObjectHandle,
+    public V8Function(long handle, PropertyLong constructorFunctionHandle,
+                      PropertyLong protoObjectHandle, PropertyLong prototypeObjectHandle,
                       String name, String inferredName,
-                      String source, long scriptRef, long scriptId,
-                      long position, long line, long column,
-                      Map<String, Long> properties, String text) {
+                      String source, PropertyLong scriptRef, long scriptId,
+                      PropertyLong position, PropertyLong line, PropertyLong column,
+                      Map<String, ReferenceAndValue> properties, String text) {
         super(handle, V8Value.Type.Function, FUNCTION_CLASS_NAME,
               constructorFunctionHandle, protoObjectHandle, prototypeObjectHandle,
               properties, text);
@@ -91,7 +92,7 @@ public final class V8Function extends V8Object {
         return source;
     }
 
-    public long getScriptRef() {
+    public PropertyLong getScriptRef() {
         return scriptRef;
     }
 
@@ -99,15 +100,15 @@ public final class V8Function extends V8Object {
         return scriptId;
     }
 
-    public long getPosition() {
+    public PropertyLong getPosition() {
         return position;
     }
 
-    public long getLine() {
+    public PropertyLong getLine() {
         return line;
     }
 
-    public long getColumn() {
+    public PropertyLong getColumn() {
         return column;
     }
     

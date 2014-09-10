@@ -42,6 +42,7 @@
 package org.netbeans.lib.v8debug;
 
 import java.util.Map;
+import org.netbeans.lib.v8debug.vars.ReferenceAndValue;
 
 /**
  *
@@ -56,8 +57,8 @@ public final class V8Frame {
     private final boolean constructCall;
     private final boolean atReturn;
     private final boolean debuggerFrame;
-    private final Map<String, Long> argumentRefs;
-    private final Map<String, Long> localRefs;
+    private final Map<String, ReferenceAndValue> argumentRefs;
+    private final Map<String, ReferenceAndValue> localRefs;
     private final long position;
     private final long line;
     private final long column;
@@ -66,8 +67,8 @@ public final class V8Frame {
     
     public V8Frame(long index, long receiver, long func, long scriptRef,
                    boolean constructCall, boolean atReturn, boolean debuggerFrame,
-                   Map<String, Long> argumentRefs,
-                   Map<String, Long> localRefs,
+                   Map<String, ReferenceAndValue> argumentRefs,
+                   Map<String, ReferenceAndValue> localRefs,
                    long position, long line, long column, String sourceLineText,
                    V8Scope[] scopes) {
         this.index = index;
@@ -114,11 +115,11 @@ public final class V8Frame {
         return debuggerFrame;
     }
 
-    public Map<String, Long> getArgumentRefs() {
+    public Map<String, ReferenceAndValue> getArgumentRefs() {
         return argumentRefs;
     }
 
-    public Map<String, Long> getLocalRefs() {
+    public Map<String, ReferenceAndValue> getLocalRefs() {
         return localRefs;
     }
 
