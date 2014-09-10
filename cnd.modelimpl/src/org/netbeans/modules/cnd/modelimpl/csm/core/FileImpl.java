@@ -64,6 +64,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
+import org.netbeans.api.project.Project;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.antlr.Parser;
 import org.netbeans.modules.cnd.antlr.Token;
@@ -151,6 +152,7 @@ import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * CsmFile implementations
@@ -636,7 +638,10 @@ public final class FileImpl implements CsmFile,
                         Collection<? extends APTIndexFilter> indexFilters = Collections.emptyList();
                         Object pp = getProject().getPlatformProject();
                         if (pp instanceof NativeProject) {
-                            indexFilters = ((NativeProject) pp).getProject().getLookup().lookupAll(APTIndexFilter.class);
+                            final Lookup.Provider project = ((NativeProject) pp).getProject();
+                            if (project instanceof Project) {
+                                indexFilters = project.getLookup().lookupAll(APTIndexFilter.class);
+                            }
                         }
                         APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT, getTextIndexKey(), indexFilters);
                         aptIndexingWalker.index();
@@ -1132,7 +1137,12 @@ public final class FileImpl implements CsmFile,
             } catch (IOException ex) {
             }
             if (platformProject instanceof NativeProject) {
-                performanceEvent.log(lines, ((NativeProject)platformProject).getProject());
+                Lookup.Provider project = ((NativeProject)platformProject).getProject();
+                if (project instanceof Project) {
+                    performanceEvent.log(lines, project);
+                } else {
+                    performanceEvent.log(lines);
+                }
             } else {
                 performanceEvent.log(lines);
             }
