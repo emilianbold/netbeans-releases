@@ -339,7 +339,17 @@ public class JSONReader {
             case Boolean:
                 return new V8Boolean(handle, getBoolean(obj, VALUE), text);
             case Number:
-                return new V8Number(handle, getLong(obj, VALUE), text);
+                Object nVal = obj.get(VALUE);
+                if (nVal instanceof Long) {
+                    return new V8Number(handle, (Long) nVal, text);
+                }
+                if (nVal instanceof Double) {
+                    return new V8Number(handle, (Double) nVal, text);
+                }
+                if (nVal == null) {
+                    return new V8Number(handle, -1l, text);
+                }
+                throw new IllegalArgumentException("Unknown variable value type: "+nVal);
             case String:
                 return new V8String(handle, getString(obj, VALUE), text);
             case Function:

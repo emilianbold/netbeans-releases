@@ -47,14 +47,38 @@ package org.netbeans.lib.v8debug.vars;
  */
 public final class V8Number extends V8Value {
     
-    private final long value;
+    private final Kind type;
+    private final long lvalue;
+    private final double dvalue;
+    
+    public static enum Kind {
+        Long,
+        Double
+    }
     
     public V8Number(long handle, long value, String text) {
         super(handle, V8Value.Type.Number, text);
-        this.value = value;
+        this.type = Kind.Long;
+        this.lvalue = value;
+        this.dvalue = value;
     }
 
-    public long getValue() {
-        return value;
+    public V8Number(long handle, double value, String text) {
+        super(handle, V8Value.Type.Number, text);
+        this.type = Kind.Double;
+        this.lvalue = (long) value;
+        this.dvalue = value;
+    }
+    
+    public Kind getKind() {
+        return type;
+    }
+
+    public long getLongValue() {
+        return lvalue;
+    }
+    
+    public double getDoubleValue() {
+        return dvalue;
     }
 }
