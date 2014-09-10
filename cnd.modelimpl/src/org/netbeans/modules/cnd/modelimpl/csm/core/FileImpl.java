@@ -639,7 +639,7 @@ public final class FileImpl implements CsmFile,
                         Object pp = getProject().getPlatformProject();
                         if (pp instanceof NativeProject) {
                             final Lookup.Provider project = ((NativeProject) pp).getProject();
-                            if (project instanceof Project) {
+                            if (project != null) {
                                 indexFilters = project.getLookup().lookupAll(APTIndexFilter.class);
                             }
                         }
