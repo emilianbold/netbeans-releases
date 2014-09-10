@@ -310,12 +310,14 @@ public class DOMNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
         actions.add(SystemAction.get(GoToNodeSourceAction.class));
-        for (Action action : org.openide.util.Utilities.actionsForPath(ACTIONS_PATH)) {
-            if (action instanceof ContextAwareAction) {
-                Lookup lookup = new ProxyLookup(Lookups.fixed(this), getLookup());
-                action = ((ContextAwareAction)action).createContextAwareInstance(lookup);
+        if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+            for (Action action : org.openide.util.Utilities.actionsForPath(ACTIONS_PATH)) {
+                if (action instanceof ContextAwareAction) {
+                    Lookup lookup = new ProxyLookup(Lookups.fixed(this), getLookup());
+                    action = ((ContextAwareAction)action).createContextAwareInstance(lookup);
+                }
+                actions.add(action);
             }
-            actions.add(action);
         }
         return actions.toArray(new Action[actions.size()]);
     }
