@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.inspect.webkit;
 
+import java.awt.Image;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -151,6 +152,26 @@ public class DOMNode extends AbstractNode {
             displayName += " (" + getNode().getNodeId() + ")"; // NOI18N
         }
         return displayName;
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        Image image = super.getIcon(type);
+        return DOMNodeAnnotator.getDefault().annotateIcon(node, image);
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        Image image = super.getIcon(type);
+        return DOMNodeAnnotator.getDefault().annotateIcon(node, image);
+    }
+
+    /**
+     * Forces update of the icon.
+     */
+    void updateIcon() {
+        fireIconChange();
+        fireOpenedIconChange();
     }
 
     /**
