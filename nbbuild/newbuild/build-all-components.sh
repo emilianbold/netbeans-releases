@@ -94,7 +94,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 ###############  Commit validation tests  ##########################
-cp -r $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans-vanilla
+cp -rp $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans-vanilla
 
 TESTS_STARTED=`date`
 # Different JDK for tests because JVM crashes often (see 6598709, 6607038)
