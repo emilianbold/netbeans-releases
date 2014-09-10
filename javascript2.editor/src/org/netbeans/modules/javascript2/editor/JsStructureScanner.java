@@ -55,6 +55,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -101,6 +102,9 @@ public class JsStructureScanner implements StructureScanner {
     }
     
     private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems, List<String> displayedAnonymousObjects) {
+        if (jsObject instanceof JsFunctionReference && !jsObject.isAnonymous()) {
+            return collectedItems;
+        }
         Collection<? extends JsObject> properties = new ArrayList(jsObject.getProperties().values());
         boolean countFunctionChild = (jsObject.getJSKind().isFunction() && !jsObject.isAnonymous() && jsObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
                 && !containsFunction(jsObject)) 
