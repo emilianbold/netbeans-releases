@@ -80,7 +80,6 @@ import org.openide.windows.WindowManager;
 @ServiceProvider(service=RunOffEDTProvider.class, position = 100)
 public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
 
-    private static final RequestProcessor WORKER = new RequestProcessor(ProgressUtils.class.getName());
     private static final RequestProcessor TI_WORKER = new RequestProcessor("TI_" + ProgressUtils.class.getName(), 1, true);
     
     private static final Map<String, Long> CUMULATIVE_SPENT_TIME = new HashMap<String, Long>();
@@ -90,6 +89,8 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
     private static final int WARNING_TIME = Integer.getInteger("org.netbeans.modules.progress.ui.WARNING_TIME", 10000);
     private static final Logger LOG = Logger.getLogger(RunOffEDTImpl.class.getName());
 
+    //@GuardedBy("rqByClz")
+    private final Map<Class<?>,Pair<Integer,RequestProcessor>> rqByClz = new HashMap<Class<?>, Pair<Integer, RequestProcessor>>();
     private final boolean assertionsOn;
 
     @Override
@@ -139,9 +140,27 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
             final AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorTime, int dlgTime) {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Dialog> d = new AtomicReference<Dialog>();
-
-        WORKER.post(new Runnable() {
-
+        RequestProcessor rp;
+        synchronized (rqByClz) {
+            final Class<?> clz = operation.getClass();
+            int index;
+            Pair<Integer,RequestProcessor> p = rqByClz.get(clz);
+            if (p == null) {
+                index = 0;
+                rp = new RequestProcessor(String.format(
+                        "%s for: %s",    //NOI18N
+                        ProgressUtils.class.getName(),
+                        clz.getName()),
+                    1,
+                    false);
+            } else {
+                index = p.first();
+                rp = p.second();
+            }
+            p = Pair.<Integer,RequestProcessor>of(index+1, rp);
+            rqByClz.put(clz, p);
+        }
+        rp.post(new Runnable() {
             public @Override void run() {
                 if (cancelOperation.get()) {
                     return;
@@ -149,6 +168,15 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
 		try {
 		    operation.run();
 		} finally {
+                    synchronized (rqByClz) {
+                        final Class<?> clz = operation.getClass();
+                        Pair<Integer,RequestProcessor> p = rqByClz.remove(clz);
+                        if (p.first() > 1) {
+                            rqByClz.put(clz, Pair.<Integer,RequestProcessor>of(
+                                p.first()-1,
+                                p.second()));
+                        }
+                    }
 		    latch.countDown();
 
 		    SwingUtilities.invokeLater(new Runnable() {
