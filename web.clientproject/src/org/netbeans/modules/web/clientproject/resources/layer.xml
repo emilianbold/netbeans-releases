@@ -145,6 +145,18 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
             </folder>
         </folder>
     </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="javascript">
+                <folder name="Popup">
+                    <file name="RunFile.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
     <folder name="Navigator">
         <folder name="Panels">
             <folder name="text">

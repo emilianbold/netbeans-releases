@@ -91,6 +91,9 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     Bundle.CompositePanelProviderImpl_sources_title(),
                     null);
         } else if (RUN.equals(name)) {
+            if (project.isJsLibrary()) {
+                return null;
+            }
             category = ProjectCustomizer.Category.create(
                     RUN,
                     Bundle.CompositePanelProviderImpl_run_title(),
@@ -114,10 +117,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         if (SOURCES.equals(categoryName)) {
             return new SourcesPanel(category, uiProperties);
         } else if (RUN.equals(categoryName)) {
-            if (project.isJsLibrary()) {
-                // #246752
-                return new JPanel();
-            }
             return new RunPanel(category, uiProperties);
         } else if (LICENSE.equals(categoryName)) {
             return CustomizerUtilities.createLicenseHeaderCustomizerPanel(category, uiProperties.getLicenseSupport());

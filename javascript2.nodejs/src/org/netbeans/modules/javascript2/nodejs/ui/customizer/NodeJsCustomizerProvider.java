@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.nodejs.ui.customizer;
 
-package org.netbeans.modules.javascript2.nodejs.preferences;
-
+import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript2.nodejs.platform.NodeJsSupport;
-import org.netbeans.modules.javascript2.nodejs.util.ValidationResult;
-import org.netbeans.modules.javascript2.nodejs.util.ValidationUtils;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
-public final class NodeJsPreferencesValidator {
+public final class NodeJsCustomizerProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
-    private final ValidationResult result = new ValidationResult();
+    public static final String CUSTOMIZER_IDENT = "NodeJs"; // NOI18N
 
 
-    public ValidationResult getResult() {
-        return result;
+    @NbBundle.Messages("NodeJsCustomizerProvider.name=Node.js")
+    @Override
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+            return ProjectCustomizer.Category.create(CUSTOMIZER_IDENT,
+                    Bundle.NodeJsCustomizerProvider_name(), null);
     }
 
-    public NodeJsPreferencesValidator validate(Project project) {
-        ValidationUtils.validateNode(result, NodeJsSupport.forProject(project).getPreferences().getNode());
-        return this;
+    @Override
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        Project project = context.lookup(Project.class);
+        assert project != null;
+        return new NodeJsCustomizerPanel(category, project);
+    }
+
+    /*@ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = "org.netbeans.modules.web.clientproject", // NOI18N
+            position = 320)*/
+    public static NodeJsCustomizerProvider createCustomizer() {
+        return new NodeJsCustomizerProvider();
     }
 
 }

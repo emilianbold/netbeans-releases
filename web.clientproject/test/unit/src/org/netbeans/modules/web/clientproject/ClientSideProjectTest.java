@@ -45,9 +45,11 @@ import java.awt.Component;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
@@ -56,6 +58,7 @@ import org.netbeans.modules.web.clientproject.sites.SiteZipPanel;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.awt.HtmlBrowser;
@@ -129,6 +132,21 @@ public class ClientSideProjectTest extends NbTestCase {
         assertEquals("site root should be created from template",
                 project.getProjectDirectory().getFileObject("custom_siteroot"), FileUtil.toFileObject(projectProperties.getResolvedSiteRootFolder()));
         assertNoProjectProblems(project);
+    }
+
+    public void testProjectWithProjectServiceProvider() throws Exception {
+        int instances = MySupport.INSTANCES.get();
+        ClientSideProject project = createProject("src", "www", "test");
+        MySupport mySupport = project.getLookup().lookup(MySupport.class);
+        assertNotNull(mySupport);
+        assertEquals(instances + 1, MySupport.INSTANCES.get());
+        assertSame(project, mySupport.getProject());
+    }
+
+    public void testProjectWithProjectServiceProvider10Times() throws Exception {
+        for (int i = 0; i < 10; ++i) {
+            testProjectWithProjectServiceProvider();
+        }
     }
 
     private ClientSideProject createProject(@NullAllowed String sources, @NullAllowed String siteRoot, @NullAllowed String tests) throws Exception {
@@ -265,6 +283,25 @@ public class ClientSideProjectTest extends NbTestCase {
         @Override
         public boolean canCreateHtmlBrowserImpl() {
             return true;
+        }
+
+    }
+
+    @ProjectServiceProvider(service = MySupport.class, projectType = "org-netbeans-modules-web-clientproject")
+    public static final class MySupport {
+
+        public static final AtomicInteger INSTANCES = new AtomicInteger();
+
+        private final Project project;
+
+
+        public MySupport(Project project) {
+            INSTANCES.incrementAndGet();
+            this.project = project;
+        }
+
+        public Project getProject() {
+            return project;
         }
 
     }
