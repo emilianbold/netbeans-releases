@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <title>${TEMPLATENAME}</title>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <div data-bind="template: templateName"></div>
+        
+        <script type="text/html" id="window">
+            <input data-bind="value: text"></input> 
+            <button data-bind="click: showDialog, enable: text">Ask!</button>
+        </script>
+        
+        
+        <script type="text/html" id="dialog">
+            <div><span data-bind="text: text"></span> How are you?</div>
+            <-- you need to check the checkbox to enabled the OK button -->
+            <input type="checkbox" data-bind="checked: ok">OK?<br>
+            <-- enabled with checkbox is checked -->
+            <button id='ok' hidden data-bind="enable: ok">Good</button>
+            <button id='bad' hidden>Bad</button>
+        </script>
+    </body>
+</html>
