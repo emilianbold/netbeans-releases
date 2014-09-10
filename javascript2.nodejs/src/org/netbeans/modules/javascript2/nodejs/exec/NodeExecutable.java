@@ -42,13 +42,22 @@
 
 package org.netbeans.modules.javascript2.nodejs.exec;
 
+import java.awt.EventQueue;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -61,10 +70,12 @@ import org.netbeans.modules.javascript2.nodejs.ui.options.NodeJsOptionsPanelCont
 import org.netbeans.modules.javascript2.nodejs.util.ExternalExecutable;
 import org.netbeans.modules.javascript2.nodejs.util.StringUtils;
 import org.netbeans.modules.javascript2.nodejs.util.ValidationResult;
+import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.InputOutput;
 
 public class NodeExecutable {
 
@@ -73,6 +84,12 @@ public class NodeExecutable {
     public static final String NODE_NAME;
 
     private static final String DEBUG_COMMAND = "debug"; // NOI18N
+    private static final String VERSION_PARAM = "--version"; // NOI18N
+
+    private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
+
+    // version of the node set in ide options
+    private static volatile Version version;
 
     protected final Project project;
     protected final String nodePath;
@@ -87,15 +104,14 @@ public class NodeExecutable {
     }
 
 
-    NodeExecutable(Project project, String nodePath) {
-        assert project != null;
+    NodeExecutable(String nodePath, @NullAllowed Project project) {
         assert nodePath != null;
-        this.project = project;
         this.nodePath = nodePath;
+        this.project = project;
     }
 
     @CheckForNull
-    public static NodeExecutable getDefault(Project project, boolean showOptions) {
+    public static NodeExecutable getDefault(@NullAllowed Project project, boolean showOptions) {
         ValidationResult result = new NodeJsOptionsValidator()
                 .validate()
                 .getResult();
@@ -107,13 +123,14 @@ public class NodeExecutable {
         }
         String node = NodeJsOptions.getInstance().getNode();
         if (Utilities.isMac()) {
-            return new MacNodeExecutable(project, node);
+            return new MacNodeExecutable(node, project);
         }
-        return new NodeExecutable(project, node);
+        return new NodeExecutable(node, project);
     }
 
     @CheckForNull
     public static NodeExecutable forProject(Project project, boolean showCustomizer) {
+        assert project != null;
         String node = NodeJsSupport.forProject(project).getPreferences().getNode();
         if (node == null) {
             return getDefault(project, showCustomizer);
@@ -128,9 +145,42 @@ public class NodeExecutable {
             return null;
         }
         if (Utilities.isMac()) {
-            return new MacNodeExecutable(project, node);
+            return new MacNodeExecutable(node, project);
         }
-        return new NodeExecutable(project, node);
+        return new NodeExecutable(node, project);
+    }
+
+    public static void resetVersion() {
+        version = null;
+    }
+
+    @CheckForNull
+    public static Version getVersion() {
+        if (version != null) {
+            return version;
+        }
+        assert !EventQueue.isDispatchThread();
+        VersionOutputProcessorFactory versionOutputProcessorFactory = new VersionOutputProcessorFactory();
+        try {
+            NodeExecutable node = getDefault(null, false);
+            if (node == null) {
+                return null;
+            }
+            node.getExecutable("node version", TMP_DIR) // NOI18N
+                    .additionalParameters(node.getVersionParams())
+                    .runAndWait(getSilentDescriptor(), versionOutputProcessorFactory, "Detecting node version..."); // NOI18N
+            String detectedVersion = versionOutputProcessorFactory.getVersion();
+            if (detectedVersion != null) {
+                version = Version.fromDottedNotationWithFallback(detectedVersion);
+                return version;
+            }
+        } catch (CancellationException ex) {
+            // cancelled, cannot happen
+            assert false;
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return null;
     }
 
     @NbBundle.Messages({
@@ -139,6 +189,7 @@ public class NodeExecutable {
     })
     @CheckForNull
     public Future<Integer> run(File script) {
+        assert project != null;
         String projectName = ProjectUtils.getInformation(project).getDisplayName();
         Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName), getProjectDir())
                 .additionalParameters(getRunParams(script))
@@ -147,7 +198,9 @@ public class NodeExecutable {
         return task;
     }
 
+    @CheckForNull
     private File getProjectDir() {
+        assert project != null;
         return FileUtil.toFile(project.getProjectDirectory());
     }
 
@@ -156,6 +209,8 @@ public class NodeExecutable {
     }
 
     private ExternalExecutable getExecutable(String title, File workDir) {
+        assert title != null;
+        assert workDir != null;
         return new ExternalExecutable(getCommand())
                 .workDir(workDir)
                 .displayName(title)
@@ -172,9 +227,26 @@ public class NodeExecutable {
                 .errLineBased(true);
     }
 
-    List<String> getRunParams(File script) {
+    private static ExecutionDescriptor getSilentDescriptor() {
+        return new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL)
+                .inputVisible(false)
+                .frontWindow(false)
+                .showProgress(false);
+    }
+
+    private List<String> getRunParams(File script) {
         assert script != null;
-        return Collections.singletonList(script.getAbsolutePath());
+        return getParams(script.getAbsolutePath());
+    }
+
+    private List<String> getVersionParams() {
+        return getParams(VERSION_PARAM);
+    }
+
+    List<String> getParams(String... params) {
+        assert params != null;
+        return Arrays.asList(params);
     }
 
     @CheckForNull
@@ -195,8 +267,8 @@ public class NodeExecutable {
         private static final String BASH_COMMAND = "/bin/bash -lc"; // NOI18N
 
 
-        MacNodeExecutable(Project project, String nodePath) {
-            super(project, nodePath);
+        MacNodeExecutable(String nodePath, Project project) {
+            super(nodePath, project);
         }
 
         @Override
@@ -205,20 +277,54 @@ public class NodeExecutable {
         }
 
         @Override
-        List<String> getRunParams(File script) {
-            return getParams(super.getRunParams(script));
-        }
-
-        private List<String> getParams(List<String> originalParams) {
+        List<String> getParams(String... params) {
             StringBuilder sb = new StringBuilder(200);
             sb.append("\""); // NOI18N
             sb.append(nodePath);
             sb.append("\" \""); // NOI18N
-            sb.append(StringUtils.implode(originalParams, "\" \"")); // NOI18N
+            sb.append(StringUtils.implode(super.getParams(params), "\" \"")); // NOI18N
             sb.append("\""); // NOI18N
             return Collections.singletonList(sb.toString());
         }
 
     }
+
+    private static class VersionOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+
+        volatile String version;
+
+
+        @Override
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return InputProcessors.bridge(new LineProcessor() {
+
+                @Override
+                public void processLine(String line) {
+                    assert version == null : version + " :: " + line;
+                    version = parseVersion(line);
+                }
+
+                @Override
+                public void reset() {
+                }
+
+                @Override
+                public void close() {
+                }
+
+            });
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public String parseVersion(String line) {
+            assert line.startsWith("v") : line; // NOI18N
+            return line.substring(1);
+        }
+
+    }
+
 
 }
