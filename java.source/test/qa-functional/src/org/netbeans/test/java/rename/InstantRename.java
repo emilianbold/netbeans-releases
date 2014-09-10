@@ -199,9 +199,7 @@ public class InstantRename extends JavaTestCase {
             "}\n";
         perform(input, 2, 13, "Ren", golden);
         EditorOperator eo = new EditorOperator("Rename");
-        eo.pressKey(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK);
-        eo.pressKey(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK);
-        eo.pressKey(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK);
+        eo.pressKey(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK);        
         String result = eo.getText();
         assertEquals(input, result);
     }

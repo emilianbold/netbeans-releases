@@ -79,6 +79,7 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     /**
      * Map from known binary roots to lists of source roots.
      */
+    //@GuardedBy("this")
     private Map<URL,FileObject[]> roots = null;
 
     public SourceForBinaryQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
@@ -88,7 +89,7 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
         helper.addAntProjectListener(this);
     }
 
-    private void refresh () {
+    private synchronized void refresh () {
         roots = null;
     }
 
@@ -96,39 +97,39 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
         return ProjectManager.mutex().readAccess(new Mutex.Action<SourceForBinaryQuery.Result>() {
             public SourceForBinaryQuery.Result run() {
                 synchronized (SourceForBinaryQueryImpl.this) {
-        if (roots == null) {
-            // Need to compute it. Easiest to compute them all at once.
-            roots = new HashMap<URL,FileObject[]>();
-            Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_LASTEST, true);
-            if (java == null) {
-                return null;
-            }
-            for (Element compilationUnit : XMLUtil.findSubElements(java)) {
-                assert compilationUnit.getLocalName().equals("compilation-unit") : compilationUnit;
-                List<URL> binaries = findBinaries(compilationUnit);
-                if (!binaries.isEmpty()) {
-                    List<FileObject> packageRoots = Classpaths.findPackageRoots(helper, evaluator, compilationUnit);
-                    FileObject[] sources = packageRoots.toArray(new FileObject[packageRoots.size()]);
-                    for (URL u : binaries) {
-                        FileObject[] orig = roots.get(u);
-                        //The case when sources are in the separate compilation units but
-                        //the output is built into a single archive is not very common.
-                        //It is better to recreate arrays rather then to add source roots
-                        //into lists which will slow down creation of Result instances.
-                        if (orig != null) {
-                            FileObject[] merged = new FileObject[orig.length+sources.length];
-                            System.arraycopy(orig, 0, merged, 0, orig.length);
-                            System.arraycopy(sources, 0,  merged, orig.length, sources.length);
-                            sources = merged;
+                    if (roots == null) {
+                        // Need to compute it. Easiest to compute them all at once.
+                        roots = new HashMap<URL,FileObject[]>();
+                        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_LASTEST, true);
+                        if (java == null) {
+                            return null;
                         }
-                        roots.put(u, sources);
+                        for (Element compilationUnit : XMLUtil.findSubElements(java)) {
+                            assert compilationUnit.getLocalName().equals("compilation-unit") : compilationUnit;
+                            List<URL> binaries = findBinaries(compilationUnit);
+                            if (!binaries.isEmpty()) {
+                                List<FileObject> packageRoots = Classpaths.findPackageRoots(helper, evaluator, compilationUnit);
+                                FileObject[] sources = packageRoots.toArray(new FileObject[packageRoots.size()]);
+                                for (URL u : binaries) {
+                                    FileObject[] orig = roots.get(u);
+                                    //The case when sources are in the separate compilation units but
+                                    //the output is built into a single archive is not very common.
+                                    //It is better to recreate arrays rather then to add source roots
+                                    //into lists which will slow down creation of Result instances.
+                                    if (orig != null) {
+                                        FileObject[] merged = new FileObject[orig.length+sources.length];
+                                        System.arraycopy(orig, 0, merged, 0, orig.length);
+                                        System.arraycopy(sources, 0,  merged, orig.length, sources.length);
+                                        sources = merged;
+                                    }
+                                    roots.put(u, sources);
+                                }
+                            }
+                        }
                     }
-                }
-            }
-        }
-        assert roots != null;
-        FileObject[] sources = roots.get(binaryRoot);
-        return sources == null ? null : new Result (sources);       //TODO: Optimize it, resolution of sources should be done in the result
+                    assert roots != null;
+                    FileObject[] sources = roots.get(binaryRoot);
+                    return sources == null ? null : new Result (sources);       //TODO: Optimize it, resolution of sources should be done in the result
                 }
             }
         });
