@@ -116,6 +116,7 @@ class JSONConstants {
     
     public static final String SCRIPT = "script";
     public static final String SCRIPT_ID = "script_id";
+    public static final String SCRIPTID = "scriptId";
     public static final String SCRIPT_NAME = "script_name";
     public static final String SCRIPT_LINE_OFFSET = "lineOffset";
     public static final String SCRIPT_COLUMN_OFFSET = "columnOffset";
@@ -170,6 +171,9 @@ class JSONConstants {
     public static final String TEXT = "text";
     
     public static final String FLAGS = "flags";
+    
+    public static final String INFINITY = "Infinity";
+    public static final String NaN = "NaN";
     
     private JSONConstants() {}
     

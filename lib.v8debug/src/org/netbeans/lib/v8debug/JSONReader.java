@@ -349,6 +349,15 @@ public class JSONReader {
                 if (nVal == null) {
                     return new V8Number(handle, -1l, text);
                 }
+                if (INFINITY.equals(nVal)) {
+                    return new V8Number(handle, Double.POSITIVE_INFINITY, text);
+                }
+                if (("-"+INFINITY).equals(nVal)) {
+                    return new V8Number(handle, Double.NEGATIVE_INFINITY, text);
+                }
+                if (NaN.equals(nVal)) {
+                    return new V8Number(handle, Double.NaN, text);
+                }
                 throw new IllegalArgumentException("Unknown variable value type: "+nVal);
             case String:
                 return new V8String(handle, getString(obj, VALUE), text);
@@ -357,7 +366,7 @@ public class JSONReader {
                 String inferredName = getString(obj, FUNCTION_INFERRED_NAME);
                 String source = getString(obj, SOURCE);
                 long scriptRef = getReference(obj, SCRIPT);
-                long scriptId = getLong(obj, SCRIPT_ID);
+                long scriptId = getLong(obj, SCRIPTID);
                 long position = getLong(obj, POSITION);
                 long line = getLong(obj, LINE);
                 long column = getLong(obj, COLUMN);
