@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,65 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.nodejs.ui.actions;
 
-package org.netbeans.modules.javascript2.nodejs.preferences;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript2.nodejs.platform.NodeJsSupport;
-import org.netbeans.modules.javascript2.nodejs.util.ValidationResult;
-import org.netbeans.modules.javascript2.nodejs.util.ValidationUtils;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
-public final class NodeJsPreferencesValidator {
+public final class NodeJsActionProvider implements ActionProvider {
 
-    private final ValidationResult result = new ValidationResult();
+    private static final RequestProcessor RP = new RequestProcessor(NodeJsActionProvider.class);
+
+    private final Project project;
+    private final Map<String, Command> commands = new ConcurrentHashMap<>();
+    private final List<String> supportedActions;
 
 
-    public ValidationResult getResult() {
-        return result;
+    public NodeJsActionProvider(Project project) {
+        assert project != null;
+        this.project = project;
+        fillCommands();
+        supportedActions = new ArrayList<>(commands.keySet());
     }
 
-    public NodeJsPreferencesValidator validate(Project project) {
-        ValidationUtils.validateNode(result, NodeJsSupport.forProject(project).getPreferences().getNode());
-        return this;
+    private void fillCommands() {
+        commands.put(COMMAND_RUN, new Command.RunProjectCommand(project));
+        commands.put(COMMAND_RUN_SINGLE, new Command.RunFileCommand(project));
+        // XXX debug?
+    }
+
+    @Override
+    public String[] getSupportedActions() {
+        return supportedActions.toArray(new String[supportedActions.size()]);
+    }
+
+    @Override
+    public void invokeAction(String command, final Lookup context) {
+        final Command runCommand = commands.get(command);
+        assert runCommand != null : command;
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                runCommand.run(context);
+            }
+        });
+    }
+
+    @Override
+    public boolean isActionEnabled(String command, Lookup context) {
+        Command runCommand = commands.get(command);
+        if (runCommand == null) {
+            return false;
+        }
+        return runCommand.isEnabled(context);
     }
 
 }
