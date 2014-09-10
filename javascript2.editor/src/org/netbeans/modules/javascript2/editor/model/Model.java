@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -78,6 +79,7 @@ import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.model.impl.AnonymousObject;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsWithObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelExtender;
@@ -98,6 +100,8 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages("LBL_DefaultDocContentForURL=To view documentation for this function, press the browser button in the toolbar above this text.")
 public final class Model {
 
+    private static final AtomicBoolean assertFired = new AtomicBoolean(false);
+    
     private static final Logger LOGGER = Logger.getLogger(OccurrencesSupport.class.getName());
 
     private static final Comparator<Map.Entry<String, ? extends JsObject>> PROPERTIES_COMPARATOR = new Comparator<Map.Entry<String, ? extends JsObject>>() {
@@ -501,10 +505,16 @@ public final class Model {
     }
     
     private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder, Set<String> alreadyResolvedObjects) {
+        if (object instanceof JsFunctionReference && !object.isAnonymous()) {
+            return;
+        }
         String fqn = object.getFullyQualifiedName();
         boolean isTopObject = object.getJSKind() == JsElement.Kind.FILE;
         if (alreadyResolvedObjects.contains(fqn)) {
-//            assert false: "Probably cycle in the javascript model of file: " + object.getFileObject().getPath(); //NOI18N
+            if (!assertFired.get()) {
+                assertFired.set(true);
+                assert false: "Probably cycle in the javascript model of file: " + object.getFileObject().getPath(); //NOI18N
+            }
             return;
         }
         if (!isTopObject) {
