@@ -71,6 +71,7 @@ public final class HTMLDialogImpl implements Runnable {
     
     private String url;
     private Runnable onPageLoad;
+    private boolean nestedLoop;
 
     public void setUrl(String url) {
         this.url = url;
@@ -91,7 +92,21 @@ public final class HTMLDialogImpl implements Runnable {
                 break;
             case 2:
                 initPage();
+                if (nestedLoop) {
+                    state = 3;
+                    EventQueue.invokeLater(this);
+                } else {
+                    state = -1;
+                }
+                break;
+            case 3:
+                showDialog();
+                state = 4;
+                Platform.runLater(this);
+                break;
+            case 4:
                 state = -1;
+                com.sun.javafx.tk.Toolkit.getToolkit().exitNestedEventLoop(this, null);
                 break;
             default:
                 throw new IllegalStateException("State: " + state);
@@ -101,21 +116,31 @@ public final class HTMLDialogImpl implements Runnable {
     public String showAndWait() {
         if (EventQueue.isDispatchThread()) {
             run();
+            showDialog();
         } else {
-            try {
-                EventQueue.invokeAndWait(this);
-            } catch (InterruptedException ex) {
-                throw new IllegalStateException(ex);
-            } catch (InvocationTargetException ex) {
-                throw new IllegalStateException(ex);
+            if (Platform.isFxApplicationThread()) {
+                nestedLoop = true;
+                EventQueue.invokeLater(this);
+                com.sun.javafx.tk.Toolkit.getToolkit().enterNestedEventLoop(this);
+            } else {
+                try {
+                    EventQueue.invokeAndWait(this);
+                } catch (InterruptedException ex) {
+                    throw new IllegalStateException(ex);
+                } catch (InvocationTargetException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                showDialog();
             }
         }
+        Object val = dd.getValue();
+        return val instanceof JButton ? ((JButton)val).getName() : null;
+    }
+
+    private void showDialog() {
         p.setPreferredSize(new Dimension(600, 400));
         Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.setVisible(true);
-        
-        Object val = dd.getValue();
-        return val instanceof JButton ? ((JButton)val).getName() : null;
     }
     
     private void initPanel() {
