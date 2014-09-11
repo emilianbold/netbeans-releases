@@ -132,7 +132,11 @@ public class ClassParser extends Parser {
         final ClassPath bootPath = info.getClassPath(ClasspathInfo.PathKind.BOOT);
         final ClassPath compilePath = info.getClassPath(ClasspathInfo.PathKind.COMPILE);
         final ClassPath srcPath = info.getClassPath(ClasspathInfo.PathKind.SOURCE);
-        final FileObject root = ClassPathSupport.createProxyClassPath(bootPath,compilePath,srcPath).findOwnerRoot(file);
+        final FileObject root = ClassPathSupport.createProxyClassPath(
+                ClassPathSupport.createClassPath(CachingArchiveProvider.getDefault().ctSymRootsFor(bootPath)),
+                bootPath,
+                compilePath,
+                srcPath).findOwnerRoot(file);
         if (root == null) {
             throw new ParseException(
                 String.format("The file %s is not owned by provided classpaths, boot: %s, compile: %s, src: %s",    //NOI18N
