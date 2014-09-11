@@ -61,6 +61,7 @@ import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
@@ -70,8 +71,10 @@ import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelContr
 import org.netbeans.modules.javascript.nodejs.util.ExternalExecutable;
 import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -166,7 +169,7 @@ public class NodeExecutable {
             if (node == null) {
                 return null;
             }
-            node.getExecutable("node version", TMP_DIR) // NOI18N
+            node.getExecutable("node version") // NOI18N
                     .additionalParameters(node.getVersionParams())
                     .runAndWait(getSilentDescriptor(), versionOutputProcessorFactory, "Detecting node version..."); // NOI18N
             String detectedVersion = versionOutputProcessorFactory.getVersion();
@@ -191,28 +194,21 @@ public class NodeExecutable {
     public Future<Integer> run(File script) {
         assert project != null;
         String projectName = ProjectUtils.getInformation(project).getDisplayName();
-        Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName), getProjectDir())
+        Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName))
                 .additionalParameters(getRunParams(script))
                 .run(getDescriptor());
         assert task != null : nodePath;
         return task;
     }
 
-    @CheckForNull
-    private File getProjectDir() {
-        assert project != null;
-        return FileUtil.toFile(project.getProjectDirectory());
-    }
-
     String getCommand() {
         return nodePath;
     }
 
-    private ExternalExecutable getExecutable(String title, File workDir) {
+    private ExternalExecutable getExecutable(String title) {
         assert title != null;
-        assert workDir != null;
         return new ExternalExecutable(getCommand())
-                .workDir(workDir)
+                .workDir(getWorkDir())
                 .displayName(title)
                 .noOutput(false);
     }
@@ -233,6 +229,21 @@ public class NodeExecutable {
                 .inputVisible(false)
                 .frontWindow(false)
                 .showProgress(false);
+    }
+
+    private File getWorkDir() {
+        if (project == null) {
+            return TMP_DIR;
+        }
+        for (SourceGroup sourceGroup : ProjectUtils.getSources(project).getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5)) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            File root = FileUtil.toFile(rootFolder);
+            assert root != null : rootFolder;
+            return root;
+        }
+        File workDir = FileUtil.toFile(project.getProjectDirectory());
+        assert workDir != null : project.getProjectDirectory();
+        return workDir;
     }
 
     private List<String> getRunParams(File script) {
