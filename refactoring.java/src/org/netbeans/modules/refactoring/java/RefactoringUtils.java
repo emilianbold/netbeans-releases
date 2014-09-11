@@ -381,7 +381,7 @@ public class RefactoringUtils {
     public static String getPackageName(URL url) {
         File f = null;
         try {
-            f = FileUtil.normalizeFile(new File(url.toURI()));
+            f = FileUtil.normalizeFile(Utilities.toFile(url.toURI()));
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(ex);
         }

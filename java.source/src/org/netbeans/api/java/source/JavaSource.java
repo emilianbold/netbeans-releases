@@ -71,6 +71,7 @@ import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.ClassParser;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
@@ -291,7 +292,11 @@ public final class JavaSource {
                     bootPath = ClassPathSupport.createProxyClassPath(execPath, bootPath);
                 }
                 final ClasspathInfo info = ClasspathInfo.create(bootPath, compilePath, srcPath);
-                FileObject root = ClassPathSupport.createProxyClassPath(bootPath,compilePath,srcPath).findOwnerRoot(fileObject);
+                FileObject root = ClassPathSupport.createProxyClassPath(
+                    ClassPathSupport.createClassPath(CachingArchiveProvider.getDefault().ctSymRootsFor(bootPath)),
+                    bootPath,
+                    compilePath,
+                    srcPath).findOwnerRoot(fileObject);
                 if (root == null) {
                     LOGGER.log(Level.FINE, "FileObject ({0}) passed to JavaSource.forFileObject of mimeType classfile does not have a corresponding root", fileObject.toURI().toString());
                     return null;

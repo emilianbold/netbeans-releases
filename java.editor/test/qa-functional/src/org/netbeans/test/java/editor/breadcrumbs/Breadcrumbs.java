@@ -98,82 +98,82 @@ public class Breadcrumbs extends JavaEditorTestCase {
         assertEquals("[]", getBreadcrumbsAt(10, 1));
     }
     public void testClass() {
-        assertEquals("[Breadcrumbs]", getBreadcrumbsAt(16, 28));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs]", getBreadcrumbsAt(16, 28));
     }
     public void testField() {
-        assertEquals("[Breadcrumbs, x]", getBreadcrumbsAt(19, 10));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, x]", getBreadcrumbsAt(19, 10));
     }
     public void testMethod() {
-        assertEquals("[Breadcrumbs, method]", getBreadcrumbsAt(22, 9));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method]", getBreadcrumbsAt(22, 9));
     }
     public void testFor() {
-        assertEquals("[Breadcrumbs, method, for <font color=#707070>(int i = 0; i &lt; 10; i++)</font>]", getBreadcrumbsAt(23, 39));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, for <font color=#707070>(int i = 0; i &lt; 10; i++)</font>]", getBreadcrumbsAt(23, 39));
     }
     public void testResource() {
-        assertEquals("[Breadcrumbs, method, try, rd]", getBreadcrumbsAt(26, 48));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, try, rd]", getBreadcrumbsAt(26, 48));
     }
     public void testTry() {
-        assertEquals("[Breadcrumbs, method, try]", getBreadcrumbsAt(27, 13));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, try]", getBreadcrumbsAt(27, 13));
     }
     public void testCatch() {
-        assertEquals("[Breadcrumbs, method, try, catch <font color=#707070>Exception ex</font>]", getBreadcrumbsAt(29, 13));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, try, catch <font color=#707070>Exception ex</font>]", getBreadcrumbsAt(29, 13));
     }
     public void testFinally() {
-        assertEquals("[Breadcrumbs, method, try, finally]", getBreadcrumbsAt(32, 13));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, try, finally]", getBreadcrumbsAt(32, 13));
     }
     public void testWhile() {
-        assertEquals("[Breadcrumbs, method, while <font color=#707070>(x > 0)</font>]", getBreadcrumbsAt(36, 13));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, while <font color=#707070>(x > 0)</font>]", getBreadcrumbsAt(36, 13));
     }
     public void testDoWhile() {
-        assertEquals("[Breadcrumbs, method, do ... while <font color=#707070>(x &lt; 10)</font>]", getBreadcrumbsAt(41, 9));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, do ... while <font color=#707070>(x &lt; 10)</font>]", getBreadcrumbsAt(41, 9));
     }
     public void testIf() {
-        assertEquals("[Breadcrumbs, method, if <font color=#707070>(x == 10)</font>]", getBreadcrumbsAt(45, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, if <font color=#707070>(x == 10)</font>]", getBreadcrumbsAt(45, 1));
     }
     public void testIfElse() {
-        assertEquals("[Breadcrumbs, method, if <font color=#707070>(x == 10)</font> else]", getBreadcrumbsAt(47, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, if <font color=#707070>(x == 10)</font> else]", getBreadcrumbsAt(47, 1));
     }
     public void testIfElseIf() {
-        assertEquals("[Breadcrumbs, method, if <font color=#707070>(x == 10)</font> else, if <font color=#707070>(x == 2)</font>]", getBreadcrumbsAt(49, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, if <font color=#707070>(x == 10)</font> else, if <font color=#707070>(x == 2)</font>]", getBreadcrumbsAt(49, 1));
     }
     public void testFor15() {
-        assertEquals("[Breadcrumbs, method, for <font color=#707070>(Object object : new String[]{&quot;&quot;})</font>]", getBreadcrumbsAt(53, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, for <font color=#707070>(Object object : new String[]{&quot;&quot;})</font>]", getBreadcrumbsAt(53, 1));
     }
     public void testSynchronized() {
-        assertEquals("[Breadcrumbs, method, synchronized <font color=#707070>(this)</font>]", getBreadcrumbsAt(56, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, synchronized <font color=#707070>(this)</font>]", getBreadcrumbsAt(56, 1));
     }
     public void testAnonymousClass() {
-        assertEquals("[Breadcrumbs, method, Runnable]", getBreadcrumbsAt(60, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, Runnable]", getBreadcrumbsAt(60, 1));
     }
     public void testAnonymousClassMethod() {
-        assertEquals("[Breadcrumbs, method, Runnable, run]", getBreadcrumbsAt(63, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, Runnable, run]", getBreadcrumbsAt(63, 1));
     }
     public void testSwitch() {
-        assertEquals("[Breadcrumbs, method, switch <font color=#707070>(x)</font>]", getBreadcrumbsAt(67, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, switch <font color=#707070>(x)</font>]", getBreadcrumbsAt(67, 1));
     }
     public void testCase() {
-        assertEquals("[Breadcrumbs, method, switch <font color=#707070>(x)</font>, case <font color=#707070>1:</font>]", getBreadcrumbsAt(70, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, switch <font color=#707070>(x)</font>, case <font color=#707070>1:</font>]", getBreadcrumbsAt(70, 1));
     }
     public void testDefaultCase() {
-        assertEquals("[Breadcrumbs, method, switch <font color=#707070>(x)</font>, default:]", getBreadcrumbsAt(73, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, method, switch <font color=#707070>(x)</font>, default:]", getBreadcrumbsAt(73, 1));
     }
     public void testInner() {
-        assertEquals("[Breadcrumbs, Inner]", getBreadcrumbsAt(79, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, Inner]", getBreadcrumbsAt(79, 1));
     }
     public void testInnerMethod() {
-        assertEquals("[Breadcrumbs, Inner, innerMethod]", getBreadcrumbsAt(82, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, Inner, innerMethod]", getBreadcrumbsAt(82, 1));
     }
     public void testEnum() {
-        assertEquals("[Breadcrumbs, E]", getBreadcrumbsAt(88, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, E]", getBreadcrumbsAt(88, 1));
     }
     public void testEnumConstantBody() {
-        assertEquals("[Breadcrumbs, E, A, E]", getBreadcrumbsAt(90, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, E, A, E]", getBreadcrumbsAt(90, 1));
     }
     public void testEnumConstantMethod() {
-        assertEquals("[Breadcrumbs, E, A, E, m]", getBreadcrumbsAt(92, 1));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, E, A, E, m]", getBreadcrumbsAt(92, 1));
     }
     public void testEnumConstant() {
-        assertEquals("[Breadcrumbs, E, B]", getBreadcrumbsAt(95, 10));
+        assertEquals("[org.netbeans.test.java.editor.breadcrumbs.Breadcrumbs, E, B]", getBreadcrumbsAt(95, 10));
     }
     
     

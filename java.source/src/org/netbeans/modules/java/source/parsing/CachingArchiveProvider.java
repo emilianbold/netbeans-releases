@@ -51,11 +51,14 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.openide.filesystems.FileObject;
@@ -75,6 +78,7 @@ import org.openide.util.Utilities;
 public final class CachingArchiveProvider {
 
     private static final String NAME_RT_JAR = "rt.jar";         //NOI18N
+    private static final String NAME_INNER_RT_JAR = NAME_RT_JAR + "!/"; //NOI18N
     private static final String PATH_CT_SYM = "lib/ct.sym";     //NOI18N
     private static final String PATH_RT_JAR_IN_CT_SYM = "META-INF/sym/rt.jar/"; //NOI18N
     private static final boolean USE_CT_SYM = !Boolean.getBoolean("CachingArchiveProvider.disableCtSym");   //NOI18N
@@ -168,7 +172,7 @@ public final class CachingArchiveProvider {
      * or the given boot classpath root.
      */
     @NonNull
-    public URL mapCtSymToJar (@NonNull final URL archiveOrCtSym) {
+    public synchronized URL mapCtSymToJar (@NonNull final URL archiveOrCtSym) {
         final URI result = ctSymToJar.get(toURI(archiveOrCtSym));
         if (result != null) {
             try {
@@ -178,6 +182,28 @@ public final class CachingArchiveProvider {
             }
         }
         return archiveOrCtSym;
+    }
+
+    @NonNull
+    public synchronized URL[] ctSymRootsFor(@NonNull final ClassPath cp) {
+        final List<URL> res = new ArrayList<>();
+        for (ClassPath.Entry entry : cp.entries()) {
+            final URL root = entry.getURL();
+            if (!root.getPath().endsWith(NAME_INNER_RT_JAR)) {
+                continue;
+            }
+            try {
+                for (Map.Entry<URI,URI> e : ctSymToJar.entrySet()) {
+                    if (e.getValue().equals(root.toURI())) {
+                        res.add(e.getKey().toURL());
+                        break;
+                    }
+                }
+            } catch (URISyntaxException | MalformedURLException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return res.toArray(new URL[res.size()]);
     }
 
     /**
