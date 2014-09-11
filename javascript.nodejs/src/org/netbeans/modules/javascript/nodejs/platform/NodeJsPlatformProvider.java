@@ -48,19 +48,19 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
-//import org.netbeans.modules.web.clientproject.api.BadgeIcon;
-//import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
-//import org.netbeans.modules.web.clientproject.spi.platform.PlatformProviderImplementation;
-//import org.netbeans.modules.web.clientproject.spi.platform.PlatformProviderImplementationListener;
+import org.netbeans.modules.web.clientproject.api.BadgeIcon;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
+import org.netbeans.modules.web.clientproject.spi.platform.PlatformProviderImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.PlatformProviderImplementationListener;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
-//@ServiceProvider(service = PlatformProviderImplementation.class, path = PlatformProviders.PLATFORM_PATH, position = 100)
-public final class NodeJsPlatformProvider /*implements PlatformProviderImplementation, PropertyChangeListener*/ {
+@ServiceProvider(service = PlatformProviderImplementation.class, path = PlatformProviders.PLATFORM_PATH, position = 100)
+public final class NodeJsPlatformProvider implements PlatformProviderImplementation, PropertyChangeListener {
 
-    /*private static final Logger LOGGER = Logger.getLogger(NodeJsPlatformProvider.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(NodeJsPlatformProvider.class.getName());
 
     @StaticResource
     private static final String ICON_PATH = "org/netbeans/modules/javascript/nodejs/ui/resources/nodejs-badge.png"; // NOI18N
@@ -142,6 +142,6 @@ public final class NodeJsPlatformProvider /*implements PlatformProviderImplement
     public void propertyChange(PropertyChangeEvent evt) {
         listenerSupport.firePropertyChanged((Project) evt.getSource(), this,
                 new PropertyChangeEvent(this, evt.getPropertyName(), evt.getOldValue(), evt.getNewValue()));
-    }*/
+    }
 
 }

@@ -54,7 +54,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.Lookup;
 
-//@ProjectServiceProvider(service = NodeJsSupport.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
+@ProjectServiceProvider(service = NodeJsSupport.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
 public final class NodeJsSupport {
 
     private static final Logger LOGGER = Logger.getLogger(NodeJsSupport.class.getName());

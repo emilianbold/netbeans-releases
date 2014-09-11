@@ -77,7 +77,7 @@ public final class NodeJsPreferences {
         boolean original = isEnabled();
         getPreferences().putBoolean(ENABLED, enabled);
         if (original != enabled) {
-            //nodeJsSupport.firePropertyChanged(NodeJsPlatformProvider.PROP_ENABLED, original, enabled);
+            nodeJsSupport.firePropertyChanged(NodeJsPlatformProvider.PROP_ENABLED, original, enabled);
         }
     }
 

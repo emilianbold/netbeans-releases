@@ -66,9 +66,9 @@ public final class NodeJsCustomizerProvider implements ProjectCustomizer.Composi
         return new NodeJsCustomizerPanel(category, project);
     }
 
-    /*@ProjectCustomizer.CompositeCategoryProvider.Registration(
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org.netbeans.modules.web.clientproject", // NOI18N
-            position = 320)*/
+            position = 320)
     public static NodeJsCustomizerProvider createCustomizer() {
         return new NodeJsCustomizerProvider();
     }
