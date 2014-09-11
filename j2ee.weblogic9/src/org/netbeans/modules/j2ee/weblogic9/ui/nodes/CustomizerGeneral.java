@@ -49,13 +49,15 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import java.awt.Font;
-import java.util.Properties;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLJpa2SwitchSupport;
+import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -104,34 +106,60 @@ class CustomizerGeneral extends javax.swing.JPanel {
         String domainRoot = manager.getInstanceProperties().getProperty( 
                 WLPluginProperties.DOMAIN_ROOT_ATTR);
         domainFolder.setText( domainRoot );
-        String domain = manager.getInstanceProperties().getProperty( WLPluginProperties.DOMAIN_NAME);
-        String port = manager.getInstanceProperties().getProperty( WLPluginProperties.PORT_ATTR);
-        Properties properties = null;
-        if ( domain== null || port == null ){
-            properties = WLPluginProperties.getDomainProperties(domainRoot);
+        String domain = manager.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_NAME);
+        String host = manager.getInstanceProperties().getProperty(WLPluginProperties.HOST_ATTR);
+        String port = manager.getInstanceProperties().getProperty(WLPluginProperties.PORT_ATTR);
+        WebLogicConfiguration config = null;
+        if (domain== null || host == null || port == null) {
+            config = manager.getCommonConfiguration();
         }
-        if ( domain == null ){
-            domain = properties.getProperty(WLPluginProperties.DOMAIN_NAME);
+        if (domain == null) {
+            domain = config.getDomainName();
         }
-        if ( port == null ){
-            port = properties.getProperty(WLPluginProperties.PORT_ATTR);
+        if (host == null) {
+            host = config.getHost();
         }
-        if ( domain!= null ) {
-            domainName.setText( domain );
+        if (port == null) {
+            port = Integer.toString(config.getPort());
         }
-        if ( port!= null){
-            serverPort.setText( port );
+        if (domain != null) {
+            domainName.setText(domain);
+        }
+        if (host != null) {
+            serverHost.setText(host);
+        }
+        if (port != null) {
+            serverPort.setText(port);
         }
         
         boolean statusVisible = support.isSwitchSupported();
         boolean buttonVisible = statusVisible
                 && !support.isEnabledViaSmartUpdate();
-
         
         jpa2SwitchLabel.setVisible(statusVisible);
         jpa2Status.setVisible(statusVisible);
         jpa2SwitchButton.setVisible(buttonVisible);
         updateJpa2Status();
+
+        noteChangesLabel.setVisible(!manager.isRemote());
+
+        if (manager.isRemote()) {
+            addAncestorListener(new AncestorListener() {
+
+                @Override
+                public void ancestorRemoved(AncestorEvent event) {
+                    manager.getInstanceProperties().refreshServerInstance();
+                }
+
+                @Override
+                public void ancestorAdded(AncestorEvent event) {
+                }
+
+                @Override
+                public void ancestorMoved(AncestorEvent event) {
+                }
+            });
+        }
     }
 
     private void updateJpa2Status() {
@@ -164,11 +192,13 @@ class CustomizerGeneral extends javax.swing.JPanel {
         passwordField = new javax.swing.JPasswordField();
         showButton = new javax.swing.JButton();
         serverPortLabel = new javax.swing.JLabel();
-        NoteChangesLabel = new javax.swing.JLabel();
+        noteChangesLabel = new javax.swing.JLabel();
         serverPort = new javax.swing.JTextField();
         jpa2SwitchLabel = new javax.swing.JLabel();
         jpa2Status = new javax.swing.JLabel();
         jpa2SwitchButton = new javax.swing.JButton();
+        serverHostLabel = new javax.swing.JLabel();
+        serverHost = new javax.swing.JTextField();
 
         domainNameLabel.setLabelFor(domainName);
         org.openide.awt.Mnemonics.setLocalizedText(domainNameLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizerDomainName")); // NOI18N
@@ -198,7 +228,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
         serverPortLabel.setLabelFor(serverPort);
         org.openide.awt.Mnemonics.setLocalizedText(serverPortLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_ServerPort")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(NoteChangesLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_Note")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(noteChangesLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_Note")); // NOI18N
 
         serverPort.setEditable(false);
 
@@ -214,6 +244,11 @@ class CustomizerGeneral extends javax.swing.JPanel {
             }
         });
 
+        serverHostLabel.setLabelFor(serverHost);
+        org.openide.awt.Mnemonics.setLocalizedText(serverHostLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.serverHostLabel.text")); // NOI18N
+
+        serverHost.setEditable(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -221,34 +256,47 @@ class CustomizerGeneral extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(adminInfoLabel)
-                    .addComponent(NoteChangesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(domainNameLabel)
-                            .addComponent(domainFolderLabel)
-                            .addComponent(userNameLabel)
-                            .addComponent(passwordLabel)
-                            .addComponent(serverPortLabel))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(serverPort, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(domainFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
-                            .addComponent(domainName, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
+                            .addComponent(noteChangesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(passwordField, javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(userName, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(domainNameLabel)
+                                    .addComponent(domainFolderLabel)
+                                    .addComponent(userNameLabel)
+                                    .addComponent(passwordLabel))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jpa2SwitchButton)
-                                    .addComponent(showButton))
-                                .addGap(65, 65, 65))))
+                                    .addComponent(domainName)
+                                    .addComponent(domainFolder)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                                    .addComponent(serverHost, javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(passwordField, javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(userName, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE))
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(showButton))
+                                            .addComponent(serverPort, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(135, 135, 135)
+                                                .addComponent(jpa2SwitchButton)))
+                                        .addGap(0, 0, Short.MAX_VALUE))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(serverHostLabel)
+                                    .addComponent(adminInfoLabel))
+                                .addGap(0, 0, Short.MAX_VALUE)))
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(serverPortLabel)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jpa2SwitchLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jpa2Status)))
-                .addContainerGap())
+                        .addComponent(jpa2Status)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -274,6 +322,10 @@ class CustomizerGeneral extends javax.swing.JPanel {
                     .addComponent(showButton))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(serverHostLabel)
+                    .addComponent(serverHost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(serverPortLabel)
                     .addComponent(serverPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -282,7 +334,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
                     .addComponent(jpa2Status)
                     .addComponent(jpa2SwitchButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(NoteChangesLabel)
+                .addComponent(noteChangesLabel)
                 .addContainerGap())
         );
 
@@ -305,8 +357,8 @@ class CustomizerGeneral extends javax.swing.JPanel {
         showButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_ShowButton")); // NOI18N
         serverPortLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_ServerPort")); // NOI18N
         serverPortLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_ServerPort")); // NOI18N
-        NoteChangesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_Note")); // NOI18N
-        NoteChangesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_Note")); // NOI18N
+        noteChangesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_Note")); // NOI18N
+        noteChangesLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_Note")); // NOI18N
         serverPort.getAccessibleContext().setAccessibleName(serverPortLabel.getAccessibleContext().getAccessibleName());
         serverPort.getAccessibleContext().setAccessibleDescription(serverPortLabel.getAccessibleContext().getAccessibleDescription());
     }// </editor-fold>//GEN-END:initComponents
@@ -346,7 +398,6 @@ class CustomizerGeneral extends javax.swing.JPanel {
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel NoteChangesLabel;
     private javax.swing.JLabel adminInfoLabel;
     private javax.swing.JTextField domainFolder;
     private javax.swing.JLabel domainFolderLabel;
@@ -355,8 +406,11 @@ class CustomizerGeneral extends javax.swing.JPanel {
     private javax.swing.JLabel jpa2Status;
     private javax.swing.JButton jpa2SwitchButton;
     private javax.swing.JLabel jpa2SwitchLabel;
+    private javax.swing.JLabel noteChangesLabel;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
+    private javax.swing.JTextField serverHost;
+    private javax.swing.JLabel serverHostLabel;
     private javax.swing.JTextField serverPort;
     private javax.swing.JLabel serverPortLabel;
     private javax.swing.JButton showButton;
