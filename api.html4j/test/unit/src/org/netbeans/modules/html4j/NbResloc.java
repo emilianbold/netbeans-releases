@@ -41,78 +41,21 @@
  */
 package org.netbeans.modules.html4j;
 
-import java.util.concurrent.CountDownLatch;
-import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.Scene;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import org.netbeans.api.html4j.HTMLComponent;
-import static org.testng.Assert.*;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import java.net.URL;
+import java.net.URLStreamHandlerFactory;
+import org.openide.util.Lookup;
+import static org.testng.Assert.assertNotNull;
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class ComponentsTest {
-    public ComponentsTest() {
+final class NbResloc {
+    static {
+        URLStreamHandlerFactory f = Lookup.getDefault().lookup(URLStreamHandlerFactory.class);
+        assertNotNull(f, "Factory found");
+        URL.setURLStreamHandlerFactory(f);
     }
-    
-    @BeforeClass public void initNbResLoc() {
-        NbResloc.init();
+    static void init() {
     }
-
-    @Test public void loadSwing() throws Exception {
-        CountDownLatch cdl = new CountDownLatch(1);
-        JComponent p = TestPages.getSwing(10, cdl);
-        JFrame f = new JFrame();
-        f.getContentPane().add(p);
-        f.pack();
-        f.setVisible(true);
-        cdl.await();
-    }
-
-    @Test public void loadFX() throws Exception {
-        final CountDownLatch cdl = new CountDownLatch(1);
-        final CountDownLatch done = new CountDownLatch(1);
-        final JFXPanel p = new JFXPanel();
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                Node wv = TestPages.getFX(10, cdl);
-                Scene s = new Scene(new Group(wv));
-                p.setScene(s);
-                done.countDown();
-            }
-        });
-        done.await();
-        JFrame f = new JFrame();
-        f.getContentPane().add(p);
-        f.pack();
-        f.setVisible(true);
-        cdl.await();
-    }
-
-    @HTMLComponent(
-        url = "simple.html", className = "TestPages",
-        type = JComponent.class
-    ) 
-    static void getSwing(int param, CountDownLatch called) {
-        assertEquals(param, 10, "Correct value passed in");
-        called.countDown();
-    }
-
-    @HTMLComponent(
-        url = "simple.html", className = "TestPages",
-        type = Node.class
-    ) 
-    static void getFX(int param, CountDownLatch called) {
-        assertEquals(param, 10, "Correct value passed in");
-        called.countDown();
-    }
-
 }
