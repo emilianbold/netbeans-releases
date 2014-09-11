@@ -42,7 +42,7 @@
 package org.netbeans.lib.v8debug;
 
 import java.util.Map;
-import org.netbeans.lib.v8debug.vars.ReferenceAndValue;
+import org.netbeans.lib.v8debug.vars.ReferencedValue;
 
 /**
  *
@@ -51,24 +51,24 @@ import org.netbeans.lib.v8debug.vars.ReferenceAndValue;
 public final class V8Frame {
     
     private final long index;
-    private final long receiver;
-    private final long func;
+    private final ReferencedValue receiver;
+    private final ReferencedValue func;
     private final long scriptRef;
     private final boolean constructCall;
     private final boolean atReturn;
     private final boolean debuggerFrame;
-    private final Map<String, ReferenceAndValue> argumentRefs;
-    private final Map<String, ReferenceAndValue> localRefs;
+    private final Map<String, ReferencedValue> argumentRefs;
+    private final Map<String, ReferencedValue> localRefs;
     private final long position;
     private final long line;
     private final long column;
     private final String sourceLineText;
     private final V8Scope[] scopes;
     
-    public V8Frame(long index, long receiver, long func, long scriptRef,
+    public V8Frame(long index, ReferencedValue receiver, ReferencedValue func, long scriptRef,
                    boolean constructCall, boolean atReturn, boolean debuggerFrame,
-                   Map<String, ReferenceAndValue> argumentRefs,
-                   Map<String, ReferenceAndValue> localRefs,
+                   Map<String, ReferencedValue> argumentRefs,
+                   Map<String, ReferencedValue> localRefs,
                    long position, long line, long column, String sourceLineText,
                    V8Scope[] scopes) {
         this.index = index;
@@ -91,11 +91,11 @@ public final class V8Frame {
         return index;
     }
 
-    public long getReceiver() {
+    public ReferencedValue getReceiver() {
         return receiver;
     }
 
-    public long getFunc() {
+    public ReferencedValue getFunc() {
         return func;
     }
 
@@ -115,11 +115,11 @@ public final class V8Frame {
         return debuggerFrame;
     }
 
-    public Map<String, ReferenceAndValue> getArgumentRefs() {
+    public Map<String, ReferencedValue> getArgumentRefs() {
         return argumentRefs;
     }
 
-    public Map<String, ReferenceAndValue> getLocalRefs() {
+    public Map<String, ReferencedValue> getLocalRefs() {
         return localRefs;
     }
 

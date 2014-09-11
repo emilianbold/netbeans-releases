@@ -89,7 +89,7 @@ import org.netbeans.lib.v8debug.commands.Version;
 import org.netbeans.lib.v8debug.events.AfterCompileEventBody;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
 import org.netbeans.lib.v8debug.events.ExceptionEventBody;
-import org.netbeans.lib.v8debug.vars.ReferenceAndValue;
+import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Boolean;
 import org.netbeans.lib.v8debug.vars.V8Function;
 import org.netbeans.lib.v8debug.vars.V8Number;
@@ -888,7 +888,7 @@ public class V8Debug {
         System.out.println(value.getText());
     }
     
-    private String print(ReferenceAndValue refAndVal) {
+    private String print(ReferencedValue refAndVal) {
         if (refAndVal.hasValue()) {
             V8Value value = refAndVal.getValue();
             if (value.getText() != null) {
@@ -930,7 +930,7 @@ public class V8Debug {
         }
     }
 
-    private void printValues(Map<String, ReferenceAndValue> argumentRefs) {
+    private void printValues(Map<String, ReferencedValue> argumentRefs) {
         for (String name : argumentRefs.keySet()) {
             System.out.println(name + " = " + print(argumentRefs.get(name)));
         }

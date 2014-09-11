@@ -54,12 +54,12 @@ public class V8Object extends V8Value {
     private final PropertyLong constructorFunctionHandle;
     private final PropertyLong protoObjectHandle;
     private final PropertyLong prototypeObjectHandle;
-    private final Map<String, ReferenceAndValue> properties;
+    private final Map<String, ReferencedValue> properties;
     
     public V8Object(long handle, String className,
                     PropertyLong constructorFunctionHandle,
                     PropertyLong protoObjectHandle, PropertyLong prototypeObjectHandle,
-                    Map<String, ReferenceAndValue> properties, String text) {
+                    Map<String, ReferencedValue> properties, String text) {
         this(handle, V8Value.Type.Object, className, constructorFunctionHandle,
              protoObjectHandle, prototypeObjectHandle, properties, text);
     }
@@ -67,7 +67,7 @@ public class V8Object extends V8Value {
     protected V8Object(long handle, V8Value.Type type, String className,
                        PropertyLong constructorFunctionHandle,
                        PropertyLong protoObjectHandle, PropertyLong prototypeObjectHandle,
-                       Map<String, ReferenceAndValue> properties, String text) {
+                       Map<String, ReferencedValue> properties, String text) {
         super(handle, type, text);
         this.className = className;
         this.constructorFunctionHandle = constructorFunctionHandle;
@@ -92,7 +92,7 @@ public class V8Object extends V8Value {
         return prototypeObjectHandle;
     }
 
-    public Map<String, ReferenceAndValue> getProperties() {
+    public Map<String, ReferencedValue> getProperties() {
         return properties;
     }
 }

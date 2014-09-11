@@ -75,7 +75,7 @@ import org.netbeans.lib.v8debug.vars.V8String;
 import org.netbeans.lib.v8debug.vars.V8Value;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.netbeans.lib.v8debug.vars.ReferenceAndValue;
+import org.netbeans.lib.v8debug.vars.ReferencedValue;
 
 /**
  *
@@ -393,7 +393,7 @@ public class JSONReader {
                 PropertyLong constructorFunctionHandle = getReferenceProperty(obj, VALUE_CONSTRUCTOR_FUNCTION);
                 PropertyLong protoObject = getReferenceProperty(obj, VALUE_PROTO_OBJECT);
                 PropertyLong prototypeObject = getReferenceProperty(obj, VALUE_PROTOTYPE_OBJECT);
-                Map<String, ReferenceAndValue> properties = getReferences((JSONArray) obj.get(VALUE_PROPERTIES));
+                Map<String, ReferencedValue> properties = getReferences((JSONArray) obj.get(VALUE_PROPERTIES));
                 return new V8Function(handle, constructorFunctionHandle,
                                       protoObject, prototypeObject,
                                       name, inferredName,
@@ -499,14 +499,14 @@ public class JSONReader {
     
     private static V8Frame getFrame(JSONObject obj) {
         long index = getLong(obj, FRAME_INDEX);
-        long receiver = getReference(obj, FRAME_RECEIVER);
-        long func = getReference(obj, FRAME_FUNC);
+        ReferencedValue receiver = getReferencedValue(obj, FRAME_RECEIVER);
+        ReferencedValue func = getReferencedValue(obj, FRAME_FUNC);
         long scriptRef = getReference(obj, SCRIPT);
         boolean constructCall = getBoolean(obj, FRAME_CONSTRUCT_CALL);
         boolean atReturn = getBoolean(obj, FRAME_AT_RETURN);
         boolean debuggerFrame = getBoolean(obj, FRAME_DEBUGGER);
-        Map<String, ReferenceAndValue> arguments = getReferences((JSONArray) obj.get(FRAME_ARGUMENTS));
-        Map<String, ReferenceAndValue> locals = getReferences((JSONArray) obj.get(FRAME_LOCALS));
+        Map<String, ReferencedValue> arguments = getReferences((JSONArray) obj.get(FRAME_ARGUMENTS));
+        Map<String, ReferencedValue> locals = getReferences((JSONArray) obj.get(FRAME_LOCALS));
         long position = getLong(obj, POSITION);
         long line = getLong(obj, LINE);
         long column = getLong(obj, COLUMN);
@@ -517,14 +517,14 @@ public class JSONReader {
                            sourceLineText, scopes);
     }
     
-    private static Map<String, ReferenceAndValue> getReferences(JSONArray array) {
+    private static Map<String, ReferencedValue> getReferences(JSONArray array) {
         if (array == null) {
             return null;
         }
-        Map<String, ReferenceAndValue> references = new HashMap<>();
+        Map<String, ReferencedValue> references = new HashMap<>();
         for (Object obj : array) {
             String name = getString((JSONObject) obj, NAME);
-            ReferenceAndValue ref = getReferenceAndValue((JSONObject) obj, VALUE);
+            ReferencedValue ref = getReferencedValue((JSONObject) obj, VALUE);
             references.put(name, ref);
         }
         return references;
@@ -550,7 +550,7 @@ public class JSONReader {
         return getLongProperty(obj, REF);
     }
     
-    private static ReferenceAndValue getReferenceAndValue(JSONObject obj, String propertyName) {
+    private static ReferencedValue getReferencedValue(JSONObject obj, String propertyName) {
         JSONObject ref = (JSONObject) obj.get(propertyName);
         if (ref == null) {
             return null;
@@ -560,7 +560,7 @@ public class JSONReader {
         if (getString(ref, TYPE) != null) {
             value = getValue(ref, reference);
         }
-        return new ReferenceAndValue(reference, value);
+        return new ReferencedValue(reference, value);
     }
     
     private static V8Scope[] getScopes(JSONArray array, Long frameIndex) {

@@ -66,7 +66,7 @@ public final class V8Function extends V8Object {
                       String name, String inferredName,
                       String source, PropertyLong scriptRef, long scriptId,
                       PropertyLong position, PropertyLong line, PropertyLong column,
-                      Map<String, ReferenceAndValue> properties, String text) {
+                      Map<String, ReferencedValue> properties, String text) {
         super(handle, V8Value.Type.Function, FUNCTION_CLASS_NAME,
               constructorFunctionHandle, protoObjectHandle, prototypeObjectHandle,
               properties, text);
