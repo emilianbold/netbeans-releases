@@ -94,10 +94,17 @@ implements Comparator<ExecutableElement> {
         return hash;
     }
     
+    private Set<Element> annotatedWith(RoundEnvironment re, Class<? extends Annotation> type) {
+        Set<Element> collect = new HashSet<>();
+        findAllElements(re.getElementsAnnotatedWith(type), collect, type);
+        return collect;
+    }
+    
+    
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment re)  {
         Map<String,Set<ExecutableElement>> names = new TreeMap<>();
-        for (Element e : re.getElementsAnnotatedWith(HTMLDialog.class)) {
+        for (Element e : annotatedWith(re, HTMLDialog.class)) {
             HTMLDialog reg = e.getAnnotation(HTMLDialog.class);
             if (reg == null || e.getKind() != ElementKind.METHOD) {
                 continue;
@@ -124,7 +131,7 @@ implements Comparator<ExecutableElement> {
             }
             elems.add(ee);
         }
-        for (Element e : re.getElementsAnnotatedWith(HTMLComponent.class)) {
+        for (Element e : annotatedWith(re, HTMLComponent.class)) {
             HTMLComponent reg = e.getAnnotation(HTMLComponent.class);
             if (reg == null || e.getKind() != ElementKind.METHOD) {
                 continue;
@@ -373,5 +380,29 @@ implements Comparator<ExecutableElement> {
             }
         }
     }
-    
+
+    private static void findAllElements(
+            Set<? extends Element> scan, Set<Element> found,
+            Class<? extends Annotation> type
+    ) {
+        for (Element e : scan) {
+            PackageElement pkg = findPkg(e);
+            if (found.add(pkg)) {
+                searchSubTree(pkg, found, type);
+            }
+        }
+    }
+
+    private static void searchSubTree(
+            Element e,
+            Set<Element> found,
+            Class<? extends Annotation> type
+    ) {
+        if (e.getAnnotation(type) != null) {
+            found.add(e);
+        }
+        for (Element ee : e.getEnclosedElements()) {
+            searchSubTree(ee, found, type);
+        }
+    }
 }
