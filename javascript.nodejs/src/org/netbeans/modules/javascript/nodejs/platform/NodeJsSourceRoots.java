@@ -62,15 +62,18 @@ public final class NodeJsSourceRoots {
     private final Project project;
 
     static {
-        List<URL> roots = new ArrayList<>();
-        for (String path : System.getenv("NODE_PATH").split(File.pathSeparator)) { // NOI18N
-            try {
-                roots.add(Utilities.toURI(FileUtil.normalizeFile(new File(path))).toURL());
-            } catch (MalformedURLException ex) {
-                LOGGER.log(Level.INFO, null, ex);
+        String nodePath = System.getenv("NODE_PATH"); // NOI18N
+        if (nodePath != null) {
+            List<URL> roots = new ArrayList<>();
+            for (String path : nodePath.split(File.pathSeparator)) {
+                try {
+                    roots.add(Utilities.toURI(FileUtil.normalizeFile(new File(path))).toURL());
+                } catch (MalformedURLException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                }
             }
+            SOURCE_ROOTS.addAll(roots);
         }
-        SOURCE_ROOTS.addAll(roots);
     }
 
 
