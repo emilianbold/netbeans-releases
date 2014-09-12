@@ -71,8 +71,17 @@ public final class QueryImpl<Q, I>  {
         this.issueProvider = issueProvider;
         this.data = data;
         this.repository = repository;
-        this.issueContainer = new IssueContainerIntern();
+        this.issueContainer = new IssueContainerIntern<I>(repository);
         
+        issueContainer.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(EVENT_QUERY_REFRESH_STARTED.equals(evt.getPropertyName())) {
+                    wasRefreshed = true;
+                    issueContainer.removePropertyChangeListener(this);
+                }
+            }
+        });
         queryProvider.setIssueContainer(data, SPIAccessor.IMPL.createIssueContainer(issueContainer));
     }
     
@@ -161,13 +170,21 @@ public final class QueryImpl<Q, I>  {
     public static final String EVENT_QUERY_RESTORE_STARTED = "bugtracking.query.restore.started";
     public static final String EVENT_QUERY_RESTORE_FINISHED = "bugtracking.query.restore.finished";
 
-    private class IssueContainerIntern implements IssueContainerImpl<I> {
+    private static class IssueContainerIntern<I> implements IssueContainerImpl<I> {
+        
+        private final PropertyChangeSupport support;
+        
         private final Set<IssueImpl> issueImpls = new ConcurrentSkipListSet<IssueImpl>(new IssueImplComparator());
         private  boolean isRunning = false;
+        private final RepositoryImpl repository;
+
+        public IssueContainerIntern(RepositoryImpl repository) {
+            this.repository = repository;
+            support = new PropertyChangeSupport(repository.getData());
+        }
         
         @Override
         public void refreshingStarted() {
-            wasRefreshed = true;
             isRunning = true;
             support.firePropertyChange(EVENT_QUERY_REFRESH_STARTED, null, null);
         }
@@ -221,12 +238,10 @@ public final class QueryImpl<Q, I>  {
             return Collections.unmodifiableCollection(issueImpls);
         }
         
-        private final PropertyChangeSupport support = new PropertyChangeSupport(data);
-        
         void addPropertyChangeListener(PropertyChangeListener listener) {
             support.addPropertyChangeListener(listener);
             if(isRunning) {
-                listener.propertyChange(new PropertyChangeEvent(data, EVENT_QUERY_REFRESH_STARTED, null, null));
+                listener.propertyChange(new PropertyChangeEvent(repository.getData(), EVENT_QUERY_REFRESH_STARTED, null, null));
             }
         }
 
