@@ -81,6 +81,10 @@ public class PSR0HintTest extends PHPHintsTestBase {
         checkHints(new PSR0Hint.NamespaceDeclarationHint(), "FirstNs/SecondNs/SomeClass.php");
     }
 
+    public void testIssue246997() throws Exception {
+        checkHints(new PSR0Hint.NamespaceDeclarationHint(), "SomeClass.php");
+    }
+
     public void testNsOkClassOk_type() throws Exception {
         checkHints(new PSR0Hint.TypeDeclarationHint(), "FirstNs/SecondNs/ClassName.php");
     }
