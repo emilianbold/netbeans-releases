@@ -103,8 +103,8 @@ public final class WSisSLSB {
                 EJBAPIAnnotations.WEB_SERVICE);
 
         if (annWebService != null) {
-            ClassTree classTree = ctx.getComplilationInfo().getTrees().getTree(ctx.getClazz());
-            if (ctx.getComplilationInfo().getTreeUtilities().isInterface(classTree)) {
+            ClassTree classTree = hintContext.getInfo().getTrees().getTree(ctx.getClazz());
+            if (classTree.getKind() == Tree.Kind.INTERFACE) {
                 return null; // ok, interfaces can have @WebService without ejb annotations
             }
             if (ctx.getEjb() instanceof Session) {
@@ -115,7 +115,7 @@ public final class WSisSLSB {
             }
             ErrorDescription err = HintsUtils.createProblem(
                     ctx.getClazz(),
-                    ctx.getComplilationInfo(),
+                    hintContext.getInfo(),
                     Bundle.WSisSLSB_err());
             return Collections.singletonList(err);
         }

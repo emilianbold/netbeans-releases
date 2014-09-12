@@ -95,7 +95,7 @@ public final class SessionSynchImplementedBySFSBOnly {
         for (TypeMirror iface : ctx.getClazz().getInterfaces()) {
             String ifaceName = JavaUtils.extractClassNameFromType(iface);
             if (EJBAPIAnnotations.SESSION_SYNCHRONIZATION.equals(ifaceName)) {
-                ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(), Bundle.SessionSynchImplementedBySFSBOnly_err());
+                ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), hintContext.getInfo(), Bundle.SessionSynchImplementedBySFSBOnly_err());
                 problems.add(err);
             }
         }

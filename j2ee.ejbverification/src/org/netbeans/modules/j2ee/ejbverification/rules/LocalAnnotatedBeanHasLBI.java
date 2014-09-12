@@ -90,7 +90,7 @@ public final class LocalAnnotatedBeanHasLBI {
                 if (ctx.getEjbData().getBusinessLocal().length == 0) {
                     ErrorDescription err = HintsUtils.createProblem(
                             ctx.getClazz(),
-                            ctx.getComplilationInfo(),
+                            hintContext.getInfo(),
                             Bundle.LocalAnnotatedBeanHasLBI_err());
                     problems.add(err);
                 }
