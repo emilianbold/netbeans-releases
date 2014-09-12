@@ -41,16 +41,14 @@
  */
 package org.netbeans.modules.html4j;
 
+import java.awt.EventQueue;
 import java.util.concurrent.CountDownLatch;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
-import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.Scene;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
-import org.netbeans.api.html4j.HTMLComponent;
-import static org.testng.Assert.*;
+import org.netbeans.api.html4j.HTMLDialog;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -58,61 +56,62 @@ import org.testng.annotations.Test;
  *
  * @author Jaroslav Tulach
  */
-public class ComponentsTest {
-    public ComponentsTest() {
+public class ShowDialogFromFXThreadTest implements Runnable {
+    private volatile boolean returned;
+    
+    @BeforeClass public static void initFX() {
+        JFXPanel p = new JFXPanel();
+        JFrame f = new JFrame();
+        f.getContentPane().add(p);
+        f.setVisible(true);
     }
     
     @BeforeClass public void initNbResLoc() {
         NbResloc.init();
     }
-
-    @Test public void loadSwing() throws Exception {
-        CountDownLatch cdl = new CountDownLatch(1);
-        JComponent p = TestPages.getSwing(10, cdl);
-        JFrame f = new JFrame();
-        f.getContentPane().add(p);
-        f.pack();
-        f.setVisible(true);
+    
+    
+    private volatile CountDownLatch cdl;
+    @Test public void showDialog() throws Exception {
+        cdl = new CountDownLatch(1);
+        Platform.runLater(this);
         cdl.await();
+        assertFalse(returned, "displayedOK method has not returned yet");
+        cdl = new CountDownLatch(1);
+        
+        waitAWT();
+        
+        closeAllDialogs();
+        cdl.await();
+        assertTrue(returned, "now the method returned OK");
+    }
+    
+    @HTMLDialog(url = "simple.html", className = "TestPages") 
+    static void displayedOK(CountDownLatch cdl) {
+        cdl.countDown();
     }
 
-    @Test public void loadFX() throws Exception {
-        final CountDownLatch cdl = new CountDownLatch(1);
-        final CountDownLatch done = new CountDownLatch(1);
-        final JFXPanel p = new JFXPanel();
-        Platform.runLater(new Runnable() {
+    @Override
+    public void run() {
+        TestPages.displayedOK(cdl);
+        returned = true;
+        cdl.countDown();
+    }
+    
+    private void closeAllDialogs() throws InterruptedException {
+        while (!returned) {
+            for (java.awt.Window w : java.awt.Window.getWindows()) {
+                w.setVisible(false);
+            }
+            Thread.sleep(100);
+        }
+    }
+    
+    private static void waitAWT() throws Exception {
+        EventQueue.invokeAndWait(new Runnable() {
             @Override
             public void run() {
-                Node wv = TestPages.getFX(10, cdl);
-                Scene s = new Scene(new Group(wv));
-                p.setScene(s);
-                done.countDown();
             }
         });
-        done.await();
-        JFrame f = new JFrame();
-        f.getContentPane().add(p);
-        f.pack();
-        f.setVisible(true);
-        cdl.await();
     }
-
-    @HTMLComponent(
-        url = "simple.html", className = "TestPages",
-        type = JComponent.class
-    ) 
-    static void getSwing(int param, CountDownLatch called) {
-        assertEquals(param, 10, "Correct value passed in");
-        called.countDown();
-    }
-
-    @HTMLComponent(
-        url = "simple.html", className = "TestPages",
-        type = Node.class
-    ) 
-    static void getFX(int param, CountDownLatch called) {
-        assertEquals(param, 10, "Correct value passed in");
-        called.countDown();
-    }
-
 }

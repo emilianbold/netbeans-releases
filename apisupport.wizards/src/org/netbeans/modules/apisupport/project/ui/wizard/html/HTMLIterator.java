@@ -351,30 +351,4 @@ public final class HTMLIterator extends BasicWizardIterator {
         return sb.toString();
     }
     
-    static class CreateActionEntryOperation implements CreatedModifiedFiles.LayerOperation {
-        private String name;
-        private String packageName;
-        
-        public CreateActionEntryOperation(String actionname, String packageName) {
-            this.packageName = packageName;
-            this.name = actionname;
-        }
-        
-        @Override
-        public void run(FileSystem layer) throws IOException {
-            FileObject folder = layer.getRoot().getFileObject("Actions/Window");// NOI18N
-            if (folder == null) {
-                folder = FileUtil.createFolder(layer.getRoot(), "Actions/Window"); // NOI18N
-            }
-            String instance = packageName.replace('.','-') + "-" + name; // NOI18N
-            folder.createData(instance, "instance"); // NOI18N
-            folder = layer.getRoot().getFileObject("Menu/Window");// NOI18N
-            if (folder == null) {
-                folder = FileUtil.createFolder(layer.getRoot(), "Menu/Window"); // NOI18N
-            }
-            FileObject file = folder.createData(name, "shadow"); // NOI18N
-            file.setAttribute("originalFile", "Actions/Window/" + instance + ".instance"); // NOI18N
-        }
-    }
-    
 }

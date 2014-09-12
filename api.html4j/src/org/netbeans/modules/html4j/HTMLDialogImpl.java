@@ -45,8 +45,11 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -64,6 +67,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 public final class HTMLDialogImpl implements Runnable {
+    private static final Logger LOG = Logger.getLogger(HTMLDialogImpl.class.getName());
+    
     private volatile int state;
     private NbFxPanel p;
     private DialogDescriptor dd;
@@ -71,6 +76,7 @@ public final class HTMLDialogImpl implements Runnable {
     
     private String url;
     private Runnable onPageLoad;
+    private boolean nestedLoop;
 
     public void setUrl(String url) {
         this.url = url;
@@ -91,31 +97,53 @@ public final class HTMLDialogImpl implements Runnable {
                 break;
             case 2:
                 initPage();
+                if (nestedLoop) {
+                    state = 3;
+                    EventQueue.invokeLater(this);
+                } else {
+                    state = -1;
+                }
+                break;
+            case 3:
+                showDialog();
+                state = 4;
+                Platform.runLater(this);
+                break;
+            case 4:
                 state = -1;
+                exitNestedLoop(this);
                 break;
             default:
                 throw new IllegalStateException("State: " + state);
         }
     }
-    
+
     public String showAndWait() {
         if (EventQueue.isDispatchThread()) {
             run();
+            showDialog();
         } else {
-            try {
-                EventQueue.invokeAndWait(this);
-            } catch (InterruptedException ex) {
-                throw new IllegalStateException(ex);
-            } catch (InvocationTargetException ex) {
-                throw new IllegalStateException(ex);
+            if (Platform.isFxApplicationThread()) {
+                nestedLoop = true;
+                EventQueue.invokeLater(this);
+                enterNestedLoop(this);
+            } else {
+                try {
+                    EventQueue.invokeAndWait(this);
+                } catch (InterruptedException | InvocationTargetException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                showDialog();
             }
         }
+        Object val = dd.getValue();
+        return val instanceof JButton ? ((JButton)val).getName() : null;
+    }
+
+    private void showDialog() {
         p.setPreferredSize(new Dimension(600, 400));
         Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.setVisible(true);
-        
-        Object val = dd.getValue();
-        return val instanceof JButton ? ((JButton)val).getName() : null;
     }
     
     private void initPanel() {
@@ -200,7 +228,7 @@ public final class HTMLDialogImpl implements Runnable {
             FXBrowsers.load(wv, pageUrl, onPageLoad, loader);
             return type.cast(wv);
         } else if (type == JComponent.class) {
-            final JFXPanel p = new JFXPanel();
+            final JFXPanel tmp = new JFXPanel();
             final ClassLoader l = loader;
             Platform.runLater(new Runnable() {
                 @Override
@@ -208,12 +236,53 @@ public final class HTMLDialogImpl implements Runnable {
                     WebView wv = new WebView();
                     FXBrowsers.load(wv, pageUrl, onPageLoad, l);
                     Scene s = new Scene(wv);
-                    p.setScene(s);
+                    tmp.setScene(s);
                 }
             });
-            return type.cast(p);
+            return type.cast(tmp);
         } else {
             throw new IllegalStateException("Unsupported type: " + type);
+        }
+    }
+
+    private static final Method GET;
+    private static final Method ENTER;
+    private static final Method EXIT;
+    static {
+        Method g = null;
+        Method n = null;
+        Method x = null;
+        try {
+            Class<?> tC = Class.forName("com.sun.javafx.tk.Toolkit"); // NOI18N
+            g = tC.getMethod("getToolkit"); // NOI18N
+            n = tC.getMethod("enterNestedEventLoop", Object.class); // NOI18N
+            x = tC.getMethod("exitNestedEventLoop", Object.class, Object.class); // NOI18N
+        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException ex) {
+            LOG.log(Level.SEVERE, 
+                "Cannot initialize JavaFX Toolkit access. May cause deadlocks.", 
+                ex
+            );
+        }
+        GET = g;
+        ENTER = n;
+        EXIT = x;
+    }
+
+    private static void enterNestedLoop(HTMLDialogImpl impl) {
+        try {
+            Object tk = GET.invoke(null);
+            ENTER.invoke(tk, impl);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            LOG.log(Level.SEVERE, "enterNestedEventLoop(" + impl + ")", ex);
+        }
+    }
+    
+    private static void exitNestedLoop(HTMLDialogImpl impl) {
+        try {
+            Object tk = GET.invoke(null);
+            EXIT.invoke(tk, impl, null);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            LOG.log(Level.SEVERE, "exitNestedEventLoop(" + impl + ", null)", ex);
         }
     }
 }
