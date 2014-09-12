@@ -25,7 +25,7 @@ public final class AuditPreferences {
         return preferences;
     }
     
-    public String get(String audit, String key) {
+    public String get(String audit, String key, String defValue) {
         String old = preferences.get(audit, ""); //NOI18N
         StringTokenizer st = new StringTokenizer(old,";"); //NOI18N
         while(st.hasMoreTokens()) {
@@ -38,10 +38,10 @@ public final class AuditPreferences {
                 }
             }
         }
-        return ""; //NOI18N
+        return defValue;
     }
 
-    public void put(String audit, String key, String value) {
+    public void put(String audit, String key, String value, String defValue) {
         String old = preferences.get(audit, ""); //NOI18N
         StringBuilder buf = new StringBuilder();
         StringTokenizer st = new StringTokenizer(old,";"); //NOI18N
@@ -51,28 +51,37 @@ public final class AuditPreferences {
             int i = token.indexOf('='); //NOI18N
             if (i > 0) {
                 String rv = token.substring(0,i);
-                if (buf.length() > 0) {
-                        buf.append(';'); //NOI18N
-                }
                 if (key.equals(rv)) {
-                    buf.append(key);
-                    buf.append('='); //NOI18N
-                    buf.append(value);
+                    if (!value.equals(defValue)) {
+                        if (buf.length() > 0) {
+                            buf.append(';'); //NOI18N
+                        }
+                        buf.append(key);
+                        buf.append('='); //NOI18N
+                        buf.append(value);
+                    }
                     found = true;
                 } else {
+                    if (buf.length() > 0) {
+                        buf.append(';'); //NOI18N
+                    }
                     buf.append(token);
                 }
             }
         }
-        if (!found) {
+        if (!found && !value.equals(defValue)) {
             if (buf.length() > 0) {
-                    buf.append(';'); //NOI18N
+                buf.append(';'); //NOI18N
             }
             buf.append(key);
             buf.append('='); //NOI18N
             buf.append(value);
         }
-        preferences.put(audit, buf.toString());
+        if (buf.length() == 0) {
+            preferences.remove(audit);
+        } else {
+            preferences.put(audit, buf.toString());
+        }
     }
 
     @Override

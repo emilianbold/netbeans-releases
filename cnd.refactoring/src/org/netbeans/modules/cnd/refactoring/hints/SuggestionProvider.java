@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -136,5 +137,10 @@ public final class SuggestionProvider implements CodeAuditProvider {
     @Override
     public AuditPreferences getPreferences() {
         return myPreferences;
+    }
+
+    @Override
+    public String getMimeType() {
+        return MIMENames.SOURCES_MIME_TYPE;
     }
 }

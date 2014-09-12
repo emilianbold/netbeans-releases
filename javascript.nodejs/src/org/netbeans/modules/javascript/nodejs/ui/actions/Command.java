@@ -71,8 +71,7 @@ abstract class Command {
 
     @CheckForNull
     protected NodeExecutable getNode() {
-        // XXX prefer project one
-        return NodeExecutable.getDefault(project, true);
+        return NodeExecutable.forProject(project, true);
     }
 
     @CheckForNull
