@@ -693,6 +693,9 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         }
 
         profileBridge().noteProgLoaded(progname);
+        if (getNDI().getAction() == NativeDebuggerManager.ATTACH) {
+            profileBridge().noteAttached();
+        }
 
         // In case we switched to another program within a session
         // (follow-exec, debug command issued by hand) unbind all
