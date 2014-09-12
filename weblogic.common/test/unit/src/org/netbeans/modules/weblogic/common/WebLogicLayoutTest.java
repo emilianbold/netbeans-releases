@@ -118,33 +118,6 @@ public class WebLogicLayoutTest extends NbTestCase {
         assertEquals(file, wlJar);
     }
 
-    public void testDomainList() throws IOException {
-        File dir = getDataDir();
-        File registry = new File(dir, "domain-registry.xml");
-        File nodeManager = new File(dir, "nodemanager.domains");
-
-        File work = getWorkDir();
-        File wlServer = new File(work, "wlserver");
-        wlServer.mkdir();
-
-        File out = new File(work, registry.getName());
-
-        copyFile(registry, out);
-
-        String[] ret = WebLogicLayout.getRegisteredDomainPaths(wlServer.getAbsolutePath());
-        assertEquals(1, ret.length);
-        assertEquals("/home/test/software/wls12120/user_projects/domains/mydomain", ret[0]);
-
-        assertTrue(out.delete());
-
-        FileObject folder = FileUtil.createFolder(FileUtil.toFileObject(wlServer), "common/nodemanager");
-        copyFile(nodeManager, new File(FileUtil.toFile(folder), nodeManager.getName()));
-
-        ret = WebLogicLayout.getRegisteredDomainPaths(wlServer.getAbsolutePath());
-        assertEquals(1, ret.length);
-        assertEquals("/home/test/software/wls1036_dev/user_projects/domains/base_domain", ret[0]);
-    }
-
     private void createJar(File file, String... manifestLines) throws Exception {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Manifest-Version: 1.0\n");
