@@ -57,10 +57,12 @@ import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.io.*;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
@@ -139,7 +141,7 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
         super.readExternal(in);
         contentTitle = (String) in.readObject();
         File[] files = (File[]) in.readObject();
-        List<Node> nodes = new LinkedList<Node>();
+        final List<Node> nodes = new ArrayList<>(files.length);
         for (File file : files) {
             nodes.add(new AbstractNode(Children.LEAF, Lookups.singleton(file)) {
                 @Override
@@ -148,8 +150,27 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
                 }
             });
         }
-        VCSContext ctx = VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
-        setContext(ctx);
+        Utils.post(new Runnable() {
+
+            @Override
+            public void run () {
+                try {
+                    OpenProjects.getDefault().openProjects().get();
+                } catch (InterruptedException | ExecutionException ex) {
+                }
+                final VCSContext ctx = VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
+                EventQueue.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run () {
+                        if (context == null) {
+                            setContext(ctx);
+                        }
+                    }
+                    
+                });
+            }
+        });
     }
     
     public boolean hasContext () {
@@ -159,7 +180,7 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
     private void refreshContent () {
         if (controller == null) return;  // the component is not showing => nothing to refresh
         updateTitle();
-        controller.setContext(context);
+        controller.setContext(context == null ? VCSContext.EMPTY : context);
     }
     
     private void updateTitle () {
