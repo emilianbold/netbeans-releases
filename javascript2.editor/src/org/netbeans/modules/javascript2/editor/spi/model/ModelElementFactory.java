@@ -183,6 +183,12 @@ public final class ModelElementFactory {
         return new OriginalParentObjectReference(new IdentifierImpl(name, OffsetRange.NONE), original, isDeclared);
     }
     
+    public JsObject newReference(String name, JsObject original, boolean isDeclared, boolean isVirtual) {
+        JsObject object = newReference(name, original, isDeclared);
+        ((JsObjectImpl)object).setVirtual(isVirtual);
+        return object;
+    }
+    
     public TypeUsage newType(String name, int offset, boolean resolved) {
         return new TypeUsageImpl(name, offset, resolved);
     }
@@ -390,7 +396,12 @@ public final class ModelElementFactory {
         @Override
         public boolean containsOffset(int offset) {
             return delegate.containsOffset(offset);
-        }        
+        }
+
+        @Override
+        public boolean isVirtual() {
+            return false;
+        }
     }
 
     private static class GlobalFunction implements JsFunction {
@@ -596,5 +607,11 @@ public final class ModelElementFactory {
         public boolean containsOffset(int offset) {
             return delegate.containsOffset(offset);
         }
+
+        @Override
+        public boolean isVirtual() {
+            return false;
+        }
+        
     }
 }

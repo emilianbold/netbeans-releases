@@ -52,6 +52,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
@@ -225,7 +226,7 @@ public final class Watcher extends AnnotationProvider {
             }
         }
         
-        final void register(FileObject fo) {
+        final void register(final FileObject fo) {
             if (fo.isValid() && !fo.isFolder()) {
                 LOG.log(Level.INFO, "Should be a folder: {0} data: {1} folder: {2} valid: {3}", new Object[]{fo, fo.isData(), fo.isFolder(), fo.isValid()});
             }
@@ -234,6 +235,20 @@ public final class Watcher extends AnnotationProvider {
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "Exception while clearing the queue", ex);
             }
+            FileChangedManager.waitNowAndRun(new Runnable() {
+                @Override
+                public void run() {
+                    registerSynchronized(fo);
+                }
+            });
+        }
+
+        /**
+         * Part of registration process that cannot be blocked by
+         * FileChangedManager, and which can take lock LOCK. See bug 246893.
+         * (FileChangedManager's "lock" must be taken always first.)
+         */
+        private void registerSynchronized(FileObject fo) {
             synchronized (LOCK) {
                 NotifierKeyRef<KEY> kr = new NotifierKeyRef<KEY>(fo, null, null, impl);
                 if (getReferences().contains(kr)) {

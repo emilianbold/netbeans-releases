@@ -53,13 +53,14 @@ import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.JsReference;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsObjectReference extends JsObjectImpl {
+public class JsObjectReference extends JsObjectImpl implements JsReference {
  
     private final JsObject original;
     

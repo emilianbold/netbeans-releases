@@ -39,59 +39,81 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javascript2.nodejs.editor;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.openide.filesystems.FileObject;
-import org.openide.util.test.MockLookup;
+import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
 import org.netbeans.modules.javascript2.nodejs.TestProjectSupport;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  *
  * @author Petr Pisl
  */
-public class NodeJsDeclarationFinderTest extends JsTestBase {
-    private static boolean projectCreated = false;
-    
-    public NodeJsDeclarationFinderTest(String testName) {
+public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
+
+    public NodeJSCodeCompletionTest(String testName) throws IOException {
         super(testName);
     }
-    
-    @Before
+
+    static private boolean isSetup = false;
+
     @Override
-    public void setUp() throws Exception {
-        super.setUp(); 
-//        if (!projectCreated) {
-            projectCreated = true;
-            FileObject folder = getTestFile("TestNavigation");
+    protected void setUp() throws Exception {
+//        super.setUp(); //To change body of generated methods, choose Tools | Templates.
+        if (!isSetup) {
+            // only for the first run index all sources
+            super.setUp();
+            isSetup = true;
+        }
+        FileObject folder = getTestFile("TestNavigation");
             Project testProject = new TestProjectSupport.TestProject(folder, null);
             List lookupAll = new ArrayList();
             lookupAll.addAll(MockLookup.getDefault().lookupAll(Object.class));
             lookupAll.add(new TestProjectSupport.FileOwnerQueryImpl(testProject));
             MockLookup.setInstances(lookupAll.toArray());
-//        }
-    }
-    
-    @Test
-    public void testNavigation01() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/foo.js", "var circle = require('./cir^cle.js');", "circle.js", 0);
-    }
-    
-    @Test
-    public void testNavigation02() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/foo.js", "var triangle = require('trian^gle.js');", "triangle.js", 0);
-    }
-    
-    @Test
-    public void testNavigation03() throws Exception {
-        checkDeclaration("TestNavigation/public_html/js/lib/testLib.js", "var bb = require ('./some_^lib');", "some-library.js", 0);
-    }
-    
 
+    }
+
+    public void testBasicExport01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/foo2.js", "+ circle.^area(4));", false);
+    }
+
+    public void testBasicExport02() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/testAddress.js", "as.^print();", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>();
+
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/TestNavigation/public_html/")));
+        return Collections.singletonMap(
+                JS_SOURCE_ID,
+                ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
+    }
+
+    @Override
+    protected boolean classPathContainsBinaries() {
+        return true;
+    }
+
+    @Override
+    protected boolean cleanCacheDir() {
+        return false;
+    }
 }
