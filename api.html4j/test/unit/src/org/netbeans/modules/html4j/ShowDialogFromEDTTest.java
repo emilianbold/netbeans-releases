@@ -41,16 +41,9 @@
  */
 package org.netbeans.modules.html4j;
 
+import java.awt.EventQueue;
 import java.util.concurrent.CountDownLatch;
-import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.Scene;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import org.netbeans.api.html4j.HTMLComponent;
-import static org.testng.Assert.*;
+import org.netbeans.api.html4j.HTMLDialog;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -58,61 +51,25 @@ import org.testng.annotations.Test;
  *
  * @author Jaroslav Tulach
  */
-public class ComponentsTest {
-    public ComponentsTest() {
-    }
-    
+public class ShowDialogFromEDTTest implements Runnable {
     @BeforeClass public void initNbResLoc() {
         NbResloc.init();
     }
-
-    @Test public void loadSwing() throws Exception {
-        CountDownLatch cdl = new CountDownLatch(1);
-        JComponent p = TestPages.getSwing(10, cdl);
-        JFrame f = new JFrame();
-        f.getContentPane().add(p);
-        f.pack();
-        f.setVisible(true);
+    
+    private CountDownLatch cdl;
+    @Test public void showDialog() throws InterruptedException {
+        cdl = new CountDownLatch(1);
+        EventQueue.invokeLater(this);
         cdl.await();
     }
-
-    @Test public void loadFX() throws Exception {
-        final CountDownLatch cdl = new CountDownLatch(1);
-        final CountDownLatch done = new CountDownLatch(1);
-        final JFXPanel p = new JFXPanel();
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                Node wv = TestPages.getFX(10, cdl);
-                Scene s = new Scene(new Group(wv));
-                p.setScene(s);
-                done.countDown();
-            }
-        });
-        done.await();
-        JFrame f = new JFrame();
-        f.getContentPane().add(p);
-        f.pack();
-        f.setVisible(true);
-        cdl.await();
+    
+    @HTMLDialog(url = "simple.html", className = "TestPages") 
+    static void displayedOKFromSwing(CountDownLatch cdl) {
+        cdl.countDown();
     }
 
-    @HTMLComponent(
-        url = "simple.html", className = "TestPages",
-        type = JComponent.class
-    ) 
-    static void getSwing(int param, CountDownLatch called) {
-        assertEquals(param, 10, "Correct value passed in");
-        called.countDown();
+    @Override
+    public void run() {
+        TestPages.displayedOKFromSwing(cdl);
     }
-
-    @HTMLComponent(
-        url = "simple.html", className = "TestPages",
-        type = Node.class
-    ) 
-    static void getFX(int param, CountDownLatch called) {
-        assertEquals(param, 10, "Correct value passed in");
-        called.countDown();
-    }
-
 }
