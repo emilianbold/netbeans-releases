@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,66 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.csl.api.Documentation;
-import org.netbeans.modules.csl.api.OffsetRange;
+package org.netbeans.modules.javascript2.nodejs.editor.model;
+
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getProperty(String name);
-    
-    /**
-     * 
-     * @return the object within this is declared
-     */
-    public JsObject getParent();  
-    List<Occurrence> getOccurrences();
+public class NodeJsType implements TypeUsage {
+    private final String module;
+    private final int offset;
 
-    public void addOccurrence(OffsetRange offsetRange);
+    public NodeJsType(String module, int offset) {
+        this.module = module;
+        this.offset = offset;
+    }
+    
+    @Override
+    public boolean isResolved() {
+        return true;
+    }
 
-    public String getFullyQualifiedName();
-    /**
-     * 
-     * @param offset
-     * @return 
-     */
-    Collection<? extends TypeUsage> getAssignmentForOffset(int offset);
+    @Override
+    public String getType() {
+        return NodeJsUtils.FAKE_OBJECT_NAME_PREFIX + module;
+    }
+
+    @Override
+    public int getOffset() {
+        return offset;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Module " + module; //NOI18N
+    }
     
-    Collection<? extends TypeUsage> getAssignments();
-    
-    public void addAssignment(TypeUsage typeName, int offset);
-    
-    public boolean isAnonymous();
-    
-    public boolean isDeprecated();
-    
-    
-    /**
-     * 
-     * @return true if the element is virtual and shouldn't be visible to the user in structure scanner. 
-     */
-    boolean isVirtual();
-    
-    /**
-     * 
-     * @return true if the object/function is identified by a name. 
-     * False if the function is declared as an item in array or the name is an expression
-     */ 
-    public boolean hasExactName();
-    
-    public Documentation getDocumentation();
-    
-    public boolean containsOffset(int offset);
 }

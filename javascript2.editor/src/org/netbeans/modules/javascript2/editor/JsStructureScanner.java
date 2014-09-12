@@ -102,7 +102,7 @@ public class JsStructureScanner implements StructureScanner {
     }
     
     private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems, List<String> displayedAnonymousObjects) {
-        if (jsObject instanceof JsFunctionReference && !jsObject.isAnonymous()) {
+        if (jsObject.isVirtual() || (jsObject instanceof JsReference && !((JsReference)jsObject).getOriginal().isAnonymous())) {
             return collectedItems;
         }
         Collection<? extends JsObject> properties = new ArrayList(jsObject.getProperties().values());
@@ -117,6 +117,10 @@ public class JsStructureScanner implements StructureScanner {
                 continue;
             }
 
+            if (child.isVirtual()) {
+                continue;
+            }
+            
             List<StructureItem> children = new ArrayList<StructureItem>();
             if ((((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
                     && !child.getName().equals(ModelUtils.PROTOTYPE)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) &&  child.getJSKind() != JsElement.Kind.OBJECT_LITERAL)

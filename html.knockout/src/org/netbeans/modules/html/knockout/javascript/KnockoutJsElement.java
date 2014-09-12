@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,66 +37,70 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.html.knockout.javascript;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.csl.api.Documentation;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Petr Pisl
+ * @author Roman Svitanic
  */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getProperty(String name);
-    
-    /**
-     * 
-     * @return the object within this is declared
-     */
-    public JsObject getParent();  
-    List<Occurrence> getOccurrences();
+public class KnockoutJsElement implements ElementHandle {
 
-    public void addOccurrence(OffsetRange offsetRange);
+    private final String name;
+    private final ElementKind kind;
 
-    public String getFullyQualifiedName();
-    /**
-     * 
-     * @param offset
-     * @return 
-     */
-    Collection<? extends TypeUsage> getAssignmentForOffset(int offset);
-    
-    Collection<? extends TypeUsage> getAssignments();
-    
-    public void addAssignment(TypeUsage typeName, int offset);
-    
-    public boolean isAnonymous();
-    
-    public boolean isDeprecated();
-    
-    
-    /**
-     * 
-     * @return true if the element is virtual and shouldn't be visible to the user in structure scanner. 
-     */
-    boolean isVirtual();
-    
-    /**
-     * 
-     * @return true if the object/function is identified by a name. 
-     * False if the function is declared as an item in array or the name is an expression
-     */ 
-    public boolean hasExactName();
-    
-    public Documentation getDocumentation();
-    
-    public boolean containsOffset(int offset);
+    public KnockoutJsElement(String name, ElementKind kind) {
+        this.name = name;
+        this.kind = kind;
+    }
+
+    @Override
+    public FileObject getFileObject() {
+        return null;
+    }
+
+    @Override
+    public String getMimeType() {
+        return ""; //NOI18N
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getIn() {
+        return ""; //NOI18N
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return kind;
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        return Collections.<Modifier>emptySet();
+    }
+
+    @Override
+    public boolean signatureEquals(ElementHandle handle) {
+        return false;
+    }
+
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return OffsetRange.NONE;
+    }
 }
