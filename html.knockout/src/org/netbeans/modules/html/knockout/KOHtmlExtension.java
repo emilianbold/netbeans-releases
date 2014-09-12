@@ -230,8 +230,21 @@ public class KOHtmlExtension extends HtmlExtension {
             return Collections.emptyList();
         }
         Collection<KnockoutCustomElement> customElements = getAllCustomElements(project, context.getPrefix());
+        List<String> alreadyAddedComponents = new ArrayList<>();
         for (KnockoutCustomElement customElement : customElements) {
-            items.add(new KOTagCompletionItem(customElement, context.getCCItemStartOffset()));
+            if (!alreadyAddedComponents.contains(customElement.getName())) {
+                items.add(new KOTagCompletionItem(customElement, context.getCCItemStartOffset()));
+                alreadyAddedComponents.add(customElement.getName());
+            } else {
+                for (CompletionItem ci : items) {
+                    KOTagCompletionItem completionItem = (KOTagCompletionItem) ci;
+                    if (completionItem.getCustomElementName().equals(customElement.getName())) {
+                        // custom element with same name is already in the result, just add alternative registration location
+                        completionItem.addAlternativeLocation(new File(customElement.getDeclarationFile().toString()).getName());
+                        break;
+                    }
+                }
+            }
         }
         return items;
     }
