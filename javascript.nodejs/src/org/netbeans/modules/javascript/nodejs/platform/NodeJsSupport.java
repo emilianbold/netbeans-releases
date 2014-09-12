@@ -46,16 +46,19 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.ui.actions.NodeJsActionProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 
-@ProjectServiceProvider(service = NodeJsSupport.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-public final class NodeJsSupport {
+public final class NodeJsSupport implements PreferenceChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(NodeJsSupport.class.getName());
 
@@ -66,12 +69,21 @@ public final class NodeJsSupport {
     private final NodeJsPreferences preferences;
 
 
-    public NodeJsSupport(Project project, Lookup lookup) {
+    public NodeJsSupport(Project project) {
         assert project != null;
         this.project = project;
         actionProvider = new NodeJsActionProvider(project);
         sourceRoots = new NodeJsSourceRoots(project);
         preferences = new NodeJsPreferences(this, project);
+    }
+
+    @ProjectServiceProvider(service = NodeJsSupport.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
+    public static NodeJsSupport create(Project project) {
+        NodeJsSupport support = new NodeJsSupport(project);
+        // listeners
+        NodeJsOptions nodeJsOptions = NodeJsOptions.getInstance();
+        nodeJsOptions.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, support, nodeJsOptions));
+        return support;
     }
 
     public static NodeJsSupport forProject(Project project) {
@@ -102,6 +114,22 @@ public final class NodeJsSupport {
 
     public void firePropertyChanged(String propertyName, Object oldValue, Object newValue) {
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(project, propertyName, oldValue, newValue));
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        String projectName = project.getProjectDirectory().getNameExt();
+        if (!preferences.isEnabled()) {
+            LOGGER.log(Level.FINE, "Change event in node.js options ignored, node.js not enabled in project {0}", projectName);
+            return;
+        }
+        String key = evt.getKey();
+        LOGGER.log(Level.FINE, "Processing change event {0} in node.js options in project {1}", new Object[] {key, projectName});
+        if (NodeJsOptions.USE_NODE_PATH.equals(key)
+                || NodeJsOptions.USE_NPM_GLOBAL_ROOT.equals(key)) {
+            boolean newValue = Boolean.parseBoolean(evt.getNewValue());
+            firePropertyChanged(NodeJsPlatformProvider.PROP_SOURCE_ROOTS, !newValue, newValue);
+        }
     }
 
 }
