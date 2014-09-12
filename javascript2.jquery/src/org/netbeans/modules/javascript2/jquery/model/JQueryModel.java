@@ -125,9 +125,8 @@ public class JQueryModel {
             return result;
         }
 
-        // XXX fixing build
         public boolean isVirtual() {
-            return true;
+            return false;
         }
 
         // pure delegation follows
