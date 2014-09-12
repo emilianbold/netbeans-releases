@@ -81,23 +81,27 @@ public abstract class AbstractCodeAudit implements CodeAudit {
     }
 
     @Override
-    public boolean isEnabled() {
-        String val = myPreferences.get(getID(), "enabled"); //NOI18N
-        if (val == null || val.isEmpty()) {
-            return defaultEnabled;
-        }
-        return !"false".equals(val); //NOI18N
+    public final boolean isEnabled() {
+        String defValue = getDefaultEnabled() ? "true" : "false"; //NOI18N
+        return !"false".equals(getPreferences().get(getID(), "enabled", defValue)); //NOI18N
     }
 
     @Override
-    public String minimalSeverity() {
-        String severity = myPreferences.get(getID(), "severity"); //NOI18N
-        if (severity == null || severity.isEmpty()) {
-            return defaultSeverity;
-        }
-        return severity;
+    public boolean getDefaultEnabled() {
+        return defaultEnabled;
     }
-
+    
+    @Override
+    public final String minimalSeverity() {
+        String defValue = getDefaultSeverity();
+        return getPreferences().get(getID(), "severity", defValue); //NOI18N
+    }
+    
+    @Override
+    public String getDefaultSeverity() {
+        return defaultSeverity;
+    }
+    
     @Override
     public String getKind() {
         return "inspection"; //NOI18N
