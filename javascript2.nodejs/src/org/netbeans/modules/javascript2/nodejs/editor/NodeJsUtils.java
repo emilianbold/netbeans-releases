@@ -235,4 +235,15 @@ public class NodeJsUtils {
         } 
         return "";  //NOI18N
     }
+    
+    public static String getModuleName(String modulePath) {
+        String name = modulePath;
+        if(name.indexOf('/') > -1) {
+            name = name.substring(name.lastIndexOf('/') + 1);
+        }
+        if(name.indexOf('.') > -1) {
+            name = name.substring(0, name.lastIndexOf('.'));
+        }
+        return name;
+    }
 }

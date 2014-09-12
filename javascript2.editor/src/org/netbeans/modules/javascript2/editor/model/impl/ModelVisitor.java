@@ -355,25 +355,24 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
 
                     String name = sb.substring(0, sb.length() - 1);
-                    FunctionInterceptor interceptorToUse = null;
+                    List<FunctionInterceptor> interceptorsToUse = new ArrayList<FunctionInterceptor>();
                     for (FunctionInterceptor interceptor : ModelExtender.getDefault().getFunctionInterceptors()) {
                         if (interceptor.getNamePattern().matcher(name).matches()) {
-                            interceptorToUse = interceptor;
-                            break;
+                            interceptorsToUse.add(interceptor);
                         }
                     }
 
 
-                    if (interceptorToUse != null) {
+                    for (FunctionInterceptor interceptor : interceptorsToUse) {
                         Collection<FunctionArgument> funcArg = new ArrayList<FunctionArgument>();
                         for (int i = 0; i < callNode.getArgs().size(); i++) {
                             Node argument = callNode.getArgs().get(i);
                             createFunctionArgument(argument, i, functionArguments, funcArg);
                         }
-                        Collection<FunctionCall> calls = functionCalls.get(interceptorToUse);
+                        Collection<FunctionCall> calls = functionCalls.get(interceptor);
                         if (calls == null) {
                             calls = new ArrayList<FunctionCall>();
-                            functionCalls.put(interceptorToUse, calls);
+                            functionCalls.put(interceptor, calls);
                         }
                         calls.add(new FunctionCall(name, modelBuilder.getCurrentDeclarationScope(), funcArg));
 

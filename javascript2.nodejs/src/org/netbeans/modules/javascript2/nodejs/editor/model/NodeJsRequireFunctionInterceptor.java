@@ -39,16 +39,23 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javascript2.nodejs.editor.model;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.regex.Pattern;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
+import org.netbeans.modules.parsing.api.Source;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -57,8 +64,8 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 @FunctionInterceptor.Registration(priority = 370)
 public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
 
-    private static Pattern METHOD_NAME = Pattern.compile("require");
-    
+    private static Pattern METHOD_NAME = Pattern.compile(NodeJsUtils.REQUIRE_METHOD_NAME); //NOI18N
+
     @Override
     public Pattern getNamePattern() {
         return METHOD_NAME;
@@ -66,14 +73,43 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
 
     @Override
     public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
-//        System.out.println("NodeJs require: " + name);
+        FileObject fo = globalObject.getFileObject();
+        if (fo == null) {
+            // no action
+            return;
+        }
+
         if (args.size() == 1) {
             FunctionArgument theFirst = args.iterator().next();
             if (theFirst.getKind() == FunctionArgument.Kind.STRING) {
-//                System.out.println("   loading : " + theFirst.getValue());
-                
+                String module = (String)theFirst.getValue();
+                Source source = Source.create(fo);
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), theFirst.getOffset());
+                if (ts == null) {
+                    return;
+                }
+                ts.move(theFirst.getOffset());
+                if (ts.moveNext()) {
+                    
+                    Token<? extends JsTokenId> token = LexUtilities.findPreviousIncluding(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.OPERATOR_SEMICOLON));
+                    if (token != null && token.id() == JsTokenId.IDENTIFIER && NodeJsUtils.REQUIRE_METHOD_NAME.equals(token.text().toString())) {
+                        token = LexUtilities.findPreviousIncluding(ts, Arrays.asList(JsTokenId.OPERATOR_ASSIGNMENT, JsTokenId.OPERATOR_SEMICOLON));
+                        if (token != null && token.id() == JsTokenId.OPERATOR_ASSIGNMENT) {
+                            token = LexUtilities.findPreviousIncluding(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.OPERATOR_SEMICOLON,
+                                    JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_LEFT_PAREN));
+                            if (token != null && token.id() == JsTokenId.IDENTIFIER) {
+                                String objectName = token.text().toString();
+                                JsObject jsObject = ((JsObject)scope).getProperty(objectName);
+                                if (jsObject != null) {
+                                    int assignmentOffset =  ts.offset() + token.length();
+                                    jsObject.addAssignment(new NodeJsType(NodeJsUtils.getModuleName(module), assignmentOffset) , assignmentOffset);
+                                }
+                            }
+                        }
+                    }    
+                }
             }
         }
     }
-    
+
 }

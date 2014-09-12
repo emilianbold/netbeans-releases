@@ -66,7 +66,7 @@ public class NodeJsObjectInterceptor implements ObjectInterceptor {
             }
         }
         if (exports != null) {
-            JsObject newReference = factory.newReference(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX + global.getName(), exports, true);
+            JsObject newReference = factory.newReference(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX + global.getName(), exports, true, true);
             global.addProperty(newReference.getName(), newReference);
         }
     }
