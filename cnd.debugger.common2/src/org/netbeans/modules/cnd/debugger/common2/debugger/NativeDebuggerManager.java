@@ -113,6 +113,7 @@ import org.netbeans.modules.cnd.debugger.common2.DbgGuiModule;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -2215,4 +2216,29 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         }
         return view.isOpened();
     }
+    
+    public interface DebuggerStateListener {
+        void notifyAttached(NativeDebugger debugger, long pid);
+    }
+    
+    private final HashSet<DebuggerStateListener> debuggerStateListeners = new HashSet<DebuggerStateListener>();
+    
+    public synchronized void addDebuggerStateListener(DebuggerStateListener listener) {
+        if (!debuggerStateListeners.contains(listener)) {
+            debuggerStateListeners.add(listener);
+        }
+    }
+    
+    public synchronized void removeDebuggerStateListener(DebuggerStateListener listener) {
+        if (debuggerStateListeners.contains(listener)) {
+            debuggerStateListeners.remove(listener);
+        }
+    }
+    
+    public synchronized void notifyAttached(NativeDebugger debugger, long pid) {
+        for (DebuggerStateListener stateListener : debuggerStateListeners) {
+            stateListener.notifyAttached(debugger, pid);
+        }
+    }
+    
 }
