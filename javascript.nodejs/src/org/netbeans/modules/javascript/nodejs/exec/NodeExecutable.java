@@ -318,7 +318,7 @@ public class NodeExecutable {
 
     }
 
-    private static class VersionOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+    static class VersionOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
 
         private static final Pattern VERSION_PATTERN = Pattern.compile("^v([\\d\\.]+)$"); // NOI18N
 
