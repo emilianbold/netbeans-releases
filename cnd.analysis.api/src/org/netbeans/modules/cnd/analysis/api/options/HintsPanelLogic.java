@@ -52,7 +52,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -66,11 +65,10 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.cnd.analysis.api.AbstractCustomizerProvider;
+import org.netbeans.modules.cnd.analysis.api.options.HintsPanel.CodeAuditProviderProxy;
+import org.netbeans.modules.cnd.analysis.api.options.HintsPanel.CodeAuditProxy;
 import org.netbeans.modules.cnd.analysis.api.options.HintsPanel.ExtendedModel;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
-import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.modules.cnd.analysis.api.options.HintsPanel.NamedOptionProxy;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -106,7 +104,6 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     private JComboBox severityComboBox;
     private JPanel customizerPanel;
     private JEditorPane descriptionTextArea;
-    private Preferences preferences;
     private final DefaultComboBoxModel defModel = new DefaultComboBoxModel();
     private final String defLabel = NbBundle.getMessage(HintsPanel.class, "CTL_ShowAs_Label"); //NOI18N
     
@@ -117,9 +114,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
    }
     
     void connect( JTree errorTree, ExtendedModel model, JLabel severityLabel, JComboBox severityComboBox,
-                  JPanel customizerPanel, JEditorPane descriptionTextArea,
-                  Preferences preferences) {
-        this.preferences = preferences;
+                  JPanel customizerPanel, JEditorPane descriptionTextArea) {
         this.errorTree = errorTree;
         this.extendedModel = model;
         this.severityLabel = severityLabel;
@@ -148,12 +143,17 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     }
     
     synchronized void applyChanges() {
+        extendedModel.store();
     }
     
+    synchronized void cancel() {
+        extendedModel.cancel();
+    }
+
     /** Were there any changes in the settings
      */
     boolean isChanged() {
-        return false;
+        return extendedModel.isChanged();
     }
     
     static Object getUserObject( TreePath path ) {
@@ -176,8 +176,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         for( int i = 0; i < node.getChildCount(); i++ ) {
             DefaultMutableTreeNode ch = (DefaultMutableTreeNode) node.getChildAt(i);
             Object o = ch.getUserObject();
-            if ( o instanceof CodeAudit ) {
-                CodeAudit hint = (CodeAudit)o;
+            if ( o instanceof CodeAuditProxy ) {
+                CodeAuditProxy hint = (CodeAuditProxy)o;
                 if ( hint.isEnabled()) {
                     return true;
                 }
@@ -246,13 +246,13 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     public void valueChanged(TreeSelectionEvent ex) {            
         Object o = getUserObject(errorTree.getSelectionPath());
         
-        if ( o instanceof CodeAudit ) {
+        if ( o instanceof CodeAuditProxy ) {
             if (defModel != severityComboBox.getModel()) {
                 severityComboBox.setModel(defModel);
                 Mnemonics.setLocalizedText(severityLabel, defLabel);
             }
 
-            CodeAudit hint = (CodeAudit) o;
+            CodeAuditProxy hint = (CodeAuditProxy) o;
             
             // Enable components
             componentsSetEnabled(true, AUDIT);
@@ -284,25 +284,22 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             customizerPanel.getParent().invalidate();
             ((JComponent)customizerPanel.getParent()).revalidate();
             customizerPanel.getParent().repaint();
-        } else if ( o instanceof CodeAuditProvider ) {
-            CodeAuditProvider hint = (CodeAuditProvider) o;
+        } else if ( o instanceof CodeAuditProviderProxy ) {
+            CodeAuditProviderProxy hint = (CodeAuditProviderProxy) o;
             String description = hint.getDescription();
             componentsSetEnabled(true, PROVIDER);
             descriptionTextArea.setText( description == null ? "" : wrapDescription(description)); // NOI18N
             // Optionally show the customizer
             customizerPanel.removeAll();
-            JComponent c = null;
-            if (o instanceof AbstractCustomizerProvider) {
-               c = ((AbstractCustomizerProvider)o).createComponent(preferences);
-            }
+            JComponent c = hint.createComponent();
             if ( c != null ) {               
                 customizerPanel.add(c, BorderLayout.CENTER);
             }            
             customizerPanel.getParent().invalidate();
             ((JComponent)customizerPanel.getParent()).revalidate();
             customizerPanel.getParent().repaint();
-       } else if (o instanceof NamedOption) {
-            NamedOption option = (NamedOption)o;
+       } else if (o instanceof NamedOptionProxy) {
+            NamedOptionProxy option = (NamedOptionProxy)o;
             if (defModel != severityComboBox.getModel()) {
                 severityComboBox.setModel(defModel);
                 Mnemonics.setLocalizedText(severityLabel, defLabel);
@@ -312,10 +309,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             descriptionTextArea.setText( description == null ? "" : wrapDescription(description)); // NOI18N
             // Optionally show the customizer
             customizerPanel.removeAll();
-            JComponent c = null;
-            if (o instanceof AbstractCustomizerProvider) {
-               c = ((AbstractCustomizerProvider)o).createComponent(preferences);
-            }
+            JComponent c = option.createComponent();
             if ( c != null ) {               
                 customizerPanel.add(c, BorderLayout.CENTER);
             }            
@@ -340,14 +334,14 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         }
         if (severityComboBox.equals(e.getSource())) {
             Object o = getUserObject(errorTree.getSelectionPath());
-            if ( o instanceof CodeAudit ) {
-                CodeAudit hint = (CodeAudit) o;
+            if ( o instanceof CodeAuditProxy ) {
+                CodeAuditProxy hint = (CodeAuditProxy) o;
                 if (index2severity(severityComboBox.getSelectedIndex()) == Severity.ERROR) {
-                    hint.getPreferences().put(hint.getID(), "severity", "error"); //NOI18N
+                    hint.setSeverity(Severity.ERROR);
                 } else if (index2severity(severityComboBox.getSelectedIndex()) == Severity.WARNING) {
-                    hint.getPreferences().put(hint.getID(), "severity", "warning"); //NOI18N
+                    hint.setSeverity(Severity.WARNING);
                 } else {
-                    hint.getPreferences().put(hint.getID(), "severity", "hint"); //NOI18N
+                    hint.setSeverity(Severity.HINT);
                 }
             }
         }
@@ -384,22 +378,18 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         Object o = getUserObject(treePath);
         ExtendedModel model = extendedModel;
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
-        if (o instanceof CodeAudit) {
-            CodeAudit hint = (CodeAudit) o;
-            if (hint.isEnabled()) {
-                hint.getPreferences().put(hint.getID(), "enabled", "false"); //NOI18N
-            } else {
-                hint.getPreferences().put(hint.getID(), "enabled", "true"); //NOI18N
-            }
+        if (o instanceof CodeAuditProxy) {
+            CodeAuditProxy hint = (CodeAuditProxy) o;
+            hint.setEnabled(!hint.isEnabled()); //NOI18N
             model.nodeChanged(node);
             errorTree.repaint();
-        } else if (o instanceof CodeAuditProvider) {
-            CodeAuditProvider provider = (CodeAuditProvider) o;
+        } else if (o instanceof CodeAuditProviderProxy) {
+            CodeAuditProviderProxy provider = (CodeAuditProviderProxy) o;
             boolean hasEnabled = false;
             boolean hasDisabled = false;
             for(int i = 0; i < node.getChildCount(); i++) {
                 DefaultMutableTreeNode childAt = (DefaultMutableTreeNode) node.getChildAt(i);
-                CodeAudit audit = (CodeAudit) childAt.getUserObject();
+                CodeAuditProxy audit = (CodeAuditProxy) childAt.getUserObject();
                 if (audit.isEnabled()) {
                     hasEnabled = true;
                 } else {
@@ -410,31 +400,31 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
                 if (hasDisabled) {
                     for(int i = 0; i < node.getChildCount(); i++) {
                         DefaultMutableTreeNode childAt = (DefaultMutableTreeNode) node.getChildAt(i);
-                        CodeAudit audit = (CodeAudit) childAt.getUserObject();
-                        audit.getPreferences().put(audit.getID(), "enabled", "true"); //NOI18N
+                        CodeAuditProxy audit = (CodeAuditProxy) childAt.getUserObject();
+                        audit.setEnabled(true);
                     }
                 } else {
                     for(int i = 0; i < node.getChildCount(); i++) {
                         DefaultMutableTreeNode childAt = (DefaultMutableTreeNode) node.getChildAt(i);
-                        CodeAudit audit = (CodeAudit) childAt.getUserObject();
-                        audit.getPreferences().put(audit.getID(), "enabled", "false"); //NOI18N
+                        CodeAuditProxy audit = (CodeAuditProxy) childAt.getUserObject();
+                        audit.setEnabled(false);
                     }
                 }
             } else {
                 for(int i = 0; i < node.getChildCount(); i++) {
                     DefaultMutableTreeNode childAt = (DefaultMutableTreeNode) node.getChildAt(i);
-                    CodeAudit audit = (CodeAudit) childAt.getUserObject();
-                    audit.getPreferences().put(audit.getID(), "enabled", "true"); //NOI18N
+                    CodeAuditProxy audit = (CodeAuditProxy) childAt.getUserObject();
+                    audit.setEnabled(true);
                 }
             }
             model.nodeChanged(node);
             errorTree.repaint();
-       } else if (o instanceof NamedOption) {
-            NamedOption option = (NamedOption)o;
-            if (NamedOption.getAccessor().getBoolean(option.getName())) {
-                NamedOption.getAccessor().setBoolean(option.getName(), false);
+       } else if (o instanceof NamedOptionProxy) {
+            NamedOptionProxy option = (NamedOptionProxy)o;
+            if (option.getBoolean()) {
+                option.setBoolean(false);
             } else {
-                NamedOption.getAccessor().setBoolean(option.getName(), true);
+                option.setBoolean(true);
             }
             model.nodeChanged(node);
             errorTree.repaint();
