@@ -65,6 +65,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
+import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
 import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController;
@@ -134,8 +135,8 @@ public class NodeExecutable {
     @CheckForNull
     public static NodeExecutable forProject(Project project, boolean showCustomizer) {
         assert project != null;
-        String node = NodeJsSupport.forProject(project).getPreferences().getNode();
-        if (node == null) {
+        NodeJsPreferences preferences = NodeJsSupport.forProject(project).getPreferences();
+        if (preferences.isDefaultNode()) {
             return getDefault(project, showCustomizer);
         }
         ValidationResult result = new NodeJsPreferencesValidator()
@@ -147,6 +148,8 @@ public class NodeExecutable {
             }
             return null;
         }
+        String node = preferences.getNode();
+        assert node != null;
         if (Utilities.isMac()) {
             return new MacNodeExecutable(node, project);
         }
