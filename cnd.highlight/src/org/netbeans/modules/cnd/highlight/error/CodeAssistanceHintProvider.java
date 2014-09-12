@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -137,6 +138,11 @@ public class CodeAssistanceHintProvider extends CsmErrorProvider implements Code
     @Override
     public String getDescription() {
         return NbBundle.getMessage(CodeAssistanceHintProvider.class, "CA_DESCRIPTION"); //NOI18N
+    }
+
+    @Override
+    public String getMimeType() {
+        return MIMENames.SOURCES_MIME_TYPE;
     }
 
     @Override

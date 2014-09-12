@@ -48,10 +48,16 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.analysis.api.CodeAuditProviderImpl;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.prefs.AbstractPreferences;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelListener;
@@ -62,9 +68,17 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.modules.cnd.analysis.api.AbstractCustomizerProvider;
+import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
+import org.netbeans.spi.editor.hints.Severity;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
@@ -74,7 +88,6 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
     private final DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();
     private final JCheckBox renderer = new JCheckBox();
     private HintsPanelLogic logic;
-    private Preferences preferences;
     private final ExtendedModel model;
     
     private final static RequestProcessor WORKER = new RequestProcessor(HintsPanel.class.getName(), 1, false, false);
@@ -92,19 +105,15 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         }
     });
 
-    public HintsPanel(Lookup masterLookup, CodeAuditProvider selection) {        
+    public HintsPanel(Lookup masterLookup, CodeAuditProvider selection, String mimeType) {
+        assert mimeType != null;
         initComponents();
-        if (selection != null) {
-            this.preferences = selection.getPreferences().getPreferences();
-        } else {
-            this.preferences = AuditPreferences.AUDIT_PREFERENCES_ROOT;
-        }
         descriptionTextArea.setContentType("text/html"); // NOI18N
         errorTree.setCellRenderer( this );
         errorTree.setRootVisible( false );
         errorTree.setShowsRootHandles( true );
         errorTree.getSelectionModel().setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
-        model = new ExtendedModel(selection);
+        model = new ExtendedModel(selection, mimeType);
         OptionsFilter filter = null;
         if (masterLookup != null) {
             filter = masterLookup.lookup(OptionsFilter.class);
@@ -114,15 +123,17 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         } else {
             errorTree.setModel(model);
         }
-        update();
+        logic = new HintsPanelLogic();
+        logic.connect(errorTree, model, severityLabel, severityComboBox,
+                customizerPanel, descriptionTextArea);
     }
     
     void selectPath(String path) {
         TreePath treePath = null;
         for(DefaultMutableTreeNode node : model.audits) {
             Object provider = node.getUserObject();
-            if (provider instanceof CodeAuditProvider) {
-                String providerID = ((CodeAuditProvider)provider).getName();
+            if (provider instanceof CodeAuditProviderProxy) {
+                String providerID = ((CodeAuditProviderProxy)provider).getName();
                 if (path.startsWith(providerID)) {
                     treePath = new TreePath(new Object[]{model.getRoot(),node});
                     path = path.substring(providerID.length());
@@ -133,8 +144,8 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
                             Object sub = children.nextElement();
                             if (sub instanceof DefaultMutableTreeNode) {
                                 Object audit = ((DefaultMutableTreeNode)sub).getUserObject();
-                                if (audit instanceof CodeAudit) {
-                                    String name = ((CodeAudit)audit).getID();
+                                if (audit instanceof CodeAuditProxy) {
+                                    String name = ((CodeAuditProxy)audit).getID();
                                     if (path.startsWith(name)) {
                                         treePath = new TreePath(new Object[]{model.getRoot(),node, sub});
                                         break;
@@ -156,9 +167,8 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
     
     @Override
     public void setSettings(Preferences settings) {
-        if (preferences == null) {
-            preferences = settings;
-        }
+        //TODO set settings
+        CndUtils.assertTrueInConsole(false, "Method is not implemented");
     }
     
     /** This method is called from within the constructor to
@@ -292,17 +302,17 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
        
-    synchronized final void update() {
+    synchronized final void update() {       
         if ( logic != null ) {
             logic.disconnect();
         }
         logic = new HintsPanelLogic();
         logic.connect(errorTree, model, severityLabel, severityComboBox,
-                customizerPanel, descriptionTextArea,
-                preferences);
+                customizerPanel, descriptionTextArea);
     }
     
     void cancel() {
+        logic.cancel();
         logic.disconnect();
         logic = null;
     }
@@ -325,18 +335,18 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         renderer.setEnabled( true );
         if (value instanceof DefaultMutableTreeNode) {
             Object data = ((DefaultMutableTreeNode)value).getUserObject();
-            if ( data instanceof CodeAudit ) {
-                CodeAudit audit = (CodeAudit)data;
+            if ( data instanceof CodeAuditProxy ) {
+                CodeAuditProxy audit = (CodeAuditProxy)data;
                 renderer.setText(audit.getName());
                 renderer.setSelected(audit.isEnabled());
-            } else if (data instanceof CodeAuditProvider) {
-                CodeAuditProvider provider = (CodeAuditProvider)data;
+            } else if (data instanceof CodeAuditProviderProxy) {
+                CodeAuditProviderProxy provider = (CodeAuditProviderProxy)data;
                 renderer.setText( provider.getDisplayName());
                 boolean hasEnabled = false;
                 boolean hasDisabled = false;
                 for(int i = 0; i < ((DefaultMutableTreeNode)value).getChildCount(); i++) {
                     DefaultMutableTreeNode childAt = (DefaultMutableTreeNode) ((DefaultMutableTreeNode)value).getChildAt(i);
-                    CodeAudit audit = (CodeAudit) childAt.getUserObject();
+                    CodeAuditProxy audit = (CodeAuditProxy) childAt.getUserObject();
                     if (audit.isEnabled()) {
                         hasEnabled = true;
                     } else {
@@ -353,10 +363,10 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
                 } else {
                     renderer.setSelected(false);
                 }
-            } else if (data instanceof NamedOption) {
-                NamedOption option = (NamedOption)data;
+            } else if (data instanceof NamedOptionProxy) {
+                NamedOptionProxy option = (NamedOptionProxy)data;
                 renderer.setText( option.getDisplayName());
-                renderer.setSelected(NamedOption.getAccessor().getBoolean(option.getName()));
+                renderer.setSelected(option.getBoolean());
             }
         }
 
@@ -382,31 +392,72 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
     // End of variables declaration//GEN-END:variables
 
     static final class ExtendedModel implements TreeModel {
-        private final List<DefaultMutableTreeNode> audits;
-        private ExtendedModel(CodeAuditProvider selection){
-            audits = new ArrayList<DefaultMutableTreeNode>();
+        private final List<DefaultMutableTreeNode> audits = new ArrayList<DefaultMutableTreeNode>();
+        private final List<HintModelController> storage =  new ArrayList<HintModelController>();
+        private final String mimeType;
+        private final CodeAuditProvider selection;
+        private ExtendedModel(CodeAuditProvider selection, String mimeType){
+            this.mimeType = mimeType;
+            this.selection = selection;
             if (selection == null) {
                 for(CodeAuditProvider provider : CodeAuditProviderImpl.getDefault()) {
-                    DefaultMutableTreeNode providerRoot = new DefaultMutableTreeNode(provider);
-                    audits.add(providerRoot);
-                    for(CodeAudit audit : provider.getAudits()) {
-                        providerRoot.add(new DefaultMutableTreeNode(audit));
+                    if (mimeType.equals(provider.getMimeType())) {
+                        CodeAuditProviderProxy proxy = new CodeAuditProviderProxy(provider, true);
+                        DefaultMutableTreeNode providerRoot = new DefaultMutableTreeNode(proxy);
+                        audits.add(providerRoot);
+                        storage.add(proxy);
+                        for(CodeAudit audit : proxy.getAudits()) {
+                            providerRoot.add(new DefaultMutableTreeNode(audit));
+                            storage.add((HintModelController) audit);
+                        }
                     }
                 }
-                for (NamedOption option : Lookups.forPath(NamedOption.HINTS_CATEGORY).lookupAll(NamedOption.class)) {
-                    if (option.isVisible()) {
-                        audits.add(new DefaultMutableTreeNode(option));
+                if (MIMENames.SOURCES_MIME_TYPE.equals(mimeType)) {
+                    for (NamedOption option : Lookups.forPath(NamedOption.HINTS_CATEGORY).lookupAll(NamedOption.class)) {
+                        if (option.isVisible()) {
+                            NamedOptionProxy proxy = new NamedOptionProxy(option, true);
+                            audits.add(new DefaultMutableTreeNode(proxy));
+                            storage.add(proxy);
+                        }
                     }
                 }
             } else {
-                DefaultMutableTreeNode providerRoot = new DefaultMutableTreeNode(selection);
+                CodeAuditProviderProxy proxy = new CodeAuditProviderProxy(selection, false);
+                DefaultMutableTreeNode providerRoot = new DefaultMutableTreeNode(proxy);
                 audits.add(providerRoot);
-                for(CodeAudit audit : selection.getAudits()) {
+                storage.add(proxy);
+                for(CodeAudit audit : proxy.getAudits()) {
                     providerRoot.add(new DefaultMutableTreeNode(audit));
+                    storage.add((HintModelController) audit);
                 }
             }
         }
 
+        boolean isChanged() {
+            for(HintModelController node : storage) {
+                if (node.isChanged()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        void store() {
+            for(HintModelController node : storage) {
+                if (node.isChanged()) {
+                    node.store();
+                }
+            }
+        }
+
+        void cancel() {
+            for(HintModelController node : storage) {
+                if (node.isChanged()) {
+                    node.cancel();
+                }
+            }
+        }
+        
         @Override
         public Object getRoot() {
             return "Root"; //NOI18N
@@ -467,8 +518,8 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         public void nodeChanged(TreeNode node) {
             if (node instanceof DefaultMutableTreeNode) {
                 Object data = ((DefaultMutableTreeNode)node).getUserObject();
-                if ( data instanceof CodeAudit ) {
-                    CodeAudit rule = (CodeAudit)data;
+                if ( data instanceof CodeAuditProxy ) {
+                    CodeAuditProxy rule = (CodeAuditProxy)data;
                 } else if (data instanceof CodeAuditProvider) {
                     CodeAuditProvider provider = (CodeAuditProvider)data;
                 } else if (data instanceof NamedOption) {
@@ -492,13 +543,397 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
             DefaultMutableTreeNode n = (DefaultMutableTreeNode) originalTreeNode;
             Object uo = n.getUserObject();
 
-            if (!(uo instanceof CodeAudit)) {
+            if (!(uo instanceof CodeAuditProxy)) {
                 return false;
             }
-            CodeAudit audit = (CodeAudit) uo;
+            CodeAuditProxy audit = (CodeAuditProxy) uo;
             return audit.getName().toLowerCase().contains(filterText.toLowerCase());
         }
     }
+    
+    interface HintModelController {
+        boolean isChanged();
+        void store();
+        void cancel();
+        JComponent createComponent();
+    }
+    
+    static final class CodeAuditProviderProxy implements CodeAuditProvider, HintModelController {
+        private final CodeAuditProvider proxy;
+        private final List<CodeAudit> audits = new ArrayList<CodeAudit>();
+        private final AuditPreferences modifiedAuditPref;
+        private final ModifiedPreferences modifiedPref;
+        
+        private CodeAuditProviderProxy(CodeAuditProvider proxy, boolean supportChanges) {
+            this.proxy = proxy;
+            modifiedPref = new ModifiedPreferences(proxy.getPreferences().getPreferences(), supportChanges);
+            modifiedAuditPref = new AuditPreferences(modifiedPref);
+            for(CodeAudit a : proxy.getAudits()) {
+                audits.add(CodeAuditProxy.create(a, supportChanges));
+            }
+        }
 
+        @Override
+        public JComponent createComponent() {
+            if (proxy instanceof AbstractCustomizerProvider) {
+                return ((AbstractCustomizerProvider)proxy).createComponent(modifiedPref);
+            }
+            return null;
+        }
+        
+        @Override
+        public Collection<CodeAudit> getAudits() {
+            return audits;
+        }
+
+        @Override
+        public String getName() {
+            return proxy.getName();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return proxy.getDisplayName();
+        }
+
+        @Override
+        public String getDescription() {
+            return proxy.getDescription();
+        }
+
+        @Override
+        public AuditPreferences getPreferences() {
+            return modifiedAuditPref;
+        }
+
+        @Override
+        public boolean isChanged() {
+            return modifiedPref.isModified();
+        }
+
+        @Override
+        public void store() {
+            modifiedPref.store();
+        }
+
+        @Override
+        public void cancel() {
+            modifiedPref.cancel();
+        }
+
+        @Override
+        public String getMimeType() {
+            return proxy.getMimeType();
+        }
+    }
+    
+   static final class CodeAuditProxy extends AbstractCodeAudit implements HintModelController {
+        private final CodeAudit proxy;
+        private final AuditPreferences modifiedAuditPref;
+        private final ModifiedPreferences modifiedPref;
+        
+        private static CodeAuditProxy create(CodeAudit proxy, boolean supportChanges) {
+            ModifiedPreferences modifiedPref = new ModifiedPreferences(proxy.getPreferences().getPreferences(), supportChanges);
+            AuditPreferences modifiedAuditPref = new AuditPreferences(modifiedPref);            
+            return new CodeAuditProxy(proxy, supportChanges, modifiedPref, modifiedAuditPref);
+        }
+        
+        private CodeAuditProxy(CodeAudit proxy, boolean supportChanges, ModifiedPreferences modifiedPref, AuditPreferences modifiedAuditPref) {
+            super(proxy.getID(), proxy.getName(), proxy.getDescription(), proxy.getDefaultSeverity(), proxy.getDefaultEnabled(), modifiedAuditPref);
+            this.proxy = proxy;
+            this.modifiedPref = modifiedPref;
+            this.modifiedAuditPref = modifiedAuditPref;
+        }
+
+        @Override
+        public JComponent createComponent() {
+            if (proxy instanceof AbstractCustomizerProvider) {
+                return ((AbstractCustomizerProvider)proxy).createComponent(modifiedPref);
+            }
+            return null;
+        }
+
+        @Override
+        public String getKind() {
+            return proxy.getKind();
+        }
+
+        @Override
+        public AuditPreferences getPreferences() {
+            return modifiedAuditPref;
+        }
+        
+        void setSeverity(Severity value) {
+            String old = minimalSeverity();
+            String defValue = getDefaultSeverity();
+            switch (value) {
+                case ERROR:
+                    if (!"error".equals(old)) { //NOI18N
+                        putString("severity", "error", defValue); //NOI18N
+                    }
+                    break;
+                case HINT:
+                    if (!"hint".equals(old)) { //NOI18N
+                        putString("severity", "hint", defValue); //NOI18N
+                    }
+                    break;
+                case WARNING:
+                    if (!"warning".equals(old)) { //NOI18N
+                        putString("severity", "warning", defValue); //NOI18N
+                    }
+                    break;
+            }
+        }
+
+        void setEnabled(boolean enabled) {
+            boolean old = isEnabled();
+            final String defValue = getDefaultEnabled() ? "true" : "false"; //NOI18N
+            if (enabled) {
+                if (!old) {
+                    putString("enabled", "true", defValue); //NOI18N
+                }
+            } else {
+                if (old) {
+                    putString("enabled", "false", defValue); //NOI18N
+                }
+            }
+        }
+        
+        private void putString(String key, String value, String defValue) {
+            getPreferences().put(getID(), key, value, defValue);
+        }
+
+        @Override
+        public boolean isChanged() {
+            return modifiedPref.isModified();
+        }
+
+        @Override
+        public void store() {
+            modifiedPref.store();
+        }
+
+        @Override
+        public void cancel() {
+            modifiedPref.cancel();
+        }
+
+        @Override
+        public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+            throw new UnsupportedOperationException();
+        }
+    }
+    
+    static final class NamedOptionProxy extends NamedOption implements HintModelController {
+        private final NamedOption proxy;
+        private final ModifiedPreferences modifiedPref;
+        
+        private NamedOptionProxy(NamedOption proxy, boolean supportChanges) {
+            this.proxy = proxy;
+            // this is hack:
+            modifiedPref = new ModifiedPreferences(NbPreferences.forModule(NamedOption.class), supportChanges);
+        }
+
+        @Override
+        public JComponent createComponent() {
+            if (proxy instanceof AbstractCustomizerProvider) {
+                return ((AbstractCustomizerProvider)proxy).createComponent(modifiedPref);
+            }
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return proxy.getName();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return proxy.getDisplayName();
+        }
+
+        @Override
+        public String getDescription() {
+            return proxy.getDescription();
+        }
+
+        @Override
+        public OptionKind getKind() {
+            return proxy.getKind();
+        }
+
+        @Override
+        public Object getDefaultValue() {
+            return proxy.getDefaultValue();
+        }
+
+        public boolean getBoolean() {
+            return modifiedPref.getBoolean(getName(), (Boolean)getDefaultValue());
+        }
+        
+        public void setBoolean(boolean value) {
+            boolean old = getBoolean();
+            if (old != value) {
+                modifiedPref.putBoolean(getName(), value);
+            }
+        }
+
+        @Override
+        public boolean isChanged() {
+            return modifiedPref.isModified();
+        }
+
+        @Override
+        public void store() {
+            modifiedPref.store();
+        }
+
+        @Override
+        public void cancel() {
+            modifiedPref.cancel();
+        }
+    }
+    
+    static final class ModifiedPreferences extends AbstractPreferences {
+        private Map<String,String> map = new HashMap<String, String>();
+        private final Map<String, String> modifiedKeys = new HashMap<String, String>();
+        private final boolean supportChanges;
+        private final Preferences proxyNode;
+        private volatile boolean modified;
+        public ModifiedPreferences( Preferences node, boolean supportChanges) {
+            super(null, ""); // NOI18N
+            this.supportChanges = supportChanges;
+            proxyNode = node;
+            init(node);                
+        }
+
+        private void init(Preferences node) {
+            map.clear();
+            try {
+                for (String key : node.keys()) {
+                    map.put(key, node.get(key, null));    
+                }
+            }
+            catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            modifiedKeys.clear();
+            modified = false;
+        }
+
+        @Override
+        public String absolutePath() {
+            return proxyNode.absolutePath();
+        }
+
+        public boolean isModified() {
+            return modified;
+        }
+        
+        void store() {
+            for (Map.Entry<String, String> entry : modifiedKeys.entrySet()) {
+                String key = entry.getKey();
+                String origVal = entry.getValue();
+                String curVal = map.get(key);
+                if (curVal == null) {
+                    proxyNode.remove(key);
+                } else if (!curVal.equals(origVal)) {                    
+                    proxyNode.put(key, curVal);
+                }
+            }
+            modifiedKeys.clear();
+            modified = false;
+        }
+        
+        void cancel() {
+            init(proxyNode);
+        }
+
+        @Override
+        protected void putSpi(String key, String value) {
+            if (!modifiedKeys.containsKey(key)) {
+                modifiedKeys.put(key, map.get(key));
+            }
+            map.put(key, value);            
+            if (!supportChanges) {
+                store();
+                init(proxyNode);
+            } else {
+                calculateModified();
+            }
+        }
+
+        @Override
+        protected String getSpi(String key) {
+            return (String)map.get(key);                    
+        }
+
+        @Override
+        protected void removeSpi(String key) {
+            if (!modifiedKeys.containsKey(key)) {
+                modifiedKeys.put(key, map.get(key));
+            }
+            map.remove(key);
+            if (!supportChanges) {
+                store();
+                init(proxyNode);
+            } else {
+                calculateModified();
+            }
+        }
+
+        private void calculateModified() {
+            modified = false;
+            for (Map.Entry<String, String> entry : modifiedKeys.entrySet()) {
+                final String key = entry.getKey();
+                final String origVal = entry.getValue();
+                final String curVal = map.get(key);
+                if (origVal != null) {
+                    modified = !origVal.equals(curVal);
+                } else {
+                    modified = curVal != null;
+                }
+                if (modified) {
+                    return;
+                }
+            }
+        }
+        
+        @Override
+        protected void removeNodeSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        protected String[] keysSpi() throws BackingStoreException {
+            String array[] = new String[map.keySet().size()];
+            return map.keySet().toArray( array );
+        }
+
+        @Override
+        protected String[] childrenNamesSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        protected AbstractPreferences childSpi(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        protected void syncSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        protected void flushSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException();
+        }
+    }
 }
 
