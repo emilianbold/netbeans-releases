@@ -42,6 +42,8 @@
 package org.netbeans.modules.html.knockout;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.javascript2.knockout.index.KnockoutCustomElement;
@@ -53,6 +55,7 @@ import org.netbeans.modules.javascript2.knockout.index.KnockoutCustomElement;
 public class KOTagCompletionItem extends HtmlCompletionItem.Tag {
 
     private final KnockoutCustomElement element;
+    private final List<String> alternativeLocations = new ArrayList<>();
 
     public KOTagCompletionItem(KnockoutCustomElement element, int substitutionOffset) {
         super(element.getName(), substitutionOffset, null, true);
@@ -75,6 +78,10 @@ public class KOTagCompletionItem extends HtmlCompletionItem.Tag {
         sb.append("<p>"); //NOI18N
         sb.append("Registered in "); //NOI18N
         sb.append(file.getName());
+        for (String loc : alternativeLocations) {
+            sb.append(", "); //NOI18N
+            sb.append(loc);
+        }
         sb.append("</p>"); //NOI18N
         return sb.toString();
     }
@@ -82,5 +89,13 @@ public class KOTagCompletionItem extends HtmlCompletionItem.Tag {
     @Override
     public boolean hasHelp() {
         return true;
+    }
+
+    public String getCustomElementName() {
+        return element.getName();
+    }
+
+    public void addAlternativeLocation(String location) {
+        alternativeLocations.add(location);
     }
 }
