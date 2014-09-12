@@ -872,7 +872,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             session().setPid(pid);
         }
         //see IZ 197786, we set breakpoints here not on prog load
-        ((GdbDebuggerSettingsBridge)profileBridge).noteAttached();
+        profileBridge().noteAttached();
 
         // continue, see IZ 198495
         if (DebuggerOption.RUN_AUTOSTART.isEnabled(optionLayers())) {
