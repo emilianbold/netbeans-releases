@@ -48,6 +48,7 @@ public final class ${TEMPLATENAME}Cntrl {
   @OpenHTMLRegistration(
     url = "${TEMPLATENAME}.html",
     displayName = "#CTL_${TEMPLATENAME}"
+    ${COMMENTICON}, iconBase="${ICONPATH}"
   )
   public static ${TEMPLATENAME} onPageLoad() {
     return new ${TEMPLATENAME}("Hello World!").applyBindings();
