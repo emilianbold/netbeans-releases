@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.versioning.core.api;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -53,6 +54,7 @@ import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.FlatFolder;
+import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -161,7 +163,7 @@ public final class VCSFileProxy {
      * @return a VCSFileProxy representing the given file or null if the given 
      * FileObject-s Filesystem isn't supported - e.g. jar filesystem. 
      */
-    public static VCSFileProxy createFileProxy(FileObject fileObject) {        
+    public static VCSFileProxy createFileProxy(final FileObject fileObject) {        
         try {
             VCSFileProxyOperations fileProxyOperations = getFileProxyOperations(fileObject.getFileSystem());
             if (fileProxyOperations == null) {
@@ -179,7 +181,18 @@ public final class VCSFileProxy {
                         @Override public void fileRenamed(FileRenameEvent fe) { }
                         @Override public void fileAttributeChanged(FileAttributeEvent fe) { }
                     };
-                    fileObject.addFileChangeListener(WeakListeners.create(FileChangeListener.class, p.fileChangeListener, fileObject));
+                    Runnable run = new Runnable() {
+
+                        @Override
+                        public void run () {
+                            fileObject.addFileChangeListener(WeakListeners.create(FileChangeListener.class, p.fileChangeListener, fileObject));
+                        }
+                    };
+                    if (EventQueue.isDispatchThread()) {
+                        Utils.postParallel(run);
+                    } else {
+                        run.run();
+                    }
                     return p;
                 } else {
                     return null; // e.g. FileObject from a jar filesystem
