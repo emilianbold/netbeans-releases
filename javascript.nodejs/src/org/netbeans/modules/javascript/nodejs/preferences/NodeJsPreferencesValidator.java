@@ -57,8 +57,27 @@ public final class NodeJsPreferencesValidator {
     }
 
     public NodeJsPreferencesValidator validate(Project project) {
-        ValidationUtils.validateNode(result, NodeJsSupport.forProject(project).getPreferences().getNode());
+        NodeJsPreferences preferences = NodeJsSupport.forProject(project).getPreferences();
+        if (!preferences.isEnabled()) {
+            return this;
+        }
+        validateNode(preferences.isDefaultNode(), preferences.getNode());
         return this;
+    }
+
+    public NodeJsPreferencesValidator validate(boolean enabled, boolean defaultNode, String node) {
+        if (!enabled) {
+            return this;
+        }
+        validateNode(defaultNode, node);
+        return this;
+    }
+
+    private void validateNode(boolean defaultNode, String node) {
+        if (defaultNode) {
+            return;
+        }
+        ValidationUtils.validateNode(result, node);
     }
 
 }
