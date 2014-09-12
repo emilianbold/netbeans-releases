@@ -57,6 +57,7 @@ public final class NodeJsPreferences {
 
     private static final String ENABLED = "enabled"; // NOI18N
     private static final String NODE_PATH = "node.path"; // NOI18N
+    private static final String NODE_DEFAULT = "node.default"; // NOI18N
 
     private final NodeJsSupport nodeJsSupport;
     private final Project project;
@@ -88,6 +89,14 @@ public final class NodeJsPreferences {
 
     public void setNode(String node) {
         getPreferences().put(NODE_PATH, FileUtils.relativizePath(project, node));
+    }
+
+    public boolean isDefaultNode() {
+        return getPreferences().getBoolean(NODE_DEFAULT, true);
+    }
+
+    public void setDefaultNode(boolean defaultNode) {
+        getPreferences().putBoolean(NODE_DEFAULT, defaultNode);
     }
 
     private Preferences getPreferences() {
