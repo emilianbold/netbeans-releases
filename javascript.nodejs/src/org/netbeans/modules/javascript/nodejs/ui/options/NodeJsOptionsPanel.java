@@ -44,6 +44,8 @@ package org.netbeans.modules.javascript.nodejs.ui.options;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -83,7 +85,10 @@ public final class NodeJsOptionsPanel extends JPanel {
         nodeHintLabel.setText(Bundle.NodeJsOptionsPanel_node_hint(NodeExecutable.NODE_NAME));
 
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
+        ItemListener defaultItemListener = new DefaultItemListener();
         nodeTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        nodePathCheckBox.addItemListener(defaultItemListener);
+        npmGlobalRootCheckBox.addItemListener(defaultItemListener);
     }
 
     public String getNode() {
@@ -278,6 +283,15 @@ public final class NodeJsOptionsPanel extends JPanel {
         }
 
         private void processUpdate() {
+            fireChange();
+        }
+
+    }
+
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
             fireChange();
         }
 
