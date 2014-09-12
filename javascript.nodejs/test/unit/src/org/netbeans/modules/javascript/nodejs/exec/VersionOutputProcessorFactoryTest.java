@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript.nodejs.exec;
 
-package org.netbeans.modules.javascript.nodejs.preferences;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable.VersionOutputProcessorFactory;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
-import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
-import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
+public class VersionOutputProcessorFactoryTest {
 
-public final class NodeJsPreferencesValidator {
+    private VersionOutputProcessorFactory versionFactory;
 
-    private final ValidationResult result = new ValidationResult();
-
-
-    public ValidationResult getResult() {
-        return result;
+    @Before
+    public void setUp() {
+        versionFactory = new VersionOutputProcessorFactory();
     }
 
-    public NodeJsPreferencesValidator validate(Project project) {
-        NodeJsPreferences preferences = NodeJsSupport.forProject(project).getPreferences();
-        if (!preferences.isEnabled()) {
-            return this;
-        }
-        validateNode(preferences.isDefaultNode(), preferences.getNode());
-        return this;
+    @Test
+    public void testValidVersion() {
+        Assert.assertEquals("0.10.31", versionFactory.parseVersion("v0.10.31"));
+        Assert.assertEquals("0.10.31.1258.2145", versionFactory.parseVersion("v0.10.31.1258.2145"));
     }
 
-    public NodeJsPreferencesValidator validate(boolean enabled, boolean defaultNode, String node) {
-        if (!enabled) {
-            return this;
-        }
-        validateNode(defaultNode, node);
-        return this;
-    }
-
-    private void validateNode(boolean defaultNode, String node) {
-        if (defaultNode) {
-            return;
-        }
-        ValidationUtils.validateNode(result, node);
+    @Test
+    public void testInvalidVersion() {
+        Assert.assertNull(versionFactory.parseVersion("v0.10.31a"));
+        Assert.assertNull(versionFactory.parseVersion("v 0.10.31"));
     }
 
 }
