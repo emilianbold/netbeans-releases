@@ -239,7 +239,6 @@ public final class NodeJsOptionsPanel extends JPanel {
         }
 
         private void processUpdate() {
-            NodeExecutable.resetVersion();
             fireChange();
         }
 
