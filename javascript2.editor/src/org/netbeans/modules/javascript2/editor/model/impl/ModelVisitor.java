@@ -598,7 +598,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         originalFunction = ((JsObject)currentScope).getProperty(functionName);
                         currentScope = currentScope.getParentScope();
                     }
-                    if (originalFunction != null) {
+                    if (originalFunction != null && originalFunction instanceof JsFunction) {
                         JsObjectImpl jsObject = ModelUtils.getJsObject(modelBuilder, name, true);
                         if (ModelUtils.isDescendant(jsObject, originalFunction)) {
                             //XXX This is not right solution. The right solution would be to create new anonymous function

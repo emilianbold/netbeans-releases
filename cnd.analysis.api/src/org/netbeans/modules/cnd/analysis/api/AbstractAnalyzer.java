@@ -125,7 +125,7 @@ public abstract class AbstractAnalyzer implements Analyzer {
     protected abstract Collection<? extends ErrorDescription> doRunImpl(final FileObject sr, final Context ctx, final CsmErrorProvider provider, final AtomicBoolean cancel);
 
     protected static AbstractHintsPanel createComponent(CodeAuditProvider provider) {
-        return new HintsPanel(null, provider);
+        return new HintsPanel(null, provider, provider.getMimeType());
     }
 
     protected static class RequestImpl implements CsmErrorProvider.Request, AnalyzerRequest {

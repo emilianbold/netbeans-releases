@@ -48,10 +48,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -65,6 +69,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
+import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
 import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController;
@@ -91,8 +96,8 @@ public class NodeExecutable {
 
     private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
 
-    // version of the node set in ide options
-    private static volatile Version version;
+    // versions of node executables
+    private static final ConcurrentMap<String, Version> VERSIONS = new ConcurrentHashMap<>();
 
     protected final Project project;
     protected final String nodePath;
@@ -134,8 +139,16 @@ public class NodeExecutable {
     @CheckForNull
     public static NodeExecutable forProject(Project project, boolean showCustomizer) {
         assert project != null;
-        String node = NodeJsSupport.forProject(project).getPreferences().getNode();
-        if (node == null) {
+        return forProjectInternal(project, showCustomizer);
+    }
+
+    @CheckForNull
+    private static NodeExecutable forProjectInternal(@NullAllowed Project project, boolean showCustomizer) {
+        if (project == null) {
+            return getDefault(project, showCustomizer);
+        }
+        NodeJsPreferences preferences = NodeJsSupport.forProject(project).getPreferences();
+        if (preferences.isDefaultNode()) {
             return getDefault(project, showCustomizer);
         }
         ValidationResult result = new NodeJsPreferencesValidator()
@@ -147,34 +160,43 @@ public class NodeExecutable {
             }
             return null;
         }
+        String node = preferences.getNode();
+        assert node != null;
         if (Utilities.isMac()) {
             return new MacNodeExecutable(node, project);
         }
         return new NodeExecutable(node, project);
     }
 
-    public static void resetVersion() {
-        version = null;
+    String getCommand() {
+        return nodePath;
+    }
+
+    public void resetVersion() {
+        VERSIONS.remove(nodePath);
     }
 
     @CheckForNull
-    public static Version getVersion() {
+    public Version getVersion() {
+        Version version = VERSIONS.get(nodePath);
         if (version != null) {
             return version;
         }
+        return getAndStoreVersion();
+    }
+
+    @CheckForNull
+    private Version getAndStoreVersion() {
         assert !EventQueue.isDispatchThread();
         VersionOutputProcessorFactory versionOutputProcessorFactory = new VersionOutputProcessorFactory();
         try {
-            NodeExecutable node = getDefault(null, false);
-            if (node == null) {
-                return null;
-            }
-            node.getExecutable("node version") // NOI18N
-                    .additionalParameters(node.getVersionParams())
+            getExecutable("node version") // NOI18N
+                    .additionalParameters(getVersionParams())
                     .runAndWait(getSilentDescriptor(), versionOutputProcessorFactory, "Detecting node version..."); // NOI18N
             String detectedVersion = versionOutputProcessorFactory.getVersion();
             if (detectedVersion != null) {
-                version = Version.fromDottedNotationWithFallback(detectedVersion);
+                Version version = Version.fromDottedNotationWithFallback(detectedVersion);
+                VERSIONS.put(nodePath, version);
                 return version;
             }
         } catch (CancellationException ex) {
@@ -199,10 +221,6 @@ public class NodeExecutable {
                 .run(getDescriptor());
         assert task != null : nodePath;
         return task;
-    }
-
-    String getCommand() {
-        return nodePath;
     }
 
     private ExternalExecutable getExecutable(String title) {
@@ -300,7 +318,9 @@ public class NodeExecutable {
 
     }
 
-    private static class VersionOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+    static class VersionOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+
+        private static final Pattern VERSION_PATTERN = Pattern.compile("^v([\\d\\.]+)$"); // NOI18N
 
         volatile String version;
 
@@ -326,13 +346,18 @@ public class NodeExecutable {
             });
         }
 
+        @CheckForNull
         public String getVersion() {
             return version;
         }
 
         public String parseVersion(String line) {
-            assert line.startsWith("v") : line; // NOI18N
-            return line.substring(1);
+            Matcher matcher = VERSION_PATTERN.matcher(line);
+            if (matcher.matches()) {
+                return matcher.group(1);
+            }
+            LOGGER.log(Level.INFO, "Unexpected node.js version line: {0}", line);
+            return null;
         }
 
     }

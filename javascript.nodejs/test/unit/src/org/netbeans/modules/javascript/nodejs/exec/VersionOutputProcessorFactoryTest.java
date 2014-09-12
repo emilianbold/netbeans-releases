@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,22 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript.nodejs.exec;
 
-package org.netbeans.modules.cnd.api.model.syntaxerr;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable.VersionOutputProcessorFactory;
 
-import java.util.Collection;
+public class VersionOutputProcessorFactoryTest {
 
-/**
- *
- * @author Alexander Simon
- */
-public interface CodeAuditProvider {
-    Collection<CodeAudit> getAudits();
-    String getName();
-    String getDisplayName();
-    String getDescription();
-    AuditPreferences getPreferences();
-    String getMimeType();
+    private VersionOutputProcessorFactory versionFactory;
+
+    @Before
+    public void setUp() {
+        versionFactory = new VersionOutputProcessorFactory();
+    }
+
+    @Test
+    public void testValidVersion() {
+        Assert.assertEquals("0.10.31", versionFactory.parseVersion("v0.10.31"));
+        Assert.assertEquals("0.10.31.1258.2145", versionFactory.parseVersion("v0.10.31.1258.2145"));
+    }
+
+    @Test
+    public void testInvalidVersion() {
+        Assert.assertNull(versionFactory.parseVersion("v0.10.31a"));
+        Assert.assertNull(versionFactory.parseVersion("v 0.10.31"));
+    }
+
 }

@@ -41,18 +41,33 @@
  */
 package org.netbeans.modules.javascript.nodejs.ui.customizer;
 
+import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
 import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle;
+import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
+import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
+import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController;
+import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.NbBundle;
 
 public final class NodeJsCustomizerPanel extends JPanel {
@@ -60,7 +75,9 @@ public final class NodeJsCustomizerPanel extends JPanel {
     private final ProjectCustomizer.Category category;
     private final NodeJsPreferences preferences;
 
-    private volatile boolean enabled;
+    volatile boolean enabled;
+    volatile boolean defaultNode;
+    volatile String node;
 
 
     public NodeJsCustomizerPanel(ProjectCustomizer.Category category, Project project) {
@@ -78,6 +95,13 @@ public final class NodeJsCustomizerPanel extends JPanel {
         // init
         enabled = preferences.isEnabled();
         enabledCheckBox.setSelected(enabled);
+        node = preferences.getNode();
+        nodeTextField.setText(node);
+        defaultNode = preferences.isDefaultNode();
+        defaultNodeCheckBox.setSelected(defaultNode);
+        // ui
+        enableAllFields();
+        validateData();
         // listeners
         category.setStoreListener(new ActionListener() {
             @Override
@@ -90,16 +114,70 @@ public final class NodeJsCustomizerPanel extends JPanel {
             public void itemStateChanged(ItemEvent e) {
                 enabled = e.getStateChange() == ItemEvent.SELECTED;
                 validateData();
+                enableAllFields();
+            }
+        });
+        nodeTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                processChange();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                processChange();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                processChange();
+            }
+            private void processChange() {
+                node = nodeTextField.getText();
+                validateData();
+            }
+        });
+        defaultNodeCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                defaultNode = e.getStateChange() == ItemEvent.SELECTED;
+                validateData();
+                enableNodeFields();
             }
         });
     }
 
+    void enableAllFields() {
+        enableNodeFields();
+        defaultNodeCheckBox.setEnabled(enabled);
+        configureNodeButton.setEnabled(enabled);
+    }
+
+    void enableNodeFields() {
+        nodeTextField.setEnabled(enabled && !defaultNode);
+        nodeBrowseButton.setEnabled(enabled && !defaultNode);
+    }
+
     void validateData() {
-        // XXX
+        ValidationResult result = new NodeJsPreferencesValidator()
+                .validate(enabled, defaultNode, node)
+                .getResult();
+        if (result.hasErrors()) {
+            category.setErrorMessage(result.getFirstErrorMessage());
+            category.setValid(false);
+            return;
+        }
+        if (result.hasWarnings()) {
+            category.setErrorMessage(result.getFirstWarningMessage());
+            category.setValid(true);
+            return;
+        }
+        category.setErrorMessage(null);
+        category.setValid(true);
     }
 
     void saveData() {
         preferences.setEnabled(enabled);
+        preferences.setNode(node);
+        preferences.setDefaultNode(defaultNode);
     }
 
     /**
@@ -110,21 +188,94 @@ public final class NodeJsCustomizerPanel extends JPanel {
     private void initComponents() {
 
         enabledCheckBox = new JCheckBox();
+        nodeLabel = new JLabel();
+        nodeTextField = new JTextField();
+        nodeBrowseButton = new JButton();
+        defaultNodeCheckBox = new JCheckBox();
+        configureNodeButton = new JButton();
 
         Mnemonics.setLocalizedText(enabledCheckBox, NbBundle.getMessage(NodeJsCustomizerPanel.class, "NodeJsCustomizerPanel.enabledCheckBox.text")); // NOI18N
+
+        nodeLabel.setLabelFor(nodeTextField);
+        Mnemonics.setLocalizedText(nodeLabel, NbBundle.getMessage(NodeJsCustomizerPanel.class, "NodeJsCustomizerPanel.nodeLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(nodeBrowseButton, NbBundle.getMessage(NodeJsCustomizerPanel.class, "NodeJsCustomizerPanel.nodeBrowseButton.text")); // NOI18N
+        nodeBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                nodeBrowseButtonActionPerformed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(defaultNodeCheckBox, NbBundle.getMessage(NodeJsCustomizerPanel.class, "NodeJsCustomizerPanel.defaultNodeCheckBox.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(configureNodeButton, NbBundle.getMessage(NodeJsCustomizerPanel.class, "NodeJsCustomizerPanel.configureNodeButton.text")); // NOI18N
+        configureNodeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                configureNodeButtonActionPerformed(evt);
+            }
+        });
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(enabledCheckBox)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(enabledCheckBox)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(nodeLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(defaultNodeCheckBox)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(configureNodeButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(nodeTextField)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(nodeBrowseButton))))
         );
+
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configureNodeButton, nodeBrowseButton});
+
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(enabledCheckBox)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(enabledCheckBox)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(nodeLabel)
+                    .addComponent(nodeTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(nodeBrowseButton))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(defaultNodeCheckBox)
+                    .addComponent(configureNodeButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    @NbBundle.Messages("NodeJsCustomizerPanel.node.browse.title=Select node")
+    private void nodeBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nodeBrowseButtonActionPerformed
+        assert EventQueue.isDispatchThread();
+        File file = new FileChooserBuilder(NodeJsCustomizerPanel.class)
+                .setFilesOnly(true)
+                .setTitle(Bundle.NodeJsCustomizerPanel_node_browse_title())
+                .showOpenDialog();
+        if (file != null) {
+            nodeTextField.setText(file.getAbsolutePath());
+        }
+    }//GEN-LAST:event_nodeBrowseButtonActionPerformed
+
+    private void configureNodeButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configureNodeButtonActionPerformed
+        assert EventQueue.isDispatchThread();
+        OptionsDisplayer.getDefault().open(NodeJsOptionsPanelController.OPTIONS_PATH);
+    }//GEN-LAST:event_configureNodeButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JButton configureNodeButton;
+    private JCheckBox defaultNodeCheckBox;
     private JCheckBox enabledCheckBox;
+    private JButton nodeBrowseButton;
+    private JLabel nodeLabel;
+    private JTextField nodeTextField;
     // End of variables declaration//GEN-END:variables
 }
