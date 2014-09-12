@@ -57,6 +57,8 @@ public final class NodeJsOptions {
     private static final NodeJsOptions INSTANCE = new NodeJsOptions();
 
     private static final String NODE_PATH = "node.path"; // NOI18N
+    private static final String USE_NODE_PATH = "use.node.path"; // NOI18N
+    private static final String USE_NPM_GLOBAL_ROOT = "use.npm.root.global"; // NOI18N
 
     private volatile boolean nodeSearched = false;
 
@@ -84,6 +86,22 @@ public final class NodeJsOptions {
 
     public void setNode(String node) {
         getPreferences().put(NODE_PATH, node);
+    }
+
+    public boolean isUseNodePath() {
+        return getPreferences().getBoolean(USE_NODE_PATH, false);
+    }
+
+    public void setUseNodePath(boolean useNodePath) {
+        getPreferences().putBoolean(USE_NODE_PATH, useNodePath);
+    }
+
+    public boolean isUseNpmGlobalRoot() {
+        return getPreferences().getBoolean(USE_NPM_GLOBAL_ROOT, false);
+    }
+
+    public void setUseNpmGlobalRoot(boolean useNpmGlobalRoot) {
+        getPreferences().putBoolean(USE_NPM_GLOBAL_ROOT, useNpmGlobalRoot);
     }
 
     private Preferences getPreferences() {
