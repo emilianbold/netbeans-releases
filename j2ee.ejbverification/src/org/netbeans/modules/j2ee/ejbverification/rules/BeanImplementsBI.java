@@ -109,7 +109,7 @@ public final class BeanImplementsBI {
 
                 for (String businessInterface : businessInterFaces) {
                     if (!implementedInterfaces.contains(businessInterface)) {
-                        ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
+                        ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), hintContext.getInfo(),
                                 Bundle.BeanImplementsBI_err(), Severity.WARNING);
                         return Collections.singletonList(err);
                     }
