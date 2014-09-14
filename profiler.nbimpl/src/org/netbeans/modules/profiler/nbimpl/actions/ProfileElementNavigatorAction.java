@@ -127,8 +127,8 @@ public final class ProfileElementNavigatorAction extends NodeAction {
                     }
 
                     if (sourceInfo != null) {
-                        Lookup configuration = Lookups.fixed(sourceInfo);
-                        ProfilerSession.findAndConfigure(configuration, project, getName());
+                        Lookup configuration = Lookups.fixed(sourceInfo, project);
+                        ProfilerSession.findAndConfigure(configuration, getName());
                     }
                 } catch (Exception ex) {
                     ProfilerDialogs.displayWarning(Bundle.ProfileElementNavigatorAction_ProblemProfilingElement());
