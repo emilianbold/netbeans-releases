@@ -311,25 +311,13 @@ public class IteratorToFor {
         TypeMirror collectionType = ctx.getInfo().getTrees().getTypeMirror(collection);
         TypeElement iterable = ctx.getInfo().getElements().getTypeElement("java.lang.Iterable");
         if (collectionType == null || iterable == null) return false;
-        DeclaredType dt = (DeclaredType)collectionType;
-        boolean erasure = dt.getTypeArguments().isEmpty();
-        TypeMirror typeMirror = null;
-        if (erasure) {
-            TypeElement obj = ctx.getInfo().getElements().getTypeElement("java.lang.Object");
-            if (obj != null) {
-                typeMirror = obj.asType();
-            }
-        } else {
-            typeMirror = ctx.getInfo().getTrees().getTypeMirror(type);
-        }
+        TypeMirror typeMirror = ctx.getInfo().getTrees().getTypeMirror(type);
         if (typeMirror != null && typeMirror.getKind().isPrimitive()) {
             typeMirror = ctx.getInfo().getTypes().boxedClass((PrimitiveType)typeMirror).asType();
         }
-        TypeMirror iterableType = erasure ?
-                ctx.getInfo().getTypes().getDeclaredType(iterable) :
-                ctx.getInfo().getTypes().getDeclaredType(iterable, ctx.getInfo().getTypes().getWildcardType(typeMirror, null));
+        TypeMirror iterableType = ctx.getInfo().getTypes().getDeclaredType(iterable, ctx.getInfo().getTypes().getWildcardType(typeMirror, null));
         TypeMirror bogusIterableType = ctx.getInfo().getTypes().getDeclaredType(iterable, ctx.getInfo().getTypes().getNullType());
-        return ctx.getInfo().getTypes().isAssignable(collectionType, iterableType) && (erasure || !ctx.getInfo().getTypes().isAssignable(collectionType, bogusIterableType));
+        return ctx.getInfo().getTypes().isAssignable(collectionType, iterableType) && !ctx.getInfo().getTypes().isAssignable(collectionType, bogusIterableType);
     }
     
     private static final class ReplaceIndexedForEachLoop extends JavaFix {
