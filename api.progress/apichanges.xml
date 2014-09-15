@@ -108,7 +108,7 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
   <changes>
       <change id="swingSplit">
-          <api name="progress api"/>
+          <api name="progress_api"/>
           <summary>
               Swing dependencies separated into a new module.
           </summary>
@@ -120,6 +120,7 @@ is the proper place.
               Progress API was split so that parts that are directly connected to Swing types were migrated
               to a separate module. 
           </description>
+          <issue number="247111"/>
       </change>
     <change id="customDialogs">
         <api name="progress_api"/>
