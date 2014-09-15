@@ -49,11 +49,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.Cancellable;
 
 /**
@@ -70,7 +66,7 @@ public final class AggregateProgressHandle {
     private static final Logger LOG = Logger.getLogger(AggregateProgressHandle.class.getName());
 
     private ProgressMonitor monitor;
-    private ProgressHandle handle;
+    final ProgressHandle handle;
     static final int WORKUNITS = 10000;
     private boolean finished;
     private Collection<ProgressContributor> contributors;
@@ -78,8 +74,9 @@ public final class AggregateProgressHandle {
     final String displayName;
     
     /** Creates a new instance of AggregateProgressHandle */
-    AggregateProgressHandle(String displayName, ProgressContributor[] contribs, Cancellable cancellable, Action listAction, boolean systemtask) {
-        handle = ProgressHandleFactory.createHandle(displayName, cancellable, listAction);
+    AggregateProgressHandle(String displayName, ProgressContributor[] contribs, Cancellable cancellable, boolean systemtask,
+            ProgressHandle hdl) {
+        handle = hdl;
         finished = false;
         contributors = new ArrayList<ProgressContributor>();
         if (contribs != null) {
@@ -263,20 +260,5 @@ public final class AggregateProgressHandle {
      */
     public void setDisplayName(String newDisplayName) {
         handle.setDisplayName(newDisplayName);
-    }
-    
-   /**
-     * have the component in custom location, don't include in the status bar.
-     */
-    JComponent extractComponent() {
-        return ProgressHandleFactory.createProgressComponent(handle);
-    }    
-
-    JLabel extractDetailLabel() {
-        return ProgressHandleFactory.createDetailLabelComponent(handle);
-    }
-
-    JLabel extractMainLabel() {
-        return ProgressHandleFactory.createMainLabelComponent(handle);
     }
 }

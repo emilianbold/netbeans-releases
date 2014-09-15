@@ -53,7 +53,7 @@ import javax.swing.UIManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.progress.spi.Controller;
-import org.netbeans.modules.progress.spi.InternalHandle;
+import org.netbeans.modules.progress.spi.UIInternalHandle;
 import org.netbeans.modules.progress.spi.ProgressEvent;
 import org.netbeans.modules.progress.spi.ProgressUIWorker;
 import org.openide.util.Cancellable;
@@ -73,19 +73,19 @@ public class ProgressHandleFactoryTest extends NbTestCase {
      */
     public void testCreateHandle() {
         
-        ProgressHandle handle = ProgressHandleFactory.createHandle("task 1");
-        InternalHandle internal = handle.getInternalHandle();
+        ProgressHandle handle = ProgressHandleFactory.createUIHandle("task 1");
+        UIInternalHandle internal = (UIInternalHandle)handle.getInternalHandle();
         assertEquals("task 1", internal.getDisplayName());
         assertFalse(internal.isAllowCancel());
         assertFalse(internal.isCustomPlaced());
-        assertEquals(InternalHandle.STATE_INITIALIZED, internal.getState());
+        assertEquals(UIInternalHandle.STATE_INITIALIZED, internal.getState());
         
-        handle = ProgressHandleFactory.createHandle("task 2", new TestCancel());
-        internal = handle.getInternalHandle();
+        handle = ProgressHandleFactory.createUIHandle("task 2", new TestCancel());
+        internal = (UIInternalHandle)handle.getInternalHandle();
         assertEquals("task 2", internal.getDisplayName());
         assertTrue(internal.isAllowCancel());
         assertFalse(internal.isCustomPlaced());
-        assertEquals(InternalHandle.STATE_INITIALIZED, internal.getState());
+        assertEquals(UIInternalHandle.STATE_INITIALIZED, internal.getState());
         
     }
 
@@ -93,7 +93,7 @@ public class ProgressHandleFactoryTest extends NbTestCase {
     public void testCustomComponentIsInitialized() {
         Controller.defaultInstance = new TestController();
         
-        ProgressHandle handle = ProgressHandleFactory.createHandle("task 1");
+        ProgressUIHandle handle = ProgressHandleFactory.createUIHandle("task 1");
         JComponent component = ProgressHandleFactory.createProgressComponent(handle);
         
         handle.start(15);
@@ -103,7 +103,7 @@ public class ProgressHandleFactoryTest extends NbTestCase {
         assertEquals(15, ((JProgressBar) component).getMaximum());
         assertEquals(2, ((JProgressBar) component).getValue());
         
-        handle = ProgressHandleFactory.createHandle("task 2");
+        handle = ProgressHandleFactory.createUIHandle("task 2");
         component = ProgressHandleFactory.createProgressComponent(handle);
         
         handle.start(20);

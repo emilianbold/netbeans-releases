@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.progress.spi;
 
+import org.netbeans.modules.progress.spi.ProgressUIWorkerWithModel;
+
 /**
  *
  * @author mkleint

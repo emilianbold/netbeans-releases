@@ -45,15 +45,10 @@
 
 package org.netbeans.modules.progress.spi;
 
-import java.awt.event.ActionEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import org.netbeans.progress.module.*;
 import org.openide.util.Cancellable;
-import org.openide.util.Lookup;
 
 /**
  * Instances provided by the ProgressHandleFactory allow the users of the API to
@@ -61,14 +56,11 @@ import org.openide.util.Lookup;
  * @author Milos Kleint (mkleint@netbeans.org)
  * @since org.netbeans.api.progress/1 1.18
  */
-public final class InternalHandle {
+public class InternalHandle {
 
     private static final Logger LOG = Logger.getLogger(InternalHandle.class.getName());
     
     private String displayName;
-    private boolean customPlaced1 = false;
-    private boolean customPlaced2 = false;
-    private boolean customPlaced3 = false;
     private int state;
     private int totalUnits;
     private int currentUnit;
@@ -78,11 +70,9 @@ public final class InternalHandle {
     private long timeSleepy = 0;
     private String lastMessage;
     private final Cancellable cancelable;
-    private final Action viewAction;
     private final boolean userInitiated;
     private int initialDelay = Controller.INITIAL_DELAY;
     private Controller controller;
-    private ExtractedProgressUIWorker component;
     
     public static final int STATE_INITIALIZED = 0;
     public static final int STATE_RUNNING = 1;
@@ -96,15 +86,13 @@ public final class InternalHandle {
     /** Creates a new instance of ProgressHandle */
     public InternalHandle(String displayName, 
                    Cancellable cancel,
-                   boolean userInitiated,
-                   Action view) {
+                   boolean userInitiated) {
         this.displayName = displayName;
         this.userInitiated = userInitiated;
         state = STATE_INITIALIZED;
         totalUnits = 0;
         lastMessage = null;
         cancelable = cancel;
-        viewAction = view;
     }
 
     public String getDisplayName() {
@@ -119,16 +107,15 @@ public final class InternalHandle {
     }
     
     public boolean isAllowCancel() {
-        return cancelable != null && !isCustomPlaced();
+        return cancelable != null;
     }
     
     public boolean isAllowView() {
-        return viewAction != null && !isCustomPlaced();
+        return false;
     }
     
-    
     public boolean isCustomPlaced() {
-        return component != null;
+        return false;
     }
     
     public boolean isUserInitialized() {
@@ -197,6 +184,11 @@ public final class InternalHandle {
         initialEstimate = estimate;
         timeLastProgress = System.currentTimeMillis();
         controller.toDeterminate(this);
+    }
+    
+    protected final void setController(Controller ctrl) {
+        assert this.controller == null : "Controller can be set just once"; // NOI18N
+        this.controller = ctrl;
     }
     
     /**
@@ -310,10 +302,6 @@ public final class InternalHandle {
     
    ///XXX - called from UI, threading
     public void requestView() {
-        if (!isAllowView()) {
-            return;
-        }
-        viewAction.actionPerformed(new ActionEvent(viewAction, ActionEvent.ACTION_PERFORMED, "performView"));
     }
     
    // XXX - called from UI, threading
@@ -345,56 +333,6 @@ public final class InternalHandle {
                             (initialEstimate == -1 ? -1 : calculateFinishEstimate()));
     }
     
-    private void createExtractedWorker() {
-        if (component == null) {
-            ProgressUIWorkerProvider prov = Lookup.getDefault().lookup(ProgressUIWorkerProvider.class);
-            if (prov == null) {
-                LOG.log(Level.CONFIG, "Using fallback trivial progress implementation");
-                prov = new TrivialProgressUIWorkerProvider();
-            }
-            component = prov.getExtractedComponentWorker();
-            controller = new Controller(component);
-        }
-    }
-    /**
-     * have the component in custom location, don't include in the status bar.
-     */
-    public synchronized JComponent extractComponent() {
-        if (customPlaced1) {
-            throw new IllegalStateException("Cannot retrieve progress component multiple times");
-        }
-        if (state != STATE_INITIALIZED) {
-            throw new IllegalStateException("You can request custom placement of progress component only before starting the task");
-        }
-        customPlaced1 = true;
-        createExtractedWorker();
-        return component.getProgressComponent();
-    }
-    
-    public synchronized JLabel extractDetailLabel() {
-        if (customPlaced2) {
-            throw new IllegalStateException("Cannot retrieve progress detail label component multiple times");
-        }
-        if (state != STATE_INITIALIZED) {
-            throw new IllegalStateException("You can request custom placement of progress component only before starting the task");
-        }
-        customPlaced2 = true;
-        createExtractedWorker();
-        return component.getDetailLabelComponent();
-    }
-
-    public synchronized JLabel extractMainLabel() {
-        if (customPlaced3) {
-            throw new IllegalStateException("Cannot retrieve progress main label component multiple times");
-        }
-        if (state != STATE_INITIALIZED) {
-            throw new IllegalStateException("You can request custom placement of progress component only before starting the task");
-        }
-        customPlaced3 = true;
-        createExtractedWorker();
-        return component.getMainLabelComponent();
-    }
-
     long calculateFinishEstimate() {
         
         // we are interested in seconds only

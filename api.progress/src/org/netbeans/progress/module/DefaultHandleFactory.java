@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,33 +34,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.progress.module;
 
-import org.netbeans.modules.progress.spi.ProgressEvent;
-import org.netbeans.modules.progress.spi.ProgressUIWorkerWithModel;
-import org.netbeans.modules.progress.spi.TaskModel;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.progress.spi.Controller;
+import org.netbeans.modules.progress.spi.InternalHandle;
+import org.netbeans.modules.progress.spi.ProgressEnvironment;
+import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
 
 /**
- * Fallback provider in case no GUI is registered.
- * Just enough to make unit tests run without errors, etc.
- * @author Jesse Glick
- * @see "issue #87812"
+ * Provides a default, non-swing, Handles
+ * @author sdedic
  */
-public class TrivialProgressUIWorkerProvider implements ProgressUIWorkerWithModel {
-
-    public TrivialProgressUIWorkerProvider() {}
-
-    public ProgressUIWorkerWithModel getDefaultWorker() {
-        return this;
+public class DefaultHandleFactory implements ProgressEnvironment {
+    private static final ProgressEnvironment INSTANCE;
+    
+    static {
+        ProgressEnvironment f = Lookup.getDefault().lookup(ProgressEnvironment.class);
+        if (f == null) {
+            f = new DefaultHandleFactory();
+        }
+        INSTANCE = f;
+    }
+    
+    public static ProgressEnvironment get() {
+        return INSTANCE;
     }
 
-    public void setModel(TaskModel model) {}
+    @Override
+    public ProgressHandle createHandle(String displayname, Cancellable c, boolean userInit) {
+        return new ProgressHandle(new InternalHandle(displayname, c, userInit)) {};
+    }
 
-    public void showPopup() {}
-
-    public void processProgressEvent(ProgressEvent event) {}
-
-    public void processSelectedProgressEvent(ProgressEvent event) {}
+    @Override
+    public Controller getController() {
+        return new Controller(null);
+    }
 }

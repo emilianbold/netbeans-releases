@@ -47,14 +47,17 @@ package org.netbeans.api.progress;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import org.netbeans.modules.progress.spi.InternalHandle;
+import org.netbeans.modules.progress.spi.UIInternalHandle;
 import org.openide.util.Cancellable;
 
 /**
  * Factory to create various ProgressHandle instances that allow long lasting
- * tasks to show their progress using various progress UIs.
+ * tasks to show their progress using various progress UIs. This class extends the
+ * {@link org.netbeans.api.progress.BaseProgressHandleFactory} with the ability to provide
+ * a custom Swing UI (JPanel) and manipulate with Swing components.
  *
  * @author Milos Kleint (mkleint@netbeans.org)
+ * @author Svata Dedic
  */
 public final class ProgressHandleFactory {
 
@@ -63,26 +66,15 @@ public final class ProgressHandleFactory {
     }
 
     /**
-     * Create a progress ui handle for a long lasting task.
-     * @param displayName to be shown in the progress UI
-     * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
+     * 
+     * @param displayName
+     * @return 
+     * @deprecated Use {@link BasicProgressHandleFactory#createHandle(java.lang.String)}
      */
     public static ProgressHandle createHandle(String displayName) {
-        return createHandle(displayName, null, null);
+        return createHandle(displayName, (Action)null);
     }
     
-    /**
-     * Create a progress ui handle for a long lasting task.
-     * @param allowToCancel either null, if the task cannot be cancelled or 
-     *          an instance of {@link org.openide.util.Cancellable} that will be called when user 
-     *          triggers cancel of the task.
-     * @param displayName to be shown in the progress UI
-     * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
-     */
-    public static ProgressHandle createHandle(String displayName, Cancellable allowToCancel) {
-        return createHandle(displayName, allowToCancel, null);
-    }
-
     /**
      * Create a progress ui handle for a long lasting task.
      * @param linkOutput an <code>Action</code> instance that links the running task in the progress bar
@@ -95,6 +87,29 @@ public final class ProgressHandleFactory {
         return createHandle(displayName, null, linkOutput);
     }
     
+    public static ProgressUIHandle createUIHandle(String displayName) {
+        return (ProgressUIHandle)createHandle(displayName, null, null);
+    }
+    
+    public static ProgressUIHandle createUIHandle(String displayName, Action linkOutput) {
+        return (ProgressUIHandle)createHandle(displayName, null, linkOutput);
+    }
+    
+    /**
+     * 
+     * @param displayName
+     * @param allowToCancel
+     * @return 
+     * @deprecated Use {@link BasicProgressHandleFactory#createHandle(java.lang.String, org.openide.util.Cancellable)}
+     */
+    public static ProgressHandle createHandle(String displayName, Cancellable allowToCancel) {
+        return createHandle(displayName, allowToCancel, null);
+    }
+    
+    public static ProgressUIHandle createUIHandle(String displayName, Cancellable allowToCancel) {
+        return createUIHandle(displayName, allowToCancel, null);
+    }
+    
     /**
      * Create a progress ui handle for a long lasting task.
      * @param allowToCancel either null, if the task cannot be cancelled or 
@@ -104,19 +119,36 @@ public final class ProgressHandleFactory {
      *                   to an output of the task. The action is assumed to open the apropriate component with the task's output.
      * @param displayName to be shown in the progress UI
      * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
-     *
+     * @deprecated use the {@link #createUIHandle(java.lang.String, org.openide.util.Cancellable, javax.swing.Action)}
      */
     public static ProgressHandle createHandle(String displayName, Cancellable allowToCancel, Action linkOutput) {
-        return new ProgressHandle(new InternalHandle(displayName, allowToCancel, true, linkOutput));
+        return new ProgressUIHandle(new UIInternalHandle(displayName, allowToCancel, true, linkOutput));
     }
     
+    public static ProgressUIHandle createUIHandle(String displayName, Cancellable allowToCancel, Action linkOutput) {
+        return new ProgressUIHandle(new UIInternalHandle(displayName, allowToCancel, true, linkOutput));
+    }
+
+    /**
+     * @param handle
+     * @return 
+     * @deprecated 
+     */
+    public static JComponent createProgressComponent(ProgressHandle handle) {
+        return ((ProgressUIHandle)handle).extractComponent();
+    }
+
     /**
      * Get the progress bar component for use in custom dialogs, the task won't 
      * show in the progress bar anymore.
      * @return the component to use in custom UI.
      */
-    public static JComponent createProgressComponent(ProgressHandle handle) {
+    public static JComponent createProgressComponent(ProgressUIHandle handle) {
         return handle.extractComponent();
+    }
+    
+    public static JLabel createMainLabelComponent(ProgressHandle handle) {
+        return ((ProgressUIHandle)handle).extractMainLabel();
     }
     
     /**
@@ -125,8 +157,12 @@ public final class ProgressHandleFactory {
      * @return the component to use in custom UI.
      * @since org.netbeans.api.progress 1.8
      */
-    public static JLabel createMainLabelComponent(ProgressHandle handle) {
+    public static JLabel createMainLabelComponent(ProgressUIHandle handle) {
         return handle.extractMainLabel();
+    }
+    
+    public static JLabel createDetailLabelComponent(ProgressHandle handle) {
+        return ((ProgressUIHandle)handle).extractDetailLabel();
     }
     
     /**
@@ -135,7 +171,7 @@ public final class ProgressHandleFactory {
      * @return the component to use in custom UI.
      * @since org.netbeans.api.progress 1.8
      */
-    public static JLabel createDetailLabelComponent(ProgressHandle handle) {
+    public static JLabel createDetailLabelComponent(ProgressUIHandle handle) {
         return handle.extractDetailLabel();
     }
     
@@ -144,24 +180,12 @@ public final class ProgressHandleFactory {
      * Such tasks have lower priority in the UI.
      * @param displayName to be shown in the progress UI
      * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
+     * @deprecated
      */
     public static ProgressHandle createSystemHandle(String displayName) {
-        return createSystemHandle(displayName, null);
+        return createSystemHandle(displayName, null, null);
     }
 
-    /**
-     * Create a cancelable handle for a task that is not triggered by explicit user action.
-     * Such tasks have lower priority in the UI.
-     * @param displayName to be shown in the progress UI
-     * @param allowToCancel either null, if the task cannot be cancelled or 
-     *          an instance of {@link org.openide.util.Cancellable} that will be called when user 
-     *          triggers cancel of the task.
-     * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
-     */
-    public static ProgressHandle createSystemHandle(String displayName, Cancellable allowToCancel) {
-        return new ProgressHandle(new InternalHandle(displayName, allowToCancel, false, null));
-    }
-    
     /**
      * Create a progress ui handle for a task that is not triggered by explicit user action.
      * @param allowToCancel either null, if the task cannot be cancelled or 
@@ -174,7 +198,6 @@ public final class ProgressHandleFactory {
      *
      */
     public static ProgressHandle createSystemHandle(String displayName, Cancellable allowToCancel, Action linkOutput) {
-        return new ProgressHandle(new InternalHandle(displayName, allowToCancel, false, linkOutput));
+        return new ProgressUIHandle(new UIInternalHandle(displayName, allowToCancel, false, linkOutput));
     }    
-    
 }

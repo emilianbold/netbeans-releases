@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,31 +42,20 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.progress.module;
+package org.netbeans.modules.progress.spi;
 
-import org.netbeans.modules.progress.spi.ProgressEvent;
-import org.netbeans.modules.progress.spi.ProgressUIWorkerWithModel;
-import org.netbeans.modules.progress.spi.TaskModel;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import org.netbeans.modules.progress.spi.ProgressUIWorker;
 
 /**
- * Fallback provider in case no GUI is registered.
- * Just enough to make unit tests run without errors, etc.
- * @author Jesse Glick
- * @see "issue #87812"
+ *
+ * @author mkleint
+ * @since org.netbeans.api.progress/1 1.18
  */
-public class TrivialProgressUIWorkerProvider implements ProgressUIWorkerWithModel {
-
-    public TrivialProgressUIWorkerProvider() {}
-
-    public ProgressUIWorkerWithModel getDefaultWorker() {
-        return this;
-    }
-
-    public void setModel(TaskModel model) {}
-
-    public void showPopup() {}
-
-    public void processProgressEvent(ProgressEvent event) {}
-
-    public void processSelectedProgressEvent(ProgressEvent event) {}
+public interface ExtractedProgressUIWorker extends ProgressUIWorker {
+    
+    JComponent getProgressComponent();
+    JLabel getMainLabelComponent();
+    JLabel getDetailLabelComponent();
 }

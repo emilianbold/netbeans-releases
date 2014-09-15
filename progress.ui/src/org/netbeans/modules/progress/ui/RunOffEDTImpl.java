@@ -61,6 +61,7 @@ import javax.swing.*;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressRunnable;
+import org.netbeans.api.progress.ProgressUIHandle;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress;
@@ -225,7 +226,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
     @Override
     public void runOffEventThreadWithProgressDialog(final Runnable operation, final String operationDescr,
             ProgressHandle handle, boolean includeDetailLabel, int waitCursorAfter, int dialogAfter) {
-        JPanel content = contentPanel(handle, includeDetailLabel);
+        JPanel content = contentPanel((ProgressUIHandle)handle, includeDetailLabel);
         runOffEventThreadCustomDialogImpl(operation, operationDescr, content, waitCursorAfter, dialogAfter);
     }
     
@@ -332,7 +333,8 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
 
     @Override
     public <T> Future<T> showProgressDialogAndRunLater (ProgressRunnable<T> operation, ProgressHandle handle, boolean includeDetailLabel) {
-       AbstractWindowRunner<T> wr = new ProgressBackgroundRunner<T>(operation, handle, includeDetailLabel, operation instanceof Cancellable);
+       AbstractWindowRunner<T> wr = new ProgressBackgroundRunner<T>(operation, 
+               (ProgressUIHandle)handle, includeDetailLabel, operation instanceof Cancellable);
        Future<T> result = wr.start();
        assert EventQueue.isDispatchThread() == (result != null);
        if (result == null) {
@@ -366,7 +368,8 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
     @Override
     public void showProgressDialogAndRun(Runnable toRun, ProgressHandle handle, boolean includeDetailLabel) {
        boolean showCancelButton = toRun instanceof Cancellable;
-       AbstractWindowRunner<Void> wr = new ProgressBackgroundRunner<Void>(toRun, handle, includeDetailLabel, showCancelButton);
+       AbstractWindowRunner<Void> wr = new ProgressBackgroundRunner<Void>(toRun, 
+               (ProgressUIHandle)handle, includeDetailLabel, showCancelButton);
        wr.start();
         try {
             try {
@@ -434,17 +437,17 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
         private final ProgressRunnable<T> toRun;
         ProgressBackgroundRunner(ProgressRunnable<T> toRun, String displayName, boolean includeDetail, boolean showCancel) {
             super (showCancel ?
-                ProgressHandleFactory.createHandle(displayName, (Cancellable) toRun) :
-                ProgressHandleFactory.createHandle(displayName), includeDetail, showCancel);
+                ProgressHandleFactory.createUIHandle(displayName, (Cancellable) toRun, null) :
+                ProgressHandleFactory.createUIHandle(displayName, (Action)null), includeDetail, showCancel);
             this.toRun = toRun;
         }
 
-        ProgressBackgroundRunner(ProgressRunnable<T> toRun, ProgressHandle handle, boolean includeDetail, boolean showCancel) {
+        ProgressBackgroundRunner(ProgressRunnable<T> toRun, ProgressUIHandle handle, boolean includeDetail, boolean showCancel) {
             super (handle, includeDetail, showCancel);
             this.toRun = toRun;
         }
 
-        ProgressBackgroundRunner(Runnable toRun, ProgressHandle handle, boolean includeDetail, boolean showCancel) {
+        ProgressBackgroundRunner(Runnable toRun, ProgressUIHandle handle, boolean includeDetail, boolean showCancel) {
             this (showCancel ? new CancellableRunnablePR<T>(toRun) : 
                 new RunnablePR<T>(toRun), handle, includeDetail, showCancel);
         }
@@ -496,7 +499,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
 
     }
 
-    private static JPanel contentPanel(final ProgressHandle handle, boolean includeDetail) {
+    private static JPanel contentPanel(final ProgressUIHandle handle, boolean includeDetail) {
         // top panel
         JPanel contentPanel = new JPanel(new GridBagLayout());
         
