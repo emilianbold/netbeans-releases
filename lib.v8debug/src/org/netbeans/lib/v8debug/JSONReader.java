@@ -115,7 +115,8 @@ public class JSONReader {
         } else {
             errorMessage = (String) obj.get(MESSAGE);
         }
-        return new V8Response(sequence, requestSequence, command, body, running, success, errorMessage);
+        ReferencedValue[] refs = getRefs((JSONArray) obj.get(REFS));
+        return new V8Response(sequence, requestSequence, command, body, refs, running, success, errorMessage);
     }
     
     public static V8Event getEvent(JSONObject obj) throws IllegalArgumentException {
@@ -498,7 +499,7 @@ public class JSONReader {
     }
     
     private static V8Frame getFrame(JSONObject obj) {
-        long index = getLong(obj, FRAME_INDEX);
+        long index = getLong(obj, INDEX);
         ReferencedValue receiver = getReferencedValue(obj, FRAME_RECEIVER);
         ReferencedValue func = getReferencedValue(obj, FRAME_FUNC);
         long scriptRef = getReference(obj, SCRIPT);
@@ -512,9 +513,10 @@ public class JSONReader {
         long column = getLong(obj, COLUMN);
         String sourceLineText = getString(obj, EVT_SOURCE_LINE_TEXT);
         V8Scope[] scopes = getScopes((JSONArray) obj.get(SCOPES), index);
+        String text = getString(obj, TEXT);
         return new V8Frame(index, receiver, func, scriptRef, constructCall, atReturn,
                            debuggerFrame, arguments, locals, position, line, column,
-                           sourceLineText, scopes);
+                           sourceLineText, scopes, text);
     }
     
     private static Map<String, ReferencedValue> getReferences(JSONArray array) {
@@ -528,6 +530,25 @@ public class JSONReader {
             references.put(name, ref);
         }
         return references;
+    }
+    
+    private static ReferencedValue[] getRefs(JSONArray array) {
+        if (array == null) {
+            return null;
+        }
+        int n = array.size();
+        ReferencedValue[] refs = new ReferencedValue[n];
+        for (int i = 0; i < n; i++) {
+            JSONObject obj = (JSONObject) array.get(i);
+            long ref = getReference(obj);
+            V8Value value = getValue(obj, ref);
+            if (value != null) {
+                refs[i] = new ReferencedValue(value.getHandle(), value);
+            } else {
+                refs[i] = new ReferencedValue(ref, value);
+            }
+        }
+        return refs;
     }
 
     private static long getReference(JSONObject obj) {
@@ -547,7 +568,7 @@ public class JSONReader {
         if (ref == null) {
             return new PropertyLong(null);
         }
-        return getLongProperty(obj, REF);
+        return getLongProperty(ref, REF);
     }
     
     private static ReferencedValue getReferencedValue(JSONObject obj, String propertyName) {
@@ -575,15 +596,20 @@ public class JSONReader {
     private static V8Scope getScope(JSONObject scope, Long frameIndex) {
         V8Scope.Type type = V8Scope.Type.valueOf((int) getLong(scope, TYPE));
         long index = getLong(scope, SCOPE_INDEX);
-        long scopeFrameIndex = getLong(scope, FRAME_INDEX);
-        if (scopeFrameIndex >= 0) {
-            frameIndex = scopeFrameIndex;
+        PropertyLong scopeFrameIndex = getLongProperty(scope, FRAME_INDEX);
+        if (!scopeFrameIndex.hasValue() && frameIndex != null) {
+            scopeFrameIndex = new PropertyLong(frameIndex);
         }
-        if (frameIndex == null) {
-            frameIndex = scopeFrameIndex;
+        ReferencedValue referencedValue = getReferencedValue(scope, OBJECT);
+        ReferencedValue<V8Object> referencedObject;
+        if (referencedValue != null) {
+            V8Object object = referencedValue.hasValue() ? (V8Object) referencedValue.getValue() : null;
+            referencedObject = new ReferencedValue<>(referencedValue.getReference(), object);
+        } else {
+            referencedObject = null;
         }
-        V8Object object = null; // TODO
-        return new V8Scope(index, frameIndex, type, object);
+        String text = getString(scope, TEXT);
+        return new V8Scope(index, scopeFrameIndex, type, referencedObject, text);
     }
     
     private static Map<Long, Boolean> getThreads(JSONArray array) {

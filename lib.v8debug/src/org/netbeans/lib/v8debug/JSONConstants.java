@@ -83,7 +83,8 @@ class JSONConstants {
     public static final String FRAMES = "frames";
     public static final String BOTTOM = "bottom";
     
-    public static final String FRAME_INDEX = "index";
+    public static final String INDEX = "index";
+    public static final String FRAME_INDEX = "frameIndex";
     public static final String FRAME_RECEIVER = "receiver";
     public static final String FRAME_FUNC = "func";
     public static final String FRAME_CONSTRUCT_CALL = "constructCall";
@@ -94,6 +95,7 @@ class JSONConstants {
     public static final String FRAME_NUMBER = "frameNumber";
     
     public static final String REF = "ref";
+    public static final String REFS = "refs";
     public static final String VALUE = "value";
     public static final String VALUE_CLASS_NAME = "className";
     public static final String VALUE_CONSTRUCTOR_FUNCTION = "constructorFunction";
@@ -102,6 +104,7 @@ class JSONConstants {
     public static final String VALUE_PROPERTIES = "properties";
     public static final String FUNCTION_INFERRED_NAME = "inferredName";
     public static final String INLINE_REFS = "inlineRefs";
+    public static final String OBJECT = "object";
     
     public static final String BODY_VERSION = "V8Version";
     

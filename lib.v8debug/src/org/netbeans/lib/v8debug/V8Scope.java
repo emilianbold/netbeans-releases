@@ -41,6 +41,7 @@
  */
 package org.netbeans.lib.v8debug;
 
+import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Object;
 
 /**
@@ -67,22 +68,24 @@ public final class V8Scope {
     }
     
     private final long index;
-    private final long frameIndex;
+    private final PropertyLong frameIndex;
     private final Type type;
-    private final V8Object object;
+    private final ReferencedValue<V8Object> object;
+    private final String text;
     
-    public V8Scope(long index, long frameIndex, Type type, V8Object object) {
+    public V8Scope(long index, PropertyLong frameIndex, Type type, ReferencedValue<V8Object> object, String text) {
         this.index = index;
         this.frameIndex = frameIndex;
         this.type = type;
         this.object = object;
+        this.text = text;
     }
 
     public long getIndex() {
         return index;
     }
 
-    public long getFrameIndex() {
+    public PropertyLong getFrameIndex() {
         return frameIndex;
     }
 
@@ -90,7 +93,11 @@ public final class V8Scope {
         return type;
     }
 
-    public V8Object getObject() {
+    public ReferencedValue<V8Object> getObject() {
         return object;
+    }
+
+    public String getText() {
+        return text;
     }
 }

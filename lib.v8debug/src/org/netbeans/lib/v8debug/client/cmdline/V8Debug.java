@@ -46,11 +46,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Scanner;
@@ -424,6 +426,28 @@ public class V8Debug {
                     }
                 }
                 return true;
+            case "lookup":
+                if (!args.isEmpty()) {
+                    Scanner scan = new Scanner(args);
+                    if (!scan.hasNextLong()) {
+                        printMSG("ERR_WrongObjectHandle", args);
+                        printPrompt();
+                    } else {
+                        List<Long> handlesL = new ArrayList<>();
+                        while (scan.hasNextLong()) {
+                            long handle = scan.nextLong();
+                            handlesL.add(handle);
+                        }
+                        long[] handles = new long[handlesL.size()];
+                        for (int i = 0; i < handlesL.size(); i++) {
+                            handles[i] = handlesL.get(i);
+                        }
+                        cc.send(Lookup.createRequest(requestSequence++, handles, false));
+                    }
+                } else {
+                    printMSG("ERR_MissingObjectHandle");
+                    printPrompt();
+                }
             case "gc":
                 if (args.isEmpty()) {
                     cc.send(GC.createRequest(requestSequence++));
@@ -662,6 +686,32 @@ public class V8Debug {
                 }
                 numFrames = -1l;
                 V8Frame[] frames = bb.getFrames();
+                ReferencedValue[] referencedValues = response.getReferencedValues();
+                Map<Long, V8Value> values;
+                if (referencedValues.length > 0) {
+                    values = new HashMap<>();
+                    for (ReferencedValue rv : referencedValues) {
+                        if (rv.hasValue()) {
+                            values.put(rv.getReference(), rv.getValue());
+                        }
+                    }
+                } else {
+                    values = null;
+                }
+                for (V8Frame f : frames) {
+                    V8Script script = null;
+                    if (values != null) {
+                        long scriptRef = f.getScriptRef();
+                        V8Value scriptValue = values.get(scriptRef);
+                        if (scriptValue instanceof V8ScriptValue) {
+                            script = ((V8ScriptValue) scriptValue).getScript();
+                        }
+                    }
+                    print(f, script);
+                    System.out.println("");
+                }
+                return true;
+                /*
                 Set<Long> handlesToLookUp = new HashSet<>();
                 for (V8Frame f : frames) {
                     handlesToLookUp.add(f.getScriptRef());
@@ -675,9 +725,17 @@ public class V8Debug {
                 internalCommands.put(requestSequence, V8Command.Lookup);
                 cc.send(Lookup.createRequest(requestSequence++, handles, false));
                 return false;
+                */
             case Lookup:
                 Lookup.ResponseBody lrb = (Lookup.ResponseBody) body;
-                Map<Long, V8Value> values = lrb.getValuesByHandle();
+                values = lrb.getValuesByHandle();
+                for (Map.Entry<Long, V8Value> ve : values.entrySet()) {
+                    System.out.print(ve.getKey()+": ");
+                    print(ve.getValue());
+                    System.out.println("");
+                }
+                return true;
+                /*
                 if (framesToPrint != null) {
                     for (V8Frame f : framesToPrint) {
                         long scriptRef = f.getScriptRef();
@@ -694,6 +752,7 @@ public class V8Debug {
                 } else {
                     return false;
                 }
+                */
             case Evaluate:
                 Evaluate.ResponseBody erb = (Evaluate.ResponseBody) body;
                 print(erb.getValue());

@@ -64,13 +64,14 @@ public final class V8Frame {
     private final long column;
     private final String sourceLineText;
     private final V8Scope[] scopes;
+    private final String text;
     
     public V8Frame(long index, ReferencedValue receiver, ReferencedValue func, long scriptRef,
                    boolean constructCall, boolean atReturn, boolean debuggerFrame,
                    Map<String, ReferencedValue> argumentRefs,
                    Map<String, ReferencedValue> localRefs,
                    long position, long line, long column, String sourceLineText,
-                   V8Scope[] scopes) {
+                   V8Scope[] scopes, String text) {
         this.index = index;
         this.receiver = receiver;
         this.func = func;
@@ -85,6 +86,7 @@ public final class V8Frame {
         this.column = column;
         this.sourceLineText = sourceLineText;
         this.scopes = scopes;
+        this.text = text;
     }
 
     public long getIndex() {
@@ -95,7 +97,7 @@ public final class V8Frame {
         return receiver;
     }
 
-    public ReferencedValue getFunc() {
+    public ReferencedValue getFunction() {
         return func;
     }
 
@@ -141,5 +143,9 @@ public final class V8Frame {
 
     public V8Scope[] getScopes() {
         return scopes;
+    }
+    
+    public String getText() {
+        return text;
     }
 }

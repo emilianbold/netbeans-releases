@@ -46,12 +46,12 @@ package org.netbeans.lib.v8debug.vars;
  *
  * @author Martin Entlicher
  */
-public final class ReferencedValue {
+public final class ReferencedValue <V extends V8Value> {
     
     private final long reference;
-    private final V8Value value;
+    private final V value;
     
-    public ReferencedValue(long reference, V8Value value) {
+    public ReferencedValue(long reference, V value) {
         this.reference = reference;
         this.value = value;
     }
@@ -64,7 +64,7 @@ public final class ReferencedValue {
         return value != null;
     }
 
-    public V8Value getValue() {
+    public V getValue() {
         return value;
     }
     

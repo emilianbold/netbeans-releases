@@ -41,6 +41,8 @@
  */
 package org.netbeans.lib.v8debug;
 
+import org.netbeans.lib.v8debug.vars.ReferencedValue;
+
 /**
  *
  * @author Martin Entlicher
@@ -50,16 +52,19 @@ public final class V8Response extends V8Packet {
     private final long requestSequence;
     private final V8Command command;
     private final V8Body body;
+    private final ReferencedValue[] referencedValues;
     private final boolean running;
     private final boolean success;
     private final String errorMessage;
     
     V8Response(long sequence, long requestSequence, V8Command command, V8Body body,
-               boolean running, boolean success, String errorMessage) {
+               ReferencedValue[] referencedValues, boolean running, boolean success,
+               String errorMessage) {
         super(sequence, V8Type.response);
         this.requestSequence = requestSequence;
         this.command = command;
         this.body = body;
+        this.referencedValues = referencedValues;
         this.running = running;
         this.success = success;
         this.errorMessage = errorMessage;
@@ -75,6 +80,10 @@ public final class V8Response extends V8Packet {
 
     public V8Body getBody() {
         return body;
+    }
+    
+    public ReferencedValue[] getReferencedValues() {
+        return referencedValues;
     }
 
     public boolean isRunning() {
