@@ -110,4 +110,50 @@ public class NodeJsElement implements ElementHandle {
         return documentation;
     }
 
+    public static class NodeJsFileElement extends NodeJsElement {
+        private final FileObject fo;
+        public NodeJsFileElement(FileObject file) {
+            super(file.getNameExt(), null, ElementKind.FILE);
+            this.fo = file;
+        }
+
+        @Override
+        public String getDocumentation() {
+            return super.getDocumentation(); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            return super.getFileObject(); //To change body of generated methods, choose Tools | Templates.
+        }
+        
+        @Override
+        public String getMimeType() {
+            return fo.getMIMEType();
+        }
+
+        @Override
+        public String getName() {
+            return fo.isFolder() ? fo.getNameExt() : fo.getName();
+        }
+        
+        @Override
+        public boolean signatureEquals(ElementHandle handle) {
+            return fo.equals(handle.getFileObject());
+        }
+    }
+    
+    public static class NodeJsModuleElement extends NodeJsElement {
+
+        public NodeJsModuleElement(final String name) {
+            super(name, null, ElementKind.MODULE);
+        }
+
+        @Override
+        public String getDocumentation() {
+            return NodeJsDataProvider.getDefault().getDocForModule(getName());
+        }
+
+    }
+
 }

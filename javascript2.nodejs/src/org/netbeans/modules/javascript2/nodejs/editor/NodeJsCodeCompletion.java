@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.nodejs.editor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
@@ -93,13 +94,23 @@ public class NodeJsCodeCompletion implements CompletionProvider {
             Token<? extends JsTokenId> token = null;
             JsTokenId tokenId;
             if (jsCompletionContext == CompletionContext.STRING || jsCompletionContext == CompletionContext.EXPRESSION) {
+                String wholePrefix = ts.token().id() == JsTokenId.STRING ? ts.token().text().toString().trim() : "";
                 token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.STRING_BEGIN, JsTokenId.STRING));
                 tokenId = token.id();
                 if (tokenId == JsTokenId.BRACKET_LEFT_PAREN && ts.movePrevious()) {
                     token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
                     tokenId = token.id();
                     if (tokenId == JsTokenId.IDENTIFIER && REQUIRE.equals(token.text().toString())) {
-//                        System.out.println("nabidnout seznam knihoven");
+                        // name of modules
+                        if (wholePrefix.isEmpty() || (wholePrefix.charAt(0) != '.' && wholePrefix.charAt(0) != '/')) {
+                            Collection<String> modules = NodeJsDataProvider.getDefault().getRuntimeModules();
+                            for(String module: modules) {
+                                if (module.startsWith(prefix)) {
+                                    ElementHandle handle = new NodeJsElement.NodeJsModuleElement(module);
+                                    result.add(new NodeJsCompletionItem.NodeJsModuleCompletionItem(handle, eOffset - prefix.length()));
+                                }
+                            }
+                        }
                         result.addAll((new NodeJsCompletionItem.FilenameSupport()).getItems(ccContext.getParserResult().getSnapshot().getSource().getFileObject(), eOffset, ".." + prefix));
                     }
                 } else {
@@ -108,15 +119,15 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                         tokenId = token.id();
                     }
                     if (tokenId == JsTokenId.OPERATOR_ASSIGNMENT) {
-//                        System.out.println("nabidnout require()");
+                        // offer require()
                         if (prefix.isEmpty() || REQUIRE.startsWith(prefix)) {
-                            result.add(NodeJsCompletionItem.createNodeJsItem(new NodeJsCompletionDataItem(REQUIRE, null, "require('${cursor}')"), ElementKind.METHOD, eOffset - prefix.length()));
+//                            result.add(NodeJsCompletionItem.createNodeJsItem(new NodeJsCompletionDataItem(REQUIRE, null, "require('${cursor}')"), ElementKind.METHOD, eOffset - prefix.length()));
                         }
                     }
                 }
             } else {
                 if (prefix.isEmpty() || EXPORTS.startsWith(prefix)) {
-                    result.add(NodeJsCompletionItem.createNodeJsItem(new NodeJsCompletionDataItem(EXPORTS, null, "exports."), ElementKind.PROPERTY, eOffset - prefix.length()));
+                    //result.add(NodeJsCompletionItem.createNodeJsItem(new NodeJsCompletionDataItem(EXPORTS, null, "exports."), ElementKind.PROPERTY, eOffset - prefix.length()));
                 }
             }
         }
@@ -126,6 +137,9 @@ public class NodeJsCodeCompletion implements CompletionProvider {
 
     @Override
     public String getHelpDocumentation(ParserResult info, ElementHandle element) {
+        if (element instanceof NodeJsElement) {
+            return ((NodeJsElement)element).getDocumentation();
+        }
         return null;
     }
 
