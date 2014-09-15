@@ -46,23 +46,27 @@ package org.netbeans.api.progress;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import org.netbeans.modules.progress.spi.InternalHandle;
 
 /**
  * Instances provided by the ProgressHandleFactory allow the users of the API to
  * notify the progress bar UI about changes in the state of the running task.
  * Progress component will be visualized only after one of the start() methods.
+ * <p/>
+ * This class was adapted to contain only non-Swing part of the Progress API. If you need
+ * to use progress UI components, please work with {@code org.netbeans.api.progres.ProgressUIHandle} 
+ * class from {@code org.netbeans.api.progress.nb} module.
+ * 
  * @author Milos Kleint (mkleint@netbeans.org)
  */
-public final class ProgressHandle {
+public class ProgressHandle {
 
     private static final Logger LOG = Logger.getLogger(ProgressHandle.class.getName());
 
     private InternalHandle internal;
+    
     /** Creates a new instance of ProgressHandle */
-    ProgressHandle(InternalHandle internal) {
+    protected ProgressHandle(InternalHandle internal) {
         LOG.fine(internal.getDisplayName());
         this.internal = internal;
     }
@@ -73,7 +77,7 @@ public final class ProgressHandle {
      * it will be visualized by a progress bar in indeterminate mode.
      * <code>start</code> method can be called just once.
      */
-    public void start() {
+    public final void start() {
         start(0, -1);
     }
     
@@ -82,7 +86,7 @@ public final class ProgressHandle {
      * <code>start</code> method can be called just once.
      * @param workunits total number of workunits that will be processed
      */
-    public void start(int workunits) {
+    public final void start(int workunits) {
        start(workunits, -1); 
     }
     
@@ -95,7 +99,7 @@ public final class ProgressHandle {
      * @param estimate estimated time to process the task in seconds
      */
     
-    public void start(int workunits, long estimate) {
+    public final void start(int workunits, long estimate) {
        internal.start("", workunits, estimate);
     }
 
@@ -105,7 +109,7 @@ public final class ProgressHandle {
      * switched to indeterminate mode.
      * This method has to be called after calling <code>start</code> method and before calling <code>finish</code> method (the task has to be running).
      */
-    public void switchToIndeterminate() {
+    public final void switchToIndeterminate() {
         internal.toIndeterminate();
     }
     
@@ -118,7 +122,7 @@ public final class ProgressHandle {
      * @param message a message to display in the silent mode
      * @since org.netbeans.api.progress/1 1.9
      */
-    public void suspend(String message) {
+    public final void suspend(String message) {
         LOG.log(Level.FINE, "{0}: {1}", new Object[] {internal.getDisplayName(), message});
         internal.toSilent(message);
     }
@@ -130,7 +134,7 @@ public final class ProgressHandle {
      * in indeterminate mode and later switch to the progress with known steps
      * @param workunits a definite number of complete units of work out of the total
      */
-    public void switchToDeterminate(int workunits) {
+    public final void switchToDeterminate(int workunits) {
         internal.toDeterminate(workunits, -1);
     }
     
@@ -142,7 +146,7 @@ public final class ProgressHandle {
      * @param workunits a definite number of complete units of work out of the total
      * @param estimate estimated time to process the task, in seconds
      */
-    public void switchToDeterminate(int workunits, long estimate) {
+    public final void switchToDeterminate(int workunits, long estimate) {
         internal.toDeterminate(workunits, estimate);
     }
     
@@ -150,7 +154,7 @@ public final class ProgressHandle {
      * Finish the task, remove the task's component from the progress bar UI.
      * This method has to be called after calling <code>start</code> method (the task has to be running).
      */
-    public void finish() {
+    public final void finish() {
         internal.finish();
     }
     
@@ -160,7 +164,7 @@ public final class ProgressHandle {
      * This method has to be called after calling <code>start</code> method and before calling <code>finish</code> method (the task has to be running).
      * @param workunit a cumulative number of workunits completed so far
      */
-    public void progress(int workunit) {
+    public final void progress(int workunit) {
         progress(null, workunit);
     }
     
@@ -169,7 +173,7 @@ public final class ProgressHandle {
      * This method has to be called after calling <code>start</code> method and before calling <code>finish</code> method (the task has to be running).
      * @param message details about the status of the task
      */
-    public void progress(String message) {
+    public final void progress(String message) {
         progress(message, InternalHandle.NO_INCREASE);
     }
     
@@ -179,7 +183,7 @@ public final class ProgressHandle {
      * @param message details about the status of the task
      * @param workunit a cumulative number of workunits completed so far
      */
-    public void progress(String message, int workunit) {
+    public final void progress(String message, int workunit) {
         LOG.log(Level.FINE, "{0}: {1}", new Object[] {internal.getDisplayName(), message});
         internal.progress(message, workunit);
     }
@@ -196,7 +200,7 @@ public final class ProgressHandle {
      * @param millis number of miliseconds to wait before the progress appears in status bar.
      * @since org.netbeans.api.progress/1 1.2
      */
-    public void setInitialDelay(int millis) {
+    public final void setInitialDelay(int millis) {
        internal.setInitialDelay(millis); 
     }
     
@@ -206,33 +210,18 @@ public final class ProgressHandle {
      * @param newDisplayName a new name to set for the task
      * @since org.netbeans.api.progress 1.5
      */
-    public void setDisplayName(String newDisplayName) {
+    public final void setDisplayName(String newDisplayName) {
         LOG.fine(newDisplayName);
         internal.requestDisplayNameChange(newDisplayName);
     }
     
     /**
-     * have the component in custom location, don't include in the status bar.
-     */
-    JComponent extractComponent() {
-        return internal.extractComponent();
-    }
-
-    /**
      * for unit testing only..
      */
-    InternalHandle getInternalHandle() {
+    protected final InternalHandle getInternalHandle() {
         return internal;
     }
 
-    JLabel extractDetailLabel() {
-        return internal.extractDetailLabel();
-    }
-
-    JLabel extractMainLabel() {
-        return internal.extractMainLabel();
-    }
-    
     String getDisplayName() {
         //XXX internal.getDisplayName() improperly synchronized
         synchronized (internal) {

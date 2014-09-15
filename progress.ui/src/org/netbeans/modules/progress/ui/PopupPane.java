@@ -65,6 +65,7 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.border.Border;
 import org.netbeans.modules.progress.spi.InternalHandle;
+import org.netbeans.modules.progress.spi.UIInternalHandle;
 import org.openide.util.Mutex;
 
 /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,33 +34,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.progress.spi;
 
-package org.netbeans.progress.module;
-
-import org.netbeans.modules.progress.spi.ProgressEvent;
-import org.netbeans.modules.progress.spi.ProgressUIWorkerWithModel;
-import org.netbeans.modules.progress.spi.TaskModel;
+import org.netbeans.api.progress.ProgressHandle;
+import org.openide.util.Cancellable;
 
 /**
- * Fallback provider in case no GUI is registered.
- * Just enough to make unit tests run without errors, etc.
- * @author Jesse Glick
- * @see "issue #87812"
+ * SPI that allows the base classes to create Handles and Controllers specialized
+ * for the target environment. The SPI is to be implemented by the platform where
+ * Progress API is deployed.
+ * 
+ * @author sdedic
+ * @since 1.40
  */
-public class TrivialProgressUIWorkerProvider implements ProgressUIWorkerWithModel {
-
-    public TrivialProgressUIWorkerProvider() {}
-
-    public ProgressUIWorkerWithModel getDefaultWorker() {
-        return this;
-    }
-
-    public void setModel(TaskModel model) {}
-
-    public void showPopup() {}
-
-    public void processProgressEvent(ProgressEvent event) {}
-
-    public void processSelectedProgressEvent(ProgressEvent event) {}
+public interface ProgressEnvironment {
+    /**
+     * Creates a ProgressHandle with the specified parameters. The creation includes
+     * also creation and initialization of the InternalHandle.
+     * 
+     * @param displayname the display name
+     * @param c callback that can cancel the operation, optional - can be {@code null}
+     * @param userInit true, if initiated by the user, false if initiated automatically
+     * @return ProgressHandle instance
+     */
+    public ProgressHandle createHandle(String displayname, Cancellable c, boolean userInit);
+    
+    /**
+     * Creates a Controller specific for the target environment. The method is called
+     * to obtain the <b>default</b> controller instance.
+     * @return initialized Controller
+     */
+    public Controller     getController();
 }

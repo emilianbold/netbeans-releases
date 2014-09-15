@@ -53,7 +53,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import org.netbeans.progress.module.DefaultHandleFactory;
 import org.netbeans.progress.module.TrivialProgressUIWorkerProvider;
+import org.openide.modules.PatchedPublic;
 import org.openide.util.Lookup;
 
 /**
@@ -97,32 +99,22 @@ public /* final - because of tests */ class Controller {
 
     public static synchronized Controller getDefault() {
         if (defaultInstance == null) {
-            defaultInstance = new Controller(null);
+            ProgressEnvironment f = DefaultHandleFactory.get();
+            defaultInstance = f.getController();
         }
         return defaultInstance;
     }
     
-    // to be called on the default instance only..
-    public Component getVisualComponent() {
-        if (component == null) {
-            getProgressUIWorker();
-        }
-        if (component instanceof Component) {
-            return (Component)component;
-        }
-        return null;
+    protected ProgressUIWorkerWithModel createWorker() {
+        Logger.getLogger(Controller.class.getName()).log(Level.CONFIG, "Using fallback trivial progress implementation");
+        return new TrivialProgressUIWorkerProvider().getDefaultWorker();
     }
     
-    ProgressUIWorker getProgressUIWorker()
+    protected final ProgressUIWorker getProgressUIWorker()
     {
         if (component == null)
         {
-            ProgressUIWorkerProvider prov = Lookup.getDefault().lookup(ProgressUIWorkerProvider.class);
-            if (prov == null) {
-                Logger.getLogger(Controller.class.getName()).log(Level.CONFIG, "Using fallback trivial progress implementation");
-                prov = new TrivialProgressUIWorkerProvider();
-            }
-            ProgressUIWorkerWithModel prgUIWorker = prov.getDefaultWorker();
+            ProgressUIWorkerWithModel prgUIWorker = createWorker();
             prgUIWorker.setModel(defaultInstance.getModel());
             component = prgUIWorker;
         }

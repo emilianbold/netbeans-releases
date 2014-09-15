@@ -53,7 +53,7 @@ import javax.swing.Timer;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.progress.spi.Controller;
-import org.netbeans.modules.progress.spi.InternalHandle;
+import org.netbeans.modules.progress.spi.UIInternalHandle;
 import org.netbeans.modules.progress.spi.ProgressUIWorker;
 import org.netbeans.modules.progress.spi.ProgressEvent;
 import org.openide.util.Cancellable;
@@ -64,8 +64,8 @@ import org.openide.util.Cancellable;
  */
 public class ProgressHandleTest extends NbTestCase {
     
-    ProgressHandle proghandle;
-    InternalHandle handle;
+    ProgressUIHandle proghandle;
+    UIInternalHandle handle;
     public ProgressHandleTest(String testName) {
         super(testName);
     }
@@ -76,13 +76,13 @@ public class ProgressHandleTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         Controller.defaultInstance = new TestController();
-        proghandle = ProgressHandleFactory.createHandle("displayName",new Cancellable() {
+        proghandle = ProgressHandleFactory.createUIHandle("displayName",new Cancellable() {
             public boolean cancel() {
                 // empty
                 return true;
             }
         });
-        handle = proghandle.getInternalHandle();
+        handle = (UIInternalHandle)proghandle.getInternalHandle();
     }
     
     private class TestController extends Controller {
@@ -109,21 +109,21 @@ public class ProgressHandleTest extends NbTestCase {
      * Test of getState method, of class org.netbeans.progress.api.ProgressHandle.
      */
     public void testGetState() {
-        assertEquals(InternalHandle.STATE_INITIALIZED, handle.getState());
+        assertEquals(UIInternalHandle.STATE_INITIALIZED, handle.getState());
 
         // finishing task before it's started does not throw ISE any more - #186366
         proghandle.finish();
         
         proghandle.start();
-        assertEquals(InternalHandle.STATE_RUNNING, handle.getState());
+        assertEquals(UIInternalHandle.STATE_RUNNING, handle.getState());
         
         // restarting already started task does not throw an ISE any more - #186366
         proghandle.start();
         // package private call, user triggered cancel action.
         handle.requestCancel();
-        assertEquals(InternalHandle.STATE_REQUEST_STOP, handle.getState());
+        assertEquals(UIInternalHandle.STATE_REQUEST_STOP, handle.getState());
         proghandle.finish();
-        assertEquals(InternalHandle.STATE_FINISHED, handle.getState());
+        assertEquals(UIInternalHandle.STATE_FINISHED, handle.getState());
     }
 
     /**
@@ -132,7 +132,7 @@ public class ProgressHandleTest extends NbTestCase {
     public void testIsAllowCancel() {
         assertTrue(handle.isAllowCancel());
         ProgressHandle h2 = ProgressHandleFactory.createHandle("ds2");
-        InternalHandle handle2 = h2.getInternalHandle();
+        UIInternalHandle handle2 = (UIInternalHandle)h2.getInternalHandle();
         assertFalse(handle2.isAllowCancel());
     }
 
@@ -203,7 +203,7 @@ public class ProgressHandleTest extends NbTestCase {
     public void testIfShortOnesGetDiscarded() throws Exception {
         OneThreadController control = new OneThreadController(new FailingUI());
         Controller.defaultInstance = control;
-        proghandle = ProgressHandleFactory.createHandle("a1");
+        proghandle = ProgressHandleFactory.createUIHandle("a1");
         proghandle.start();
         proghandle.progress("");
         proghandle.finish();
@@ -214,7 +214,7 @@ public class ProgressHandleTest extends NbTestCase {
         assertTrue(control.tobeRestartedDelay == -1);
 
         
-        proghandle = ProgressHandleFactory.createHandle("a2");
+        proghandle = ProgressHandleFactory.createUIHandle("a2");
         ProgressHandle h2 = ProgressHandleFactory.createHandle("a3");
         proghandle.start();
         proghandle.progress("");
@@ -257,7 +257,7 @@ public class ProgressHandleTest extends NbTestCase {
         System.out.println("testIfCustomShortOnesGetDiscarded");
         OneThreadController control = new OneThreadController(new FailingUI());
         Controller.defaultInstance = control;
-        proghandle = ProgressHandleFactory.createHandle("c1");
+        proghandle = ProgressHandleFactory.createUIHandle("c1");
         proghandle.setInitialDelay(100);
         proghandle.start();
         proghandle.progress("");
@@ -268,7 +268,7 @@ public class ProgressHandleTest extends NbTestCase {
         //after running the timer sould be stopped
         assertTrue(control.tobeRestartedDelay == -1);
         
-        proghandle = ProgressHandleFactory.createHandle("c2");
+        proghandle = ProgressHandleFactory.createUIHandle("c2");
         ProgressHandle h2 = ProgressHandleFactory.createHandle("c3");
         proghandle.setInitialDelay(100);
         proghandle.start();
@@ -337,7 +337,7 @@ public class ProgressHandleTest extends NbTestCase {
         assert !SwingUtilities.isEventDispatchThread();
         PingingUI ui = new PingingUI();
         Controller.defaultInstance = new Controller(ui);
-        proghandle = ProgressHandleFactory.createHandle("b1");
+        proghandle = ProgressHandleFactory.createUIHandle("b1");
         proghandle.start();
         try {
             Thread.sleep(800);
@@ -353,7 +353,7 @@ public class ProgressHandleTest extends NbTestCase {
         assert !SwingUtilities.isEventDispatchThread();
         PingingUI ui = new PingingUI();
         Controller.defaultInstance = new Controller(ui);
-        proghandle = ProgressHandleFactory.createHandle("b1");
+        proghandle = ProgressHandleFactory.createUIHandle("b1");
         proghandle.setInitialDelay(100);
         proghandle.start();
         try {
@@ -399,7 +399,7 @@ class MyFrame extends JFrame implements Runnable {
 }
         
         assertFalse(SwingUtilities.isEventDispatchThread());
-        ProgressHandle h = ProgressHandleFactory.createHandle("foo");
+        ProgressUIHandle h = ProgressHandleFactory.createUIHandle("foo");
         JComponent component = ProgressHandleFactory.createProgressComponent(h);
         
 

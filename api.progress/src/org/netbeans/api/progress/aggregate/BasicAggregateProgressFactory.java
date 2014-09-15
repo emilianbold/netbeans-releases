@@ -44,9 +44,8 @@
 
 package org.netbeans.api.progress.aggregate;
 
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
+import org.netbeans.api.progress.BaseProgressHandleFactory;
+import org.netbeans.api.progress.ProgressHandle;
 import org.openide.util.Cancellable;
 
 /**
@@ -55,11 +54,8 @@ import org.openide.util.Cancellable;
  *
  * @author mkleint (mkleint@netbeans.org)
  */
-public final class AggregateProgressFactory {
-
+public class BasicAggregateProgressFactory {
     /** Creates a new instance of AggregateProgressFactory */
-    private AggregateProgressFactory() {
-    }
     
     /**
      * Create an aggregating progress ui handle for a long lasting task.
@@ -74,59 +70,24 @@ public final class AggregateProgressFactory {
      *
      */
     public static AggregateProgressHandle createHandle(String displayName, ProgressContributor[] contributors, 
-                                                       Cancellable allowToCancel, Action linkOutput) {
-        return new AggregateProgressHandle(displayName, contributors, allowToCancel, linkOutput, false);
+                                                       Cancellable allowToCancel) {
+        return doCreateHandle(displayName, contributors, allowToCancel, false);
     }
     
     public static ProgressContributor createProgressContributor(String trackingId) {
         return new ProgressContributor(trackingId);
     }
     
-    /**
-     * Create an aggregating progress ui handle for a long lasting task.
-     * @param contributors the initial set of progress indication contributors that are aggregated in the UI.
-     * @param allowToCancel either null, if the task cannot be cancelled or 
-     *          an instance of {@link org.openide.util.Cancellable} that will be called when user 
-     *          triggers cancel of the task.
-     * @param linkOutput an <code>Action</code> instance that links the running task in the progress bar
-     *                   to an output of the task. The action is assumed to open the apropriate component with the task's output.
-     * @param displayName to be shown in the progress UI
-     * @return an instance of <code>ProgressHandle</code>, initialized but not started.
-     *
-     */
-    public static AggregateProgressHandle createSystemHandle(String displayName, ProgressContributor[] contributors, 
-                                                       Cancellable allowToCancel, Action linkOutput) {
-        return new AggregateProgressHandle(displayName, contributors, allowToCancel, linkOutput, true);
-    }  
-    
-    /**
-     * Get the progress bar component for use in custom dialogs, the task won't 
-     * show in the progress bar anymore.
-     * @since org.netbeans.api.progress 1.3
-     * @return the component to use in custom UI.
-     */
-    public static JComponent createProgressComponent(AggregateProgressHandle handle) {
-        return handle.extractComponent();
-    }    
-    
-    /**
-     * Get the task title component for use in custom dialogs, the task won't 
-     * show in the progress bar anymore. The text of the label is changed by calls to handle's <code>setDisplayName()</code> method.
-     * @return the component to use in custom UI.
-     * @since org.netbeans.api.progress 1.8
-     */
-    public static JLabel createMainLabelComponent(AggregateProgressHandle handle) {
-        return handle.extractMainLabel();
+    protected static AggregateProgressHandle doCreateHandle(String displayName, ProgressContributor[] contributors, 
+                                                       Cancellable allowToCancel, boolean systemHandle) {
+        return new AggregateProgressHandle(displayName, contributors, allowToCancel, systemHandle,
+                systemHandle ? 
+                        BaseProgressHandleFactory.createSystemHandle(displayName, allowToCancel) :
+                        BaseProgressHandleFactory.createHandle(displayName, allowToCancel)
+                );
     }
     
-    /**
-     * Get the detail messages component for use in custom dialogs, the task won't 
-     * show in the progress bar anymore.The text of the label is changed by calls to contributors' <code>progress(String)</code> methods.
-     * @return the component to use in custom UI.
-     * @since org.netbeans.api.progress 1.8
-     */
-    public static JLabel createDetailLabelComponent(AggregateProgressHandle handle) {
-        return handle.extractDetailLabel();
+    protected static ProgressHandle getProgressHandle(AggregateProgressHandle ah) {
+        return ah.handle;
     }
-    
 }

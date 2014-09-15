@@ -49,6 +49,7 @@ import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.progress.spi.ProgressUIWorkerWithModel;
+import org.netbeans.modules.progress.spi.SwingController;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -82,7 +83,7 @@ public class ProgressListAction extends AbstractAction implements ListDataListen
     }
     
     public void run() {
-        ((ProgressUIWorkerWithModel)Controller.getDefault().getVisualComponent()).showPopup();
+        ((ProgressUIWorkerWithModel)SwingController.getDefault().getVisualComponent()).showPopup();
     }
 
     private void updateEnabled() {

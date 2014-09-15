@@ -76,6 +76,7 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.ProgressUIHandle;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -87,7 +88,7 @@ abstract class AbstractWindowRunner<T> extends WindowAdapter implements Runnable
 
     private volatile JDialog dlg;
     private final boolean includeDetail;
-    protected final ProgressHandle handle;
+    protected final ProgressUIHandle handle;
     private final CountDownLatch latch = new CountDownLatch(1);
     private volatile T operationResult;
     private final CountDownLatch startLatch = new CountDownLatch(1);
@@ -96,7 +97,7 @@ abstract class AbstractWindowRunner<T> extends WindowAdapter implements Runnable
     private final boolean showCancel;
     private static final RequestProcessor RP = new RequestProcessor(AbstractWindowRunner.class.getName(), 10);
 
-    AbstractWindowRunner(ProgressHandle handle, boolean includeDetail, boolean showCancel) {
+    AbstractWindowRunner(ProgressUIHandle handle, boolean includeDetail, boolean showCancel) {
         this.includeDetail = includeDetail;
         this.handle = handle;
         this.showCancel = showCancel;
@@ -231,7 +232,7 @@ abstract class AbstractWindowRunner<T> extends WindowAdapter implements Runnable
         }
     }
 
-    private JDialog createModalProgressDialog(ProgressHandle handle, boolean includeDetail) {
+    private JDialog createModalProgressDialog(ProgressUIHandle handle, boolean includeDetail) {
         assert EventQueue.isDispatchThread();
         int edgeGap = Utilities.isMac() ? 12 : 8;
         int compGap = Utilities.isMac() ? 9 : 5;

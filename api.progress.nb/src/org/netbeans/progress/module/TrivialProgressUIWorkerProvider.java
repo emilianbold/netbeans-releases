@@ -44,20 +44,51 @@
 
 package org.netbeans.progress.module;
 
-import org.netbeans.modules.progress.spi.Controller;
-import java.awt.Component;
-import org.openide.awt.StatusLineElementProvider;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import org.netbeans.modules.progress.spi.ExtractedProgressUIWorker;
+import org.netbeans.modules.progress.spi.ProgressEvent;
+import org.netbeans.modules.progress.spi.ProgressUIWorkerProvider;
+import org.netbeans.modules.progress.spi.ProgressUIWorkerWithModel;
+import org.netbeans.modules.progress.spi.TaskModel;
 
 /**
- * Implementation of StatusLineElementProvider which allows to dock the progress
- * component into the status bar.
- * @author  Milos Kleint
+ * Fallback provider in case no GUI is registered.
+ * Just enough to make unit tests run without errors, etc.
+ * @author Jesse Glick
+ * @see "issue #87812"
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.awt.StatusLineElementProvider.class, position=-13)
-public final class ProgressVisualizerProvider implements StatusLineElementProvider {
+public class TrivialProgressUIWorkerProvider implements ProgressUIWorkerProvider, ProgressUIWorkerWithModel, ExtractedProgressUIWorker {
 
-    public Component getStatusLineElement () {
-        return Controller.getDefault().getVisualComponent();
+    public TrivialProgressUIWorkerProvider() {}
+
+    public ProgressUIWorkerWithModel getDefaultWorker() {
+        return this;
     }
-    
+
+    public ExtractedProgressUIWorker getExtractedComponentWorker() {
+        return this;
+    }
+
+    public void setModel(TaskModel model) {}
+
+    public void showPopup() {}
+
+    public void processProgressEvent(ProgressEvent event) {}
+
+    public void processSelectedProgressEvent(ProgressEvent event) {}
+
+    public JComponent getProgressComponent() {
+        return new JPanel();
+    }
+
+    public JLabel getMainLabelComponent() {
+        return new JLabel();
+    }
+
+    public JLabel getDetailLabelComponent() {
+        return new JLabel();
+    }
+
 }

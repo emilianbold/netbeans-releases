@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,21 +34,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.progress.spi;
+package org.netbeans.api.progress;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import org.netbeans.modules.progress.spi.InternalHandle;
+import org.netbeans.modules.progress.spi.UIInternalHandle;
 
 /**
- *
- * @author mkleint
- * @since org.netbeans.api.progress/1 1.18
+ * UI-oriented ProgressHandle. Unlike th basic {@link ProgressHandle},
+ * this class can be used to extract Swing Components from the handle.
+ * 
+ * @author sdedic
  */
-public interface ExtractedProgressUIWorker extends ProgressUIWorker {
+public final class ProgressUIHandle extends ProgressHandle {
+
+    public ProgressUIHandle(InternalHandle internal) {
+        super(internal);
+    }
     
-    JComponent getProgressComponent();
-    JLabel getMainLabelComponent();
-    JLabel getDetailLabelComponent();
+    /**
+     * have the component in custom location, don't include in the status bar.
+     */
+    JComponent extractComponent() {
+        return ih().extractComponent();
+    }
+    
+    UIInternalHandle ih() {
+        return (UIInternalHandle)getInternalHandle();
+    }
+
+    JLabel extractDetailLabel() {
+        return ih().extractDetailLabel();
+    }
+
+    JLabel extractMainLabel() {
+        return ih().extractMainLabel();
+    }
 }

@@ -42,23 +42,20 @@
 
 package org.netbeans.api.progress;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider;
-import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress2;
-import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
 /**
- * Useful static methods
+ * Useful static methods. Most of methods were migrated to a non-swing class,
+ * {@link BaseProgressUtils}. 
+ * 
  * @author Tomas Holy
  * @since 1.16
  */
@@ -87,9 +84,10 @@ public final class ProgressUtils {
      * @param operationDescr text shown in dialog
      * @param cancelOperation set to true if user canceled the operation
      * @param waitForCanceled true if method should wait until canceled task is finished (if it is not finished in 1s ISE is thrown)
+     * @deprecated Use {@link BaseProgressUtils}
      */
     public static void runOffEventDispatchThread(Runnable operation, String operationDescr, AtomicBoolean cancelOperation, boolean waitForCanceled) {
-        PROVIDER.runOffEventDispatchThread(operation, operationDescr, cancelOperation, waitForCanceled, DISPLAY_WAIT_CURSOR_MS, DISPLAY_DIALOG_MS);
+        BaseProgressUtils.runOffEventDispatchThread(operation, operationDescr, cancelOperation, waitForCanceled, DISPLAY_WAIT_CURSOR_MS, DISPLAY_DIALOG_MS);
     }
 
     /**
@@ -107,9 +105,10 @@ public final class ProgressUtils {
      * @param waitCursorAfter time in ms after which wait cursor is shown
      * @param dialogAfter time in ms after which dialog with "Cancel" button is shown
      * @since 1.19
+     * @deprecated Use {@link BaseProgressUtils}
      */
     public static void runOffEventDispatchThread(Runnable operation, String operationDescr, AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorAfter, int dialogAfter) {
-        PROVIDER.runOffEventDispatchThread(operation, operationDescr, cancelOperation, waitForCanceled, waitCursorAfter, dialogAfter);
+        BaseProgressUtils.runOffEventDispatchThread(operation, operationDescr, cancelOperation, waitForCanceled, waitCursorAfter, dialogAfter);
     }
 
     /**
@@ -133,14 +132,10 @@ public final class ProgressUtils {
      * ProgressHandle.progress (String, int), false if not.  If true, the
      * created dialog will include a label that shows progress details.
      * @since 1.19
+     * @deprecated Use {@link BaseProgressUtils}
      */
     public static void showProgressDialogAndRun(Runnable operation, ProgressHandle progress, boolean includeDetailLabel) {
-        if (PROVIDER instanceof Progress) {
-            Progress p = (Progress) PROVIDER;
-            p.showProgressDialogAndRun(operation, progress, includeDetailLabel);
-        } else {
-            PROVIDER.runOffEventDispatchThread(operation, progress.getDisplayName(), new AtomicBoolean(false), false, 0, 0);
-        }
+        BaseProgressUtils.showProgressDialogAndRun(operation, progress, includeDetailLabel);
     }
 
     /**
@@ -164,6 +159,7 @@ public final class ProgressUtils {
      *                    is shown
      * 
      * @since 1.30
+     * @deprecated Use {@link BaseProgressUtils}
      */
     public static void runOffEventThreadWithProgressDialog(
             final Runnable operation,
@@ -173,16 +169,7 @@ public final class ProgressUtils {
             int waitCursorAfter,
             int dialogAfter)
     {
-        if (PROVIDER instanceof Progress2) {
-            Progress2 p = (Progress2) PROVIDER;
-            p.runOffEventThreadWithProgressDialog(operation, dialogTitle, progress, includeDetailLabel, waitCursorAfter, dialogAfter);
-        } else {
-            PROVIDER.runOffEventDispatchThread(operation, progress.getDisplayName(),
-                    new AtomicBoolean(false),
-                    true,
-                    DISPLAY_WAIT_CURSOR_MS,
-                    DISPLAY_DIALOG_MS);
-        }
+        BaseProgressUtils.runOffEventThreadWithProgressDialog(operation, dialogTitle, progress, includeDetailLabel, waitCursorAfter, dialogAfter);
     }
 
     /**
@@ -203,6 +190,7 @@ public final class ProgressUtils {
      *                    is shown
      * 
      * @since 1.30
+     * @deprecated Use {@link BaseProgressUtils}
      */
     public static void runOffEventThreadWithCustomDialogContent(
             final Runnable operation,
@@ -215,7 +203,7 @@ public final class ProgressUtils {
             Progress2 p = (Progress2) PROVIDER;
             p.runOffEventThreadWithCustomDialogContent(operation, dialogTitle, content, waitCursorAfter, dialogAfter);
         } else {
-            PROVIDER.runOffEventDispatchThread(operation, 
+            BaseProgressUtils.runOffEventDispatchThread(operation, 
                     dialogTitle, 
                     new AtomicBoolean(false),
                     true, 
@@ -243,30 +231,11 @@ public final class ProgressUtils {
      * details (needed only if you plan to call ProgressHandle.setProgress(String, int)
      * @return The result of the operation.
      * @since 1.19
+     * @deprecated use {@link BaseProgressUtils}
      */
     public static <T> T showProgressDialogAndRun(final ProgressRunnable<T> operation, final String displayName, boolean includeDetailLabel) {
-        if (PROVIDER instanceof Progress) {
-            Progress p = (Progress) PROVIDER;
-            return p.showProgressDialogAndRun(operation, displayName, includeDetailLabel);
-        } else {
-            final AtomicReference<T> ref = new AtomicReference<T>();
-            PROVIDER.runOffEventDispatchThread(new Runnable() {
-                @Override
-                public void run() {
-                    ProgressHandle handle = ProgressHandleFactory.createHandle(displayName);
-                    handle.start();
-                    handle.switchToIndeterminate();
-                    try {
-                        ref.set(operation.run(handle));
-                    } finally {
-                        handle.finish();
-                    }
-                }
-            }, displayName, new AtomicBoolean(false), true, 0, 0);
-            return ref.get();
-        }
+        return BaseProgressUtils.showProgressDialogAndRun(operation, displayName, includeDetailLabel);
     }
-
 
 
     /**
@@ -283,15 +252,10 @@ public final class ProgressUtils {
      * @param operation A runnable to run
      * @param displayName The display name of the operation, to show in the dialog
      * @since 1.19
+     * @deprecated use {@link BaseProgressUtils}
      */
     public static void showProgressDialogAndRun(Runnable operation, String displayName) {
-        RunnableWrapper wrapper;
-        if (operation instanceof Cancellable) {
-            wrapper = new CancellableRunnableWrapper(operation);
-        } else {
-            wrapper = new RunnableWrapper(operation);
-        }
-        showProgressDialogAndRun(wrapper, displayName, false);
+        BaseProgressUtils.showProgressDialogAndRun(operation, displayName);
     }
 
     /**
@@ -309,49 +273,12 @@ public final class ProgressUtils {
      * @param handle
      * @param includeDetailLabel
      * @return
+     * @deprecated use {@link BaseProgressUtils}
      */
     public static <T> Future<T> showProgressDialogAndRunLater (final ProgressRunnable<T> operation, final ProgressHandle handle, boolean includeDetailLabel) {
-        if (PROVIDER instanceof Progress) {
-            Progress p = (Progress) PROVIDER;
-            return p.showProgressDialogAndRunLater(operation, handle, includeDetailLabel);
-        } else {
-            FutureTask<T> result = new FutureTask<T>(new Callable<T>() {
-                @Override
-                public T call() throws Exception {
-                    return operation.run(handle);
-                }
-            });
-            PROVIDER.runOffEventDispatchThread(result, handle.getDisplayName(), new AtomicBoolean(false), true, 0, 0);
-            return result;
-        }
+        return BaseProgressUtils.showProgressDialogAndRunLater(operation, handle, includeDetailLabel);
     }
 
-    private static class RunnableWrapper implements ProgressRunnable<Void> {
-        private final Runnable toRun;
-        RunnableWrapper(Runnable toRun) {
-            this.toRun = toRun;
-        }
-
-        @Override
-        public Void run(ProgressHandle handle) {
-            toRun.run();
-            return null;
-        }
-    }
-
-    private static final class CancellableRunnableWrapper extends RunnableWrapper implements Cancellable {
-        private final Cancellable cancelable;
-        CancellableRunnableWrapper(Runnable toRun) {
-            super(toRun);
-            this.cancelable = (Cancellable)toRun;
-        }
-
-        @Override
-        public boolean cancel() {
-            return cancelable.cancel();
-        }
-    }
-        
     private static class Trivial implements RunOffEDTProvider {
         private static final RequestProcessor WORKER = new RequestProcessor(ProgressUtils.class.getName());
 

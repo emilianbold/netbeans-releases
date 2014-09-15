@@ -42,31 +42,22 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.progress.module;
+package org.netbeans.modules.progress.ui;
 
-import org.netbeans.modules.progress.spi.ProgressEvent;
-import org.netbeans.modules.progress.spi.ProgressUIWorkerWithModel;
-import org.netbeans.modules.progress.spi.TaskModel;
+import java.awt.Component;
+import org.netbeans.modules.progress.spi.SwingController;
+import org.openide.awt.StatusLineElementProvider;
 
 /**
- * Fallback provider in case no GUI is registered.
- * Just enough to make unit tests run without errors, etc.
- * @author Jesse Glick
- * @see "issue #87812"
+ * Implementation of StatusLineElementProvider which allows to dock the progress
+ * component into the status bar.
+ * @author  Milos Kleint
  */
-public class TrivialProgressUIWorkerProvider implements ProgressUIWorkerWithModel {
+@org.openide.util.lookup.ServiceProvider(service=org.openide.awt.StatusLineElementProvider.class, position=-13)
+public final class ProgressVisualizerProvider implements StatusLineElementProvider {
 
-    public TrivialProgressUIWorkerProvider() {}
-
-    public ProgressUIWorkerWithModel getDefaultWorker() {
-        return this;
+    public Component getStatusLineElement () {
+        return SwingController.getDefault().getVisualComponent();
     }
-
-    public void setModel(TaskModel model) {}
-
-    public void showPopup() {}
-
-    public void processProgressEvent(ProgressEvent event) {}
-
-    public void processSelectedProgressEvent(ProgressEvent event) {}
+    
 }
