@@ -61,46 +61,73 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
     private static final Logger LOG = Logger.getLogger(ProjectSensitivePerformer.class.getName());
     
     final private String command;
+    final private boolean attach;
     
-    public ProjectSensitivePerformer(String command) {
-        this.command = command;
+    public static ProjectSensitivePerformer profileProject(String command) {
+        return new ProjectSensitivePerformer(command, false);
     }
     
-    @Override
-    public boolean enable(Project project) {
-        if (project == null) return false;
-
+    public static ProjectSensitivePerformer attachProject() {
+        return new ProjectSensitivePerformer(null, true);
+    }
+    
+    private ProjectSensitivePerformer(String command, boolean attach) {
+        this.command = command;
+        this.attach = attach;
+    }
+    
+    
+    static boolean supportsProfileProject(String command, Project project) {
         ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         try {
             if (ap != null && contains(ap.getSupportedActions(), command)) {
                 ProjectProfilingSupport ppp = ProjectProfilingSupport.get(project);
-                if (ppp == null) {
-                    return false;
-                }
-                return  ppp.isProfilingSupported() && ap.isActionEnabled(command, project.getLookup());
+                if (ppp == null) return false;
+                return ppp.isProfilingSupported() && ap.isActionEnabled(command, project.getLookup());
             }
         } catch (IllegalArgumentException e) {
             LOG.log(Level.WARNING, null, e);
         }
         return false;
     }
+    
+    static boolean supportsAttachProject(Project project) {
+        ProjectProfilingSupport ppp = ProjectProfilingSupport.get(project);
+        return ppp == null ? false : ppp.isAttachSupported();
+    }
+    
+    @Override
+    public boolean enable(Project project) {
+        if (project == null) return false;
+        if (attach) return supportsAttachProject(project);
+        else return supportsProfileProject(command, project);
+    }
 
     @Override
     public void perform(Project project) {
+        ProfilerSession session = null;
+        
         Lookup projectLookup = project.getLookup();
-        ActionProvider ap = projectLookup.lookup(ActionProvider.class);
-        if (ap != null) {
-            ProfilerLauncher.Command _command = new ProfilerLauncher.Command(command);
-            Lookup context = new ProxyLookup(projectLookup, Lookups.fixed(project, _command));
-            ProfilerSession session = ProfilerSession.forContext(context);
-            if (session != null) session.requestActive();
+        if (attach) {
+            Lookup context = new ProxyLookup(projectLookup, Lookups.fixed(project));
+            session = ProfilerSession.forContext(context);
+        } else {
+            ActionProvider ap = projectLookup.lookup(ActionProvider.class);
+            if (ap != null) {
+                ProfilerLauncher.Command _command = new ProfilerLauncher.Command(command);
+                Lookup context = new ProxyLookup(projectLookup, Lookups.fixed(project, _command));
+                session = ProfilerSession.forContext(context);
+            }
+        }
+        
+        if (session != null) {
+            session.setAttach(attach);
+            session.requestActive();
         }
     }
     
     private static boolean contains(String[] actions, String action) {
-        for(String a : actions) {
-            if (action.equals(a)) return true;
-        }
+        for(String a : actions) if (action.equals(a)) return true;
         return false;
     }
 }
