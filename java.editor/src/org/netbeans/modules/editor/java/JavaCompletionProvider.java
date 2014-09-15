@@ -4466,7 +4466,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     results.add(javaCompletionItemFactory.createInitializeAllConstructorItem(env.getController(), true, uninitializedFinalFields, dctor2generate.getKind() == CONSTRUCTOR ? (ExecutableElement)dctor2generate : null, te, anchorOffset));
                 }
                 for (Map.Entry<ExecutableElement, boolean[]> entry : ctors2generate.entrySet()) {
-                    if (!(entry.getKey() == dctor2generate && ((ExecutableType)dctor2generate.asType()).getParameterTypes().isEmpty())) {
+                    if (!(entry.getKey() == dctor2generate && uninitializedFinalFields.isEmpty() && ((ExecutableType)dctor2generate.asType()).getParameterTypes().isEmpty())) {
                         if (entry.getValue()[0]) {
                             results.add(javaCompletionItemFactory.createInitializeAllConstructorItem(env.getController(), false, uninitializedFinalFields, entry.getKey(), te, anchorOffset));
                         }
