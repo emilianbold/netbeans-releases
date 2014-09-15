@@ -169,6 +169,21 @@ class CustomizerJVM extends javax.swing.JPanel {
                 new PropertyDocumentListener(manager, WLPluginProperties.MEM_OPTS, 
                         memoryOptions));
 
+        proxyCheckBox.setEnabled(!manager.isRemote());
+        proxyCheckBox.setSelected(!manager.isRemote()
+                && Boolean.valueOf(manager.getInstanceProperties().getProperty(WLPluginProperties.PROXY_ENABLED)));
+        proxyCheckBox.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    manager.getInstanceProperties().setProperty(WLPluginProperties.PROXY_ENABLED, Boolean.TRUE.toString());
+                } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+                    manager.getInstanceProperties().setProperty(WLPluginProperties.PROXY_ENABLED, Boolean.FALSE.toString());
+                }
+            }
+        });
+
         debugModeCheckBox.setEnabled(manager.isRemote());
         debugModeCheckBox.setSelected(!manager.isRemote()
                 || Boolean.valueOf(manager.getInstanceProperties().getProperty(WLPluginProperties.REMOTE_DEBUG_ENABLED)));
@@ -252,6 +267,7 @@ class CustomizerJVM extends javax.swing.JPanel {
         portLabel = new javax.swing.JLabel();
         portSpinner = new javax.swing.JSpinner();
         debugModeCheckBox = new javax.swing.JCheckBox();
+        proxyCheckBox = new javax.swing.JCheckBox();
 
         javaHomeLabel.setLabelFor(javaHome);
         org.openide.awt.Mnemonics.setLocalizedText(javaHomeLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_JavaHome")); // NOI18N
@@ -276,6 +292,8 @@ class CustomizerJVM extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "CustomizerJVM.portLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(debugModeCheckBox, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "CustomizerJVM.debugModeCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(proxyCheckBox, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "CustomizerJVM.proxyCheckBox.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -312,7 +330,8 @@ class CustomizerJVM extends javax.swing.JPanel {
                                 .addComponent(portLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(portSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(debugModeCheckBox))
+                            .addComponent(debugModeCheckBox)
+                            .addComponent(proxyCheckBox))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
@@ -339,6 +358,8 @@ class CustomizerJVM extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(memoryOptionsCommentLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(proxyCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(debugModeCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -380,6 +401,7 @@ class CustomizerJVM extends javax.swing.JPanel {
     private javax.swing.JLabel noteChangesLabel;
     private javax.swing.JLabel portLabel;
     private javax.swing.JSpinner portSpinner;
+    private javax.swing.JCheckBox proxyCheckBox;
     private javax.swing.JLabel vendorLabel;
     private javax.swing.JComboBox vendorName;
     private javax.swing.JTextField vmOptions;

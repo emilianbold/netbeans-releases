@@ -84,6 +84,8 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
      */
     public static final String DEFAULT_DEBUGGER_PORT = "8787"; // NOI18N
 
+    public static final String DEFAULT_PROXY_ENABLED = "true"; // NOI18N
+
     public static final String DEFAULT_MAC_MEM_OPTS = "-Xmx1024m -XX:PermSize=256m"; // NOI18N
 
     public static final String DEFAULT_DWP_MEM_OPTS = "-Xmx512m -XX:PermSize=128m"; // NOI18N
@@ -152,6 +154,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         props.put(WLPluginProperties.HOST_ATTR, host);
         props.put(WLPluginProperties.REMOTE_ATTR, Boolean.toString(remote));
         props.put(WLPluginProperties.REMOTE_DEBUG_ENABLED, Boolean.toString(remoteDebug));
+        props.put(WLPluginProperties.PROXY_ENABLED, DEFAULT_PROXY_ENABLED);
         if (remoteDebug) {
             props.put(WLPluginProperties.DEBUGGER_PORT_ATTR, debugPort);
         } else {

@@ -66,6 +66,7 @@ import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.weblogic.common.api.RuntimeListener;
 import org.netbeans.modules.weblogic.common.api.WebLogicRuntime;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.InputOutput;
 
@@ -283,7 +284,7 @@ public final class WLStartServer extends StartServer {
             }
         }
 
-        appendNonProxyHosts(sb);
+        configureProxy(dm.getInstanceProperties(), ret, sb);
         if (sb.length() > 0) {
             ret.put(JAVA_OPTIONS_VARIABLE, sb.toString());
         }
@@ -325,7 +326,7 @@ public final class WLStartServer extends StartServer {
             }
         }
 
-        appendNonProxyHosts(javaOptsBuilder);
+        configureProxy(dm.getInstanceProperties(), ret, javaOptsBuilder);
         ret.put(JAVA_OPTIONS_VARIABLE, javaOptsBuilder.toString());
         return ret;
     }
@@ -347,12 +348,43 @@ public final class WLStartServer extends StartServer {
             }
         }
 
-        appendNonProxyHosts(javaOptsBuilder);
+        configureProxy(dm.getInstanceProperties(), ret, javaOptsBuilder);
         String toAdd = javaOptsBuilder.toString().trim();
         if (!toAdd.isEmpty()) {
             ret.put(JAVA_OPTIONS_VARIABLE, toAdd);
         }
         return ret;
+    }
+
+    private static void configureProxy(InstanceProperties props, Map<String, String> env, StringBuilder javaOpts) {
+        if (Boolean.valueOf(props.getProperty(WLPluginProperties.PROXY_ENABLED))) {
+            configureProxy(javaOpts);
+        } else {
+            env.put("http_proxy", ""); // NOI18N
+        }
+    }
+
+    private static StringBuilder configureProxy(StringBuilder sb) {
+        final String[] PROXY_PROPS = {
+            "http.proxyHost", // NOI18N
+            "http.proxyPort", // NOI18N
+            "https.proxyHost", // NOI18N
+            "https.proxyPort", // NOI18N
+        };
+        for (String prop : PROXY_PROPS) {
+            if (sb.indexOf(prop) < 0) {
+                String value = System.getProperty(prop);
+                if (value != null) {
+                    if (sb.length() > 0) {
+                        sb.append(' '); // NOI18N
+                    }
+                    sb.append(" -D").append(prop).append("=").append(value); // NOI18N
+                }
+            }
+        }
+
+        appendNonProxyHosts(sb);
+        return sb;
     }
 
     private static StringBuilder appendNonProxyHosts(StringBuilder sb) {
