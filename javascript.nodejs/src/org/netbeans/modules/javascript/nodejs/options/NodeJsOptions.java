@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript.nodejs.options;
 
 import java.util.List;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
@@ -50,13 +51,15 @@ import org.openide.util.NbPreferences;
 
 public final class NodeJsOptions {
 
+    public static final String NODE_PATH = "node.path"; // NOI18N
+    public static final String USE_NODE_PATH = "use.node.path"; // NOI18N
+    public static final String USE_NPM_GLOBAL_ROOT = "use.npm.root.global"; // NOI18N
+
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing these preferences
     private static final String PREFERENCES_PATH = "nodejs"; // NOI18N
 
     private static final NodeJsOptions INSTANCE = new NodeJsOptions();
-
-    private static final String NODE_PATH = "node.path"; // NOI18N
 
     private volatile boolean nodeSearched = false;
 
@@ -66,6 +69,14 @@ public final class NodeJsOptions {
 
     public static NodeJsOptions getInstance() {
         return INSTANCE;
+    }
+
+    public void addPreferenceChangeListener(PreferenceChangeListener listener) {
+        getPreferences().addPreferenceChangeListener(listener);
+    }
+
+    public void removePreferenceChangeListener(PreferenceChangeListener listener) {
+        getPreferences().removePreferenceChangeListener(listener);
     }
 
     @CheckForNull
@@ -84,6 +95,22 @@ public final class NodeJsOptions {
 
     public void setNode(String node) {
         getPreferences().put(NODE_PATH, node);
+    }
+
+    public boolean isUseNodePath() {
+        return getPreferences().getBoolean(USE_NODE_PATH, false);
+    }
+
+    public void setUseNodePath(boolean useNodePath) {
+        getPreferences().putBoolean(USE_NODE_PATH, useNodePath);
+    }
+
+    public boolean isUseNpmGlobalRoot() {
+        return getPreferences().getBoolean(USE_NPM_GLOBAL_ROOT, false);
+    }
+
+    public void setUseNpmGlobalRoot(boolean useNpmGlobalRoot) {
+        getPreferences().putBoolean(USE_NPM_GLOBAL_ROOT, useNpmGlobalRoot);
     }
 
     private Preferences getPreferences() {
