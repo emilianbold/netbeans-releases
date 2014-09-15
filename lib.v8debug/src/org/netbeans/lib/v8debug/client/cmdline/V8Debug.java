@@ -944,54 +944,80 @@ public class V8Debug {
             System.out.print(toEvaluate+" = ");
             toEvaluate = null;
         }
-        System.out.println(value.getText());
+        System.out.println(printStr(value));
     }
     
-    private String print(ReferencedValue refAndVal) {
+    private String printStr(ReferencedValue refAndVal) {
         if (refAndVal.hasValue()) {
             V8Value value = refAndVal.getValue();
-            if (value.getText() != null) {
-                return value.getText();
-            }
-            switch (value.getType()) {
-                case Boolean:
-                    return Boolean.toString(((V8Boolean) value).getValue());
-                case Function:
-                    String name = ((V8Function) value).getName();
-                    if (name == null || name.isEmpty()) {
-                        name = ((V8Function) value).getInferredName();
-                    }
-                    return name+"()";
-                case Null:
-                    return String.valueOf(null);
-                case Number:
-                    V8Number n = (V8Number) value;
-                    switch (n.getKind()) {
-                        case Double:
-                            return Double.toString(n.getDoubleValue());
-                        case Long:
-                            return Long.toString(n.getLongValue());
-                        default:
-                            throw new IllegalStateException("Unknown kind: "+n.getKind());
-                    }
-                case Object:
-                    V8Object o = (V8Object) value;
-                    return "("+o.getClassName()+")";
-                case String:
-                    return "\""+((V8String) value).getValue()+"\"";
-                case Undefined:
-                    return "undefined";
-                default:
-                    throw new IllegalStateException("Unknown value type: "+value.getType());
-            }
+            return printStr(value);
         } else {
             return "reference: "+refAndVal.getReference();
+        }
+    }
+    
+    private String printStr(V8Value value) {
+        switch (value.getType()) {
+            case Boolean:
+                return Boolean.toString(((V8Boolean) value).getValue());
+            case Function:
+                String name = ((V8Function) value).getName();
+                if (name == null || name.isEmpty()) {
+                    name = ((V8Function) value).getInferredName();
+                }
+                return name+"()";
+            case Null:
+                return String.valueOf(null);
+            case Number:
+                V8Number n = (V8Number) value;
+                switch (n.getKind()) {
+                    case Double:
+                        return Double.toString(n.getDoubleValue());
+                    case Long:
+                        return Long.toString(n.getLongValue());
+                    default:
+                        throw new IllegalStateException("Unknown kind: "+n.getKind());
+                }
+            case Object:
+                V8Object o = (V8Object) value;
+                StringBuilder sb = new StringBuilder("(");
+                sb.append(o.getClassName());
+                sb.append(')');
+                if (o.getText() != null) {
+                    sb.append(' ');
+                    sb.append(o.getText());
+                }
+                if (o.getProperties() != null) {
+                    Map<String, V8Object.Property> properties = o.getProperties();
+                    String newLine = System.getProperty("line.separator");
+                    for (String propName : properties.keySet()) {
+                        sb.append(newLine);
+                        sb.append("  ");
+                        sb.append(propName);
+                        sb.append(" = ");
+                        V8Object.Property property = properties.get(propName);
+                        sb.append('(');
+                        sb.append(property.getType());
+                        sb.append(") ref: ");
+                        sb.append(property.getReference());
+                    }
+                }
+                return sb.toString();
+            case String:
+                return "\""+((V8String) value).getValue()+"\"";
+            case Undefined:
+                return "undefined";
+            default:
+                if (value.getText() != null) {
+                    return value.getText();
+                }
+                throw new IllegalStateException("Unknown value type: "+value.getType());
         }
     }
 
     private void printValues(Map<String, ReferencedValue> argumentRefs) {
         for (String name : argumentRefs.keySet()) {
-            System.out.println(name + " = " + print(argumentRefs.get(name)));
+            System.out.println(name + " = " + printStr(argumentRefs.get(name)));
         }
     }
     
