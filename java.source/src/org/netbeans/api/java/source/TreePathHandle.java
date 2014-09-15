@@ -44,8 +44,10 @@
                                                                                                                                                                                                                                
 package org.netbeans.api.java.source;                                                                                                                                                                                          
                                                                                                                                                                                                                                
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;                                                                                                                                                                                               
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;                                                                                                                                                                                           
@@ -248,16 +250,22 @@ public final class TreePathHandle {
         TreePath current = treePath;
         Element correspondingElement = info.getTrees().getElement(current);
         Element element = null;
+        boolean child = false;
         while (current != null) {
             if (   TreeUtilities.CLASS_TREE_KINDS.contains(current.getLeaf().getKind())
                 || current.getLeaf().getKind() == Kind.VARIABLE
                 || current.getLeaf().getKind() == Kind.METHOD) {
                 Element loc = info.getTrees().getElement(current);
                 if (isSupported(loc)) {
+                    if (child && info.getTreeUtilities().isSynthetic(info.getCompilationUnit(), current.getLeaf())) {
+                        // we do not support handles to statements in synth members
+                        throw new IllegalArgumentException("Handle for synthetic path");
+                    }
                     element = loc;
                     break;
                 }
             }
+            child = true;
             current = current.getParentPath();
         }
         return new TreePathHandle(new TreeDelegate(pos, new TreeDelegate.KindPath(treePath), file, element != null ? ElementHandle.create(element) : null, correspondingElement != null && isSupported(correspondingElement) ? ElementHandle.create(correspondingElement) : null));
