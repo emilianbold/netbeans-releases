@@ -127,7 +127,7 @@ public class DebugAction extends ControlAction {
 
     private static boolean enableImpl(final ServerInstance si) {
         if (si == null || si.getServerState() != ServerInstance.STATE_STOPPED
-            || !si.isDebugSupported()) {
+            || !si.isDebugStartSupported()) {
             return false;
         }
         return true;

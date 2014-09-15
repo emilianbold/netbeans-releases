@@ -1042,6 +1042,15 @@ public class ServerInstance implements Node.Cookie, Comparable {
         return ss.supportsStartDebugging(null) || ss.isDebuggable(null);
     }
 
+    // XXX will be called from AWT
+    public boolean isDebugStartSupported() {
+        StartServer ss = getStartServer();
+        if (ss == null) {
+            return false;
+        }
+        return ss.supportsStartDebugging(null);
+    }
+
     /**
      * Can be this server started in profile mode? Currently the only case when
      * the server cannot be started in the debugged is when the admin server is
