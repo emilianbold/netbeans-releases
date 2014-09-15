@@ -44,9 +44,12 @@ package org.netbeans.modules.javascript.nodejs.ui.options;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -82,7 +85,10 @@ public final class NodeJsOptionsPanel extends JPanel {
         nodeHintLabel.setText(Bundle.NodeJsOptionsPanel_node_hint(NodeExecutable.NODE_NAME));
 
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
+        ItemListener defaultItemListener = new DefaultItemListener();
         nodeTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        nodePathCheckBox.addItemListener(defaultItemListener);
+        npmGlobalRootCheckBox.addItemListener(defaultItemListener);
     }
 
     public String getNode() {
@@ -91,6 +97,22 @@ public final class NodeJsOptionsPanel extends JPanel {
 
     public void setNode(String node) {
         nodeTextField.setText(node);
+    }
+
+    public boolean isUseNodePath() {
+        return nodePathCheckBox.isSelected();
+    }
+
+    public void setUseNodePath(boolean useNodePath) {
+        nodePathCheckBox.setSelected(useNodePath);
+    }
+
+    public boolean isUseNpmGlobalRoot() {
+        return npmGlobalRootCheckBox.isSelected();
+    }
+
+    public void setUseNpmGlobalRoot(boolean useNpmGlobalRoot) {
+        npmGlobalRootCheckBox.setSelected(useNpmGlobalRoot);
     }
 
     public void setError(String message) {
@@ -130,6 +152,9 @@ public final class NodeJsOptionsPanel extends JPanel {
         nodeBrowseButton = new JButton();
         nodeSearchButton = new JButton();
         nodeHintLabel = new JLabel();
+        foldersLabel = new JLabel();
+        nodePathCheckBox = new JCheckBox();
+        npmGlobalRootCheckBox = new JCheckBox();
         errorLabel = new JLabel();
 
         Mnemonics.setLocalizedText(nodeLabel, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.nodeLabel.text")); // NOI18N
@@ -150,6 +175,12 @@ public final class NodeJsOptionsPanel extends JPanel {
 
         Mnemonics.setLocalizedText(nodeHintLabel, "HINT"); // NOI18N
 
+        Mnemonics.setLocalizedText(foldersLabel, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.foldersLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(nodePathCheckBox, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.nodePathCheckBox.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(npmGlobalRootCheckBox, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.npmGlobalRootCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
@@ -169,7 +200,11 @@ public final class NodeJsOptionsPanel extends JPanel {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(nodeSearchButton))))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(errorLabel)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(errorLabel)
+                    .addComponent(nodePathCheckBox)
+                    .addComponent(npmGlobalRootCheckBox)
+                    .addComponent(foldersLabel))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -181,6 +216,12 @@ public final class NodeJsOptionsPanel extends JPanel {
                     .addComponent(nodeSearchButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(nodeHintLabel)
+                .addGap(18, 18, 18)
+                .addComponent(foldersLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(nodePathCheckBox)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(npmGlobalRootCheckBox)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(errorLabel))
         );
@@ -212,11 +253,14 @@ public final class NodeJsOptionsPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel errorLabel;
+    private JLabel foldersLabel;
     private JButton nodeBrowseButton;
     private JLabel nodeHintLabel;
     private JLabel nodeLabel;
+    private JCheckBox nodePathCheckBox;
     private JButton nodeSearchButton;
     private JTextField nodeTextField;
+    private JCheckBox npmGlobalRootCheckBox;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
@@ -239,6 +283,15 @@ public final class NodeJsOptionsPanel extends JPanel {
         }
 
         private void processUpdate() {
+            fireChange();
+        }
+
+    }
+
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
             fireChange();
         }
 

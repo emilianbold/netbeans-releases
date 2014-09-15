@@ -120,8 +120,8 @@ public final class ProfileClassEditorAction extends NodeAction {
                     if (project == null) project = ProjectUtilities.getProject(dobj.getPrimaryFile());
                     
                     // Let the ProfilerSession handle the root method
-                    Lookup configuration = Lookups.fixed(resolvedClass);
-                    ProfilerSession.findAndConfigure(configuration, project, getName());
+                    Lookup configuration = Lookups.fixed(resolvedClass, project);
+                    ProfilerSession.findAndConfigure(configuration, getName());
                 } catch (Exception ex) {
                     ProfilerDialogs.displayWarning(Bundle.ProfileClassEditorAction_ProblemProfilingClass());
                 }

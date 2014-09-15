@@ -60,6 +60,7 @@ import org.netbeans.modules.profiler.actions.ProfilingSupport;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
 import org.netbeans.modules.profiler.attach.AttachWizard;
 import org.netbeans.modules.profiler.nbimpl.NetBeansProfiler;
@@ -108,7 +109,8 @@ public class ProfilerLauncher {
         }
 
         public boolean start() {
-            getProfiler().setProfiledProject(getProject(), getFile());
+            Project project = (Project)getProject();
+            getProfiler().setProfiledProject(project, getFile());
             
             final ProfilingSettings pSettings = getProfilingSettings();
             
@@ -133,7 +135,16 @@ public class ProfilerLauncher {
                 });
             } else {
                 Command command = getContext().lookup(Command.class);
-                final Session s = newSession(command.get(), getContext());
+                String _command = command == null ? null : command.get();
+                if (_command == null) { // Context action in editor/navigator
+                    _command = ActionProvider.COMMAND_PROFILE;
+                    if (!ProjectSensitivePerformer.supportsProfileProject(_command, project)) {
+                        ProfilerDialogs.displayError("Profile project not supported for " +
+                                                     ProjectUtilities.getDisplayName(project));
+                        return false;
+                    }
+                }
+                final Session s = newSession(_command, getContext());
                 if (s != null) {
                     s.setProfilingSettings(pSettings);
                     s.run();
