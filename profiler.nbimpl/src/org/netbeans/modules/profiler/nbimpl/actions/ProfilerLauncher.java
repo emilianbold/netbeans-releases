@@ -138,7 +138,7 @@ public class ProfilerLauncher {
                 String _command = command == null ? null : command.get();
                 if (_command == null) { // Context action in editor/navigator
                     _command = ActionProvider.COMMAND_PROFILE;
-                    if (!new ProjectSensitivePerformer(_command).enable(project)) {
+                    if (!ProjectSensitivePerformer.supportsProfileProject(_command, project)) {
                         ProfilerDialogs.displayError("Profile project not supported for " +
                                                      ProjectUtilities.getDisplayName(project));
                         return false;

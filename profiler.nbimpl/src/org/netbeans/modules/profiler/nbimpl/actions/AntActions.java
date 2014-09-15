@@ -44,17 +44,12 @@ package org.netbeans.modules.profiler.nbimpl.actions;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.swing.Action;
-import org.netbeans.api.project.Project;
-import org.netbeans.lib.profiler.ProfilerLogger;
-import org.netbeans.modules.profiler.NetBeansProfiler;
 
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.ProfilerIcons;
-import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
-import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -85,7 +80,7 @@ public class AntActions {
         if (ref != null) return ref;
 
         Action delegate = MainProjectSensitiveActions.mainProjectSensitiveAction(
-                new ProjectSensitivePerformer(ActionProvider.COMMAND_PROFILE), 
+                ProjectSensitivePerformer.profileProject(ActionProvider.COMMAND_PROFILE), 
                 NbBundle.getMessage(AntActions.class, "LBL_ProfileMainProjectAction"), // NOI18N
                 Icons.getIcon(ProfilerIcons.PROFILE)
         );
@@ -110,7 +105,7 @@ public class AntActions {
     })
     public static Action profileProjectPopup() {
         Action delegate = ProjectSensitiveActions.projectSensitiveAction(
-                new ProjectSensitivePerformer(ActionProvider.COMMAND_PROFILE), 
+                ProjectSensitivePerformer.profileProject(ActionProvider.COMMAND_PROFILE), 
                 NbBundle.getMessage(AntActions.class, "LBL_ProfileProject"), // NOI18N
                 null
         );
@@ -124,7 +119,7 @@ public class AntActions {
     @NbBundle.Messages("SUITE_ACTION_profile_osgi=Profile in Felix")
     public static Action profileOsgi() {
         Action delegate = ProjectSensitiveActions.projectSensitiveAction(
-                new ProjectSensitivePerformer("profile-osgi"), 
+                ProjectSensitivePerformer.profileProject("profile-osgi"), 
                 Bundle.SUITE_ACTION_profile_osgi(), 
                 null
         );
@@ -160,5 +155,28 @@ public class AntActions {
                 new FileSensitivePerformer(ActionProvider.COMMAND_PROFILE_TEST_SINGLE), 
                 Bundle.LBL_ProfileTest(),
                 null);
+    }
+    
+    @Messages({
+        "# {0} - # of selected projects (0 if disabled), or -1 if main project", 
+        "# {1} - project name, if exactly one project", 
+//        "LBL_ProfileMainProjectAction=&Profile {0,choice,-1#Main Project|0#Project|1#Project ({1})|1<{0} Projects}" // #231371
+        "LBL_AttachMainProjectAction=&Attach to {0,choice,-1#Main Project|0#Project|1#Project ({1})|1<Project}"
+    })
+    @ActionID(category="Profile", id="org.netbeans.modules.profiler.actions.AttachMainProject")
+    @ActionRegistration(displayName="#LBL_AttachMainProjectAction", lazy=false)
+    @ActionReferences({
+        @ActionReference(path="Menu/Profile", position=125)
+    })
+    public static Action attachMainProjectAction() {
+        Action delegate = ProjectSensitiveActions.projectSensitiveAction(
+                ProjectSensitivePerformer.attachProject(), 
+                NbBundle.getMessage(AntActions.class, "LBL_AttachMainProjectAction"), // NOI18N
+                Icons.getIcon(ProfilerIcons.ATTACH)
+        );
+        delegate.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(AntActions.class, "LBL_AttachMainProjectAction")); // NOI18N
+        delegate.putValue("iconBase", Icons.getResource(ProfilerIcons.ATTACH)); // NOI18N
+        
+        return delegate;
     }
 }
