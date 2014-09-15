@@ -42,12 +42,11 @@
 package org.netbeans.modules.javascript2.nodejs.editor;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.json.simple.JSONObject;
@@ -57,6 +56,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -76,6 +76,15 @@ public class NodeJsUtils {
     
     private static String MAIN_FIELD = "main"; //NOI18N
 
+    private static final String NODEJS_ICON_PATH = "org/netbeans/modules/javascript2/nodejs/resources/nodeJs16.png"; //NOI18N
+    private static ImageIcon NODEJS_ICON = null;
+    
+    public static ImageIcon getNodeJsIcon () {
+        if (NODEJS_ICON == null) {
+            NODEJS_ICON = new ImageIcon(ImageUtilities.loadImage(NODEJS_ICON_PATH)); //NOI18N
+        }
+        return NODEJS_ICON;
+    }
     public static FileObject findModuleFile(FileObject fromModule, String modulePath) {
         if (modulePath == null || modulePath.isEmpty()) {
             // do nothing in such case
