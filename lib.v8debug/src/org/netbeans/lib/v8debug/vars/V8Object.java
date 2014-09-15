@@ -54,12 +54,12 @@ public class V8Object extends V8Value {
     private final PropertyLong constructorFunctionHandle;
     private final PropertyLong protoObjectHandle;
     private final PropertyLong prototypeObjectHandle;
-    private final Map<String, ReferencedValue> properties;
+    private final Map<String, Property> properties;
     
     public V8Object(long handle, String className,
                     PropertyLong constructorFunctionHandle,
                     PropertyLong protoObjectHandle, PropertyLong prototypeObjectHandle,
-                    Map<String, ReferencedValue> properties, String text) {
+                    Map<String, Property> properties, String text) {
         this(handle, V8Value.Type.Object, className, constructorFunctionHandle,
              protoObjectHandle, prototypeObjectHandle, properties, text);
     }
@@ -67,7 +67,7 @@ public class V8Object extends V8Value {
     protected V8Object(long handle, V8Value.Type type, String className,
                        PropertyLong constructorFunctionHandle,
                        PropertyLong protoObjectHandle, PropertyLong prototypeObjectHandle,
-                       Map<String, ReferencedValue> properties, String text) {
+                       Map<String, Property> properties, String text) {
         super(handle, type, text);
         this.className = className;
         this.constructorFunctionHandle = constructorFunctionHandle;
@@ -92,7 +92,58 @@ public class V8Object extends V8Value {
         return prototypeObjectHandle;
     }
 
-    public Map<String, ReferencedValue> getProperties() {
+    public Map<String, Property> getProperties() {
         return properties;
+    }
+    
+    public static final class Property {
+        
+        public static enum Type {
+            Normal,
+            Field,
+            Constant,
+            Callbacks
+        }
+        
+        public static final int ATTR_NONE = 0;
+        public static final int ATTR_READ_ONLY = 1;
+        public static final int ATTR_DONT_ENUM = 2;
+        public static final int ATTR_DONT_DELETE = 4;
+        public static final int ATTR_SEALED = ATTR_DONT_DELETE;
+        public static final int ATTR_FROZEN = ATTR_SEALED | ATTR_READ_ONLY;
+        public static final int ATTR_STRING = 8;
+        public static final int ATTR_SYMBOLIC = 16;
+        public static final int ATTR_PRIVATE_SYMBOL = 32;
+        public static final int ATTR_DONT_SHOW = ATTR_DONT_ENUM | ATTR_SYMBOLIC | ATTR_PRIVATE_SYMBOL;
+        public static final int ATTR_ABSENT = 64;
+        
+        private final String name;
+        private final Type type;
+        private final int attributes;
+        private final long reference;
+        
+        public Property(String name, Type type, int attributes, long reference) {
+            this.name = name;
+            this.type = type;
+            this.attributes = attributes;
+            this.reference = reference;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public int getAttributes() {
+            return attributes;
+        }
+
+        public long getReference() {
+            return reference;
+        }
+        
     }
 }

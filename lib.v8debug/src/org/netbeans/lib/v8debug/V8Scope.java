@@ -55,7 +55,8 @@ public final class V8Scope {
         Local,
         With,
         Closure,
-        Catch;
+        Catch,
+        Block;
         
         public static Type valueOf(int i) {
             for (Type t : values()) {

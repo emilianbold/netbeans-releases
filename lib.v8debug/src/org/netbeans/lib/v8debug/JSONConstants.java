@@ -106,6 +106,9 @@ class JSONConstants {
     public static final String INLINE_REFS = "inlineRefs";
     public static final String OBJECT = "object";
     
+    public static final String ATTRIBUTES = "attributes";
+    public static final String PROPERTY_TYPE = "propertyType";
+    
     public static final String BODY_VERSION = "V8Version";
     
     public static final String EVT_INVOCATION_TEXT = "invocationText";

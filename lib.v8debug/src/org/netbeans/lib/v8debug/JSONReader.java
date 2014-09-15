@@ -41,6 +41,7 @@
  */
 package org.netbeans.lib.v8debug;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -394,7 +395,7 @@ public class JSONReader {
                 PropertyLong constructorFunctionHandle = getReferenceProperty(obj, VALUE_CONSTRUCTOR_FUNCTION);
                 PropertyLong protoObject = getReferenceProperty(obj, VALUE_PROTO_OBJECT);
                 PropertyLong prototypeObject = getReferenceProperty(obj, VALUE_PROTOTYPE_OBJECT);
-                Map<String, ReferencedValue> properties = getReferences((JSONArray) obj.get(VALUE_PROPERTIES));
+                Map<String, V8Object.Property> properties = getProperties((JSONArray) obj.get(VALUE_PROPERTIES));
                 return new V8Function(handle, constructorFunctionHandle,
                                       protoObject, prototypeObject,
                                       name, inferredName,
@@ -405,7 +406,7 @@ public class JSONReader {
                 constructorFunctionHandle = getReferenceProperty(obj, VALUE_CONSTRUCTOR_FUNCTION);
                 protoObject = getReferenceProperty(obj, VALUE_PROTO_OBJECT);
                 prototypeObject = getReferenceProperty(obj, VALUE_PROTOTYPE_OBJECT);
-                properties = getReferences((JSONArray) obj.get(VALUE_PROPERTIES));
+                properties = getProperties((JSONArray) obj.get(VALUE_PROPERTIES));
                 return new V8Object(handle, className,
                                     constructorFunctionHandle,
                                     protoObject, prototypeObject,
@@ -530,6 +531,35 @@ public class JSONReader {
             references.put(name, ref);
         }
         return references;
+    }
+    
+    private static Map<String, V8Object.Property> getProperties(JSONArray array) {
+        if (array == null) {
+            return null;
+        }
+        if (array.isEmpty()) {
+            return Collections.EMPTY_MAP;
+        }
+        Map<String, V8Object.Property> properties = new HashMap<>();
+        V8Object.Property.Type[] types = V8Object.Property.Type.values();
+        for (Object obj : array) {
+            JSONObject prop = (JSONObject) obj;
+            String name = getString(prop, NAME);
+            long ref = getReference(prop);
+            long attributes = getLong(prop, ATTRIBUTES, 0);
+            long propertyTypeNum = getLong(prop, PROPERTY_TYPE);
+            V8Object.Property.Type type;
+            if (propertyTypeNum < 0) {
+                type = null;
+            } else if (propertyTypeNum < types.length) {
+                type = types[(int) propertyTypeNum];
+            } else {
+                throw new IllegalArgumentException("Unknown property type: "+propertyTypeNum);
+            }
+            V8Object.Property property = new V8Object.Property(name, type, (int) attributes, ref);
+            properties.put(name, property);
+        }
+        return properties;
     }
     
     private static ReferencedValue[] getRefs(JSONArray array) {
