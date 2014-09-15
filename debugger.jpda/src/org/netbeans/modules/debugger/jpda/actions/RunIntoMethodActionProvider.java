@@ -52,6 +52,7 @@ import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.connect.Connector;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
@@ -59,25 +60,29 @@ import com.sun.jdi.request.EventRequest;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
-
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.SessionBridge;
+import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
-import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.ListeningDICookie;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
 import org.netbeans.modules.debugger.jpda.ExpressionPool.Interval;
@@ -97,18 +102,17 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
-import org.netbeans.spi.debugger.ActionsProviderSupport;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
+import org.netbeans.spi.debugger.ActionsProviderSupport;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -321,6 +325,8 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         Expression expr = debugger.getExpressionPool().getExpressionAt(locations.get(0), url);
         Location bpLocation = null;
         Interval expressionLines = null;
+        String methodClassType = null;
+        boolean isNative = false;
         if (expr != null) {
             Operation[] ops = expr.getOperations();
             for (int i = 0; i < ops.length; i++) {
@@ -329,6 +335,8 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     methodOffset <= op.getMethodEndPosition().getOffset()) {
                     
                     bpLocation = expr.getLocations()[i];
+                    methodClassType = op.getMethodClassType();
+                    isNative = op.isNative();
                     break;
                 }
             }
@@ -337,23 +345,28 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         if (bpLocation == null) {
             bpLocation = locations.get(0);
         }
-        doAction(debugger, methodName, bpLocation, expressionLines, false, doResume,
-                 MethodChooserSupport.MethodEntry.SELECTED);
+        doAction(debugger, methodName, methodClassType, isNative, bpLocation,
+                  expressionLines, false, doResume,
+                  MethodChooserSupport.MethodEntry.SELECTED);
     }
 
     static boolean doAction(final JPDADebuggerImpl debugger,
                             final String methodName,
+                            final String methodClassType,
+                            final boolean isNative,
                             Location bpLocation,
                             Interval expressionLines,
                             // If it's important not to run far from the expression
                             boolean setBoundaryStep,
                             MethodChooserSupport.MethodEntry methodEntry) {
         
-        return doAction(debugger, methodName, bpLocation, expressionLines, setBoundaryStep, true, methodEntry);
+        return doAction(debugger, methodName, methodClassType, isNative, bpLocation, expressionLines, setBoundaryStep, true, methodEntry);
     }
 
     private static boolean doAction(final JPDADebuggerImpl debugger,
                                     final String methodName,
+                                    final String methodClassType,
+                                    final boolean isNative,
                                     Location bpLocation,
                                     // If it's important not to run far from the expression
                                     Interval expressionLines,
@@ -395,8 +408,9 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         logger.log(Level.FINE, "doAction() areWeOnTheLocation = {0}, methodName = {1}", new Object[]{areWeOnTheLocation, methodName});
         if (areWeOnTheLocation) {
             // We're on the line from which the method is called
-            traceLineForMethod(debugger, ct.getThreadReference(), methodName,
-                               line, doFinishWhenMethodNotFound, methodEntry);
+            traceLineForMethod(debugger, ct, methodName,
+                               methodClassType, isNative, line,
+                               doFinishWhenMethodNotFound, methodEntry);
         } else {
             final JPDAStep[] boundaryStepPtr = new JPDAStep[] { null };
             // Submit the breakpoint to get to the point from which the method is called
@@ -465,8 +479,9 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                         } catch (VMDisconnectedExceptionWrapper e) {
                             return false;
                         }
-                        traceLineForMethod(debugger, tr, methodName, line,
-                                           doFinishWhenMethodNotFound, methodEntry);
+                        traceLineForMethod(debugger, t, methodName, methodClassType,
+                                           isNative, line, doFinishWhenMethodNotFound,
+                                           methodEntry);
                         return true;
                     }
 
@@ -545,13 +560,40 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
     }
 
     private static void traceLineForMethod(final JPDADebuggerImpl debugger,
-                                           final ThreadReference tr,
+                                           final JPDAThreadImpl jtr,
                                            final String method,
+                                           final String methodClassType,
+                                           final boolean isNative,
                                            final int methodLine,
                                            final boolean finishWhenNotFound,
                                            final MethodChooserSupport.MethodEntry methodEntry) {
-        final JPDAThread jtr = debugger.getThread(tr);
+        //ThreadReference tr = jtr.getThreadReference();
         final int depth = jtr.getStackDepth();
+        //System.err.println("traceLineForMethod: stepping into native method "+methodClassType+"."+method+" = "+isNative);
+        if (isNative && SessionBridge.getDefault().isChangerFor((String) ActionsManager.ACTION_STEP_INTO)) {
+            Map<Object, Object> properties = new HashMap<Object, Object>();
+            properties.put("javaClass", methodClassType);
+            properties.put("javaMethod", method);
+            Session session = debugger.getSession();
+            putConnectionProperties(session, properties);
+            final Lock writeLock = jtr.accessLock.writeLock();
+            boolean changed = false;
+            writeLock.lock();
+            try {
+                changed = SessionBridge.getDefault().suggestChange(
+                            session,
+                            (String) ActionsManager.ACTION_STEP_INTO,
+                            properties);
+            } finally {
+                if (changed) {
+                    writeLock.unlock();
+                    jtr.resume();
+                    return ;
+                } else {
+                    writeLock.unlock();
+                }
+            }
+        }
         final JPDAStep step = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_INTO);
         step.setHidden(true);
         logger.log(Level.FINE, "Will traceLineForMethod({0}, {1}, {2})",
@@ -628,6 +670,25 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         });
         step.addStep(jtr);
     } 
+    
+    private static void putConnectionProperties(Session session, Map properties) {
+        ListeningDICookie lc = session.lookupFirst(null, ListeningDICookie.class);
+        Map<String, ? extends Connector.Argument> args = null;
+        if (lc != null) {
+            args = lc.getArgs();
+            properties.put("conn_port", lc.getPortNumber());
+            properties.put("conn_shmem", lc.getSharedMemoryName());
+        } else {
+            AttachingDICookie ac = session.lookupFirst(null, AttachingDICookie.class);
+            if (ac != null) {
+                args = ac.getArgs();
+                properties.put("conn_host", ac.getHostName());
+                properties.put("conn_port", ac.getPortNumber());
+                properties.put("conn_shmem", ac.getSharedMemoryName());
+                properties.put("conn_pid", ac.getProcessID());
+            }
+        }
+    }
 
     @Override
     public void actionPerformed(Object action) {

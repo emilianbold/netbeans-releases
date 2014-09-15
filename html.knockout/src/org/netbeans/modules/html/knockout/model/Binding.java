@@ -60,6 +60,7 @@ public enum Binding implements KOHelpItem {
     //text and appearance
     visible,
     text,
+    textInput,
     html,
     css,
     style,
@@ -82,6 +83,7 @@ public enum Binding implements KOHelpItem {
     selectedOptions,
     uniqueName,
     //rendering
+    component,
     template;
 
     public static final String DOC_CHARSET = "UTF-8"; //NOI18N
@@ -117,7 +119,7 @@ public enum Binding implements KOHelpItem {
     public String getExternalDocumentationURL() {
         return new StringBuilder()
                 .append(DOC_URL_BASE)
-                .append(getName())
+                .append(getName().equals(Binding.textInput.name()) ? getName().toLowerCase() : getName()) // workaround for issue #246945
                 .append(DOC_URL_POSTFIX)
                 .toString();
     }

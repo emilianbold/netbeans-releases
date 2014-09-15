@@ -321,7 +321,7 @@ public class HintsUtils {
                             long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
                             LOG.log(Level.FINE, "processed class {0} in {1} ms", new Object[]{javaClass.getSimpleName(), timeElapsed});
                         }
-                        return new EJBProblemContext(info, project, ejbModule, file, javaClass, ejb, new SessionData(businessLocal, businessRemote, sessionType));
+                        return new EJBProblemContext(project, ejbModule, file, javaClass, ejb, new SessionData(businessLocal, businessRemote, sessionType));
                     } else {
                         return null;
                     }

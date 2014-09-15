@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.inspect.webkit;
 
+import java.awt.Image;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -151,6 +152,26 @@ public class DOMNode extends AbstractNode {
             displayName += " (" + getNode().getNodeId() + ")"; // NOI18N
         }
         return displayName;
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        Image image = super.getIcon(type);
+        return DOMNodeAnnotator.getDefault().annotateIcon(node, image);
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        Image image = super.getIcon(type);
+        return DOMNodeAnnotator.getDefault().annotateIcon(node, image);
+    }
+
+    /**
+     * Forces update of the icon.
+     */
+    void updateIcon() {
+        fireIconChange();
+        fireOpenedIconChange();
     }
 
     /**
@@ -289,12 +310,14 @@ public class DOMNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
         actions.add(SystemAction.get(GoToNodeSourceAction.class));
-        for (Action action : org.openide.util.Utilities.actionsForPath(ACTIONS_PATH)) {
-            if (action instanceof ContextAwareAction) {
-                Lookup lookup = new ProxyLookup(Lookups.fixed(this), getLookup());
-                action = ((ContextAwareAction)action).createContextAwareInstance(lookup);
+        if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+            for (Action action : org.openide.util.Utilities.actionsForPath(ACTIONS_PATH)) {
+                if (action instanceof ContextAwareAction) {
+                    Lookup lookup = new ProxyLookup(Lookups.fixed(this), getLookup());
+                    action = ((ContextAwareAction)action).createContextAwareInstance(lookup);
+                }
+                actions.add(action);
             }
-            actions.add(action);
         }
         return actions.toArray(new Action[actions.size()]);
     }

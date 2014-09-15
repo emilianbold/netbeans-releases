@@ -70,6 +70,8 @@ import org.openide.util.Exceptions;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.platform.JavaPlatformProvider.class)
 public class TestJavaPlatformProviderImpl implements JavaPlatformProvider {
+
+    public static volatile boolean ALLOW_INSTALL_FOLDERS;
     
     /** Creates a new instance of TestJavaPlatformProviderImpl */
     public TestJavaPlatformProviderImpl() {
@@ -103,37 +105,28 @@ public class TestJavaPlatformProviderImpl implements JavaPlatformProvider {
         }
 
         private static ClassPath  bootClassPath;
-        
+
         private static synchronized ClassPath getBootClassPath() {
             if (bootClassPath == null) {
-                try {
-                    String cp = System.getProperty("sun.boot.class.path");
-                    List<URL> urls = new ArrayList<URL>();
-                    String[] paths = cp.split(Pattern.quote(System.getProperty("path.separator")));
-                    
-                    for (String path : paths) {
-                        File f = new File(path);
-                        
-                        if (!f.canRead())
-                            continue;
-                        
-                        FileObject fo = FileUtil.toFileObject(f);
-                        
-                        if (FileUtil.isArchiveFile(fo)) {
-                            fo = FileUtil.getArchiveRoot(fo);
-                        }
-                        
-                        if (fo != null) {
-                            urls.add(fo.getURL());
-                        }
+                String cp = System.getProperty("sun.boot.class.path");
+                List<URL> urls = new ArrayList<>();
+                String[] paths = cp.split(Pattern.quote(System.getProperty("path.separator")));
+                for (String path : paths) {
+                    File f = new File(path);
+
+                    if (!f.canRead())
+                        continue;
+
+                    FileObject fo = FileUtil.toFileObject(f);
+                    if (FileUtil.isArchiveFile(fo)) {
+                        fo = FileUtil.getArchiveRoot(fo);
                     }
-                    
-                    bootClassPath = ClassPathSupport.createClassPath((URL[])urls.toArray(new URL[0]));
-                } catch (FileStateInvalidException e) {
-                    Exceptions.printStackTrace(e);
+                    if (fo != null) {
+                        urls.add(fo.toURL());
+                    }
                 }
+                bootClassPath = ClassPathSupport.createClassPath((URL[])urls.toArray(new URL[0]));
             }
-            
             return bootClassPath;
         }
 
@@ -155,8 +148,21 @@ public class TestJavaPlatformProviderImpl implements JavaPlatformProvider {
             return spec;
         }
 
-        public Collection getInstallFolders() {
-            return Collections.emptyList();
+        @Override
+        public Collection<FileObject> getInstallFolders() {
+            if (!ALLOW_INSTALL_FOLDERS) {
+                return Collections.emptySet();
+            }
+            FileObject jh = FileUtil.toFileObject(
+                FileUtil.normalizeFile(
+                    new File(System.getProperty("java.home"))));    //NOI18N
+            if (jh == null) {
+                return Collections.emptySet();
+            }
+            if (jh.getFileObject("bin/javac") == null && jh.getParent().getFileObject("bin/javac") != null) {   //NOI18N
+                jh = jh.getParent();
+            }
+            return Collections.singleton(jh);
         }
 
         public FileObject findTool(String toolName) {

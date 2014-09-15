@@ -82,6 +82,13 @@ public interface JsObject extends JsElement {
     
     public boolean isDeprecated();
     
+    
+    /**
+     * 
+     * @return true if the element is virtual and shouldn't be visible to the user in structure scanner. 
+     */
+    boolean isVirtual();
+    
     /**
      * 
      * @return true if the object/function is identified by a name. 

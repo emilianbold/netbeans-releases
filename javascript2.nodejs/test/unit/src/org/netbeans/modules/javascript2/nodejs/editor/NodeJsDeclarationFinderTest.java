@@ -44,14 +44,9 @@ package org.netbeans.modules.javascript2.nodejs.editor;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.text.Document;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.csl.api.DeclarationFinder;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.util.test.MockLookup;

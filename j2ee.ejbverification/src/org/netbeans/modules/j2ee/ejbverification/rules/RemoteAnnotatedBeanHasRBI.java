@@ -90,7 +90,7 @@ public final class RemoteAnnotatedBeanHasRBI {
                 if (ctx.getEjbData().getBusinessRemote().length == 0) {
                     ErrorDescription err = HintsUtils.createProblem(
                             ctx.getClazz(),
-                            ctx.getComplilationInfo(),
+                            hintContext.getInfo(),
                             Bundle.RemoteAnnotatedBeanHasRBI_err());
                     problems.add(err);
                 }

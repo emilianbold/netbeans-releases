@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -115,7 +114,7 @@ public final class AnnotationPostContruct {
                 for (ExecutableElement problematicMethods : eligibleMethods) {
                     problems.add(HintsUtils.createProblem(
                             problematicMethods,
-                            ctx.getComplilationInfo(),
+                            hintCtx.getInfo(),
                             Bundle.AnnotationPostContruct_too_much_annotations()));
                 }
             }
@@ -125,23 +124,23 @@ public final class AnnotationPostContruct {
                 if (!"void".equals(method.getReturnType().toString())) { //NOI18N
                     problems.add(HintsUtils.createProblem(
                             method,
-                            ctx.getComplilationInfo(),
+                            hintCtx.getInfo(),
                             Bundle.AnnotationPostContruct_wrong_return_type()));
                 }
                 // cannot throw unchecked exceptions
-                if (!method.getThrownTypes().isEmpty() && throwsCheckedException(ctx.getComplilationInfo(), method.getThrownTypes())) {
+                if (!method.getThrownTypes().isEmpty() && throwsCheckedException(hintCtx.getInfo(), method.getThrownTypes())) {
                     problems.add(HintsUtils.createProblem(
                             method,
-                            ctx.getComplilationInfo(),
+                            hintCtx.getInfo(),
                             Bundle.AnnotationPostContruct_thrown_checked_exceptions()));
                 }
                 // no parameter except in the case of EJB interceptor
                 List<? extends VariableElement> parameters = method.getParameters();
                 if (!parameters.isEmpty()
-                        && (parameters.size() > 1 || !isEjbInterceptor(ctx.getComplilationInfo(), method))) {
+                        && (parameters.size() > 1 || !isEjbInterceptor(hintCtx.getInfo(), method))) {
                     problems.add(HintsUtils.createProblem(
                             method,
-                            ctx.getComplilationInfo(),
+                            hintCtx.getInfo(),
                             Bundle.AnnotationPostContruct_wrong_parameters()));
                 }
             }

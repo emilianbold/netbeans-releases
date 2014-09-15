@@ -125,6 +125,10 @@ public class JQueryModel {
             return result;
         }
 
+        public boolean isVirtual() {
+            return false;
+        }
+
         // pure delegation follows
 
         @Override
