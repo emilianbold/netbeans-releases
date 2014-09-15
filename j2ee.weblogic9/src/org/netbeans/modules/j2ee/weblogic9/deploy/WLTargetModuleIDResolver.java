@@ -39,60 +39,66 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.j2ee.weblogic9.deploy;
 
-package org.netbeans.modules.j2ee.weblogic9;
-
-import java.io.File;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.j2ee.deployment.common.api.Version;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class CommonBridge {
+public class WLTargetModuleIDResolver extends TargetModuleIDResolver {
 
-    private CommonBridge() {
-        super();
+    private final WLDeploymentManager dm;
+
+    public WLTargetModuleIDResolver(WLDeploymentManager dm) {
+        this.dm = dm;
     }
 
-    @NonNull
-    public static WebLogicConfiguration getConfiguration(@NonNull WLDeploymentManager dm) {
-        InstanceProperties ip = dm.getInstanceProperties();
-        String username = ip.getProperty(InstanceProperties.USERNAME_ATTR);
-        String password = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
+    @Override
+    public TargetModuleID[] lookupTargetModuleID(Map targetModuleInfo, Target[] targetList) {
+        String contextRoot = (String) targetModuleInfo.get(KEY_CONTEXT_ROOT);
+        if (contextRoot == null) {
+            return EMPTY_TMID_ARRAY;
+        }
+        // WAR modules in EAR contains slash in name
+        String noSlashContextRoot = contextRoot;
+        if (contextRoot.startsWith("/")) { // NOI18N
+            noSlashContextRoot = contextRoot.substring(1);
+        }
 
-        String serverHome = ip.getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
-        String domainHome = ip.getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
+        ArrayList result = new ArrayList();
+        try {
+            addCollisions(contextRoot, noSlashContextRoot, result, dm.getAvailableModules(ModuleType.WAR, targetList));
+        } catch (Exception ex) {
+            Logger.getLogger(WLTargetModuleIDResolver.class.getName()).log(Level.INFO, null, ex);
+        }
 
-        if (dm.isRemote()) {
-            String uri = ip.getProperty(InstanceProperties.URL_ATTR);
-            // it is guaranteed it is WL
-            String[] parts = uri.substring(WLDeploymentFactory.URI_PREFIX.length()).split(":");
+        return (TargetModuleID[]) result.toArray(new TargetModuleID[result.size()]);
+    }
 
-            String host = parts[0];
-            String port = parts.length > 1 ? parts[1] : "";
-            int realPort;
-            try {
-                realPort = Integer.parseInt(port);
-            } catch (NumberFormatException ex) {
-                realPort = 7001;
+    private void addCollisions(String contextRoot, String noSlashContextRoot, List<TargetModuleID> result, TargetModuleID[] candidates) {
+        if (candidates == null) {
+            return;
+        }
+        for (int i = 0; i < candidates.length; i++) {
+            TargetModuleID tm = candidates[i];
+            if (contextRoot.equals(tm.getModuleID()) || noSlashContextRoot.equals(tm.getModuleID())) {
+                TargetModuleID parent = tm.getParentTargetModuleID();
+                if (parent != null) {
+                    result.add(parent);
+                } else {
+                    result.add(tm);
+                }
             }
-            return WebLogicConfiguration.forRemoteDomain(new File(serverHome), host, realPort, username, password);
         }
-        return WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome), username, password);
-    }
-
-    @CheckForNull
-    public static Version getVersion(@NullAllowed org.netbeans.modules.weblogic.common.api.Version version) {
-        if (version == null) {
-            return null;
-        }
-        return Version.fromJsr277OrDottedNotationWithFallback(version.toString());
     }
 }
