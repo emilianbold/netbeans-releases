@@ -44,6 +44,11 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import java.util.Vector;
+import java.util.regex.Pattern;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
+import org.netbeans.modules.cnd.debugger.common2.utils.PsProvider;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.SessionProvider;
 
@@ -63,7 +68,22 @@ public abstract class NativeSessionProvider extends SessionProvider {
 
     // interface SessionProvider
     public String getSessionName() {
-	return "placeholder-for-NativeSessionProvider.getSessionName()"; // NOI18N
+        NativeDebuggerInfo ndi = ctx.lookupFirst(null, NativeDebuggerInfo.class);
+        if (ndi != null) {
+            String pid = "" + ndi.getPid(); // NOI18N
+            PsProvider.PsData data = PsProvider.getDefault(Host.byName(ndi.getHostName())).getData(false);
+            for (Vector<String> process : data.processes(Pattern.compile(pid))) {
+                if (process.get(data.pidColumnIdx()).equals(pid)) {
+                    String command = process.get(data.commandColumnIdx());
+                    int spaceIdx = command.indexOf(" "); // NOI18N
+                    if (spaceIdx != -1) {
+                        command = command.substring(0, spaceIdx);
+                    }
+                    return CndPathUtilities.getBaseName(command);
+                }
+            }
+        }
+	return ""; // NOI18N
     }
 
     // interface SessionProvider
