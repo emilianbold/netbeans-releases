@@ -54,6 +54,42 @@ public class MoveMethodTest extends MoveBaseTest {
         super(name);
     }
     
+    public void testMoveKeepOld() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public static String param = \"a\";\n"
+                + "    \n"
+                + "    public static void movedMethod(String p) {\n"
+                + "        \n"
+                + "    }\n"
+                + "    \n"
+                + "    public void test() {\n"
+                + "        movedMethod(param);\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{2}, src.getFileObject("t/B.java"), Visibility.ASIS, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public static String param = \"a\";\n"
+                + "    \n"
+                + "    public void test() {\n"
+                + "        B.movedMethod(param);\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    \n"
+                + "    public static void movedMethod(String p) {\n"
+                + "        \n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void test232604() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
