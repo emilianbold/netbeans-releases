@@ -44,13 +44,11 @@ package org.netbeans.modules.j2ee.weblogic9.registration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.weblogic9.VersionBridge;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.ui.wizard.WLInstantiatingIterator;
@@ -70,7 +68,7 @@ import org.openide.util.Utilities;
  * java -cp platform/core/core.jar:platform/lib/boot.jar:platform/lib/org-openide-modules.jar:platform/core/org-openide-filesystems.jar:platform/lib/org-openide-util.jar:platform/lib/org-openide-util-lookup.jar:enterprise/modules/org-netbeans-modules-j2eeapis.jar:enterprise/modules/org-netbeans-modules-j2eeserver.jar:enterprise/modules/org-netbeans-modules-j2ee-weblogic9.jar org.netbeans.modules.j2ee.weblogic9.registration.AutomaticRegistration %lt;clusterDir&gt; &lt;serverDir&gt; &lt;domainDir&gt; &lt;username&gt; &lt;password&gt;
  *
  * @author Petr Hejl
- * @see #main(args)
+ * @see #main(java.lang.String[]) 
  */
 public class AutomaticRegistration {
 
@@ -196,9 +194,10 @@ public class AutomaticRegistration {
             return 8;
         }
 
+        // we do expand version string here because one may be 12.1.4.0 while the other may be 12.1.4.0.0
         if (domainVersion != null
                 && version != null
-                && !version.equals(domainVersion)) {
+                && !version.expand("0").equals(domainVersion.expand("0"))) { // NOI18N
             LOGGER.log(Level.INFO, "Cannot register the default WebLogic server. "
                     + " The domain version does not match the server version."); // NOI18N
             return 9;

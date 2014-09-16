@@ -312,6 +312,31 @@ public final class Version implements Serializable {
         return version;
     }
 
+    /**
+     * Expands the version to full dotted notation.
+     *
+     * @param qualifierDefault the qualifier to use if empty
+     * @return the expanded version
+     * @since 1.109
+     */
+    public Version expand(String qualifierDefault) {
+        if (majorNumber == null) {
+            return this;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(majorNumber).append('.');
+        sb.append(minorNumber == null ? 0 : minorNumber).append('.');
+        sb.append(microNumber == null ? 0 : microNumber).append('.');
+        sb.append(updateNumber == null ? 0 : updateNumber).append('.');
+        sb.append(qualifier == null ? qualifierDefault : qualifier);
+
+        return new Version(sb.toString(), majorNumber,
+                minorNumber == null ? 0 : minorNumber,
+                microNumber == null ? 0 : microNumber,
+                updateNumber == null ? 0 : updateNumber,
+                qualifier == null ? qualifierDefault : qualifier);
+    }
+
     private int compareTo(Version o) {
         int comparison = compare(majorNumber, o.majorNumber);
         if (comparison != 0) {

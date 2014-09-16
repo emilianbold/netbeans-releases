@@ -177,9 +177,10 @@ public class ServerLocalPropertiesVisual extends javax.swing.JPanel {
             return false;
         }
 
+        // we do expand version string here because one may be 12.1.4.0 while the other may be 12.1.4.0.0
         if (instance.getDomainVersion() != null
                 && instantiatingIterator.getServerVersion() != null
-                && !instantiatingIterator.getServerVersion().equals(instance.getDomainVersion())) {
+                && !instantiatingIterator.getServerVersion().expand("0").equals(instance.getDomainVersion().expand("0"))) { // NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(
                             ServerLocalPropertiesVisual.class, "ERR_INVALID_DOMAIN_VERSION"))); // NOI18N
