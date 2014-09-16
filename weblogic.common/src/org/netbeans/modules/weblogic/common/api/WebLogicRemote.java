@@ -49,6 +49,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.weblogic.common.ProxyUtils;
 
 /**
  *
@@ -58,8 +59,6 @@ public final class WebLogicRemote {
 
     // full weblogic code is setting this, causing CNFE on DWP
     private static final String PORTABLE_OBJECT_PROPERTY = "javax.rmi.CORBA.PortableRemoteObjectClass"; // NOI18N
-
-    private static final String HTTP_NON_PROXY_HOSTS = "http.nonProxyHosts";
     
     private final WebLogicConfiguration config;
 
@@ -75,22 +74,10 @@ public final class WebLogicRemote {
 
             String portable = System.getProperty(PORTABLE_OBJECT_PROPERTY);
 
-            String originalNonProxyHosts = System.getProperty(HTTP_NON_PROXY_HOSTS);
-            String configuredNonProxyHosts = nonProxy != null ? nonProxy.call() : "";
-
-            boolean nonProxyHostsChanged = false;
-            if (!configuredNonProxyHosts.isEmpty()) {
-                String nonProxyHosts;
-                if (originalNonProxyHosts != null) {
-                    nonProxyHosts = compactNonProxyHosts(
-                            originalNonProxyHosts + "," + configuredNonProxyHosts); // NOI18N
-                } else {
-                    nonProxyHosts = configuredNonProxyHosts;
-                }
-                if (!nonProxyHosts.equals(originalNonProxyHosts)) {
-                    nonProxyHostsChanged = true;
-                    System.setProperty(HTTP_NON_PROXY_HOSTS, nonProxyHosts);
-                }
+            String originalNonProxyHosts = System.getProperty(ProxyUtils.HTTP_NON_PROXY_HOSTS);
+            String nonProxyHosts = ProxyUtils.getNonProxyHosts(nonProxy);
+            if (nonProxyHosts != null) {
+                System.setProperty(ProxyUtils.HTTP_NON_PROXY_HOSTS, nonProxyHosts);
             }
 
             Thread.currentThread().setContextClassLoader(classLoader);
@@ -100,12 +87,10 @@ public final class WebLogicRemote {
                 Thread.currentThread().setContextClassLoader(originalLoader);
 
                 // this is not really safe considering other threads, but it is the best we can do
-                if (nonProxyHostsChanged) {
-                    if (originalNonProxyHosts == null) {
-                        System.clearProperty(HTTP_NON_PROXY_HOSTS);
-                    } else {
-                        System.setProperty(HTTP_NON_PROXY_HOSTS, originalNonProxyHosts);
-                    }
+                if (originalNonProxyHosts == null) {
+                    System.clearProperty(ProxyUtils.HTTP_NON_PROXY_HOSTS);
+                } else {
+                    System.setProperty(ProxyUtils.HTTP_NON_PROXY_HOSTS, originalNonProxyHosts);
                 }
 
                 // this is not really safe considering other threads, but it is the best we can do

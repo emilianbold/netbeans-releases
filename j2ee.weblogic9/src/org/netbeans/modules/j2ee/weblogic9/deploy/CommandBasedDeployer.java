@@ -47,7 +47,13 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +62,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -92,6 +99,7 @@ import org.netbeans.modules.j2ee.weblogic9.config.WLApplicationModule;
 import org.netbeans.modules.j2ee.weblogic9.config.WLDatasource;
 import org.netbeans.modules.j2ee.weblogic9.config.WLMessageDestination;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
+import org.netbeans.modules.j2ee.weblogic9.optional.NonProxyHostsHelper;
 import org.netbeans.modules.j2ee.weblogic9.ui.FailedAuthenticationSupport;
 import org.netbeans.modules.weblogic.common.api.BatchDeployListener;
 import org.netbeans.modules.weblogic.common.api.DeployListener;
@@ -115,6 +123,14 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     private static final Logger LOGGER = Logger.getLogger(CommandBasedDeployer.class.getName());
 
     private static final RequestProcessor URL_WAIT_RP = new RequestProcessor("Weblogic URL Wait", 10); // NOI18N
+
+    private static final Callable<String> NON_PROXY = new Callable<String>() {
+
+        @Override
+        public String call() throws Exception {
+            return NonProxyHostsHelper.getNonProxyHosts();
+        }
+    };
 
     public CommandBasedDeployer(WLDeploymentManager deploymentManager) {
         super(deploymentManager);
@@ -214,7 +230,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
         deployer.undeploy(names.keySet(), listener);
 
         return progress;
@@ -296,7 +312,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
         deployer.start(names.keySet(), listener);
 
         return progress;
@@ -372,7 +388,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
         deployer.stop(names.keySet(), listener);
 
         return progress;
@@ -582,7 +598,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
         deployer.deploy(file, listener, name);
 
         return progress;
@@ -660,7 +676,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         };
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()));
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
         if (file != null) {
             deployer.redeploy(targetModuleID[0].getModuleID(), file, listener);
         } else {
@@ -673,7 +689,8 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     private BaseExecutionService createService(final String command,
             final LineProcessor processor, String... parameters) {
 
-        InstanceProperties ip = getDeploymentManager().getInstanceProperties();
+        WLDeploymentManager manager = getDeploymentManager();
+        InstanceProperties ip = manager.getInstanceProperties();
         String username = ip.getProperty(InstanceProperties.USERNAME_ATTR);
         String password = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
 
@@ -687,17 +704,48 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         org.netbeans.api.extexecution.base.ProcessBuilder builder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
         builder.setExecutable(getJavaBinary());
         builder.setRedirectErrorStream(true);
+
         List<String> arguments = new ArrayList<String>();
         // NB supports only JDK6+ while WL 9, only JDK 5
-        if (getDeploymentManager().getDomainVersion() == null
-                || !getDeploymentManager().getDomainVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
+        if (manager.getDomainVersion() == null
+                || !manager.getDomainVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
             arguments.add("-Dsun.lang.ClassLoader.allowArraySyntax=true"); // NOI18N
         }
+
+        if (manager.isRemote()) {
+            try {
+                // XXX authentication
+                // t3 and t3s is afaik sits on top of http and https (source ?)
+                List<Proxy> proxies = ProxySelector.getDefault().select(new URI("http://" + host + ":" + port)); // NOI18N
+                if (!proxies.isEmpty()) {
+                    Proxy first = proxies.get(0);
+                    if (first.type() != Proxy.Type.DIRECT) {
+                        SocketAddress addr = first.address();
+                        if (addr instanceof InetSocketAddress) {
+                            InetSocketAddress inet = (InetSocketAddress) addr;
+                            if (first.type() == Proxy.Type.HTTP) {
+                                arguments.add("-Dhttp.proxyHost=" + inet.getHostString()); // NOI18N
+                                arguments.add("-Dhttp.proxyPort=" + inet.getPort()); // NOI18N
+                                arguments.add("-Dhttps.proxyHost=" + inet.getHostString()); // NOI18N
+                                arguments.add("-Dhttps.proxyPort=" + inet.getPort()); // NOI18N
+                            } else if (first.type() == Proxy.Type.SOCKS) {
+                                arguments.add("-DsocksProxyHost=" + inet.getHostString()); // NOI18N
+                                arguments.add("-DsocksProxyPort=" + inet.getPort()); // NOI18N
+                            }
+                        }
+                    }
+                }
+                arguments.add("-Dhttp.nonProxyHosts=\"" + NonProxyHostsHelper.getNonProxyHosts() + "\""); // NOI18N
+            } catch (URISyntaxException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+
         arguments.add("-cp"); // NOI18N
         arguments.add(getClassPath());
         arguments.add("weblogic.Deployer"); // NOI18N
         arguments.add("-adminurl"); // NOI18N
-        arguments.add("t3://" + host + ":" + port); // NOI18N
+        arguments.add(manager.getCommonConfiguration().getAdminURL()); // NOI18N
         arguments.add("-username"); // NOI18N
         arguments.add(username);
         arguments.add("-password"); // NOI18N

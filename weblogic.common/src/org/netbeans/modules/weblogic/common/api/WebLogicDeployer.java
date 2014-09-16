@@ -44,6 +44,12 @@ package org.netbeans.modules.weblogic.common.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,6 +71,7 @@ import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.extexecution.base.input.LineProcessors;
+import org.netbeans.modules.weblogic.common.ProxyUtils;
 import org.openide.util.BaseUtilities;
 import org.openide.util.RequestProcessor;
 
@@ -84,14 +91,18 @@ public final class WebLogicDeployer {
 
     private final File javaBinary;
 
-    private WebLogicDeployer(WebLogicConfiguration config, File javaBinary) {
+    private final Callable<String> nonProxy;
+
+    private WebLogicDeployer(WebLogicConfiguration config, File javaBinary, @NullAllowed Callable<String> nonProxy) {
         this.config = config;
         this.javaBinary = javaBinary;
+        this.nonProxy = nonProxy;
     }
 
     @NonNull
-    public static WebLogicDeployer getInstance(@NonNull WebLogicConfiguration config, @NullAllowed File javaBinary) {
-        return new WebLogicDeployer(config, javaBinary);
+    public static WebLogicDeployer getInstance(@NonNull WebLogicConfiguration config,
+            @NullAllowed File javaBinary, @NullAllowed Callable<String> nonProxy) {
+        return new WebLogicDeployer(config, javaBinary, nonProxy);
     }
 
     @NonNull
@@ -508,6 +519,40 @@ public final class WebLogicDeployer {
                 || !version.isAboveOrEqual(WebLogicConfiguration.VERSION_10)) {
             arguments.add("-Dsun.lang.ClassLoader.allowArraySyntax=true"); // NOI18N
         }
+
+        if (config.isRemote()) {
+            try {
+                // XXX authentication
+                // t3 and t3s is afaik sits on top of http and https (source ?)
+                List<Proxy> proxies = ProxySelector.getDefault().select(
+                        new URI("http://" + config.getHost() + ":" + config.getPort())); // NOI18N
+                if (!proxies.isEmpty()) {
+                    Proxy first = proxies.get(0);
+                    if (first.type() != Proxy.Type.DIRECT) {
+                        SocketAddress addr = first.address();
+                        if (addr instanceof InetSocketAddress) {
+                            InetSocketAddress inet = (InetSocketAddress) addr;
+                            if (first.type() == Proxy.Type.HTTP) {
+                                arguments.add("-Dhttp.proxyHost=" + inet.getHostString()); // NOI18N
+                                arguments.add("-Dhttp.proxyPort=" + inet.getPort()); // NOI18N
+                                arguments.add("-Dhttps.proxyHost=" + inet.getHostString()); // NOI18N
+                                arguments.add("-Dhttps.proxyPort=" + inet.getPort()); // NOI18N
+                            } else if (first.type() == Proxy.Type.SOCKS) {
+                                arguments.add("-DsocksProxyHost=" + inet.getHostString()); // NOI18N
+                                arguments.add("-DsocksProxyPort=" + inet.getPort()); // NOI18N
+                            }
+                        }
+                    }
+                }
+                String nonProxyHosts = ProxyUtils.getNonProxyHosts(nonProxy);
+                if (nonProxyHosts != null) {
+                    arguments.add("-Dhttp.nonProxyHosts=\"" + nonProxyHosts + "\""); // NOI18N
+                }
+            } catch (URISyntaxException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+
         arguments.add("-cp"); // NOI18N
         arguments.add(getClassPath());
         arguments.add("weblogic.Deployer"); // NOI18N

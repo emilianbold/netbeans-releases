@@ -86,7 +86,7 @@ public class Main {
         runtime.startAndWait(new DefaultFactory(), new DefaultFactory(), null);
         System.out.println("Started again");
 
-        WebLogicDeployer deployer = WebLogicDeployer.getInstance(config, null);
+        WebLogicDeployer deployer = WebLogicDeployer.getInstance(config, null, null);
         Collection<String> apps = deployer.list().get();
         for (String app : apps) {
             System.out.println("Application " + app);
