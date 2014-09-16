@@ -305,6 +305,8 @@ public class ModelVisitor extends PathNodeVisitor {
             if (binaryNode.rhs() instanceof IdentNode) {
                 addOccurence((IdentNode)binaryNode.rhs(), false);
             }
+        } else if(binaryNode.tokenType() == TokenType.ASSIGN && rhs instanceof ReferenceNode) {
+            
         }
         return super.enter(binaryNode);
     }
@@ -594,12 +596,18 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                     if (originalFunction != null) {
                         JsObjectImpl jsObject = ModelUtils.getJsObject(modelBuilder, name, true);
+                        if (ModelUtils.isDescendant(jsObject, originalFunction)) {
+                            //XXX This is not right solution. The right solution would be to create new anonymous function
+                            // and the recreate the object that has the same name as the function.
+                            // See issue #246598
+                            return null;
+                        }
                         JsFunctionReference jsFunctionReference = new JsFunctionReference(jsObject.getParent(), jsObject.getDeclarationName(), (JsFunction)originalFunction, true, jsObject.getModifiers());
                         jsObject.getParent().addProperty(jsObject.getName(), jsFunctionReference);
-                        return null;
-                    }
+                        return null; 
                 }
             }
+        }
         }
 
         JsObject previousUsage = null;
@@ -1181,10 +1189,49 @@ public class ModelVisitor extends PathNodeVisitor {
         FunctionNode reference = referenceNode.getReference();
         if (reference != null) {
             Node lastNode = getPreviousFromPath(1);
-            if (!( lastNode instanceof VarNode && !reference.isAnonymous())) {
-                addToPath(referenceNode);
-                reference.accept(this);
-                removeFromPathTheLast();
+            if (!((lastNode instanceof VarNode) && !reference.isAnonymous())) {
+                if (lastNode instanceof BinaryNode && !reference.isAnonymous()) {
+                    Node lhs = ((BinaryNode)lastNode).lhs();
+                    List<Identifier> nodeName = getNodeName(lhs, parserResult);
+                    if (nodeName != null && !nodeName.isEmpty()) {
+                        JsObject jsObject = null;
+                        if ("this".equals(nodeName.get(0).getName())) { //NOI18N
+                            jsObject = resolveThis(modelBuilder.getCurrentObject());
+                            for (int i = 1; jsObject != null && i < nodeName.size(); i++ ) {
+                                jsObject = jsObject.getProperty(nodeName.get(i).getName());
+                            }
+                        } else {
+                            jsObject = ModelUtils.getJsObject(modelBuilder, nodeName, true);
+                        }
+                        if (jsObject != null) {
+                            Identifier name = nodeName.get(nodeName.size() - 1);
+                            DeclarationScopeImpl ds = modelBuilder.getCurrentDeclarationScope();
+                            String referenceName = reference.getIdent().getName();
+                            JsObject property = ds.getProperty(referenceName);
+                            while (property != null && !(property instanceof JsFunction)) {
+                                if (ds.getParentScope() != null) {
+                                    ds = (DeclarationScopeImpl)ds.getParentScope();
+                                    property = ds.getProperty(referenceName);
+                                } else {
+                                    property = null;
+                                }
+                            }
+                            if (property != null && property instanceof JsFunction) {
+                                //property contains the definition of the function
+                                JsObject newRef = new JsFunctionReference(jsObject.getParent(), name, (JsFunction)property, true, jsObject.getModifiers());
+                                jsObject.getParent().addProperty(jsObject.getName(), newRef);
+                                for (Occurrence occurence : jsObject.getOccurrences()) {
+                                    newRef.addOccurrence(occurence.getOffsetRange());
+                                }
+                            }
+                            
+                        }
+                    }
+                } else {
+                    addToPath(referenceNode);
+                    reference.accept(this);
+                    removeFromPathTheLast();
+                }
             } 
             return null;
         }
