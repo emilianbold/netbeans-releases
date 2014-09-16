@@ -104,6 +104,7 @@ public class CPCslElementHandle implements ElementHandle {
                 return ElementKind.METHOD;
             case VARIABLE_GLOBAL_DECLARATION:
             case VARIABLE_LOCAL_DECLARATION:
+            case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
                 return ElementKind.VARIABLE;
             default:
                 return null;

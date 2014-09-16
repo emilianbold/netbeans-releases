@@ -71,10 +71,10 @@ public class KOHtmlExtensionTest extends CslTestBase {
     }
     
     public void testCompletionWithPrefix() {
-        assertCC("<div data-bind=\"t|", Match.EXACT, "text", "textinput", "template");
-        assertCC("<div data-bind=\"tex|", Match.EXACT, "text", "textinput");
-        assertCC("<div data-bind=\"text|", Match.EXACT, "text", "textinput");
-        assertCC("<div data-bind=\"text|:value", Match.EXACT, "text", "textinput");
+        assertCC("<div data-bind=\"t|", Match.EXACT, "text", "textInput", "template");
+        assertCC("<div data-bind=\"tex|", Match.EXACT, "text", "textInput");
+        assertCC("<div data-bind=\"text|", Match.EXACT, "text", "textInput");
+        assertCC("<div data-bind=\"text|:value", Match.EXACT, "text", "textInput");
         assertCC("<div data-bind=\"text:value, v|", Match.EXACT, "visible", "value");
     }
     
