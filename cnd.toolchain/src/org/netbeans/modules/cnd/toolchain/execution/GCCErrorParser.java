@@ -186,7 +186,11 @@ public final class GCCErrorParser extends ErrorParser {
             Results res = new Results();
             for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
                 StackIncludeItem item = it.next();
-                res.add(item.line, listenerRegistry.register(item.fo, item.lineNumber, false, item.getMessage())); // NOI18N
+                if (item.fo != null) {
+                    res.add(item.line, listenerRegistry.register(item.fo, item.lineNumber, false, item.getMessage())); // NOI18N
+                } else {
+                    res.add(item.line, null);
+                }
             }
             errorInludes.clear();
             res.add(line, null);
