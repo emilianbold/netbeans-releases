@@ -110,7 +110,7 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
             JPopupMenu popup = super.getPopupMenu();
             if (!initialized) {
                 if (activeNodes == null || activeNodes.length != 1) {
-                    return null;
+                    return popup;
                 }
 
                 Node activeNode = activeNodes[0];
