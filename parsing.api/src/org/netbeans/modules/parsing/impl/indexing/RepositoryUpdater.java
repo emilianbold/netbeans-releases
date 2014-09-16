@@ -4464,7 +4464,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private boolean refreshNonExistentDeps;
 
         private DependenciesContext depCtx;
-        protected SourceIndexers indexers = null; // is only ever filled by InitialRootsWork
+        protected volatile SourceIndexers indexers = null; // is only ever filled by InitialRootsWork
         
         // flag that no projects are opened, and no real scanning work is expected
         private boolean shouldDoNothing;
@@ -4856,8 +4856,16 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         protected @Override boolean isCancelledBy(final Work newWork, final Collection<? super Work> follow) {
             boolean b = (newWork instanceof RootsWork) && useInitialState;
-            if (b && LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Cancelling " + this + ", because of " + newWork); //NOI18N
+            if (b) {
+                final SourceIndexers si = indexers;
+                if (si != null &&
+                   ((si.changedCifs != null && !si.changedCifs.isEmpty()) ||
+                    (si.changedEifs != null && !si.changedEifs.isEmpty()))) {
+                    ((RootsWork)newWork).indexers = si;
+                }
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Cancelling " + this + ", because of " + newWork); //NOI18N
+                }
             }
             return b;
         }
@@ -4880,6 +4888,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
                 if (rw.refreshNonExistentDeps) {
                     refreshNonExistentDeps = rw.refreshNonExistentDeps;
+                }
+                final SourceIndexers si = rw.indexers;
+                if (si != null &&
+                   ((si.changedCifs != null && !si.changedCifs.isEmpty()) ||
+                    (si.changedEifs != null && !si.changedEifs.isEmpty()))) {
+                    indexers = si;
                 }
                 return true;
             } else {
