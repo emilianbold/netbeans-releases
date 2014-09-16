@@ -48,7 +48,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -82,6 +86,7 @@ import org.netbeans.api.extexecution.base.input.InputReaders;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.modules.weblogic.common.RemoteLogInputReader;
 import org.openide.util.BaseUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -114,7 +119,7 @@ public final class WebLogicRuntime {
 
     private static final int DELAY = 1000;
 
-    private static final int CHECK_TIMEOUT = 10000;
+    private static final int CHECK_TIMEOUT = 5000;
 
     //@GuardedBy(PROCESSES)
     private static final WeakHashMap<WebLogicConfiguration, Process> PROCESSES = new WeakHashMap<WebLogicConfiguration, Process>();
@@ -486,7 +491,7 @@ public final class WebLogicRuntime {
 
         String host = config.getHost();
         int port = config.getPort();
-        return ping(host, port, CHECK_TIMEOUT); // is server responding?
+        return ping(host, port, CHECK_TIMEOUT, config.isRemote()); // is server responding?
     }
 
     public boolean isProcessRunning() {
@@ -597,16 +602,28 @@ public final class WebLogicRuntime {
         }
     }
 
-    private static boolean ping(String host, int port, int timeout) {
-        if (ping(host, port, timeout, "/console/login/LoginForm.jsp")) {
+    private static boolean ping(String host, int port, int timeout, boolean remote) {
+        if (ping(host, port, timeout, "/console/login/LoginForm.jsp", remote)) {
             return true;
         }
-        return ping(host, port, timeout, "/console");
+        return ping(host, port, timeout, "/console", remote);
     }
 
-    private static boolean ping(String host, int port, int timeout, String path) {
+    private static boolean ping(String host, int port, int timeout, String path, boolean remote) {
         // checking whether a socket can be created is not reliable enough, see #47048
-        Socket socket = new Socket();
+
+        Proxy proxy = Proxy.NO_PROXY;
+        if (remote) {
+            try {
+                List<Proxy> proxies = ProxySelector.getDefault().select(new URI("http://" + host + ":" + port + path)); // NOI18N
+                if (!proxies.isEmpty()) {
+                    proxy = proxies.get(0);
+                }
+            } catch (URISyntaxException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+        Socket socket = new Socket(proxy);
         try {
             try {
                 socket.connect(new InetSocketAddress(host, port), timeout); // NOI18N

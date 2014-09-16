@@ -151,7 +151,7 @@ public final class WLConnectionSupport {
 
             @Override
             public T call() throws Exception {
-                JMXServiceURL url = new JMXServiceURL("iiop", resolvedHost, // NOI18N
+                JMXServiceURL url = new JMXServiceURL("t3", resolvedHost, // NOI18N
                         Integer.parseInt(resolvedPort), action.getPath());
                 
                 String username = deploymentManager.getInstanceProperties().getProperty(
