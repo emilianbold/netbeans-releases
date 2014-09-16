@@ -49,6 +49,7 @@ import org.netbeans.modules.parsing.spi.Scheduler;
  * Allows the environment implementation to reschedule tasks for a
  * source. The instance is passed to {@link SourceEnvironment#attachScheduler}.
  * @author sdedic
+ * @since 9.2
  */
 public interface SchedulerControl {
     /**

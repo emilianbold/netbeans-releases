@@ -68,6 +68,7 @@ import org.openide.util.Parameters;
  * from the {@link Source.EnvControl} to allow Source instances to be GCed. 
  * 
  * @author sdedic
+ * @since 9.2
  */
 public abstract class SourceEnvironment {
 
@@ -75,6 +76,10 @@ public abstract class SourceEnvironment {
     private FileChangeListener fileChangeListener;
     private ChangeListener parserListener;
 
+    /**
+     * Initialized a new SourceEnvironment.
+     * @param sourceControl handle to control a Source object
+     */
     protected SourceEnvironment(@NonNull final SourceControl sourceControl) {
         Parameters.notNull("sourceControl", sourceControl); //NOI18N
         this.sourceControl = sourceControl;

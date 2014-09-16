@@ -397,6 +397,7 @@ public final class ParserManager {
      * and must avoid blocking on other parsing results.
      * 
      * @return true, if the current thread executes code called from within the parser
+     * @since 9.2
      */
     public static boolean isParsing() {
         return Utilities.holdsParserLock();
@@ -408,6 +409,7 @@ public final class ParserManager {
      * 
      * @param mimeType the MIME type to check
      * @return true, if the MIME type can be parsed.
+     * @since 9.2
      */
     public static boolean canBeParsed(String mimeType) {
         if (mimeType == null ||
