@@ -351,6 +351,8 @@ public class AutomaticRegistration {
             instanceFO.setAttribute(WLPluginProperties.DOMAIN_ROOT_ATTR, domainRoot);
             instanceFO.setAttribute(WLPluginProperties.DEBUGGER_PORT_ATTR,
                     WLInstantiatingIterator.DEFAULT_DEBUGGER_PORT);
+            instanceFO.setAttribute(WLPluginProperties.PROXY_ENABLED,
+                    WLInstantiatingIterator.DEFAULT_PROXY_ENABLED);
             instanceFO.setAttribute(WLPluginProperties.DOMAIN_NAME, domainName);
             instanceFO.setAttribute(WLPluginProperties.PORT_ATTR, port);
             if (javaOpts != null) {
