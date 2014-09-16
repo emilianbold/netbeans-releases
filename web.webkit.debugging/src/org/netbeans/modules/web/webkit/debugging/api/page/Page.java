@@ -99,7 +99,7 @@ public class Page {
     }
 
     /**
-     * Reloads the page.
+     * Reloads the page optionally ignoring the cache.
      * 
      * @param ignoreCache if true then the browser cache is ignored
      * (as if the user pressed Shift+refresh).
@@ -107,10 +107,27 @@ public class Page {
      * be injected into all frames of the inspected page after reload.
      */
     public void reload(boolean ignoreCache, String scriptToEvaluateOnLoad) {
+        reload(ignoreCache, scriptToEvaluateOnLoad, null);
+    }
+
+    /**
+     * Reloads the page optionally ignoring the cache.
+     * 
+     * @param ignoreCache if true then the browser cache is ignored
+     * (as if the user pressed Shift+refresh).
+     * @param scriptToEvaluateOnLoad if non-null then the script will
+     * be injected into all frames of the inspected page after reload.
+     * @param scriptPreprocessor script body that should evaluate to function
+     * that will preprocess all the scripts before their compilation.
+     */
+    public void reload(boolean ignoreCache, String scriptToEvaluateOnLoad, String scriptPreprocessor) {
         JSONObject pars = new JSONObject();
         pars.put("ignoreCache", ignoreCache); // NOI18N
-        if (scriptToEvaluateOnLoad !=null) {
+        if (scriptToEvaluateOnLoad != null) {
             pars.put("scriptToEvaluateOnLoad", scriptToEvaluateOnLoad); // NOI18N
+        }
+        if (scriptPreprocessor != null) {
+            pars.put("scriptPreprocessor", scriptPreprocessor); // NOI18N
         }
         transport.sendBlockingCommand(new Command("Page.reload", pars)); // NOI18N
     }
