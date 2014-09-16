@@ -3217,7 +3217,7 @@ public class Reformatter implements ReformatTask {
             }
             int maxCount = bof ? 0 : maxPreservedBlankLines;
             if (maxCount < count) {
-                count = maxCount;
+                maxCount = count;
             }
             if (!bof && templateEdit && maxCount < 1) {
                 maxCount = 1;

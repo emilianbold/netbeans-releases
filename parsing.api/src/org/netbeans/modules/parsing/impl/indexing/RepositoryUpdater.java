@@ -2162,7 +2162,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         //visibility. The Work.scanBinaries modifies the map from multiple threads.
         private final Map<String,int[]> indexerStatistics = Collections.<String, int[]>synchronizedMap(new HashMap<String, int[]>());
         private volatile boolean reportIndexerStatistics;
-        private SourceIndexers sourceIndexers;
+        private volatile SourceIndexers sourceIndexers;
 
         protected Work(
                 final boolean followUpJob,
@@ -2204,6 +2204,16 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 sourceIndexers = SourceIndexers.load(initialRootsWork);
             }
             return sourceIndexers;
+        }
+
+        protected final void inheritChangedIndexers(@NonNull final Work from) {
+            @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
+            final SourceIndexers si = from.sourceIndexers;
+            if (si != null &&
+               ((si.changedCifs != null && !si.changedCifs.isEmpty()) ||
+                (si.changedEifs != null && !si.changedEifs.isEmpty()))) {
+                sourceIndexers = si;
+            }
         }
 
         @CheckForNull
@@ -5028,14 +5038,17 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         protected @Override boolean isCancelledBy(final Work newWork, final Collection<? super Work> follow) {
             boolean b = (newWork instanceof RootsWork) && useInitialState;
-            if (b && LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(
-                    Level.FINE,
-                    "Cancelling {0}, because of {1}",    //NOI18N
-                    new Object[]{
-                        this,
-                        newWork
-                    });
+            if (b) {
+                newWork.inheritChangedIndexers(this);
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(
+                        Level.FINE,
+                        "Cancelling {0}, because of {1}",    //NOI18N
+                        new Object[]{
+                            this,
+                            newWork
+                        });
+                }
             }
             return b;
         }
@@ -5058,6 +5071,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             });
                     }
                 }
+                inheritChangedIndexers(newWork);
                 if (rw.refreshNonExistentDeps) {
                     refreshNonExistentDeps = rw.refreshNonExistentDeps;
                 }

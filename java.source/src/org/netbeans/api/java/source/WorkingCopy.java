@@ -992,7 +992,7 @@ public class WorkingCopy extends CompilationController {
             } else if (target != null) {
                 if (!commentHandler.getComments(target).hasComments()) {
                     if (!stillPresent.contains(l)) {
-                        commentHandler.copyComments(l, target, null, usedComments);
+                        commentHandler.copyComments(l, target, null, usedComments, false);
                         newParentCopy = target;
                         collectChildren = true;
                     }
@@ -1001,7 +1001,7 @@ public class WorkingCopy extends CompilationController {
                 collectChildren = collectCommentsFromRemovedNodes;
                 if (collectCommentsFromRemovedNodes) {
                     if (parentToCopy != null) {
-                        commentHandler.copyComments(l, parentToCopy, collectToPosition, usedComments);
+                        commentHandler.copyComments(l, parentToCopy, collectToPosition, usedComments, true);
                     }
                 }
             }
@@ -1018,6 +1018,9 @@ public class WorkingCopy extends CompilationController {
             this.collectCommentsFromRemovedNodes = saveCollect;
             return v;
         }
+    }
+    
+    private void moveComments(Tree from, Tree to, RelativePosition relPos, Set<Comment> used) {
         
     }
     

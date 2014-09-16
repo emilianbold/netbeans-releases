@@ -444,6 +444,8 @@ public final class ElementUtilities {
             if (hider == member)
                 return true;
             if (hider.getSimpleName() == member.getSimpleName()) {
+                if (member instanceof VariableElement && hider instanceof VariableElement)
+                    return true;
                 if (elements.hides(member, hider)) {
                     it.remove();
                 } else {
