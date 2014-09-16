@@ -73,7 +73,9 @@ public class NodeJsCodeCompletion implements CompletionProvider {
     public List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContext jsCompletionContext, String prefix) {
         List<CompletionProposal> result = new ArrayList<CompletionProposal>();
 
-        if (jsCompletionContext == CompletionContext.STRING || jsCompletionContext == CompletionContext.EXPRESSION
+        if (jsCompletionContext == CompletionContext.GLOBAL) {
+//            NodeJsDataProvider.getDefault().getGlobalObjects();
+        } else if (jsCompletionContext == CompletionContext.STRING || jsCompletionContext == CompletionContext.EXPRESSION
                 || jsCompletionContext == CompletionContext.GLOBAL) {
             TokenHierarchy<?> th = ccContext.getParserResult().getSnapshot().getTokenHierarchy();
             if (th == null) {

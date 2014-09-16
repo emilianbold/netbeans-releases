@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javascript2.nodejs.editor;
 
 import java.io.BufferedInputStream;
@@ -57,6 +56,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,7 +65,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import static org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils.loadFileContent;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -82,46 +86,45 @@ import org.openide.util.RequestProcessor;
     "doc.notFound=Documentation not found."
 })
 public class NodeJsDataProvider {
-    
+
     private static final Logger LOG = Logger.getLogger(NodeJsDataProvider.class.getSimpleName());
-    
+
     private static RequestProcessor RP = new RequestProcessor(NodeJsDataProvider.class);
     private static NodeJsDataProvider INSTANCE;
     private boolean loadingStarted;
     private ProgressHandle progress;
-    
+
     private static final String DOC_VERSION = "0.10.31";    //NOI18N
     private static final String DOC_URL = "http://nodejs.org/docs/v" + DOC_VERSION + "/api/"; //NOI18N
-    
+
     private static final String CACHE_FOLDER_NAME = "nodejs-doc"; //NOI18N
     private static final String API_ALL_JSON_FILE = "all.json"; //NOI18N
-    
+
     private static final int URL_CONNECTION_TIMEOUT = 1000; //ms
     private static final int URL_READ_TIMEOUT = URL_CONNECTION_TIMEOUT * 3; //ms
-    
+
     private static final String AP_STRING = "&#39;"; //NOI18N
     private static final String REQUIRE_STRING = "= require(" + AP_STRING;     //NOI18N
-    
+
     // name of the json fields in api file
     private static final String MODULES = "modules"; //NOI18N
     private static final String NAME = "name"; //NOI18N
     private static final String DESCRIPTION = "desc"; //NOI18N
 
-    
     private NodeJsDataProvider() {
         this.loadingStarted = false;
     }
-    
+
     public static synchronized NodeJsDataProvider getDefault() {
         if (INSTANCE == null) {
             INSTANCE = new NodeJsDataProvider();
         }
         return INSTANCE;
     }
-    
+
     /**
-     * 
-     * @return URL or null if it's not available. 
+     *
+     * @return URL or null if it's not available.
      */
     public URL getDocumentationURL() {
         URL result = null;
@@ -132,7 +135,7 @@ public class NodeJsDataProvider {
         }
         return result;
     }
-    
+
     public Collection<String> getRuntimeModules() {
 //        HashSet<String> moduleNames = new HashSet<String>();
 //        Object jsonValue;
@@ -167,7 +170,7 @@ public class NodeJsDataProvider {
         }
         return modules;
     }
-    
+
     public String getDocForModule(final String moduleName) {
         Object jsonValue;
         JSONArray modules = getModules();
@@ -177,7 +180,7 @@ public class NodeJsDataProvider {
                 if (jsonValue != null && jsonValue instanceof JSONObject) {
                     JSONObject jsonModule = (JSONObject) jsonValue;
                     jsonValue = jsonModule.get(NAME);
-                    if (jsonValue != null && jsonValue instanceof String && moduleName.equals(((String)jsonValue).toLowerCase())) {
+                    if (jsonValue != null && jsonValue instanceof String && moduleName.equals(((String) jsonValue).toLowerCase())) {
                         jsonValue = jsonModule.get(DESCRIPTION);
                         if (jsonValue != null && jsonValue instanceof String) {
                             return (String) jsonValue;
@@ -187,6 +190,67 @@ public class NodeJsDataProvider {
             }
         }
         return null;
+    }
+
+    public Collection<JsObject> getGlobalObjects(ModelElementFactory factory) {
+        String content = getContentApiFile();
+        if (content != null && !content.isEmpty()) {
+            File apiFile = getCachedAPIFile();
+            JsObject globalObject = factory.newGlobalObject(FileUtil.toFileObject(apiFile), (int) apiFile.length());
+            JSONObject root = (JSONObject) JSONValue.parse(content);
+            if (root != null) {
+                Object jsonValue = root.get("globals");
+                if (jsonValue != null && jsonValue instanceof JSONArray) {
+                    JSONArray globals = (JSONArray) jsonValue;
+                    for (int i = 0; i < globals.size(); i++) {
+                        jsonValue = globals.get(i);
+                        if (jsonValue != null && jsonValue instanceof JSONObject) {
+                            JSONObject global = (JSONObject) jsonValue;
+                            jsonValue = global.get(NAME);
+                            if (jsonValue != null && jsonValue instanceof String) {
+                                System.out.println(jsonValue);
+                                JsObject object = factory.newObject(globalObject, (String)jsonValue, OffsetRange.NONE, true);
+                                globalObject.addProperty(object.getName(), object);
+                            }
+                        }
+                    }
+                }
+                jsonValue = root.get("vars");
+                if (jsonValue != null && jsonValue instanceof JSONArray) {
+                    JSONArray globals = (JSONArray) jsonValue;
+                    for (int i = 0; i < globals.size(); i++) {
+                        jsonValue = globals.get(i);
+                        if (jsonValue != null && jsonValue instanceof JSONObject) {
+                            JSONObject global = (JSONObject) jsonValue;
+                            jsonValue = global.get(NAME);
+                            if (jsonValue != null && jsonValue instanceof String) {
+                                System.out.println(jsonValue);
+                                JsObject object = factory.newObject(globalObject, (String)jsonValue, OffsetRange.NONE, true);
+                                globalObject.addProperty(object.getName(), object);
+                            }
+                        }
+                    }
+                }
+                jsonValue = root.get("methods");
+                if (jsonValue != null && jsonValue instanceof JSONArray) {
+                    JSONArray globals = (JSONArray) jsonValue;
+                    for (int i = 0; i < globals.size(); i++) {
+                        jsonValue = globals.get(i);
+                        if (jsonValue != null && jsonValue instanceof JSONObject) {
+                            JSONObject global = (JSONObject) jsonValue;
+                            jsonValue = global.get(NAME);
+                            if (jsonValue != null && jsonValue instanceof String) {
+                                System.out.println(jsonValue);
+                                JsObject object = factory.newObject(globalObject, (String)jsonValue, OffsetRange.NONE, true);
+                                globalObject.addProperty(object.getName(), object);
+                            }
+                        }
+                    }
+                }
+            }
+            return Collections.singletonList(globalObject);
+        }
+        return Collections.emptyList();
     }
 
     private JSONArray getModules() {
@@ -202,7 +266,7 @@ public class NodeJsDataProvider {
         }
         return null;
     }
-    
+
     private void loadURL(URL url, Writer writer, Charset charset) throws IOException {
         if (charset == null) {
             charset = Charset.defaultCharset();
@@ -219,7 +283,7 @@ public class NodeJsDataProvider {
         }
         r.close();
     }
-    
+
     private String getFileContent(File file) throws IOException {
         Reader r = new InputStreamReader(new FileInputStream(file), "UTF-8"); // NOI18N
         StringBuilder sb = new StringBuilder();
@@ -234,14 +298,14 @@ public class NodeJsDataProvider {
         }
         return sb.toString();
     }
-    
+
     private File getCachedAPIFile() {
-        String pathFile =  new StringBuilder().append(CACHE_FOLDER_NAME).append('/')
+        String pathFile = new StringBuilder().append(CACHE_FOLDER_NAME).append('/')
                 .append(DOC_VERSION).append('/').append(API_ALL_JSON_FILE).toString();
         File cacheFile = Places.getCacheSubfile(pathFile);
         return cacheFile;
     }
-    
+
     private String getContentApiFile() {
         String result = null;
         try {
@@ -271,14 +335,14 @@ public class NodeJsDataProvider {
         }
         return result;
     }
-    
+
     private void startLoading() {
         LOG.fine("start loading doc"); //NOI18N
 
         progress = ProgressHandleFactory.createHandle(Bundle.doc_building());
         progress.start(1);
     }
-    
+
     private void loadDoc(File cacheFile) throws URISyntaxException, MalformedURLException, IOException {
         LOG.fine("start loading doc"); //NOI18N
         URL url = new URL(getDocumentationURL().toExternalForm() + API_ALL_JSON_FILE);
