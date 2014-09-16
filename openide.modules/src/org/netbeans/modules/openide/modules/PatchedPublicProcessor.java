@@ -180,17 +180,17 @@ public class PatchedPublicProcessor extends AbstractProcessor {
                 }
                 AnnotationValue val = m.getElementValues().get(valueElement);
                 if (!(val.getValue() instanceof DeclaredType)) {
-                    processingEnv.getMessager().printMessage(Kind.ERROR, "Value for @ImplementationFor must be a valid class", e);
+                    processingEnv.getMessager().printMessage(Kind.ERROR, "Value for @PatchFor must be a valid class", e);
                     continue CLAZZ;
                 }
                 Element x = ((DeclaredType)val.getValue()).asElement();
                 if (!(x instanceof TypeElement)) {
-                    processingEnv.getMessager().printMessage(Kind.ERROR, "Value for @ImplementationFor must be a valid class", e);
+                    processingEnv.getMessager().printMessage(Kind.ERROR, "Value for @PatchFor must be a valid class", e);
                     continue CLAZZ;
                 }
                 target = (TypeElement)x;
                 if (target.getKind() != ElementKind.CLASS) {
-                    processingEnv.getMessager().printMessage(Kind.ERROR, "@ImplementationFor can be only applied on classes", e);
+                    processingEnv.getMessager().printMessage(Kind.ERROR, "@PatchFor can be only applied on classes", e);
                     continue CLAZZ;
                 }
                 apiName = processingEnv.getElementUtils().getBinaryName(target).toString();

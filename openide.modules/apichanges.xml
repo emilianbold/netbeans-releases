@@ -59,37 +59,16 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible"/>
         <description>
             <p>
-                When removing @deprecated code from API, it is still desirable to retain
-                backward binary compatibility. Because of JVM method/field/class resolution
-                mechanism, it is permitted to move the implementation upwards the inheritance
-                hierarchy. However, the superclass that receives the methods must
-                not be visible in the sources (otherwise the change would not serve any good) and
-                specifically, must not be referenced from `extends' clause of the changed class.
-            </p>
-            <p>
-                The compatibility superclass ought to reside in a completely different module to
-                allow reduce type dependencies and should be only injected into inheritance chain
-                if and only if some of enabled modules depend on the obsolete version of the API module.
-            </p>
-            <p>
-                Special annotation <a href="@TOP@/org/netbeans/modules/PatchFor.html"><code>@PatchFor</code></a>
+                Special annotation <a href="@TOP@/org/openide/modules/PatchFor.html"><code>@PatchFor</code></a>
                 allows to require that a class should serve as a <i>superclass</i> of some other class.
-                See <a href="@TOP@/org/netbeans/modules/PatchFor.html">@PatchFor javadoc</a> for further 
+                See <a href="@TOP@/org/openide/modules/PatchFor.html">@PatchFor javadoc</a> for further 
                 constraints.
             </p>
             <p>
-                The constructor cannot be 'just moved', because of it contains instance variable initialization
-                code. To support removing obsolete constructors, 
-                <a href="@TOP@/org/netbeans/modules/ConstructorDelegate.html"><code>@ConstructorDelegate</code></a> has been
-                created to mark moved initialization code. See <a href="@TOP@/org/netbeans/modules/ConstructorDelegate.html">@ConstructorDelegate javadoc</a>
+                To support removing obsolete constructors, 
+                <a href="@TOP@/org/openide/modules/ConstructorDelegate.html"><code>@ConstructorDelegate</code></a> has been
+                created to mark moved initialization code. See <a href="@TOP@/org/openide/modules/ConstructorDelegate.html">@ConstructorDelegate javadoc</a>
                 for more details.
-            </p>
-            <p>
-                The module which contains such patches must share the classloader with the patched one,
-                since classes in those two modules reference each other. A new Manifest entry, <strong>
-                    <code>OpenIDE-Module-Fragment-Host</code>
-                </strong>, is defined. It's value must be set to <strong>codename</strong> of the
-                patched module.
             </p>
         </description>
         <class package="org.netbeans.modules" name="PatchFor"/>

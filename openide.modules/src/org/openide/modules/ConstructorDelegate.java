@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.openide.modules;
 
 import java.lang.annotation.ElementType;
@@ -49,16 +48,45 @@ import java.lang.annotation.Target;
 
 /**
  * Marks a code that implements constructor contract for backward compatibility.
- * There are two possible uses for this annotation. A static void method can be annotated.
- * The method must take the compat implementation type as its first parameter. The rest
- * of parameters will be used to generate a constructor in the original API class, 
- * with the same thrown exceptions and access modifiers. The generated constructor will first call
- * <b>the default constructor</b> of the API class, then delegate the initialization work
- * to the static method passing <code>this</code> as the first parameter.
+ * A static void method must be annotated, name is irrelevant. The method must
+ * take the enclosing type marked by <code>@PatchFor</code> implementation type
+ * as its first parameter. The rest of parameter types will be used to generate
+ * a constructor in the original API class, with the same thrown exceptions and
+ * access modifiers.
  * <p/>
- * The annotation has only effect if the method's declaring class was annotated using
- * {@link PatchFor}.
- * 
+ * The generated constructor will first call
+ * <b>the default constructor</b> of the API class, then delegate the
+ * initialization work to the static method passing <code>this</code> typed as
+ * the {@link PatchFor @PatchFor}
+ * class as the first parameter. Formally, at compile-time, the API class does
+ * not derive from the <code>@PatchFor</code> supertype. Passing the new
+ * instance typed as the API class would require type casting to the
+ * <code>@PatchFor</code> supertype in order to access the data for the injected
+ * code.
+ * <p/>
+ * The annotation has only effect if the method's declaring class was annotated
+ * using {@link PatchFor @PatchFor}.
+ * <p/>
+ * Take, for example, the following code from <code>openide.filesystems</code> module:
+ * <code><pre>
+ *  &#064PatchFor(JarFileSystem.class)
+ * public abstract class JarFileSystemCompat extends AbstractFileSystem {
+ *    &#064ConstructorDelegate
+ *   public static void createJarFileSystemCompat(JarFileSystemCompat jfs, FileSystemCapability cap) throws IOException {
+ *     ...
+ *   }
+ * }
+ * </pre></code>
+ * Will cause generate, at runtime (during class loading), a new constructor in the
+ * <code>JarFileSystem</code> class: 
+ * <code><pre>
+ *      JarFileSystem(FileSystemCapability c) throws IOException {
+ *          this();
+ *          JarFileSystemCompat.createJarFileSystemCompat(this, c);
+ *      }
+ * </pre></code>
+ * Invocation of other constructors than the default one is not supported.
+ *
  * @see PatchFor
  * @since 7.44
  * @author sdedic
