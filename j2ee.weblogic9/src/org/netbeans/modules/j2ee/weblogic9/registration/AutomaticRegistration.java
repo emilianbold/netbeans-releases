@@ -202,9 +202,10 @@ public class AutomaticRegistration {
             return 8;
         }
 
+        // we do expand version string here because one may be 12.1.4.0 while the other may be 12.1.4.0.0
         if (domainVersion != null
                 && version != null
-                && !version.equals(domainVersion)) {
+                && !version.expand("0").equals(domainVersion.expand("0"))) { // NOI18N
             LOGGER.log(Level.INFO, "Cannot register the default WebLogic server. "
                     + " The domain version does not match the server version."); // NOI18N
             return 9;
