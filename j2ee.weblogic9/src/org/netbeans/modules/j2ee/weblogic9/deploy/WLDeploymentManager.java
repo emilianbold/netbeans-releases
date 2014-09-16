@@ -824,6 +824,17 @@ public class WLDeploymentManager implements DeploymentManager2 {
             if (url != null && url.startsWith("/")) { // NOI18N
                 url = "http://" + getHost() + ":" + getPort() + url; // NOI18N
             }
+            // TODO perhaps web url should be configurable separately
+            //if (isRemote()) {
+                if (url != null && url.startsWith("http://")) { // NOI18N
+                    // start at 7 - after http://
+                    int end = url.indexOf('/', 7); //NOI18N
+                    if (end < 0) {
+                        end = url.length();
+                    }
+                    url = "http://" + getHost() + ":" + getPort() + url.substring(end); // NOI18n
+                }
+            //}
             return url;
         }
 
