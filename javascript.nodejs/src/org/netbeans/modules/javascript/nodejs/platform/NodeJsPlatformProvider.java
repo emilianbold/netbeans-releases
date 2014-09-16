@@ -120,7 +120,9 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
     @Override
     public void projectClosed(Project project) {
         assert project != null;
-        NodeJsSupport.forProject(project).removePropertyChangeListener(this);
+        NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
+        nodeJsSupport.projectClosed();
+        nodeJsSupport.removePropertyChangeListener(this);
     }
 
     @Override
