@@ -112,6 +112,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
@@ -183,7 +184,12 @@ public class JavaFixUtilities {
             Collection<TreePathHandle> tph = new LinkedList<TreePathHandle>();
 
             for (TreePath tp : e.getValue()) {
-                tph.add(TreePathHandle.create(tp, info));
+                TreePathHandle x = TreePathHandle.create(tp, info);
+                // resolve back, to save some problems later:
+                if (x.resolve(info) == null) {
+                    continue;
+                }
+                tph.add(x);
             }
 
             paramsMulti.put(e.getKey(), tph);
@@ -368,7 +374,7 @@ public class JavaFixUtilities {
 
         return false;
     }
-
+    
     private static class JavaFixRealImpl extends JavaFix {
         private final String displayName;
         private final Map<String, TreePathHandle> params;
@@ -423,9 +429,9 @@ public class JavaFixUtilities {
 
                 for (TreePathHandle tph : e.getValue()) {
                     TreePath p = tph.resolve(wc);
-
                     if (p == null) {
                         Logger.getLogger(JavaFix.class.getName()).log(Level.SEVERE, "Cannot resolve handle={0}", e.getValue());
+                        continue;
                     }
 
                     tps.add(p);
@@ -1223,7 +1229,9 @@ public class JavaFixUtilities {
 
                     if (embedded != null) {
                         for (TreePath tp : embedded) {
-                            result.add((T) tp.getLeaf());
+                            if (tp != null) {
+                                result.add((T) tp.getLeaf());
+                            }
                         }
                     }
                 } else {

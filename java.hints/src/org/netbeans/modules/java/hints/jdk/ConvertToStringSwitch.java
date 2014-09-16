@@ -550,7 +550,11 @@ public class ConvertToStringSwitch {
             }
             
             if (desc.literals == null) {
-                cases.add(make.asReplacementOf(make.Case(null, statements), replacedByCase, true));
+                CaseTree ct = make.Case(null, statements);
+                if (replacedByCase != null) {
+                    ct = make.asReplacementOf(ct, replacedByCase, true);
+                }
+                cases.add(ct);
 
                 return false;
             }
