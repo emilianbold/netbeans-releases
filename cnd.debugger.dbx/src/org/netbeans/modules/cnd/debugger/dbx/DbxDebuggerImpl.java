@@ -1213,7 +1213,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
     public final void stepTo(String function) {
         if (function != null) {
-            dbx.sendCommand(0, 0, "step to " + function);	// NOI18N
+            String cmd =  "stop in " + function + " -temp -hidden";	// NOI18N
+            runProgram(cmd, "cont");	// NOI18N
         } else {
             dbx.sendCommand(0, 0, "step to");	// NOI18N
         }
