@@ -286,8 +286,7 @@ public class CPUSamplingDataFrameProcessor extends AbstractLockDataFrameProcesso
                         JMethodIdTableEntry entry = methodIdTable.getEntry(methodId);
                         String method = formatter.formatMethodName(entry.className, entry.methodName, entry.methodSig).toFormatted();
                         String className = entry.className.replace('/','.');
-                        String methodName = method+StackTraceSnapshotBuilder.NAME_SIG_SPLITTER+entry.methodSig;
-                        el = new StackTraceElement(className, methodName, null, entry.isNative?-2:-1);
+                        el = new StackTraceElement(className, method, entry.methodSig, -1);
                         stackTraceElements.put(Integer.valueOf(methodId),el);
                     }
                     stackTrace[i] = el;
