@@ -724,11 +724,45 @@ public final class ModuleManager extends Modules {
 
         @Override
         protected synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            ProxyClassLoader priviledged = null;
+            NetigsoLoader osgi = null;
+            Class[] stack = TopSecurityManager.getStack();
+            for (Class c: stack) {
+                ClassLoader l = c.getClassLoader();
+                if (l == this) {
+                    continue;
+                }
+                if (l == getClass().getClassLoader()) {
+                    continue;
+                }
+                if (l instanceof ProxyClassLoader) {
+                    priviledged = (ProxyClassLoader) l;
+                    break;
+                }
+                if (l instanceof NetigsoLoader) {
+                    osgi = (NetigsoLoader) l;
+                    break;
+                }
+            }
+            ClassNotFoundException prev = null;
             try {
+                if (priviledged != null) try {
+                    return priviledged.loadClass(name, resolve);
+                } catch (ClassNotFoundException inner) {
+                    prev = inner;
+                }
+                if (osgi != null) try {
+                    return osgi.loadClass(name, resolve);
+                } catch (ClassNotFoundException inner) {
+                    prev = inner;
+                }
                 return super.loadClass(name, resolve);
             } catch (ClassNotFoundException ex) {
                 ClassLoader l = netigso.findFallbackLoader();
                 if (l == null || l == this) {
+                    if (prev != null) {
+                        ex.initCause(prev);
+                    }
                     throw ex;
                 }
                 return Class.forName(name, resolve, l);
