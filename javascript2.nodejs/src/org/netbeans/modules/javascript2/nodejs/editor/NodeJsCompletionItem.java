@@ -50,7 +50,6 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.web.common.api.FileReferenceCompletion;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -61,20 +60,13 @@ import org.openide.util.NbBundle;
  */
 public class NodeJsCompletionItem implements CompletionProposal {
     
-    static CompletionProposal createNodeJsItem(NodeJsCompletionDataItem data, ElementKind kind, int anchorOffset) {
-        ElementHandle element = new NodeJsElement(data.getName(), data.getDocumentation(), kind);
-        return new NodeJsCompletionItem(data, anchorOffset, element);
-    }
-    
     
     private final int anchorOffset;
     private final ElementHandle element;
-    private final NodeJsCompletionDataItem data;
 
-    public NodeJsCompletionItem(NodeJsCompletionDataItem data, int anchorOffset, ElementHandle element) {
+    public NodeJsCompletionItem(ElementHandle element, int anchorOffset) {
         this.anchorOffset = anchorOffset;
         this.element = element;
-        this.data = data;
     }
 
     @Override
@@ -145,24 +137,34 @@ public class NodeJsCompletionItem implements CompletionProposal {
 
     @Override
     public String getCustomInsertTemplate() {
-        if (data.getTemplate() != null) {
-            return data.getTemplate().trim();
-        }
         return null;
     }
+    
+    public static class NodeJsModuleCompletionItem extends NodeJsCompletionItem {
+        public NodeJsModuleCompletionItem(ElementHandle element, int anchorOffset) {
+            super(element, anchorOffset);
+        }
 
+        @Override
+        public ImageIcon getIcon() {
+            return NodeJsUtils.getNodeJsIcon();
+        }
+        
+    }
+    
+    
     public static class FilenameSupport extends FileReferenceCompletion<NodeJsCompletionItem> {
 
         @Override
         public NodeJsCompletionItem createFileItem(FileObject file, int anchor) {
-            ElementHandle element = new NodeJsElement(file.getNameExt(), file.getPath(), ElementKind.FILE);
-            return new NodeJsCompletionItem(new NodeJsCompletionDataItem(file.getNameExt(), file.getPath(), null), anchor, element);
+            ElementHandle element = new NodeJsElement.NodeJsFileElement(file);
+            return new NodeJsCompletionItem(element, anchor);
         }
 
         @Override
         public NodeJsCompletionItem createGoUpItem(int anchor, Color color, ImageIcon icon) {
             ElementHandle element = new NodeJsElement("..", null, ElementKind.FILE);
-            return new NodeJsCompletionItem(new NodeJsCompletionDataItem("..", null, null), anchor, element);
+            return new NodeJsCompletionItem(element, anchor);
         }
     }
 }
