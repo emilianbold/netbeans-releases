@@ -133,7 +133,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
     }
     
     private void initialize(String corePath, String host) {
-        initComponents();
+        initComponents();	
 	if (readonly) {
 	    corefileComboBox.setEditable(false);
 	    corefileBrowseButton.setEnabled(false);
@@ -144,6 +144,8 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	errorLabel.setForeground(javax.swing.UIManager.getColor("nb.errorForeground")); // NOI18N
 	if (corePath == null) {
             corePath = lastSelectedCorefile;
+        } else {
+            corefilePickList.addElement(corePath);
         }
         
         corefileComboBox.getEditor().setItem(corePath);
@@ -179,7 +181,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
                 executablePickList.addElement(getExecutablePath());
                 corefilePickList.addElement(getCorefilePath());
             }
-        });
+        });    
     }
 
     @Override
