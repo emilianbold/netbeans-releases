@@ -82,14 +82,24 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTest.SFBQImpl;
 import org.netbeans.modules.parsing.spi.indexing.support.EmbeddedPathRecognizer;
+import org.netbeans.spi.editor.document.DocumentFactory;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
@@ -116,6 +126,42 @@ public class IndexingTestBase extends NbTestCase {
             classes.addAll(Arrays.asList(services2));
         }
         MockServices.setServices(classes.toArray(new Class[classes.size()]));
+            MockMimeLookup.setInstances(
+            MimePath.EMPTY,
+            new DocumentFactory() {
+                @Override
+                public Document createDocument(String mimeType) {
+                    return new BaseDocument(false, mimeType);
+                }
+
+                @Override
+                public Document getDocument(FileObject file) {
+                    try {
+                        final DataObject dobj = DataObject.find(file);
+                        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+                        return ec == null ?
+                            null :
+                            ec.openDocument();
+                    } catch (DataObjectNotFoundException e) {
+                        return null;
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                        return null;
+                    }
+                }
+
+                @Override
+                public FileObject getFileObject(Document document) {
+                    Object sdp = document.getProperty(Document.StreamDescriptionProperty);
+                    if (sdp instanceof FileObject) {
+                        return (FileObject)sdp;
+                    }
+                    if (sdp instanceof DataObject) {
+                        return ((DataObject)sdp).getPrimaryFile();
+                    }
+                    return null;
+            }
+        });
     }
     
     protected Class[] getMockServices() {

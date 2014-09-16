@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +64,7 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.document.EditorMimeTypes;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -90,6 +93,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.spi.editor.document.EditorMimeTypesImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
@@ -139,6 +143,7 @@ public class EmbeddedIndexerTest extends IndexingTestBase {
         clazz.add(TopPathRecognizer.class);
         clazz.add(TopLoader.class);
         clazz.add(ClassPathProviderImpl.class);
+        clazz.add(MimeProviderImpl.class);
     }
 
     @Override
@@ -655,6 +660,30 @@ public class EmbeddedIndexerTest extends IndexingTestBase {
             }
 
         }
+    }
+    
+    public static class MimeProviderImpl implements EditorMimeTypesImplementation {
+        private static final Set<String> MIMES;
+        
+        static {
+            MIMES = new HashSet<>(2);
+            MIMES.add(MIME_INNER);
+            MIMES.add(MIME_TOP);
+        }
+
+        @Override
+        public Set<String> getSupportedMimeTypes() {
+            return MIMES;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        }
+    
     }
 
     public static class TopPathRecognizer extends PathRecognizer {

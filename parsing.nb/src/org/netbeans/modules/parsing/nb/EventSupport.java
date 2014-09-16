@@ -532,8 +532,8 @@ final class EventSupport extends SourceEnvironment {
         
         public synchronized void attachSource(Source s, boolean attach) {
             if (source != null) {
-                assert (attach || source == s) && weakListener != null;
                 final FileObject fo = source.getFileObject();
+                assert (attach || source == s) && (weakListener != null || fo == null);
                 if (fo != null) {
                     try {
                         final DataObject dobj = DataObject.find(fo);

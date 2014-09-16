@@ -68,6 +68,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.spi.editor.document.DocumentFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
 
@@ -385,6 +386,16 @@ public class TestUtil {
 
       public static void setupEditorMockServices() {
         MockMimeLookup.setInstances(MimePath.EMPTY, new DocumentFactory() {
+
+            @Override
+            public Document getDocument(FileObject file) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public FileObject getFileObject(Document document) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
 
             @Override
             public Document createDocument(String mimeType) {

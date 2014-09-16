@@ -160,12 +160,20 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         
         extraLookupContent[0] = repository;
         extraLookupContent[1] = new DocumentFactory() {
-
             @Override
             public Document createDocument(String mimeType) {
                 return new BaseDocument(false, mimeType);
             }
-            
+
+            @Override
+            public Document getDocument(FileObject file) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public FileObject getFileObject(Document document) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
         };
         
         SourceUtilsTestUtil.setLookup(extraLookupContent, SourceUtilsTestUtil.class.getClassLoader());
