@@ -113,7 +113,9 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
     @Override
     public void projectOpened(Project project) {
         assert project != null;
-        NodeJsSupport.forProject(project).addPropertyChangeListener(this);
+        NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
+        nodeJsSupport.addPropertyChangeListener(this);
+        nodeJsSupport.projectOpened();
         // XXX add autodetection
     }
 

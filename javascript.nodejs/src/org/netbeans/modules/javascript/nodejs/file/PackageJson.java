@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript.nodejs.file;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -56,6 +59,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -76,9 +80,17 @@ public final class PackageJson implements ChangeListener, FileChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(PackageJson.class.getName());
 
-    private static final String FILENAME = "package.json"; // NOI18N
+    public static final String PROP_NAME = "NAME"; // NOI18N
+    public static final String PROP_SCRIPTS_START = "SCRIPTS_START"; // NOI18N
+
+    static final String FILENAME = "package.json"; // NOI18N
+    // file content
+    static final String NAME = "name"; // NOI18N
+    static final String SCRIPTS = "scripts"; // NOI18N
+    static final String START = "start"; // NOI18N
 
     private final Project project;
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     // @GuardedBy("this")
     private boolean listening = false;
@@ -93,8 +105,20 @@ public final class PackageJson implements ChangeListener, FileChangeListener {
         this.project = project;
     }
 
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
     public boolean exists() {
         return getPackageJson().isFile();
+    }
+
+    public String getPath() {
+        return getPackageJson().getAbsolutePath();
     }
 
     @CheckForNull
@@ -116,6 +140,11 @@ public final class PackageJson implements ChangeListener, FileChangeListener {
             return null;
         }
         return new JSONObject(content);
+    }
+
+    public void init() {
+        // read the file so we can listen on changes and fire proper events
+        getContent();
     }
 
     public void cleanup() {
@@ -165,25 +194,64 @@ public final class PackageJson implements ChangeListener, FileChangeListener {
         return null;
     }
 
-    private synchronized void clear(boolean newFile) {
-        // XXX implement property change firing
-        if (content != null) {
-            LOGGER.log(Level.FINE, "Clearing cached content of {0}", packageJson);
-            content = null;
-        }
-        if (newFile) {
-            if (packageJson != null) {
-                try {
-                    FileUtil.removeFileChangeListener(this, packageJson);
-                    LOGGER.log(Level.FINE, "Stopped listenening to {0}", packageJson);
-                } catch (IllegalArgumentException ex) {
-                    // not listeneing yet, ignore
-                    LOGGER.log(Level.FINE, "Not listenening yet to {0}", packageJson);
-                }
-                LOGGER.log(Level.FINE, "Clearing cached package.json path {0}", packageJson);
+    private void clear(boolean newFile) {
+        JSONObject oldContent;
+        JSONObject newContent;
+        synchronized (this) {
+            oldContent = content;
+            if (content != null) {
+                LOGGER.log(Level.FINE, "Clearing cached content of {0}", packageJson);
+                content = null;
             }
-            packageJson = null;
+            if (newFile) {
+                if (packageJson != null) {
+                    try {
+                        FileUtil.removeFileChangeListener(this, packageJson);
+                        LOGGER.log(Level.FINE, "Stopped listenening to {0}", packageJson);
+                    } catch (IllegalArgumentException ex) {
+                        // not listeneing yet, ignore
+                        LOGGER.log(Level.FINE, "Not listenening yet to {0}", packageJson);
+                    }
+                    LOGGER.log(Level.FINE, "Clearing cached package.json path {0}", packageJson);
+                }
+                packageJson = null;
+            }
+            newContent = getContent();
         }
+        fireChanges(oldContent, newContent);
+    }
+
+    private void fireChanges(@NullAllowed JSONObject oldContent, @NullAllowed JSONObject newContent) {
+        String oldName = getName(oldContent);
+        String newName = getName(newContent);
+        if (!Objects.equals(oldName, newName)) {
+            propertyChangeSupport.firePropertyChange(PROP_NAME, oldName, newName);
+        }
+        String oldStartScript = getStartScript(oldContent);
+        String newStartScript = getStartScript(newContent);
+        if (!Objects.equals(oldStartScript, newStartScript)) {
+            propertyChangeSupport.firePropertyChange(PROP_SCRIPTS_START, oldStartScript, newStartScript);
+        }
+    }
+
+    @CheckForNull
+    private String getName(@NullAllowed JSONObject data) {
+        if (data == null) {
+            return null;
+        }
+        return (String) data.get(NAME);
+    }
+
+    @CheckForNull
+    private String getStartScript(@NullAllowed JSONObject data) {
+        if (data == null) {
+            return null;
+        }
+        JSONObject scripts = (JSONObject) data.get(SCRIPTS);
+        if (scripts == null) {
+            return null;
+        }
+        return (String) scripts.get(START);
     }
 
     //~ Listeners
