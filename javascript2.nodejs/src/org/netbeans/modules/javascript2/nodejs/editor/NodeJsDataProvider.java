@@ -55,9 +55,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
@@ -65,7 +67,9 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import static org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils.loadFileContent;
@@ -97,6 +101,7 @@ public class NodeJsDataProvider {
     private static final String DOC_VERSION = "0.10.31";    //NOI18N
     private static final String DOC_URL = "http://nodejs.org/docs/v" + DOC_VERSION + "/api/"; //NOI18N
 
+    private static final String API_ALL_HTML_FILE = "all.html";
     private static final String CACHE_FOLDER_NAME = "nodejs-doc"; //NOI18N
     private static final String API_ALL_JSON_FILE = "all.json"; //NOI18N
 
@@ -199,58 +204,156 @@ public class NodeJsDataProvider {
             JsObject globalObject = factory.newGlobalObject(FileUtil.toFileObject(apiFile), (int) apiFile.length());
             JSONObject root = (JSONObject) JSONValue.parse(content);
             if (root != null) {
-                Object jsonValue = root.get("globals");
-                if (jsonValue != null && jsonValue instanceof JSONArray) {
-                    JSONArray globals = (JSONArray) jsonValue;
-                    for (int i = 0; i < globals.size(); i++) {
-                        jsonValue = globals.get(i);
-                        if (jsonValue != null && jsonValue instanceof JSONObject) {
+                JSONArray globals = getJSONArrayProperty(root, "globals");
+                if (globals != null) {
+                    for (Object jsonValue : globals) {
+                        if (jsonValue instanceof JSONObject) {
                             JSONObject global = (JSONObject) jsonValue;
-                            jsonValue = global.get(NAME);
-                            if (jsonValue != null && jsonValue instanceof String) {
-                                System.out.println(jsonValue);
-                                JsObject object = factory.newObject(globalObject, (String)jsonValue, OffsetRange.NONE, true);
-                                globalObject.addProperty(object.getName(), object);
+                            String name = getJSONStringProperty(global, NAME);
+                            if (name != null) {
+                                JsObject property = createProperty(factory, globalObject, global);
+                                addProperties(factory, property, (DeclarationScope) globalObject, global);
+                                addMethods(factory, property, (DeclarationScope)globalObject, global);
                             }
                         }
                     }
                 }
-                jsonValue = root.get("vars");
-                if (jsonValue != null && jsonValue instanceof JSONArray) {
-                    JSONArray globals = (JSONArray) jsonValue;
-                    for (int i = 0; i < globals.size(); i++) {
-                        jsonValue = globals.get(i);
-                        if (jsonValue != null && jsonValue instanceof JSONObject) {
-                            JSONObject global = (JSONObject) jsonValue;
-                            jsonValue = global.get(NAME);
-                            if (jsonValue != null && jsonValue instanceof String) {
-                                System.out.println(jsonValue);
-                                JsObject object = factory.newObject(globalObject, (String)jsonValue, OffsetRange.NONE, true);
-                                globalObject.addProperty(object.getName(), object);
+                JSONArray vars = getJSONArrayProperty(root, "vars");
+                if (vars != null) {
+                    for (Object jsonValue : vars) {
+                        if (jsonValue instanceof JSONObject) {
+                            JSONObject var = (JSONObject) jsonValue;
+                            String name = getJSONStringProperty(var, NAME);
+                            if (name != null) {
+//                                if (REQUIRE_STRING.equals(name)) {
+//
+//                                } else {
+//                                    
+//                                }
+                                JsObject property = createProperty(factory, globalObject, var);
+                                addProperties(factory, property, (DeclarationScope) globalObject, var);
+                                addMethods(factory, property, (DeclarationScope)globalObject, var);
                             }
                         }
                     }
                 }
-                jsonValue = root.get("methods");
-                if (jsonValue != null && jsonValue instanceof JSONArray) {
-                    JSONArray globals = (JSONArray) jsonValue;
-                    for (int i = 0; i < globals.size(); i++) {
-                        jsonValue = globals.get(i);
-                        if (jsonValue != null && jsonValue instanceof JSONObject) {
-                            JSONObject global = (JSONObject) jsonValue;
-                            jsonValue = global.get(NAME);
-                            if (jsonValue != null && jsonValue instanceof String) {
-                                System.out.println(jsonValue);
-                                JsObject object = factory.newObject(globalObject, (String)jsonValue, OffsetRange.NONE, true);
-                                globalObject.addProperty(object.getName(), object);
-                            }
-                        }
-                    }
-                }
+                addMethods(factory, globalObject, (DeclarationScope) globalObject, root);
             }
             return Collections.singletonList(globalObject);
         }
         return Collections.emptyList();
+    }
+
+    private void addMethods(final ModelElementFactory factory, final JsObject toObject, final DeclarationScope scope, final JSONObject fromObject) {
+        JSONArray methods = getJSONArrayProperty(fromObject, "methods");
+        if (methods != null) {
+            for (Object methodO : methods) {
+                if (methodO instanceof JSONObject) {
+                    JSONObject method = (JSONObject) methodO;
+                    String methodName = getJSONStringProperty(method, NAME);
+                    JSONArray signatures = getJSONArrayProperty(method, "signatures");
+                    String doc = getJSONStringProperty(method, "desc");
+                    if (methodName != null && signatures != null) {
+                        for (Object signature : signatures) {
+                            JSONArray params = getJSONArrayProperty((JSONObject) signature, "params");
+                            List<String> paramNames = new ArrayList<String>();
+                            if (params != null && !params.isEmpty()) {
+                                for (Object param : params) {
+                                    String paramName = getJSONStringProperty((JSONObject) param, NAME);
+                                    if (paramName != null) {
+                                        paramNames.add(paramName);
+                                    }
+                                }
+                            }
+                            JsObject object = factory.newFunction(scope, toObject, methodName, paramNames, NodeJsUtils.NODEJS_NAME);
+                            object.setDocumentation(Documentation.create(doc, getDocumentationURL(methodName, paramNames)));
+                            toObject.addProperty(object.getName(), object);
+                            addProperties(factory, object, (DeclarationScope) object, method);
+                            addMethods(factory, object, (DeclarationScope) object, method);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private JsObject createProperty(final ModelElementFactory factory, final JsObject parent, final JSONObject jsonObject) {
+        String propertyName = getJSONStringProperty(jsonObject, NAME);
+        if (propertyName != null) {
+            JsObject object = factory.newObject(parent, propertyName, OffsetRange.NONE, true, NodeJsUtils.NODEJS_NAME);
+            parent.addProperty(object.getName(), object);
+            String doc = getJSONStringProperty(jsonObject, "desc");
+            object.setDocumentation(Documentation.create(doc, getDocumentationURL(propertyName)));
+            return object;
+        }
+        return null;
+    }
+
+    private void addProperties(final ModelElementFactory factory, final JsObject toObject, final DeclarationScope scope, final JSONObject fromObject) {
+        JSONArray properties = getJSONArrayProperty(fromObject, "properties");
+        if (properties != null) {
+            for (Object propertyO : properties) {
+                if (propertyO instanceof JSONObject) {
+                    JSONObject property = (JSONObject) propertyO;
+                    JsObject newProperty = createProperty(factory, toObject, property);
+                    if (newProperty != null) {
+                        addProperties(factory, newProperty, scope, property);
+                        addMethods(factory, newProperty, scope, property);
+                    }
+                }
+            }
+        }
+    }
+
+    private String getJSONStringProperty(final JSONObject object, final String property) {
+        Object value = object.get(property);
+        if (value != null && value instanceof String) {
+            return (String) value;
+        }
+        return null;
+    }
+
+    private JSONArray getJSONArrayProperty(final JSONObject object, final String property) {
+        Object value = object.get(property);
+        if (value != null && value instanceof JSONArray) {
+            return (JSONArray) value;
+        }
+        return null;
+    }
+
+    private URL getDocumentationURL(String name) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(DOC_URL).append(API_ALL_HTML_FILE).append("#all_");
+        String alteredName = name;
+        while (alteredName.charAt(0) == '_') {
+            alteredName = alteredName.substring(1);
+        }
+        sb.append(alteredName.toLowerCase());
+        URL result = null;
+        try {
+            result = new URL(sb.toString());
+        } catch (MalformedURLException ex) {
+            // Do nothing
+        }
+        return result;
+    }
+
+    private URL getDocumentationURL(String name, Collection<String> params) {
+        URL result = getDocumentationURL(name);
+        if (result != null) {
+            StringBuilder sb = new StringBuilder(); 
+            sb.append(result.toExternalForm());
+            for (String param : params) {
+                sb.append('_').append(param);
+            }
+            result = null;
+            try {
+                result = new URL(sb.toString());
+            } catch (MalformedURLException ex) {
+                // Do nothing
+            }
+        }
+        return result;
     }
 
     private JSONArray getModules() {

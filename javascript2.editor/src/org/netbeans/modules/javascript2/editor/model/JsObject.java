@@ -97,6 +97,7 @@ public interface JsObject extends JsElement {
     public boolean hasExactName();
     
     public Documentation getDocumentation();
+    public void setDocumentation(Documentation documentation);
     
     public boolean containsOffset(int offset);
 }

@@ -232,6 +232,11 @@ public class JQueryModel {
         }
 
         @Override
+        public void setDocumentation(Documentation documentation) {
+            delegate.setDocumentation(documentation);
+        }
+
+        @Override
         public int getOffset() {
             return delegate.getOffset();
         }
