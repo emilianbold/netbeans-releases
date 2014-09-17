@@ -104,7 +104,7 @@ public class NodeJsCompletionItem implements CompletionProposal {
         return formatter.getText();
     }
 
-    @NbBundle.Messages("NodeJsCompletionItem.lbl.nodejs.name=Node.js") //NOI18N
+    @NbBundle.Messages("NodeJsCompletionItem.lbl.nodejs.name=NodeJS") //NOI18N
     @Override
     public String getRhsHtml(HtmlFormatter formatter) {
         return Bundle.NodeJsCompletionItem_lbl_nodejs_name();

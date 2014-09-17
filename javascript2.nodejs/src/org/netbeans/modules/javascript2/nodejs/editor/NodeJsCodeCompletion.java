@@ -72,10 +72,7 @@ public class NodeJsCodeCompletion implements CompletionProvider {
     @Override
     public List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContext jsCompletionContext, String prefix) {
         List<CompletionProposal> result = new ArrayList<CompletionProposal>();
-
-        if (jsCompletionContext == CompletionContext.GLOBAL) {
-//            NodeJsDataProvider.getDefault().getGlobalObjects();
-        } else if (jsCompletionContext == CompletionContext.STRING || jsCompletionContext == CompletionContext.EXPRESSION
+        if (jsCompletionContext == CompletionContext.STRING || jsCompletionContext == CompletionContext.EXPRESSION
                 || jsCompletionContext == CompletionContext.GLOBAL) {
             TokenHierarchy<?> th = ccContext.getParserResult().getSnapshot().getTokenHierarchy();
             if (th == null) {
@@ -123,13 +120,10 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                     if (tokenId == JsTokenId.OPERATOR_ASSIGNMENT) {
                         // offer require()
                         if (prefix.isEmpty() || REQUIRE.startsWith(prefix)) {
-//                            result.add(NodeJsCompletionItem.createNodeJsItem(new NodeJsCompletionDataItem(REQUIRE, null, "require('${cursor}')"), ElementKind.METHOD, eOffset - prefix.length()));
+                            ElementHandle handle = new NodeJsElement(REQUIRE, "", ElementKind.METHOD);
+                            result.add(new NodeJsCompletionItem(handle, eOffset - prefix.length()));
                         }
                     }
-                }
-            } else {
-                if (prefix.isEmpty() || EXPORTS.startsWith(prefix)) {
-                    //result.add(NodeJsCompletionItem.createNodeJsItem(new NodeJsCompletionDataItem(EXPORTS, null, "exports."), ElementKind.PROPERTY, eOffset - prefix.length()));
                 }
             }
         }
