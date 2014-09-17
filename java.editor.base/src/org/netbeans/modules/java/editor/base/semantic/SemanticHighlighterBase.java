@@ -115,7 +115,6 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 
@@ -125,19 +124,10 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class SemanticHighlighterBase extends JavaParserResultTask {
     
-    private FileObject file;
-    //XXX: correct rescheduling when troubles traversing token list!
-//    private SemanticHighlighterFactory fact;
     private AtomicBoolean cancel = new AtomicBoolean();
     
-//    SemanticHighlighterBase(FileObject file) {
-//        this(file, null);
-//    }
-//    
-    protected SemanticHighlighterBase(FileObject file/*, SemanticHighlighterFactory fact*/) {
+    protected SemanticHighlighterBase() {
         super(Phase.RESOLVED, TaskIndexingMode.ALLOWED_DURING_SCAN);
-        this.file = file;
-//        this.fact = fact;
     }
 
     @Override
@@ -154,9 +144,7 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
         
         if (!verifyDocument(doc)) return;
 
-        if (process(info, doc)/* && fact != null*/) {
-//            fact.rescheduleImpl(file);
-        }
+        process(info, doc);
     }
 
     private static boolean verifyDocument(final Document doc) {
@@ -167,17 +155,15 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
 
         final boolean[] tokenSequenceNull =  new boolean[1];
         doc.render(new Runnable() {
+            @Override
             public void run() {
                 tokenSequenceNull[0] = (TokenHierarchy.get(doc).tokenSequence() == null);
             }
         });
-        if (tokenSequenceNull[0]) {
-            return false;
-        }
-        
-        return true;
+        return !tokenSequenceNull[0];
     }
     
+    @Override
     public void cancel() {
         cancel.set(true);
     }

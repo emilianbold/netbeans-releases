@@ -89,7 +89,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.editor.base.semantic.Utilities;
 import org.netbeans.modules.java.editor.base.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.base.options.MarkOccurencesSettingsNames;
 import org.netbeans.modules.parsing.spi.Parser.Result;

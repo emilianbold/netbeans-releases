@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.java.editor.semantic;
 
-import org.netbeans.modules.java.editor.base.semantic.SemanticHighlighterBase;
-
 import java.util.Collection;
 import java.util.Collections;
 
@@ -60,7 +58,6 @@ public class SemanticHighlighterFactory extends TaskFactory {
     
     @Override
     public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        return Collections.singleton(new SemanticHighlighter(snapshot.getSource().getFileObject()));
+        return Collections.singleton(new SemanticHighlighter());
     }
-    
 }

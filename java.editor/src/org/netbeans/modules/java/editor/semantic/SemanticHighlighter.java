@@ -63,7 +63,6 @@ import org.netbeans.modules.java.editor.base.semantic.SemanticHighlighterBase;
 import org.netbeans.modules.java.editor.base.semantic.SemanticHighlighterBase.ErrorDescriptionSetter;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
 /**
@@ -72,10 +71,6 @@ import org.openide.loaders.DataObject;
  */
 public class SemanticHighlighter extends SemanticHighlighterBase {
 
-    public SemanticHighlighter(FileObject file) {
-        super(file);
-    }
-    
     protected boolean process(final CompilationInfo info, final Document doc) {
         long start = System.currentTimeMillis();
         boolean ret = process(info, doc, ERROR_DESCRIPTION_SETTER);

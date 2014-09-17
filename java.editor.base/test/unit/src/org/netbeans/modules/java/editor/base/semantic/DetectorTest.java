@@ -426,7 +426,7 @@ public class DetectorTest extends TestBase {
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, final ErrorDescriptionSetter setter) {
-                new SemanticHighlighterBase(parameter.getFileObject()) {
+                new SemanticHighlighterBase() {
                     @Override
                     protected boolean process(CompilationInfo info, Document doc) {
                         return process(info, doc, setter);
