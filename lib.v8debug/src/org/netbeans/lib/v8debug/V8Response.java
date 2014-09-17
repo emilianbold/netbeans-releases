@@ -41,7 +41,10 @@
  */
 package org.netbeans.lib.v8debug;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
+import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
  *
@@ -53,6 +56,7 @@ public final class V8Response extends V8Packet {
     private final V8Command command;
     private final V8Body body;
     private final ReferencedValue[] referencedValues;
+    private Map<Long, V8Value> valuesByReferences;
     private final boolean running;
     private final boolean success;
     private final String errorMessage;
@@ -84,6 +88,21 @@ public final class V8Response extends V8Packet {
     
     public ReferencedValue[] getReferencedValues() {
         return referencedValues;
+    }
+    
+    public V8Value getReferencedValue(long reference) {
+        if (referencedValues == null || referencedValues.length == 0) {
+            return null;
+        }
+        synchronized (this) {
+            if (valuesByReferences == null) {
+                valuesByReferences = new HashMap<>();
+                for (int i = 0; i < referencedValues.length; i++) {
+                    valuesByReferences.put(referencedValues[i].getReference(), referencedValues[i].getValue());
+                }
+            }
+            return valuesByReferences.get(reference);
+        }
     }
 
     public boolean isRunning() {
