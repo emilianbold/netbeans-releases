@@ -102,7 +102,13 @@ public class JSONWriter {
                 return obj;
             case Setbreakpoint:
                 SetBreakpoint.Arguments sbargs = (SetBreakpoint.Arguments) arguments;
-                obj.put(TYPE, sbargs.getType().toString());
+                String bpType;
+                if (V8Breakpoint.Type.scriptName.equals(sbargs.getType())) {
+                    bpType = "script";
+                } else {
+                    bpType = sbargs.getType().toString();
+                }
+                obj.put(TYPE, bpType);
                 obj.put(TARGET, sbargs.getTarget());
                 storeIf(sbargs.getLine(), obj, LINE);
                 storeIf(sbargs.getColumn(), obj, COLUMN);
@@ -114,7 +120,7 @@ public class JSONWriter {
                 ChangeBreakpoint.Arguments chbargs = (ChangeBreakpoint.Arguments) arguments;
                 obj.put(BREAK_POINT, chbargs.getBreakpoint());
                 storeIf(chbargs.isEnabled(), obj, BREAK_ENABLED);
-                storeIf(chbargs.getCondition(), obj, BREAK_CONDITION);
+                obj.put(BREAK_CONDITION, chbargs.getCondition());
                 storeIf(chbargs.getIgnoreCount(), obj, BREAK_IGNORE_COUNT);
                 return obj;
             case Clearbreakpoint:

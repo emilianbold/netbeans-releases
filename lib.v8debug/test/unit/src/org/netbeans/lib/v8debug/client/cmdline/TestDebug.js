@@ -56,6 +56,8 @@ glob_m = Math.sin(glob_m) + Math.cos(glob_n);
     var cl = closures();
     cl.getValue();
     scope();
+    testThis();
+    testBreakpoints();
 })();
 
 function vars() {

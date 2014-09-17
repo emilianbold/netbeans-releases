@@ -556,9 +556,9 @@ public class V8Debug {
                 ci += 3;
                 condition = lineStr.substring(ci).trim();
             }
-            cc.send(SetBreakpoint.createRequest(requestSequence++, V8Breakpoint.Type.script, scriptName, line-1, column, true, condition, null));
+            cc.send(SetBreakpoint.createRequest(requestSequence++, V8Breakpoint.Type.scriptName, scriptName, line-1, column, true, condition, null));
         } else {
-            cc.send(SetBreakpoint.createRequest(requestSequence++, V8Breakpoint.Type.script, scriptName, line-1, column));
+            cc.send(SetBreakpoint.createRequest(requestSequence++, V8Breakpoint.Type.scriptName, scriptName, line-1, column));
         }
     }
     
@@ -850,17 +850,20 @@ public class V8Debug {
     private void print(V8Breakpoint b) {
         System.out.print(b.getNumber()+".: ");
         String scriptName = b.getScriptName();
-        if (scriptName == null) {
-            V8Script script = getScript(b.getScriptId());
+        if (scriptName == null && b.getScriptId().hasValue()) {
+            V8Script script = getScript(b.getScriptId().getValue());
             if (script != null) {
                 scriptName = script.getName();
             } else {
-                scriptName = "(script id="+b.getScriptId()+")";
+                scriptName = "(script id="+b.getScriptId().getValue()+")";
             }
         }
-        System.out.print(scriptName+":"+(b.getLine()+1));
-        if (b.getColumn() >= 0) {
-            System.out.print(":"+b.getColumn());
+        System.out.print(scriptName);
+        if (b.getLine().hasValue()) {
+            System.out.print(":"+(b.getLine().getValue()+1));
+        }
+        if (b.getColumn().hasValue()) {
+            System.out.print(":"+b.getColumn().getValue());
         }
         System.out.print(" active="+b.isActive());
     }
@@ -883,13 +886,16 @@ public class V8Debug {
             return ;
         }
         printMSG("MSG_LoadedScripts");
-        Arrays.sort(scripts, new Comparator<V8Script>() {
+        V8Script[] sortedScripts = new V8Script[scripts.length];
+        System.arraycopy(scripts, 0, sortedScripts, 0, scripts.length);
+        Arrays.sort(sortedScripts, new Comparator<V8Script>() {
             @Override
             public int compare(V8Script s1, V8Script s2) {
                 long d = s1.getId() - s2.getId();
                 return (d == 0l) ? 0 : (d > 0l) ? 1 : -1;
             }
         });
+        scripts = sortedScripts;
         long maxId = scripts[scripts.length - 1].getId();
         /*for (V8Script script : scripts) {
             long id = script.getId();

@@ -172,7 +172,7 @@ public class JSONReader {
                 long line = getLong(obj, LINE, -1);
                 long column = getLong(obj, COLUMN, -1);
                 V8Breakpoint.ActualLocation[] actualLocations = getActualLocations((JSONArray) obj.get(BREAK_ACTUAL_LOCATIONS));
-                return new SetBreakpoint.ResponseBody(V8Breakpoint.Type.typeFrom(type), bpId,
+                return new SetBreakpoint.ResponseBody(V8Breakpoint.Type.valueOf(type), bpId,
                                                       scriptName, line, column, actualLocations);
             case Setexceptionbreak:
                 String typeName = getString(obj, TYPE);
@@ -458,28 +458,35 @@ public class JSONReader {
 
     private static V8Breakpoint getBreakpoint(JSONObject obj) {
         String typeStr = (String) obj.get(TYPE);
-        if ("scriptName".equals(typeStr)) {
+        /*if ("scriptName".equals(typeStr)) {
             typeStr = V8Breakpoint.Type.script.name();
-        }
+        }*/
         V8Breakpoint.Type type = V8Breakpoint.Type.valueOf(typeStr);
-        long scriptId;
+        PropertyLong scriptId;
         String scriptName;
         if (V8Breakpoint.Type.scriptId.equals(type)) {
-            scriptId = getLong(obj, SCRIPT_ID);
+            scriptId = new PropertyLong(getLong(obj, SCRIPT_ID));
             scriptName = null;
         } else {
-            scriptId = -1;
+            scriptId = new PropertyLong(null);
             scriptName = getString(obj, SCRIPT_NAME);
         }
         long number = getLong(obj, NUMBER);
-        long line = getLong(obj, LINE);
-        long column = getLong(obj, COLUMN);
-        long groupId = getLong(obj, BREAK_GROUP_ID);
+        PropertyLong line = getLongProperty(obj, LINE);
+        PropertyLong column = getLongProperty(obj, COLUMN);
+        PropertyLong groupId = getLongProperty(obj, BREAK_GROUP_ID);
         long hitCount = getLong(obj, BREAK_HIT_COUNT, 0);
         boolean active = getBoolean(obj, BREAK_ACTIVE);
+        Object conditionObject = obj.get(BREAK_CONDITION);
+        String condition;
+        if (conditionObject instanceof String) {
+            condition = (String) conditionObject;
+        } else {
+            condition = null;
+        }
         long ignoreCount = getLong(obj, BREAK_IGNORE_COUNT, 0);
         V8Breakpoint.ActualLocation[] actualLocations = getActualLocations((JSONArray) obj.get(BREAK_ACTUAL_LOCATIONS));
-        return new V8Breakpoint(type, scriptId, scriptName, number, line, column, groupId, hitCount, active, ignoreCount, actualLocations);
+        return new V8Breakpoint(type, scriptId, scriptName, number, line, column, groupId, hitCount, active, condition, ignoreCount, actualLocations);
     }
     
     private static V8Breakpoint.ActualLocation[] getActualLocations(JSONArray array) {

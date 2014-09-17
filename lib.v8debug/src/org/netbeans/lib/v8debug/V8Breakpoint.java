@@ -50,35 +50,30 @@ public final class V8Breakpoint {
     public static enum Type {
     
         function,
-        script,
+        scriptName,
         scriptId,
         scriptRegExp;
         
-        public static Type typeFrom(String name) {
-            if ("scriptName".equals(name)) {
-                return Type.script;
-            } else {
-                return valueOf(name);
-            }
-        }
-    
     }
     
     private final Type type;
-    private final long scriptId;
+    private final PropertyLong scriptId;
     private final String scriptName;
     private final long number;
-    private final long line;
-    private final long column;
-    private final long groupId;
+    private final PropertyLong line;
+    private final PropertyLong column;
+    private final PropertyLong groupId;
     private final long hitCount;
     private final boolean active;
+    private final String condition;
     private final long ignoreCount;
     private final ActualLocation[] actualLocations;
     
-    public V8Breakpoint(Type type, long scriptId, String scriptName,
-                        long number, long line, long column, long groupId,
-                        long hitCount, boolean active, long ignoreCount,
+    public V8Breakpoint(Type type, PropertyLong scriptId, String scriptName,
+                        long number, PropertyLong line, PropertyLong column,
+                        PropertyLong groupId,
+                        long hitCount, boolean active,
+                        String condition, long ignoreCount,
                         ActualLocation[] actualLocations) {
         this.type = type;
         this.scriptId = scriptId;
@@ -89,6 +84,7 @@ public final class V8Breakpoint {
         this.groupId = groupId;
         this.hitCount = hitCount;
         this.active = active;
+        this.condition = condition;
         this.ignoreCount = ignoreCount;
         this.actualLocations = actualLocations;
     }
@@ -97,7 +93,7 @@ public final class V8Breakpoint {
         return type;
     }
 
-    public long getScriptId() {
+    public PropertyLong getScriptId() {
         return scriptId;
     }
 
@@ -109,15 +105,15 @@ public final class V8Breakpoint {
         return number;
     }
 
-    public long getLine() {
+    public PropertyLong getLine() {
         return line;
     }
 
-    public long getColumn() {
+    public PropertyLong getColumn() {
         return column;
     }
 
-    public long getGroupId() {
+    public PropertyLong getGroupId() {
         return groupId;
     }
 
@@ -127,6 +123,10 @@ public final class V8Breakpoint {
 
     public boolean isActive() {
         return active;
+    }
+    
+    public String getCondition() {
+        return condition;
     }
 
     public long getIgnoreCount() {
