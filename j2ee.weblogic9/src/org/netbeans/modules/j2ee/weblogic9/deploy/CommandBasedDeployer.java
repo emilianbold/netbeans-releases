@@ -47,6 +47,8 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
@@ -691,8 +693,8 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
         WLDeploymentManager manager = getDeploymentManager();
         InstanceProperties ip = manager.getInstanceProperties();
-        String username = ip.getProperty(InstanceProperties.USERNAME_ATTR);
-        String password = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
+        final String username = ip.getProperty(InstanceProperties.USERNAME_ATTR);
+        final String password = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
 
         String uri = ip.getProperty(InstanceProperties.URL_ATTR);
         // it is guaranteed it is WL
@@ -748,8 +750,8 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         arguments.add(manager.getCommonConfiguration().getAdminURL()); // NOI18N
         arguments.add("-username"); // NOI18N
         arguments.add(username);
-        arguments.add("-password"); // NOI18N
-        arguments.add(password);
+//        arguments.add("-password"); // NOI18N
+//        arguments.add(password);
         arguments.add(command);
 
         arguments.addAll(Arrays.asList(parameters));
@@ -772,6 +774,12 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             @Override
             public InputProcessor newInputProcessor() {
                 return InputProcessors.bridge(realProcessor);
+            }
+        }).inReaderFactory(new BaseExecutionDescriptor.ReaderFactory() {
+
+            @Override
+            public Reader newReader() {
+                return new StringReader(password + "\n"); // NOI18N
             }
         });
         return BaseExecutionService.newService(builder, descriptor);

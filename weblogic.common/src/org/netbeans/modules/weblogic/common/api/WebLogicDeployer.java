@@ -44,6 +44,8 @@ package org.netbeans.modules.weblogic.common.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.ProxySelector;
@@ -560,8 +562,8 @@ public final class WebLogicDeployer {
         arguments.add(config.getAdminURL());
         arguments.add("-username"); // NOI18N
         arguments.add(config.getUsername());
-        arguments.add("-password"); // NOI18N
-        arguments.add(config.getPassword());
+        //arguments.add("-password"); // NOI18N
+        //arguments.add(config.getPassword());
         arguments.add(command);
 
         arguments.addAll(Arrays.asList(parameters));
@@ -584,6 +586,12 @@ public final class WebLogicDeployer {
             @Override
             public InputProcessor newInputProcessor() {
                 return InputProcessors.bridge(realProcessor);
+            }
+        }).inReaderFactory(new BaseExecutionDescriptor.ReaderFactory() {
+
+            @Override
+            public Reader newReader() {
+                return new StringReader(config.getPassword() + "\n"); // NOI18N
             }
         });
         return BaseExecutionService.newService(builder, descriptor);
