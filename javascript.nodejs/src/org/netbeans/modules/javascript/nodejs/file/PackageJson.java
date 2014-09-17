@@ -65,7 +65,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
-import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -76,7 +76,7 @@ import org.openide.util.WeakListeners;
 /**
  * Class representing project's <tt>package.json</tt> file.
  */
-public final class PackageJson implements ChangeListener, FileChangeListener {
+public final class PackageJson {
 
     private static final Logger LOGGER = Logger.getLogger(PackageJson.class.getName());
 
@@ -91,6 +91,8 @@ public final class PackageJson implements ChangeListener, FileChangeListener {
 
     private final Project project;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private final ChangeListener changeListener = new ChangeListenerImpl();
+    private final FileChangeListener fileChangeListener = new FileChangeListenerImpl();
 
     // @GuardedBy("this")
     private boolean listening = false;
@@ -160,7 +162,7 @@ public final class PackageJson implements ChangeListener, FileChangeListener {
         if (!listening) {
             listening = true;
             Sources sources = ProjectUtils.getSources(project);
-            sources.addChangeListener(WeakListeners.change(this, sources));
+            sources.addChangeListener(WeakListeners.change(changeListener, sources));
         }
         if (packageJson == null) {
             // first sources
@@ -178,7 +180,7 @@ public final class PackageJson implements ChangeListener, FileChangeListener {
             }
             packageJson = FileUtil.normalizeFile(packageJson);
             try {
-                FileUtil.addFileChangeListener(this, packageJson);
+                FileUtil.addFileChangeListener(fileChangeListener, packageJson);
                 LOGGER.log(Level.FINE, "Started listenening to {0}", packageJson);
             } catch (IllegalArgumentException ex) {
                 // ignore, already listening
@@ -199,7 +201,7 @@ public final class PackageJson implements ChangeListener, FileChangeListener {
         return null;
     }
 
-    private void clear(boolean newFile) {
+    void clear(boolean newFile) {
         JSONObject oldContent;
         JSONObject newContent;
         synchronized (this) {
@@ -211,7 +213,7 @@ public final class PackageJson implements ChangeListener, FileChangeListener {
             if (newFile) {
                 if (packageJson != null) {
                     try {
-                        FileUtil.removeFileChangeListener(this, packageJson);
+                        FileUtil.removeFileChangeListener(fileChangeListener, packageJson);
                         LOGGER.log(Level.FINE, "Stopped listenening to {0}", packageJson);
                     } catch (IllegalArgumentException ex) {
                         // not listeneing yet, ignore
@@ -265,41 +267,39 @@ public final class PackageJson implements ChangeListener, FileChangeListener {
         }
     }
 
-    //~ Listeners
+    //~ Inner classes
 
-    @Override
-    public void stateChanged(ChangeEvent e) {
-        clear(true);
+    private final class ChangeListenerImpl implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            clear(true);
+        }
+
     }
 
-    @Override
-    public void fileFolderCreated(FileEvent fe) {
-        // noop
-    }
+    private final class FileChangeListenerImpl extends FileChangeAdapter {
 
-    @Override
-    public void fileDataCreated(FileEvent fe) {
-        clear(false);
-    }
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            clear(false);
+        }
 
-    @Override
-    public void fileChanged(FileEvent fe) {
-        clear(false);
-    }
+        @Override
+        public void fileChanged(FileEvent fe) {
+            clear(false);
+        }
 
-    @Override
-    public void fileDeleted(FileEvent fe) {
-        clear(false);
-    }
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            clear(false);
+        }
 
-    @Override
-    public void fileRenamed(FileRenameEvent fe) {
-        clear(true);
-    }
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            clear(true);
+        }
 
-    @Override
-    public void fileAttributeChanged(FileAttributeEvent fe) {
-        // noop
     }
 
 }
