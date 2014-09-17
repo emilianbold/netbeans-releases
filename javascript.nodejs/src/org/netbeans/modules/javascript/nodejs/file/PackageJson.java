@@ -98,11 +98,22 @@ public final class PackageJson implements ChangeListener, FileChangeListener {
     private File packageJson;
     // @GuardedBy("this")
     private JSONObject content;
+    private volatile boolean inited = false;
 
 
     public PackageJson(Project project) {
         assert project != null;
         this.project = project;
+    }
+
+    public void init() {
+        // read the file so we can listen on changes and fire proper events
+        inited = true;
+        getContent();
+    }
+
+    public void cleanup() {
+        clear(true);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -114,15 +125,18 @@ public final class PackageJson implements ChangeListener, FileChangeListener {
     }
 
     public boolean exists() {
+        checkInit();
         return getPackageJson().isFile();
     }
 
     public String getPath() {
+        checkInit();
         return getPackageJson().getAbsolutePath();
     }
 
     @CheckForNull
     public synchronized JSONObject getContent() {
+        checkInit();
         if (content != null) {
             return new JSONObject(content);
         }
@@ -140,15 +154,6 @@ public final class PackageJson implements ChangeListener, FileChangeListener {
             return null;
         }
         return new JSONObject(content);
-    }
-
-    public void init() {
-        // read the file so we can listen on changes and fire proper events
-        getContent();
-    }
-
-    public void cleanup() {
-        clear(true);
     }
 
     private synchronized File getPackageJson() {
@@ -252,6 +257,12 @@ public final class PackageJson implements ChangeListener, FileChangeListener {
             return null;
         }
         return (String) scripts.get(START);
+    }
+
+    private void checkInit() {
+        if (!inited) {
+            throw new IllegalStateException("Must call init() method first");
+        }
     }
 
     //~ Listeners

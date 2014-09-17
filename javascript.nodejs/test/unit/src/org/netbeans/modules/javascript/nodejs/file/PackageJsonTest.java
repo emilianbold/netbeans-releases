@@ -94,6 +94,37 @@ public class PackageJsonTest extends NbTestCase {
         packageJson.cleanup();
     }
 
+    public void testNoInitCalled() {
+        Project project = new DummyProject(projectDir);
+        Exception exc = null;
+        try {
+            new PackageJson(project)
+                    .getContent();
+            fail("Should not get here");
+        } catch (IllegalStateException ex) {
+            exc = ex;
+        }
+        assertNotNull(exc);
+        exc = null;
+        try {
+            new PackageJson(project)
+                    .exists();
+            fail("Should not get here");
+        } catch (IllegalStateException ex) {
+            exc = ex;
+        }
+        assertNotNull(exc);
+        exc = null;
+        try {
+            new PackageJson(project)
+                    .getPath();
+            fail("Should not get here");
+        } catch (IllegalStateException ex) {
+            exc = ex;
+        }
+        assertNotNull(exc);
+    }
+
     public void testNoPackageJson() {
         assertFalse(packageJson.exists());
         assertEquals(getFile().getAbsolutePath(), packageJson.getPath());
