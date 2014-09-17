@@ -613,6 +613,7 @@ public final class FileImpl implements CsmFile,
             }
             long time;
             synchronized (stateLock) {
+                boolean hasParseIssue = true;
                 try {
                     State curState;
                     synchronized (changeStateLock) {
@@ -750,9 +751,18 @@ public final class FileImpl implements CsmFile,
                         default:
                             System.err.println("unexpected state in ensureParsed " + curState); // NOI18N
                     }
+                    // clear flag if reached the end of parsing without exceptions
+                    hasParseIssue = false;
                 } finally {
                     synchronized (changeStateLock) {
-                        parsingState = ParsingState.NOT_BEING_PARSED;
+                        parsingState = ParsingState.NOT_BEING_PARSED;       
+                        if (hasParseIssue) {
+                            // TODO: introduce error on parse state
+                            // 
+                            // For now we have to mark file as parsed, otherwise 
+                            // scheduleParsing(true) never finishes while(!isParsed()) loop
+                            state = State.PARSED;
+                        }
                     }
                 }
             }
@@ -1847,6 +1857,16 @@ public final class FileImpl implements CsmFile,
     public void scheduleParsing(boolean wait) throws InterruptedException {
         synchronized (stateLock) {
             while (!isParsed()) {
+                // when IDE exists during ensureParsed, then file is left in 
+                // INITIAL state which is not PARSED
+                // check such a case to prevent infinite loop of code model clients
+                CsmModelState modelState = ModelImpl.instance().getState();
+                if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+                    if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
+                        System.err.printf("scheduleParsing: %s file is interrupted on closing model\n", this.getAbsolutePath());
+                    }
+                    return;
+                }
                 String oldName = wait ? Thread.currentThread().getName() : "";
                 try {
                     if (wait) {
