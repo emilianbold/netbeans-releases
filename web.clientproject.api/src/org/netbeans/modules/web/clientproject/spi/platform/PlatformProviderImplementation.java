@@ -64,6 +64,16 @@ public interface PlatformProviderImplementation {
      * Property name for changes in source roots.
      */
     String PROP_SOURCE_ROOTS = "SOURCE_ROOTS"; // NOI18N
+    /**
+     * Property name for changes in project name.
+     * @since 1.70
+     */
+    String PROP_PROJECT_NAME = "PROJECT_NAME"; // NOI18N
+    /**
+     * Property name for changes in start file.
+     * @since 1.70
+     */
+    String PROP_START_FILE = "START_FILE"; // NOI18N
 
     /**
      * Returns the <b>non-localized (usually english)</b> identifier of this provider.

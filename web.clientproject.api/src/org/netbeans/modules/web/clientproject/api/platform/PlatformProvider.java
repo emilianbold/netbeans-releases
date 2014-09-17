@@ -66,6 +66,16 @@ public final class PlatformProvider {
      * Property name for changes in source roots.
      */
     public static final String PROP_SOURCE_ROOTS = PlatformProviderImplementation.PROP_SOURCE_ROOTS;
+    /**
+     * Property name for changes in project name.
+     * @since 1.70
+     */
+    public static final String PROP_PROJECT_NAME = PlatformProviderImplementation.PROP_PROJECT_NAME;
+    /**
+     * Property name for changes in start file.
+     * @since 1.70
+     */
+    public static final String PROP_START_FILE = PlatformProviderImplementation.PROP_START_FILE;
 
 
     private final PlatformProviderImplementation delegate;

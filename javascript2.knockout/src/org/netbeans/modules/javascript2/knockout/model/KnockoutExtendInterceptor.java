@@ -68,7 +68,7 @@ public class KnockoutExtendInterceptor implements FunctionInterceptor {
 
     private static final Logger LOGGER = Logger.getLogger(KnockoutExtendInterceptor.class.getName());
 
-    private static final Pattern NAME_PATTERN = Pattern.compile("ko\\.utils\\.extend"); // NOI18N
+    private static final Pattern NAME_PATTERN = Pattern.compile("ko\\.utils\\.(extend|setPrototypeOfOrExtend)"); // NOI18N
 
     @Override
     public Pattern getNamePattern() {
@@ -120,8 +120,11 @@ public class KnockoutExtendInterceptor implements FunctionInterceptor {
                 LOGGER.log(Level.FINE, "Extending {0} with {1}", new Object[]{object.getFullyQualifiedName(), value.getFullyQualifiedName()});
             }
             for (Map.Entry<String, ? extends JsObject> entry : value.getProperties().entrySet()) {
-                object.addProperty(entry.getKey(),
-                        factory.newReference(object, entry.getKey(), offsetRange, entry.getValue(), true, null));
+                if (functionName.equals("ko.utils.extend") || object.getProperty(entry.getKey()) == null) { //NOI18N
+                    // if ko.utils.extend has been called, set the property always, in other cases only if object doesn't contain it
+                    object.addProperty(entry.getKey(),
+                            factory.newReference(object, entry.getKey(), offsetRange, entry.getValue(), true, null));
+                }
             }
         }
     }
