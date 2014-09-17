@@ -133,22 +133,18 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
     public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
         if(!isAlive()) {
             if(getMetadataFolderNames().contains(file.getName()) && file.isDirectory()) {
-                if (VersioningManager.LOG.isLoggable(Level.FINE)) {
-                    VersioningManager.LOG.log(
-                            Level.FINE, 
-                            "will awake VCS {0} because of metadata folder {1}",// NOI18N 
-                            new Object[]{displayName, file});
-                }
+                VersioningManager.LOG.log(
+                        Level.FINE, 
+                        "will awake VCS {0} because of metadata folder {1}",// NOI18N 
+                        new Object[]{displayName, file}); 
 
                 return getDelegate().getTopmostManagedAncestor(file);
             } 
             if(hasMetadata(file)) {
-                if (VersioningManager.LOG.isLoggable(Level.FINE)) {
-                    VersioningManager.LOG.log(
-                            Level.FINE, 
-                            "will awake VCS {0} because {1} contains matadata",     // NOI18N
-                            new Object[]{displayName, file});
-                }
+                VersioningManager.LOG.log(
+                        Level.FINE, 
+                        "will awake VCS {0} because {1} contains matadata",     // NOI18N
+                        new Object[]{displayName, file});
                 
                 
                 return getDelegate().getTopmostManagedAncestor(file);
@@ -312,9 +308,7 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
             return false;
         }
         
-        if (VersioningManager.LOG.isLoggable(Level.FINE)) {
-            VersioningManager.LOG.log(Level.FINE, "looking up metadata for {0}", new Object[] { file });
-        }
+        VersioningManager.LOG.log(Level.FINE, "looking up metadata for {0}", new Object[] { file });
         if(unversionedParents.contains(file)) {
             VersioningManager.LOG.fine(" cached as unversioned");
             return false;
@@ -331,9 +325,7 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
             }
             
             if(unversionedParents.contains(parent)) {
-                if (VersioningManager.LOG.isLoggable(Level.FINE)) {
-                    VersioningManager.LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
-                }
+                VersioningManager.LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
                 break;
             }
             
@@ -342,12 +334,10 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
                 boolean forbiddenFolder = org.netbeans.modules.versioning.core.util.Utils.isForbiddenFolder(parent);
                 final boolean metadataFolder = !forbiddenFolder && VCSFileProxy.createFileProxy(parent, folderName).exists();
                 if(metadataFolder) {
-                    if (VersioningManager.LOG.isLoggable(Level.FINER)) {
-                        VersioningManager.LOG.log(
-                                Level.FINER, 
-                                "found metadata folder {0} for file {1}",           // NOI18N
-                                new Object[]{metadataFolder, file});
-                    }
+                    VersioningManager.LOG.log(
+                            Level.FINER, 
+                            "found metadata folder {0} for file {1}",           // NOI18N
+                            new Object[]{metadataFolder, file});
                     
                     ret = true;
                 } else {

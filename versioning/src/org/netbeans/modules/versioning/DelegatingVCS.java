@@ -164,21 +164,17 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
     public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy proxy) {
         if(!isAlive()) {
             if(getMetadataFolderNames().contains(proxy.getName()) && proxy.isDirectory()) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(
-                            Level.FINE, 
-                            "will awake VCS {0} because of metadata folder {1}",// NOI18N 
-                            new Object[]{displayName, proxy}); 
-                }
+                LOG.log(
+                        Level.FINE, 
+                        "will awake VCS {0} because of metadata folder {1}",// NOI18N 
+                        new Object[]{displayName, proxy}); 
                 return getTopmostManagedAncestorImpl(proxy);
             } 
             if(hasMetadata(proxy)) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(
-                            Level.FINE, 
-                            "will awake VCS {0} because {1} contains matadata",     // NOI18N
-                            new Object[]{displayName, proxy});
-                }
+                LOG.log(
+                        Level.FINE, 
+                        "will awake VCS {0} because {1} contains matadata",     // NOI18N
+                        new Object[]{displayName, proxy});
                 return getTopmostManagedAncestorImpl(proxy);
             }
         } else {
@@ -508,9 +504,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
             return false;
         }
         
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "looking up metadata for {0}", new Object[] { file });
-        }
+        LOG.log(Level.FINE, "looking up metadata for {0}", new Object[] { file });
         if(unversionedParents.contains(file)) {
             LOG.fine(" cached as unversioned");
             return false;
@@ -528,9 +522,7 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
             while(parent != null) {
                 
                 if(unversionedParents.contains(parent)) {
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
-                    }
+                    LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
                     break;
                 }
                 
@@ -538,12 +530,10 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                 boolean forbiddenFolder = Utils.isForbiddenFolder(parent);
                 final boolean metadataFolder = !forbiddenFolder && VCSFileProxy.createFileProxy(parent, folderName).exists();
                 if(metadataFolder) {
-                    if (LOG.isLoggable(Level.FINER)) {
-                        LOG.log(
-                                Level.FINER, 
-                                "found metadata folder {0} for file {1}",           // NOI18N
-                                new Object[]{metadataFolder, file});
-                    }
+                    LOG.log(
+                            Level.FINER, 
+                            "found metadata folder {0} for file {1}",           // NOI18N
+                            new Object[]{metadataFolder, file});
                     
                     ret = true;
                 } else {

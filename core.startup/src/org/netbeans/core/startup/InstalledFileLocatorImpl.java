@@ -337,9 +337,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
             String rel = "update_tracking/" + codeNameBaseDashes + ".xml"; // NOI18N
             for (File dir : dirs) {
                 File tracking = new File(dir, rel);
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "checking {0} due to {1} cache={2}", new Object[] {tracking, path, clusterCache != null});
-                }
+                LOG.log(Level.FINE, "checking {0} due to {1} cache={2}", new Object[] {tracking, path, clusterCache != null});
                 if (tracking.isFile()) {
                     clusters.add(dir);
                 }
@@ -457,9 +455,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
             ownership = new HashSet<String>();
             try {
                 // Could do a proper XML parse but likely too slow.
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "Parsing {0} due to {1}", new Object[] {list, path});
-                }
+                LOG.log(Level.FINE, "Parsing {0} due to {1}", new Object[] {list, path});
                 Reader r = new FileReader(list);
                 try {
                     BufferedReader br = new BufferedReader(r);
@@ -478,9 +474,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                 LOG.log(Level.INFO, "could not parse " + list, x);
                 return true;
             }
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.log(Level.FINER, "parsed {0} -> {1}", new Object[] {list, ownership});
-            }
+            LOG.log(Level.FINER, "parsed {0} -> {1}", new Object[] {list, ownership});
             ownershipByModule.put(codeNameBase, ownership);
         }
         if (!ownership.contains(path)) {

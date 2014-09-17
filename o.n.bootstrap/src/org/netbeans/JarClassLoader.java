@@ -563,9 +563,7 @@ public class JarClassLoader extends ProxyClassLoader {
         protected URL doGetResource(String name) throws IOException  {
             byte[] buf = archive.getData(this, name);
             if (buf == null) return null;
-            if (LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.log(Level.FINER, "Loading {0} from {1}", new Object[] {name, file.getPath()});
-            }
+            LOGGER.log(Level.FINER, "Loading {0} from {1}", new Object[] {name, file.getPath()});
             try {
                 return new URL(null, resPrefix + new URI(null, name, null).getRawPath(), new JarURLStreamHandler(jcl));
             } catch (URISyntaxException x) {
@@ -605,9 +603,7 @@ public class JarClassLoader extends ProxyClassLoader {
                     return null;
                 }
 
-                if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.log(Level.FINER, "Loading {0} from {1}", new Object[] {path, file.getPath()});
-                }
+                LOGGER.log(Level.FINER, "Loading {0} from {1}", new Object[] {path, file.getPath()});
             
                 int len = (int)ze.getSize();
                 byte[] data = new byte[len];
@@ -723,9 +719,7 @@ public class JarClassLoader extends ProxyClassLoader {
             doCloseJar();
             file = temp;
             dead = true;
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "#21114: replacing {0} with {1}", new Object[] {orig, temp});
-            }
+            LOGGER.log(Level.FINE, "#21114: replacing {0} with {1}", new Object[] {orig, temp});
         }
         
         private JarFile callGet() throws IOException {
@@ -804,10 +798,8 @@ public class JarClassLoader extends ProxyClassLoader {
                         LOGGER.log(Level.INFO, "closing " + toClose, ioe);
                     }
                 }
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Opening module JAR {0} for {1}", new Object[] {source.file, forWhat});
-                    LOGGER.log(Level.FINE, "Currently open JARs: {0}", sources.size());
-                }
+                LOGGER.log(Level.FINE, "Opening module JAR {0} for {1}", new Object[] {source.file, forWhat});
+                LOGGER.log(Level.FINE, "Currently open JARs: {0}", sources.size());
             }
         }
 
@@ -1000,17 +992,13 @@ public class JarClassLoader extends ProxyClassLoader {
                 throw new IOException(x);
             }
             Source _src = Source.sources.get(jar);
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINER, "openConnection for {0} jar: {1} src: {2}", new Object[]{u, jar, _src});
-            }
+            LOGGER.log(Level.FINER, "openConnection for {0} jar: {1} src: {2}", new Object[]{u, jar, _src});
             if (_src == null) {
                 try {
                     Method m = URLStreamHandler.class.getDeclaredMethod("openConnection", URL.class);
                     m.setAccessible(true);
                     JarURLConnection ret = (JarURLConnection) m.invoke(originalJarHandler, u);
-                    if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.log(Level.FINER, "Calling original {0} yields {1}", new Object[]{originalJarHandler, ret});
-                    }
+                    LOGGER.log(Level.FINER, "Calling original {0} yields {1}", new Object[]{originalJarHandler, ret});
                     return ret;
                 } catch (Exception e) {
                     throw (IOException) new IOException(e.toString()).initCause(e);
@@ -1022,9 +1010,7 @@ public class JarClassLoader extends ProxyClassLoader {
             } catch (URISyntaxException x) {
                 throw (IOException) new IOException("Decoding " + u + ": " + x).initCause(x);
             }
-            if (LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.log(Level.FINER, "creating NbJarURLConnection({0},{1},{2})", new Object[]{u, _src, _name});
-            }
+            LOGGER.log(Level.FINER, "creating NbJarURLConnection({0},{1},{2})", new Object[]{u, _src, _name});
             return new NbJarURLConnection (u, _src, _name, loader);
         }
         

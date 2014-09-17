@@ -149,16 +149,14 @@ public class LazyLookupProviders {
                         }
                     }
                 };
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(
-                        Level.FINE,
-                        "Additional lookup created: {0} service class: {1} for base lookup: {2}",   //NOI18N
-                        new Object[]{
-                            System.identityHashCode(result),
-                            attrs.get("class"),
-                            System.identityHashCode(lkp)
-                        });
-                }
+                LOG.log(
+                    Level.FINE,
+                    "Additional lookup created: {0} service class: {1} for base lookup: {2}",   //NOI18N
+                    new Object[]{
+                        System.identityHashCode(result),
+                        attrs.get("class"),
+                        System.identityHashCode(lkp)
+                    });
                 return result;
             }
             

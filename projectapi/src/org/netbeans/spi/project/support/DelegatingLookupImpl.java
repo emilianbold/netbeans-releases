@@ -121,15 +121,13 @@ class DelegatingLookupImpl extends ProxyLookup implements LookupListener, Change
             }
             results.clear();
             Collection<? extends LookupProvider> providers = providerResult.allInstances();
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(
-                    Level.FINE,
-                    "New providers count: {0} for: {1}",  //NOI18N
-                     new Object[] {
-                         providers.size(),
-                         System.identityHashCode(this)
-                     });
-            }
+            LOG.log(
+                Level.FINE,
+                "New providers count: {0} for: {1}",  //NOI18N
+                 new Object[] {
+                     providers.size(),
+                     System.identityHashCode(this)
+                 });
             List<Lookup> newLookups = new ArrayList<Lookup>();
             for (LookupProvider elem : providers) {
                 if (old.contains(elem)) {

@@ -410,9 +410,7 @@ public class Mercurial {
 
     public void getOriginalFile(File workingCopy, File originalFile) {
         FileInformation info = fileStatusCache.getStatus(workingCopy);
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "getOriginalFile: {0} {1}", new Object[] {workingCopy, info}); // NOI18N
-        }
+        LOG.log(Level.FINE, "getOriginalFile: {0} {1}", new Object[] {workingCopy, info}); // NOI18N
         // original file only for diffable status
         if ((info.getStatus() & STATUS_DIFFABLE) == 0) {
             if ((info.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0 && info.getStatus(null) != null && info.getStatus(null).getOriginalFile() != null) {
@@ -530,21 +528,15 @@ public class Mercurial {
     private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
     File getTopmostManagedAncestor(File file) {
         long t = System.currentTimeMillis();
-        if (Mercurial.LOG.isLoggable(Level.FINE)) {
-            Mercurial.LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
-        }
+        Mercurial.LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
         if(unversionedParents.contains(file)) {
             Mercurial.LOG.fine(" cached as unversioned");
             return null;
         }
-        if (Mercurial.LOG.isLoggable(Level.FINE)) {
-            Mercurial.LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
-        }
+        Mercurial.LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
         File parent = getKnownParent(file);
         if(parent != null) {
-            if (Mercurial.LOG.isLoggable(Level.FINE)) {
-                Mercurial.LOG.log(Level.FINE, "  getTopmostManagedParent returning known parent " + parent);
-            }
+            Mercurial.LOG.log(Level.FINE, "  getTopmostManagedParent returning known parent " + parent);
             return parent;
         }
 
@@ -562,24 +554,18 @@ public class Mercurial {
         File topmost = null;
         for (;file != null; file = file.getParentFile()) {
             if(unversionedParents.contains(file)) {
-                if (Mercurial.LOG.isLoggable(Level.FINE)) {
-                    Mercurial.LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
-                }
+                Mercurial.LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
                 break;
             }
             if (VersioningSupport.isExcluded(file)) break;
             // is the folder a special one where metadata should not be looked for?
             boolean forbiddenFolder = Utils.isForbiddenFolder(file.getAbsolutePath());
             if (!forbiddenFolder && HgUtils.hgExistsFor(file)){
-                if (Mercurial.LOG.isLoggable(Level.FINE)) {
-                    Mercurial.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
-                }
+                Mercurial.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by hg
                 topmost =  file;
             } else {
-                if (Mercurial.LOG.isLoggable(Level.FINE)) {
-                    Mercurial.LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
-                }
+                Mercurial.LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
                 if(file.exists()) { // could be created later ...
                     done.add(file);
                 }

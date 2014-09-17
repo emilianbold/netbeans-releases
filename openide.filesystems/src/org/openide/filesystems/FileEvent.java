@@ -143,9 +143,7 @@ public class FileEvent extends EventObject {
         this.file = file;
         this.time = time <= 0L ? System.currentTimeMillis() : time;
         this.expected = expected;
-        if (LOG.isLoggable(Level.FINEST)) {
-            LOG.log(Level.FINEST, "FileEvent({0}, {1}, {2}, {3})", new Object[]{src, file, expected, this.time});
-        }
+        LOG.log(Level.FINEST, "FileEvent({0}, {1}, {2}, {3})", new Object[]{src, file, expected, this.time});
         MIMESupport.freeCaches();
         FileUtil.freeCaches();
     }

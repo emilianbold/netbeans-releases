@@ -267,9 +267,7 @@ class StandardModule extends Module {
     
     /** Open the JAR, load its manifest, and do related things. */
     private void loadManifest() throws IOException {
-        if (Util.err.isLoggable(Level.FINE)) {
-            Util.err.fine("loading manifest of " + jar);
-        }
+        Util.err.fine("loading manifest of " + jar);
         File jarBeingOpened = null; // for annotation purposes
         try {
             if (reloadable) {

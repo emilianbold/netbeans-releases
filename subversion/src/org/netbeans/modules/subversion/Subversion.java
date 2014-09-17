@@ -496,9 +496,7 @@ public class Subversion {
      * @return topmost managed ancestor for the given file
      */
     public File getTopmostManagedAncestor (File file) {
-        if (Subversion.LOG.isLoggable(Level.FINE)) {
-            Subversion.LOG.log(Level.FINE, "looking for managed parent for {0}", new Object[] { file });
-        }
+        Subversion.LOG.log(Level.FINE, "looking for managed parent for {0}", new Object[] { file });
         if(unversionedParents.contains(file)) {
             Subversion.LOG.fine(" cached as unversioned");
             return null;
@@ -508,9 +506,7 @@ public class Subversion {
             Subversion.LOG.fine(" part of metaddata");
             for (;file != null; file = file.getParentFile()) {
                 if (SvnUtils.isAdministrative(file)) {
-                    if (Subversion.LOG.isLoggable(Level.FINE)) {
-                        Subversion.LOG.log(Level.FINE, " will use parent {0}", new Object[] { file });
-                    }
+                    Subversion.LOG.log(Level.FINE, " will use parent {0}", new Object[] { file });
                     metadataRoot = file;
                     file = file.getParentFile();
                     break;
@@ -521,24 +517,18 @@ public class Subversion {
         Set<File> done = new HashSet<File>();
         for (; file != null; file = file.getParentFile()) {
             if(unversionedParents.contains(file)) {
-                if (Subversion.LOG.isLoggable(Level.FINE)) {
-                    Subversion.LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
-                }
+                Subversion.LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
                 break;
             }
             if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
             // is the folder a special one where metadata should not be looked for?
             boolean forbiddenFolder = org.netbeans.modules.versioning.util.Utils.isForbiddenFolder(file.getAbsolutePath());
             if (!forbiddenFolder && SvnUtils.hasMetadata(file)) {
-                if (Subversion.LOG.isLoggable(Level.FINE)) {
-                    Subversion.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
-                }
+                Subversion.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 topmost = file;
                 done.clear();
             } else {
-                if (Subversion.LOG.isLoggable(Level.FINE)) {
-                    Subversion.LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
-                }
+                Subversion.LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
                 if(file.exists()) { // could be created later ...
                     done.add(file);
                 }
@@ -550,14 +540,10 @@ public class Subversion {
         }
         if (topmost == null && metadataRoot != null) {
             // .svn is considered managed, too, see #159453
-            if (Subversion.LOG.isLoggable(Level.FINE)) {
-                Subversion.LOG.log(Level.FINE, "setting metadata root as managed parent {0}", new Object[] { metadataRoot });
-            }
+            Subversion.LOG.log(Level.FINE, "setting metadata root as managed parent {0}", new Object[] { metadataRoot });
             topmost = metadataRoot;
         }
-        if (Subversion.LOG.isLoggable(Level.FINE)) {
-            Subversion.LOG.log(Level.FINE, "returning managed parent {0}", new Object[] { topmost });
-        }
+        Subversion.LOG.log(Level.FINE, "returning managed parent {0}", new Object[] { topmost });
         return topmost;
     }
 

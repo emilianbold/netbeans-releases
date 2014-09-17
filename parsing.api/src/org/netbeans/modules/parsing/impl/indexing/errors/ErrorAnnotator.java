@@ -138,9 +138,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
             }
         }
         
-        if (Logger.getLogger(ErrorAnnotator.class.getName()).isLoggable(Level.FINE)) {
-            Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.FINE, "files={0}, in error={1}", new Object[] {files, inError});
-        }
+        Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.FINE, "files={0}, in error={1}", new Object[] {files, inError});
         
         if (inError) {
             //badge:
@@ -355,9 +353,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
             
             long endTime = System.currentTimeMillis();
             
-            if (Logger.getLogger(ErrorAnnotator.class.getName()).isLoggable(Level.FINE)) {
-                Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.FINE, "time spent in error annotations computation: {0}, cumulative time: {1}", new Object[] {(endTime - startTime), (cumulativeTime += (endTime - startTime))});
-            }
+            Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.FINE, "time spent in error annotations computation: {0}, cumulative time: {1}", new Object[] {(endTime - startTime), (cumulativeTime += (endTime - startTime))});
         }
     });
 

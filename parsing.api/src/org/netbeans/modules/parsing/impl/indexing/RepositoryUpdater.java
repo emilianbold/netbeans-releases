@@ -258,15 +258,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         if (working) {
             result.add(IndexingState.WORKING);
         }
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE,
-                    "IsScanInProgress: (starting: {0} | working: {1} | path are changing: {2})",  //NOI18N
-                    new Object[] {
-                        starting,
-                        working,
-                        pathChanging
-                    });
-        }
+        LOGGER.log(Level.FINE,
+                "IsScanInProgress: (starting: {0} | working: {1} | path are changing: {2})",  //NOI18N
+                new Object[] {
+                    starting,
+                    working,
+                    pathChanging
+                });
         return result;
     }
 
@@ -332,26 +330,22 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         boolean steady,
         @NonNull final LogContext logCtx) {
         
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(
-                Level.FINE,
-                "addIndexingJob: rootUrl={0}, fileUrls={1}, followUpJob={2}, checkEditor={3}, wait={4}",    //NOI18N
-                new Object[]{
-                    rootUrl,
-                    fileUrls,
-                    followUpJob,
-                    checkEditor,
-                    wait}); 
-        }
+        LOGGER.log(
+            Level.FINE,
+            "addIndexingJob: rootUrl={0}, fileUrls={1}, followUpJob={2}, checkEditor={3}, wait={4}",    //NOI18N
+            new Object[]{
+                rootUrl,
+                fileUrls,
+                followUpJob,
+                checkEditor,
+                wait}); 
 
         final FileListWork flw = createFileListWork(rootUrl, fileUrls, followUpJob, checkEditor, forceRefresh, steady, logCtx);        
         if (flw != null) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(
-                    Level.FINE,
-                    "Scheduling index refreshing: root={0}, files={1}", //NOI18N
-                    new Object[]{rootUrl, fileUrls});
-            }
+            LOGGER.log(
+                Level.FINE,
+                "Scheduling index refreshing: root={0}, files={1}", //NOI18N
+                new Object[]{rootUrl, fileUrls});
             scheduleWork(flw, wait);
         }
     }
@@ -383,12 +377,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             @NonNull final Collection<? extends URL> fileUrls) throws IOException {
         final FileListWork flw = createFileListWork(rootUrl, fileUrls, false, true, true, false, null);
         if (flw != null) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(
-                    Level.FINE,
-                    "Transient File List Update {0}",   //NOI18N
-                    flw);
-            }
+            LOGGER.log(
+                Level.FINE,
+                "Transient File List Update {0}",   //NOI18N
+                flw);
             class T implements Callable<Void>, Runnable {
                 @Override
                 public void run() {
@@ -1154,11 +1146,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
 
                     FileObject docFile = Util.getFileObject(doc);
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "{0}: version={1}, lastIndexerVersion={2}, lastDirtyVersion={3}, openedInEditor={4} => reindex={5}", new Object [] {
-                            docFile.getPath(), version, lastIndexedVersion, lastDirtyVersion, openedInEditor, reindex
-                        });
-                    }
+                    LOGGER.log(Level.FINE, "{0}: version={1}, lastIndexerVersion={2}, lastDirtyVersion={3}, openedInEditor={4} => reindex={5}", new Object [] {
+                        docFile.getPath(), version, lastIndexedVersion, lastDirtyVersion, openedInEditor, reindex
+                    });
 
                     if (reindex) {
                         // we have already seen the document and it's been modified since the last time
@@ -1774,9 +1764,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             if (sourceIds == null || libraryIds == null || binaryLibraryIds == null) {
                 Set<String> ids;
                 if (null != (ids = PathRegistry.getDefault().getSourceIdsFor(rootURL)) && !ids.isEmpty()) {
-                    if (LOGGER.isLoggable(Level.FINER)) {
-                        LOGGER.log(Level.FINER, "Resolving Ids based on sourceIds for {0}: {1}", new Object [] { rootURL, ids }); //NOI18N
-                    }
+                    LOGGER.log(Level.FINER, "Resolving Ids based on sourceIds for {0}: {1}", new Object [] { rootURL, ids }); //NOI18N
                     Set<String> lids = new HashSet<String>();
                     Set<String> blids = new HashSet<String>();
                     for(String id : ids) {
@@ -1793,9 +1781,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         binaryLibraryIds = blids;
                     }                    
                 } else if (null != (ids = PathRegistry.getDefault().getLibraryIdsFor(rootURL)) && !ids.isEmpty()) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINER, "Resolving Ids based on libraryIds for {0}: {1}", new Object [] { rootURL, ids }); //NOI18N
-                    }
+                    LOGGER.log(Level.FINER, "Resolving Ids based on libraryIds for {0}: {1}", new Object [] { rootURL, ids }); //NOI18N
                     Set<String> blids = new HashSet<String>();
                     for(String id : ids) {
                         blids.addAll(PathRecognizerRegistry.getDefault().getBinaryLibraryIdsForLibraryId(id));
@@ -1818,11 +1804,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 return false;
             }
 
-            if (LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.log(Level.FINER, "SourceIds for {0}: {1}", new Object [] { rootURL, sourceIds }); //NOI18N
-                LOGGER.log(Level.FINER, "LibraryIds for {0}: {1}", new Object [] { rootURL, libraryIds }); //NOI18N
-                LOGGER.log(Level.FINER, "BinaryLibraryIds for {0}: {1}", new Object [] { rootURL, binaryLibraryIds }); //NOI18N
-            }
+            LOGGER.log(Level.FINER, "SourceIds for {0}: {1}", new Object [] { rootURL, sourceIds }); //NOI18N
+            LOGGER.log(Level.FINER, "LibraryIds for {0}: {1}", new Object [] { rootURL, libraryIds }); //NOI18N
+            LOGGER.log(Level.FINER, "BinaryLibraryIds for {0}: {1}", new Object [] { rootURL, binaryLibraryIds }); //NOI18N
                         
             { // sources
                 for (String id : sourceIds) {
@@ -2968,7 +2952,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 return false;
             }
 
-            if (LOGGER.isLoggable(Level.FINE)) {
+            if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.fine("Using BinaryIndexerFactories: " + indexers.bifs); //NOI18N
             }
 
@@ -3327,9 +3311,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         public final boolean cancelBy(Work newWork, final Collection<? super Work> follow) {
             if (isCancelledBy(newWork, follow)) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "{0} cancelled by {1}", new Object [] { this, newWork }); //NOI18N
-                }
+                LOGGER.log(Level.FINE, "{0} cancelled by {1}", new Object [] { this, newWork }); //NOI18N
                 cancelled.set(true);
                 finished.set(true); // work cancelled by other work is by default finished
                 return true;
@@ -3846,9 +3828,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             boolean b = (newWork instanceof RootsWork);
             if (b) {
                 follow.add(new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, getSuspendStatus(), LogContext.createAndAbsorb(getLogContext())));
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18NLOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
-                }
+                LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
             }
             return b;
         }
@@ -4012,16 +3992,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             boolean b = (newWork instanceof RootsWork);
             if (b) {
                 follow.add(new RefreshEifIndices(eifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, getSuspendStatus(), LogContext.createAndAbsorb(getLogContext())));
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
-                }
+                LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
             }
             if (newWork instanceof RefreshEifIndices) {
                 boolean b2 = ((RefreshEifIndices)newWork).eifInfos.containsAll(eifInfos);
                 if (b2) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
-                    }
+                    LOGGER.log(Level.FINE, "Cancelling {0}, because of {1}", new Object[]{this, newWork}); //NOI18N
                 }
                 b |= b2;
             }
@@ -4255,7 +4231,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         } else if (fileOrFileObject.first() instanceof FileObject) {
                             fileObject = Pair.<FileObject, Boolean>of((FileObject) fileOrFileObject.first(), fileOrFileObject.second());
                         } else {
-                            LOGGER.log(Level.FINE, "Not File or FileObject, ignoring: {0}", fileOrFileObject); //NOI18N
+                            LOGGER.fine("Not File or FileObject, ignoring: " + fileOrFileObject); //NOI18N
                         }
 
                         if (fileObject != null) {
@@ -4606,28 +4582,20 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 final Collection<URL> newRoots = new HashSet<URL>();
                 Collection<? extends URL> c = PathRegistry.getDefault().getSources();
                 checkRootCollection(c);
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "PathRegistry.sources=");
-                    printCollection(c, Level.FINE); //NOI18N
-                }
+                LOGGER.log(Level.FINE, "PathRegistry.sources="); printCollection(c, Level.FINE); //NOI18N
                 newRoots.addAll(c);
 
                 c = PathRegistry.getDefault().getLibraries();
                 checkRootCollection(c);
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "PathRegistry.libraries=");
-                    printCollection(c, Level.FINE); //NOI18N
-                }
+                LOGGER.log(Level.FINE, "PathRegistry.libraries="); printCollection(c, Level.FINE); //NOI18N
                 newRoots.addAll(c);
 
                 checkRootCollection(PathRegistry.getDefault().getBinaryLibraries());
                 depCtx.newBinariesToScan.addAll(PathRegistry.getDefault().getBinaryLibraries());                
 
                 if (useInitialState) {
-                    c = PathRegistry.getDefault().getUnknownRoots();
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "PathRegistry.unknown="); printCollection(c, Level.FINE); //NOI18N
-                    }
+                    c = PathRegistry.getDefault().getUnknownRoots();                    
+                    LOGGER.log(Level.FINE, "PathRegistry.unknown="); printCollection(c, Level.FINE); //NOI18N
                     depCtx.unknownRoots.addAll(c);
                     depCtx.preInversedDeps = Util.findTransitiveReverseDependencies(
                         depCtx.initialRoots2Deps,
@@ -4876,15 +4844,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 if (!rw.useInitialState) {
                     // the new work does not use initial state and so should not we
                     useInitialState = rw.useInitialState;
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(
-                            Level.FINE,
-                            "Absorbing {0}, updating useInitialState to {1}",   //NOI18N
-                            new Object[]{
-                                rw,
-                                useInitialState
-                            });
-                    }
+                    LOGGER.log(
+                        Level.FINE,
+                        "Absorbing {0}, updating useInitialState to {1}",   //NOI18N
+                        new Object[]{
+                            rw,
+                            useInitialState
+                        });
                 }
                 if (rw.refreshNonExistentDeps) {
                     refreshNonExistentDeps = rw.refreshNonExistentDeps;
@@ -5057,15 +5023,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     scannedRootsCnt.incrementAndGet();
                 }
                 reportRootScan(root, time);
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(
-                        Level.FINE,
-                        "Indexing of: {0} took: {1} ms",    //NOI18N
-                        new Object[] {
-                            root,
-                            time
-                        });
-                }
+                LOGGER.log(
+                    Level.FINE,
+                    "Indexing of: {0} took: {1} ms",    //NOI18N
+                    new Object[] {
+                        root,
+                        time
+                    });
             }
             return success;
         }
@@ -5328,12 +5292,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     long t = System.currentTimeMillis();
                     URL indexURL;
                     if (!rootSeen && (indexURL=getRemoteIndexURL(root))!=null) {
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.log(
-                                    Level.FINE,
-                                    "Downloading index for root: {0} from: {1}",
-                                    new Object[]{root, indexURL});
-                        }
+                        LOGGER.log(
+                                Level.FINE,
+                                "Downloading index for root: {0} from: {1}",
+                                new Object[]{root, indexURL});
                         final FileObject cf = CacheFolder.getCacheFolder();
                         assert cf != null;
                         final File cacheFolder = FileUtil.toFile(cf);
@@ -5643,9 +5605,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     // wait until the current work is finished
                     int cnt = 10;
                     while (scheduled && cnt-- > 0) {
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.log(Level.FINE, "Waiting for indexing jobs to finish; job in progress: {0}, jobs queue: {1}", new Object[] { work, todo }); //NOI18N
-                        }
+                        LOGGER.log(Level.FINE, "Waiting for indexing jobs to finish; job in progress: {0}, jobs queue: {1}", new Object[] { work, todo }); //NOI18N
                         try {
                             todo.wait(1000);
                         } catch (InterruptedException ie) {
@@ -6167,14 +6127,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             synchronized (this) {
                 if (activeAA != null) {
                     boolean firedFrom = event.firedFrom(activeAA);
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "{0} fired from {1}: {2}", new Object[] { event, activeAA, firedFrom }); //NOI18N
-                    }
+                    LOGGER.log(Level.FINE, "{0} fired from {1}: {2}", new Object[] { event, activeAA, firedFrom }); //NOI18N
                     return firedFrom ? Authorization.IGNORE : Authorization.PROCESS;
                 } else {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Set to ignore {0}: {1}", new Object[] { event, ignoreFsEvents }); //NOI18N
-                    }
+                    LOGGER.log(Level.FINE, "Set to ignore {0}: {1}", new Object[] { event, ignoreFsEvents }); //NOI18N
                     return ignoreFsEvents ? Authorization.IGNORE : Authorization.PROCESS;
                 }
             }
@@ -6560,10 +6516,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             ctx.setProfileSource(inv);
             inv.scheduled = SAMPLER_RP.post(inv, delay);
             currentSampler = inv;
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Sampler scheduled after {0} + {3} for indexer {1} on {2}", // NOI18N
-                        new Object[] { new Date(), indexerName, root, delay });
-            }
+            LOGGER.log(Level.FINE, "Sampler scheduled after {0} + {3} for indexer {1} on {2}", // NOI18N
+                    new Object[] { new Date(), indexerName, root, delay });
         }
         
         @Override
@@ -6572,10 +6526,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             if (sampler != null && currentSampler == this) {
                 sampler.start();
                 this.sampler = sampler;
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Updater profiling started at {0} because of {1} runnint on {2} more than {3})",  // NOI18N
-                            new Object[] { new Date(), indexerName, root, estimate });
-                }
+                LOGGER.log(Level.FINE, "Updater profiling started at {0} because of {1} runnint on {2} more than {3})",  // NOI18N
+                        new Object[] { new Date(), indexerName, root, estimate });
             
             }
         }
@@ -6595,11 +6547,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
              
         public boolean _stop(boolean release) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Sampler cancelled at {0} for indexer {1} on {2}", new Object[] { // NOI18N
-                    new Date(), indexerName, root
-                });
-            }
+            LOGGER.log(Level.FINE, "Sampler cancelled at {0} for indexer {1} on {2}", new Object[] { // NOI18N
+                new Date(), indexerName, root
+            });
             if (scheduled != null) {
                 if (!scheduled.cancel()) {
                     LOGGER.log(Level.FINE, "Sampling has already started, release = " + release); // NOI18N

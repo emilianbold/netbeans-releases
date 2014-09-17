@@ -380,14 +380,10 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         }
         if (owner != null) {
             if (owner == NULL_OWNER) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { file });
-                }
+                LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { file });
                 return null;
             }
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), file });
-            }
+            LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), file });
             return owner;
         }
 
@@ -410,9 +406,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
 
         if (owner == null && VersioningSupport.isExcluded(folder)) {
             // the owner is not known yet and the folder is excluded/unversioned
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, " caching NULL_OWNER of excluded {0}", new Object[] { file }); //NOI18N
-            }
+            LOG.log(Level.FINE, " caching NULL_OWNER of excluded {0}", new Object[] { file }); //NOI18N
             if (isFile) {
                 synchronized(fileOwners) {
                     fileOwners.put(folder, NULL_OWNER);
@@ -424,20 +418,14 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
             return null;
         } else if (owner != null) {
             synchronized(fileOwners) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, file }) ;
-                }
+                LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, file }) ;
                 fileOwners.put(file, owner != null ? owner : NULL_OWNER);            
             }           
             if (owner == NULL_OWNER) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { folder });
-                }
+                LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { folder });
                 return null;
             }            
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), folder });
-            }
+            LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), folder });                         
             return owner;
         }        
         
@@ -448,20 +436,14 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         for (VersioningSystem system : vs) {
             if (system != localHistory) {    // currently, local history is never an owner of a file
                 VCSFileProxy topmost = system.getTopmostManagedAncestor(folder);
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, " {0} returns {1} ", new Object[] { system.getClass().getName(), topmost }) ;
-                }
+                LOG.log(Level.FINE, " {0} returns {1} ", new Object[] { system.getClass().getName(), topmost }) ;
                 if (topmost != null && (closestParent == null || Utils.isAncestorOrEqual(closestParent, topmost))) {
                     if (VersioningConfig.getDefault().isDisconnected(system, topmost)) {
                         // repository root is disconnected from this vcs
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.log(Level.FINE, " skipping disconnected owner = {0} for {1}", new Object[] { 
-                                system.getClass().getName(), topmost }) ;
-                        }
+                        LOG.log(Level.FINE, " skipping disconnected owner = {0} for {1}", new Object[] { 
+                            system.getClass().getName(), topmost }) ;
                     } else {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.log(Level.FINE, " owner = {0}", new Object[] { system.getClass().getName() }) ;
-                        }
+                        LOG.log(Level.FINE, " owner = {0}", new Object[] { system.getClass().getName() }) ;
                         owner = system;
                         closestParent = topmost;
                     }
@@ -471,30 +453,22 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
                 
         synchronized(folderOwners) {
             if (owner != null) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, folder }) ;
-                }
+                LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, folder }) ;
                 folderOwners.put(folder, owner);
             } else {
                 // nobody owns the folder => all parents aren't owned
                 while(folder != null) {
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.log(Level.FINE, " caching unversioned folder {0}", new Object[] { folder }) ;
-                    }
+                    LOG.log(Level.FINE, " caching unversioned folder {0}", new Object[] { folder }) ;
                     folderOwners.put(folder, NULL_OWNER);
                     folder = folder.getParentFile();
                 }
             }
         }
         synchronized(fileOwners) {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, file }) ;
-            }
+            LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, file }) ;
             fileOwners.put(file, owner != null ? owner : NULL_OWNER);            
         }
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "owner = {0}", new Object[] { owner != null ? owner.getClass().getName() : null }) ;
-        }
+        LOG.log(Level.FINE, "owner = {0}", new Object[] { owner != null ? owner.getClass().getName() : null }) ;
         return owner;
     }
     
@@ -650,9 +624,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
                 return ret;
             }
         } finally {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "needsLocalHistory method [{0}] returns {1}", new Object[] {methodName, ret});
-            }
+            LOG.log(Level.FINE, "needsLocalHistory method [{0}] returns {1}", new Object[] {methodName, ret});
         }
     }
 

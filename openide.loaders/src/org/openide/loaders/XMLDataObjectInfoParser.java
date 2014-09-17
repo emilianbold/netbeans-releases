@@ -318,9 +318,7 @@ implements FileChangeListener, LexicalHandler, LookupListener {
         
         synchronized (this) {
             if (previousID != null && previousID.equals(id) && lookup != null) {
-                if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
-                    XMLDataObject.ERR.fine("No need to update lookup: " + id + " for " + realXML);
-                }
+                XMLDataObject.ERR.fine("No need to update lookup: " + id + " for " + realXML);
                 return lookup;
             }
         }
