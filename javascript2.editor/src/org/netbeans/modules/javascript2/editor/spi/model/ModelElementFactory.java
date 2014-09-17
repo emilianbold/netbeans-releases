@@ -143,22 +143,32 @@ public final class ModelElementFactory {
         return wrapped;
     }
     
-    public JsObject newObject(JsObject parent, String name, OffsetRange offsetRange,
-            boolean isDeclared) {
-        return new JsObjectImpl(parent, new IdentifierImpl(name, offsetRange), offsetRange, isDeclared, null, null);
+    public JsObject newObject(JsObject parent, String name, OffsetRange offsetRange, boolean isDeclared) {
+        return newObject(parent, name, offsetRange, isDeclared, null);
     }
 
+    public JsObject newObject(JsObject parent, String name, OffsetRange offsetRange, boolean isDeclared, String sourceLabel) {
+        return new JsObjectImpl(parent, new IdentifierImpl(name, offsetRange), offsetRange, isDeclared, null, sourceLabel);
+    }
+    
     public JsFunction newFunction(DeclarationScope scope, JsObject parent, String name, Collection<String> params) {
+        return newFunction(scope, parent, name, params, null);
+    }
+    
+    public JsFunction newFunction(DeclarationScope scope, JsObject parent, String name, Collection<String> params, String sourceLabel) {
         List<Identifier> realParams = new ArrayList<Identifier>();
         for (String param : params) {
             realParams.add(new IdentifierImpl(param, OffsetRange.NONE));
         }
-        return new JsFunctionImpl(scope, parent, new IdentifierImpl(name, OffsetRange.NONE),
-                realParams, OffsetRange.NONE, null, null);
+        return newFunction(scope, parent, new IdentifierImpl(name, OffsetRange.NONE), realParams, OffsetRange.NONE, sourceLabel);
     }
     
     public JsFunction newFunction(DeclarationScope scope, JsObject parent, Identifier name, List<Identifier> params, OffsetRange range) {
-        return new JsFunctionImpl(scope, parent, name, params, range, null, null);
+        return newFunction(scope, parent, name, params, range, null);
+    }
+    
+    public JsFunction newFunction(DeclarationScope scope, JsObject parent, Identifier name, List<Identifier> params, OffsetRange range, String sourceLabel) {
+        return new JsFunctionImpl(scope, parent, name, params, range, null, sourceLabel);
     }
     
     public JsObject newReference(JsObject parent, String name, OffsetRange offsetRange,
@@ -321,6 +331,11 @@ public final class ModelElementFactory {
         @Override
         public Documentation getDocumentation() {
             return delegate.getDocumentation();
+        }
+
+        @Override
+        public void setDocumentation(Documentation documentation) {
+            delegate.setDocumentation(documentation);
         }
 
         @Override
@@ -531,6 +546,11 @@ public final class ModelElementFactory {
         @Override
         public Documentation getDocumentation() {
             return delegate.getDocumentation();
+        }
+
+        @Override
+        public void setDocumentation(Documentation documentation) {
+            delegate.setDocumentation(documentation);
         }
 
         @Override
