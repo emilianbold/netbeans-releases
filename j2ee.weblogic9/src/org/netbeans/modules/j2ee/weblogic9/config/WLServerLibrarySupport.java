@@ -108,6 +108,8 @@ public class WLServerLibrarySupport {
     private final File domainPath;
 
     private final File serverRoot;
+    
+    private final boolean remote;
 
     public WLServerLibrarySupport(WLDeploymentManager dm) {
         String domainDir = dm.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
@@ -115,17 +117,25 @@ public class WLServerLibrarySupport {
         String serverDir = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
         assert serverDir != null;
 
-        this.domainPath = new File(domainDir);
+        this.domainPath = domainDir == null ? null : new File(domainDir);
         this.serverRoot = new File(serverDir);
+        this.remote = dm.isRemote();
+        assert domainPath != null || remote;
     }
 
     public WLServerLibrarySupport(File serverRoot, File domainPath) {
         this.domainPath = domainPath;
         this.serverRoot = serverRoot;
+        this.remote = domainPath == null;
+        assert domainPath != null || remote;
     }
 
     public Map<ServerLibrary, List<File>> getClasspathEntries(Set<ServerLibraryDependency> libraries)
             throws ConfigurationException {
+
+        if (remote) {
+            return Collections.emptyMap();
+        }
 
         Set<WLServerLibrary> deployed = getDeployedLibraries();
         Set<WLServerLibrary> classpath = new HashSet<WLServerLibrary>();
@@ -175,6 +185,9 @@ public class WLServerLibrarySupport {
     }
 
     public Set<WLServerLibrary> getDeployedLibraries() {
+        if (remote) {
+            return Collections.emptySet();
+        }
         FileObject domainConfig = WLPluginProperties.getDomainConfigFileObject(domainPath);
         if (domainConfig == null) {
             return Collections.emptySet();
@@ -383,9 +396,9 @@ public class WLServerLibrarySupport {
 
         private final File domainDir;
 
-        private Library library;
+        private final StringBuilder value = new StringBuilder();
 
-        private String value;
+        private Library library;
 
         public LibraryHandler(File domainDir) {
             this.domainDir = domainDir;
@@ -393,7 +406,7 @@ public class WLServerLibrarySupport {
 
         @Override
         public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes attributes) throws SAXException {
-            value = null;
+            value.setLength(0);
             if ("library".equals(qName)) { // NOI18N
                 library = new Library(domainDir);
             }
@@ -409,7 +422,7 @@ public class WLServerLibrarySupport {
                 libraries.add(library);
                 library = null;
             } else if("name".equals(qName)) { // NOI18N
-                String[] splitted = value.split("#"); // NOI18N
+                String[] splitted = value.toString().split("#"); // NOI18N
                 if (splitted.length > 1) {
                     library.setName(splitted[0]);
                     splitted = splitted[1].split("@"); // NOI18N
@@ -418,18 +431,18 @@ public class WLServerLibrarySupport {
                         library.setImplementationVersion(Version.fromJsr277NotationWithFallback(splitted[1]));
                     }
                 } else {
-                    library.setName(value);
+                    library.setName(value.toString());
                 }
             } else if ("target".equals(qName)) { // NOI18N
-                library.setTarget(value);
+                library.setTarget(value.toString());
             } else if ("source-path".equals(qName)) { // NOI18N
-                library.setFile(value);
+                library.setFile(value.toString());
             }
         }
 
         @Override
         public void characters(char[] ch, int start, int length) {
-            value = new String(ch, start, length);
+            value.append(ch, start, length);
         }
 
         public List<Library> getLibraries() {

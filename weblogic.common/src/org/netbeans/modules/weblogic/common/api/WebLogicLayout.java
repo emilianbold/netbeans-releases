@@ -51,38 +51,44 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.PermissionCollection;
+import java.security.Permissions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.WeakHashMap;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileUtil;
-import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public final class WebLogicLayout {
 
-    private static final String WEBLOGIC_JAR = "server/lib/weblogic.jar"; // NOI18N
+    private static final WeakHashMap<WebLogicConfiguration, ClassLoader> CLASSLOADERS = new WeakHashMap<WebLogicConfiguration, ClassLoader>();
 
-    private static final int DEFAULT_PORT = 7001;
+    private static final String WEBLOGIC_JAR = "server/lib/weblogic.jar"; // NOI18N
 
     private static final Collection<String> EXPECTED_FILES = new ArrayList<>();
 
@@ -93,28 +99,6 @@ public final class WebLogicLayout {
     }
 
     private static final Logger LOGGER = Logger.getLogger(WebLogicLayout.class.getName());
-
-    private static final String DOMAIN_HOST = "host"; // NOI18N
-    private static final String DOMAIN_PORT = "port"; // NOI18N
-    private static final String ADMIN_SERVER_NAME= "adminName"; // NOI18N
-    private static final String DOMAIN_NAME = "domainName"; // NOI18N
-    private static final String PRODUCTION_MODE = "productionMode"; // NOI18N
-    private static final String DOMAIN_VERSION = "domainVersion"; // NOI18N
-
-    private static final Pattern LISTEN_ADDRESS_PATTERN =
-        Pattern.compile("(?:[a-z]+\\:)?listen-address");            // NOI18N
-
-    private static final Pattern LISTEN_PORT_PATTERN =
-        Pattern.compile("(?:[a-z]+\\:)?listen-port");               // NOI18N
-
-    private static final Pattern NAME_PATTERN =
-        Pattern.compile("(?:[a-z]+\\:)?name");                      // NOI18N
-
-    private static final  Pattern SERVER_PATTERN =
-        Pattern.compile("(?:[a-z]+\\:)?server");                    // NOI18N
-
-    private static final  Pattern ADMIN_SERVER_PATTERN =
-        Pattern.compile("(?:[a-z]+\\:)?admin-server-name");         // NOI18N
 
     private static final String DOMAIN_LIST = "common/nodemanager/nodemanager.domains"; // NOI18N
 
@@ -131,7 +115,12 @@ public final class WebLogicLayout {
         if (config.isRemote()) {
             return null;
         }
-        return FileUtil.normalizeFile(new File(config.getDomainHome(),
+        return getDomainConfigFile(config.getDomainHome());
+    }
+
+    @NonNull
+    public static File getDomainConfigFile(File domain) {
+        return FileUtil.normalizeFile(new File(domain,
                 "config" + File.separator + "config.xml")); // NOI18N
     }
 
@@ -167,157 +156,15 @@ public final class WebLogicLayout {
         return weblogicJar;
     }
 
-    /**
-     * Gets the list of registered domains according to the given server
-     * installation root
-     *
-     * @param serverRoot the server's installation location
-     *
-     * @return an array if strings with the paths
-     */
-    public static String[] getRegisteredDomainPaths(String serverRoot) {
-        // init the resulting vector
-        List<String> result = new ArrayList<String>(getDomainsFromRegistry(serverRoot));
-        if (result.isEmpty()) {
-            result.addAll(getDomainsFromNodeManager(serverRoot));
+    @CheckForNull
+    public static DomainConfiguration getDomainConfiguration(String domainPath) {
+        DomainConfiguration ret = DomainConfiguration.getInstance(new File(domainPath), false);
+        if (ret == null) {
+            LOGGER.log(Level.FINE, "Domain config file "
+                    + "is not found. Probably server configuration was "
+                    + "changed externally"); // NOI18N
         }
-        return result.toArray(new String[result.size()]);
-    }
-
-    /**
-     * Returns map of server domain configuration properties red from config.xml file.
-     * Only properties required for the moment are returned.
-     * Method implementation should be extended for additional properties.
-     * return server configuration properties
-     */
-    public static Properties getDomainProperties(String domainPath) {
-        Properties properties = new Properties();
-        String configPath = domainPath + "/config/config.xml"; // NOI18N
-
-        // init the input stream for the file and the w3c document object
-        InputStream inputStream = null;
-        Document document = null;
-
-        try {
-            // open the stream from the instances config file
-            File config = new File(configPath);
-            if (!config.exists()){
-                LOGGER.log(Level.FINE, "Domain config file "
-                        + "is not found. Probably server configuration was "
-                        + "changed externally"); // NOI18N
-                return properties;
-            }
-            inputStream = new FileInputStream(config);
-
-            // parse the document
-            document = DocumentBuilderFactory.newInstance()
-                    .newDocumentBuilder().parse(inputStream);
-
-            // get the root element
-            Element root = document.getDocumentElement();
-
-            // get the child nodes
-            NodeList children = root.getChildNodes();
-
-            String adminServer = null;
-            LinkedHashMap<String, ServerDescriptor> servers = new LinkedHashMap<String, ServerDescriptor>();
-            // for each child
-            for (int j = 0; j < children.getLength(); j++) {
-                Node child = children.item(j);
-                if ("name".equals(child.getNodeName())) {
-                    String domainName = child.getFirstChild().getNodeValue();
-                    properties.put(DOMAIN_NAME, domainName);
-                } else if ("domain-version".equals(child.getNodeName())) {
-                    String domainVersion = child.getFirstChild().getNodeValue();
-                    properties.put(DOMAIN_VERSION, domainVersion);
-                } else if ("production-mode-enabled".equals(child.getNodeName())) {
-                    String isEnabled = child.getFirstChild().getNodeValue();
-                    properties.put(PRODUCTION_MODE, "true".equals(isEnabled));
-                } else if (ADMIN_SERVER_PATTERN.matcher(child.getNodeName()).matches()) {
-                    adminServer = child.getFirstChild().getNodeValue();
-                // if the child's name equals 'server' get its children
-                // and iterate over them
-                } else if (SERVER_PATTERN.matcher(child.getNodeName()).matches()) {
-                    NodeList nl = child.getChildNodes();
-
-                    // declare the server's name/host/port
-                    String name = ""; // NOI18N
-                    String port = ""; // NOI18N
-                    String host = ""; // NOI18N
-
-                    // iterate over the children
-                    for (int k = 0; k < nl.getLength(); k++) {
-                        Node ch = nl.item(k);
-
-                        // if the child's name equals 'name' fetch the
-                        // instance's name
-                        if (NAME_PATTERN.matcher(ch.getNodeName()).matches()) {
-                            name = ch.getFirstChild().getNodeValue();
-                        }
-
-                        // if the child's name equals 'listen-port' fetch the
-                        // instance's port
-                        if (LISTEN_PORT_PATTERN.matcher(ch.getNodeName())
-                                .matches()) {
-                            port = ch.getFirstChild().getNodeValue();
-                        }
-
-                        // if the child's name equals 'listen-address' fetch the
-                        // instance's host
-                        if (LISTEN_ADDRESS_PATTERN.matcher(ch.getNodeName())
-                                .matches()) {
-                            if (ch.hasChildNodes()) {
-                                host = ch.getFirstChild().getNodeValue();
-                            }
-                        }
-                    }
-
-                    if (port != null) {
-                        port = port.trim();
-                    }
-
-                    // if all the parameters were fetched successfully add
-                    // them to the result
-                    if ((name != null) && (!name.equals(""))) { // NOI18N
-                        // address and port have minOccurs=0 and are missing in
-                        // 90 examples server
-                        port = (port == null || port.equals("")) // NOI18N
-                                ? Integer.toString(DEFAULT_PORT)
-                                : port;
-                        host = (host == null || host.equals(""))
-                                ? "localhost" // NOI18N
-                                : host;
-
-                        servers.put(name, new ServerDescriptor(host, port, name));
-                    }
-                }
-            }
-            ServerDescriptor admin = null;
-            if (adminServer != null) {
-                admin = servers.get(adminServer);
-            }
-            if (admin == null && !servers.isEmpty()) {
-                admin = servers.entrySet().iterator().next().getValue();
-            }
-            if (admin != null) {
-                properties.put(DOMAIN_PORT, admin.getPort());
-                properties.put(DOMAIN_HOST, admin.getHost());
-                properties.put(ADMIN_SERVER_NAME, admin.getName());
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch (ParserConfigurationException | SAXException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } finally {
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.INFO, null, e);
-            }
-        }
-        return properties;
+        return ret;
     }
 
     public static boolean isSupportedLayout(File candidate){
@@ -398,6 +245,37 @@ public final class WebLogicLayout {
         return new File[] {weblogicJar};
     }
 
+    @NonNull
+    public ClassLoader getClassLoader() {
+        synchronized (CLASSLOADERS) {
+            ClassLoader classLoader = CLASSLOADERS.get(config);
+            if (classLoader != null) {
+                return classLoader;
+            }
+
+            // two instances may have the same classpath because of the same
+            // server root directory
+            for (Map.Entry<WebLogicConfiguration, ClassLoader> entry : CLASSLOADERS.entrySet()) {
+                // FIXME base the check on classpath - it would be more safe
+                // more expensive as well
+                String serverRootCached = entry.getKey().getServerHome().getAbsolutePath();
+                String serverRootFresh = config.getServerHome().getAbsolutePath();
+
+                if ((serverRootCached == null) ? (serverRootFresh == null) : serverRootCached.equals(serverRootFresh)) {
+                    classLoader = entry.getValue();
+                    break;
+                }
+            }
+
+            if (classLoader == null) {
+                classLoader = createClassLoader();
+            }
+
+            CLASSLOADERS.put(config, classLoader);
+            return classLoader;
+        }
+    }
+
     @CheckForNull
     public Version getServerVersion() {
         return getServerVersion(config.getServerHome());
@@ -433,32 +311,6 @@ public final class WebLogicLayout {
         } catch (IOException e) {
             LOGGER.log(Level.FINE, null, e);
         }
-        return null;
-    }
-
-    @CheckForNull
-    public Version getDomainVersion() {
-        // Domain config file
-        File configFile = getDomainConfigFile();
-
-        // Check if the file exists
-        if (configFile == null || !configFile.exists()) {
-            return null;
-        }
-
-        try {
-            InputSource source = new InputSource(new FileInputStream(configFile));
-            Document d = XMLUtil.parse(source, false, false, null, null);
-
-            // Retrieve domain version
-            if (d.getElementsByTagName("domain-version").getLength() > 0) {
-                String strVersion = d.getElementsByTagName("domain-version").item(0).getTextContent();
-                return  strVersion != null ? Version.fromJsr277OrDottedNotationWithFallback(strVersion) : null;
-            }
-        } catch(IOException | SAXException e) {
-            LOGGER.log(Level.INFO, null, e);
-        }
-
         return null;
     }
 
@@ -505,122 +357,6 @@ public final class WebLogicLayout {
         return null;
     }
 
-    private static List<String> getDomainsFromNodeManager(String serverRoot) {
-        // is the server root was not defined, return an empty array of domains
-        if (serverRoot == null) {
-            return Collections.emptyList();
-        }
-
-        // init the input stream for the file and the w3c document object
-        File file = new File(serverRoot + File.separator
-                + DOMAIN_LIST.replaceAll("/", Matcher.quoteReplacement(File.separator)));
-        if (!file.exists() || !file.canRead()) {
-            return Collections.emptyList();
-        }
-
-        List<String> result = new ArrayList<String>();
-        BufferedReader lnr = null;
-
-        // read the list file line by line fetching out the domain paths
-        try {
-            // create a new reader for the FileInputStream
-            lnr = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-
-            // read the lines
-            String line;
-            while ((line = lnr.readLine()) != null) {
-                // skip the comments
-                if (line.startsWith("#")) {  // NOI18N
-                    continue;
-                }
-
-                // fetch the domain path
-                String path = line.split("=")[1].replaceAll("\\\\\\\\", "/").replaceAll("\\\\:", ":"); // NOI18N
-
-                // add the path to the resulting set
-                result.add(path);
-            }
-        } catch (FileNotFoundException e) {
-            LOGGER.log(Level.INFO, null, e);   // NOI18N
-        } catch (IOException e) {
-            LOGGER.log(Level.INFO, null, e);   // NOI18N
-        } finally {
-            try {
-                // close the stream
-                if (lnr != null) {
-                    lnr.close();
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.INFO, null, e);  // NOI18N
-            }
-        }
-        return result;
-    }
-
-    private static List<String> getDomainsFromRegistry(String serverRoot) {
-        // is the server root was not defined, return an empty array of domains
-        if (serverRoot == null) {
-            return Collections.emptyList();
-        }
-
-        File mwHome = getMiddlewareHome(new File(serverRoot));
-        if (mwHome == null) {
-            return Collections.emptyList();
-        }
-        // init the input stream for the file and the w3c document object
-        File file = new File(mwHome, DOMAIN_REGISTRY);
-        if (!file.exists() || !file.canRead()) {
-            return Collections.emptyList();
-        }
-
-        List<String> result = new ArrayList<String>();
-        // init the input stream for the file and the w3c document object
-        InputStream inputStream = null;
-        Document document = null;
-
-        try {
-            inputStream = new BufferedInputStream(new FileInputStream(file));
-
-            // parse the document
-            document = DocumentBuilderFactory.newInstance()
-                    .newDocumentBuilder().parse(inputStream);
-
-            // get the root element
-            Element root = document.getDocumentElement();
-
-            // get the child nodes
-            NodeList children = root.getChildNodes();
-
-            for (int j = 0; j < children.getLength(); j++) {
-                Node child = children.item(j);
-                if ("domain".equals(child.getNodeName())) { // NOI18N
-                    Node attr = child.getAttributes().getNamedItem("location"); // NOI18N
-                    if (attr != null) {
-                        String location = attr.getNodeValue();
-                        if (location != null) {
-                            result.add(location);
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch (ParserConfigurationException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } catch (SAXException e) {
-            LOGGER.log(Level.INFO, null, e);
-        } finally {
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.INFO, null, e);
-            }
-        }
-        return result;
-    }
-
     private static boolean hasRequiredChildren(File candidate, Collection<String> requiredChildren) {
         if (null == candidate) {
             return false;
@@ -643,6 +379,66 @@ public final class WebLogicLayout {
         return true;
     }
 
+    private WebLogicClassLoader createClassLoader() {
+        LOGGER.log(Level.FINE, "Creating classloader for {0}", config.getId());
+        try {
+            File[] classpath = getClassPath();
+            URL[] urls = new URL[classpath.length];
+            for (int i = 0; i < classpath.length; i++) {
+                urls[i] = classpath[i].toURI().toURL();
+            }
+            WebLogicClassLoader classLoader = new WebLogicClassLoader(urls, WebLogicConfiguration.class.getClassLoader());
+            LOGGER.log(Level.FINE, "Classloader for {0} created successfully", config.getId());
+            return classLoader;
+        } catch (MalformedURLException e) {
+            LOGGER.log(Level.WARNING, null, e);
+        }
+        return new WebLogicClassLoader(new URL[] {}, WebLogicConfiguration.class.getClassLoader());
+    }
+
+    private static class WebLogicClassLoader extends URLClassLoader {
+
+        public WebLogicClassLoader(URL[] urls, ClassLoader parent) {
+            super(urls, parent);
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            Class<?> clazz = super.findClass(name);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                String filename = name.replace('.', '/'); // NOI18N
+                int index = filename.indexOf('$'); // NOI18N
+                if (index > 0) {
+                    filename = filename.substring(0, index);
+                }
+                filename = filename + ".class"; // NOI18N
+
+                URL url = this.getResource(filename);
+                LOGGER.log(Level.FINEST, "WebLogic classloader asked for {0}", name);
+                if (url != null) {
+                    LOGGER.log(Level.FINEST, "WebLogic classloader found {0} at {1}",new Object[]{name, url});
+                }
+            }
+            return clazz;
+        }
+
+        @Override
+        protected PermissionCollection getPermissions(CodeSource codeSource) {
+            Permissions p = new Permissions();
+            p.add(new AllPermission());
+            return p;
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            // get rid of annoying warnings
+            if (name.contains("jndi.properties") || name.contains("i18n_user.properties")) { // NOI18N
+                return Collections.enumeration(Collections.<URL>emptyList());
+            }
+
+            return super.getResources(name);
+        }
+    }
     private static class ServerDescriptor {
 
         private final String host;

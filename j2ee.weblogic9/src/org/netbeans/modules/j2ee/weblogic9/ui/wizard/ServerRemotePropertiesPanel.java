@@ -55,38 +55,41 @@ import org.openide.util.HelpCtx;
  *
  * @author Petr Hejl
  */
-public class ServerPropertiesPanel implements WizardDescriptor.Panel, ChangeListener {
+public class ServerRemotePropertiesPanel implements WizardDescriptor.Panel, ChangeListener {
 
     private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
 
     private final AtomicBoolean isValidating = new AtomicBoolean();
 
-    private ServerPropertiesVisual component;
+    private ServerRemotePropertiesVisual component;
 
     private WizardDescriptor wizard;
-    
+
     private transient WLInstantiatingIterator instantiatingIterator;
 
-    public ServerPropertiesPanel (WLInstantiatingIterator instantiatingIterator) {
+    public ServerRemotePropertiesPanel (WLInstantiatingIterator instantiatingIterator) {
         this.instantiatingIterator = instantiatingIterator;
     }
-    
+
+    @Override
     public Component getComponent() {
         if (component == null) {
-            component = new ServerPropertiesVisual(instantiatingIterator);
+            component = new ServerRemotePropertiesVisual(instantiatingIterator);
             component.addChangeListener(this);
         }
         return component;
     }
 
-    public  ServerPropertiesVisual getVisual() {
-        return (ServerPropertiesVisual) getComponent();
+    public  ServerRemotePropertiesVisual getVisual() {
+        return (ServerRemotePropertiesVisual) getComponent();
     }
 
+    @Override
     public HelpCtx getHelp() {
          return new HelpCtx("j2eeplugins_registering_app_server_weblogic_properties"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
         if (isValidating.compareAndSet(false, true)) {
             try {
@@ -98,14 +101,16 @@ public class ServerPropertiesPanel implements WizardDescriptor.Panel, ChangeList
         return true;
     }
 
+    @Override
     public void readSettings(Object settings) {
         if (wizard == null) {
             wizard = (WizardDescriptor) settings;
         }
     }
 
+    @Override
     public void storeSettings(Object settings) {
-        
+
     }
 
     /**
@@ -113,6 +118,7 @@ public class ServerPropertiesPanel implements WizardDescriptor.Panel, ChangeList
      *
      * @param listener the listener to be added
      */
+    @Override
     public void addChangeListener(ChangeListener listener) {
         listeners.add(listener);
     }
@@ -122,10 +128,12 @@ public class ServerPropertiesPanel implements WizardDescriptor.Panel, ChangeList
      *
      * @param listener the listener to be removed
      */
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         listeners.remove(listener);
     }
 
+    @Override
     public void stateChanged(ChangeEvent event) {
         fireChangeEvent(event);
     }
