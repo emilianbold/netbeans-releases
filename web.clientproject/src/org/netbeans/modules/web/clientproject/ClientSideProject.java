@@ -200,6 +200,7 @@ public class ClientSideProject implements Project {
         @Override
         public void propertyChanged(Project project, PlatformProvider platformProvider, PropertyChangeEvent event) {
             if (ClientSideProject.this.equals(project)) {
+                LOGGER.log(Level.FINE, "Processing platform provider event {0}", event);
                 String propertyName = event.getPropertyName();
                 if (propertyName == null
                         || PlatformProvider.PROP_ENABLED.equals(propertyName)) {

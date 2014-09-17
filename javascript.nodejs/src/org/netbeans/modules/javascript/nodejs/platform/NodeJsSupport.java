@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.ui.actions.NodeJsActionProvider;
@@ -58,7 +59,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.WeakListeners;
 
-public final class NodeJsSupport implements PreferenceChangeListener {
+public final class NodeJsSupport implements PreferenceChangeListener, PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(NodeJsSupport.class.getName());
 
@@ -67,6 +68,7 @@ public final class NodeJsSupport implements PreferenceChangeListener {
     private final ActionProvider actionProvider;
     private final NodeJsSourceRoots sourceRoots;
     private final NodeJsPreferences preferences;
+    private final PackageJson packageJson;
 
 
     public NodeJsSupport(Project project) {
@@ -75,6 +77,7 @@ public final class NodeJsSupport implements PreferenceChangeListener {
         actionProvider = new NodeJsActionProvider(project);
         sourceRoots = new NodeJsSourceRoots(project);
         preferences = new NodeJsPreferences(this, project);
+        packageJson = new PackageJson(project);
     }
 
     @ProjectServiceProvider(service = NodeJsSupport.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
@@ -104,6 +107,10 @@ public final class NodeJsSupport implements PreferenceChangeListener {
         return sourceRoots.getSourceRoots();
     }
 
+    public PackageJson getPackageJson() {
+        return packageJson;
+    }
+
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(listener);
     }
@@ -115,6 +122,18 @@ public final class NodeJsSupport implements PreferenceChangeListener {
     public void firePropertyChanged(String propertyName, Object oldValue, Object newValue) {
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(project, propertyName, oldValue, newValue));
     }
+
+    void projectOpened() {
+        packageJson.addPropertyChangeListener(this);
+        packageJson.init();
+    }
+
+    public void projectClosed() {
+        packageJson.removePropertyChangeListener(this);
+        packageJson.cleanup();
+    }
+
+    //~ Listeners
 
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
@@ -129,6 +148,24 @@ public final class NodeJsSupport implements PreferenceChangeListener {
                 || NodeJsOptions.USE_NPM_GLOBAL_ROOT.equals(key)) {
             boolean newValue = Boolean.parseBoolean(evt.getNewValue());
             firePropertyChanged(NodeJsPlatformProvider.PROP_SOURCE_ROOTS, !newValue, newValue);
+        }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        String projectName = project.getProjectDirectory().getNameExt();
+        if (!preferences.isEnabled()) {
+            LOGGER.log(Level.FINE, "Property change event in package.json ignored, node.js not enabled in project {0}", projectName);
+            return;
+        }
+        String propertyName = evt.getPropertyName();
+        LOGGER.log(Level.FINE, "Processing property change event {0} in package.json in project {1}", new Object[] {propertyName, projectName});
+        if (PackageJson.PROP_NAME.equals(propertyName)) {
+            firePropertyChanged(NodeJsPlatformProvider.PROP_PROJECT_NAME, evt.getOldValue(), evt.getNewValue());
+        } else if (PackageJson.PROP_SCRIPTS_START.equals(propertyName)) {
+            firePropertyChanged(NodeJsPlatformProvider.PROP_START_FILE, evt.getOldValue(), evt.getNewValue());
+        } else {
+            assert false : "Unknown event: " + propertyName;
         }
     }
 
