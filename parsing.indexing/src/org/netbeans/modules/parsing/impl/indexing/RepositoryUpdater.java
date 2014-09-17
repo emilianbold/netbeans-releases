@@ -86,7 +86,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.BaseProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -5826,7 +5826,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     try {
                         if (progressHandle == null) {
                             if (work.getProgressTitle() != null) {
-                                progressHandle = ProgressHandleFactory.createHandle(work.getProgressTitle(), workCancel);
+                                progressHandle = BaseProgressHandleFactory.createHandle(work.getProgressTitle(), workCancel);
                                 progressHandle.start();
                             }
                         } else {
