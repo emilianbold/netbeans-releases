@@ -108,12 +108,11 @@ public class WLServerLibrarySupport {
     private final File domainPath;
 
     private final File serverRoot;
-    
+
     private final boolean remote;
 
     public WLServerLibrarySupport(WLDeploymentManager dm) {
         String domainDir = dm.getInstanceProperties().getProperty(WLPluginProperties.DOMAIN_ROOT_ATTR);
-        assert domainDir != null;
         String serverDir = dm.getInstanceProperties().getProperty(WLPluginProperties.SERVER_ROOT_ATTR);
         assert serverDir != null;
 
