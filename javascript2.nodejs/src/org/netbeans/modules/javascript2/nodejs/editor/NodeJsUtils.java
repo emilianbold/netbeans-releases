@@ -69,6 +69,7 @@ public class NodeJsUtils {
     public static String PACKAGE_NAME = "package"; //NOI18N
     public static String INDEX_NAME = "index"; //NOI18N
     public static String FAKE_OBJECT_NAME_PREFIX = "nm$_"; //NOI18N
+    public static String NODEJS_NAME = "NodeJS"; //NOI18N
     
     public static String JS_EXT = ".js"; //NOI18N
     public static String JSON_EXT = ".json"; //NOI18N

@@ -669,6 +669,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return documentation;
     }
 
+    @Override
     public void setDocumentation(Documentation doc) {
         this.documentation = doc;
     }
