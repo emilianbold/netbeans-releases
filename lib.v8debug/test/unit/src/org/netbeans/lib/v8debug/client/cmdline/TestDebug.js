@@ -156,7 +156,7 @@ function scope() {
     }
     
     b += a;
-    inner();
+    inner();            // breakpoint
     c += a;
 }
 
