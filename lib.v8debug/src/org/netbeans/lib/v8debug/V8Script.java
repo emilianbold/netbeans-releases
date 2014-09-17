@@ -43,6 +43,7 @@ package org.netbeans.lib.v8debug;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.lib.v8debug.vars.ReferencedValue;
 
 /**
  *
@@ -59,6 +60,8 @@ public final class V8Script {
     private final String source;
     private final String sourceStart;
     private final long sourceLength;
+    private final ReferencedValue context;
+    private final String text;
     private final Type scriptType;
     private final CompilationType compilationType;
     private final String evalFromScript;
@@ -66,7 +69,8 @@ public final class V8Script {
     
     public V8Script(String name, long id, long lineOffset, long columnOffset,
                     long lineCount, Object data, String source, String sourceStart,
-                    long sourceLength, Type scriptType, CompilationType compilationType,
+                    long sourceLength, ReferencedValue context, String text,
+                    Type scriptType, CompilationType compilationType,
                     String evalFromScript, EvalFromLocation evalFromLocation) {
         this.name = name;
         this.id = id;
@@ -77,6 +81,8 @@ public final class V8Script {
         this.source = source;
         this.sourceStart = sourceStart;
         this.sourceLength = sourceLength;
+        this.context = context;
+        this.text = text;
         this.scriptType = scriptType;
         this.compilationType = compilationType;
         this.evalFromScript = evalFromScript;
@@ -117,6 +123,14 @@ public final class V8Script {
 
     public long getSourceLength() {
         return sourceLength;
+    }
+    
+    public ReferencedValue getContext() {
+        return context;
+    }
+    
+    public String getText() {
+        return text;
     }
 
     public Type getScriptType() {

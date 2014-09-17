@@ -130,6 +130,7 @@ class JSONConstants {
     public static final String SCRIPT_TYPE = "scriptType";
     public static final String TYPES = "types";
     public static final String IDs = "ids";
+    public static final String CONTEXT = "context";
     
     public static final String INCLUDE_SOURCE = "includeSource";
     public static final String FILTER = "filter";

@@ -333,6 +333,8 @@ public class JSONReader {
         String source = getString(obj, SOURCE);
         String sourceStart = getString(obj, SOURCE_START);
         long sourceLength = getLong(obj, SOURCE_LENGTH);
+        ReferencedValue context = getReferencedValue(obj, CONTEXT);
+        String text = getString(obj, TEXT);
         long scriptTypeNum = getLong(obj, SCRIPT_TYPE);
         V8Script.Type scriptType = V8Script.Type.valueOf((int) scriptTypeNum);
         long compilationTypeNum = getLong(obj, COMPILATION_TYPE);
@@ -344,7 +346,7 @@ public class JSONReader {
         } else {
             evalFromLocation = null;
         }
-        return new V8Script(name, id, lineOffset, columnOffset, lineCount, data, source, sourceStart, sourceLength, scriptType, compilationType, evalFromScript, evalFromLocation);
+        return new V8Script(name, id, lineOffset, columnOffset, lineCount, data, source, sourceStart, sourceLength, context, text, scriptType, compilationType, evalFromScript, evalFromLocation);
     }
 
     private static V8Value getValue(JSONObject obj) {

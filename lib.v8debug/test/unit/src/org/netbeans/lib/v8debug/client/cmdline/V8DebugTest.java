@@ -79,6 +79,7 @@ import org.netbeans.lib.v8debug.commands.GC;
 import org.netbeans.lib.v8debug.commands.Lookup;
 import org.netbeans.lib.v8debug.commands.Scope;
 import org.netbeans.lib.v8debug.commands.Scopes;
+import org.netbeans.lib.v8debug.commands.Scripts;
 import org.netbeans.lib.v8debug.commands.SetBreakpoint;
 import org.netbeans.lib.v8debug.commands.Source;
 import org.netbeans.lib.v8debug.commands.Threads;
@@ -360,6 +361,9 @@ public class V8DebugTest {
         checkScopes();
         commandsToTest.remove(V8Command.Scopes);
         commandsToTest.remove(V8Command.Scope);
+        
+        checkScripts();
+        commandsToTest.remove(V8Command.Scripts);
         
         assertTrue("Commands remaining to test: "+commandsToTest.toString(), commandsToTest.isEmpty());
     }
@@ -988,6 +992,117 @@ public class V8DebugTest {
                                                 "    }",
                                   testFilePath, -1, 4495, 152, 18, null, null) }, "#<Object>"));
         assertEquals(5, ((V8Object) scopeVal).getProperties().size());
+    }
+
+    private void checkScripts() throws IOException, InterruptedException {
+        V8Debug.TestAccess.doCommand(v8dbg, "scripts");
+        V8Response lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Scripts, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        Scripts.ResponseBody srb = (Scripts.ResponseBody) lastResponse.getBody();
+        V8Script[] scripts = srb.getScripts();
+        assertTrue(scripts.length > 5);
+        Map<String, V8Script> scriptsByName = new HashMap<>();
+        for (int i = 0; i < scripts.length; i++) {
+            scriptsByName.put(scripts[i].getName(), scripts[i]);
+            assertNull(scripts[i].getData());
+            assertNull(scripts[i].getEvalFromLocation());
+            assertNull(scripts[i].getEvalFromScript());
+        }
+        V8Script testScript = scriptsByName.get(testFilePath);
+        assertEquals(TEST_NUM_LINES, testScript.getLineCount());
+        assertEquals(TEST_NUM_CHARS, testScript.getSourceLength());
+        assertEquals(0, testScript.getLineOffset());
+        assertEquals(0, testScript.getColumnOffset());
+        assertEquals(testFilePath, V8Debug.TestAccess.getScript(v8dbg, testScript.getId()).getName());
+        assertEquals("(function (exports, require, module, __filename, __dirname) { /* \n * DO NOT ALTE", testScript.getSourceStart());
+        assertEquals(V8Script.Type.NORMAL, testScript.getScriptType());
+        assertEquals(V8Script.CompilationType.API, testScript.getCompilationType());
+        long contextRef = testScript.getContext().getReference();
+        assertEquals(testFilePath+" (lines: "+TEST_NUM_LINES+")", testScript.getText());
+        V8Value contextValue = lastResponse.getReferencedValue(contextRef);
+        assertEquals(V8Value.Type.Context, contextValue.getType());
+        
+        assertNotNull(scriptsByName.get("node.js"));
+        assertNotNull(scriptsByName.get("events.js"));
+        assertNotNull(scriptsByName.get("module.js"));
+        assertNotNull(scriptsByName.get("fs.js"));
+        
+        V8Debug.TestAccess.send(v8dbg, Scripts.createRequest(123, new V8Script.Types(true, false, false), false));
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Scripts, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        srb = (Scripts.ResponseBody) lastResponse.getBody();
+        scripts = srb.getScripts();
+        for (int i = 0; i < scripts.length; i++) {
+            assertEquals(V8Script.Type.NATIVE, scripts[i].getScriptType());
+        }
+        
+        V8Debug.TestAccess.send(v8dbg, Scripts.createRequest(123, new V8Script.Types(false, true, false), false));
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Scripts, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        srb = (Scripts.ResponseBody) lastResponse.getBody();
+        scripts = srb.getScripts();
+        for (int i = 0; i < scripts.length; i++) {
+            assertEquals(V8Script.Type.EXTENSION, scripts[i].getScriptType());
+        }
+        
+        V8Debug.TestAccess.send(v8dbg, Scripts.createRequest(123, new V8Script.Types(false, false, true), false));
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Scripts, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        srb = (Scripts.ResponseBody) lastResponse.getBody();
+        scripts = srb.getScripts();
+        for (int i = 0; i < scripts.length; i++) {
+            assertEquals(V8Script.Type.NORMAL, scripts[i].getScriptType());
+        }
+        
+        V8Debug.TestAccess.send(v8dbg, Scripts.createRequest(123, null, null, true, "TestDebug"));
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Scripts, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        srb = (Scripts.ResponseBody) lastResponse.getBody();
+        scripts = srb.getScripts();
+        assertEquals(1, scripts.length);
+        assertEquals(TEST_NUM_CHARS, scripts[0].getSource().length());
+        
+        int numIDs = 5;
+        long[] ids = new long[numIDs];
+        int i = 0;
+        for (V8Script script : scriptsByName.values()) {
+            ids[i++] = script.getId();
+            if (i >= numIDs) {
+                break;
+            }
+        }
+        V8Debug.TestAccess.send(v8dbg, Scripts.createRequest(123, null, ids, false, null));
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Scripts, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        srb = (Scripts.ResponseBody) lastResponse.getBody();
+        scripts = srb.getScripts();
+        assertEquals(numIDs, scripts.length);
+        Set<Long> allIDs = new HashSet<>();
+        for (i = 0; i < numIDs; i++) {
+            allIDs.add(ids[i]);
+        }
+        for (i = 0; i < numIDs; i++) {
+            allIDs.remove(scripts[i].getId());
+        }
+        assertTrue("scripts with IDs "+allIDs.toString()+" were not returned", allIDs.isEmpty());
     }
     
     private final class FunctionCheck {

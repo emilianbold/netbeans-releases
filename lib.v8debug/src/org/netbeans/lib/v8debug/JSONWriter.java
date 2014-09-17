@@ -162,8 +162,12 @@ public class JSONWriter {
                 return obj;
             case Scripts:
                 Scripts.Arguments scargs = (Scripts.Arguments) arguments;
-                obj.put(TYPES, scargs.getTypes().getIntTypes());
-                obj.put(IDs, array(scargs.getIds()));
+                if (scargs.getTypes() != null) {
+                    obj.put(TYPES, scargs.getTypes().getIntTypes());
+                }
+                if (scargs.getIds() != null) {
+                    obj.put(IDs, array(scargs.getIds()));
+                }
                 storeIf(scargs.isIncludeSource(), obj, INCLUDE_SOURCE);
                 storeIf(scargs.getNameFilter(), obj, FILTER);
                 storeIf(scargs.getIdFilter(), obj, FILTER);
