@@ -141,9 +141,9 @@ public class CommentHandlerService implements CommentHandler {
                 if (to == null) {
                     map.put(toTree, to = new CommentSetImpl());
                 }
-                int index = 0;
-                int last = -1;
                 for (RelativePosition pos : RelativePosition.values()) {
+                    int index = 0;
+                    int last = -1;
                     List<Comment> l = from.getComments(pos);
                     if (nonEmpty) {
                         boolean nonWs = false;
