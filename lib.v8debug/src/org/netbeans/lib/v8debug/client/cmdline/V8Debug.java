@@ -256,10 +256,12 @@ public class V8Debug {
                         break;
                     case "over":
                         cc.send(Continue.createRequest(requestSequence++, V8StepAction.next));
+                        break;
                     case "in":
                     case "into":
                     case "":
                         cc.send(Continue.createRequest(requestSequence++, V8StepAction.in));
+                        break;
                     default:
                         printMSG("ERR_UnknownCommandStep", args);
                         printPrompt();
