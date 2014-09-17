@@ -195,7 +195,7 @@ public class JSONReader {
                 V8Frame frame = getFrame(obj);
                 return new Frame.ResponseBody(frame);
             case Lookup:
-                Map<Long, V8Value> valuesByHandle = new HashMap<>();
+                Map<Long, V8Value> valuesByHandle = new LinkedHashMap<>();
                 for (Object element : obj.values()) {
                     V8Value value = getValue((JSONObject) element);
                     valuesByHandle.put(value.getHandle(), value);
@@ -395,7 +395,7 @@ public class JSONReader {
                 PropertyLong constructorFunctionHandle = getReferenceProperty(obj, VALUE_CONSTRUCTOR_FUNCTION);
                 PropertyLong protoObject = getReferenceProperty(obj, VALUE_PROTO_OBJECT);
                 PropertyLong prototypeObject = getReferenceProperty(obj, VALUE_PROTOTYPE_OBJECT);
-                Map<String, V8Object.Property> properties = getProperties((JSONArray) obj.get(VALUE_PROPERTIES));
+                Map<String, V8Object.Property> properties = getProperties((JSONArray) obj.get(VALUE_PROPERTIES), null);
                 return new V8Function(handle, constructorFunctionHandle,
                                       protoObject, prototypeObject,
                                       name, inferredName,
@@ -406,11 +406,22 @@ public class JSONReader {
                 constructorFunctionHandle = getReferenceProperty(obj, VALUE_CONSTRUCTOR_FUNCTION);
                 protoObject = getReferenceProperty(obj, VALUE_PROTO_OBJECT);
                 prototypeObject = getReferenceProperty(obj, VALUE_PROTOTYPE_OBJECT);
-                properties = getProperties((JSONArray) obj.get(VALUE_PROPERTIES));
+                V8Object.Array[] arrayRef;
+                boolean isArray = "Array".equals(className);
+                if (isArray) {
+                    arrayRef = new V8Object.Array[] { null };
+                } else {
+                    arrayRef = null;
+                }
+                properties = getProperties((JSONArray) obj.get(VALUE_PROPERTIES), arrayRef);
+                if (isArray && arrayRef[0] == null) {
+                    arrayRef[0] = new V8Object.DefaultArray();
+                }
+                V8Object.Array array = (arrayRef != null) ? arrayRef[0] : null;
                 return new V8Object(handle, className,
                                     constructorFunctionHandle,
                                     protoObject, prototypeObject,
-                                    properties, text);
+                                    properties, array, text);
             case Frame:
                 // ? TODO
                 return new V8Value(handle, type, text);
@@ -533,7 +544,7 @@ public class JSONReader {
         return references;
     }
     
-    private static Map<String, V8Object.Property> getProperties(JSONArray array) {
+    private static Map<String, V8Object.Property> getProperties(JSONArray array, V8Object.Array[] oArrayRef) {
         if (array == null) {
             return null;
         }
@@ -542,22 +553,40 @@ public class JSONReader {
         }
         Map<String, V8Object.Property> properties = new HashMap<>();
         V8Object.Property.Type[] types = V8Object.Property.Type.values();
+        V8Object.DefaultArray oArray = null;
         for (Object obj : array) {
             JSONObject prop = (JSONObject) obj;
-            String name = getString(prop, NAME);
-            long ref = getReference(prop);
-            long attributes = getLong(prop, ATTRIBUTES, 0);
-            long propertyTypeNum = getLong(prop, PROPERTY_TYPE);
-            V8Object.Property.Type type;
-            if (propertyTypeNum < 0) {
-                type = null;
-            } else if (propertyTypeNum < types.length) {
-                type = types[(int) propertyTypeNum];
-            } else {
-                throw new IllegalArgumentException("Unknown property type: "+propertyTypeNum);
+            Object nameObj = prop.get(NAME);
+            if (nameObj == null) {
+                continue;
             }
-            V8Object.Property property = new V8Object.Property(name, type, (int) attributes, ref);
-            properties.put(name, property);
+            //String name = getString(prop, NAME);
+            long ref = getReference(prop);
+            if (oArrayRef != null && nameObj instanceof Long) {
+                // An array
+                if (oArray == null) {
+                    oArray = new V8Object.DefaultArray();
+                }
+                long index = (Long) nameObj;
+                oArray.putReferenceAt(index, ref);
+            } else {
+                String name = nameObj.toString();
+                long attributes = getLong(prop, ATTRIBUTES, 0);
+                long propertyTypeNum = getLong(prop, PROPERTY_TYPE);
+                V8Object.Property.Type type;
+                if (propertyTypeNum < 0) {
+                    type = null;
+                } else if (propertyTypeNum < types.length) {
+                    type = types[(int) propertyTypeNum];
+                } else {
+                    throw new IllegalArgumentException("Unknown property type: "+propertyTypeNum);
+                }
+                V8Object.Property property = new V8Object.Property(name, type, (int) attributes, ref);
+                properties.put(name, property);
+            }
+        }
+        if (oArrayRef != null) {
+            oArrayRef[0] = oArray;
         }
         return properties;
     }

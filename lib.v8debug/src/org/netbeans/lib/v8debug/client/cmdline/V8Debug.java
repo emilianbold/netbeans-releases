@@ -166,7 +166,7 @@ public class V8Debug {
     }
     
     private void startCommandLoop() throws IOException {
-        new Thread() {
+        Thread cmdLoop = new Thread() {
             @Override
             public void run() {
                 String line;
@@ -188,7 +188,9 @@ public class V8Debug {
                     printERR("ERR_IO", ex.getLocalizedMessage());
                 }
             }
-        }.start();
+        };
+        cmdLoop.setDaemon(true);
+        cmdLoop.start();
         // Initial internal commands:
         internalCommands.put(requestSequence, V8Command.Scripts);
         V8Request scriptsRequest = Scripts.createRequest(requestSequence++);
@@ -428,6 +430,7 @@ public class V8Debug {
                 return true;
             case "lookup":
                 if (!args.isEmpty()) {
+                    args = args.replace(',', ' ');
                     Scanner scan = new Scanner(args);
                     if (!scan.hasNextLong()) {
                         printMSG("ERR_WrongObjectHandle", args);
@@ -448,6 +451,7 @@ public class V8Debug {
                     printMSG("ERR_MissingObjectHandle");
                     printPrompt();
                 }
+                return true;
             case "gc":
                 if (args.isEmpty()) {
                     cc.send(GC.createRequest(requestSequence++));
@@ -732,7 +736,6 @@ public class V8Debug {
                 for (Map.Entry<Long, V8Value> ve : values.entrySet()) {
                     System.out.print(ve.getKey()+": ");
                     print(ve.getValue());
-                    System.out.println("");
                 }
                 return true;
                 /*
@@ -967,7 +970,7 @@ public class V8Debug {
                 }
                 return name+"()";
             case Null:
-                return String.valueOf(null);
+                return String.valueOf((Object) null);
             case Number:
                 V8Number n = (V8Number) value;
                 switch (n.getKind()) {
@@ -1027,7 +1030,7 @@ public class V8Debug {
             final V8Debug v8dbg = new V8Debug(hostName, port);
             v8dbg.testeable = testeable;
             v8dbg.startCommandLoop();
-            new Thread("Response loop") {
+            Thread responseLoop = new Thread("Response loop") {
                 @Override
                 public void run() {
                     try {
@@ -1036,7 +1039,9 @@ public class V8Debug {
                         Logger.getLogger(V8Debug.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-            }.start();
+            };
+            responseLoop.setDaemon(true);
+            responseLoop.start();
             return v8dbg;
         }
         
