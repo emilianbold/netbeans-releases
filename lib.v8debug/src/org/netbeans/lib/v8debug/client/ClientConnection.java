@@ -47,11 +47,13 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.simple.JSONArray;
 import org.netbeans.lib.v8debug.JSONReader;
 import org.netbeans.lib.v8debug.JSONWriter;
 import org.netbeans.lib.v8debug.V8Event;
@@ -59,6 +61,7 @@ import org.netbeans.lib.v8debug.V8Request;
 import org.netbeans.lib.v8debug.V8Response;
 import org.netbeans.lib.v8debug.V8Type;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ContainerFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
@@ -80,6 +83,7 @@ public final class ClientConnection {
     private final InputStream serverIn;
     private final OutputStream serverOut;
     private final byte[] buffer = new byte[BUFFER_SIZE];
+    private final ContainerFactory containerFactory = new LinkedJSONContainterFactory();
     
     public ClientConnection(String serverName, int serverPort) throws IOException {
         server = new Socket(serverName, serverPort);
@@ -254,7 +258,7 @@ public final class ClientConnection {
             return ;
         }
         JSONParser parser = new JSONParser();
-        JSONObject obj = (JSONObject) parser.parse(message);
+        JSONObject obj = (JSONObject) parser.parse(message, containerFactory);
         //V8Packet packet = V8Packet.get(obj);
         V8Type type = JSONReader.getType(obj);
         switch (type) {
@@ -278,4 +282,19 @@ public final class ClientConnection {
         
         void event(V8Event event);
     }
+    
+    private static final class LinkedJSONContainterFactory implements ContainerFactory {
+
+        @Override
+        public Map createObjectContainer() {
+            return new LinkedJSONObject();
+        }
+
+        @Override
+        public List creatArrayContainer() {
+            return new JSONArray();
+        }
+        
+    }
+    
 }
