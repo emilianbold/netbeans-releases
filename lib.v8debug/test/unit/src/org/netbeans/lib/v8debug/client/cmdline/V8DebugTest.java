@@ -1322,7 +1322,7 @@ public class V8DebugTest {
         assertTrue(lastResponse.isRunning());
         V8Event lastEvent = responseHandler.getLastEvent();
         assertEquals(V8Event.Kind.Break, lastEvent.getKind());
-        checkFrame(4, LINE_BRKP_REFS-1, "    r3();               // breakpoint");
+        checkFrame(4, LINE_BRKP_REFS-1, "    r4();               // breakpoint");
         
         V8Debug.TestAccess.doCommand(v8dbg, "frame");
         lastResponse = responseHandler.getLastResponse();

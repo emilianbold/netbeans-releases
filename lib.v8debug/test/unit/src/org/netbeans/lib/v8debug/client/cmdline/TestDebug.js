@@ -204,5 +204,5 @@ function testReferences() {
     }
     var john = new Person("John", 30, 'm');
     var sandra = new Person("Sandra", 29, 'f');
-    r3();               // breakpoint
+    r4();               // breakpoint
 }
