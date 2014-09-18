@@ -76,6 +76,7 @@ import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelContr
 import org.netbeans.modules.javascript.nodejs.util.ExternalExecutable;
 import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
+import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
@@ -140,6 +141,19 @@ public class NodeExecutable {
     public static NodeExecutable forProject(Project project, boolean showCustomizer) {
         assert project != null;
         return forProjectInternal(project, showCustomizer);
+    }
+
+    @CheckForNull
+    public static NodeExecutable forPath(String path) {
+        ValidationResult result = new ValidationResult();
+        ValidationUtils.validateNode(result, path);
+        if (validateResult(result) != null) {
+            return null;
+        }
+        if (Utilities.isMac()) {
+            return new MacNodeExecutable(path, null);
+        }
+        return new NodeExecutable(path, null);
     }
 
     @CheckForNull
