@@ -3116,7 +3116,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case EXCEPTION_PARAMETER:
                         case PARAMETER:
                             return startsWith(env, e.getSimpleName().toString()) &&
-                                    (method == e.getEnclosingElement() || eu.isEffectivelyFinal((VariableElement)e) ||
+                                    (method == e.getEnclosingElement() ||
+                                    env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0 && eu.isEffectivelyFinal((VariableElement)e) ||
                                     (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT ||
                                     e.getEnclosingElement().getKind() == STATIC_INIT ||
                                     e.getEnclosingElement().getKind() == METHOD && e.getEnclosingElement().getEnclosingElement().getKind() == FIELD))) &&
@@ -4465,7 +4466,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     results.add(javaCompletionItemFactory.createInitializeAllConstructorItem(env.getController(), true, uninitializedFinalFields, dctor2generate.getKind() == CONSTRUCTOR ? (ExecutableElement)dctor2generate : null, te, anchorOffset));
                 }
                 for (Map.Entry<ExecutableElement, boolean[]> entry : ctors2generate.entrySet()) {
-                    if (!(entry.getKey() == dctor2generate && ((ExecutableType)dctor2generate.asType()).getParameterTypes().isEmpty())) {
+                    if (!(entry.getKey() == dctor2generate && uninitializedFinalFields.isEmpty() && ((ExecutableType)dctor2generate.asType()).getParameterTypes().isEmpty())) {
                         if (entry.getValue()[0]) {
                             results.add(javaCompletionItemFactory.createInitializeAllConstructorItem(env.getController(), false, uninitializedFinalFields, entry.getKey(), te, anchorOffset));
                         }

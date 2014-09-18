@@ -1063,9 +1063,15 @@ public class BinaryAnalyser {
                             InputStream in = new BufferedInputStream(new FileInputStream(file));
                             try {
                                 analyse(in);
-                            } catch (InvalidClassFormatException icf) {
-                                LOGGER.log(Level.WARNING, "Invalid class file format: {0}", file.getAbsolutePath());      //NOI18N
-
+                            } catch (InvalidClassFormatException | RuntimeException icf) {
+                                LOGGER.log(
+                                    Level.WARNING,
+                                    "Invalid class file format: {0}",      //NOI18N
+                                    file.getAbsolutePath());
+                                    LOGGER.log(
+                                        Level.INFO,
+                                        "Class File Exception Details",             //NOI18N
+                                        icf);
                             } finally {
                                 in.close();
                             }
@@ -1120,10 +1126,16 @@ public class BinaryAnalyser {
                     final InputStream in = new BufferedInputStream (fo.getInputStream());
                     try {
                         analyse (in);
-                    } catch (InvalidClassFormatException icf) {
-                        LOGGER.log(Level.WARNING, "Invalid class file format: {0}", FileUtil.getFileDisplayName(fo));      //NOI18N
-                    }
-                    finally {
+                    } catch (InvalidClassFormatException | RuntimeException icf) {
+                            LOGGER.log(
+                                    Level.WARNING,
+                                    "Invalid class file format: {0}",      //NOI18N
+                                    FileUtil.getFileDisplayName(fo));
+                            LOGGER.log(
+                                    Level.INFO,
+                                    "Class File Exception Details",             //NOI18N
+                                    icf);
+                    } finally {
                         in.close();
                     }
                     if (lmListener.isLowMemory()) {
