@@ -59,10 +59,13 @@ public final class NodeJsOptions {
 
     private static final NodeJsOptions INSTANCE = new NodeJsOptions();
 
+    private final Preferences preferences;
+
     private volatile boolean nodeSearched = false;
 
 
     private NodeJsOptions() {
+        preferences = NbPreferences.forModule(NodeJsOptions.class).node(PREFERENCES_PATH);
     }
 
     public static NodeJsOptions getInstance() {
@@ -70,16 +73,16 @@ public final class NodeJsOptions {
     }
 
     public void addPreferenceChangeListener(PreferenceChangeListener listener) {
-        getPreferences().addPreferenceChangeListener(listener);
+        preferences.addPreferenceChangeListener(listener);
     }
 
     public void removePreferenceChangeListener(PreferenceChangeListener listener) {
-        getPreferences().removePreferenceChangeListener(listener);
+        preferences.removePreferenceChangeListener(listener);
     }
 
     @CheckForNull
     public String getNode() {
-        String path = getPreferences().get(NODE_PATH, null);
+        String path = preferences.get(NODE_PATH, null);
         if (path == null && !nodeSearched) {
             nodeSearched = true;
             List<String> files = FileUtils.findFileOnUsersPath(NodeExecutable.NODE_NAME);
@@ -92,11 +95,7 @@ public final class NodeJsOptions {
     }
 
     public void setNode(String node) {
-        getPreferences().put(NODE_PATH, node);
-    }
-
-    private Preferences getPreferences() {
-        return NbPreferences.forModule(NodeJsOptions.class).node(PREFERENCES_PATH);
+        preferences.put(NODE_PATH, node);
     }
 
 }
