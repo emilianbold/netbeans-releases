@@ -115,6 +115,12 @@ public class NodeJsDataProvider {
     private static final String MODULES = "modules"; //NOI18N
     private static final String NAME = "name"; //NOI18N
     private static final String DESCRIPTION = "desc"; //NOI18N
+    private static final String GLOBALS = "globals"; //NOI18N
+    private static final String VARS = "vars";  //NOI18N
+    private static final String PARAMS = "params";  //NOI18N
+    private static final String METHODS = "methods";    //NOI18N
+    private static final String PROPERTIES = "properties";  //NOI18N
+    private static final String CLASSES = "classes";    //NOI18N
 
     private NodeJsDataProvider() {
         this.loadingStarted = false;
@@ -204,7 +210,7 @@ public class NodeJsDataProvider {
             JsObject globalObject = factory.newGlobalObject(FileUtil.toFileObject(apiFile), (int) apiFile.length());
             JSONObject root = (JSONObject) JSONValue.parse(content);
             if (root != null) {
-                JSONArray globals = getJSONArrayProperty(root, "globals");
+                JSONArray globals = getJSONArrayProperty(root, GLOBALS);
                 if (globals != null) {
                     for (Object jsonValue : globals) {
                         if (jsonValue instanceof JSONObject) {
@@ -213,12 +219,12 @@ public class NodeJsDataProvider {
                             if (name != null) {
                                 JsObject property = createProperty(factory, globalObject, global);
                                 addProperties(factory, property, (DeclarationScope) globalObject, global);
-                                addMethods(factory, property, (DeclarationScope)globalObject, global);
+                                addMethods(factory, property, (DeclarationScope) globalObject, global);
                             }
                         }
                     }
                 }
-                JSONArray vars = getJSONArrayProperty(root, "vars");
+                JSONArray vars = getJSONArrayProperty(root, VARS);
                 if (vars != null) {
                     for (Object jsonValue : vars) {
                         if (jsonValue instanceof JSONObject) {
@@ -232,7 +238,7 @@ public class NodeJsDataProvider {
 //                                }
                                 JsObject property = createProperty(factory, globalObject, var);
                                 addProperties(factory, property, (DeclarationScope) globalObject, var);
-                                addMethods(factory, property, (DeclarationScope)globalObject, var);
+                                addMethods(factory, property, (DeclarationScope) globalObject, var);
                             }
                         }
                     }
@@ -245,17 +251,17 @@ public class NodeJsDataProvider {
     }
 
     private void addMethods(final ModelElementFactory factory, final JsObject toObject, final DeclarationScope scope, final JSONObject fromObject) {
-        JSONArray methods = getJSONArrayProperty(fromObject, "methods");
+        JSONArray methods = getJSONArrayProperty(fromObject, METHODS);
         if (methods != null) {
             for (Object methodO : methods) {
                 if (methodO instanceof JSONObject) {
                     JSONObject method = (JSONObject) methodO;
                     String methodName = getJSONStringProperty(method, NAME);
                     JSONArray signatures = getJSONArrayProperty(method, "signatures");
-                    String doc = getJSONStringProperty(method, "desc");
+                    String doc = getJSONStringProperty(method, DESCRIPTION);
                     if (methodName != null && signatures != null) {
                         for (Object signature : signatures) {
-                            JSONArray params = getJSONArrayProperty((JSONObject) signature, "params");
+                            JSONArray params = getJSONArrayProperty((JSONObject) signature, PARAMS);
                             List<String> paramNames = new ArrayList<String>();
                             if (params != null && !params.isEmpty()) {
                                 for (Object param : params) {
@@ -282,7 +288,7 @@ public class NodeJsDataProvider {
         if (propertyName != null) {
             JsObject object = factory.newObject(parent, propertyName, OffsetRange.NONE, true, NodeJsUtils.NODEJS_NAME);
             parent.addProperty(object.getName(), object);
-            String doc = getJSONStringProperty(jsonObject, "desc");
+            String doc = getJSONStringProperty(jsonObject, DESCRIPTION);
             object.setDocumentation(Documentation.create(doc, getDocumentationURL(propertyName)));
             return object;
         }
@@ -290,7 +296,7 @@ public class NodeJsDataProvider {
     }
 
     private void addProperties(final ModelElementFactory factory, final JsObject toObject, final DeclarationScope scope, final JSONObject fromObject) {
-        JSONArray properties = getJSONArrayProperty(fromObject, "properties");
+        JSONArray properties = getJSONArrayProperty(fromObject, PROPERTIES);
         if (properties != null) {
             for (Object propertyO : properties) {
                 if (propertyO instanceof JSONObject) {
@@ -341,7 +347,7 @@ public class NodeJsDataProvider {
     private URL getDocumentationURL(String name, Collection<String> params) {
         URL result = getDocumentationURL(name);
         if (result != null) {
-            StringBuilder sb = new StringBuilder(); 
+            StringBuilder sb = new StringBuilder();
             sb.append(result.toExternalForm());
             for (String param : params) {
                 sb.append('_').append(param);
@@ -463,5 +469,77 @@ public class NodeJsDataProvider {
             }
 
         }
+    }
+
+    /**
+     *
+     * @param fqn fully qualified name of the type.
+     * @return
+     */
+    String getDocumentation(String fqn) {
+        String moduleName = fqn.startsWith(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX)
+                ? fqn.substring(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX.length()) : fqn;
+        String[] parts = moduleName.split("\\.");
+        JSONArray modules = getModules();
+        JSONObject module = null;
+        if (modules != null) {
+            for (Object moduleObject : modules) {
+                module = (JSONObject) moduleObject;
+                String name = getJSONStringProperty(module, NAME);
+                if (name != null && name.equals(parts[0])) {
+                    break;
+                }
+                module = null;
+            }
+        }
+        if (module != null) {
+            JSONObject property = module;
+            for (int i = 1; i < parts.length; i++) {
+                if ("prototype".equals(parts[i])) {
+                    continue;
+                }
+                property = findProperty(property, parts[i]);
+                if (property == null) {
+                    break;
+                }
+            }
+            return property == null ? null : getJSONStringProperty(property, DESCRIPTION);
+        }
+        return null;
+    }
+
+    private JSONObject findProperty(final JSONObject parent, final String name) {
+        JSONArray properties = getJSONArrayProperty(parent, PROPERTIES);
+        if (properties != null) {
+            for (Object propertyTmp : properties) {
+                JSONObject property = (JSONObject) propertyTmp;
+                String propertyName = getJSONStringProperty(property, NAME);
+                if (propertyName != null && propertyName.equals(name)) {
+                    return property;
+                }
+            }
+        }
+        properties = getJSONArrayProperty(parent, METHODS);
+        if (properties != null) {
+            for (Object propertyTmp : properties) {
+                JSONObject property = (JSONObject) propertyTmp;
+                String propertyName = getJSONStringProperty(property, NAME);
+                if (propertyName != null && propertyName.equals(name)) {
+                    return property;
+                }
+            }
+        }
+        properties = getJSONArrayProperty(parent, CLASSES);
+        if (properties != null) {
+            String className = getJSONStringProperty(parent, NAME) + '.' + name;
+            for (Object propertyTmp : properties) {
+                JSONObject property = (JSONObject) propertyTmp;
+                String propertyName = getJSONStringProperty(property, NAME);
+                if (propertyName != null && (propertyName.equals(className) || propertyName.equals(name))) {
+                    return property;
+                }
+            }
+        }
+        return null;
     }
 }
