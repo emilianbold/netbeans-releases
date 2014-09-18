@@ -223,7 +223,7 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
             }
             return sb.toString();
         } catch (GitException ex) {
-            LOG.log(Level.INFO, null, ex);
+            LOG.log(Level.FINE, null, ex);
             return commit;
         }
     }
