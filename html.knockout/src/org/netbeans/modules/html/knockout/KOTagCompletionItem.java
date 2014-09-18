@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.knockout;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;
@@ -95,7 +96,11 @@ public class KOTagCompletionItem extends HtmlCompletionItem.Tag {
         return element.getName();
     }
 
-    public void addAlternativeLocation(String location) {
-        alternativeLocations.add(location);
+    public void addAlternativeLocation(URL url) {
+        File file = new File(url.toString());
+        if (!element.getDeclarationFile().equals(url)
+                && !alternativeLocations.contains(file.getName())) {
+            alternativeLocations.add(file.getName());
+        }
     }
 }
