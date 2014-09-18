@@ -45,11 +45,14 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
+import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.netbeans.modules.web.common.api.Version;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -57,24 +60,10 @@ public final class NodeJsSourceRoots {
 
     private static final Logger LOGGER = Logger.getLogger(NodeJsSourceRoots.class.getName());
 
-    private static final List<URL> NODE_PATH = new CopyOnWriteArrayList<>();
-
     private final Project project;
 
-    static {
-        String nodePath = System.getenv("NODE_PATH"); // NOI18N
-        if (nodePath != null) {
-            List<URL> roots = new ArrayList<>();
-            for (String path : nodePath.split(File.pathSeparator)) {
-                try {
-                    roots.add(Utilities.toURI(FileUtil.normalizeFile(new File(path))).toURL());
-                } catch (MalformedURLException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                }
-            }
-            NODE_PATH.addAll(roots);
-        }
-    }
+    // @GuardedBy("this")
+    private List<URL> sourceRoots = null;
 
 
     public NodeJsSourceRoots(Project project) {
@@ -82,8 +71,39 @@ public final class NodeJsSourceRoots {
         this.project = project;
     }
 
-    public List<URL> getSourceRoots() {
-        return new ArrayList<>(NODE_PATH);
+    public synchronized List<URL> getSourceRoots() {
+        if (sourceRoots == null) {
+            sourceRoots = findSourceRoots();
+        }
+        return new ArrayList<>(sourceRoots);
+    }
+
+    public synchronized void resetSourceRoots() {
+        sourceRoots = null;
+    }
+
+    private List<URL> findSourceRoots() {
+        NodeExecutable node = NodeExecutable.forProject(project, false);
+        if (node == null) {
+            return Collections.emptyList();
+        }
+        Version version = node.getVersion();
+        if (version == null) {
+            return Collections.emptyList();
+        }
+        if (!FileUtils.hasNodeSources(version)) {
+            // XXX project problem?
+            return Collections.emptyList();
+        }
+        File nodeSources = FileUtils.getNodeSources(version);
+        try {
+            URL nodeLib = Utilities.toURI(FileUtil.normalizeFile(new File(nodeSources, "lib"))).toURL(); // NOI18N
+            return Collections.singletonList(nodeLib);
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            assert false;
+        }
+        return Collections.emptyList();
     }
 
 }

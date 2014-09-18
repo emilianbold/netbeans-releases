@@ -42,12 +42,11 @@
 
 package org.netbeans.modules.javascript.nodejs.preferences;
 
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.javascript.nodejs.platform.NodeJsPlatformProvider;
-import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 
 /**
@@ -55,19 +54,27 @@ import org.netbeans.modules.javascript.nodejs.util.FileUtils;
  */
 public final class NodeJsPreferences {
 
-    private static final String ENABLED = "enabled"; // NOI18N
-    private static final String NODE_PATH = "node.path"; // NOI18N
-    private static final String NODE_DEFAULT = "node.default"; // NOI18N
+    public static final String ENABLED = "enabled"; // NOI18N
+    public static final String NODE_PATH = "node.path"; // NOI18N
+    public static final String NODE_DEFAULT = "node.default"; // NOI18N
 
-    private final NodeJsSupport nodeJsSupport;
     private final Project project;
 
+    // @GuardedBy("this")
+    private Preferences preferences;
 
-    public NodeJsPreferences(NodeJsSupport nodeJsSupport, Project project) {
-        assert nodeJsSupport != null;
+
+    public NodeJsPreferences(Project project) {
         assert project != null;
-        this.nodeJsSupport = nodeJsSupport;
         this.project = project;
+    }
+
+    public void addPreferenceChangeListener(PreferenceChangeListener listener) {
+        getPreferences().addPreferenceChangeListener(listener);
+    }
+
+    public void removePreferenceChangeListener(PreferenceChangeListener listener) {
+        getPreferences().removePreferenceChangeListener(listener);
     }
 
     public boolean isEnabled() {
@@ -75,11 +82,7 @@ public final class NodeJsPreferences {
     }
 
     public void setEnabled(boolean enabled) {
-        boolean original = isEnabled();
         getPreferences().putBoolean(ENABLED, enabled);
-        if (original != enabled) {
-            nodeJsSupport.firePropertyChanged(NodeJsPlatformProvider.PROP_ENABLED, original, enabled);
-        }
     }
 
     @CheckForNull
@@ -99,8 +102,11 @@ public final class NodeJsPreferences {
         getPreferences().putBoolean(NODE_DEFAULT, defaultNode);
     }
 
-    private Preferences getPreferences() {
-        return ProjectUtils.getPreferences(project, NodeJsPreferences.class, false);
+    private synchronized Preferences getPreferences() {
+        if (preferences == null) {
+            preferences = ProjectUtils.getPreferences(project, NodeJsPreferences.class, false);
+        }
+        return preferences;
     }
 
 }

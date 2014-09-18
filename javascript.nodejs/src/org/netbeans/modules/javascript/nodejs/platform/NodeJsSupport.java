@@ -59,15 +59,18 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.WeakListeners;
 
-public final class NodeJsSupport implements PreferenceChangeListener, PropertyChangeListener {
+public final class NodeJsSupport {
 
-    private static final Logger LOGGER = Logger.getLogger(NodeJsSupport.class.getName());
+    static final Logger LOGGER = Logger.getLogger(NodeJsSupport.class.getName());
 
+    final Project project;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    private final Project project;
+    final PreferenceChangeListener optionsListener = new OptionsListener();
+    final PreferenceChangeListener preferencesListener = new PreferencesListener();
+    private final PropertyChangeListener packageJsonListener = new PackageJsonListener();
+    final NodeJsPreferences preferences;
     private final ActionProvider actionProvider;
-    private final NodeJsSourceRoots sourceRoots;
-    private final NodeJsPreferences preferences;
+    final NodeJsSourceRoots sourceRoots;
     private final PackageJson packageJson;
 
 
@@ -76,7 +79,7 @@ public final class NodeJsSupport implements PreferenceChangeListener, PropertyCh
         this.project = project;
         actionProvider = new NodeJsActionProvider(project);
         sourceRoots = new NodeJsSourceRoots(project);
-        preferences = new NodeJsPreferences(this, project);
+        preferences = new NodeJsPreferences(project);
         packageJson = new PackageJson(project);
     }
 
@@ -85,7 +88,7 @@ public final class NodeJsSupport implements PreferenceChangeListener, PropertyCh
         NodeJsSupport support = new NodeJsSupport(project);
         // listeners
         NodeJsOptions nodeJsOptions = NodeJsOptions.getInstance();
-        nodeJsOptions.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, support, nodeJsOptions));
+        nodeJsOptions.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, support.optionsListener, nodeJsOptions));
         return support;
     }
 
@@ -124,45 +127,83 @@ public final class NodeJsSupport implements PreferenceChangeListener, PropertyCh
     }
 
     void projectOpened() {
-        packageJson.addPropertyChangeListener(this);
+        preferences.addPreferenceChangeListener(preferencesListener);
+        packageJson.addPropertyChangeListener(packageJsonListener);
         packageJson.init();
     }
 
     public void projectClosed() {
-        packageJson.removePropertyChangeListener(this);
+        preferences.removePreferenceChangeListener(preferencesListener);
+        packageJson.removePropertyChangeListener(packageJsonListener);
         packageJson.cleanup();
     }
 
-    //~ Listeners
+    //~ Inner classes
 
-    @Override
-    public void preferenceChange(PreferenceChangeEvent evt) {
-        String projectName = project.getProjectDirectory().getNameExt();
-        if (!preferences.isEnabled()) {
-            LOGGER.log(Level.FINE, "Change event in node.js options ignored, node.js not enabled in project {0}", projectName);
-            return;
+    private final class OptionsListener implements PreferenceChangeListener {
+
+        @Override
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String projectName = project.getProjectDirectory().getNameExt();
+            if (!preferences.isEnabled()) {
+                LOGGER.log(Level.FINE, "Change event in node.js options ignored, node.js not enabled in project {0}", projectName);
+                return;
+            }
+            String key = evt.getKey();
+            LOGGER.log(Level.FINE, "Processing change event {0} in node.js options in project {1}", new Object[] {key, projectName});
+            if (NodeJsOptions.NODE_PATH.equals(key)
+                    && preferences.isDefaultNode()) {
+                sourceRoots.resetSourceRoots();
+                firePropertyChanged(NodeJsPlatformProvider.PROP_SOURCE_ROOTS, null, null);
+            }
         }
-        String key = evt.getKey();
-        LOGGER.log(Level.FINE, "Processing change event {0} in node.js options in project {1}", new Object[] {key, projectName});
-        // XXX fire changes in source roots if nodejs changes
+
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        String projectName = project.getProjectDirectory().getNameExt();
-        if (!preferences.isEnabled()) {
-            LOGGER.log(Level.FINE, "Property change event in package.json ignored, node.js not enabled in project {0}", projectName);
-            return;
+    private final class PreferencesListener implements PreferenceChangeListener {
+
+        @Override
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            String projectName = project.getProjectDirectory().getNameExt();
+            boolean enabled = preferences.isEnabled();
+            String key = evt.getKey();
+            LOGGER.log(Level.FINE, "Processing change event {0} in node.js preferences in project {1}", new Object[] {key, projectName});
+            if (NodeJsPreferences.ENABLED.equals(key)) {
+                firePropertyChanged(NodeJsPlatformProvider.PROP_ENABLED, !enabled, enabled);
+            } else if (!enabled) {
+                LOGGER.log(Level.FINE, "Change event in node.js preferences ignored, node.js not enabled in project {0}", projectName);
+            } else if (NodeJsPreferences.NODE_DEFAULT.equals(key)) {
+                sourceRoots.resetSourceRoots();
+                firePropertyChanged(NodeJsPlatformProvider.PROP_SOURCE_ROOTS, null, null);
+            } else if (NodeJsPreferences.NODE_PATH.equals(key)
+                    && !preferences.isDefaultNode()) {
+                sourceRoots.resetSourceRoots();
+                firePropertyChanged(NodeJsPlatformProvider.PROP_SOURCE_ROOTS, null, null);
+            }
         }
-        String propertyName = evt.getPropertyName();
-        LOGGER.log(Level.FINE, "Processing property change event {0} in package.json in project {1}", new Object[] {propertyName, projectName});
-        if (PackageJson.PROP_NAME.equals(propertyName)) {
-            firePropertyChanged(NodeJsPlatformProvider.PROP_PROJECT_NAME, evt.getOldValue(), evt.getNewValue());
-        } else if (PackageJson.PROP_SCRIPTS_START.equals(propertyName)) {
-            firePropertyChanged(NodeJsPlatformProvider.PROP_START_FILE, evt.getOldValue(), evt.getNewValue());
-        } else {
-            assert false : "Unknown event: " + propertyName;
+
+    }
+
+    private final class PackageJsonListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            String projectName = project.getProjectDirectory().getNameExt();
+            if (!preferences.isEnabled()) {
+                LOGGER.log(Level.FINE, "Property change event in package.json ignored, node.js not enabled in project {0}", projectName);
+                return;
+            }
+            String propertyName = evt.getPropertyName();
+            LOGGER.log(Level.FINE, "Processing property change event {0} in package.json in project {1}", new Object[]{propertyName, projectName});
+            if (PackageJson.PROP_NAME.equals(propertyName)) {
+                firePropertyChanged(NodeJsPlatformProvider.PROP_PROJECT_NAME, evt.getOldValue(), evt.getNewValue());
+            } else if (PackageJson.PROP_SCRIPTS_START.equals(propertyName)) {
+                firePropertyChanged(NodeJsPlatformProvider.PROP_START_FILE, evt.getOldValue(), evt.getNewValue());
+            } else {
+                assert false : "Unknown event: " + propertyName;
+            }
         }
+
     }
 
 }
