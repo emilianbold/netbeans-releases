@@ -67,11 +67,13 @@ public enum V8Command {
     Disconnect,
     Gc,
     Listbreakpoints,
-    Setvariablevalue;
+    SetVariableValue;
     
     @Override
     public String toString() {
-        return super.toString().toLowerCase();
+        String commandName = super.toString();
+        commandName = Character.toLowerCase(commandName.charAt(0)) + commandName.substring(1);
+        return commandName;
     }
     
     public static V8Command fromString(String commandName) {

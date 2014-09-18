@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -39,73 +39,44 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug.commands;
+
+package org.netbeans.lib.v8debug.vars;
 
 import org.netbeans.lib.v8debug.PropertyLong;
-import org.netbeans.lib.v8debug.V8Arguments;
-import org.netbeans.lib.v8debug.V8Body;
 import org.netbeans.lib.v8debug.V8Command;
-import org.netbeans.lib.v8debug.V8Request;
-import org.netbeans.lib.v8debug.vars.NewValue;
-import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
- *
+ * A new value for {@link V8Command#SetVariableValue} command.
+ * 
  * @author Martin Entlicher
  */
-public final class SetVariableValue {
+public class NewValue {
     
-    private SetVariableValue() {}
+    private final PropertyLong handle;
+    private final V8Value.Type type;
+    private final String description;
     
-    public static V8Request createRequest(long sequence, String name, NewValue newValue, long scopeNumber) {
-        return createRequest(sequence, name, newValue, scopeNumber, null);
+    public NewValue(long handle) {
+        this.handle = new PropertyLong(handle);
+        this.type = null;
+        this.description = null;
     }
     
-    public static V8Request createRequest(long sequence, String name, NewValue newValue, long scopeNumber, Long scopeFrameNumber) {
-        return new V8Request(sequence, V8Command.SetVariableValue, new Arguments(name, newValue, scopeNumber, scopeFrameNumber));
+    public NewValue(V8Value.Type type, String description) {
+        this.handle = new PropertyLong(null);
+        this.type = type;
+        this.description = description;
     }
-    
-    public static final class Arguments extends V8Arguments {
-        
-        private final String name;
-        private final NewValue newValue;
-        private final long scopeNumber;
-        private final PropertyLong scopeFrameNumber;
-        
-        public Arguments(String name, NewValue newValue, long scopeNumber, Long scopeFrameNumber) {
-            this.name = name;
-            this.newValue = newValue;
-            this.scopeNumber = scopeNumber;
-            this.scopeFrameNumber = new PropertyLong(scopeFrameNumber);
-        }
 
-        public String getName() {
-            return name;
-        }
-        
-        public NewValue getNewValue() {
-            return newValue;
-        }
-
-        public long getScopeNumber() {
-            return scopeNumber;
-        }
-
-        public PropertyLong getScopeFrameNumber() {
-            return scopeFrameNumber;
-        }
+    public PropertyLong getHandle() {
+        return handle;
     }
-    
-    public static final class ResponseBody extends V8Body {
-        
-        private final V8Value newValue;
-        
-        public ResponseBody(V8Value newValue) {
-            this.newValue = newValue;
-        }
 
-        public V8Value getNewValue() {
-            return newValue;
-        }
+    public V8Value.Type getType() {
+        return type;
+    }
+
+    public String getDescription() {
+        return description;
     }
 }

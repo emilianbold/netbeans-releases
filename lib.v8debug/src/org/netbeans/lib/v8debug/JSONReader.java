@@ -204,7 +204,7 @@ public class JSONReader {
             case Evaluate:
                 V8Value value = getValue(obj);
                 return new Evaluate.ResponseBody(value);
-            case Setvariablevalue:
+            case SetVariableValue:
                 value = getValue((JSONObject) obj.get(NEW_VALUE));
                 return new SetVariableValue.ResponseBody(value);
             case Scope:

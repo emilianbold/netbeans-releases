@@ -86,10 +86,12 @@ import org.netbeans.lib.v8debug.commands.Scope;
 import org.netbeans.lib.v8debug.commands.Scopes;
 import org.netbeans.lib.v8debug.commands.Scripts;
 import org.netbeans.lib.v8debug.commands.SetBreakpoint;
+import org.netbeans.lib.v8debug.commands.SetVariableValue;
 import org.netbeans.lib.v8debug.commands.Source;
 import org.netbeans.lib.v8debug.commands.Threads;
 import org.netbeans.lib.v8debug.commands.Version;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
+import org.netbeans.lib.v8debug.vars.NewValue;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Boolean;
 import org.netbeans.lib.v8debug.vars.V8Function;
@@ -319,6 +321,8 @@ public class V8DebugTest {
         assertEquals(V8Event.Kind.Break, lastEvent.getKind());
         checkFrame(6, LINE_BRKP_OBJECTS-1, "    o4.ab.vol;          // breakpoint");
         checkObjects();
+        checkSetVars();
+        commandsToTest.remove(V8Command.SetVariableValue);
         
         checkThreads();
         commandsToTest.remove(V8Command.Threads);
@@ -872,6 +876,45 @@ public class V8DebugTest {
                             },
                 "#<Object>"), false);
         checkLocalVar("o5", null, false);
+    }
+    
+    private void checkSetVars() throws IOException, InterruptedException {
+        checkSetVars("o1", V8Value.Type.Number, "10", 0l, null);
+        checkSetVars("o2", V8Value.Type.Number, "3.14", 0l, null);
+        checkSetVars("o3", V8Value.Type.Boolean, "", 0l, null);
+        checkSetVars("o3", V8Value.Type.Boolean, "something", 0l, null);
+        checkSetVars("o1", V8Value.Type.String, "A test String", 0l, null);
+    }
+    private void checkSetVars(String varName, V8Value.Type type, String description, long scope, Long frame) throws IOException, InterruptedException {
+        V8Debug.TestAccess.send(v8dbg, SetVariableValue.createRequest(345, varName, new NewValue(type, description), scope, frame));
+        V8Response lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.SetVariableValue, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        SetVariableValue.ResponseBody svrb = (SetVariableValue.ResponseBody) lastResponse.getBody();
+        V8Value newValue = svrb.getNewValue();
+        assertEquals(type, newValue.getType());
+        switch(type) {
+            case Boolean:
+                assertEquals(description != null && !description.isEmpty(), ((V8Boolean) newValue).getValue());
+                break;
+            case Null:
+                break;
+            case Number:
+                V8Number num = (V8Number) newValue;
+                if (V8Number.Kind.Long.equals(num.getKind())) {
+                    assertEquals(description, Long.toString(num.getLongValue()));
+                } else {
+                    assertEquals(description, Double.toString(num.getDoubleValue()));
+                }
+                break;
+            case String:
+                assertEquals(description, ((V8String) newValue).getValue());
+                break;
+            case Undefined:
+                break;
+        }
     }
 
     private void checkThreads() throws IOException, InterruptedException {

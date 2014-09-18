@@ -62,6 +62,9 @@ import org.netbeans.lib.v8debug.commands.V8Flags;
 import org.netbeans.lib.v8debug.vars.V8Value;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.netbeans.lib.v8debug.vars.NewValue;
+import org.netbeans.lib.v8debug.vars.ReferencedValue;
+import org.netbeans.lib.v8debug.vars.V8Number;
 
 /**
  *
@@ -184,12 +187,12 @@ public class JSONWriter {
                 storeIf(srcargs.getFromLine(), obj, FROM_LINE);
                 storeIf(srcargs.getToLine(), obj, TO_LINE);
                 return obj;
-            case Setvariablevalue:
+            case SetVariableValue:
                 SetVariableValue.Arguments svargs = (SetVariableValue.Arguments) arguments;
                 obj.put(NAME, svargs.getName());
                 obj.put(NEW_VALUE, store(svargs.getNewValue()));
                 JSONObject scope = new JSONObject();
-                storeIf(svargs.getScopeNumber(), scope, NUMBER);
+                scope.put(NUMBER, svargs.getScopeNumber());
                 storeIf(svargs.getScopeFrameNumber(), scope, FRAME_NUMBER);
                 obj.put(SCOPE, scope);
                 return obj;
@@ -250,11 +253,14 @@ public class JSONWriter {
         return obj;
     }
     
-    private static JSONObject store(V8Value value) {
+    private static JSONObject store(NewValue value) {
         JSONObject obj = new JSONObject();
-        obj.put(HANDLE, value.getHandle());
-        obj.put(TYPE, value.getType().toString());
-        // TODO
+        if (value.getHandle().hasValue()) {
+            obj.put(HANDLE, value.getHandle().getValue());
+        } else {
+            obj.put(TYPE, value.getType().toString());
+            storeIf(value.getDescription(), obj, STRING_DESCRIPTION);
+        }
         return obj;
     }
 }

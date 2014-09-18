@@ -72,6 +72,7 @@ class JSONConstants {
     public static final String SOURCE_START = "sourceStart";
     public static final String SOURCE_LENGTH = "sourceLength";
     public static final String COMPILATION_TYPE = "compilationType";
+    public static final String STRING_DESCRIPTION = "stringDescription";
     
     public static final String ARGS_STEP_ACTION = "stepaction";
     public static final String ARGS_STEP_COUNT = "stepcount";
