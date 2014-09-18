@@ -45,15 +45,11 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -87,21 +83,7 @@ public final class NodeJsSourceRoots {
     }
 
     public List<URL> getSourceRoots() {
-        NodeJsOptions options = NodeJsOptions.getInstance();
-        boolean useNodePath = options.isUseNodePath();
-        boolean useNpmGlobalRoot = options.isUseNpmGlobalRoot();
-        if (!useNodePath
-                && !useNpmGlobalRoot) {
-            return Collections.emptyList();
-        }
-        Set<URL> urls = new LinkedHashSet<>();
-        if (useNodePath) {
-            urls.addAll(NODE_PATH);
-        }
-        if (useNpmGlobalRoot) {
-            // XXX
-        }
-        return new ArrayList<>(urls);
+        return new ArrayList<>(NODE_PATH);
     }
 
 }

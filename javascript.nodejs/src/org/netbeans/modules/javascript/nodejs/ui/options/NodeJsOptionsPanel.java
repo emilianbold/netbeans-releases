@@ -43,24 +43,14 @@ package org.netbeans.modules.javascript.nodejs.ui.options;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
-import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
@@ -85,10 +75,7 @@ public final class NodeJsOptionsPanel extends JPanel {
         nodeHintLabel.setText(Bundle.NodeJsOptionsPanel_node_hint(NodeExecutable.NODE_NAME));
 
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
-        ItemListener defaultItemListener = new DefaultItemListener();
         nodeTextField.getDocument().addDocumentListener(defaultDocumentListener);
-        nodePathCheckBox.addItemListener(defaultItemListener);
-        npmGlobalRootCheckBox.addItemListener(defaultItemListener);
     }
 
     public String getNode() {
@@ -97,22 +84,6 @@ public final class NodeJsOptionsPanel extends JPanel {
 
     public void setNode(String node) {
         nodeTextField.setText(node);
-    }
-
-    public boolean isUseNodePath() {
-        return nodePathCheckBox.isSelected();
-    }
-
-    public void setUseNodePath(boolean useNodePath) {
-        nodePathCheckBox.setSelected(useNodePath);
-    }
-
-    public boolean isUseNpmGlobalRoot() {
-        return npmGlobalRootCheckBox.isSelected();
-    }
-
-    public void setUseNpmGlobalRoot(boolean useNpmGlobalRoot) {
-        npmGlobalRootCheckBox.setSelected(useNpmGlobalRoot);
     }
 
     public void setError(String message) {
@@ -147,82 +118,65 @@ public final class NodeJsOptionsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        nodeLabel = new JLabel();
-        nodeTextField = new JTextField();
-        nodeBrowseButton = new JButton();
-        nodeSearchButton = new JButton();
-        nodeHintLabel = new JLabel();
-        foldersLabel = new JLabel();
-        nodePathCheckBox = new JCheckBox();
-        npmGlobalRootCheckBox = new JCheckBox();
-        errorLabel = new JLabel();
+        nodeLabel = new javax.swing.JLabel();
+        nodeTextField = new javax.swing.JTextField();
+        nodeBrowseButton = new javax.swing.JButton();
+        nodeSearchButton = new javax.swing.JButton();
+        nodeHintLabel = new javax.swing.JLabel();
+        errorLabel = new javax.swing.JLabel();
 
-        Mnemonics.setLocalizedText(nodeLabel, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.nodeLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(nodeLabel, org.openide.util.NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.nodeLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(nodeBrowseButton, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.nodeBrowseButton.text")); // NOI18N
-        nodeBrowseButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+        org.openide.awt.Mnemonics.setLocalizedText(nodeBrowseButton, org.openide.util.NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.nodeBrowseButton.text")); // NOI18N
+        nodeBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nodeBrowseButtonActionPerformed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(nodeSearchButton, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.nodeSearchButton.text")); // NOI18N
-        nodeSearchButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+        org.openide.awt.Mnemonics.setLocalizedText(nodeSearchButton, org.openide.util.NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.nodeSearchButton.text")); // NOI18N
+        nodeSearchButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nodeSearchButtonActionPerformed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(nodeHintLabel, "HINT"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(nodeHintLabel, "HINT"); // NOI18N
 
-        Mnemonics.setLocalizedText(foldersLabel, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.foldersLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
-        Mnemonics.setLocalizedText(nodePathCheckBox, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.nodePathCheckBox.text")); // NOI18N
-
-        Mnemonics.setLocalizedText(npmGlobalRootCheckBox, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.npmGlobalRootCheckBox.text")); // NOI18N
-
-        Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
-
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(nodeLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(nodeHintLabel)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(nodeTextField)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(nodeBrowseButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(nodeSearchButton))))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(errorLabel)
-                    .addComponent(nodePathCheckBox)
-                    .addComponent(npmGlobalRootCheckBox)
-                    .addComponent(foldersLabel))
+                .addComponent(errorLabel)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
-        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(nodeLabel)
-                    .addComponent(nodeTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(nodeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(nodeBrowseButton)
                     .addComponent(nodeSearchButton))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(nodeHintLabel)
-                .addGap(18, 18, 18)
-                .addComponent(foldersLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(nodePathCheckBox)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(npmGlobalRootCheckBox)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -252,15 +206,12 @@ public final class NodeJsOptionsPanel extends JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JLabel errorLabel;
-    private JLabel foldersLabel;
-    private JButton nodeBrowseButton;
-    private JLabel nodeHintLabel;
-    private JLabel nodeLabel;
-    private JCheckBox nodePathCheckBox;
-    private JButton nodeSearchButton;
-    private JTextField nodeTextField;
-    private JCheckBox npmGlobalRootCheckBox;
+    private javax.swing.JLabel errorLabel;
+    private javax.swing.JButton nodeBrowseButton;
+    private javax.swing.JLabel nodeHintLabel;
+    private javax.swing.JLabel nodeLabel;
+    private javax.swing.JButton nodeSearchButton;
+    private javax.swing.JTextField nodeTextField;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
@@ -283,15 +234,6 @@ public final class NodeJsOptionsPanel extends JPanel {
         }
 
         private void processUpdate() {
-            fireChange();
-        }
-
-    }
-
-    private final class DefaultItemListener implements ItemListener {
-
-        @Override
-        public void itemStateChanged(ItemEvent e) {
             fireChange();
         }
 

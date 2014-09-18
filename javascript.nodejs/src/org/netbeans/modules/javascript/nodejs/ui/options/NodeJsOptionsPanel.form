@@ -34,12 +34,7 @@
               </Group>
           </Group>
           <Group type="102" attributes="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="nodePathCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="npmGlobalRootCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="foldersLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
+              <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -55,12 +50,6 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="nodeHintLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="foldersLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="nodePathCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="npmGlobalRootCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
               <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
           </Group>
@@ -100,27 +89,6 @@
     <Component class="javax.swing.JLabel" name="nodeHintLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value="HINT" noResource="true"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="foldersLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/javascript/nodejs/ui/options/Bundle.properties" key="NodeJsOptionsPanel.foldersLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="nodePathCheckBox">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/javascript/nodejs/ui/options/Bundle.properties" key="NodeJsOptionsPanel.nodePathCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="npmGlobalRootCheckBox">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/javascript/nodejs/ui/options/Bundle.properties" key="NodeJsOptionsPanel.npmGlobalRootCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="errorLabel">

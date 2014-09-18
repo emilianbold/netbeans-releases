@@ -144,11 +144,7 @@ public final class NodeJsSupport implements PreferenceChangeListener, PropertyCh
         }
         String key = evt.getKey();
         LOGGER.log(Level.FINE, "Processing change event {0} in node.js options in project {1}", new Object[] {key, projectName});
-        if (NodeJsOptions.USE_NODE_PATH.equals(key)
-                || NodeJsOptions.USE_NPM_GLOBAL_ROOT.equals(key)) {
-            boolean newValue = Boolean.parseBoolean(evt.getNewValue());
-            firePropertyChanged(NodeJsPlatformProvider.PROP_SOURCE_ROOTS, !newValue, newValue);
-        }
+        // XXX fire changes in source roots if nodejs changes
     }
 
     @Override
