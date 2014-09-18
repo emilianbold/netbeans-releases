@@ -240,7 +240,7 @@ public class KOHtmlExtension extends HtmlExtension {
                     KOTagCompletionItem completionItem = (KOTagCompletionItem) ci;
                     if (completionItem.getCustomElementName().equals(customElement.getName())) {
                         // custom element with same name is already in the result, just add alternative registration location
-                        completionItem.addAlternativeLocation(new File(customElement.getDeclarationFile().toString()).getName());
+                        completionItem.addAlternativeLocation(customElement.getDeclarationFile());
                         break;
                     }
                 }
