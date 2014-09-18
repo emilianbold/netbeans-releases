@@ -57,7 +57,7 @@ glob_m = Math.sin(glob_m) + Math.cos(glob_n);
     cl.getValue();
     scope();
     testThis();
-    testBreakpoints();
+    testBreakpoints(); testReferences();
 })();
 
 function vars() {
@@ -184,4 +184,25 @@ function testBreakpoints() {
     } else {
         return false;
     }
+}
+
+function testReferences() {
+    var r1 = { ref : {} };
+    var r2 = r1.ref;
+    var r3 = function (r1) {
+        var rf1 = [];
+        rf1[5] = r1;
+        return rf1;
+    }();
+    var r4 = function refFunc(ref) {
+        console.log(r2);
+    };
+    function Person(name, age, sex) {
+        this.name = name;
+        this.age = age;
+        this.sex = sex;
+    }
+    var john = new Person("John", 30, 'm');
+    var sandra = new Person("Sandra", 29, 'f');
+    r3();               // breakpoint
 }

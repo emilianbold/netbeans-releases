@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import junit.framework.AssertionFailedError;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -80,6 +81,7 @@ import org.netbeans.lib.v8debug.commands.Frame;
 import org.netbeans.lib.v8debug.commands.GC;
 import org.netbeans.lib.v8debug.commands.ListBreakpoints;
 import org.netbeans.lib.v8debug.commands.Lookup;
+import org.netbeans.lib.v8debug.commands.References;
 import org.netbeans.lib.v8debug.commands.Scope;
 import org.netbeans.lib.v8debug.commands.Scopes;
 import org.netbeans.lib.v8debug.commands.Scripts;
@@ -110,8 +112,8 @@ public class V8DebugTest {
     private static final String NODE_EXE_PROP = "nodeBinary";   // NOI18N
     private static final String NODE_ARG_DBG = "--debug-brk";   // NOI18N
     
-    private static final int TEST_NUM_LINES = 189;
-    private static final int TEST_NUM_CHARS = 5123;
+    private static final int TEST_NUM_LINES = 210;
+    private static final int TEST_NUM_CHARS = 5638;
     
     private static final Object VALUE_UNDEFINED = new String("<undefined>");
     
@@ -373,6 +375,9 @@ public class V8DebugTest {
         commandsToTest.remove(V8Command.Clearbreakpoint);
         commandsToTest.remove(V8Command.Changebreakpoint);
         
+        checkReferences();
+        commandsToTest.remove(V8Command.References);
+        
         assertTrue("Commands remaining to test: "+commandsToTest.toString(), commandsToTest.isEmpty());
     }
     
@@ -439,7 +444,7 @@ public class V8DebugTest {
         V8Frame f = frames[0];
         assertEquals(89-1, f.getLine());
         assertEquals(8, f.getColumn());
-        assertEquals(3110, f.getPosition());
+        assertEquals(3128, f.getPosition());
         
         Map<String, ReferencedValue> argumentRefs = f.getArgumentRefs();
         assertEquals(1, argumentRefs.size());
@@ -470,7 +475,7 @@ public class V8DebugTest {
         V8Object receiver = (V8Object) receiverRef.getValue();
         assertEquals("global", receiver.getClassName());
         
-        assertEquals("#00 longStack(n=0) "+testFilePath+" line 89 column 9 (position 3111)", f.getText());
+        assertEquals("#00 longStack(n=0) "+testFilePath+" line 89 column 9 (position 3129)", f.getText());
         
         long globalScopeIndex = -1;
         
@@ -494,7 +499,7 @@ public class V8DebugTest {
             f = frames[i];
             assertEquals(86-1, f.getLine());
             assertEquals(8, f.getColumn());
-            assertEquals(3014, f.getPosition());
+            assertEquals(3032, f.getPosition());
             
             argumentRefs = f.getArgumentRefs();
             assertEquals(1, argumentRefs.size());
@@ -507,7 +512,7 @@ public class V8DebugTest {
                 nf = "0"+nf;
             }
             assertEquals("        longStack(n-1);", f.getSourceLineText());
-            assertEquals("#"+nf+" longStack(n="+i+") "+testFilePath+" line 86 column 9 (position 3015)", f.getText());
+            assertEquals("#"+nf+" longStack(n="+i+") "+testFilePath+" line 86 column 9 (position 3033)", f.getText());
         }
         
         f = frames[21];
@@ -661,10 +666,10 @@ public class V8DebugTest {
         checkLocalVar("s3", "s", false);
         checkLocalVar("s4", "\u0011", false);
         checkLocalVar("f1",
-                new FunctionCheck("", "f1", "function (){}", testFilePath, -1, 2787, 73, 21, null, null),
+                new FunctionCheck("", "f1", "function (){}", testFilePath, -1, 2805, 73, 21, null, null),
                 false);
         checkLocalVar("f2",
-                new FunctionCheck("myF2", "", "function myF2(){ return true; }", testFilePath, -1, 2819, 74, 26, null, null),
+                new FunctionCheck("myF2", "", "function myF2(){ return true; }", testFilePath, -1, 2837, 74, 26, null, null),
                 false);
         checkLocalVar("undef", VALUE_UNDEFINED, false);
         checkLocalVar("nul", null, false);
@@ -832,7 +837,7 @@ public class V8DebugTest {
                                                             "fnc"
                                                           },
                                               new Object[]{ "bbb", 2014l,
-                                                            new FunctionCheck("", "o4.ab.fnc", "function (i) { return i+1; }", testFilePath, -1, 3863, 123-1, 34, null, null)
+                                                            new FunctionCheck("", "o4.ab.fnc", "function (i) { return i+1; }", testFilePath, -1, 3881, 123-1, 34, null, null)
                                                           },
                                               "#<Object>"),
                               0l, false, "three and third", "five hundred",
@@ -998,7 +1003,7 @@ public class V8DebugTest {
                                                 "        var b = 20, c = 30, d = 40;\n" +
                                                 "        a = a + b;\n" +
                                                 "    }",
-                                  testFilePath, -1, 4534, 154, 18, null, null) }, "#<Object>"));
+                                  testFilePath, -1, 4552, 154, 18, null, null) }, "#<Object>"));
         assertEquals(5, ((V8Object) scopeVal).getProperties().size());
     }
 
@@ -1280,6 +1285,85 @@ public class V8DebugTest {
         assertEquals(V8Event.Kind.Break, lastEvent.getKind());
         checkLocalVar("i", 51l, false);
         checkLocalVar("sum", 1275l, false);
+    }
+
+    private void checkReferences() throws IOException, InterruptedException {
+        V8Debug.TestAccess.doCommand(v8dbg, "stop at "+testFilePath+":207");
+        V8Response lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
+        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 8, testFilePath, 207-1, -1, 4);
+        V8Debug.TestAccess.doCommand(v8dbg, "cont");
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Continue, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertTrue(lastResponse.isRunning());
+        V8Event lastEvent = responseHandler.getLastEvent();
+        assertEquals(V8Event.Kind.Break, lastEvent.getKind());
+        checkFrame(4, 207-1, "    r3();               // breakpoint");
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "frame");
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Frame, lastResponse.getCommand());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        Frame.ResponseBody fbody = (Frame.ResponseBody) lastResponse.getBody();
+        V8Frame frame = fbody.getFrame();
+        Map<String, ReferencedValue> refs = frame.getLocalRefs();
+        ReferencedValue r1 = refs.get("r1");
+        V8Value r1Val = lastResponse.getReferencedValue(r1.getReference());
+        long ref = ((V8Object) r1Val).getProperties().get("ref").getReference();
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "references "+ref);
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.References, lastResponse.getCommand());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        References.ResponseBody rrb = (References.ResponseBody) lastResponse.getBody();
+        V8Value[] references = rrb.getReferences();
+        assertEquals(3, references.length);
+        V8Object objRef = null;
+        V8Function refFunc = null;
+        V8Function person = null;
+        for (V8Value oref : references) {
+            if (V8Value.Type.Function.equals(oref.getType())) {
+                V8Function fn = (V8Function) oref;
+                if ("refFunc".equals(fn.getName())) {
+                    refFunc = fn;
+                } else if ("Person".equals(fn.getName())) {
+                    person = fn;
+                }
+            } else {
+                V8Object or1 = (V8Object) oref;
+                assertEquals(V8Value.Type.Object, or1.getType());
+                assertEquals("Object", or1.getClassName());
+                V8Object.Property or1RefProp = or1.getProperties().get("ref");
+                assertEquals(V8Object.Property.Type.Field, or1RefProp.getType());
+                objRef = or1;
+            }
+        }
+        assertNotNull("ref field", objRef);
+        assertNotNull("refFunc", refFunc);
+        assertNotNull("Person", person);
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "instances "+person.getHandle());
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.References, lastResponse.getCommand());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        rrb = (References.ResponseBody) lastResponse.getBody();
+        references = rrb.getReferences();
+        assertEquals(2, references.length);
+        ObjectCheck johnCheck = new ObjectCheck("Object", new String[] { "name", "age", "sex" }, new Object[] { "John", 30l, "m"}, "#<Person>");
+        ObjectCheck sandraCheck = new ObjectCheck("Object", new String[] { "name", "age", "sex" }, new Object[] { "Sandra", 29l, "f"}, "#<Person>");
+        try {
+            johnCheck.check((V8Object) references[0]);
+            sandraCheck.check((V8Object) references[1]);
+        } catch (AssertionFailedError afe) {
+            sandraCheck.check((V8Object) references[0]);
+            johnCheck.check((V8Object) references[1]);
+        }
     }
     
     private final class FunctionCheck {
