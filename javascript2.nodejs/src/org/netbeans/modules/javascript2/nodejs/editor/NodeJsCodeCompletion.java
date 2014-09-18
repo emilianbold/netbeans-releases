@@ -56,8 +56,11 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.index.IndexedElement;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -135,6 +138,27 @@ public class NodeJsCodeCompletion implements CompletionProvider {
     public String getHelpDocumentation(ParserResult info, ElementHandle element) {
         if (element instanceof NodeJsElement) {
             return ((NodeJsElement)element).getDocumentation();
+        }
+        String fqn = null;
+        if (element instanceof JsObject) {
+            fqn = ((JsObject)element).getFullyQualifiedName();
+        }
+        if (element instanceof IndexedElement) {
+            fqn = ((IndexedElement)element).getFQN();
+        }
+        if (fqn != null) {
+            if (!fqn.startsWith(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX)) {
+                FileObject fo = element.getFileObject();
+                if (fo != null) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX).append(fo.getName());
+                    sb.append('.').append(fqn);
+                    fqn = sb.toString();
+                    return NodeJsDataProvider.getDefault().getDocumentation(fqn);
+                }
+            } else {
+                return NodeJsDataProvider.getDefault().getDocumentation(fqn);
+            }
         }
         return null;
     }
