@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript.nodejs.ui.options;
 
+import org.netbeans.modules.javascript.nodejs.ui.NodeJsPathPanel;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -71,7 +72,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     // @GuardedBy("EDT")
-    private NodeJsOptionsPanel nodeJsOptionsPanel;
+    private NodeJsPathPanel nodeJsOptionsPanel;
     private volatile boolean changed = false;
     private boolean firstOpening = true;
 
@@ -107,7 +108,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
     @Override
     public boolean isValid() {
         assert EventQueue.isDispatchThread();
-        NodeJsOptionsPanel panel = getPanel();
+        NodeJsPathPanel panel = getPanel();
         ValidationResult result = new NodeJsOptionsValidator()
                 .validate(panel.getNode())
                 .getResult();
@@ -163,10 +164,10 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 
-    private NodeJsOptionsPanel getPanel() {
+    private NodeJsPathPanel getPanel() {
         assert EventQueue.isDispatchThread();
         if (nodeJsOptionsPanel == null) {
-            nodeJsOptionsPanel = new NodeJsOptionsPanel();
+            nodeJsOptionsPanel = new NodeJsPathPanel();
             nodeJsOptionsPanel.addChangeListener(this);
         }
         return nodeJsOptionsPanel;
