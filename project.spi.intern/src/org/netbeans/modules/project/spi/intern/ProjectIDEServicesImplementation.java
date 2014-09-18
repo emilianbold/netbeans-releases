@@ -129,37 +129,6 @@ public interface ProjectIDEServicesImplementation {
      */
     public void notifyWarning(String message);
     
-    /**
-     * Create a progress ui handle for a long lasting task.
-     * @param allowToCancel either null, if the task cannot be cancelled or 
-     *          an instance of {@link org.openide.util.Cancellable} that will be called when user 
-     *          triggers cancel of the task.
-     * @param displayName to be shown in the progress UI
-     * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
-     */
-    public ProgressHandle createProgressHandle(String displayName, Cancellable allowToCancel);
-    
-    public static interface ProgressHandle {
-
-        public void start();
-
-        public void progress(String message);
-        
-        public void progress(int workunit);
-
-        public void progress(String message, int workunit);
-        
-        public void switchToDeterminate(int workunits);
-
-        public void finish();
-
-        public void switchToIndeterminate();
-
-        public void setDisplayName(String displayName);
-    
-    }
-    
-
     ////////////////////////////////////////////////////////////////////////////
     // Misc utils & co.
     ////////////////////////////////////////////////////////////////////////////

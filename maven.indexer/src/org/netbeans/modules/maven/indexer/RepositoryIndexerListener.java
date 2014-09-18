@@ -50,11 +50,11 @@ import org.apache.maven.index.ArtifactContext;
 import org.apache.maven.index.ArtifactScanningListener;
 import org.apache.maven.index.ScanningResult;
 import org.apache.maven.index.context.IndexingContext;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import static org.netbeans.modules.maven.indexer.Bundle.*;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.project.spi.intern.ProjectIDEServices;
-import org.netbeans.modules.project.spi.intern.ProjectIDEServicesImplementation.ProgressHandle;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle.Messages;
 
@@ -85,16 +85,13 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
         }
         expectedDirs.clear();
         encounteredDirs.clear();
-        handle = ProjectIDEServices.createProgressHandle(LBL_indexing_repo(ri != null ? ri.getName() : indexingContext.getId()), this);
-        if(handle != null) {
-            handle.start();
-            handle.progress(LBL_findIndexableDirs());
-        }
+        handle = ProgressHandleFactory.createHandle(LBL_indexing_repo(ri != null ? ri.getName() : indexingContext.getId()), this);
+        handle.start();
+        handle.progress(LBL_findIndexableDirs());
         findIndexableDirs(ctx.getRepository());
-        if(handle != null) {
-            handle.switchToDeterminate(expectedDirs.size());
-        }
+        handle.switchToDeterminate(expectedDirs.size());
     }
+    
     private void findIndexableDirs(File d) {
         // Try to guess what DefaultScanner might find. Hard to know for sure, so guess that nonempty leaf dirs will contain real artifacts.
         if (d == null || d.getName().startsWith(".")) {

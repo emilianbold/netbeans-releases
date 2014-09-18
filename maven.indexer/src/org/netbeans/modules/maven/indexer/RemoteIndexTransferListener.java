@@ -53,11 +53,11 @@ import org.apache.maven.index.updater.ResourceFetcher;
 import org.apache.maven.wagon.events.TransferEvent;
 import org.apache.maven.wagon.events.TransferListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.openide.util.Cancellable;
 import static org.netbeans.modules.maven.indexer.Bundle.*;
-import org.netbeans.modules.project.spi.intern.ProjectIDEServices;
-import org.netbeans.modules.project.spi.intern.ProjectIDEServicesImplementation.ProgressHandle;
 import org.openide.util.NbBundle.Messages;
 
 public class RemoteIndexTransferListener implements TransferListener, Cancellable {
@@ -81,10 +81,8 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     public RemoteIndexTransferListener(RepositoryInfo info) {
         this.info = info;
         Cancellation.register(this);
-        handle = ProjectIDEServices.createProgressHandle(LBL_Transfer(info.getName()), this);
-        if(handle != null) {
-            handle.start();
-        }
+        handle = ProgressHandleFactory.createHandle(LBL_Transfer(info.getName()), this);
+        handle.start();
     }
 
     void setFetcher(ResourceFetcher fetcher) {
@@ -94,9 +92,7 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     public @Override void transferInitiated(TransferEvent e) {
         String u = e.getWagon().getRepository().getUrl() + e.getResource();
         LOG.log(Level.FINE, "initiated transfer: {0}", u);
-        if(handle != null) {
-            handle.progress(u);
-        }
+        handle.progress(u);
         checkCancel();
     }
 
@@ -106,15 +102,11 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         LOG.log(Level.FINE, "contentLength: {0}", contentLength);
         // #189806: could be resumed due to FNFE in DefaultIndexUpdater (*.gz -> *.zip)
         this.units = (int) contentLength / 1024;
-        if(handle != null) {
-            handle.switchToDeterminate(units);
-        }
+        handle.switchToDeterminate(units);
     }
 
     public @Override boolean cancel() {
-        if(handle != null) {
-            handle.finish();
-        }
+        handle.finish();
         if (fetcher != null) {
             try {
                 fetcher.disconnect();
@@ -135,23 +127,17 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         checkCancel();
         LOG.log(Level.FINER, "progress: {0}", length);
         int work = length / 1024;
-        if(handle != null) {
-            handle.progress(Math.min(units, lastunit += work));
-        }
+        handle.progress(Math.min(units, lastunit += work));
     }
 
     public @Override void transferCompleted(TransferEvent e) {
         LOG.fine("completed");
-        if(handle != null) {
-            handle.switchToIndeterminate();
-        }
+        handle.switchToIndeterminate();
     }
 
     public @Override void transferError(TransferEvent e) {
         LOG.log(Level.FINE, "error transferring", e.getException());
-        if(handle != null) {
-            handle.switchToIndeterminate();
-        }
+        handle.switchToIndeterminate();
     }
 
     public @Override void debug(String message) {
@@ -194,18 +180,14 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     @Messages({"# {0} - repo name", "LBL_unpacking=Unpacking index for {0}"})
     void unpackingProgress(String label) {
         checkCancel();
-        if(handle != null) {
-            if (unpacking.compareAndSet(false, true)) {
-                handle.setDisplayName(LBL_unpacking(info.getName()));
-            }
-            handle.progress(label);
+        if (unpacking.compareAndSet(false, true)) {
+            handle.setDisplayName(LBL_unpacking(info.getName()));
         }
+        handle.progress(label);
     }
 
     void close() {
-        if(handle != null) {
-            handle.finish();
-        }
+        handle.finish();
     }
 
 }

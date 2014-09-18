@@ -43,9 +43,7 @@ package org.netbeans.modules.project.spi.intern;
 
 import java.io.IOException;
 import javax.swing.Icon;
-import org.netbeans.modules.project.spi.intern.ProjectIDEServicesImplementation.ProgressHandle;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 
 /**
@@ -91,11 +89,6 @@ public final class ProjectIDEServices {
         return i != null ? i.loadIcon(resource, localized) : null;
     }
     
-    public static ProgressHandle createProgressHandle(String displayName, Cancellable allowToCancel) {
-        ProjectIDEServicesImplementation i = getImpl();
-        return i != null ? i.createProgressHandle(displayName, allowToCancel) : null;
-    }
-
     public static boolean isEventDispatchThread() {
         ProjectIDEServicesImplementation i = getImpl();
         return i != null ? i.isEventDispatchThread() : false;
