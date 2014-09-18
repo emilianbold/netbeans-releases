@@ -240,19 +240,6 @@ public final class JavaPlatformManager {
                 };
             }
             Collection<? extends JavaPlatformProvider> instances = this.providers.allInstances();
-            boolean assertsOn = false;
-            assert assertsOn = true;
-            Iterator<? extends JavaPlatformProvider> it = instances.iterator();
-            while(it.hasNext()) {
-                JavaPlatformProvider jp = it.next();
-                if (!assertsOn) {
-                    if(!"org.netbeans.modules.java.platform.DefaultJavaPlatformProvider".equals(jp.getClass().getName())) {
-                        throw new IllegalStateException("the only accepted JavaPlatformProvider instance is org.netbeans.modules.java.platform.DefaultJavaPlatformProvider");
-                    } 
-                } else {
-                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Unexpected JavaPlatformProvider instance: {0}", jp.getClass());
-                }
-            }
             Collection<JavaPlatformProvider> toAdd = new HashSet<JavaPlatformProvider>(instances);
             toAdd.removeAll (this.lastProviders);
             Collection<JavaPlatformProvider> toRemove = new HashSet<JavaPlatformProvider>(this.lastProviders);
