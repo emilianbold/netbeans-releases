@@ -63,7 +63,6 @@ import org.openide.windows.TopComponent;
         iconBase = "org/netbeans/modules/web/inspect/resources/knockout.png") // NOI18N
 @TopComponent.Registration(
         mode = "properties", // NOI18N
-        position = 600,
         openAtStartup = false)
 @ActionID(
         category = "Window", // NOI18N
