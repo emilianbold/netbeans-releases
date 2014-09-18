@@ -69,7 +69,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  * Factory for creating {@link MavenEmbedder}s.
@@ -526,7 +526,7 @@ public final class EmbedderFactory {
     public static Properties fillEnvVars(Properties properties) {
         for (Map.Entry<String,String> entry : System.getenv().entrySet()) {
             String key = entry.getKey();
-            if (Utilities.isWindows()) {
+            if (BaseUtilities.isWindows()) {
                 key = key.toUpperCase(Locale.ENGLISH);
             }
             properties.setProperty("env." + key, entry.getValue());
