@@ -50,7 +50,6 @@ import org.netbeans.performance.j2se.dialogs.AboutDialogTest;
 import org.netbeans.performance.j2se.dialogs.AddJDBCDriverDialogTest;
 import org.netbeans.performance.j2se.dialogs.AddProfilingPointWizardTest;
 import org.netbeans.performance.j2se.dialogs.AttachDialogTest;
-import org.netbeans.performance.j2se.dialogs.CompareMemorySnapshotsDialogTest;
 import org.netbeans.performance.j2se.dialogs.DeleteFileDialogTest;
 import org.netbeans.performance.j2se.dialogs.DocumentsDialogTest;
 import org.netbeans.performance.j2se.dialogs.FavoritesWindowTest;
@@ -105,7 +104,6 @@ public class MeasureJ2SEDialogsTest {
                 .addTest(J2SESetup.class)
                 .addTest(AboutDialogTest.class)
                 .addTest(AddJDBCDriverDialogTest.class)
-                .addTest(CompareMemorySnapshotsDialogTest.class)
                 .addTest(AttachDialogTest.class)
                 .addTest(FavoritesWindowTest.class)
                 .addTest(FilesWindowTest.class)
