@@ -49,6 +49,7 @@ import java.io.IOException;
  * Semi-private SPI for self-profiling of the parsing system.
  *
  * @author sdedic
+ * @since 9.2
  */
 public abstract class ProfilerSupport {
     /**

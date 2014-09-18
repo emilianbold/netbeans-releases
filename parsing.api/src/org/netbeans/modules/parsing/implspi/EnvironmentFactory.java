@@ -59,6 +59,7 @@ import org.openide.util.Lookup;
  * <p/>
  * An instance of this Provider must be registered in the default Lookup. The first
  * instance found will be used.
+ * @since 9.2
  */
 public interface EnvironmentFactory {
     /**

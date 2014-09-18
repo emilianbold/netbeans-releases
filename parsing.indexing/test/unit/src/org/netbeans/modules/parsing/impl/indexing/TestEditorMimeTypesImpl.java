@@ -59,6 +59,11 @@ public class TestEditorMimeTypesImpl implements EditorMimeTypesImplementation {
             new HashSet<>(Arrays.asList(new String[]{
                 "text/x-java",
                 "text/x-foo",
+                "text/x-top",
+                "text/x-inner",
+                "text/foo",
+                "text/emb",
+                "text/plain",
                 EmbeddedPathRecognizer.EMB_MIME,
                 FooPathRecognizer.FOO_MIME
     }));

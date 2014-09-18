@@ -51,8 +51,9 @@ import org.openide.util.Parameters;
 /**
  * Allows to control the parsing susbsytem operation.
  * @author sdedic
+ * @since 9.2
  */
-public class TaskProcessorControl {
+public final class TaskProcessorControl {
     /**
      * Initialize the parsing and scheduling system. The method should be called 
      * at "appropriate time", for example when the UI starts and is ready to accept

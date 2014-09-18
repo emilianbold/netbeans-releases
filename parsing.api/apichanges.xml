@@ -129,6 +129,7 @@ is the proper place.
                   or automatically uses Lookup.getDefault if no explicit Lookup is given.
               </p>
           </description>
+          <issue number="247161"/>
       </change>
     <change id="Parsing.Netbeans.Cleanup">
           <api name="ParsingAPI"/>

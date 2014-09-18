@@ -51,6 +51,7 @@ package org.netbeans.modules.parsing.impl;
  * This pseudoAPI can be changed at any time without any warning! 
  * 
  * @author sdedic
+ * @since 9.2
  */
 public interface IndexerBridge {
     /**

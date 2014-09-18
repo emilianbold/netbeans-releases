@@ -58,6 +58,7 @@ import org.openide.util.RequestProcessor;
  * The {@link SourceEnvironment} gets this instance to forward interesting
  * events to the parser. It is possible to invalidate the source, region of source.
  * @author sdedic
+ * @since 9.2
  */
 public final class SourceControl {
 
@@ -71,6 +72,11 @@ public final class SourceControl {
 
     private final Source source;
 
+    /**
+     * Creates a new control object for the source.
+     * 
+     * @param source the source which is controlled
+     */
     public SourceControl(@NonNull final Source source) {
         Parameters.notNull("source", source);   //NOI18N
         this.source = source;
