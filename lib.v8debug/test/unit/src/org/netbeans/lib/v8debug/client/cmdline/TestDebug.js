@@ -128,7 +128,9 @@ function objects() {
                500 : "five hundred",
                undefined : {},
                NaN : [ NaN ],
-               Infinity : []
+               Infinity : [],
+               12e3 : 12e-3,
+               '' : "Empty"
             };
     // console.log(o4);
     var o5 = null;

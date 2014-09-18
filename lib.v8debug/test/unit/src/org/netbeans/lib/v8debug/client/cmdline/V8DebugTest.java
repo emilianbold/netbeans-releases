@@ -112,16 +112,16 @@ public class V8DebugTest {
     private static final String NODE_EXE_PROP = "nodeBinary";   // NOI18N
     private static final String NODE_ARG_DBG = "--debug-brk";   // NOI18N
     
-    private static final int TEST_NUM_LINES = 210;
-    private static final int TEST_NUM_CHARS = 5638;
+    private static final int TEST_NUM_LINES = 212;
+    private static final int TEST_NUM_CHARS = 5696;
     
     private static final int LINE_BEGIN = 45;
     private static final int LINE_FNC = LINE_BEGIN + 7;
     private static final int LINE_BRKP_VARS = LINE_BEGIN + 34;
     private static final int LINE_BRKP_LONG_STACK = LINE_BRKP_VARS + 10;
     private static final int LINE_BRKP_ARRAYS = LINE_BRKP_LONG_STACK + 18;
-    private static final int LINE_BRKP_OBJECTS = LINE_BRKP_ARRAYS + 28;
-    private static final int LINE_O4_AB_FNC = LINE_BRKP_OBJECTS - 12;
+    private static final int LINE_BRKP_OBJECTS = LINE_BRKP_ARRAYS + 30;
+    private static final int LINE_O4_AB_FNC = LINE_BRKP_OBJECTS - 14;
     private static final int LINE_BRKP_SCOPE = LINE_BRKP_OBJECTS + 26;
     private static final int LINE_CLOSURE_CALL = LINE_FNC + 4;
     private static final int LINE_CLOSURE_CALEE = LINE_BRKP_OBJECTS + 11;
@@ -134,7 +134,7 @@ public class V8DebugTest {
     private static final int POS_VAR_F2 = POS_VAR_F1 + 32;
     private static final int POS_BRKP_LONG_STACK = POS_VAR_F2 + 291;
     private static final int POS_O4_AB_FNC = POS_BRKP_LONG_STACK + 753;
-    private static final int POS_SCOPE_INNER_FUNC = POS_O4_AB_FNC + 671;
+    private static final int POS_SCOPE_INNER_FUNC = POS_O4_AB_FNC + 729;
     
     private static final Object VALUE_UNDEFINED = new String("<undefined>");
     
@@ -850,7 +850,9 @@ public class V8DebugTest {
                               "null", "true", "3.3333333", "500",
                               "undefined",
                               "NaN",
-                              "Infinity"
+                              "Infinity",
+                              "12000",
+                              ""
                             },
                 new Object[]{ new ObjectCheck("Object", null, null, "#<Object>"), 11l,
                               new ObjectCheck("Object",
@@ -864,7 +866,9 @@ public class V8DebugTest {
                               0l, false, "three and third", "five hundred",
                               new ObjectCheck("Object", null, null, "#<Object>"),
                               new ObjectCheck("Array", null, new Object[]{ Double.NaN }, "#<Array>"),
-                              new ObjectCheck("Array", null, new Object[]{ }, "#<Array>")
+                              new ObjectCheck("Array", null, new Object[]{ }, "#<Array>"),
+                              12e-3,
+                              "Empty"
                             },
                 "#<Object>"), false);
         checkLocalVar("o5", null, false);
