@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+Copyright 2014 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -38,23 +38,14 @@ made subject to such option by the copyright holder.
 
 Contributor(s):
 
-Portions Copyrighted 2013 Sun Microsystems, Inc.
+Portions Copyrighted 2014 Sun Microsystems, Inc.
 -->
-<!DOCTYPE filesystem PUBLIC
-          "-//NetBeans//DTD Filesystem 1.2//EN"
-          "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<!DOCTYPE group PUBLIC
+          "-//NetBeans//DTD Group Properties 2.0//EN"
+          "http://www.netbeans.org/dtds/group-properties2_0.dtd">
 
-<filesystem>
-    <folder name="Windows2">
-        <folder name="Groups">
-            <file name="DomTree.wsgrp" url="DomTree.wsgrp"/>
-            <folder name="DomTree">
-                <file name="DomTC.wstcgrp" url="DomTC.wstcgrp"/>
-            </folder>
-            <file name="Knockout.wsgrp" url="Knockout.wsgrp"/>
-            <folder name="Knockout">
-                <file name="KnockoutTC.wstcgrp" url="KnockoutTC.wstcgrp"/>
-            </folder>
-        </folder>
-    </folder>
-</filesystem>
+<group version="2.0">
+    <module name="org.netbeans.modules.web.inspect" />
+    <name unique="Knockout" />
+    <state opened="false" />
+</group>
