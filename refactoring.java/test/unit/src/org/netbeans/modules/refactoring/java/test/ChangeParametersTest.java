@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
@@ -65,6 +66,10 @@ public class ChangeParametersTest extends RefactoringTestBase {
 
     public ChangeParametersTest(String name) {
         super(name, "1.8");
+    }
+    
+    static {
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
     
     public void test239300() throws Exception {
