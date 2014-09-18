@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.html.knockout.javascript;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,7 +60,6 @@ import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 import org.netbeans.modules.javascript2.knockout.index.KnockoutCustomElement;
 import org.netbeans.modules.javascript2.knockout.index.KnockoutIndex;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -73,6 +70,8 @@ import org.openide.util.Exceptions;
 public class KnockoutJsCodeCompletion implements CompletionProvider {
 
     private static final String MIMETYPE = "text/html/text/javascript"; //NOI18N
+    private static final String PROP_NAME = "name"; //NOI18N
+    private static final String PROP_PARAMS = "params"; //NOI18N
 
     @Override
     public List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContext jsCompletionContext, String prefix) {
@@ -92,14 +91,20 @@ public class KnockoutJsCodeCompletion implements CompletionProvider {
                     result.addAll(findComponentNames(ccContext));
                     break;
                 case COMPONENT_CONF_EMPTY:
-                    result.add(new KnockoutCodeCompletionItem.KOComponentOptionItem(
-                            new KnockoutJsElement("name", ElementKind.PROPERTY), ccContext)); //NOI18N
-                    result.add(new KnockoutCodeCompletionItem.KOComponentOptionConfigItem(
-                            new KnockoutJsElement("params", ElementKind.PROPERTY), ccContext)); //NOI18N
+                    if (prefix.isEmpty() || PROP_NAME.startsWith(prefix)) {
+                        result.add(new KnockoutCodeCompletionItem.KOComponentOptionItem(
+                                new KnockoutJsElement(PROP_NAME, ElementKind.PROPERTY), ccContext));
+                    }
+                    if (prefix.isEmpty() || PROP_PARAMS.startsWith(prefix)) {
+                        result.add(new KnockoutCodeCompletionItem.KOComponentOptionConfigItem(
+                                new KnockoutJsElement(PROP_PARAMS, ElementKind.PROPERTY), ccContext));
+                    }
                     break;
                 case COMPONENT_CONF_PARAMS:
-                    result.add(new KnockoutCodeCompletionItem.KOComponentOptionConfigItem(
-                            new KnockoutJsElement("params", ElementKind.PROPERTY), ccContext)); //NOI18N
+                    if (prefix.isEmpty() || PROP_PARAMS.startsWith(prefix)) {
+                        result.add(new KnockoutCodeCompletionItem.KOComponentOptionConfigItem(
+                                new KnockoutJsElement(PROP_PARAMS, ElementKind.PROPERTY), ccContext));
+                    }
                     break;
             }
             return result;
@@ -136,7 +141,8 @@ public class KnockoutJsCodeCompletion implements CompletionProvider {
                 for (KnockoutCustomElement kce : customElements) {
                     String name = kce.getName();
                     ElementHandle element = new KnockoutJsElement(name, ElementKind.CLASS);
-                    if (!componentNames.contains(name)) {
+                    if ((ccContext.getPrefix().isEmpty() || name.startsWith(ccContext.getPrefix()))
+                            && !componentNames.contains(name)) {
                         // we don't have this component yet, add it now
                         result.add(new KnockoutCodeCompletionItem.KOComponentItem(element, ccContext));
                         componentNames.add(name);
