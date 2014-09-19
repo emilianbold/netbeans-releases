@@ -46,7 +46,6 @@ package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +60,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.Utilities;
 
 /**
  * Specifies license header for module and suite projects.
