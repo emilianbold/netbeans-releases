@@ -188,6 +188,7 @@ public final class NodeJsPathPanel extends JPanel {
     @NbBundle.Messages({
         "# {0} - version",
         "NodeJsPathPanel.sources.exists=Sources for version {0} already exist. Download again?",
+        "NodeJsPathPanel.download.success=Node.js sources downloaded successfully.",
         "NodeJsPathPanel.download.error=Error occured during download (see IDE log).",
     })
     private void downloadSources() {
@@ -211,6 +212,7 @@ public final class NodeJsPathPanel extends JPanel {
             public void run() {
                 try {
                     FileUtils.downloadNodeSources(version);
+                    StatusDisplayer.getDefault().setStatusText(Bundle.NodeJsPathPanel_download_success());
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                     NotifyDescriptor descriptor = new NotifyDescriptor.Message(Bundle.NodeJsPathPanel_download_error(), NotifyDescriptor.ERROR_MESSAGE);
