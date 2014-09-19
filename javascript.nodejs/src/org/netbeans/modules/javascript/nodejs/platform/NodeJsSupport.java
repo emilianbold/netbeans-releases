@@ -144,6 +144,11 @@ public final class NodeJsSupport {
         preferences.addPreferenceChangeListener(preferencesListener);
         packageJson.addPropertyChangeListener(packageJsonListener);
         packageJson.init();
+        // init node version
+        NodeExecutable node = NodeExecutable.forProject(project, false);
+        if (node != null) {
+            node.getVersion();
+        }
     }
 
     public void projectClosed() {
