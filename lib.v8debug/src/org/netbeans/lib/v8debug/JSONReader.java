@@ -76,6 +76,7 @@ import org.netbeans.lib.v8debug.vars.V8String;
 import org.netbeans.lib.v8debug.vars.V8Value;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.netbeans.lib.v8debug.commands.Flags;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 
 /**
@@ -235,6 +236,14 @@ public class JSONReader {
             case Version:
                 String version = getString(obj, BODY_VERSION);
                 return new Version.ResponseBody(version);
+            case Flags:
+                JSONArray flagsArray = (JSONArray) obj.get(FLAGS);
+                Map<String, Boolean> flags = new LinkedHashMap<>();
+                for (Object fObj : flagsArray) {
+                    JSONObject flag = (JSONObject) fObj;
+                    flags.put(getString(flag, NAME), getBoolean(flag, VALUE));
+                }
+                return new Flags.ResponseBody(flags);
             default:
                 return null;
         }

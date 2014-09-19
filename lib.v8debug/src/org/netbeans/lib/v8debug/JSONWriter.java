@@ -41,12 +41,16 @@
  */
 package org.netbeans.lib.v8debug;
 
+import java.util.Map;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import static org.netbeans.lib.v8debug.JSONConstants.*;
 import org.netbeans.lib.v8debug.commands.Backtrace;
 import org.netbeans.lib.v8debug.commands.ChangeBreakpoint;
 import org.netbeans.lib.v8debug.commands.ClearBreakpoint;
 import org.netbeans.lib.v8debug.commands.Continue;
 import org.netbeans.lib.v8debug.commands.Evaluate;
+import org.netbeans.lib.v8debug.commands.Flags;
 import org.netbeans.lib.v8debug.commands.Frame;
 import org.netbeans.lib.v8debug.commands.GC;
 import org.netbeans.lib.v8debug.commands.Lookup;
@@ -59,12 +63,10 @@ import org.netbeans.lib.v8debug.commands.SetExceptionBreak;
 import org.netbeans.lib.v8debug.commands.SetVariableValue;
 import org.netbeans.lib.v8debug.commands.Source;
 import org.netbeans.lib.v8debug.commands.V8Flags;
-import org.netbeans.lib.v8debug.vars.V8Value;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.netbeans.lib.v8debug.vars.NewValue;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Number;
+import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
  *
@@ -88,7 +90,7 @@ public class JSONWriter {
         return obj;
     }
     
-    private static JSONObject store(V8Command command, V8Arguments arguments) {
+    private static Object store(V8Command command, V8Arguments arguments) {
         JSONObject obj = new JSONObject();
         switch(command) {
             case Backtrace:
@@ -201,8 +203,22 @@ public class JSONWriter {
                 obj.put(TYPE, gcargs.getType());
                 return obj;
             case V8flags:
-                V8Flags.Arguments flargs = (V8Flags.Arguments) arguments;
-                obj.put(FLAGS, flargs.getFlags());
+                V8Flags.Arguments v8flargs = (V8Flags.Arguments) arguments;
+                obj.put(FLAGS, v8flargs.getFlags());
+                return obj;
+            case Flags:
+                Flags.Arguments flargs = (Flags.Arguments) arguments;
+                Map<String, Boolean> flags = flargs.getFlags();
+                if (flags != null) {
+                    JSONArray arr = new JSONArray();
+                    for (Map.Entry<String, Boolean> flagEntry : flags.entrySet()) {
+                        JSONObject f = new JSONObject();
+                        f.put(NAME, flagEntry.getKey());
+                        f.put(VALUE, flagEntry.getValue());
+                        arr.add(f);
+                    }
+                    obj.put(FLAGS, arr);
+                }
                 return obj;
             default:
                 return null;

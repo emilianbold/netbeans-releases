@@ -69,6 +69,7 @@ import org.netbeans.lib.v8debug.V8Command;
 import org.netbeans.lib.v8debug.V8Event;
 import org.netbeans.lib.v8debug.V8ExceptionBreakType;
 import org.netbeans.lib.v8debug.V8Frame;
+import org.netbeans.lib.v8debug.V8Request;
 import org.netbeans.lib.v8debug.V8Response;
 import org.netbeans.lib.v8debug.V8Scope;
 import org.netbeans.lib.v8debug.V8Script;
@@ -79,6 +80,7 @@ import org.netbeans.lib.v8debug.commands.ChangeBreakpoint;
 import org.netbeans.lib.v8debug.commands.ClearBreakpoint;
 import org.netbeans.lib.v8debug.commands.Continue;
 import org.netbeans.lib.v8debug.commands.Evaluate;
+import org.netbeans.lib.v8debug.commands.Flags;
 import org.netbeans.lib.v8debug.commands.Frame;
 import org.netbeans.lib.v8debug.commands.GC;
 import org.netbeans.lib.v8debug.commands.ListBreakpoints;
@@ -92,6 +94,7 @@ import org.netbeans.lib.v8debug.commands.SetExceptionBreak;
 import org.netbeans.lib.v8debug.commands.SetVariableValue;
 import org.netbeans.lib.v8debug.commands.Source;
 import org.netbeans.lib.v8debug.commands.Threads;
+import org.netbeans.lib.v8debug.commands.V8Flags;
 import org.netbeans.lib.v8debug.commands.Version;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
 import org.netbeans.lib.v8debug.events.ExceptionEventBody;
@@ -342,6 +345,8 @@ public class V8DebugTest {
         
         checkV8Flags();
         commandsToTest.remove(V8Command.V8flags);
+        checkFlags();
+        commandsToTest.remove(V8Command.Flags);
         
         checkGC();
         commandsToTest.remove(V8Command.Gc);
@@ -593,6 +598,16 @@ public class V8DebugTest {
         } while (lastEvent.getKind() != V8Event.Kind.Break);
         V8Response lastResponse = responseHandler.getLastResponse();
         
+        // First, activate break on uncaught exceptions:
+        V8Debug.TestAccess.send(v8dbg, Flags.createRequest(123, Flags.FLAG_BREAK_ON_UNCAUGHT_EXCEPTION, true));
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Flags, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        Flags.ResponseBody frb = (Flags.ResponseBody) lastResponse.getBody();
+        Map<String, Boolean> flags = frb.getFlags();
+        assertTrue(Flags.FLAG_BREAK_ON_UNCAUGHT_EXCEPTION, flags.get(Flags.FLAG_BREAK_ON_UNCAUGHT_EXCEPTION));
+        
         // Initially, we have one default breakpoint and no exception breakpoints
         V8Debug.TestAccess.doCommand(v8dbg, "breakpoints");
         lastResponse = responseHandler.getLastResponse();
@@ -602,7 +617,7 @@ public class V8DebugTest {
         assertFalse(lastResponse.isRunning());
         ListBreakpoints.ResponseBody lbrb = (ListBreakpoints.ResponseBody) lastResponse.getBody();
         assertFalse(lbrb.isBreakOnExceptions());
-        assertFalse(lbrb.isBreakOnUncaughtExceptions());
+        assertTrue(lbrb.isBreakOnUncaughtExceptions());
         V8Breakpoint[] breakpoints = lbrb.getBreakpoints();
         assertEquals(1, breakpoints.length);
         
@@ -1179,6 +1194,30 @@ public class V8DebugTest {
         assertTrue(lastResponse.isSuccess());
     }
 
+    private void checkFlags() throws IOException, InterruptedException {
+        // Get all flags first:
+        V8Debug.TestAccess.send(v8dbg, Flags.createRequest(123));
+        V8Response lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Flags, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        Flags.ResponseBody frb = (Flags.ResponseBody) lastResponse.getBody();
+        Map<String, Boolean> flags = frb.getFlags();
+        assertTrue(Flags.FLAG_BREAK_POINTS_ACTIVE, flags.get(Flags.FLAG_BREAK_POINTS_ACTIVE));
+        assertFalse(Flags.FLAG_BREAK_ON_CAUGHT_EXCEPTION, flags.get(Flags.FLAG_BREAK_ON_CAUGHT_EXCEPTION));
+        assertFalse(Flags.FLAG_BREAK_ON_UNCAUGHT_EXCEPTION, flags.get(Flags.FLAG_BREAK_ON_UNCAUGHT_EXCEPTION));
+        
+        // Set a flag
+        V8Debug.TestAccess.send(v8dbg, Flags.createRequest(123, Flags.FLAG_BREAK_ON_UNCAUGHT_EXCEPTION, true));
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Flags, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        frb = (Flags.ResponseBody) lastResponse.getBody();
+        flags = frb.getFlags();
+        assertTrue(Flags.FLAG_BREAK_ON_UNCAUGHT_EXCEPTION, flags.get(Flags.FLAG_BREAK_ON_UNCAUGHT_EXCEPTION));
+    }
+
     private void checkGC() throws IOException, InterruptedException {
         V8Debug.TestAccess.doCommand(v8dbg, "gc");
         V8Response lastResponse = responseHandler.getLastResponse();
@@ -1435,7 +1474,7 @@ public class V8DebugTest {
         assertFalse(lastResponse.isRunning());
         ListBreakpoints.ResponseBody lbrb = (ListBreakpoints.ResponseBody) lastResponse.getBody();
         assertFalse(lbrb.isBreakOnExceptions());
-        assertFalse(lbrb.isBreakOnUncaughtExceptions());
+        assertTrue(lbrb.isBreakOnUncaughtExceptions()); // Changed by flags
         V8Breakpoint[] breakpoints = lbrb.getBreakpoints();
         assertEquals(6, breakpoints.length);
         for (int i = 0; i < breakpoints.length; i++) {
@@ -1499,7 +1538,7 @@ public class V8DebugTest {
         assertFalse(lastResponse.isRunning());
         lbrb = (ListBreakpoints.ResponseBody) lastResponse.getBody();
         assertFalse(lbrb.isBreakOnExceptions());
-        assertFalse(lbrb.isBreakOnUncaughtExceptions());
+        assertTrue(lbrb.isBreakOnUncaughtExceptions()); // Changed by flags
         breakpoints = lbrb.getBreakpoints();
         assertEquals(4, breakpoints.length);
         
@@ -1523,7 +1562,7 @@ public class V8DebugTest {
         assertFalse(lastResponse.isRunning());
         lbrb = (ListBreakpoints.ResponseBody) lastResponse.getBody();
         assertFalse(lbrb.isBreakOnExceptions());
-        assertFalse(lbrb.isBreakOnUncaughtExceptions());
+        assertTrue(lbrb.isBreakOnUncaughtExceptions());
         breakpoints = lbrb.getBreakpoints();
         assertEquals(5, breakpoints.length);
         assertFalse(breakpoints[4].isActive());
@@ -1550,7 +1589,7 @@ public class V8DebugTest {
         assertFalse(lastResponse.isRunning());
         lbrb = (ListBreakpoints.ResponseBody) lastResponse.getBody();
         assertFalse(lbrb.isBreakOnExceptions());
-        assertFalse(lbrb.isBreakOnUncaughtExceptions());
+        assertTrue(lbrb.isBreakOnUncaughtExceptions());
         breakpoints = lbrb.getBreakpoints();
         assertEquals(5, breakpoints.length);
         assertTrue(breakpoints[4].isActive());
