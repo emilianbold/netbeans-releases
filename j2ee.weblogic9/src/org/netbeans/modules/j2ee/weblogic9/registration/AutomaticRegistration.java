@@ -44,7 +44,6 @@ package org.netbeans.modules.j2ee.weblogic9.registration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -53,6 +52,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.ui.wizard.WLInstantiatingIterator;
+import org.netbeans.modules.weblogic.common.api.DomainConfiguration;
 import org.netbeans.modules.weblogic.common.api.Version;
 import org.netbeans.modules.weblogic.common.api.WebLogicLayout;
 import org.openide.filesystems.FileObject;
@@ -68,7 +68,7 @@ import org.openide.util.Utilities;
  * java -cp platform/core/core.jar:platform/lib/boot.jar:platform/lib/org-openide-modules.jar:platform/core/org-openide-filesystems.jar:platform/lib/org-openide-util.jar:platform/lib/org-openide-util-lookup.jar:enterprise/modules/org-netbeans-modules-j2eeapis.jar:enterprise/modules/org-netbeans-modules-j2eeserver.jar:enterprise/modules/org-netbeans-modules-j2ee-weblogic9.jar org.netbeans.modules.j2ee.weblogic9.registration.AutomaticRegistration %lt;clusterDir&gt; &lt;serverDir&gt; &lt;domainDir&gt; &lt;username&gt; &lt;password&gt;
  *
  * @author Petr Hejl
- * @see #main(args)
+ * @see #main(java.lang.String[]) 
  */
 public class AutomaticRegistration {
 
@@ -169,43 +169,35 @@ public class AutomaticRegistration {
             return 5;
         }
 
-        Properties properties = WLPluginProperties.getDomainProperties(domainDir.getAbsolutePath());
-        if (properties.isEmpty()) {
+        DomainConfiguration config = WebLogicLayout.getDomainConfiguration(domainDir.getAbsolutePath());
+        if (config == null) {
             LOGGER.log(Level.INFO, "Cannot register the default WebLogic server. "
                     + " The domain " + domainDirValue + " is not valid domain."); // NOI18N
             return 6;
         }
 
-        String name = properties.getProperty(WLPluginProperties.ADMIN_SERVER_NAME);
-        String port = properties.getProperty(WLPluginProperties.PORT_ATTR);
-        String host = properties.getProperty(WLPluginProperties.HOST_ATTR);
-        String domainName = properties.getProperty(WLPluginProperties.DOMAIN_NAME);
-        String versionString = properties.getProperty(WLPluginProperties.DOMAIN_VERSION);
-        Version domainVersion = versionString != null ? Version.fromJsr277OrDottedNotationWithFallback(versionString) : null;
-        Boolean isProductionMode = (Boolean) properties.get(WLPluginProperties.PRODUCTION_MODE);
-        if ((name != null) && (!name.equals(""))) { // NOI18N
-            // address and port have minOccurs=0 and are missing in 90
-            // examples server
-            port = (port == null || port.equals("")) // NOI18N
-            ? Integer.toString(WLDeploymentFactory.DEFAULT_PORT)
-                    : port;
-            host = (host == null || host.equals("")) ? "localhost" // NOI18N
-                    : host;
-        } else {
+        String name = config.getAdminServer();
+        int port = config.getPort();
+        String host = config.getHost();
+        String domainName = config.getName();
+        Version domainVersion = config.getVersion();
+        boolean isProductionMode = config.isProduction();
+        if (name == null) {
             LOGGER.log(Level.INFO, "Cannot register the default WebLogic server. "
                     + " The domain name is empty."); // NOI18N
             return 7;
         }
 
-        if (isProductionMode != null && isProductionMode.booleanValue()) {
+        if (isProductionMode) {
             LOGGER.log(Level.INFO, "Cannot register the default WebLogic server. "
                     + " The domain is in production mode."); // NOI18N
             return 8;
         }
 
+        // we do expand version string here because one may be 12.1.4.0 while the other may be 12.1.4.0.0
         if (domainVersion != null
                 && version != null
-                && !version.equals(domainVersion)) {
+                && !version.expand("0").equals(domainVersion.expand("0"))) { // NOI18N
             LOGGER.log(Level.INFO, "Cannot register the default WebLogic server. "
                     + " The domain version does not match the server version."); // NOI18N
             return 9;
@@ -232,7 +224,7 @@ public class AutomaticRegistration {
         String displayName = generateUniqueDisplayName(serverInstanceDir, version);
         boolean ok = registerServerInstanceFO(serverInstanceDir, url, displayName,
                 serverDir.getAbsolutePath(), domainDir.getAbsolutePath(), domainName,
-                port, username, password, javaOpts);
+                Integer.toString(port), username, password, javaOpts);
         if (ok) {
             return 0;
         } else {
@@ -359,6 +351,8 @@ public class AutomaticRegistration {
             instanceFO.setAttribute(WLPluginProperties.DOMAIN_ROOT_ATTR, domainRoot);
             instanceFO.setAttribute(WLPluginProperties.DEBUGGER_PORT_ATTR,
                     WLInstantiatingIterator.DEFAULT_DEBUGGER_PORT);
+            instanceFO.setAttribute(WLPluginProperties.PROXY_ENABLED,
+                    WLInstantiatingIterator.DEFAULT_PROXY_ENABLED);
             instanceFO.setAttribute(WLPluginProperties.DOMAIN_NAME, domainName);
             instanceFO.setAttribute(WLPluginProperties.PORT_ATTR, port);
             if (javaOpts != null) {
