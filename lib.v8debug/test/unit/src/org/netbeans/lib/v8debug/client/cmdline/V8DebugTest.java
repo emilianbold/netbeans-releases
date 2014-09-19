@@ -86,6 +86,7 @@ import org.netbeans.lib.v8debug.commands.GC;
 import org.netbeans.lib.v8debug.commands.ListBreakpoints;
 import org.netbeans.lib.v8debug.commands.Lookup;
 import org.netbeans.lib.v8debug.commands.References;
+import org.netbeans.lib.v8debug.commands.Restartframe;
 import org.netbeans.lib.v8debug.commands.Scope;
 import org.netbeans.lib.v8debug.commands.Scopes;
 import org.netbeans.lib.v8debug.commands.Scripts;
@@ -420,6 +421,9 @@ public class V8DebugTest {
         
         checkReferences();
         commandsToTest.remove(V8Command.References);
+        
+        checkRestartframe();
+        commandsToTest.remove(V8Command.Restartframe);
         
         V8Debug.TestAccess.doCommand(v8dbg, "exit"); // disconnect
         lastResponse = responseHandler.getLastResponse();
@@ -1711,6 +1715,50 @@ public class V8DebugTest {
             sandraCheck.check((V8Object) references[0]);
             johnCheck.check((V8Object) references[1]);
         }
+    }
+    
+    private void checkRestartframe() throws IOException, InterruptedException {
+        checkFrame(4, LINE_BRKP_REFS-1, "    r4();               // breakpoint");
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "step in");
+        V8Response lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Continue, lastResponse.getCommand());
+        V8Event lastEvent = responseHandler.getLastEvent();
+        assertEquals(V8Event.Kind.Break, lastEvent.getKind());
+        checkFrame(8, LINE_BRKP_REFS-9-1, "        console.log(r2);");
+        
+        V8Debug.TestAccess.send(v8dbg, Restartframe.createRequest(123));
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Restartframe, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        Restartframe.ResponseBody rrb = (Restartframe.ResponseBody) lastResponse.getBody();
+        Map<String, Object> result = rrb.getResult();
+        Boolean needsStepIn = (Boolean) result.get(Restartframe.RESULT_STACK_UPDATE_NEEDS_STEP_IN);
+        assertTrue(Restartframe.RESULT_STACK_UPDATE_NEEDS_STEP_IN, needsStepIn.booleanValue());
+        
+        checkFrame(4, LINE_BRKP_REFS-1, "    r4();               // breakpoint");
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "step in");
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Continue, lastResponse.getCommand());
+        lastEvent = responseHandler.getLastEvent();
+        assertEquals(V8Event.Kind.Break, lastEvent.getKind());
+        checkFrame(8, LINE_BRKP_REFS-9-1, "        console.log(r2);");
+        
+        V8Debug.TestAccess.send(v8dbg, Restartframe.createRequest(123, 1));
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Restartframe, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        rrb = (Restartframe.ResponseBody) lastResponse.getBody();
+        result = rrb.getResult();
+        needsStepIn = (Boolean) result.get(Restartframe.RESULT_STACK_UPDATE_NEEDS_STEP_IN);
+        assertTrue(Restartframe.RESULT_STACK_UPDATE_NEEDS_STEP_IN, needsStepIn.booleanValue());
+        
+        checkFrame(4, LINE_FNC+9-1, "    testReferences();");
     }
     
     private final class FunctionCheck {

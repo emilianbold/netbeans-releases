@@ -68,7 +68,8 @@ public enum V8Command {
     Disconnect,
     Gc,
     Listbreakpoints,
-    SetVariableValue;
+    SetVariableValue,
+    Restartframe;
     
     @Override
     public String toString() {

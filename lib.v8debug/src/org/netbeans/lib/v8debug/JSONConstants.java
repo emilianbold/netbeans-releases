@@ -94,6 +94,7 @@ class JSONConstants {
     public static final String FRAME_ARGUMENTS = "arguments";
     public static final String FRAME_LOCALS = "locals";
     public static final String FRAME_NUMBER = "frameNumber";
+    public static final String RESULT = "result";
     
     public static final String REF = "ref";
     public static final String REFS = "refs";

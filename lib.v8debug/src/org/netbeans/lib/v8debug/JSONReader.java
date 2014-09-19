@@ -45,16 +45,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import static org.netbeans.lib.v8debug.JSONConstants.*;
 import org.netbeans.lib.v8debug.commands.Backtrace;
 import org.netbeans.lib.v8debug.commands.ClearBreakpoint;
 import org.netbeans.lib.v8debug.commands.Continue;
 import org.netbeans.lib.v8debug.commands.Evaluate;
+import org.netbeans.lib.v8debug.commands.Flags;
 import org.netbeans.lib.v8debug.commands.Frame;
 import org.netbeans.lib.v8debug.commands.GC;
 import org.netbeans.lib.v8debug.commands.ListBreakpoints;
 import org.netbeans.lib.v8debug.commands.Lookup;
 import org.netbeans.lib.v8debug.commands.References;
+import org.netbeans.lib.v8debug.commands.Restartframe;
 import org.netbeans.lib.v8debug.commands.Scope;
 import org.netbeans.lib.v8debug.commands.Scopes;
 import org.netbeans.lib.v8debug.commands.Scripts;
@@ -67,6 +71,7 @@ import org.netbeans.lib.v8debug.commands.Version;
 import org.netbeans.lib.v8debug.events.AfterCompileEventBody;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
 import org.netbeans.lib.v8debug.events.ExceptionEventBody;
+import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Boolean;
 import org.netbeans.lib.v8debug.vars.V8Function;
 import org.netbeans.lib.v8debug.vars.V8Number;
@@ -74,10 +79,6 @@ import org.netbeans.lib.v8debug.vars.V8Object;
 import org.netbeans.lib.v8debug.vars.V8ScriptValue;
 import org.netbeans.lib.v8debug.vars.V8String;
 import org.netbeans.lib.v8debug.vars.V8Value;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.netbeans.lib.v8debug.commands.Flags;
-import org.netbeans.lib.v8debug.vars.ReferencedValue;
 
 /**
  *
@@ -195,6 +196,12 @@ public class JSONReader {
             case Frame:
                 V8Frame frame = getFrame(obj);
                 return new Frame.ResponseBody(frame);
+            case Restartframe:
+                JSONObject resultObj = (JSONObject) obj.get(RESULT);
+                if (resultObj == null) {
+                    return null;
+                }
+                return new Restartframe.ResponseBody(resultObj);
             case Lookup:
                 Map<Long, V8Value> valuesByHandle = new LinkedHashMap<>();
                 for (Object element : obj.values()) {
