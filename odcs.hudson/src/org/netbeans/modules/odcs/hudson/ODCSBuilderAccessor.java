@@ -280,13 +280,15 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         if (projectHandle == null) {
             return;
         }
+        Collection<BuildsListener> bls;
         synchronized (CACHE) {
-            for (BuildsListener bl : CACHE.keySet()) {
+            bls = new ArrayList(CACHE.keySet());
+        }
+        for (BuildsListener bl : bls) {
                 Reference<ProjectHandle<ODCSProject>> ref = bl.projectHandle;
                 if (ref != null && projectHandle.equals(ref.get())) {
                     bl.removeHudsonAndClean();
                 }
-            }
         }
     }
 
