@@ -67,10 +67,12 @@ import org.netbeans.lib.v8debug.V8Body;
 import org.netbeans.lib.v8debug.V8Breakpoint;
 import org.netbeans.lib.v8debug.V8Command;
 import org.netbeans.lib.v8debug.V8Event;
+import org.netbeans.lib.v8debug.V8ExceptionBreakType;
 import org.netbeans.lib.v8debug.V8Frame;
 import org.netbeans.lib.v8debug.V8Response;
 import org.netbeans.lib.v8debug.V8Scope;
 import org.netbeans.lib.v8debug.V8Script;
+import org.netbeans.lib.v8debug.V8ScriptLocation;
 import org.netbeans.lib.v8debug.V8StepAction;
 import org.netbeans.lib.v8debug.commands.Backtrace;
 import org.netbeans.lib.v8debug.commands.ChangeBreakpoint;
@@ -86,11 +88,13 @@ import org.netbeans.lib.v8debug.commands.Scope;
 import org.netbeans.lib.v8debug.commands.Scopes;
 import org.netbeans.lib.v8debug.commands.Scripts;
 import org.netbeans.lib.v8debug.commands.SetBreakpoint;
+import org.netbeans.lib.v8debug.commands.SetExceptionBreak;
 import org.netbeans.lib.v8debug.commands.SetVariableValue;
 import org.netbeans.lib.v8debug.commands.Source;
 import org.netbeans.lib.v8debug.commands.Threads;
 import org.netbeans.lib.v8debug.commands.Version;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
+import org.netbeans.lib.v8debug.events.ExceptionEventBody;
 import org.netbeans.lib.v8debug.vars.NewValue;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Boolean;
@@ -114,12 +118,12 @@ public class V8DebugTest {
     private static final String NODE_EXE_PROP = "nodeBinary";   // NOI18N
     private static final String NODE_ARG_DBG = "--debug-brk";   // NOI18N
     
-    private static final int TEST_NUM_LINES = 212;
-    private static final int TEST_NUM_CHARS = 5696;
+    private static final int TEST_NUM_LINES = 244;
+    private static final int TEST_NUM_CHARS = 6274;
     
     private static final int LINE_BEGIN = 45;
     private static final int LINE_FNC = LINE_BEGIN + 7;
-    private static final int LINE_BRKP_VARS = LINE_BEGIN + 34;
+    private static final int LINE_BRKP_VARS = LINE_BEGIN + 36;
     private static final int LINE_BRKP_LONG_STACK = LINE_BRKP_VARS + 10;
     private static final int LINE_BRKP_ARRAYS = LINE_BRKP_LONG_STACK + 18;
     private static final int LINE_BRKP_OBJECTS = LINE_BRKP_ARRAYS + 30;
@@ -130,9 +134,15 @@ public class V8DebugTest {
     private static final int LINE_SCOPE_INNER_FUNC = LINE_CLOSURE_CALEE + 9;
     private static final int LINE_BRKP_COND = LINE_BRKP_SCOPE + 19;
     private static final int LINE_BRKP_REFS = LINE_BRKP_COND + 27;
+    private static final int LINE_EBRKP1 = LINE_BRKP_REFS + 5;
+    private static final int LINE_EBRKP2 = LINE_EBRKP1 + 5;
+    private static final int LINE_EBRKP3 = LINE_EBRKP2 + 5;
+    private static final int LINE_EBRKP4 = LINE_EBRKP3 + 6;
+    private static final int LINE_EBRKP5 = LINE_EBRKP4 + 5;
+    private static final int LINE_EBRKP6 = LINE_EBRKP5 + 4;
     
     private static final int POS_FNC = 2347;
-    private static final int POS_VAR_F1 = POS_FNC + 458;
+    private static final int POS_VAR_F1 = POS_FNC + 494;
     private static final int POS_VAR_F2 = POS_VAR_F1 + 32;
     private static final int POS_BRKP_LONG_STACK = POS_VAR_F2 + 291;
     private static final int POS_O4_AB_FNC = POS_BRKP_LONG_STACK + 753;
@@ -149,17 +159,6 @@ public class V8DebugTest {
     
     @BeforeClass
     public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() throws IOException {
-        int port = startNodeDebug(V8DebugTest.class.getResourceAsStream(TEST_FILE));
-        assertTrue("Invalid port: "+port, port > 0);
-        responseHandler = new ResponseHandler();
         // To block standard in:
         System.setIn(new InputStream() {
             @Override
@@ -172,11 +171,23 @@ public class V8DebugTest {
                 return -1;
             }
         });
+    }
+    
+    @AfterClass
+    public static void tearDownClass() {
+    }
+    
+    @Before
+    public void setUp() throws IOException {
+        int port = startNodeDebug(V8DebugTest.class.getResourceAsStream(TEST_FILE));
+        assertTrue("Invalid port: "+port, port > 0);
+        responseHandler = new ResponseHandler();
         v8dbg = V8Debug.TestAccess.createV8Debug("localhost", port, responseHandler);
     }
     
     @After
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
+        Thread.sleep(2000); // To recover
     }
     
     private int startNodeDebug(InputStream testSource) throws IOException {
@@ -220,6 +231,8 @@ public class V8DebugTest {
     public void testMain() throws IOException, InterruptedException {
         // The set of commands that we need to test:
         Set<V8Command> commandsToTest = new HashSet<>(Arrays.asList(V8Command.values()));
+        // Exception breakpoints are tested explicitly
+        commandsToTest.remove(V8Command.Setexceptionbreak);
         
         // Wait to stop first:
         V8Event lastEvent;
@@ -403,7 +416,234 @@ public class V8DebugTest {
         checkReferences();
         commandsToTest.remove(V8Command.References);
         
+        V8Debug.TestAccess.doCommand(v8dbg, "exit"); // disconnect
+        lastResponse = responseHandler.getLastResponse();
+        commandsToTest.remove(V8Command.Disconnect);
+        assertTrue(lastResponse.isSuccess());
+        assertTrue(lastResponse.isRunning());
+        Thread.sleep(500);
+        assertTrue("is connection closed", V8Debug.TestAccess.isClosed(v8dbg));
+        assertTrue("is closed", responseHandler.isClosed());
+        
         assertTrue("Commands remaining to test: "+commandsToTest.toString(), commandsToTest.isEmpty());
+    }
+    
+    /**
+     * Test of all exception breakpoints.
+     */
+    @Test
+    public void testSetexceptionbreakAll() throws IOException, InterruptedException {
+        // Exception breakpoints are tested explicitly
+        
+        // Wait to stop first:
+        V8Event lastEvent;
+        do {
+            lastEvent = responseHandler.getLastEvent();
+        } while (lastEvent.getKind() != V8Event.Kind.Break);
+        V8Response lastResponse = responseHandler.getLastResponse();
+        
+        // Initially, we have one default breakpoint and no exception breakpoints
+        V8Debug.TestAccess.doCommand(v8dbg, "breakpoints");
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Listbreakpoints, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        ListBreakpoints.ResponseBody lbrb = (ListBreakpoints.ResponseBody) lastResponse.getBody();
+        assertFalse(lbrb.isBreakOnExceptions());
+        assertFalse(lbrb.isBreakOnUncaughtExceptions());
+        V8Breakpoint[] breakpoints = lbrb.getBreakpoints();
+        assertEquals(1, breakpoints.length);
+        
+        V8Debug.TestAccess.send(v8dbg, SetExceptionBreak.createRequest(11, V8ExceptionBreakType.all, true));
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Setexceptionbreak, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        SetExceptionBreak.ResponseBody serb = (SetExceptionBreak.ResponseBody) lastResponse.getBody();
+        assertEquals(V8ExceptionBreakType.all, serb.getType());
+        assertEquals(true, serb.isEnabled());
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "cont");
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Continue, lastResponse.getCommand());
+        do {
+            lastEvent = responseHandler.getLastEvent();
+        } while (V8Event.Kind.AfterCompile == lastEvent.getKind());
+        assertEquals(V8Event.Kind.Exception, lastEvent.getKind());
+        ExceptionEventBody eeb = (ExceptionEventBody) lastEvent.getBody();
+        assertFalse(eeb.isUncaught());
+        assertEquals(LINE_EBRKP1-1, eeb.getSourceLine());
+        assertEquals(8, eeb.getSourceColumn());
+        assertEquals("        throw \"Test throw.\";", eeb.getSourceLineText());
+        V8Script script = eeb.getScript();
+        assertEquals(testFilePath, script.getName());
+        assertEquals(0, script.getLineOffset());
+        assertEquals(0, script.getColumnOffset());
+        assertEquals(TEST_NUM_LINES, script.getLineCount());
+        V8Value exception = eeb.getException();
+        assertEquals("Test throw.", ((V8String) exception).getValue());
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "cont");
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Continue, lastResponse.getCommand());
+        do {
+            lastEvent = responseHandler.getLastEvent();
+        } while (V8Event.Kind.AfterCompile == lastEvent.getKind());
+        assertEquals(V8Event.Kind.Exception, lastEvent.getKind());
+        eeb = (ExceptionEventBody) lastEvent.getBody();
+        assertFalse(eeb.isUncaught());
+        assertEquals(LINE_EBRKP2-1, eeb.getSourceLine());
+        assertEquals(8, eeb.getSourceColumn());
+        assertEquals("        throw 1.5;", eeb.getSourceLineText());
+        exception = eeb.getException();
+        assertEquals(1.5, ((V8Number) exception).getDoubleValue(), 1e-10);
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "cont");
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Continue, lastResponse.getCommand());
+        do {
+            lastEvent = responseHandler.getLastEvent();
+        } while (V8Event.Kind.AfterCompile == lastEvent.getKind());
+        assertEquals(V8Event.Kind.Exception, lastEvent.getKind());
+        eeb = (ExceptionEventBody) lastEvent.getBody();
+        assertFalse(eeb.isUncaught());
+        assertEquals(LINE_EBRKP3-1, eeb.getSourceLine());
+        assertEquals(8, eeb.getSourceColumn());
+        assertEquals("        throw false;", eeb.getSourceLineText());
+        exception = eeb.getException();
+        assertEquals(false, ((V8Boolean) exception).getValue());
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "cont");
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Continue, lastResponse.getCommand());
+        do {
+            lastEvent = responseHandler.getLastEvent();
+        } while (V8Event.Kind.AfterCompile == lastEvent.getKind());
+        assertEquals(V8Event.Kind.Exception, lastEvent.getKind());
+        eeb = (ExceptionEventBody) lastEvent.getBody();
+        assertFalse(eeb.isUncaught());
+        assertEquals(LINE_EBRKP4-1, eeb.getSourceLine());
+        assertEquals(10, eeb.getSourceColumn());
+        assertEquals("        a.getOwnPropertyName(\"oops\");", eeb.getSourceLineText());
+        exception = eeb.getException();
+        V8Object err = (V8Object) exception;
+        assertEquals(V8Value.Type.Error, err.getType());
+        assertEquals("TypeError: Object 10 has no method 'getOwnPropertyName'", err.getText());
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "cont");
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Continue, lastResponse.getCommand());
+        do {
+            lastEvent = responseHandler.getLastEvent();
+        } while (V8Event.Kind.AfterCompile == lastEvent.getKind());
+        assertEquals(V8Event.Kind.Exception, lastEvent.getKind());
+        eeb = (ExceptionEventBody) lastEvent.getBody();
+        assertFalse(eeb.isUncaught());
+        assertEquals(LINE_EBRKP5-1, eeb.getSourceLine());
+        assertEquals(14, eeb.getSourceColumn());
+        assertEquals("        throw new Error(\"Test Error.\");", eeb.getSourceLineText());
+        exception = eeb.getException();
+        err = (V8Object) exception;
+        assertEquals(V8Value.Type.Error, err.getType());
+        assertEquals("Error: Test Error.", err.getText());
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "cont");
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Continue, lastResponse.getCommand());
+        do {
+            lastEvent = responseHandler.getLastEvent();
+        } while (V8Event.Kind.AfterCompile == lastEvent.getKind());
+        assertEquals(V8Event.Kind.Exception, lastEvent.getKind());
+        eeb = (ExceptionEventBody) lastEvent.getBody();
+        // assertTrue(eeb.isUncaught()); - trurns false, but should return true IMHO!
+        assertEquals(LINE_EBRKP6-1, eeb.getSourceLine());
+        assertEquals(4, eeb.getSourceColumn());
+        assertEquals("    throw \"exiting...\";", eeb.getSourceLineText());
+        exception = eeb.getException();
+        assertEquals("exiting...", ((V8String) exception).getValue());
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "cont");
+        lastResponse = responseHandler.getLastResponse();
+        assertTrue(lastResponse.isSuccess());
+        assertTrue(lastResponse.isRunning());
+        
+        
+        /*V8Debug.TestAccess.doCommand(v8dbg, "exit"); // disconnect
+        lastResponse = responseHandler.getLastResponse();
+        assertTrue(lastResponse.isSuccess());
+        assertTrue(lastResponse.isRunning());*/
+        Thread.sleep(500);
+        assertTrue("is connection closed", V8Debug.TestAccess.isClosed(v8dbg));
+        assertTrue("is closed", responseHandler.isClosed());
+    }
+    
+    /**
+     * Test of uncaught exception breakpoints.
+     */
+    //@Test - TODO: Do not test now, debugger does not break on uncaught exceptions.
+    public void testSetexceptionbreakUncaught() throws IOException, InterruptedException {
+        // Exception breakpoints are tested explicitly
+        
+        // Wait to stop first:
+        V8Event lastEvent;
+        do {
+            lastEvent = responseHandler.getLastEvent();
+        } while (lastEvent.getKind() != V8Event.Kind.Break);
+        V8Response lastResponse = responseHandler.getLastResponse();
+        
+        // Initially, we have one default breakpoint and no exception breakpoints
+        V8Debug.TestAccess.doCommand(v8dbg, "breakpoints");
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Listbreakpoints, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        ListBreakpoints.ResponseBody lbrb = (ListBreakpoints.ResponseBody) lastResponse.getBody();
+        assertFalse(lbrb.isBreakOnExceptions());
+        assertFalse(lbrb.isBreakOnUncaughtExceptions());
+        V8Breakpoint[] breakpoints = lbrb.getBreakpoints();
+        assertEquals(1, breakpoints.length);
+        
+        V8Debug.TestAccess.send(v8dbg, SetExceptionBreak.createRequest(11, V8ExceptionBreakType.uncaught, true));
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Setexceptionbreak, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        SetExceptionBreak.ResponseBody serb = (SetExceptionBreak.ResponseBody) lastResponse.getBody();
+        assertEquals(V8ExceptionBreakType.uncaught, serb.getType());
+        assertEquals(true, serb.isEnabled());
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "cont");
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Continue, lastResponse.getCommand());
+        do {
+            lastEvent = responseHandler.getLastEvent();
+        } while (V8Event.Kind.AfterCompile == lastEvent.getKind());
+        assertEquals(V8Event.Kind.Exception, lastEvent.getKind());
+        ExceptionEventBody eeb = (ExceptionEventBody) lastEvent.getBody();
+        assertTrue(eeb.isUncaught()); //- trurns false, but should return true IMHO!
+        assertEquals(LINE_EBRKP6-1, eeb.getSourceLine());
+        assertEquals(4, eeb.getSourceColumn());
+        assertEquals("    throw \"exiting...\";", eeb.getSourceLineText());
+        V8Value exception = eeb.getException();
+        assertEquals("exiting...", ((V8String) exception).getValue());
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "cont");
+        lastResponse = responseHandler.getLastResponse();
+        assertTrue(lastResponse.isSuccess());
+        assertTrue(lastResponse.isRunning());
+        
+        
+        /*V8Debug.TestAccess.doCommand(v8dbg, "exit"); // disconnect
+        lastResponse = responseHandler.getLastResponse();
+        assertTrue(lastResponse.isSuccess());
+        assertTrue(lastResponse.isRunning());*/
+        Thread.sleep(500);
+        assertTrue("is connection closed", V8Debug.TestAccess.isClosed(v8dbg));
+        assertTrue("is closed", responseHandler.isClosed());
     }
     
     private void checkFrame(long column, long line, String sourceLineText) throws IOException, InterruptedException {
@@ -1557,6 +1797,7 @@ public class V8DebugTest {
         
         private V8Response lastResponse;
         private V8Event lastEvent;
+        private boolean closed;
 
         @Override
         public synchronized void notifyResponse(V8Response response) {
@@ -1568,6 +1809,11 @@ public class V8DebugTest {
         public synchronized void notifyEvent(V8Event event) {
             this.lastEvent = event;
             this.notifyAll();
+        }
+
+        @Override
+        public void notifyClosed() {
+            this.closed = true;
         }
         
         public synchronized V8Response getLastResponse() throws InterruptedException {
@@ -1590,6 +1836,10 @@ public class V8DebugTest {
             V8Event event = lastEvent;
             lastEvent = null;
             return event;
+        }
+        
+        public boolean isClosed() {
+            return closed;
         }
         
     }

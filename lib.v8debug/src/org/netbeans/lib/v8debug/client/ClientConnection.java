@@ -64,6 +64,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ContainerFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.netbeans.lib.v8debug.V8Command;
 
 /**
  *
@@ -198,6 +199,7 @@ public final class ClientConnection {
     public void send(V8Request request) throws IOException {
         JSONObject obj = JSONWriter.store(request);
         String text = obj.toJSONString();
+        //System.out.println("SEND: "+text);
         LOG.log(Level.FINE, "SEND: {0}", text);
         byte[] bytes = text.getBytes(CHAR_SET);
         String contentLength = CONTENT_LENGTH_STR+bytes.length + "\r\n\r\n";
@@ -208,6 +210,14 @@ public final class ClientConnection {
     public void close() throws IOException {
         if (server != null) {
             server.close();
+        }
+    }
+    
+    public boolean isClosed() {
+        if (server != null) {
+            return server.isClosed();
+        } else {
+            return false;
         }
     }
     
@@ -269,6 +279,11 @@ public final class ClientConnection {
             case response:  V8Response response = JSONReader.getResponse(obj);
                             //System.out.println("response: "+response);
                             listener.response(response);
+                            if (V8Command.Disconnect.equals(response.getCommand())) {
+                                try {
+                                    close();
+                                } catch (IOException ioex) {}
+                            }
                             break;
             default: throw new IllegalStateException("Wrong type: "+type);
         }

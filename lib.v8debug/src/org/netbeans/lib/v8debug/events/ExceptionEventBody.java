@@ -42,7 +42,8 @@
 package org.netbeans.lib.v8debug.events;
 
 import org.netbeans.lib.v8debug.V8Body;
-import org.netbeans.lib.v8debug.V8ScriptLocation;
+import org.netbeans.lib.v8debug.V8Script;
+import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
  *
@@ -51,15 +52,15 @@ import org.netbeans.lib.v8debug.V8ScriptLocation;
 public final class ExceptionEventBody extends V8Body {
     
     private final boolean uncaught;
-    private final String exception;
+    private final V8Value exception;
     private final long sourceLine;
     private final long sourceColumn;
     private final String sourceLineText;
-    private final V8ScriptLocation script;
+    private final V8Script script;
     
-    public ExceptionEventBody(boolean uncaught, String exception,
+    public ExceptionEventBody(boolean uncaught, V8Value exception,
                               long sourceLine, long sourceColumn,
-                              String sourceLineText, V8ScriptLocation script) {
+                              String sourceLineText, V8Script script) {
         this.uncaught = uncaught;
         this.exception = exception;
         this.sourceLine = sourceLine;
@@ -72,7 +73,7 @@ public final class ExceptionEventBody extends V8Body {
         return uncaught;
     }
 
-    public String getException() {
+    public V8Value getException() {
         return exception;
     }
 
@@ -88,7 +89,7 @@ public final class ExceptionEventBody extends V8Body {
         return sourceLineText;
     }
 
-    public V8ScriptLocation getScript() {
+    public V8Script getScript() {
         return script;
     }
 }

@@ -59,12 +59,17 @@ public class V8Object extends V8Value {
     private final Map<String, Property> properties;
     private final Array array;
     
-    public V8Object(long handle, String className,
+    public V8Object(long handle, V8Value.Type type, String className,
                     PropertyLong constructorFunctionHandle,
                     PropertyLong protoObjectHandle, PropertyLong prototypeObjectHandle,
                     Map<String, Property> properties, Array array, String text) {
-        this(handle, V8Value.Type.Object, className, constructorFunctionHandle,
-             protoObjectHandle, prototypeObjectHandle, properties, array, text);
+        super(handle, type, text);
+        this.className = className;
+        this.constructorFunctionHandle = constructorFunctionHandle;
+        this.protoObjectHandle = protoObjectHandle;
+        this.prototypeObjectHandle = prototypeObjectHandle;
+        this.properties = properties;
+        this.array = array;
     }
     
     protected V8Object(long handle, V8Value.Type type, String className,
@@ -75,19 +80,6 @@ public class V8Object extends V8Value {
              protoObjectHandle, prototypeObjectHandle, properties, null, text);
     }
     
-    private V8Object(long handle, V8Value.Type type, String className,
-                     PropertyLong constructorFunctionHandle,
-                     PropertyLong protoObjectHandle, PropertyLong prototypeObjectHandle,
-                     Map<String, Property> properties, Array array, String text) {
-        super(handle, type, text);
-        this.className = className;
-        this.constructorFunctionHandle = constructorFunctionHandle;
-        this.protoObjectHandle = protoObjectHandle;
-        this.prototypeObjectHandle = prototypeObjectHandle;
-        this.properties = properties;
-        this.array = array;
-    }
-
     public String getClassName() {
         return className;
     }

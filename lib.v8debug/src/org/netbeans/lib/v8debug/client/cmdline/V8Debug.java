@@ -198,6 +198,7 @@ public class V8Debug {
     }
     
     private void responseLoop() throws IOException, ParseException {
+        try {
         cc.runEventLoop(new ClientConnection.Listener() {
 
             @Override
@@ -237,6 +238,12 @@ public class V8Debug {
             }
 
         });
+        } finally {
+            cc.close();
+            if (testeable != null) {
+                testeable.notifyClosed();
+            }
+        }
     }
     
     private boolean doCommand(String command) throws IOException {
@@ -809,6 +816,9 @@ public class V8Debug {
             case Version:
                 printMSG("MSG_Version", ((Version.ResponseBody) body).getVersion());
                 return true;
+            case Disconnect:
+                closing = true;
+                return false;
             default:
                 return true;
         }
@@ -1065,6 +1075,10 @@ public class V8Debug {
             v8dbg.cc.send(req);
         }
         
+        static boolean isClosed(V8Debug v8dbg) {
+            return v8dbg.cc.isClosed();
+        }
+        
     }
     
     static interface Testeable {
@@ -1072,6 +1086,8 @@ public class V8Debug {
         void notifyResponse(V8Response response);
         
         void notifyEvent(V8Event event);
+        
+        void notifyClosed();
         
     }
 

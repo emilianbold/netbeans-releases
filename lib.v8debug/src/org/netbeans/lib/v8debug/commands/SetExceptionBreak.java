@@ -43,7 +43,9 @@ package org.netbeans.lib.v8debug.commands;
 
 import org.netbeans.lib.v8debug.V8Arguments;
 import org.netbeans.lib.v8debug.V8Body;
+import org.netbeans.lib.v8debug.V8Command;
 import org.netbeans.lib.v8debug.V8ExceptionBreakType;
+import org.netbeans.lib.v8debug.V8Request;
 
 /**
  *
@@ -52,6 +54,10 @@ import org.netbeans.lib.v8debug.V8ExceptionBreakType;
 public final class SetExceptionBreak {
     
     private SetExceptionBreak() {}
+    
+    public static V8Request createRequest(long sequence, V8ExceptionBreakType type, boolean enabled) {
+        return new V8Request(sequence, V8Command.Setexceptionbreak, new Arguments(type, enabled));
+    }
     
     public static final class Arguments extends V8Arguments {
         

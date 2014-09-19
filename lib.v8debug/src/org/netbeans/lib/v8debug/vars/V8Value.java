@@ -58,7 +58,8 @@ public class V8Value {
         Function,
         Frame,
         Script,
-        Context;
+        Context,
+        Error;
 
         @Override
         public String toString() {

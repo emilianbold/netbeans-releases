@@ -57,7 +57,9 @@ glob_m = Math.sin(glob_m) + Math.cos(glob_n);
     cl.getValue();
     scope();
     testThis();
-    testBreakpoints(); testReferences();
+    testBreakpoints();
+    testReferences();
+    testExceptionBreakpoints();
 })();
 
 function vars() {
@@ -207,4 +209,34 @@ function testReferences() {
     var john = new Person("John", 30, 'm');
     var sandra = new Person("Sandra", 29, 'f');
     r4();               // breakpoint
+}
+
+function testExceptionBreakpoints() {
+    try {
+        throw "Test throw.";
+    } catch (exc) {
+        console.log(exc);
+    }
+    try {
+        throw 1.5;
+    } catch (exc) {
+        console.log(exc);
+    }
+    try {
+        throw false;
+    } catch (exc) {
+        console.log(exc);
+    }
+    try {
+        var a = 10;
+        a.getOwnPropertyName("oops");
+    } catch (exc) {
+        console.log(exc);
+    }
+    try {
+        throw new Error("Test Error.");
+    } catch (err) {
+        console.log(err);
+    }
+    throw "exiting...";
 }

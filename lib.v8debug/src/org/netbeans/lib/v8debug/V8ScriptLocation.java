@@ -47,16 +47,22 @@ package org.netbeans.lib.v8debug;
  */
 public final class V8ScriptLocation {
     
+    private final long id;
     private final String name;
     private final long line;
     private final long column;
     private final long lineCount;
     
-    public V8ScriptLocation(String name, long line, long column, long lineCount) {
+    public V8ScriptLocation(long id, String name, long line, long column, long lineCount) {
+        this.id = id;
         this.name = name;
         this.line = line;
         this.column = column;
         this.lineCount = lineCount;
+    }
+    
+    public long getId() {
+        return id;
     }
 
     public String getName() {

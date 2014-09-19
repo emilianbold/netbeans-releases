@@ -142,12 +142,12 @@ public class JSONReader {
                 break;
             case Exception:
                 boolean uncaught = (boolean) obj.get(EVT_UNCAUGHT);
-                String exception = (String) obj.get(EVT_EXCEPTION);
+                V8Value exception = getValue((JSONObject) obj.get(EVT_EXCEPTION));
                 sourceLine = getLong(obj, EVT_SOURCE_LINE);
                 sourceColumn = getLong(obj, EVT_SOURCE_COLUMN);
                 sourceLineText = (String) obj.get(EVT_SOURCE_LINE_TEXT);
-                scriptLocation = getScriptLocation((JSONObject) obj.get(EVT_SCRIPT));
-                body = new ExceptionEventBody(uncaught, exception, sourceLine, sourceColumn, sourceLineText, scriptLocation);
+                script = getScript((JSONObject) obj.get(EVT_SCRIPT));
+                body = new ExceptionEventBody(uncaught, exception, sourceLine, sourceColumn, sourceLineText, script);
                 break;
             default:
                 new IllegalArgumentException("Unknown event "+eventName+" in "+obj.toJSONString()).printStackTrace();
@@ -316,11 +316,12 @@ public class JSONReader {
     }
     
     private static V8ScriptLocation getScriptLocation(JSONObject obj) {
+        long id = getLong(obj, ID);
         String name = getString(obj, NAME);
         long line = getLong(obj, SCRIPT_LINE_OFFSET);
         long column = getLong(obj, SCRIPT_COLUMN_OFFSET);
         long lineCount = getLong(obj, SCRIPT_LINE_COUNT);
-        return new V8ScriptLocation(name, line, column, lineCount);
+        return new V8ScriptLocation(id, name, line, column, lineCount);
     }
     
     private static V8Script getScript(JSONObject obj) {
@@ -336,9 +337,9 @@ public class JSONReader {
         ReferencedValue context = getReferencedValue(obj, CONTEXT);
         String text = getString(obj, TEXT);
         long scriptTypeNum = getLong(obj, SCRIPT_TYPE);
-        V8Script.Type scriptType = V8Script.Type.valueOf((int) scriptTypeNum);
+        V8Script.Type scriptType = (scriptTypeNum >= 0) ? V8Script.Type.valueOf((int) scriptTypeNum) : null;
         long compilationTypeNum = getLong(obj, COMPILATION_TYPE);
-        V8Script.CompilationType compilationType = V8Script.CompilationType.valueOf((int) compilationTypeNum);
+        V8Script.CompilationType compilationType = (compilationTypeNum >= 0) ? V8Script.CompilationType.valueOf((int) compilationTypeNum) : null;
         String evalFromScript = getString(obj, EVAL_FROM_SCRIPT);
         V8Script.EvalFromLocation evalFromLocation;
         if (V8Script.CompilationType.EVAL.equals(compilationType)) {
@@ -404,6 +405,7 @@ public class JSONReader {
                                       source, scriptRef, scriptId,
                                       position, line, column, properties, text);
             case Object:
+            case Error:
                 String className = getString(obj, VALUE_CLASS_NAME);
                 constructorFunctionHandle = getReferenceProperty(obj, VALUE_CONSTRUCTOR_FUNCTION);
                 protoObject = getReferenceProperty(obj, VALUE_PROTO_OBJECT);
@@ -420,7 +422,7 @@ public class JSONReader {
                     arrayRef[0] = new V8Object.DefaultArray();
                 }
                 V8Object.Array array = (arrayRef != null) ? arrayRef[0] : null;
-                return new V8Object(handle, className,
+                return new V8Object(handle, type, className,
                                     constructorFunctionHandle,
                                     protoObject, prototypeObject,
                                     properties, array, text);
