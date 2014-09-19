@@ -82,7 +82,7 @@ public final class NodeJsSupport {
     private final PackageJson packageJson;
 
 
-    public NodeJsSupport(Project project) {
+    private NodeJsSupport(Project project) {
         assert project != null;
         this.project = project;
         actionProvider = new NodeJsActionProvider(project);
