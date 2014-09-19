@@ -92,12 +92,14 @@ public final class NodeJsSourceRoots {
             return Collections.emptyList();
         }
         if (!FileUtils.hasNodeSources(version)) {
-            // XXX project problem?
             return Collections.emptyList();
         }
-        File nodeSources = FileUtils.getNodeSources(version);
+        File lib = new File(FileUtils.getNodeSources(version), "lib"); // NOI18N
+        if (!lib.isDirectory()) {
+            return Collections.emptyList();
+        }
         try {
-            URL nodeLib = Utilities.toURI(FileUtil.normalizeFile(new File(nodeSources, "lib"))).toURL(); // NOI18N
+            URL nodeLib = Utilities.toURI(FileUtil.normalizeFile(lib)).toURL();
             return Collections.singletonList(nodeLib);
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.INFO, null, ex);
