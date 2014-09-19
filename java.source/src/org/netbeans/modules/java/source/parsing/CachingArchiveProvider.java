@@ -122,13 +122,23 @@ public final class CachingArchiveProvider {
      * @return new {@link Archive}
      */
     @CheckForNull
-    public synchronized Archive getArchive(@NonNull final URL root, final boolean cacheFile)  {
+    public Archive getArchive(@NonNull final URL root, final boolean cacheFile)  {
         final URI rootURI = toURI(root);
-        Archive archive = archives.get(rootURI);
+        Archive archive;
+        synchronized (this) {
+            archive = archives.get(rootURI);
+        }
         if (archive == null) {
             archive = create(root, cacheFile);
             if (archive != null) {
-                archives.put(rootURI, archive );
+                synchronized (this) {
+                    // the value could be possibly computed while we were without the lock.
+                    archive = archives.put(rootURI, archive );
+                    if (archive != null) {
+                        // return the original value back and return it to the client.
+                        archives.put(rootURI, archive );
+                    }
+                }
             }
         }
         return archive;
