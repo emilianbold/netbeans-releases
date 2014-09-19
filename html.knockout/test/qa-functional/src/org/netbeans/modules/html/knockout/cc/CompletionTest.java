@@ -109,7 +109,7 @@ public class CompletionTest extends GeneralKnockout {
     eo.pressKey(KeyEvent.VK_RIGHT);
 
     eo.typeKey(' ', InputEvent.CTRL_MASK);
-    checkCompletionItems(getBindingTypes(), new String[]{"text", "visible"});
+    checkCompletionItems(getBindingTypes(), new String[]{"text", "visible", "component", "textInput"});
     eo.pressKey(KeyEvent.VK_ESCAPE);
 
     type(eo, "v");
