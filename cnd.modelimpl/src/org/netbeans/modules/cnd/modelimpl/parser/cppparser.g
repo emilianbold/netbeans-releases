@@ -3110,7 +3110,7 @@ superclass_init
 	: 
 	q = qualified_id 
         (
-            LPAREN! (expression_list | array_initializer)? RPAREN!
+            LPAREN (expression_list | array_initializer)? RPAREN
         |
             array_initializer
         )
