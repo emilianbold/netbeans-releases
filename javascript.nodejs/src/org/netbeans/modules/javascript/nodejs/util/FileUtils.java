@@ -318,16 +318,18 @@ public final class FileUtils {
         }
     }
 
+    public static File getNodeSources() {
+        return Places.getCacheSubdirectory(NODEJS_DIR_NAME);
+    }
+
     public static boolean hasNodeSources(Version version) {
-        File nodeSources = getNodeSources(version);
-        String[] children = nodeSources.list();
-        return children != null
-                && children.length > 0;
+        assert version != null;
+        return getNodeSources(version).isDirectory();
     }
 
     public static File getNodeSources(Version version) {
         assert version != null;
-        return Places.getCacheSubdirectory(NODEJS_DIR_NAME + "/" + version.toString());
+        return new File(getNodeSources(), version.toString());
     }
 
     @NbBundle.Messages({
@@ -336,8 +338,28 @@ public final class FileUtils {
     })
     public static void downloadNodeSources(Version version) throws NetworkException, IOException {
         assert !EventQueue.isDispatchThread();
+        assert version != null;
+        deleteExistingNodeSources(version);
+        File nodeSources = getNodeSources();
+        String nodeVersion = version.toString();
+        File archive = new File(nodeSources, "nodejs-" + nodeVersion + ".tar.gz"); // NOI18N
+        downloadNodeSources(archive, nodeVersion);
+        // unpack
+        try {
+            String foldername = decompressTarGz(archive, nodeSources, false);
+            new File(nodeSources, foldername).renameTo(new File(nodeSources, nodeVersion));
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, archive.getAbsolutePath(), ex);
+            throw ex;
+        }
+        if (!archive.delete()) {
+            archive.deleteOnExit();
+        }
+    }
+
+    private static void deleteExistingNodeSources(Version version) throws IOException {
+        assert version != null;
         if (hasNodeSources(version)) {
-            // delete it
             final FileObject fo = FileUtil.toFileObject(getNodeSources(version));
             assert fo != null : version;
             FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
@@ -347,31 +369,36 @@ public final class FileUtils {
                 }
             });
         }
-        File nodeSources = getNodeSources(version);
-        String nodeVersion = version.toString();
+    }
+
+    private static void downloadNodeSources(File archive, String nodeVersion) throws IOException {
+        assert archive != null;
+        assert nodeVersion != null;
         String url = String.format(NODEJS_SOURCES_URL, nodeVersion, nodeVersion);
-        File archive = new File(nodeSources, "nodejs-" + nodeVersion + ".tar.gz"); // NOI18N
+        // download
         try {
             NetworkSupport.downloadWithProgress(url, archive, Bundle.FileUtils_sources_downloading(nodeVersion));
         } catch (InterruptedException ex) {
             // download cancelled
             LOGGER.log(Level.FINE, "Download cancelled for {0}", url);
-            return;
-        }
-        decompressTarGz(archive, nodeSources, true);
-        if (!archive.delete()) {
-            archive.deleteOnExit();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, url, ex);
+            throw ex;
         }
     }
 
-    public static void decompressTarGz(File archive, File destination, boolean skipArchiveRoot) throws IOException {
+    @CheckForNull
+    public static String decompressTarGz(File archive, File destination, boolean skipArchiveRoot) throws IOException {
+        String archiveRoot = null;
         try (TarArchiveInputStream tarInputStream = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(archive)))) {
             int archiveRootLength = -1;
             TarArchiveEntry tarEntry = tarInputStream.getNextTarEntry();
-            if (skipArchiveRoot
-                    && tarEntry != null) {
-                archiveRootLength = tarEntry.getName().length();
-                tarEntry = tarInputStream.getNextTarEntry();
+            if (tarEntry != null) {
+                archiveRoot = tarEntry.getName();
+                if (skipArchiveRoot) {
+                    archiveRootLength = archiveRoot.length();
+                    tarEntry = tarInputStream.getNextTarEntry();
+                }
             }
             while (tarEntry != null) {
                 String name = tarEntry.getName();
@@ -390,6 +417,7 @@ public final class FileUtils {
                 tarEntry = tarInputStream.getNextTarEntry();
             }
         }
+        return archiveRoot;
     }
 
 }
