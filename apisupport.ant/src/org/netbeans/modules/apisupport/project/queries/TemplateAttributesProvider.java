@@ -44,18 +44,24 @@
 
 package org.netbeans.modules.apisupport.project.queries;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Utilities;
 
 /**
  * Specifies license header for module and suite projects.
@@ -64,6 +70,8 @@ public class TemplateAttributesProvider implements CreateFromTemplateAttributesP
     private final NbModuleProject project;
     private final AntProjectHelper helper;
     private final boolean netbeansOrg;
+
+    private static final Logger LOG = Logger.getLogger(TemplateAttributesProvider.class.getName());
 
     public TemplateAttributesProvider(NbModuleProject p, AntProjectHelper helper, boolean netbeansOrg) {
         this.project = p;
@@ -75,11 +83,12 @@ public class TemplateAttributesProvider implements CreateFromTemplateAttributesP
     public Map<String,?> attributesFor(DataObject template, DataFolder target, String name) {
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String license = props.getProperty("project.license"); // NOI18N
+        String licensePath = props.getProperty("project.licensePath"); // NOI18N
 
         if (license == null && netbeansOrg) {
             license = "cddl-netbeans-sun"; // NOI18N
         }
-        if (license == null && project != null) {
+        if (license == null && licensePath == null && project != null) {
             SuiteProject sp;
             try {
                 sp = SuiteUtils.findSuite(project);
@@ -93,7 +102,15 @@ public class TemplateAttributesProvider implements CreateFromTemplateAttributesP
         }
         Map<String, String> values = new HashMap<String, String>();
         if (license != null) {
-            values.put("license", license); // NOI18N
+            values.put("license", license);
+        }
+        if(licensePath != null) {
+            File path = FileUtil.normalizeFile(helper.resolveFile(licensePath));
+            if (path.exists() && path.isAbsolute()) { //is this necessary? should prevent failed license header inclusion
+                values.put("licensePath", path.getAbsolutePath());
+            } else {
+                LOG.log(Level.INFO, "project.licensePath value not accepted - " + license);
+            }
         }
         values.put("encoding", "UTF-8"); // NOI18N
         return Collections.singletonMap("project", values); // NOI18N
