@@ -51,12 +51,19 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.ui.actions.NodeJsActionProvider;
+import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 
 public final class NodeJsSupport {
@@ -68,6 +75,7 @@ public final class NodeJsSupport {
     final PreferenceChangeListener optionsListener = new OptionsListener();
     final PreferenceChangeListener preferencesListener = new PreferencesListener();
     private final PropertyChangeListener packageJsonListener = new PackageJsonListener();
+    private final FileChangeListener nodeSourcesListener = new NodeSourcesListener();
     final NodeJsPreferences preferences;
     private final ActionProvider actionProvider;
     final NodeJsSourceRoots sourceRoots;
@@ -132,12 +140,14 @@ public final class NodeJsSupport {
     }
 
     void projectOpened() {
+        FileUtil.addFileChangeListener(nodeSourcesListener, FileUtils.getNodeSources());
         preferences.addPreferenceChangeListener(preferencesListener);
         packageJson.addPropertyChangeListener(packageJsonListener);
         packageJson.init();
     }
 
     public void projectClosed() {
+        FileUtil.removeFileChangeListener(nodeSourcesListener, FileUtils.getNodeSources());
         preferences.removePreferenceChangeListener(preferencesListener);
         packageJson.removePropertyChangeListener(packageJsonListener);
         packageJson.cleanup();
@@ -203,6 +213,31 @@ public final class NodeJsSupport {
                 firePropertyChanged(NodeJsPlatformProvider.PROP_START_FILE, evt.getOldValue(), evt.getNewValue());
             } else {
                 assert false : "Unknown event: " + propertyName;
+            }
+        }
+
+    }
+
+    private final class NodeSourcesListener extends FileChangeAdapter {
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            String projectName = project.getProjectDirectory().getNameExt();
+            if (!preferences.isEnabled()) {
+                LOGGER.log(Level.FINE, "File change event in node sources ignored, node.js not enabled in project {0}", projectName);
+                return;
+            }
+            NodeExecutable node = NodeExecutable.forProject(project, false);
+            if (node == null) {
+                return;
+            }
+            Version version = node.getVersion();
+            if (version == null) {
+                return;
+            }
+            if (fe.getFile().getNameExt().equals(version.toString())) {
+                LOGGER.log(Level.FINE, "Processing file change event in node sources in project {0}", projectName);
+                fireSourceRootsChanged();
             }
         }
 
