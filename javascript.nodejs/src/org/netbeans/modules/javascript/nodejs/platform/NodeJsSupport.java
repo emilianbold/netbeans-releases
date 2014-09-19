@@ -126,6 +126,11 @@ public final class NodeJsSupport {
         propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(project, propertyName, oldValue, newValue));
     }
 
+    public void fireSourceRootsChanged() {
+        sourceRoots.resetSourceRoots();
+        firePropertyChanged(NodeJsPlatformProvider.PROP_SOURCE_ROOTS, null, null);
+    }
+
     void projectOpened() {
         preferences.addPreferenceChangeListener(preferencesListener);
         packageJson.addPropertyChangeListener(packageJsonListener);
@@ -153,8 +158,7 @@ public final class NodeJsSupport {
             LOGGER.log(Level.FINE, "Processing change event {0} in node.js options in project {1}", new Object[] {key, projectName});
             if (NodeJsOptions.NODE_PATH.equals(key)
                     && preferences.isDefaultNode()) {
-                sourceRoots.resetSourceRoots();
-                firePropertyChanged(NodeJsPlatformProvider.PROP_SOURCE_ROOTS, null, null);
+                fireSourceRootsChanged();
             }
         }
 
@@ -173,12 +177,10 @@ public final class NodeJsSupport {
             } else if (!enabled) {
                 LOGGER.log(Level.FINE, "Change event in node.js preferences ignored, node.js not enabled in project {0}", projectName);
             } else if (NodeJsPreferences.NODE_DEFAULT.equals(key)) {
-                sourceRoots.resetSourceRoots();
-                firePropertyChanged(NodeJsPlatformProvider.PROP_SOURCE_ROOTS, null, null);
+                fireSourceRootsChanged();
             } else if (NodeJsPreferences.NODE_PATH.equals(key)
                     && !preferences.isDefaultNode()) {
-                sourceRoots.resetSourceRoots();
-                firePropertyChanged(NodeJsPlatformProvider.PROP_SOURCE_ROOTS, null, null);
+                fireSourceRootsChanged();
             }
         }
 
