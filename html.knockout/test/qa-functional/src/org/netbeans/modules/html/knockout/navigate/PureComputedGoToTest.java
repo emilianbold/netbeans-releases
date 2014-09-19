@@ -52,48 +52,49 @@ import org.netbeans.modules.html.knockout.GeneralKnockout;
  *
  * @author vriha
  */
-public class BindingGoToTest extends GeneralKnockout {
+public class PureComputedGoToTest extends GeneralKnockout {
 
-    public BindingGoToTest(String args) {
+    public PureComputedGoToTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(BindingGoToTest.class).addTest(
-                "createApplication",
-                "testClick",
-                "testForeach"
-        ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(PureComputedGoToTest.class).addTest(
+                        "createApplication",
+                        "testFirstBinding",
+                        "testSecondBinding",
+                        "testTemplate"
+                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
     public void createApplication() {
         try {
             startTest();
             openDataProjects("sample");
-            openFile("index.html", "sample");
+            openFile("purecomp.html", "sample");
             waitScanFinished();
             endTest();
         } catch (IOException ex) {
-            Logger.getLogger(BindingGoToTest.class.getName()).log(Level.INFO, "Opening project", ex);
+            Logger.getLogger(PureComputedGoToTest.class.getName()).log(Level.INFO, "Opening project", ex);
         }
     }
 
-    public void testClick() {
+    public void testFirstBinding() {
         startTest();
-        navigate("index.html", "model1.js", 9, 33, 1, 1);
+        navigate("purecomp.html", "purecomp.js", 24, 35, 1, 1);
         endTest();
     }
 
-    public void testForeach() {
+    public void testSecondBinding() {
         startTest();
-        navigate("index.html", "model1.js", 2, 28, 1, 1);
+        navigate("purecomp.html", "purecomp.js", 24, 54, 1, 1);
         endTest();
     }
 
-    public void testComputed() {
+    public void testTemplate() {
         startTest();
-        navigate("index.html", "model1.js", 11, 31, 1, 1);
+        navigate("purecomp.html", "purecomp.js", 22, 70, 1, 1);
         endTest();
     }
-
 }
