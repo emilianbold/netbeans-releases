@@ -1,3 +1,9 @@
+nobugid - TermTester
+	[ See xxx for how to use ]
+	
+nobugid - termcap and terminfo sequences
+	... for xterm, ansi and dtterm added to doc-files/
+
 238225 - Midnight Commander and re-size breaks terminal
 	Looking at traces from Term MC sets the margins (op_margin())
 	but never resets them (reset/default margins always track 

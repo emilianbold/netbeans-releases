@@ -1,0 +1,93 @@
+#	Reconstructed via infocmp from file: /usr/share/terminfo/x/xterm
+# (untranslatable capabilities removed to fit entry within 1023 bytes)
+# (sgr removed to fit entry within 1023 bytes)
+# (acsc removed to fit entry within 1023 bytes)
+# (terminfo-only capabilities suppressed to fit entry within 1023 bytes)
+# (some function-key capabilities suppressed to fit entry within 1023 bytes)
+# WARNING: this entry, 1051 bytes long, may core-dump older termcap libraries!
+xterm|xterm terminal emulator (X Window System):\
+	:am:\
+	:bs:\
+	:km:\
+	:mi:\
+	:ms:\
+	:xn:\
+	:co#80:\
+	:it#8:\
+	:li#24:\
+	:AL=\E[%dL:\
+	:DC=\E[%dP:\
+	:DL=\E[%dM:\
+	:DO=\E[%dB:\
+	:IC=\E[%d@:\
+	:K2=\EOE:\
+	:LE=\E[%dD:\
+	:RI=\E[%dC:\
+	:SF=\E[%dS:\
+	:SR=\E[%dT:\
+	:UP=\E[%dA:\
+	:ae=\E(B:\
+	:as=\E(0:\
+	:al=\E[L:\
+	:bl=^G:\
+	:bt=\E[Z:\
+	:cd=\E[J:\
+	:ce=\E[K:\
+	:cl=\E[H
+	    \E[2J:\
+	:cm=\E[%i%d;%dH:\
+	:cr=^M:\
+	:cs=\E[%i%d;%dr:\
+	:ct=\E[3g:\
+	:dc=\E[P:\
+	:dl=\E[M:\
+	:do=^J:\
+	:ec=\E[%dX:\
+	:ei=\E[4l:\
+	:ho=\E[H:\
+	:im=\E[4h:\
+	:is=\E[!p
+	    \E[?3;4l		*
+	    \E[4l		*
+	    \E>:\		*
+	:kD=\E[3~:\
+	:kI=\E[2~:\
+	:kN=\E[6~:\
+	:kP=\E[5~:\
+	:kb=\177:\
+	:kd=\EOB:\
+	:ke=\E[?1l
+	    \E>:\
+	:kh=\EOH:\
+	:kl=\EOD:\
+	:kr=\EOC:\
+	:ks=\E[?1h
+	    \E=:\
+	:ku=\EOA:\
+	:le=^H:\
+	:mb=\E[5m:\
+	:md=\E[1m:\
+	:me=\E[0m:\
+	:mm=\E[?1034h:\
+	:mo=\E[?1034l:\
+	:mr=\E[7m:\
+	:nd=\E[C:\
+	:rc=\E8:\
+	:sc=\E7:\
+	:se=\E[27m:\
+	:sf=^J:\
+	:so=\E[7m:\
+	:sr=\EM:\
+	:st=\EH:\
+	:ta=^I:\
+	:te=\E[?1049l:\
+	:ti=\E[?1049h:\
+	:ue=\E[24m:\
+	:up=\E[A:\
+	:us=\E[4m:\
+	:vb=\E[?5h
+	    \E[?5l:\
+	:ve=\E[?12l
+	    \E[?25h:\
+	:vi=\E[?25l:\
+	:vs=\E[?12;25h:
