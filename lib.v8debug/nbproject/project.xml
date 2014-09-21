@@ -73,13 +73,14 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.nodejs.debug</friend>
                 <package>org.netbeans.lib.v8debug</package>
                 <package>org.netbeans.lib.v8debug.client</package>
                 <package>org.netbeans.lib.v8debug.commands</package>
                 <package>org.netbeans.lib.v8debug.events</package>
                 <package>org.netbeans.lib.v8debug.vars</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
