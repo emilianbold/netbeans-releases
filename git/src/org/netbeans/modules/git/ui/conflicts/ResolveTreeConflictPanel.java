@@ -59,10 +59,17 @@ import org.openide.util.NbBundle;
 public class ResolveTreeConflictPanel extends javax.swing.JPanel {
 
     /** Creates new form ResolveTreeConflictPanel */
-    public ResolveTreeConflictPanel (File file, Type conflictType) {
+    public ResolveTreeConflictPanel (File file, String relPath, Type conflictType) {
         initComponents();
         lblFile.setText(NbBundle.getMessage(ResolveTreeConflictPanel.class, "MSG_ResolveTreeConflictPanel.file.text", file.getName()));
+        txtFilePath.setText(relPath);
         lblFileStatus.setText(NbBundle.getMessage(ResolveTreeConflictPanel.class, "MSG_ResolveTreeConflictPanel.fileStatus.text", conflictType.getDescription()));
+    }
+
+    @Override
+    public void addNotify () {
+        super.addNotify();
+        txtFilePath.setCaretPosition(txtFilePath.getText().length());
     }
 
     /** This method is called from within the constructor to
@@ -76,10 +83,14 @@ public class ResolveTreeConflictPanel extends javax.swing.JPanel {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         lblFile = new javax.swing.JLabel();
+        txtFilePath = new javax.swing.JTextField();
         lblFileStatus = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(lblFile, org.openide.util.NbBundle.getMessage(ResolveTreeConflictPanel.class, "ResolveTreeConflictPanel.lblFile.text")); // NOI18N
+
+        txtFilePath.setEditable(false);
+        txtFilePath.setBorder(null);
 
         org.openide.awt.Mnemonics.setLocalizedText(lblFileStatus, org.openide.util.NbBundle.getMessage(ResolveTreeConflictPanel.class, "ResolveTreeConflictPanel.lblFileStatus.text")); // NOI18N
 
@@ -101,21 +112,30 @@ public class ResolveTreeConflictPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblFile)
-                    .addComponent(lblFileStatus)
                     .addComponent(jLabel1)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(12, 12, 12)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(rbAdd)
                             .addComponent(rbRemove))))
-                .addContainerGap(8, Short.MAX_VALUE))
+                .addContainerGap(141, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblFileStatus)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(txtFilePath, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(lblFile)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtFilePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblFileStatus)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel1)
@@ -123,7 +143,7 @@ public class ResolveTreeConflictPanel extends javax.swing.JPanel {
                 .addComponent(rbRemove)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(rbAdd)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -135,6 +155,7 @@ public class ResolveTreeConflictPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblFileStatus;
     final javax.swing.JRadioButton rbAdd = new javax.swing.JRadioButton();
     final javax.swing.JRadioButton rbRemove = new javax.swing.JRadioButton();
+    private javax.swing.JTextField txtFilePath;
     // End of variables declaration//GEN-END:variables
 
 }
