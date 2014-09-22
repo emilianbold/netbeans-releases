@@ -42,34 +42,18 @@
 
 package org.netbeans.modules.j2ee.weblogic9.optional;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.nio.charset.Charset;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
-import org.netbeans.api.extexecution.base.Processes;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
-import org.netbeans.api.extexecution.base.input.InputReaderTask;
-import org.netbeans.api.extexecution.base.input.InputReaders;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.modules.j2ee.deployment.plugins.api.CommonServerBridge;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -77,14 +61,11 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
-import org.netbeans.modules.j2ee.weblogic9.CommonBridge;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.weblogic.common.api.RuntimeListener;
 import org.netbeans.modules.weblogic.common.api.WebLogicRuntime;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.InputOutput;
@@ -114,9 +95,9 @@ public final class WLStartServer extends StartServer {
 
     @Override
     public ServerDebugInfo getDebugInfo(Target target) {
-        return new ServerDebugInfo(dm.getHost(), new Integer(
+        return new ServerDebugInfo(dm.getHost(), Integer.valueOf(
                 dm.getInstanceProperties().getProperty(
-                WLPluginProperties.DEBUGGER_PORT_ATTR)).intValue());
+                WLPluginProperties.DEBUGGER_PORT_ATTR)));
     }
 
     @Override
@@ -126,18 +107,20 @@ public final class WLStartServer extends StartServer {
 
     @Override
     public boolean isDebuggable(Target target) {
-        if (!isServerInDebug(dm.getUri())) {
+        if (!dm.isRemote() && !isServerInDebug(dm.getUri())) {
             return false;
         }
         if (!isRunning()) {
             return false;
         }
-        return true;
+        // XXX
+        return !dm.isRemote()
+                || Boolean.valueOf(dm.getInstanceProperties().getProperty(WLPluginProperties.REMOTE_DEBUG_ENABLED));
     }
 
     @Override
     public boolean isRunning() {
-        WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
+        WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
         return runtime.isRunning();
     }
 
@@ -165,7 +148,7 @@ public final class WLStartServer extends StartServer {
                 InstanceProperties.DISPLAY_NAME_ATTR);
         String uri = dm.getUri();
 
-        WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
+        WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
         runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
                 new StartListener(dm, serverName, serverProgress), getStartDebugVariables(dm), null);
 
@@ -182,7 +165,7 @@ public final class WLStartServer extends StartServer {
                 InstanceProperties.DISPLAY_NAME_ATTR);
         String uri = dm.getUri();
 
-        WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
+        WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
         runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
                 new StartListener(dm, serverName, serverProgress), getStartVariables(dm), null);
 
@@ -203,7 +186,7 @@ public final class WLStartServer extends StartServer {
 
         String uri = dm.getUri();
 
-        final WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
+        final WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
         runtime.start(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
                 new StartListener(dm, serverName, serverProgress) {
 
@@ -241,9 +224,9 @@ public final class WLStartServer extends StartServer {
                 InstanceProperties.DISPLAY_NAME_ATTR);
         String uri = dm.getUri();
 
-        WebLogicRuntime runtime = WebLogicRuntime.getInstance(CommonBridge.getConfiguration(dm));
+        WebLogicRuntime runtime = WebLogicRuntime.getInstance(dm.getCommonConfiguration());
         runtime.stop(new DefaultInputProcessorFactory(uri, false), new DefaultInputProcessorFactory(uri, true),
-                new StopListener(uri, serverName, serverProgress));
+                new StopListener(dm, serverName, serverProgress));
 
         removeServerInDebug(uri);
         return serverProgress;
@@ -251,12 +234,12 @@ public final class WLStartServer extends StartServer {
 
     @Override
     public boolean supportsStartDeploymentManager() {
-        return true;
+        return !dm.isRemote();
     }
 
     @Override
     public boolean supportsStartProfiling( Target target ) {
-        return true;
+        return !dm.isRemote();
     }
 
     @Override
@@ -301,7 +284,7 @@ public final class WLStartServer extends StartServer {
             }
         }
 
-        appendNonProxyHosts(sb);
+        configureProxy(dm.getInstanceProperties(), ret, sb);
         if (sb.length() > 0) {
             ret.put(JAVA_OPTIONS_VARIABLE, sb.toString());
         }
@@ -343,7 +326,7 @@ public final class WLStartServer extends StartServer {
             }
         }
 
-        appendNonProxyHosts(javaOptsBuilder);
+        configureProxy(dm.getInstanceProperties(), ret, javaOptsBuilder);
         ret.put(JAVA_OPTIONS_VARIABLE, javaOptsBuilder.toString());
         return ret;
     }
@@ -365,12 +348,43 @@ public final class WLStartServer extends StartServer {
             }
         }
 
-        appendNonProxyHosts(javaOptsBuilder);
+        configureProxy(dm.getInstanceProperties(), ret, javaOptsBuilder);
         String toAdd = javaOptsBuilder.toString().trim();
         if (!toAdd.isEmpty()) {
             ret.put(JAVA_OPTIONS_VARIABLE, toAdd);
         }
         return ret;
+    }
+
+    private static void configureProxy(InstanceProperties props, Map<String, String> env, StringBuilder javaOpts) {
+        if (Boolean.valueOf(props.getProperty(WLPluginProperties.PROXY_ENABLED))) {
+            configureProxy(javaOpts);
+        } else {
+            env.put("http_proxy", ""); // NOI18N
+        }
+    }
+
+    private static StringBuilder configureProxy(StringBuilder sb) {
+        final String[] PROXY_PROPS = {
+            "http.proxyHost", // NOI18N
+            "http.proxyPort", // NOI18N
+            "https.proxyHost", // NOI18N
+            "https.proxyPort", // NOI18N
+        };
+        for (String prop : PROXY_PROPS) {
+            if (sb.indexOf(prop) < 0) {
+                String value = System.getProperty(prop);
+                if (value != null) {
+                    if (sb.length() > 0) {
+                        sb.append(' '); // NOI18N
+                    }
+                    sb.append(" -D").append(prop).append("=").append(value); // NOI18N
+                }
+            }
+        }
+
+        appendNonProxyHosts(sb);
+        return sb;
     }
 
     private static StringBuilder appendNonProxyHosts(StringBuilder sb) {
@@ -450,6 +464,7 @@ public final class WLStartServer extends StartServer {
                 return;
             }
 
+            dm.getLogManager().stop();
             try {
                 // as described in the api we reset just ouptut
                 io.getOut().reset();
@@ -503,14 +518,14 @@ public final class WLStartServer extends StartServer {
 
     private static class StopListener implements RuntimeListener {
 
-        private final String uri;
+        private final WLDeploymentManager dm;
 
         private final String serverName;
 
         private final WLServerProgress serverProgress;
 
-        public StopListener(String uri, String serverName, WLServerProgress serverProgress) {
-            this.uri = uri;
+        public StopListener(WLDeploymentManager dm, String serverName, WLServerProgress serverProgress) {
+            this.dm = dm;
             this.serverName = serverName;
             this.serverProgress = serverProgress;
         }
@@ -535,11 +550,12 @@ public final class WLStartServer extends StartServer {
 
         @Override
         public void onProcessStart() {
-            InputOutput io = UISupport.getServerIO(uri);
+            InputOutput io = UISupport.getServerIO(dm.getUri());
             if (io == null) {
                 return;
             }
 
+            dm.getLogManager().stop();
             try {
                 // as described in the api we reset just ouptut
                 io.getOut().reset();
@@ -552,7 +568,7 @@ public final class WLStartServer extends StartServer {
 
         @Override
         public void onProcessFinish() {
-            InputOutput io = UISupport.getServerIO(uri);
+            InputOutput io = UISupport.getServerIO(dm.getUri());
             if (io != null) {
                 io.getOut().close();
                 io.getErr().close();

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.j2ee.deployment.common.api;
 
+import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -62,7 +63,7 @@ import org.openide.util.Parameters;
 //       so that it can be reused in other places. Perhaps it should be deprecated
 //       here in favor of web.common one???
 
-public final class Version {
+public final class Version implements Serializable {
 
     private static final Pattern JSR277_PATTERN = Pattern.compile(
             "(\\d+)(\\.(\\d+)(\\.(\\d+)(\\.(\\d+))?)?)?(-((\\w|-)+))?");
@@ -309,6 +310,31 @@ public final class Version {
     @Override
     public String toString() {
         return version;
+    }
+
+    /**
+     * Expands the version to full dotted notation.
+     *
+     * @param qualifierDefault the qualifier to use if empty
+     * @return the expanded version
+     * @since 1.109
+     */
+    public Version expand(String qualifierDefault) {
+        if (majorNumber == null) {
+            return this;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(majorNumber).append('.');
+        sb.append(minorNumber == null ? 0 : minorNumber).append('.');
+        sb.append(microNumber == null ? 0 : microNumber).append('.');
+        sb.append(updateNumber == null ? 0 : updateNumber).append('.');
+        sb.append(qualifier == null ? qualifierDefault : qualifier);
+
+        return new Version(sb.toString(), majorNumber,
+                minorNumber == null ? 0 : minorNumber,
+                microNumber == null ? 0 : microNumber,
+                updateNumber == null ? 0 : updateNumber,
+                qualifier == null ? qualifierDefault : qualifier);
     }
 
     private int compareTo(Version o) {
