@@ -471,6 +471,42 @@ public class NodeJsDataProvider {
         }
     }
 
+    public String getDocumentationForGlobalObject(String nameObject) {
+        String content = getContentApiFile();
+        if (content != null && !content.isEmpty()) {
+            File apiFile = getCachedAPIFile();
+            JSONObject root = (JSONObject) JSONValue.parse(content);
+            if (root != null) {
+                JSONArray globals = getJSONArrayProperty(root, GLOBALS);
+                if (globals != null) {
+                    for (Object jsonValue : globals) {
+                        if (jsonValue instanceof JSONObject) {
+                            JSONObject global = (JSONObject) jsonValue;
+                            String name = getJSONStringProperty(global, NAME);
+                            if (name != null && name.equals(nameObject)) {
+                                String doc = getJSONStringProperty(global, DESCRIPTION);
+                                return doc;
+                            }
+                        }
+                    }
+                }
+                JSONArray vars = getJSONArrayProperty(root, VARS);
+                if (vars != null) {
+                    for (Object jsonValue : vars) {
+                        if (jsonValue instanceof JSONObject) {
+                            JSONObject var = (JSONObject) jsonValue;
+                            String name = getJSONStringProperty(var, NAME);
+                            if (name != null && name.equals(nameObject)) {
+                                String doc = getJSONStringProperty(var, DESCRIPTION);
+                                return doc;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
     /**
      *
      * @param fqn fully qualified name of the type.
