@@ -89,6 +89,8 @@ public final class WebLogicDeployer {
 
     private static final int TIMEOUT = 300000;
 
+    private static final Version VERSION_10 = Version.fromJsr277NotationWithFallback("10"); // NOI18N
+
     private final WebLogicConfiguration config;
 
     private final File javaBinary;
@@ -518,7 +520,7 @@ public final class WebLogicDeployer {
         // NB supports only JDK6+ while WL 9, only JDK 5
         Version version = config.getDomainVersion();
         if (version == null
-                || !version.isAboveOrEqual(WebLogicConfiguration.VERSION_10)) {
+                || !version.isAboveOrEqual(VERSION_10)) {
             arguments.add("-Dsun.lang.ClassLoader.allowArraySyntax=true"); // NOI18N
         }
 

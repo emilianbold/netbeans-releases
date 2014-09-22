@@ -55,8 +55,6 @@ import org.openide.util.WeakSet;
  */
 public final class WebLogicConfiguration {
 
-    public static final Version VERSION_10 = Version.fromJsr277NotationWithFallback("10"); // NOI18N
-
     private static final WeakSet<WebLogicConfiguration> INSTANCES = new WeakSet<WebLogicConfiguration>();
 
     private final String id;
