@@ -1200,7 +1200,10 @@ public final class DashboardViewer implements PropertyChangeListener {
             for (CategoryNode categoryNode : categoryNodes) {
                 int index = categoryNode.indexOf(taskNode.getTask());
                 if (index != -1) {
-                    return categoryNode.getTaskNodes().get(index);
+                    TaskNode catTaskNode = categoryNode.getTaskNodes().get(index);
+                    if (catTaskNode != null && catTaskNode.getCategory() != null) {
+                        return catTaskNode;
+                    }
                 }
             }
             return null;
