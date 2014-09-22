@@ -218,6 +218,14 @@ public class JPDATruffleAccessor extends Object {
             frameInfos.append('\n');
             frameInfos.append(visualizer.displaySourceLocation(fi.getCallNode()));
             frameInfos.append('\n');
+            if (fi.getCallNode() == null) {
+                /* frames with null call nodes are filtered out by JPDATruffleDebugManager.FrameInfo
+                System.err.println("Frame with null call node: "+fi);
+                System.err.println("  is virtual frame = "+fi.isVirtualFrame());
+                System.err.println("  call target = "+fi.getCallTarget());
+                System.err.println("frameInfos = "+frameInfos);
+                */
+            }
             JPDATruffleDebugManager.SourcePosition position = JPDATruffleDebugManager.getPosition(fi.getCallNode());
             frameInfos.append(position.id);
             frameInfos.append('\n');

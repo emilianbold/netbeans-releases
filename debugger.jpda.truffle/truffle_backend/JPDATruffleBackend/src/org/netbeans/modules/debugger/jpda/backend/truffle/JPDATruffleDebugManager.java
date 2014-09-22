@@ -271,6 +271,10 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
             */
             ArrayList<FrameInstance> stackTraceArr = new ArrayList<>();
             Truffle.getRuntime().iterateFrames((FrameInstance fi) -> {
+                // Filter frames with null call node. How should we display them?
+                if (fi.getCallNode() == null) {
+                    return false;
+                }
                 return stackTraceArr.add(fi);
             });
             stackTrace = stackTraceArr.toArray(new FrameInstance[]{});
