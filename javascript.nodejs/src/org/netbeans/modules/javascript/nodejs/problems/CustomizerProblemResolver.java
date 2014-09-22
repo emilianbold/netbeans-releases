@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,76 +37,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript.nodejs.problems;
 
-package org.netbeans.modules.javascript.nodejs.preferences;
-
-import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
-import org.netbeans.api.annotations.common.CheckForNull;
+import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
+import org.netbeans.spi.project.ui.ProjectProblemResolver;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 
-/**
- * Project specific Node.js preferences.
- */
-public final class NodeJsPreferences {
-
-    public static final String ENABLED = "enabled"; // NOI18N
-    public static final String NODE_PATH = "node.path"; // NOI18N
-    public static final String NODE_DEFAULT = "node.default"; // NOI18N
+public class CustomizerProblemResolver implements ProjectProblemResolver {
 
     private final Project project;
 
-    // @GuardedBy("this")
-    private Preferences preferences;
 
-
-    public NodeJsPreferences(Project project) {
+    CustomizerProblemResolver(Project project) {
         assert project != null;
         this.project = project;
     }
 
-    public void addPreferenceChangeListener(PreferenceChangeListener listener) {
-        getPreferences().addPreferenceChangeListener(listener);
+    @Override
+    public Future<ProjectProblemsProvider.Result> resolve() {
+        CustomizerProvider2 customizerProvider = project.getLookup().lookup(CustomizerProvider2.class);
+        assert customizerProvider != null : "CustomizerProvider2 must be found in lookup of " + project.getClass().getName();
+        customizerProvider.showCustomizer(NodeJsCustomizerProvider.CUSTOMIZER_IDENT, null);
+        return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
     }
 
-    public void removePreferenceChangeListener(PreferenceChangeListener listener) {
-        getPreferences().removePreferenceChangeListener(listener);
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 71 * hash + (this.project != null ? this.project.hashCode() : 0);
+        return hash;
     }
 
-    public boolean isEnabled() {
-        return getPreferences().getBoolean(ENABLED, false);
-    }
-
-    public void setEnabled(boolean enabled) {
-        getPreferences().putBoolean(ENABLED, enabled);
-    }
-
-    @CheckForNull
-    public String getNode() {
-        return FileUtils.resolvePath(project, getPreferences().get(NODE_PATH, null));
-    }
-
-    public void setNode(String node) {
-        getPreferences().put(NODE_PATH, FileUtils.relativizePath(project, node));
-    }
-
-    public boolean isDefaultNode() {
-        return getPreferences().getBoolean(NODE_DEFAULT, true);
-    }
-
-    public void setDefaultNode(boolean defaultNode) {
-        getPreferences().putBoolean(NODE_DEFAULT, defaultNode);
-    }
-
-    private synchronized Preferences getPreferences() {
-        if (preferences == null) {
-            preferences = ProjectUtils.getPreferences(project, NodeJsPreferences.class, false);
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
-        return preferences;
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CustomizerProblemResolver other = (CustomizerProblemResolver) obj;
+        if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
+            return false;
+        }
+        return true;
     }
 
 }

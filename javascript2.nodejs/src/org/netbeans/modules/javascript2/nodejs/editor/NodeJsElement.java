@@ -59,11 +59,17 @@ public class NodeJsElement implements ElementHandle {
     private final String name;
     private final ElementKind kind;
     private final String documentation;
+    private final String template;
 
     public NodeJsElement(String name, String documentation, ElementKind kind) {
+        this(name, documentation, null, kind);
+    }
+    
+    public NodeJsElement(String name, String documentation, String template, ElementKind kind) {
         this.name = name;
         this.kind = kind;
         this.documentation = documentation;
+        this.template = template;
     }
 
     @Override
@@ -108,6 +114,10 @@ public class NodeJsElement implements ElementHandle {
 
     public String getDocumentation() {
         return documentation;
+    }
+
+    public String getTemplate() {
+        return template;
     }
 
     public static class NodeJsFileElement extends NodeJsElement {

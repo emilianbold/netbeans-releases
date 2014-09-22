@@ -41,7 +41,15 @@
  */
 package org.netbeans.modules.web.inspect.webkit.knockout;
 
+import java.awt.dnd.DnDConstants;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+import javax.swing.JComponent;
 import org.netbeans.modules.web.inspect.PageModel;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  * A panel for Knockout-related information about the inspected page.
@@ -49,12 +57,61 @@ import org.netbeans.modules.web.inspect.PageModel;
  * @author Jan Stola
  */
 public class KnockoutPanel extends javax.swing.JPanel {
+    /** Page model for this panel. */
+    private final PageModel pageModel;
+    /** Tree view that displays Knockout context of the selected node. */
+    private BeanTreeView treeView;
 
     /**
      * Creates a new {@code KnockoutPanel}.
      */
     public KnockoutPanel(PageModel pageModel) {
+        this.pageModel = pageModel;
+
+        initTreeView();
         initComponents();
+        if (pageModel == null) {
+            messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.noInspection")); // NOI18N
+            add(messageLabel);
+        } else {
+            pageModel.addPropertyChangeListener(new Listener());
+            update();
+        }
+    }
+
+    /**
+     * Initializes the tree view.
+     */
+    private void initTreeView() {
+        treeView = new BeanTreeView();
+        treeView.setAllowedDragActions(DnDConstants.ACTION_NONE);
+        treeView.setAllowedDropActions(DnDConstants.ACTION_NONE);
+        treeView.setRootVisible(false);
+    }
+
+    /**
+     * Updates the panel (according to the current selection).
+     */
+    final void update() {
+        List<? extends Node> selection = pageModel.getSelectedNodes();
+        JComponent componentToShow;
+        if (selection.isEmpty()) {
+            messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.noSelection")); // NOI18N
+            componentToShow = messageLabel;
+        } else if (selection.size() > 1) {
+            messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.noSingleSelection")); // NOI18N
+            componentToShow = messageLabel;
+        } else {
+            // Node selectedNode = selection.get(0);
+            // componentToShow = treeView;
+            messageLabel.setText("Coming soon ... ;-)");
+            componentToShow = messageLabel;
+        }
+        if (componentToShow.getParent() == null) {
+            removeAll();
+            add(componentToShow);
+        }
+        repaint();
     }
 
     /**
@@ -66,17 +123,33 @@ public class KnockoutPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        label = new javax.swing.JLabel();
+        messageLabel = new javax.swing.JLabel();
+
+        messageLabel.setBackground(treeView.getViewport().getView().getBackground());
+        messageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        messageLabel.setEnabled(false);
+        messageLabel.setOpaque(true);
 
         setLayout(new java.awt.BorderLayout());
-
-        label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.label.text")); // NOI18N
-        add(label, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel label;
+    private javax.swing.JLabel messageLabel;
     // End of variables declaration//GEN-END:variables
+
+    /**
+     * Listener for the changes of the page model.
+     */
+    final class Listener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PageModel.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                update();
+            }
+        }
+        
+    }
+
 }

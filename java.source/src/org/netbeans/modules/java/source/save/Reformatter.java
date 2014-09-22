@@ -1295,6 +1295,15 @@ public class Reformatter implements ReformatTask {
 
         @Override
         public Boolean visitTypeParameter(TypeParameterTree node, Void p) {
+            List<? extends AnnotationTree> annotations = node.getAnnotations();
+            if (annotations != null && !annotations.isEmpty()) {
+                for (Iterator<? extends AnnotationTree> it = annotations.iterator(); it.hasNext();) {
+                    scan(it.next(), p);
+                    if (it.hasNext())
+                        spaces(1, true);
+                }
+                space();
+            }
             if (!ERROR.contentEquals(node.getName()))
                 accept(IDENTIFIER);
             List<? extends Tree> bounds = node.getBounds();

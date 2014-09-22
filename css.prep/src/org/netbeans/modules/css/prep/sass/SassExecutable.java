@@ -78,12 +78,14 @@ public final class SassExecutable {
 
     private static final String DEBUG_PARAM = "--debug-info"; // NOI18N
     private static final String SOURCEMAP_PARAM = "--sourcemap"; // NOI18N
+    private static final String SOURCEMAP_WITH_VALUE_PARAM = "--sourcemap=%s"; // NOI18N
     private static final String VERSION_PARAM = "--version"; // NOI18N
     private static final String CACHE_LOCATION_PARAM = "--cache-location"; // NOI18N
 
     private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
 
     private static final Version MINIMAL_VERSION_WITH_SOURCEMAP = Version.fromDottedNotationWithFallback("3.3.0"); // NOI18N
+    private static final Version VERSION_WITH_DEFAULT_SOURCEMAP = Version.fromDottedNotationWithFallback("3.4.0"); // NOI18N
     static final String VERSION_PATTERN = "Sass\\s+(\\d+(\\.\\d+)*)"; // NOI18N
 
     // version of the compiler set in ide options
@@ -213,14 +215,25 @@ public final class SassExecutable {
         params.add(Places.getCacheSubdirectory("sass-compiler").getAbsolutePath()); // NOI18N
         // debug
         boolean debug = CssPrepOptions.getInstance().getSassDebug();
+        Version installedVersion = getVersion();
         if (debug) {
-            Version installedVersion = getVersion();
-            if (installedVersion != null
-                    && installedVersion.isAboveOrEqual(MINIMAL_VERSION_WITH_SOURCEMAP)) {
-                params.add(SOURCEMAP_PARAM);
+            if (installedVersion != null) {
+                if (installedVersion.isAboveOrEqual(VERSION_WITH_DEFAULT_SOURCEMAP)) {
+                    // noop, the 'auto' sourcemaps work just fine
+                } else if (installedVersion.isAboveOrEqual(MINIMAL_VERSION_WITH_SOURCEMAP)) {
+                    params.add(SOURCEMAP_PARAM);
+                } else {
+                    // older versions
+                    params.add(DEBUG_PARAM);
+                }
             } else {
-                // older versions
+                // unknwon sass version
                 params.add(DEBUG_PARAM);
+            }
+        } else {
+            if (installedVersion != null
+                    && installedVersion.isAboveOrEqual(VERSION_WITH_DEFAULT_SOURCEMAP)) {
+                params.add(String.format(SOURCEMAP_WITH_VALUE_PARAM, "none")); // NOI18N
             }
         }
         // compiler options

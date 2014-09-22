@@ -70,7 +70,8 @@ import org.openide.filesystems.FileObject;
 public class NodeJsCodeCompletion implements CompletionProvider {
 
     private static final String REQUIRE = "require";
-    private static final String EXPORTS = "exports";
+    private static final String TEMPLATE_REQUIRE = "('${cursor}')";
+    
 
     @Override
     public List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContext jsCompletionContext, String prefix) {
@@ -108,7 +109,7 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                             Collection<String> modules = NodeJsDataProvider.getDefault().getRuntimeModules();
                             for(String module: modules) {
                                 if (module.startsWith(prefix)) {
-                                    ElementHandle handle = new NodeJsElement.NodeJsModuleElement(module);
+                                    NodeJsElement handle = new NodeJsElement.NodeJsModuleElement(module);
                                     result.add(new NodeJsCompletionItem.NodeJsModuleCompletionItem(handle, eOffset - prefix.length()));
                                 }
                             }
@@ -123,7 +124,7 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                     if (tokenId == JsTokenId.OPERATOR_ASSIGNMENT) {
                         // offer require()
                         if (prefix.isEmpty() || REQUIRE.startsWith(prefix)) {
-                            ElementHandle handle = new NodeJsElement(REQUIRE, "", ElementKind.METHOD);
+                            NodeJsElement handle = new NodeJsElement(REQUIRE, NodeJsDataProvider.getDefault().getDocumentationForGlobalObject(REQUIRE), TEMPLATE_REQUIRE, ElementKind.METHOD);
                             result.add(new NodeJsCompletionItem(handle, eOffset - prefix.length()));
                         }
                     }

@@ -62,9 +62,9 @@ public class NodeJsCompletionItem implements CompletionProposal {
     
     
     private final int anchorOffset;
-    private final ElementHandle element;
+    private final NodeJsElement element;
 
-    public NodeJsCompletionItem(ElementHandle element, int anchorOffset) {
+    public NodeJsCompletionItem(NodeJsElement element, int anchorOffset) {
         this.anchorOffset = anchorOffset;
         this.element = element;
     }
@@ -137,11 +137,14 @@ public class NodeJsCompletionItem implements CompletionProposal {
 
     @Override
     public String getCustomInsertTemplate() {
+        if (element.getTemplate() != null) {
+            return element.getName() + element.getTemplate();
+        }
         return null;
     }
     
     public static class NodeJsModuleCompletionItem extends NodeJsCompletionItem {
-        public NodeJsModuleCompletionItem(ElementHandle element, int anchorOffset) {
+        public NodeJsModuleCompletionItem(NodeJsElement element, int anchorOffset) {
             super(element, anchorOffset);
         }
 
@@ -157,13 +160,13 @@ public class NodeJsCompletionItem implements CompletionProposal {
 
         @Override
         public NodeJsCompletionItem createFileItem(FileObject file, int anchor) {
-            ElementHandle element = new NodeJsElement.NodeJsFileElement(file);
+            NodeJsElement element = new NodeJsElement.NodeJsFileElement(file);
             return new NodeJsCompletionItem(element, anchor);
         }
 
         @Override
         public NodeJsCompletionItem createGoUpItem(int anchor, Color color, ImageIcon icon) {
-            ElementHandle element = new NodeJsElement("..", null, ElementKind.FILE);
+            NodeJsElement element = new NodeJsElement("..", null, ElementKind.FILE);
             return new NodeJsCompletionItem(element, anchor);
         }
     }

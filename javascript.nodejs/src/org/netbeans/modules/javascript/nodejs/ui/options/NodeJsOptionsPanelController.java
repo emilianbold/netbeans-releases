@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript.nodejs.ui.options;
 
+import org.netbeans.modules.javascript.nodejs.ui.NodeJsPathPanel;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -71,7 +72,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     // @GuardedBy("EDT")
-    private NodeJsOptionsPanel nodeJsOptionsPanel;
+    private NodeJsPathPanel nodeJsOptionsPanel;
     private volatile boolean changed = false;
     private boolean firstOpening = true;
 
@@ -82,8 +83,6 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         if (firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
             firstOpening = false;
             getPanel().setNode(getNodeJsOptions().getNode());
-            getPanel().setUseNodePath(getNodeJsOptions().isUseNodePath());
-            getPanel().setUseNpmGlobalRoot(getNodeJsOptions().isUseNpmGlobalRoot());
         }
         changed = false;
     }
@@ -94,8 +93,6 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
             @Override
             public void run() {
                 getNodeJsOptions().setNode(getPanel().getNode());
-                getNodeJsOptions().setUseNodePath(getPanel().isUseNodePath());
-                getNodeJsOptions().setUseNpmGlobalRoot(getPanel().isUseNpmGlobalRoot());
                 changed = false;
             }
         });
@@ -105,15 +102,13 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
     public void cancel() {
         if (isChanged()) { // if panel is modified by the user and options window closes, discard any changes
             getPanel().setNode(getNodeJsOptions().getNode());
-            getPanel().setUseNodePath(getNodeJsOptions().isUseNodePath());
-            getPanel().setUseNpmGlobalRoot(getNodeJsOptions().isUseNpmGlobalRoot());
         }
     }
 
     @Override
     public boolean isValid() {
         assert EventQueue.isDispatchThread();
-        NodeJsOptionsPanel panel = getPanel();
+        NodeJsPathPanel panel = getPanel();
         ValidationResult result = new NodeJsOptionsValidator()
                 .validate(panel.getNode())
                 .getResult();
@@ -136,17 +131,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
     public boolean isChanged() {
         String saved = getNodeJsOptions().getNode();
         String current = getPanel().getNode().trim();
-        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
-            return true;
-        }
-        boolean savedUse = getNodeJsOptions().isUseNodePath();
-        boolean currentUse = getPanel().isUseNodePath();
-        if (savedUse != currentUse) {
-            return true;
-        }
-        savedUse = getNodeJsOptions().isUseNpmGlobalRoot();
-        currentUse = getPanel().isUseNpmGlobalRoot();
-        return savedUse != currentUse;
+        return saved == null ? !current.isEmpty() : !saved.equals(current);
     }
 
     @Override
@@ -179,10 +164,10 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 
-    private NodeJsOptionsPanel getPanel() {
+    private NodeJsPathPanel getPanel() {
         assert EventQueue.isDispatchThread();
         if (nodeJsOptionsPanel == null) {
-            nodeJsOptionsPanel = new NodeJsOptionsPanel();
+            nodeJsOptionsPanel = new NodeJsPathPanel();
             nodeJsOptionsPanel.addChangeListener(this);
         }
         return nodeJsOptionsPanel;

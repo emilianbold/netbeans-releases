@@ -41,7 +41,12 @@
  */
 package org.netbeans.modules.javascript.nodejs.util;
 
+import java.awt.EventQueue;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,15 +58,23 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.api.network.NetworkException;
+import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
+import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.Places;
 import org.openide.text.Line;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -75,6 +88,8 @@ public final class FileUtils {
 
     private static final boolean IS_WINDOWS = Utilities.isWindows();
     private static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
+    private static final String NODEJS_DIR_NAME = "nodejs"; // NOI18N
+    private static final String NODEJS_SOURCES_URL = "http://nodejs.org/dist/v%s/node-v%s.tar.gz"; // NOI18N
 
 
     private FileUtils() {
@@ -301,6 +316,108 @@ public final class FileUtils {
         } catch (IndexOutOfBoundsException exc) {
             LOGGER.log(Level.FINE, null, exc);
         }
+    }
+
+    public static File getNodeSources() {
+        return Places.getCacheSubdirectory(NODEJS_DIR_NAME);
+    }
+
+    public static boolean hasNodeSources(Version version) {
+        assert version != null;
+        return getNodeSources(version).isDirectory();
+    }
+
+    public static File getNodeSources(Version version) {
+        assert version != null;
+        return new File(getNodeSources(), version.toString());
+    }
+
+    @NbBundle.Messages({
+        "# {0} - version",
+        "FileUtils.sources.downloading=Downloading sources for node.js version {0}...",
+    })
+    public static void downloadNodeSources(Version version) throws NetworkException, IOException {
+        assert !EventQueue.isDispatchThread();
+        assert version != null;
+        deleteExistingNodeSources(version);
+        File nodeSources = getNodeSources();
+        String nodeVersion = version.toString();
+        File archive = new File(nodeSources, "nodejs-" + nodeVersion + ".tar.gz"); // NOI18N
+        downloadNodeSources(archive, nodeVersion);
+        // unpack
+        try {
+            String foldername = decompressTarGz(archive, nodeSources, false);
+            new File(nodeSources, foldername).renameTo(new File(nodeSources, nodeVersion));
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, archive.getAbsolutePath(), ex);
+            throw ex;
+        }
+        if (!archive.delete()) {
+            archive.deleteOnExit();
+        }
+    }
+
+    private static void deleteExistingNodeSources(Version version) throws IOException {
+        assert version != null;
+        if (hasNodeSources(version)) {
+            final FileObject fo = FileUtil.toFileObject(getNodeSources(version));
+            assert fo != null : version;
+            FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+                @Override
+                public void run() throws IOException {
+                    fo.delete();
+                }
+            });
+        }
+    }
+
+    private static void downloadNodeSources(File archive, String nodeVersion) throws IOException {
+        assert archive != null;
+        assert nodeVersion != null;
+        String url = String.format(NODEJS_SOURCES_URL, nodeVersion, nodeVersion);
+        // download
+        try {
+            NetworkSupport.downloadWithProgress(url, archive, Bundle.FileUtils_sources_downloading(nodeVersion));
+        } catch (InterruptedException ex) {
+            // download cancelled
+            LOGGER.log(Level.FINE, "Download cancelled for {0}", url);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, url, ex);
+            throw ex;
+        }
+    }
+
+    @CheckForNull
+    public static String decompressTarGz(File archive, File destination, boolean skipArchiveRoot) throws IOException {
+        String archiveRoot = null;
+        try (TarArchiveInputStream tarInputStream = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(archive)))) {
+            int archiveRootLength = -1;
+            TarArchiveEntry tarEntry = tarInputStream.getNextTarEntry();
+            if (tarEntry != null) {
+                archiveRoot = tarEntry.getName();
+                if (skipArchiveRoot) {
+                    archiveRootLength = archiveRoot.length();
+                    tarEntry = tarInputStream.getNextTarEntry();
+                }
+            }
+            while (tarEntry != null) {
+                String name = tarEntry.getName();
+                if (skipArchiveRoot) {
+                    name = name.substring(archiveRootLength);
+                }
+                File destPath = new File(destination, name);
+                if (tarEntry.isDirectory()) {
+                    destPath.mkdirs();
+                } else {
+                    destPath.createNewFile();
+                    try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(destPath))) {
+                        FileUtil.copy(tarInputStream, outputStream);
+                    }
+                }
+                tarEntry = tarInputStream.getNextTarEntry();
+            }
+        }
+        return archiveRoot;
     }
 
 }
