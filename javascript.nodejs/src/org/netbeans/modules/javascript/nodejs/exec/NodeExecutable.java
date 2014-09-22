@@ -65,6 +65,7 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
@@ -271,6 +272,10 @@ public class NodeExecutable {
     private File getWorkDir() {
         if (project == null) {
             return TMP_DIR;
+        }
+        PackageJson packageJson = NodeJsSupport.forProject(project).getPackageJson();
+        if (packageJson.exists()) {
+            return new File(packageJson.getPath()).getParentFile();
         }
         for (SourceGroup sourceGroup : ProjectUtils.getSources(project).getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5)) {
             FileObject rootFolder = sourceGroup.getRootFolder();
