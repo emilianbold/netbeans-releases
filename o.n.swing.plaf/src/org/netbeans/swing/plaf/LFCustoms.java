@@ -363,6 +363,9 @@ public abstract class LFCustoms {
     protected static final String OUTPUT_BACKGROUND = "nb.output.background"; //NOI18N
     protected static final String OUTPUT_FOREGROUND = "nb.output.foreground"; //NOI18N
 
+    //QuickSearch
+    protected static final String QUICKSEARCH_BORDER = "nb.quicksearch.border"; //NOI18N
+
     //Property sheet
     protected static final String PROPSHEET_ALTERNATE_ROW_COLOR = "Tree.altbackground"; //NOI18N
     protected static final String PROPSHEET_SET_BACKGROUND = "PropSheet.setBackground"; //NOI18N

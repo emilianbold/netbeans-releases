@@ -51,6 +51,7 @@ import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.GitBranch;
@@ -88,8 +89,10 @@ public class CreateBranchCommand extends GitCommand {
             Utils.findCommit(repository, revision); // does it exist?
         }
         cmd.setStartPoint(revision);
+        String createdBranchName = branchName;
         try {
-            cmd.call();
+            Ref ref = cmd.call();
+            createdBranchName = ref.getName().substring(Constants.R_HEADS.length());
         } catch (RefNotFoundException ex) {
             if (!createBranchInEmptyRepository(repository)) {
                 throw new GitException(ex);
@@ -100,7 +103,7 @@ public class CreateBranchCommand extends GitCommand {
         ListBranchCommand branchCmd = new ListBranchCommand(repository, getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
         branchCmd.run();
         Map<String, GitBranch> branches = branchCmd.getBranches();
-        branch = branches.get(branchName);
+        branch = branches.get(createdBranchName);
     }
 
     @Override

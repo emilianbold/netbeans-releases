@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -280,13 +281,15 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         if (projectHandle == null) {
             return;
         }
+        Collection<BuildsListener> bls;
         synchronized (CACHE) {
-            for (BuildsListener bl : CACHE.keySet()) {
+            bls = new ArrayList(CACHE.keySet());
+        }
+        for (BuildsListener bl : bls) {
                 Reference<ProjectHandle<ODCSProject>> ref = bl.projectHandle;
                 if (ref != null && projectHandle.equals(ref.get())) {
                     bl.removeHudsonAndClean();
                 }
-            }
         }
     }
 
@@ -547,6 +550,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         private final Reference<ODCSServer> server;
         private final List<HudsonJobHandle> buildHandles;
         private List<HudsonJobHandle> watchedBuildHandles;
+        private final AtomicBoolean hudsonRemoved = new AtomicBoolean();
 
         public BuildsListener(HudsonInstance instance,
                 ProjectHandle<ODCSProject> projectHandle) {
@@ -612,7 +616,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
 
         private void removeHudsonAndClean() {
             cleanup();
-            if (!instance.isPersisted()) {
+            if (!instance.isPersisted() && hudsonRemoved.compareAndSet(false, true)) {
                 HudsonManager.removeInstance(instance);
             }
         }
