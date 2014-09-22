@@ -143,7 +143,6 @@ public final class NodeJsSupport {
         FileUtil.addFileChangeListener(nodeSourcesListener, FileUtils.getNodeSources());
         preferences.addPreferenceChangeListener(preferencesListener);
         packageJson.addPropertyChangeListener(packageJsonListener);
-        packageJson.init();
         // init node version
         NodeExecutable node = NodeExecutable.forProject(project, false);
         if (node != null) {
