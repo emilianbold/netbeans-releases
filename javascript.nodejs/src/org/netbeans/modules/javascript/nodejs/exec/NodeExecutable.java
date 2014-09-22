@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.javascript.nodejs.exec;
 
-import java.awt.EventQueue;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,6 +65,7 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
@@ -76,6 +76,7 @@ import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelContr
 import org.netbeans.modules.javascript.nodejs.util.ExternalExecutable;
 import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
+import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
@@ -143,6 +144,19 @@ public class NodeExecutable {
     }
 
     @CheckForNull
+    public static NodeExecutable forPath(String path) {
+        ValidationResult result = new ValidationResult();
+        ValidationUtils.validateNode(result, path);
+        if (validateResult(result) != null) {
+            return null;
+        }
+        if (Utilities.isMac()) {
+            return new MacNodeExecutable(path, null);
+        }
+        return new NodeExecutable(path, null);
+    }
+
+    @CheckForNull
     private static NodeExecutable forProjectInternal(@NullAllowed Project project, boolean showCustomizer) {
         if (project == null) {
             return getDefault(project, showCustomizer);
@@ -176,6 +190,10 @@ public class NodeExecutable {
         VERSIONS.remove(nodePath);
     }
 
+    public boolean hasVersion() {
+        return VERSIONS.containsKey(nodePath);
+    }
+
     @CheckForNull
     public Version getVersion() {
         Version version = VERSIONS.get(nodePath);
@@ -185,14 +203,16 @@ public class NodeExecutable {
         return getAndStoreVersion();
     }
 
+    @NbBundle.Messages({
+        "NodeExecutable.version.detecting=Detecting node version..."
+    })
     @CheckForNull
     private Version getAndStoreVersion() {
-        assert !EventQueue.isDispatchThread();
         VersionOutputProcessorFactory versionOutputProcessorFactory = new VersionOutputProcessorFactory();
         try {
             getExecutable("node version") // NOI18N
                     .additionalParameters(getVersionParams())
-                    .runAndWait(getSilentDescriptor(), versionOutputProcessorFactory, "Detecting node version..."); // NOI18N
+                    .runAndWait(getSilentDescriptor(), versionOutputProcessorFactory, Bundle.NodeExecutable_version_detecting());
             String detectedVersion = versionOutputProcessorFactory.getVersion();
             if (detectedVersion != null) {
                 Version version = Version.fromDottedNotationWithFallback(detectedVersion);
@@ -252,6 +272,10 @@ public class NodeExecutable {
     private File getWorkDir() {
         if (project == null) {
             return TMP_DIR;
+        }
+        PackageJson packageJson = NodeJsSupport.forProject(project).getPackageJson();
+        if (packageJson.exists()) {
+            return new File(packageJson.getPath()).getParentFile();
         }
         for (SourceGroup sourceGroup : ProjectUtils.getSources(project).getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5)) {
             FileObject rootFolder = sourceGroup.getRootFolder();
