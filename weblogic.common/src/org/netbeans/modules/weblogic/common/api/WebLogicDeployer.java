@@ -44,6 +44,14 @@ package org.netbeans.modules.weblogic.common.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,6 +73,7 @@ import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.extexecution.base.input.LineProcessors;
+import org.netbeans.modules.weblogic.common.ProxyUtils;
 import org.openide.util.BaseUtilities;
 import org.openide.util.RequestProcessor;
 
@@ -84,14 +93,18 @@ public final class WebLogicDeployer {
 
     private final File javaBinary;
 
-    private WebLogicDeployer(WebLogicConfiguration config, File javaBinary) {
+    private final Callable<String> nonProxy;
+
+    private WebLogicDeployer(WebLogicConfiguration config, File javaBinary, @NullAllowed Callable<String> nonProxy) {
         this.config = config;
         this.javaBinary = javaBinary;
+        this.nonProxy = nonProxy;
     }
 
     @NonNull
-    public static WebLogicDeployer getInstance(@NonNull WebLogicConfiguration config, @NullAllowed File javaBinary) {
-        return new WebLogicDeployer(config, javaBinary);
+    public static WebLogicDeployer getInstance(@NonNull WebLogicConfiguration config,
+            @NullAllowed File javaBinary, @NullAllowed Callable<String> nonProxy) {
+        return new WebLogicDeployer(config, javaBinary, nonProxy);
     }
 
     @NonNull
@@ -145,10 +158,14 @@ public final class WebLogicDeployer {
     public Future<Void> redeploy(@NonNull String name, @NonNull File file,
             @NullAllowed BatchDeployListener listener) {
         List<String> params = new ArrayList<>();
-//        if (file.isDirectory()) {
-            params.add("-source"); // NOI18N
-            params.add(file.getAbsolutePath());
-//        }
+        params.add("-source"); // NOI18N
+        params.add(file.getAbsolutePath());
+
+        if (config.isRemote()) {
+            params.add("-upload");
+            // we must use remote otherwise it will fail
+            params.add("-remote");
+        }
         return redeploy(Collections.singletonList(name), listener, params.toArray(new String[params.size()]));
     }
 
@@ -363,11 +380,12 @@ public final class WebLogicDeployer {
 
             @Override
             public Void call() throws Exception {
-                int length = config.isRemote() ? parameters.length + 2 : parameters.length + 1;
+                int length = config.isRemote() ? parameters.length + 3 : parameters.length + 1;
                 String[] execParams = new String[length];
                 execParams[execParams.length - 1] = file.getAbsolutePath();
                 if (config.isRemote()) {
                     execParams[execParams.length - 2] = "-upload"; // NOI18N
+                    execParams[execParams.length - 3] = "-remote"; // NOI18N
                 }
                 if (parameters.length > 0) {
                     System.arraycopy(parameters, 0, execParams, 0, parameters.length);
@@ -498,11 +516,45 @@ public final class WebLogicDeployer {
         builder.setRedirectErrorStream(true);
         List<String> arguments = new ArrayList<String>();
         // NB supports only JDK6+ while WL 9, only JDK 5
-        Version version = config.getLayout().getDomainVersion();
+        Version version = config.getDomainVersion();
         if (version == null
                 || !version.isAboveOrEqual(WebLogicConfiguration.VERSION_10)) {
             arguments.add("-Dsun.lang.ClassLoader.allowArraySyntax=true"); // NOI18N
         }
+
+        if (config.isRemote()) {
+            try {
+                // XXX authentication
+                // t3 and t3s is afaik sits on top of http and https (source ?)
+                List<Proxy> proxies = ProxySelector.getDefault().select(
+                        new URI("http://" + config.getHost() + ":" + config.getPort())); // NOI18N
+                if (!proxies.isEmpty()) {
+                    Proxy first = proxies.get(0);
+                    if (first.type() != Proxy.Type.DIRECT) {
+                        SocketAddress addr = first.address();
+                        if (addr instanceof InetSocketAddress) {
+                            InetSocketAddress inet = (InetSocketAddress) addr;
+                            if (first.type() == Proxy.Type.HTTP) {
+                                arguments.add("-Dhttp.proxyHost=" + inet.getHostString()); // NOI18N
+                                arguments.add("-Dhttp.proxyPort=" + inet.getPort()); // NOI18N
+                                arguments.add("-Dhttps.proxyHost=" + inet.getHostString()); // NOI18N
+                                arguments.add("-Dhttps.proxyPort=" + inet.getPort()); // NOI18N
+                            } else if (first.type() == Proxy.Type.SOCKS) {
+                                arguments.add("-DsocksProxyHost=" + inet.getHostString()); // NOI18N
+                                arguments.add("-DsocksProxyPort=" + inet.getPort()); // NOI18N
+                            }
+                        }
+                    }
+                }
+                String nonProxyHosts = ProxyUtils.getNonProxyHosts(nonProxy);
+                if (nonProxyHosts != null) {
+                    arguments.add("-Dhttp.nonProxyHosts=\"" + nonProxyHosts + "\""); // NOI18N
+                }
+            } catch (URISyntaxException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+
         arguments.add("-cp"); // NOI18N
         arguments.add(getClassPath());
         arguments.add("weblogic.Deployer"); // NOI18N
@@ -510,8 +562,8 @@ public final class WebLogicDeployer {
         arguments.add(config.getAdminURL());
         arguments.add("-username"); // NOI18N
         arguments.add(config.getUsername());
-        arguments.add("-password"); // NOI18N
-        arguments.add(config.getPassword());
+        //arguments.add("-password"); // NOI18N
+        //arguments.add(config.getPassword());
         arguments.add(command);
 
         arguments.addAll(Arrays.asList(parameters));
@@ -534,6 +586,12 @@ public final class WebLogicDeployer {
             @Override
             public InputProcessor newInputProcessor() {
                 return InputProcessors.bridge(realProcessor);
+            }
+        }).inReaderFactory(new BaseExecutionDescriptor.ReaderFactory() {
+
+            @Override
+            public Reader newReader() {
+                return new StringReader(config.getPassword() + "\n"); // NOI18N
             }
         });
         return BaseExecutionService.newService(builder, descriptor);
