@@ -39,73 +39,50 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.platform;
+package org.netbeans.modules.javascript.nodejs.problems;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
-import org.netbeans.modules.javascript.nodejs.util.FileUtils;
-import org.netbeans.modules.web.common.api.Version;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 
-public final class NodeJsSourceRoots {
+/**
+ * Simple result for project problems.
+ */
+public class Done implements Future<ProjectProblemsProvider.Result> {
 
-    private static final Logger LOGGER = Logger.getLogger(NodeJsSourceRoots.class.getName());
-
-    private final Project project;
-
-    // @GuardedBy("this")
-    private List<URL> sourceRoots = null;
+    private final ProjectProblemsProvider.Result result;
 
 
-    public NodeJsSourceRoots(Project project) {
-        assert project != null;
-        this.project = project;
+    Done(ProjectProblemsProvider.Result result) {
+        assert result != null;
+        this.result = result;
     }
 
-    public synchronized List<URL> getSourceRoots() {
-        if (sourceRoots == null) {
-            sourceRoots = findSourceRoots();
-        }
-        return new ArrayList<>(sourceRoots);
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        return false;
     }
 
-    public synchronized void resetSourceRoots() {
-        sourceRoots = null;
+    @Override
+    public boolean isCancelled() {
+        return false;
     }
 
-    private List<URL> findSourceRoots() {
-        NodeExecutable node = NodeExecutable.forProject(project, false);
-        if (node == null) {
-            return Collections.emptyList();
-        }
-        Version version = node.getVersion();
-        if (version == null) {
-            return Collections.emptyList();
-        }
-        if (!FileUtils.hasNodeSources(version)) {
-            return Collections.emptyList();
-        }
-        File lib = new File(FileUtils.getNodeSources(version), "lib"); // NOI18N
-        if (!lib.isDirectory()) {
-            return Collections.emptyList();
-        }
-        try {
-            URL nodeLib = Utilities.toURI(FileUtil.normalizeFile(lib)).toURL();
-            return Collections.singletonList(nodeLib);
-        } catch (MalformedURLException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            assert false;
-        }
-        return Collections.emptyList();
+    @Override
+    public boolean isDone() {
+        return true;
+    }
+
+    @Override
+    public ProjectProblemsProvider.Result get() throws InterruptedException, ExecutionException {
+        return result;
+    }
+
+    @Override
+    public ProjectProblemsProvider.Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        return get();
     }
 
 }

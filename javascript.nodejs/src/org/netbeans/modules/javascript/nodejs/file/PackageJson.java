@@ -100,7 +100,7 @@ public final class PackageJson {
     private File packageJson;
     // @GuardedBy("this")
     private JSONObject content;
-    private volatile boolean inited = false;
+    private volatile boolean contentInited = false;
 
 
     public PackageJson(Project project) {
@@ -108,17 +108,13 @@ public final class PackageJson {
         this.project = project;
     }
 
-    public void init() {
-        // read the file so we can listen on changes and fire proper events
-        inited = true;
-        getContent();
-    }
-
     public void cleanup() {
+        contentInited = false;
         clear(true);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
+        initContent();
         propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
@@ -127,18 +123,16 @@ public final class PackageJson {
     }
 
     public boolean exists() {
-        checkInit();
         return getPackageJson().isFile();
     }
 
     public String getPath() {
-        checkInit();
         return getPackageJson().getAbsolutePath();
     }
 
     @CheckForNull
     public synchronized JSONObject getContent() {
-        checkInit();
+        initContent();
         if (content != null) {
             return new JSONObject(content);
         }
@@ -156,6 +150,15 @@ public final class PackageJson {
             return null;
         }
         return new JSONObject(content);
+    }
+
+    private void initContent() {
+        if (contentInited) {
+            return;
+        }
+        // read the file so we can listen on changes and fire proper events
+        contentInited = true;
+        getContent();
     }
 
     private synchronized File getPackageJson() {
@@ -259,12 +262,6 @@ public final class PackageJson {
             return null;
         }
         return (String) scripts.get(START);
-    }
-
-    private void checkInit() {
-        if (!inited) {
-            throw new IllegalStateException("Must call init() method first");
-        }
     }
 
     //~ Inner classes

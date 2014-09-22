@@ -85,44 +85,12 @@ public class PackageJsonTest extends NbTestCase {
         projectDir = FileUtil.toFileObject(dummy);
         assertNotNull(projectDir);
         packageJson = new PackageJson(new DummyProject(projectDir));
-        packageJson.init();
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         packageJson.cleanup();
-    }
-
-    public void testNoInitCalled() {
-        Project project = new DummyProject(projectDir);
-        Exception exc = null;
-        try {
-            new PackageJson(project)
-                    .getContent();
-            fail("Should not get here");
-        } catch (IllegalStateException ex) {
-            exc = ex;
-        }
-        assertNotNull(exc);
-        exc = null;
-        try {
-            new PackageJson(project)
-                    .exists();
-            fail("Should not get here");
-        } catch (IllegalStateException ex) {
-            exc = ex;
-        }
-        assertNotNull(exc);
-        exc = null;
-        try {
-            new PackageJson(project)
-                    .getPath();
-            fail("Should not get here");
-        } catch (IllegalStateException ex) {
-            exc = ex;
-        }
-        assertNotNull(exc);
     }
 
     public void testNoPackageJson() {

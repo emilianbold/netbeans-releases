@@ -52,8 +52,6 @@ import org.openide.util.NbPreferences;
 public final class NodeJsOptions {
 
     public static final String NODE_PATH = "node.path"; // NOI18N
-    public static final String USE_NODE_PATH = "use.node.path"; // NOI18N
-    public static final String USE_NPM_GLOBAL_ROOT = "use.npm.root.global"; // NOI18N
 
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing these preferences
@@ -61,10 +59,13 @@ public final class NodeJsOptions {
 
     private static final NodeJsOptions INSTANCE = new NodeJsOptions();
 
+    private final Preferences preferences;
+
     private volatile boolean nodeSearched = false;
 
 
     private NodeJsOptions() {
+        preferences = NbPreferences.forModule(NodeJsOptions.class).node(PREFERENCES_PATH);
     }
 
     public static NodeJsOptions getInstance() {
@@ -72,16 +73,16 @@ public final class NodeJsOptions {
     }
 
     public void addPreferenceChangeListener(PreferenceChangeListener listener) {
-        getPreferences().addPreferenceChangeListener(listener);
+        preferences.addPreferenceChangeListener(listener);
     }
 
     public void removePreferenceChangeListener(PreferenceChangeListener listener) {
-        getPreferences().removePreferenceChangeListener(listener);
+        preferences.removePreferenceChangeListener(listener);
     }
 
     @CheckForNull
     public String getNode() {
-        String path = getPreferences().get(NODE_PATH, null);
+        String path = preferences.get(NODE_PATH, null);
         if (path == null && !nodeSearched) {
             nodeSearched = true;
             List<String> files = FileUtils.findFileOnUsersPath(NodeExecutable.NODE_NAME);
@@ -94,27 +95,7 @@ public final class NodeJsOptions {
     }
 
     public void setNode(String node) {
-        getPreferences().put(NODE_PATH, node);
-    }
-
-    public boolean isUseNodePath() {
-        return getPreferences().getBoolean(USE_NODE_PATH, false);
-    }
-
-    public void setUseNodePath(boolean useNodePath) {
-        getPreferences().putBoolean(USE_NODE_PATH, useNodePath);
-    }
-
-    public boolean isUseNpmGlobalRoot() {
-        return getPreferences().getBoolean(USE_NPM_GLOBAL_ROOT, false);
-    }
-
-    public void setUseNpmGlobalRoot(boolean useNpmGlobalRoot) {
-        getPreferences().putBoolean(USE_NPM_GLOBAL_ROOT, useNpmGlobalRoot);
-    }
-
-    private Preferences getPreferences() {
-        return NbPreferences.forModule(NodeJsOptions.class).node(PREFERENCES_PATH);
+        preferences.put(NODE_PATH, node);
     }
 
 }

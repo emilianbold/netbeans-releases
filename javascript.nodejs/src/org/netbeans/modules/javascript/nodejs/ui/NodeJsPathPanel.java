@@ -39,17 +39,17 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.ui.options;
+package org.netbeans.modules.javascript.nodejs.ui;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -60,35 +60,49 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.netbeans.modules.web.common.api.Version;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
-public final class NodeJsOptionsPanel extends JPanel {
+public final class NodeJsPathPanel extends JPanel {
+
+    private static final Logger LOGGER = Logger.getLogger(NodeJsPathPanel.class.getName());
+
+    private static final RequestProcessor RP = new RequestProcessor(NodeJsPathPanel.class);
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final RequestProcessor.Task versionTask;
 
 
-    public NodeJsOptionsPanel() {
+    public NodeJsPathPanel() {
         initComponents();
         init();
+
+        versionTask = RP.create(new Runnable() {
+            @Override
+            public void run() {
+                setVersion();
+            }
+        });
     }
 
     @NbBundle.Messages({
         "# {0} - node.js file name",
-        "NodeJsOptionsPanel.node.hint=Full path of node file (typically {0}).",
+        "NodeJsPathPanel.node.hint=Full path of node file (typically {0}).",
     })
     private void init() {
         errorLabel.setText(" "); // NOI18N
-        nodeHintLabel.setText(Bundle.NodeJsOptionsPanel_node_hint(NodeExecutable.NODE_NAME));
+        nodeVersionLabel.setText(" "); // NOI18N
+        nodeHintLabel.setText(Bundle.NodeJsPathPanel_node_hint(NodeExecutable.NODE_NAME));
 
-        DocumentListener defaultDocumentListener = new DefaultDocumentListener();
-        ItemListener defaultItemListener = new DefaultItemListener();
+        DocumentListener defaultDocumentListener = new NodeDocumentListener();
         nodeTextField.getDocument().addDocumentListener(defaultDocumentListener);
-        nodePathCheckBox.addItemListener(defaultItemListener);
-        npmGlobalRootCheckBox.addItemListener(defaultItemListener);
     }
 
     public String getNode() {
@@ -97,22 +111,6 @@ public final class NodeJsOptionsPanel extends JPanel {
 
     public void setNode(String node) {
         nodeTextField.setText(node);
-    }
-
-    public boolean isUseNodePath() {
-        return nodePathCheckBox.isSelected();
-    }
-
-    public void setUseNodePath(boolean useNodePath) {
-        nodePathCheckBox.setSelected(useNodePath);
-    }
-
-    public boolean isUseNpmGlobalRoot() {
-        return npmGlobalRootCheckBox.isSelected();
-    }
-
-    public void setUseNpmGlobalRoot(boolean useNpmGlobalRoot) {
-        npmGlobalRootCheckBox.setSelected(useNpmGlobalRoot);
     }
 
     public void setError(String message) {
@@ -135,8 +133,99 @@ public final class NodeJsOptionsPanel extends JPanel {
         changeSupport.removeChangeListener(listener);
     }
 
+    public void enablePanel(boolean enabled) {
+        nodeTextField.setEnabled(enabled);
+        nodeBrowseButton.setEnabled(enabled);
+        nodeSearchButton.setEnabled(enabled);
+        if (enabled) {
+            setVersion();
+        } else {
+            downloadSourcesButton.setEnabled(false);
+        }
+    }
+
     void fireChange() {
         changeSupport.fireChange();
+    }
+
+    void detectVersion() {
+        versionTask.schedule(100);
+    }
+
+    @NbBundle.Messages({
+        "NodeJsPathPanel.version.na=Not available",
+        "NodeJsPathPanel.version.detecting=Detecting...",
+    })
+    void setVersion() {
+        downloadSourcesButton.setEnabled(false);
+        nodeVersionLabel.setText(Bundle.NodeJsPathPanel_version_detecting());
+        final String nodePath = getNode();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                String version = null;
+                NodeExecutable node = NodeExecutable.forPath(nodePath);
+                if (node != null) {
+                    Version nodeVersion = node.getVersion();
+                    if (nodeVersion != null) {
+                        version = nodeVersion.toString();
+                    }
+                }
+                final String versionRef = version;
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (versionRef != null) {
+                            downloadSourcesButton.setEnabled(true);
+                        }
+                        nodeVersionLabel.setText(versionRef != null ? versionRef : Bundle.NodeJsPathPanel_version_na());
+                    }
+                });
+            }
+        });
+    }
+
+    @NbBundle.Messages({
+        "# {0} - version",
+        "NodeJsPathPanel.sources.exists=Sources for version {0} already exist. Download again?",
+        "NodeJsPathPanel.download.success=Node.js sources downloaded successfully.",
+        "NodeJsPathPanel.download.error=Error occured during download (see IDE log).",
+    })
+    private void downloadSources() {
+        downloadSourcesButton.setEnabled(false);
+        String nodePath = getNode();
+        NodeExecutable node = NodeExecutable.forPath(nodePath);
+        assert node != null : nodePath;
+        final Version version = node.getVersion();
+        assert version != null : nodePath;
+        if (FileUtils.hasNodeSources(version)) {
+            NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(
+                    Bundle.NodeJsPathPanel_sources_exists(version.toString()),
+                    NotifyDescriptor.YES_NO_OPTION);
+            if (DialogDisplayer.getDefault().notify(confirmation) == NotifyDescriptor.NO_OPTION) {
+                downloadSourcesButton.setEnabled(true);
+                return;
+            }
+        }
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    FileUtils.downloadNodeSources(version);
+                    StatusDisplayer.getDefault().setStatusText(Bundle.NodeJsPathPanel_download_success());
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    NotifyDescriptor descriptor = new NotifyDescriptor.Message(Bundle.NodeJsPathPanel_download_error(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(descriptor);
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        downloadSourcesButton.setEnabled(true);
+                    }
+                });
+            }
+        });
     }
 
     /**
@@ -152,21 +241,22 @@ public final class NodeJsOptionsPanel extends JPanel {
         nodeBrowseButton = new JButton();
         nodeSearchButton = new JButton();
         nodeHintLabel = new JLabel();
-        foldersLabel = new JLabel();
-        nodePathCheckBox = new JCheckBox();
-        npmGlobalRootCheckBox = new JCheckBox();
+        versionLabel = new JLabel();
+        nodeVersionLabel = new JLabel();
+        downloadSourcesButton = new JButton();
+        versionInfoLabel = new JLabel();
         errorLabel = new JLabel();
 
-        Mnemonics.setLocalizedText(nodeLabel, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.nodeLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(nodeLabel, NbBundle.getMessage(NodeJsPathPanel.class, "NodeJsPathPanel.nodeLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(nodeBrowseButton, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.nodeBrowseButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(nodeBrowseButton, NbBundle.getMessage(NodeJsPathPanel.class, "NodeJsPathPanel.nodeBrowseButton.text")); // NOI18N
         nodeBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 nodeBrowseButtonActionPerformed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(nodeSearchButton, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.nodeSearchButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(nodeSearchButton, NbBundle.getMessage(NodeJsPathPanel.class, "NodeJsPathPanel.nodeSearchButton.text")); // NOI18N
         nodeSearchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 nodeSearchButtonActionPerformed(evt);
@@ -175,11 +265,19 @@ public final class NodeJsOptionsPanel extends JPanel {
 
         Mnemonics.setLocalizedText(nodeHintLabel, "HINT"); // NOI18N
 
-        Mnemonics.setLocalizedText(foldersLabel, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.foldersLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(versionLabel, NbBundle.getMessage(NodeJsPathPanel.class, "NodeJsPathPanel.versionLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(nodePathCheckBox, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.nodePathCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(nodeVersionLabel, "VERSION"); // NOI18N
 
-        Mnemonics.setLocalizedText(npmGlobalRootCheckBox, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.npmGlobalRootCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(downloadSourcesButton, NbBundle.getMessage(NodeJsPathPanel.class, "NodeJsPathPanel.downloadSourcesButton.text")); // NOI18N
+        downloadSourcesButton.setEnabled(false);
+        downloadSourcesButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                downloadSourcesButtonActionPerformed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(versionInfoLabel, NbBundle.getMessage(NodeJsPathPanel.class, "NodeJsPathPanel.versionInfoLabel.text")); // NOI18N
 
         Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
@@ -187,25 +285,30 @@ public final class NodeJsOptionsPanel extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(nodeLabel)
+                .addComponent(errorLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(nodeLabel)
+                    .addComponent(versionLabel))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(nodeHintLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addComponent(versionInfoLabel)
+                        .addGap(0, 10, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(nodeVersionLabel)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(downloadSourcesButton))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(nodeTextField)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(nodeBrowseButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(nodeSearchButton))))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(errorLabel)
-                    .addComponent(nodePathCheckBox)
-                    .addComponent(npmGlobalRootCheckBox)
-                    .addComponent(foldersLabel))
-                .addGap(0, 0, Short.MAX_VALUE))
+                        .addComponent(nodeSearchButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(nodeHintLabel)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -216,30 +319,31 @@ public final class NodeJsOptionsPanel extends JPanel {
                     .addComponent(nodeSearchButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(nodeHintLabel)
-                .addGap(18, 18, 18)
-                .addComponent(foldersLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(nodePathCheckBox)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(versionLabel)
+                    .addComponent(nodeVersionLabel)
+                    .addComponent(downloadSourcesButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(npmGlobalRootCheckBox)
+                .addComponent(versionInfoLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    @NbBundle.Messages("NodeJsOptionsPanel.node.browse.title=Select node")
+    @NbBundle.Messages("NodeJsPathPanel.node.browse.title=Select node")
     private void nodeBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_nodeBrowseButtonActionPerformed
         assert EventQueue.isDispatchThread();
-        File file = new FileChooserBuilder(NodeJsOptionsPanel.class)
+        File file = new FileChooserBuilder(NodeJsPathPanel.class)
                 .setFilesOnly(true)
-                .setTitle(Bundle.NodeJsOptionsPanel_node_browse_title())
+                .setTitle(Bundle.NodeJsPathPanel_node_browse_title())
                 .showOpenDialog();
         if (file != null) {
             nodeTextField.setText(file.getAbsolutePath());
         }
     }//GEN-LAST:event_nodeBrowseButtonActionPerformed
 
-    @NbBundle.Messages("NodeJsOptionsPanel.node.none=No node executable was found.")
+    @NbBundle.Messages("NodeJsPathPanel.node.none=No node executable was found.")
     private void nodeSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_nodeSearchButtonActionPerformed
         assert EventQueue.isDispatchThread();
         for (String node : FileUtils.findFileOnUsersPath(NodeExecutable.NODE_NAME)) {
@@ -247,25 +351,30 @@ public final class NodeJsOptionsPanel extends JPanel {
             return;
         }
         // no node found
-        StatusDisplayer.getDefault().setStatusText(Bundle.NodeJsOptionsPanel_node_none());
+        StatusDisplayer.getDefault().setStatusText(Bundle.NodeJsPathPanel_node_none());
     }//GEN-LAST:event_nodeSearchButtonActionPerformed
+
+    private void downloadSourcesButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_downloadSourcesButtonActionPerformed
+        downloadSources();
+    }//GEN-LAST:event_downloadSourcesButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JButton downloadSourcesButton;
     private JLabel errorLabel;
-    private JLabel foldersLabel;
     private JButton nodeBrowseButton;
     private JLabel nodeHintLabel;
     private JLabel nodeLabel;
-    private JCheckBox nodePathCheckBox;
     private JButton nodeSearchButton;
     private JTextField nodeTextField;
-    private JCheckBox npmGlobalRootCheckBox;
+    private JLabel nodeVersionLabel;
+    private JLabel versionInfoLabel;
+    private JLabel versionLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
 
-    private final class DefaultDocumentListener implements DocumentListener {
+    private final class NodeDocumentListener implements DocumentListener {
 
         @Override
         public void insertUpdate(DocumentEvent e) {
@@ -284,15 +393,7 @@ public final class NodeJsOptionsPanel extends JPanel {
 
         private void processUpdate() {
             fireChange();
-        }
-
-    }
-
-    private final class DefaultItemListener implements ItemListener {
-
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-            fireChange();
+            detectVersion();
         }
 
     }
