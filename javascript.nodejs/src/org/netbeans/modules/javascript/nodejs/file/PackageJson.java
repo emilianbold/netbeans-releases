@@ -109,6 +109,7 @@ public final class PackageJson {
     }
 
     public void cleanup() {
+        contentInited = false;
         clear(true);
     }
 
