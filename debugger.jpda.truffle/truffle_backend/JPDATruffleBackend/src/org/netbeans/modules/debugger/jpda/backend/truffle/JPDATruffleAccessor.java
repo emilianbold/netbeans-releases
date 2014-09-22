@@ -136,7 +136,9 @@ public class JPDATruffleAccessor extends Object {
     }
     
     static void executionStepInto(Node astNode, String name,
-                                  long srcId, String srcName, String srcPath, int line, String code) {
+                                  long srcId, String srcName, String srcPath, int line, String code,
+                                  FrameSlot[] frameSlots, String[] slotNames, String[] slotTypes,
+                                  FrameInstance[] stackTrace, String topFrame) {
         // Called when the execution steps into a call.
         setCommand();
     }

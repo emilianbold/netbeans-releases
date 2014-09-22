@@ -8,6 +8,8 @@ package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.ExecutionContext;
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.TruffleRuntime;
+import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameInstanceVisitor;
@@ -59,7 +61,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
         this.topFrameHolder = new TopFrameHolder();
         ((JPDADebugClient) dbgClient).setTopFrameHolder(topFrameHolder);
         nodeProberDelegate.addNodeProber(
-                new JPDAJSNodeProber((JSContext) context, this, new JPDAInstrumentProxy(instrumentCallback)));
+                new JPDAJSNodeProber((JSContext) context, this, new JPDAInstrumentProxy(instrumentCallback, context)));
         //System.err.println("new JPDATruffleDebugManager("+engine+")");
     }
     
@@ -153,65 +155,13 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
             SourcePosition position = getPosition(astNode);
             Visualizer visualizer = context.getVisualizer();
             
-            Object[] arguments = frame.getArguments();
-            FrameDescriptor frameDescriptor = frame.getFrameDescriptor();
-            Set<Object> identifiers = frameDescriptor.getIdentifiers();
-            
-            List<? extends FrameSlot> slotsList = frameDescriptor.getSlots();
-            ArrayList<FrameSlot> slotsArr = new ArrayList<>();
-            for (FrameSlot fs : slotsList) {
-                FrameSlotKind kind = fs.getKind();
-                if (FrameSlotKind.Illegal.equals(kind)) {
-                    continue;
-                }
-                slotsArr.add(fs);
-            }
-            FrameSlot[] slots = slotsArr.toArray(new FrameSlot[]{});
-            String[] slotNames = new String[slots.length];
-            String[] slotTypes = new String[slots.length];
-            for (int i = 0; i < slots.length; i++) {
-                slotNames[i] = visualizer.displayIdentifier(slots[i]);// slots[i].getIdentifier().toString();
-                slotTypes[i] = slots[i].getKind().toString();
-            }
-            /*
-            System.err.println("JPDADebugClient: HALTED AT "+astNode+", "+frame+
-                               "\n                 src. pos. = "+
-                               position.path+":"+position.line);
-            System.err.println("  frame arguments = "+Arrays.toString(arguments));
-            System.err.println("  identifiers = "+Arrays.toString(identifiers.toArray()));
-            System.err.println("  slots = "+Arrays.toString(slotsList.toArray()));
-            
-            for (int i = 0; i < slots.length; i++) {
-                System.err.println("    "+slotNames[i]+" = "+JPDATruffleAccessor.getSlotValue(frame, slots[i]));
-            }
-            */
-            ArrayList<FrameInstance> stackTraceArr = new ArrayList<>();
-            Truffle.getRuntime().iterateFrames((FrameInstance fi) -> {
-                return stackTraceArr.add(fi);
-            });
-            FrameInstance[] stackTrace = stackTraceArr.toArray(new FrameInstance[]{});
-            /*
-            String[] stackNames = new String[stackTrace.length];
-            for (int i = 0; i < stackTrace.length; i++) {
-                //stackNames[i] = stackTrace[i].getCallNode().getDescription();
-                stackNames[i] = visualizer.displaySourceLocation(stackTrace[i].getCallNode());
-            }*/
-            //System.err.println("  stack trace = "+Arrays.toString(stackTrace));
-            //System.err.println("  stack names = "+Arrays.toString(stackNames));
-            String topFrame = visualizer.displayCallTargetName(astNode.getRootNode().getCallTarget())+"\n"+
-                              visualizer.displayMethodName(astNode)+"\n"+
-                              visualizer.displaySourceLocation(astNode)+"\n"+
-                              position.id+"\n"+
-                              position.name+"\n"+
-                              position.path+"\n"+
-                              position.line;
-            //System.err.println("  top frame = \n'"+topFrame+"'");
+            FrameInfo fi = new FrameInfo(frame, visualizer, astNode);
             
             JPDATruffleAccessor.executionHalted(astNode, frame,
                     position.id, position.name, position.path,
                     position.line, position.code,
-                    slots, slotNames, slotTypes,
-                    stackTrace, topFrame);
+                    fi.slots, fi.slotNames, fi.slotTypes,
+                    fi.stackTrace, fi.topFrame);
             
             topFrameHolder.currentTopFrame = null;
             topFrameHolder.currentNode = null;
@@ -226,10 +176,13 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
     private static class JPDAInstrumentProxy implements DebugInstrumentCallback {
         
         private final DebugInstrumentCallback delegateCallback;
+        private final ExecutionContext context;
         private boolean isStepping = false;
         
-        public JPDAInstrumentProxy(DebugInstrumentCallback delegateCallback) {
+        public JPDAInstrumentProxy(DebugInstrumentCallback delegateCallback,
+                                   ExecutionContext context) {
             this.delegateCallback = delegateCallback;
+            this.context = context;
         }
 
         @Override
@@ -253,9 +206,15 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
             astNode.getSourceSection();
             if (JPDATruffleAccessor.isSteppingInto) {
                 SourcePosition position = getPosition(astNode);
+                FrameInstance currentFrame = Truffle.getRuntime().getCurrentFrame();
+                Frame frame = currentFrame.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true);
+                Visualizer visualizer = context.getVisualizer();
+                FrameInfo fi = new FrameInfo(frame.materialize(), visualizer, astNode);
                 JPDATruffleAccessor.executionStepInto(astNode, name,
                         position.id, position.name, position.path,
-                        position.line, position.code);                        
+                        position.line, position.code,
+                        fi.slots, fi.slotNames, fi.slotTypes,
+                        fi.stackTrace, fi.topFrame);
             }
             delegateCallback.callEntering(astNode, name);
         }
@@ -266,6 +225,73 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
             delegateCallback.callReturned(astNode, name);
         }
         
+    }
+    
+    private static final class FrameInfo {
+        
+        private final FrameSlot[] slots;
+        private final String[] slotNames;
+        private final String[] slotTypes;
+        private final FrameInstance[] stackTrace;
+        private final String topFrame;
+        
+        public FrameInfo(MaterializedFrame frame, Visualizer visualizer,
+                         Node astNode) {
+            Object[] arguments = frame.getArguments();
+            FrameDescriptor frameDescriptor = frame.getFrameDescriptor();
+            Set<Object> identifiers = frameDescriptor.getIdentifiers();
+            
+            List<? extends FrameSlot> slotsList = frameDescriptor.getSlots();
+            ArrayList<FrameSlot> slotsArr = new ArrayList<>();
+            for (FrameSlot fs : slotsList) {
+                FrameSlotKind kind = fs.getKind();
+                if (FrameSlotKind.Illegal.equals(kind)) {
+                    continue;
+                }
+                slotsArr.add(fs);
+            }
+            slots = slotsArr.toArray(new FrameSlot[]{});
+            slotNames = new String[slots.length];
+            slotTypes = new String[slots.length];
+            for (int i = 0; i < slots.length; i++) {
+                slotNames[i] = visualizer.displayIdentifier(slots[i]);// slots[i].getIdentifier().toString();
+                slotTypes[i] = slots[i].getKind().toString();
+            }
+            /*
+            System.err.println("JPDADebugClient: HALTED AT "+astNode+", "+frame+
+                               "\n                 src. pos. = "+
+                               position.path+":"+position.line);
+            System.err.println("  frame arguments = "+Arrays.toString(arguments));
+            System.err.println("  identifiers = "+Arrays.toString(identifiers.toArray()));
+            System.err.println("  slots = "+Arrays.toString(slotsList.toArray()));
+            
+            for (int i = 0; i < slots.length; i++) {
+                System.err.println("    "+slotNames[i]+" = "+JPDATruffleAccessor.getSlotValue(frame, slots[i]));
+            }
+            */
+            ArrayList<FrameInstance> stackTraceArr = new ArrayList<>();
+            Truffle.getRuntime().iterateFrames((FrameInstance fi) -> {
+                return stackTraceArr.add(fi);
+            });
+            stackTrace = stackTraceArr.toArray(new FrameInstance[]{});
+            /*
+            String[] stackNames = new String[stackTrace.length];
+            for (int i = 0; i < stackTrace.length; i++) {
+                //stackNames[i] = stackTrace[i].getCallNode().getDescription();
+                stackNames[i] = visualizer.displaySourceLocation(stackTrace[i].getCallNode());
+            }*/
+            //System.err.println("  stack trace = "+Arrays.toString(stackTrace));
+            //System.err.println("  stack names = "+Arrays.toString(stackNames));
+            SourcePosition position = getPosition(astNode);
+            topFrame = visualizer.displayCallTargetName(astNode.getRootNode().getCallTarget())+"\n"+
+                       visualizer.displayMethodName(astNode)+"\n"+
+                       visualizer.displaySourceLocation(astNode)+"\n"+
+                       position.id+"\n"+
+                       position.name+"\n"+
+                       position.path+"\n"+
+                       position.line;
+            //System.err.println("  top frame = \n'"+topFrame+"'");
+        }
     }
     
     static final class SourcePosition {
