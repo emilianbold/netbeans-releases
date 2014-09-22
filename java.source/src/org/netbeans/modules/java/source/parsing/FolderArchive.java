@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -77,7 +79,7 @@ public class FolderArchive implements Archive {
     private static final boolean normalize = Boolean.getBoolean("FolderArchive.normalize"); //NOI18N
     
     final File root;
-    final Charset encoding;
+    volatile Charset encoding;
     
     private boolean sourceRootInitialized;
     private URL sourceRoot;
@@ -90,15 +92,39 @@ public class FolderArchive implements Archive {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "creating FolderArchive for {0}", root.getAbsolutePath());
         }
-        
-        FileObject file = FileUtil.toFileObject(root);
-        
-        if (file != null) {
-            encoding = FileEncodingQuery.getEncoding(file);
-        } else {
-            encoding = null;
-        }
     }
+    
+    private Charset encoding() {
+        Charset e = encoding;
+        if (e == null) {
+            FileObject file = FileUtil.toFileObject(root);
+            if (file != null) {
+                e = FileEncodingQuery.getEncoding(file);
+            } else {
+                // avoid further checks
+                e = UNKNOWN_CHARSET;
+            }
+            encoding = e;
+        }
+        return e != UNKNOWN_CHARSET ? e : null;
+    }
+    
+    private static final Charset UNKNOWN_CHARSET = new Charset("UNKNOWN", null) {
+        @Override
+        public boolean contains(Charset cs) {
+            throw new UnsupportedOperationException("Unexpected call");
+        }
+
+        @Override
+        public CharsetDecoder newDecoder() {
+            throw new UnsupportedOperationException("Unexpected call");
+        }
+
+        @Override
+        public CharsetEncoder newEncoder() {
+            throw new UnsupportedOperationException("Unexpected call");
+        }
+    };
     
     @Override
     public Iterable<JavaFileObject> getFiles(String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter) throws IOException {
@@ -122,7 +148,7 @@ public class FolderArchive implements Archive {
                     if ((kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(f.getName())))) &&
                         f.isFile() &&
                         (entry == null || entry.includes(Utilities.toURI(f).toURL()))) {
-                        result.add(FileObjects.fileFileObject(f,this.root,filter, encoding));
+                        result.add(FileObjects.fileFileObject(f,this.root,filter, encoding()));
                     }
                 }
                 return Collections.unmodifiableList(result);
@@ -138,7 +164,7 @@ public class FolderArchive implements Archive {
             relativePath = relativePath.replace('/', File.separatorChar);
         }
         final File file = new File (root, relativePath);
-        return FileObjects.fileFileObject(file, root, filter, encoding);
+        return FileObjects.fileFileObject(file, root, filter, encoding());
     }
 
     @Override
@@ -150,7 +176,7 @@ public class FolderArchive implements Archive {
         final String path = name.replace('/', File.separatorChar);        //NOI18N
         File file = new File (this.root, path);
         if (file.exists()) {
-            return FileObjects.fileFileObject(file,this.root,null,encoding);
+            return FileObjects.fileFileObject(file,this.root,null,encoding());
         }
         try {
             final URL srcRoot = getBaseSourceRoot(Utilities.toURI(this.root).toURL());
@@ -159,7 +185,7 @@ public class FolderArchive implements Archive {
                     final File folder = Utilities.toFile(srcRoot.toURI());
                     file = new File (folder,path);
                     if (file.exists()) {
-                        return FileObjects.fileFileObject(file,folder,null,encoding);
+                        return FileObjects.fileFileObject(file,folder,null,encoding());
                     }
                 } else {
                     final FileObject srcRootFo = URLMapper.findFileObject(srcRoot);
