@@ -95,7 +95,9 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
     
     @NbBundle.Messages({"LBL_Push.pushToUpstreamFailed=Push to Upstream Failed",
         "LBL_PushToUpstreamAction.preparing=Preparing Push...",
-        "# {0} - local branch", "MSG_Err.unknownRemoteBranchName=Cannot guess remote branch name for {0}"})
+        "MSG_Err.noBranchState=You are not on a branch, push cannot continue.",
+        "# {0} - local branch", "MSG_Err.unknownRemoteBranchName=Cannot guess remote branch name for {0}"
+    })
     Task push (final File repository, final Set<File> repositories) {
         final Task[] t = new Task[1];
         GitProgressSupport supp = new GitProgressSupport.NoOutputLogging() {
@@ -108,6 +110,10 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
                     return;
                 }
                 String errorLabel = LBL_Push_pushToUpstreamFailed();
+                if (GitBranch.NO_BRANCH.equals(activeBranch.getName())) {
+                    GitUtils.notifyError(errorLabel, MSG_Err_noBranchState());
+                    return;
+                }
                 RepositoryInfo.PushMode pushMode = info.getPushMode();
                 GitBranch trackedBranch = getTrackedBranch(activeBranch, pushMode, errorLabel);
                 GitRemoteConfig cfg = getRemoteConfigForActiveBranch(trackedBranch, info, errorLabel);                        
