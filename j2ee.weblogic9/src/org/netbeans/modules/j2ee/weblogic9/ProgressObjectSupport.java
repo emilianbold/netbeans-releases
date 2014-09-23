@@ -47,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 
 /**
@@ -59,7 +60,8 @@ public final class ProgressObjectSupport {
         super();
     }
 
-    public static void waitFor(ProgressObject obj) {
+    @CheckReturnValue
+    public static boolean waitFor(ProgressObject obj) {
         final CountDownLatch latch = new CountDownLatch(1);
         obj.addProgressListener(new ProgressListener() {
 
@@ -71,12 +73,13 @@ public final class ProgressObjectSupport {
             }
         });
         if (obj.getDeploymentStatus().isCompleted() || obj.getDeploymentStatus().isFailed()) {
-            return;
+            return true;
         }
         try {
-            latch.await(WLDeploymentManager.MANAGER_TIMEOUT, TimeUnit.MILLISECONDS);
+            return latch.await(WLDeploymentManager.MANAGER_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
+        return false;
     }
 }
