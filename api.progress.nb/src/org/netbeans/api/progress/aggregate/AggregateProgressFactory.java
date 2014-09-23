@@ -82,10 +82,6 @@ public final class AggregateProgressFactory extends BasicAggregateProgressFactor
                 ProgressHandleFactory.createHandle(displayName, allowToCancel, linkOutput));
     }
     
-    public static ProgressContributor createProgressContributor(String trackingId) {
-        return new ProgressContributor(trackingId);
-    }
-    
     /**
      * Create an aggregating progress ui handle for a long lasting task.
      * @param contributors the initial set of progress indication contributors that are aggregated in the UI.
