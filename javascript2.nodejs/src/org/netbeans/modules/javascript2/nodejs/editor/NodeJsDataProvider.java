@@ -58,21 +58,29 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
-import static org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils.loadFileContent;
+import org.netbeans.modules.javascript2.nodejs.spi.NodeJsSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
@@ -94,7 +102,6 @@ public class NodeJsDataProvider {
     private static final Logger LOG = Logger.getLogger(NodeJsDataProvider.class.getSimpleName());
 
     private static RequestProcessor RP = new RequestProcessor(NodeJsDataProvider.class);
-    private static NodeJsDataProvider INSTANCE;
     private boolean loadingStarted;
     private ProgressHandle progress;
 
@@ -122,22 +129,53 @@ public class NodeJsDataProvider {
     private static final String PROPERTIES = "properties";  //NOI18N
     private static final String CLASSES = "classes";    //NOI18N
 
-    private NodeJsDataProvider() {
+    private static final WeakHashMap<Project, NodeJsDataProvider> cache = new WeakHashMap<Project, NodeJsDataProvider>();
+    private static NodeJsDataProvider noProjectInstance = null;
+    
+    private final boolean isSupportEnabled;
+    private final FileObject docFolder;
+    
+    private NodeJsDataProvider(NodeJsSupport support) {
         this.loadingStarted = false;
-    }
-
-    public static synchronized NodeJsDataProvider getDefault() {
-        if (INSTANCE == null) {
-            INSTANCE = new NodeJsDataProvider();
+        if (support != null) {
+            this.isSupportEnabled = support.isSupportEnabled();
+            this.docFolder = support.getDocumentationFolder();
+        } else {
+            this.isSupportEnabled = false;
+            this.docFolder = null;
         }
-        return INSTANCE;
     }
 
+    public static synchronized NodeJsDataProvider getDefault(FileObject fo) {
+        assert fo != null;
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            if (noProjectInstance == null) {
+                noProjectInstance = new NodeJsDataProvider(null);
+            }
+            return noProjectInstance;
+        }
+        NodeJsDataProvider instance = cache.get(project);
+        if (instance == null) {
+            NodeJsSupport support = null;
+            support = project.getLookup().lookup(NodeJsSupport.class);
+            support.addChangeListener(new ProjectSupportChangeListener(project));
+            instance = new NodeJsDataProvider(support);
+            cache.put(project, instance);
+        }
+        
+        return instance;
+    }
+
+    public boolean isSupportEnabled() {
+        return isSupportEnabled;
+    }
+    
     /**
      *
      * @return URL or null if it's not available.
      */
-    public URL getDocumentationURL() {
+    private URL getDocumentationURL() {
         URL result = null;
         try {
             result = new URL(DOC_URL);
@@ -148,21 +186,6 @@ public class NodeJsDataProvider {
     }
 
     public Collection<String> getRuntimeModules() {
-//        HashSet<String> moduleNames = new HashSet<String>();
-//        Object jsonValue;
-//        JSONArray modules = getModules();
-//        if (modules != null) {
-//            for (int i = 0; i < modules.size(); i++) {
-//                jsonValue = modules.get(i);
-//                if (jsonValue != null && jsonValue instanceof JSONObject) {
-//                    JSONObject jsonModule = (JSONObject) jsonValue;
-//                    jsonValue = jsonModule.get(NAME);
-//                    if (jsonValue != null && jsonValue instanceof String ) {
-//                        moduleNames.add((String)jsonValue);
-//                    }
-//                }
-//            }
-//        }
         String content = getContentApiFile();
         int index = 0;
         int lenghtOfRequire = REQUIRE_STRING.length();
@@ -409,8 +432,20 @@ public class NodeJsDataProvider {
     }
 
     private File getCachedAPIFile() {
-        String pathFile = new StringBuilder().append(CACHE_FOLDER_NAME).append('/')
-                .append(DOC_VERSION).append('/').append(API_ALL_JSON_FILE).toString();
+        String pathFile = null;
+        if (docFolder != null) {
+            for (FileObject folder : Collections.list(docFolder.getFolders(false))) {
+                FileObject fo = folder.getFileObject(API_ALL_JSON_FILE);
+                if (fo != null) {
+                    return FileUtil.toFile(fo);
+                }
+            }
+            
+        }
+        if (pathFile == null) {
+            pathFile = new StringBuilder().append(CACHE_FOLDER_NAME).append('/')
+                    .append(DOC_VERSION).append('/').append(API_ALL_JSON_FILE).toString();
+        }
         File cacheFile = Places.getCacheSubfile(pathFile);
         return cacheFile;
     }
@@ -577,5 +612,19 @@ public class NodeJsDataProvider {
             }
         }
         return null;
+    }
+    
+    private static class ProjectSupportChangeListener implements ChangeListener {
+        private final Project project;
+        
+        public ProjectSupportChangeListener(Project project) {
+            this.project = project;
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            cache.remove(project);
+        }
+        
     }
 }

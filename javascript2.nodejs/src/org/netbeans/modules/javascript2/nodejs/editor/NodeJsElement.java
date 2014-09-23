@@ -161,7 +161,8 @@ public class NodeJsElement implements ElementHandle {
 
         @Override
         public String getDocumentation() {
-            return NodeJsDataProvider.getDefault().getDocForModule(getName());
+            FileObject fo = getFileObject();    
+            return fo == null ? null : NodeJsDataProvider.getDefault(fo).getDocForModule(getName());
         }
 
     }

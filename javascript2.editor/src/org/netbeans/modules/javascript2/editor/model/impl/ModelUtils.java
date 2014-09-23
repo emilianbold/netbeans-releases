@@ -811,7 +811,7 @@ public class ModelUtils {
                             }
                         }
 
-                        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+                        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects(model.getGlobalObject().getFileObject())) {
                             assert libGlobal != null;
                             for (JsObject object : libGlobal.getProperties().values()) {
                                 if (object.getName().equals(name)) {
@@ -1018,7 +1018,7 @@ public class ModelUtils {
                             }
                         }
                         // from libraries look for top level types
-                        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+                        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects(model.getGlobalObject().getFileObject())) {
                             for (JsObject object : libGlobal.getProperties().values()) {
                                 if (object.getName().equals(typeUsage.getType())) {
                                     JsObject property = object.getProperty(name);

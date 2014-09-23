@@ -48,6 +48,7 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ObjectInterceptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -118,13 +119,13 @@ public final class ModelExtender {
         return new ArrayList<ObjectInterceptor>(OBJECT_INTERCEPTORS.allInstances());
     }
 
-    public synchronized List<? extends JsObject> getExtendingGlobalObjects() {
+    public synchronized List<? extends JsObject> getExtendingGlobalObjects(FileObject fo) {
         if (extendingObjects == null) {
             Collection<? extends ModelInterceptor> interceptors = MODEL_INTERCEPTORS.allInstances();
             extendingObjects = new ArrayList<JsObject>(interceptors.size());
             for (ModelInterceptor interceptor : interceptors) {
                 extendingObjects.addAll(interceptor.interceptGlobal(
-                        ModelElementFactoryAccessor.getDefault().createModelElementFactory()));
+                        ModelElementFactoryAccessor.getDefault().createModelElementFactory(), fo));
             }
         }
         return extendingObjects;

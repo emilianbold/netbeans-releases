@@ -75,6 +75,10 @@ public class NodeJsCodeCompletion implements CompletionProvider {
 
     @Override
     public List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContext jsCompletionContext, String prefix) {
+        FileObject fo = ccContext.getParserResult().getSnapshot().getSource().getFileObject();
+        if (fo == null) {
+            return Collections.EMPTY_LIST;
+        }
         List<CompletionProposal> result = new ArrayList<CompletionProposal>();
         if (jsCompletionContext == CompletionContext.STRING || jsCompletionContext == CompletionContext.EXPRESSION
                 || jsCompletionContext == CompletionContext.GLOBAL) {
@@ -106,7 +110,7 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                     if (tokenId == JsTokenId.IDENTIFIER && REQUIRE.equals(token.text().toString())) {
                         // name of modules
                         if (wholePrefix.isEmpty() || (wholePrefix.charAt(0) != '.' && wholePrefix.charAt(0) != '/')) {
-                            Collection<String> modules = NodeJsDataProvider.getDefault().getRuntimeModules();
+                            Collection<String> modules = NodeJsDataProvider.getDefault(fo).getRuntimeModules();
                             for(String module: modules) {
                                 if (module.startsWith(prefix)) {
                                     NodeJsElement handle = new NodeJsElement.NodeJsModuleElement(module);
@@ -124,7 +128,7 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                     if (tokenId == JsTokenId.OPERATOR_ASSIGNMENT) {
                         // offer require()
                         if (prefix.isEmpty() || REQUIRE.startsWith(prefix)) {
-                            NodeJsElement handle = new NodeJsElement(REQUIRE, NodeJsDataProvider.getDefault().getDocumentationForGlobalObject(REQUIRE), TEMPLATE_REQUIRE, ElementKind.METHOD);
+                            NodeJsElement handle = new NodeJsElement(REQUIRE, NodeJsDataProvider.getDefault(fo).getDocumentationForGlobalObject(REQUIRE), TEMPLATE_REQUIRE, ElementKind.METHOD);
                             result.add(new NodeJsCompletionItem(handle, eOffset - prefix.length()));
                         }
                     }
@@ -147,18 +151,18 @@ public class NodeJsCodeCompletion implements CompletionProvider {
         if (element instanceof IndexedElement) {
             fqn = ((IndexedElement)element).getFQN();
         }
-        if (fqn != null) {
+        FileObject fo = element.getFileObject();
+        if (fo != null && fqn != null) {
             if (!fqn.startsWith(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX)) {
-                FileObject fo = element.getFileObject();
                 if (fo != null) {
                     StringBuilder sb = new StringBuilder();
                     sb.append(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX).append(fo.getName());
                     sb.append('.').append(fqn);
                     fqn = sb.toString();
-                    return NodeJsDataProvider.getDefault().getDocumentation(fqn);
+                    return NodeJsDataProvider.getDefault(fo).getDocumentation(fqn);
                 }
             } else {
-                return NodeJsDataProvider.getDefault().getDocumentation(fqn);
+                return NodeJsDataProvider.getDefault(fo).getDocumentation(fqn);
             }
         }
         return null;
