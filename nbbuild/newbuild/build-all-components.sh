@@ -94,6 +94,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 ###############  Commit validation tests  ##########################
+ls $NB_ALL/nbbuild/netbeans/platform/lib/boot.jar
 cp -rp $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans-vanilla
 
 TESTS_STARTED=`date`
@@ -137,11 +138,11 @@ fi
 
 mv $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans.after_commit-validation_and_test-dist
 mv $NB_ALL/nbbuild/netbeans-vanilla $NB_ALL/nbbuild/netbeans
-
+ls $NB_ALL/nbbuild/netbeans/platform/lib/boot.jar
 cd $NB_ALL
 
 #Build all NBMs for stable UC - IDE + UC-only
-ant ${CLUSTER_CONFIG:--Dcluster.config=stableuc} -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f nbbuild/build.xml build-nbms -Dbase.nbm.target.dir=${DIST}/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=${DEBUGLEVEL}
+ant -d ${CLUSTER_CONFIG:--Dcluster.config=stableuc} -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f nbbuild/build.xml build-nbms -Dbase.nbm.target.dir=${DIST}/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=${DEBUGLEVEL}
 ERROR_CODE=$?
 
 create_test_result "build.NBMs" "Build all NBMs" $ERROR_CODE
