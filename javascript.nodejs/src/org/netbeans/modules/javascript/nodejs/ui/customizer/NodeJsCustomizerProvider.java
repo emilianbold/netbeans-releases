@@ -43,6 +43,8 @@ package org.netbeans.modules.javascript.nodejs.ui.customizer;
 
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -55,8 +57,13 @@ public final class NodeJsCustomizerProvider implements ProjectCustomizer.Composi
     @NbBundle.Messages("NodeJsCustomizerProvider.name=Node.js")
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
-            return ProjectCustomizer.Category.create(CUSTOMIZER_IDENT,
-                    Bundle.NodeJsCustomizerProvider_name(), null);
+        Project project = context.lookup(Project.class);
+        assert project != null;
+        if (ProjectUtils.getSources(project).getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5).length == 0) {
+            return null;
+        }
+        return ProjectCustomizer.Category.create(CUSTOMIZER_IDENT,
+                Bundle.NodeJsCustomizerProvider_name(), null);
     }
 
     @Override
