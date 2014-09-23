@@ -103,7 +103,8 @@ public class MeasureEntityBeanActionTest extends PerformanceTestCase {
     }
 
     public void testAddBusinessMethod() {
-        WAIT_AFTER_OPEN = 1000;
+        WAIT_AFTER_OPEN = 2000;
+        expectedTime = 2000;
         popup_menu = "Add|Business Method";
         title = "Business Method";
         name = "testBusinessMethod";
