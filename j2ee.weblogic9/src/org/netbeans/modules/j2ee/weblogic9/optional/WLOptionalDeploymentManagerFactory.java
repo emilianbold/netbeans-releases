@@ -170,40 +170,25 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
 
     private static class WLServerInstanceDescriptor implements ServerInstanceDescriptor {
 
-        private final String host;
-
-        private int port;
-        
-        private final boolean remote;
+        private final WLDeploymentManager manager;
 
         public WLServerInstanceDescriptor(WLDeploymentManager manager) {
-            String uri = manager.getInstanceProperties().getProperty(InstanceProperties.URL_ATTR);
-            // it is guaranteed it is WL
-            String[] parts = uri.substring(WLDeploymentFactory.URI_PREFIX.length()).split(":");
-
-            host = parts[0];
-            try {
-                port = parts.length > 1 ? Integer.parseInt(parts[1]) : WLDeploymentFactory.DEFAULT_PORT;
-            } catch (NumberFormatException ex) {
-                // leave default
-                port = WLDeploymentFactory.DEFAULT_PORT;
-            }
-            remote = manager.isRemote();
+            this.manager = manager;
         }
 
         @Override
         public String getHostname() {
-            return host;
+            return manager.getCommonConfiguration().getHost();
         }
 
         @Override
         public int getHttpPort() {
-            return port;
+            return manager.getCommonConfiguration().getPort();
         }
 
         @Override
         public boolean isLocal() {
-            return !remote;
+            return !manager.isRemote();
         }
     }
 }
