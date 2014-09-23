@@ -52,6 +52,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
 
 /**
  *
@@ -81,6 +82,7 @@ public class ScriptingNodePopupTest extends PerformanceTestCase {
     /**
      * Selects node whose popup menu will be tested.
      */
+    @Override
     public void prepare() {
         dataObjectNode.select();
     }
@@ -94,13 +96,16 @@ public class ScriptingNodePopupTest extends PerformanceTestCase {
      *
      * @return JPopupMenuOperator instance
      */
+    @Override
     public ComponentOperator open() {
         /* it stopped to work after a while, see issue 58790
          java.awt.Point p = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
          JPopupMenu menu = callPopup(dataObjectNode.tree(), p.x, p.y, java.awt.event.InputEvent.BUTTON3_MASK);
          return new JPopupMenuOperator(menu);
          */
-
+        
+        // wait only for popup opening and ignore other repaint events
+        MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
         java.awt.Point point = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
         dataObjectNode.tree().clickForPopup(point.x, point.y);
         return new JPopupMenuOperator();
