@@ -73,14 +73,14 @@ public class ProgressHandleFactoryTest extends NbTestCase {
      */
     public void testCreateHandle() {
         
-        ProgressHandle handle = ProgressHandleFactory.createUIHandle("task 1");
+        ProgressHandle handle = ProgressUIHandle.createUIHandle("task 1");
         UIInternalHandle internal = (UIInternalHandle)handle.getInternalHandle();
         assertEquals("task 1", internal.getDisplayName());
         assertFalse(internal.isAllowCancel());
         assertFalse(internal.isCustomPlaced());
         assertEquals(UIInternalHandle.STATE_INITIALIZED, internal.getState());
         
-        handle = ProgressHandleFactory.createUIHandle("task 2", new TestCancel());
+        handle = ProgressUIHandle.createUIHandle("task 2", new TestCancel());
         internal = (UIInternalHandle)handle.getInternalHandle();
         assertEquals("task 2", internal.getDisplayName());
         assertTrue(internal.isAllowCancel());
@@ -93,7 +93,7 @@ public class ProgressHandleFactoryTest extends NbTestCase {
     public void testCustomComponentIsInitialized() {
         Controller.defaultInstance = new TestController();
         
-        ProgressUIHandle handle = ProgressHandleFactory.createUIHandle("task 1");
+        ProgressUIHandle handle = ProgressUIHandle.createUIHandle("task 1");
         JComponent component = ProgressHandleFactory.createProgressComponent(handle);
         
         handle.start(15);
@@ -103,7 +103,7 @@ public class ProgressHandleFactoryTest extends NbTestCase {
         assertEquals(15, ((JProgressBar) component).getMaximum());
         assertEquals(2, ((JProgressBar) component).getValue());
         
-        handle = ProgressHandleFactory.createUIHandle("task 2");
+        handle = ProgressUIHandle.createUIHandle("task 2");
         component = ProgressHandleFactory.createProgressComponent(handle);
         
         handle.start(20);

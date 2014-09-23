@@ -42,7 +42,7 @@
 package org.netbeans.modules.progress.ui;
 
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.ProgressUIHandle;
 import org.netbeans.modules.progress.spi.Controller;
 import org.netbeans.modules.progress.spi.ProgressEnvironment;
 import org.netbeans.modules.progress.spi.SwingController;
@@ -59,9 +59,9 @@ public class ProgressUI implements ProgressEnvironment {
     @Override
     public ProgressHandle createHandle(String displayname, Cancellable c, boolean userInit) {
         if (userInit) {
-            return ProgressHandleFactory.createUIHandle(displayname, c, null);
+            return ProgressUIHandle.createUIHandle(displayname, c, null);
         } else {
-            return ProgressHandleFactory.createSystemHandle(displayname, c, null);
+            return ProgressUIHandle.createSystemUIHandle(displayname, c, null);
         }
     }
 

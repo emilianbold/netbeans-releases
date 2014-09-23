@@ -437,8 +437,8 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
         private final ProgressRunnable<T> toRun;
         ProgressBackgroundRunner(ProgressRunnable<T> toRun, String displayName, boolean includeDetail, boolean showCancel) {
             super (showCancel ?
-                ProgressHandleFactory.createUIHandle(displayName, (Cancellable) toRun, null) :
-                ProgressHandleFactory.createUIHandle(displayName, (Action)null), includeDetail, showCancel);
+                ProgressUIHandle.createUIHandle(displayName, (Cancellable) toRun, null) :
+                ProgressUIHandle.createUIHandle(displayName, (Action)null), includeDetail, showCancel);
             this.toRun = toRun;
         }
 
