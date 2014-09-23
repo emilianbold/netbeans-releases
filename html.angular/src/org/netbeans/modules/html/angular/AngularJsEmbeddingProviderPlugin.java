@@ -256,45 +256,86 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         return processed;
     }
     
-    private boolean processController(String controllerName) {        processTemplate();
+    private boolean processController(String controllerName) {
+        processTemplate();
         StringBuilder sb = new StringBuilder();
-        
-        sb.append("(function () {\n$scope = "); //NOI18N
-        
         Project project = FileOwnerQuery.getOwner(snapshot.getSource().getFileObject());
-        String fqn = controllerName.trim();
         AngularJsIndex index = null;
         try {
-             index = AngularJsIndex.get(project);
+            index = AngularJsIndex.get(project);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        if (index != null) {
-            Collection<AngularJsController> controllers = index.getControllers(controllerName, true);
-            for (AngularJsController controller : controllers) {
-                if (controller.getName().equals(controllerName)) {
-                    fqn = controller.getFqn();
-                    break;
+
+        if (controllerName.contains(" as ")) { //NOI18N
+            // we have controllerAs expression
+            String[] parts = controllerName.trim().split(" as "); //NOI18N
+            if (parts.length < 2) {
+                return false;
+            }
+
+            sb.append("(function () {\n"); //NOI18N
+
+            String fqn = parts[0].trim();
+            if (index != null) {
+                Collection<AngularJsController> controllers = index.getControllers(parts[0], true);
+                for (AngularJsController controller : controllers) {
+                    if (controller.getName().equals(parts[0])) {
+                        fqn = controller.getFqn();
+                        break;
+                    }
                 }
             }
-        }
-        
-        if (!fqn.isEmpty()) {
-            sb.append(fqn);
-            sb.append(".");
-        }
-        sb.append("$scope;\n");   //NOI18N
-        embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
-        sb = new StringBuilder();
-        if (!controllerName.isEmpty()) {
-            embeddings.add(snapshot.create(tokenSequence.offset() + 1, controllerName.length(), Constants.JAVASCRIPT_MIMETYPE));
-            sb.append(";");
+
+            if (!fqn.isEmpty()) {
+                sb.append(parts[1]).append(" = "); //NOI18N
+                sb.append(fqn);
+                sb.append(";\n"); //NOI18N
+            }
+
+            embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
+            sb = new StringBuilder();
+            if (!parts[0].isEmpty()) {
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1, parts[0].length(), Constants.JAVASCRIPT_MIMETYPE));
+                sb.append(";");
+            } else {
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1, 0, Constants.JAVASCRIPT_MIMETYPE));
+            }
+            sb.append("\n{ \n"); //NOI18N
+            embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+            return true;
         } else {
-            embeddings.add(snapshot.create(tokenSequence.offset() + 1, 0, Constants.JAVASCRIPT_MIMETYPE));
-        } 
-        sb.append("\nwith ($scope) { \n");
-        embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-        return true;
+            // classic controller with $scope
+            sb.append("(function () {\n$scope = "); //NOI18N
+
+            String fqn = controllerName.trim();
+            if (index != null) {
+                Collection<AngularJsController> controllers = index.getControllers(controllerName, true);
+                for (AngularJsController controller : controllers) {
+                    if (controller.getName().equals(controllerName)) {
+                        fqn = controller.getFqn();
+                        break;
+                    }
+                }
+            }
+
+            if (!fqn.isEmpty()) {
+                sb.append(fqn);
+                sb.append(".");
+            }
+            sb.append("$scope;\n");   //NOI18N
+            embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
+            sb = new StringBuilder();
+            if (!controllerName.isEmpty()) {
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1, controllerName.length(), Constants.JAVASCRIPT_MIMETYPE));
+                sb.append(";");
+            } else {
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1, 0, Constants.JAVASCRIPT_MIMETYPE));
+            }
+            sb.append("\nwith ($scope) { \n");
+            embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+            return true;
+        }
     }
     
     private boolean processModel(String value) { 
@@ -539,25 +580,39 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             Exceptions.printStackTrace(ex);
         }
         if (index != null) {
-             Collection<String> controllersForTemplate = index.getControllersForTemplate(fo.toURI());
-            for (String controllerName : controllersForTemplate) {
-                Collection<AngularJsController> controllers = index.getControllers(controllerName, true);
+            Collection<AngularJsController.ModuleConfigRegistration> controllersForTemplate = index.getControllersForTemplate(fo.toURI());
+            for (AngularJsController.ModuleConfigRegistration controllerRegistration : controllersForTemplate) {
+                Collection<AngularJsController> controllers = index.getControllers(controllerRegistration.getControllerName(), true);
                 if (!controllers.isEmpty()) {
                     String fqn;
                     for (AngularJsController controller : controllers) {
-                        if (controller.getName().equals(controllerName)) {
+                        if (controller.getName().equals(controllerRegistration.getControllerName())) {
                             fqn = controller.getFqn();
                             processedTemplate++;
                             StringBuilder sb = new StringBuilder();
-                            sb.append("(function () {\n$scope = "); //NOI18N
-                            if (!fqn.isEmpty()) {
-                                sb.append(fqn);
+                            if (controllerRegistration.getControllerAsName() == null) {
+                                // classic Angular controller with $scope
+                                sb.append("(function () {\n$scope = "); //NOI18N
+                                if (!fqn.isEmpty()) {
+                                    sb.append(fqn);
+                                } else {
+                                    sb.append(controllerRegistration.getControllerName());
+                                }
+                                sb.append("."); //NOI18N
+                                sb.append("$scope;\n");   //NOI18N
+                                sb.append("\nwith ($scope) { \n"); //NOI18N
                             } else {
-                               sb.append(controllerName);
+                                // we have controllerAs present in configuration
+                                sb.append("(function () {\n"); //NOI18N
+                                sb.append(controllerRegistration.getControllerAsName()).append(" = "); //NOI18N
+                                if (!fqn.isEmpty()) {
+                                    sb.append(fqn);
+                                    sb.append(";\n"); //NOI18N
+                                } else {
+                                    sb.append(controllerRegistration.getControllerName());
+                                }
+                                sb.append("{ \n"); //NOI18N
                             }
-                            sb.append(".");
-                            sb.append("$scope;\n");   //NOI18N
-                            sb.append("\nwith ($scope) { \n"); //NOI18N
                             embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
                             break;
                         }
@@ -565,11 +620,22 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 } else {
                     processedTemplate++;
                     StringBuilder sb = new StringBuilder();
-                    sb.append("(function () {\n$scope = "); //NOI18N
-                    sb.append(controllerName);
-                    sb.append(".");
-                    sb.append("$scope;\n");   //NOI18N
-                    sb.append("\nwith ($scope) { \n"); //NOI18N
+                    if (controllerRegistration.getControllerAsName() == null) {
+                        // classic Angular controller with $scope
+                        sb.append("(function () {\n$scope = "); //NOI18N
+                        sb.append(controllerRegistration.getControllerName());
+                        sb.append("."); //NOI18N
+                        sb.append("$scope;\n");   //NOI18N
+                        sb.append("\nwith ($scope) { \n"); //NOI18N
+                    } else {
+                        // we have controllerAs present in configuration
+                        sb.append("(function () {\n"); //NOI18N
+                        sb.append(controllerRegistration.getControllerAsName());
+                        sb.append(" = "); //NOI18N
+                        sb.append(controllerRegistration.getControllerName());
+                        sb.append(";\n"); //NOI18N
+                        sb.append("{ \n"); //NOI18N
+                    }
                     embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
                 }
             }

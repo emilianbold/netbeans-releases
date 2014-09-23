@@ -461,7 +461,7 @@ public class JsCompletionItem implements CompletionProposal {
 
         @Override
         public int getSortPrioOverride() {
-            return 110;
+            return 130;
         }
     }
 

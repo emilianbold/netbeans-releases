@@ -44,8 +44,6 @@ package org.netbeans.modules.html.angular.index;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -54,6 +52,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.index.JsIndexer;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -81,7 +80,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
     private static final Logger LOG = Logger.getLogger(AngularJsIndexer.class.getName());
     
     private static final ThreadLocal<Map<URI, Collection<AngularJsController>>> controllers = new ThreadLocal<>();
-    private static final ThreadLocal<Map<URI, Map<String, String>>>templateControllers = new ThreadLocal<>();
+    private static final ThreadLocal<Map<URI, Map<String, AngularJsController.ModuleConfigRegistration>>>templateControllers = new ThreadLocal<>();
     private static final ThreadLocal<Boolean> addedToJsIndexPost = new ThreadLocal<>();
     
     public static void addController(@NonNull final URI uri, @NonNull final AngularJsController controller) {
@@ -101,20 +100,20 @@ public class AngularJsIndexer extends EmbeddingIndexer{
         
     }
     
-    public static void addTemplateController(@NonNull final URI uri, @NonNull final String template, @NonNull final String controller) {
-        final Map<URI, Map<String, String>> map = templateControllers.get();
+    public static void addTemplateController(@NonNull final URI uri, @NonNull final String template, @NonNull final String controller, @NullAllowed String controllerAs) {
+        final Map<URI, Map<String, AngularJsController.ModuleConfigRegistration>> map = templateControllers.get();
         
         if (map == null) {
             throw new IllegalStateException("AngularJsIndexer.addTemplateControllers can be called only from scanner thread.");  //NOI18N
         }
         
-        Map<String, String> templates = map.get(uri);
+        Map<String, AngularJsController.ModuleConfigRegistration> templates = map.get(uri);
         if(templates == null) {
             templates = new HashMap<>();
-            templates.put(template, controller);
+            templates.put(template, new AngularJsController.ModuleConfigRegistration(controller, controllerAs));
             map.put(uri, templates);
         } else {
-            templates.put(template, controller);
+            templates.put(template, new AngularJsController.ModuleConfigRegistration(controller, controllerAs));
         }
     }
 
@@ -128,7 +127,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
     }
     
     private static void removeTemplateControllers(@NonNull final URI uri) {
-        final Map<URI, Map<String, String>> map = templateControllers.get();
+        final Map<URI, Map<String, AngularJsController.ModuleConfigRegistration>> map = templateControllers.get();
         
         if (map == null) {
             throw new IllegalStateException("AngularJsIndexer.addControllers can be called only from scanner thread.");  //NOI18N
@@ -144,8 +143,8 @@ public class AngularJsIndexer extends EmbeddingIndexer{
         return map.get(uri);
     }
     
-    private static Map<String, String> getTemplateControllers(@NonNull final URI uri) {
-        final Map<URI, Map<String, String>> map = templateControllers.get();
+    private static Map<String, AngularJsController.ModuleConfigRegistration> getTemplateControllers(@NonNull final URI uri) {
+        final Map<URI, Map<String, AngularJsController.ModuleConfigRegistration>> map = templateControllers.get();
         if (map == null) {
             throw new IllegalStateException("AngularJsIndexer.getControllers can be called only from scanner thread.");  //NOI18N
         }
@@ -263,7 +262,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
         public boolean scanStarted(Context context) {
             postScanTasks.set(new LinkedList<Runnable>());
             controllers.set(new HashMap<URI, Collection<AngularJsController>>());
-            templateControllers.set(new HashMap<URI, Map<String, String>>());
+            templateControllers.set(new HashMap<URI, Map<String, AngularJsController.ModuleConfigRegistration>>());
             addedToJsIndexPost.set(Boolean.FALSE);
             return super.scanStarted(context);
         }
@@ -311,7 +310,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
 
         @Override
         public void run() {
-            Map<URI, Map<String, String>> templates = templateControllers.get();
+            Map<URI, Map<String, AngularJsController.ModuleConfigRegistration>> templates = templateControllers.get();
             Map<URI, Collection<AngularJsController>> controls = controllers.get();
             if ((templates != null && !templates.isEmpty()) || (controls != null && !controls.isEmpty())) {
                 IndexingSupport support;
@@ -322,17 +321,20 @@ public class AngularJsIndexer extends EmbeddingIndexer{
                     return;
                 }
                 if (templates != null && !templates.isEmpty()) {
-                    for (Map.Entry<URI, Map<String, String>> entry : templates.entrySet()) {
+                    for (Map.Entry<URI, Map<String, AngularJsController.ModuleConfigRegistration>> entry : templates.entrySet()) {
                         URI uri = entry.getKey();
-                        Map<String, String> map = entry.getValue();
+                        Map<String, AngularJsController.ModuleConfigRegistration> map = entry.getValue();
                         File file = Utilities.toFile(uri);
                         FileObject fo = FileUtil.toFileObject(file);
 
                         IndexDocument elementDocument = support.createDocument(fo);
                         for (String template : map.keySet()) {
-                            String controller = map.get(template);
+                            AngularJsController.ModuleConfigRegistration controller = map.get(template);
                             StringBuilder sb = new StringBuilder();
-                            sb.append(template).append(":").append(controller); //NOI18N
+                            sb.append(template).append(":").append(controller.getControllerName()); //NOI18N
+                            if (controller.getControllerAsName()!= null) {
+                                sb.append(":").append(controller.getControllerAsName()); //NOI18N
+                            }
                             elementDocument.addPair(FIELD_TEMPLATE_CONTROLLER, sb.toString(), true, true);
                         }
                         if (controls != null) {
