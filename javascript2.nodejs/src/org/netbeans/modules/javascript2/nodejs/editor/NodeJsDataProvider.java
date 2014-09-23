@@ -86,6 +86,7 @@ import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -132,17 +133,29 @@ public class NodeJsDataProvider {
     private static final WeakHashMap<Project, NodeJsDataProvider> cache = new WeakHashMap<Project, NodeJsDataProvider>();
     private static NodeJsDataProvider noProjectInstance = null;
     
-    private final boolean isSupportEnabled;
-    private final FileObject docFolder;
+    private boolean isSupportEnabled;
+    private FileObject docFolder;
     
-    private NodeJsDataProvider(NodeJsSupport support) {
+    private ProjectSupportChangeListener listener;
+    
+    /**
+     * Caching the apifile from sources folder.
+     */
+    private File apiFile = null;
+    
+    private NodeJsDataProvider(Project project) {
         this.loadingStarted = false;
-        if (support != null) {
-            this.isSupportEnabled = support.isSupportEnabled();
-            this.docFolder = support.getDocumentationFolder();
-        } else {
-            this.isSupportEnabled = false;
-            this.docFolder = null;
+        this.isSupportEnabled = false;
+        this.docFolder = null;
+        if (project != null) {
+            NodeJsSupport support = null;
+            support = project.getLookup().lookup(NodeJsSupport.class);
+            if (support != null) {
+                listener = new ProjectSupportChangeListener(project);
+                support.addChangeListener(WeakListeners.change(listener, support));
+                this.isSupportEnabled = support.isSupportEnabled();
+                this.docFolder = support.getDocumentationFolder();
+            }
         }
     }
 
@@ -157,10 +170,7 @@ public class NodeJsDataProvider {
         }
         NodeJsDataProvider instance = cache.get(project);
         if (instance == null) {
-            NodeJsSupport support = null;
-            support = project.getLookup().lookup(NodeJsSupport.class);
-            support.addChangeListener(new ProjectSupportChangeListener(project));
-            instance = new NodeJsDataProvider(support);
+            instance = new NodeJsDataProvider(project);
             cache.put(project, instance);
         }
         
@@ -433,14 +443,17 @@ public class NodeJsDataProvider {
 
     private File getCachedAPIFile() {
         String pathFile = null;
+        if (apiFile != null) {
+            return apiFile;
+        }
         if (docFolder != null) {
             for (FileObject folder : Collections.list(docFolder.getFolders(false))) {
                 FileObject fo = folder.getFileObject(API_ALL_JSON_FILE);
                 if (fo != null) {
-                    return FileUtil.toFile(fo);
+                    apiFile = FileUtil.toFile(fo);
+                    return apiFile;
                 }
             }
-            
         }
         if (pathFile == null) {
             pathFile = new StringBuilder().append(CACHE_FOLDER_NAME).append('/')
@@ -614,7 +627,7 @@ public class NodeJsDataProvider {
         return null;
     }
     
-    private static class ProjectSupportChangeListener implements ChangeListener {
+    private class ProjectSupportChangeListener implements ChangeListener {
         private final Project project;
         
         public ProjectSupportChangeListener(Project project) {
