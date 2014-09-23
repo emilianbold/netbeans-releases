@@ -43,6 +43,7 @@ package org.netbeans.modules.cordova.project;
 
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -55,6 +56,11 @@ public class CordovaPanelProvider implements ProjectCustomizer.CompositeCategory
 
     @Override
     public Category createCategory(Lookup context) {
+            Project project = context.lookup(Project.class);
+            assert project != null;
+            if (ProjectWebRootQuery.getWebRoots(project).isEmpty()) {
+                return null;
+            }
             return ProjectCustomizer.Category.create(
                     "phonegap",//NOI18N
                     "Cordova",//NOI18N
