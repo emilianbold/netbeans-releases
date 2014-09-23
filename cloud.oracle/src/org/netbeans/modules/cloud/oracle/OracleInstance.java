@@ -73,6 +73,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.CommandBasedDeployer;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -559,7 +560,7 @@ public class OracleInstance {
         }
         try {
             File home = Deployment.getDefault().getServerInstance(onPremiseServerInstanceId).getJ2eePlatform().getServerHome();
-            return WLPluginProperties.getWeblogicJar(home);
+            return WebLogicLayout.getWeblogicJar(home);
         } catch (InstanceRemovedException ex) {
             // ignore
         }
