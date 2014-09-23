@@ -41,80 +41,68 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.performance.j2se.dialogs;
+package org.netbeans.performance.j2se.actions;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
- * Open Select Profiling Task dialog.
+ * Profile project.
  *
  * @author mmirilovic@netbeans.org
+ * @author Jiri Skrivanek
  */
-public class SelectProfilingTaskDialogTest extends PerformanceTestCase {
+public class ProfileProjectTest extends PerformanceTestCase {
 
-    protected static String PROFILE_MAIN_PROJECT;
-    protected static String DIALOG_TITLE;
     private Node projectNode;
     private String projectName;
 
     /**
-     * Creates a new instance of CreateTestsDialog
+     * Creates a new instance of test
      *
      * @param testName the name of the test
      */
-    public SelectProfilingTaskDialogTest(String testName) {
+    public ProfileProjectTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
 
     /**
-     * Creates a new instance of CreateTestsDialog
+     * Creates a new instance of test
      *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
-    public SelectProfilingTaskDialogTest(String testName, String performanceDataName) {
+    public ProfileProjectTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public void testSelectProfilingTaskDialog() {
+    public void testProfileProject() {
         doMeasurement();
-    }
-
-    @Override
-    public void initialize() {
-        PROFILE_MAIN_PROJECT = Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "LBL_ProfileProjectActionPopup"); //Profile Project
-        DIALOG_TITLE = "Profile";
     }
 
     public static Test suite() {
         return emptyConfiguration()
                 .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
-                .addTest(SelectProfilingTaskDialogTest.class)
+                .addTest(ProfileProjectTest.class)
                 .suite();
     }
 
     @Override
     public void prepare() {
         projectName = "PerformanceTestData";
-        this.projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);
-
-        if (this.projectNode == null) {
-            throw new Error("Cannot find project [" + projectName + "]");
-        }
+        projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);
     }
 
     @Override
     public ComponentOperator open() {
-        projectNode.performPopupActionNoBlock(PROFILE_MAIN_PROJECT);
-        return new NbDialogOperator(DIALOG_TITLE + " " + projectName);
+        projectNode.performPopupAction("Profile");
+        return new TopComponentOperator(projectName);
     }
 }
