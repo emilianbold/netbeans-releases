@@ -670,6 +670,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
         }
     }
 
+    // FIXME this should handle failed packages and timeout or return po
     public void deployOptionalPackages(File[] optionalPackages) {
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         if (optionalPackages.length > 0) {
