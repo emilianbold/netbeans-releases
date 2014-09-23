@@ -85,7 +85,11 @@ public final class NodeJsSupportImpl implements NodeJsSupport {
         if (version == null) {
             return null;
         }
-        return FileUtil.toFileObject(FileUtils.getNodeSources(version));
+        FileObject sources = FileUtil.toFileObject(FileUtils.getNodeSources(version));
+        if (sources == null) {
+            return null;
+        }
+        return sources.getFileObject("doc"); // NOI18N
     }
 
     @Override
