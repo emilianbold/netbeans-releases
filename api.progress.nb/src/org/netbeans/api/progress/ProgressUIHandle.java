@@ -41,20 +41,83 @@
  */
 package org.netbeans.api.progress;
 
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import static org.netbeans.api.progress.ProgressHandleFactory.createHandle;
 import org.netbeans.modules.progress.spi.InternalHandle;
 import org.netbeans.modules.progress.spi.UIInternalHandle;
+import org.openide.util.Cancellable;
 
 /**
  * UI-oriented ProgressHandle. Unlike th basic {@link ProgressHandle},
  * this class can be used to extract Swing Components from the handle.
  * 
  * @author sdedic
+ * @since 1.40
  */
 public final class ProgressUIHandle extends ProgressHandle {
+    /**
+     * Create a progress ui handle for a long lasting task.
+     * @param displayName to be shown in the progress UI
+     * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
+     */
+    public static ProgressUIHandle createUIHandle(String displayName) {
+        return createUIHandle(displayName, (Action)null);
+    }
+    
+     /**
+      * Create a progress ui handle for a long lasting task.
+     * @param allowToCancel either null, if the task cannot be cancelled or 
+     *          an instance of {@link org.openide.util.Cancellable} that will be called when user 
+     *          triggers cancel of the task.
+     * @param displayName to be shown in the progress UI
+     * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
+     */
+    public static ProgressUIHandle createUIHandle(String displayName, Cancellable allowToCancel) {
+        return createUIHandle(displayName, allowToCancel, null);
+    }
 
-    public ProgressUIHandle(InternalHandle internal) {
+    /**
+     * Create a progress ui handle for a long lasting task.
+     * @param allowToCancel either null, if the task cannot be cancelled or 
+     *          an instance of {@link org.openide.util.Cancellable} that will be called when user 
+     *          triggers cancel of the task.
+     * @param linkOutput an <code>Action</code> instance that links the running task in the progress bar
+     *                   to an output of the task. The action is assumed to open the apropriate component with the task's output.
+     * @param displayName to be shown in the progress UI
+     * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
+     */
+    public static ProgressUIHandle createUIHandle(String displayName, Cancellable allowToCancel, Action linkOutput) {
+        return new ProgressUIHandle(new UIInternalHandle(displayName, allowToCancel, true, linkOutput));
+    }
+
+    /**
+     * Create a progress ui handle for a long lasting task.
+     * @param linkOutput an <code>Action</code> instance that links the running task in the progress bar
+     *                   to an output of the task. The action is assumed to open the apropriate component with the task's output.
+     * @param displayName to be shown in the progress UI
+     * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
+     */
+    public static ProgressUIHandle createUIHandle(String displayName, Action linkOutput) {
+        return createUIHandle(displayName, null, linkOutput);
+    }
+    
+    /**
+     * Create a progress ui handle for a task that is not triggered by explicit user action.
+     * @param allowToCancel either null, if the task cannot be cancelled or 
+     *          an instance of {@link org.openide.util.Cancellable} that will be called when user 
+     *          triggers cancel of the task.
+     * @param linkOutput an <code>Action</code> instance that links the running task in the progress bar
+     *                   to an output of the task. The action is assumed to open the apropriate component with the task's output.
+     * @param displayName to be shown in the progress UI
+     * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
+     */
+    public static ProgressUIHandle createSystemUIHandle(String displayName, Cancellable allowToCancel, Action linkOutput) {
+        return new ProgressUIHandle(new UIInternalHandle(displayName, allowToCancel, false, linkOutput));
+    }    
+
+    ProgressUIHandle(InternalHandle internal) {
         super(internal);
     }
     

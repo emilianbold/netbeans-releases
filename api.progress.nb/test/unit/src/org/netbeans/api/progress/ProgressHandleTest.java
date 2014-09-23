@@ -76,7 +76,7 @@ public class ProgressHandleTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         Controller.defaultInstance = new TestController();
-        proghandle = ProgressHandleFactory.createUIHandle("displayName",new Cancellable() {
+        proghandle = ProgressUIHandle.createUIHandle("displayName",new Cancellable() {
             public boolean cancel() {
                 // empty
                 return true;
@@ -203,7 +203,7 @@ public class ProgressHandleTest extends NbTestCase {
     public void testIfShortOnesGetDiscarded() throws Exception {
         OneThreadController control = new OneThreadController(new FailingUI());
         Controller.defaultInstance = control;
-        proghandle = ProgressHandleFactory.createUIHandle("a1");
+        proghandle = ProgressUIHandle.createUIHandle("a1");
         proghandle.start();
         proghandle.progress("");
         proghandle.finish();
@@ -214,7 +214,7 @@ public class ProgressHandleTest extends NbTestCase {
         assertTrue(control.tobeRestartedDelay == -1);
 
         
-        proghandle = ProgressHandleFactory.createUIHandle("a2");
+        proghandle = ProgressUIHandle.createUIHandle("a2");
         ProgressHandle h2 = ProgressHandleFactory.createHandle("a3");
         proghandle.start();
         proghandle.progress("");
@@ -257,7 +257,7 @@ public class ProgressHandleTest extends NbTestCase {
         System.out.println("testIfCustomShortOnesGetDiscarded");
         OneThreadController control = new OneThreadController(new FailingUI());
         Controller.defaultInstance = control;
-        proghandle = ProgressHandleFactory.createUIHandle("c1");
+        proghandle = ProgressUIHandle.createUIHandle("c1");
         proghandle.setInitialDelay(100);
         proghandle.start();
         proghandle.progress("");
@@ -268,7 +268,7 @@ public class ProgressHandleTest extends NbTestCase {
         //after running the timer sould be stopped
         assertTrue(control.tobeRestartedDelay == -1);
         
-        proghandle = ProgressHandleFactory.createUIHandle("c2");
+        proghandle = ProgressUIHandle.createUIHandle("c2");
         ProgressHandle h2 = ProgressHandleFactory.createHandle("c3");
         proghandle.setInitialDelay(100);
         proghandle.start();
@@ -337,7 +337,7 @@ public class ProgressHandleTest extends NbTestCase {
         assert !SwingUtilities.isEventDispatchThread();
         PingingUI ui = new PingingUI();
         Controller.defaultInstance = new Controller(ui);
-        proghandle = ProgressHandleFactory.createUIHandle("b1");
+        proghandle = ProgressUIHandle.createUIHandle("b1");
         proghandle.start();
         try {
             Thread.sleep(800);
@@ -353,7 +353,7 @@ public class ProgressHandleTest extends NbTestCase {
         assert !SwingUtilities.isEventDispatchThread();
         PingingUI ui = new PingingUI();
         Controller.defaultInstance = new Controller(ui);
-        proghandle = ProgressHandleFactory.createUIHandle("b1");
+        proghandle = ProgressUIHandle.createUIHandle("b1");
         proghandle.setInitialDelay(100);
         proghandle.start();
         try {
@@ -399,7 +399,7 @@ class MyFrame extends JFrame implements Runnable {
 }
         
         assertFalse(SwingUtilities.isEventDispatchThread());
-        ProgressUIHandle h = ProgressHandleFactory.createUIHandle("foo");
+        ProgressUIHandle h = ProgressUIHandle.createUIHandle("foo");
         JComponent component = ProgressHandleFactory.createProgressComponent(h);
         
 
