@@ -66,7 +66,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -105,24 +105,16 @@ public final class TopLogging {
         PrintStream ps = new PrintStream(os);
 
         Collection<Logger> keep = new LinkedList<Logger>();
-        for (Map.Entry<?, ?> e: System.getProperties().entrySet()) {
-            Object objKey = e.getKey();
-            String key;
-            if (objKey instanceof String) {
-                key = (String)objKey;
-            } else {
-                continue;
-            }
-
+        Properties properties = System.getProperties();
+        for (String key : properties.stringPropertyNames()) {
+            
             if ("sun.os.patch.level".equals(key)) { // NOI18N
                 // skip this property as it does not mean level of logging
                 continue;
             }
 
-            String v;
-            if (e.getValue() instanceof String) {
-                v = (String)e.getValue();
-            } else {
+            String v = properties.getProperty(key);
+            if (v == null) {
                 continue;
             }
 
