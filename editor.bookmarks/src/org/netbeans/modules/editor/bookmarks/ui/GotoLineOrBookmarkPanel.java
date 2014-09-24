@@ -189,7 +189,7 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
         gotoCombo.getEditor().getEditorComponent().addFocusListener(this);
         gotoCombo.getEditor().selectAll();
         gotoCombo.getEditor().getEditorComponent().requestFocus();
-        gotoCombo.addActionListener(this);
+        gotoCombo.getEditor().addActionListener(this);
         dialog.addWindowListener(this);
     }
 
@@ -304,7 +304,7 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
     @Override
     public void actionPerformed(ActionEvent evt) {
         Object src = evt.getSource();
-        if (src == gotoCombo || (buttons != null && src == buttons[0])) {
+        if (src == gotoCombo.getEditor().getEditorComponent() || (buttons != null && src == buttons[0])) {
             if (performGoto()) {
                 updateHistory();
                 disposeDialog();
