@@ -54,6 +54,7 @@ import org.apache.maven.wagon.events.TransferEvent;
 import org.apache.maven.wagon.events.TransferListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.openide.util.Cancellable;
 import static org.netbeans.modules.maven.indexer.Bundle.*;

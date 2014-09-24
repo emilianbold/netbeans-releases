@@ -51,6 +51,7 @@ import org.apache.maven.index.ArtifactScanningListener;
 import org.apache.maven.index.ScanningResult;
 import org.apache.maven.index.context.IndexingContext;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import static org.netbeans.modules.maven.indexer.Bundle.*;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
