@@ -80,7 +80,6 @@ import org.netbeans.performance.j2se.dialogs.RefactorFindUsagesDialogTest;
 import org.netbeans.performance.j2se.dialogs.RefactorMoveClassDialogTest;
 import org.netbeans.performance.j2se.dialogs.RefactorRenameDialogTest;
 import org.netbeans.performance.j2se.dialogs.RuntimeWindowTest;
-import org.netbeans.performance.j2se.dialogs.SelectProfilingTaskDialogTest;
 import org.netbeans.performance.j2se.dialogs.ServerManagerTest;
 import org.netbeans.performance.j2se.dialogs.TemplateManagerTest;
 import org.netbeans.performance.j2se.dialogs.ToDoWindowTest;
@@ -136,7 +135,6 @@ public class MeasureJ2SEDialogsTest {
                 .addTest(RefactorMoveClassDialogTest.class)
                 .addTest(RefactorRenameDialogTest.class)
                 .addTest(RuntimeWindowTest.class)
-                .addTest(SelectProfilingTaskDialogTest.class)
                 .addTest(ServerManagerTest.class)
                 .addTest(TemplateManagerTest.class)
                 .addTest(ToDoWindowTest.class)
