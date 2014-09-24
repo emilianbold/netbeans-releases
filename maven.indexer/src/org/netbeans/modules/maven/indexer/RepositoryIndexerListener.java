@@ -51,7 +51,6 @@ import org.apache.maven.index.ArtifactScanningListener;
 import org.apache.maven.index.ScanningResult;
 import org.apache.maven.index.context.IndexingContext;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.BaseProgressHandleFactory;
 import static org.netbeans.modules.maven.indexer.Bundle.*;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -85,7 +84,7 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
         }
         expectedDirs.clear();
         encounteredDirs.clear();
-        handle = BaseProgressHandleFactory.createHandle(LBL_indexing_repo(ri != null ? ri.getName() : indexingContext.getId()), this);
+        handle = ProgressHandle.createHandle(LBL_indexing_repo(ri != null ? ri.getName() : indexingContext.getId()), this);
         handle.start();
         handle.progress(LBL_findIndexableDirs());
         findIndexableDirs(ctx.getRepository());
