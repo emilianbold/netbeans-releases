@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.web.inspect.webkit.knockout;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.PropertyDescriptor;
@@ -90,14 +93,67 @@ public class KnockoutChildFactory extends ChildFactory<PropertyDescriptor> {
         }
         if (remoteObject.getType() == RemoteObject.Type.OBJECT) {
             List<PropertyDescriptor> properties = remoteObject.getProperties();
-            toPopulate.addAll(properties);
+            toPopulate.addAll(sort(properties));
         }
         return true;
+    }
+
+    /**
+     * Returns a sorted copy of the given list.
+     * 
+     * @param list list to sort.
+     * @return sorted copy of the given list.
+     */
+    static List<PropertyDescriptor> sort(List<PropertyDescriptor> list) {
+        List<PropertyDescriptor> copy = new ArrayList<PropertyDescriptor>();
+        copy.addAll(list);
+        Collections.sort(copy, PropertyDescriptorComparator.getInstance());
+        return copy;
     }
 
     @Override
     protected Node createNodeForKey(PropertyDescriptor key) {
         return new KnockoutNode(key.getName(), key.getValue());
+    }
+
+    /**
+     * Comparator for {@PropertyDescriptor}s.
+     */
+    private static class PropertyDescriptorComparator implements Comparator<PropertyDescriptor> {
+        /** The only instance of this class. */
+        private static final PropertyDescriptorComparator INSTANCE = new PropertyDescriptorComparator();
+        /** Name of the prototype property. */
+        private static final String PROTOTYPE = "__proto__"; // NOI18N
+
+        /**
+         * Returns the (only) instance of this class.
+         * 
+         * @return instance of this class.
+         */
+        static final PropertyDescriptorComparator getInstance() {
+            return INSTANCE;
+        }
+
+        @Override
+        public int compare(PropertyDescriptor descriptor1, PropertyDescriptor descriptor2) {
+            String name1 = descriptor1.getName();
+            String name2 = descriptor2.getName();
+            // Make sure that prototype is at the end
+            if (PROTOTYPE.equals(name1)) {
+                if (PROTOTYPE.equals(name2)) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            } else {
+                if (PROTOTYPE.equals(name2)) {
+                    return -1;
+                } else {
+                    return name1.compareTo(name2);
+                }                
+            }
+        }
+        
     }
     
 }
