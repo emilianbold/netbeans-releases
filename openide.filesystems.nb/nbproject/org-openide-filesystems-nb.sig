@@ -264,6 +264,44 @@ meth public abstract void fileDeleted(org.openide.filesystems.FileEvent)
 meth public abstract void fileFolderCreated(org.openide.filesystems.FileEvent)
 meth public abstract void fileRenamed(org.openide.filesystems.FileRenameEvent)
 
+CLSS public org.openide.filesystems.FileChooserBuilder
+cons public init(java.lang.Class)
+cons public init(java.lang.String)
+innr public abstract interface static BadgeProvider
+innr public abstract interface static SelectionApprover
+meth public java.io.File showOpenDialog()
+meth public java.io.File showSaveDialog()
+meth public java.io.File[] showMultiOpenDialog()
+meth public javax.swing.JFileChooser createFileChooser()
+meth public org.openide.filesystems.FileChooserBuilder addDefaultFileFilters()
+meth public org.openide.filesystems.FileChooserBuilder addFileFilter(javax.swing.filechooser.FileFilter)
+meth public org.openide.filesystems.FileChooserBuilder forceUseOfDefaultWorkingDirectory(boolean)
+meth public org.openide.filesystems.FileChooserBuilder setAcceptAllFileFilterUsed(boolean)
+meth public org.openide.filesystems.FileChooserBuilder setAccessibleDescription(java.lang.String)
+meth public org.openide.filesystems.FileChooserBuilder setApproveText(java.lang.String)
+meth public org.openide.filesystems.FileChooserBuilder setBadgeProvider(org.openide.filesystems.FileChooserBuilder$BadgeProvider)
+meth public org.openide.filesystems.FileChooserBuilder setControlButtonsAreShown(boolean)
+meth public org.openide.filesystems.FileChooserBuilder setDefaultWorkingDirectory(java.io.File)
+meth public org.openide.filesystems.FileChooserBuilder setDirectoriesOnly(boolean)
+meth public org.openide.filesystems.FileChooserBuilder setFileFilter(javax.swing.filechooser.FileFilter)
+meth public org.openide.filesystems.FileChooserBuilder setFileHiding(boolean)
+meth public org.openide.filesystems.FileChooserBuilder setFilesOnly(boolean)
+meth public org.openide.filesystems.FileChooserBuilder setSelectionApprover(org.openide.filesystems.FileChooserBuilder$SelectionApprover)
+meth public org.openide.filesystems.FileChooserBuilder setTitle(java.lang.String)
+supr java.lang.Object
+hfds DONT_STORE_DIRECTORIES,PREVENT_SYMLINK_TRAVERSAL,aDescription,approveText,approver,badger,controlButtonsShown,dirKey,dirsOnly,failoverDir,fileHiding,filesOnly,filter,filters,force,title,useAcceptAllFileFilter
+hcls BadgeIconProvider,CustomFileView,IconProvider,MergedIcon,SavedDirFileChooser
+
+CLSS public abstract interface static org.openide.filesystems.FileChooserBuilder$BadgeProvider
+ outer org.openide.filesystems.FileChooserBuilder
+meth public abstract int getXOffset()
+meth public abstract int getYOffset()
+meth public abstract javax.swing.Icon getBadge(java.io.File)
+
+CLSS public abstract interface static org.openide.filesystems.FileChooserBuilder$SelectionApprover
+ outer org.openide.filesystems.FileChooserBuilder
+meth public abstract boolean approve(java.io.File[])
+
 CLSS public org.openide.filesystems.FileEvent
 cons public init(org.openide.filesystems.FileObject)
 cons public init(org.openide.filesystems.FileObject,org.openide.filesystems.FileObject)

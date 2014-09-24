@@ -228,6 +228,14 @@ supr java.lang.Object
 hfds ATTR_NAME_EXT_XML,DTD_PATH,PUBLIC_ID,READONLY_ATTRIBUTES,cache,change,fileName,info,list,serialVersionUID
 hcls ElementHandler,InnerParser,Table
 
+CLSS public org.openide.filesystems.EnvironmentNotSupportedException
+ anno 0 java.lang.Deprecated()
+cons public init(org.openide.filesystems.FileSystem)
+cons public init(org.openide.filesystems.FileSystem,java.lang.String)
+meth public org.openide.filesystems.FileSystem getFileSystem()
+supr java.io.IOException
+hfds fs,serialVersionUID
+
 CLSS public org.openide.filesystems.FileAlreadyLockedException
 cons public init()
 cons public init(java.lang.String)
@@ -416,6 +424,7 @@ fld public final static java.lang.String PROP_VALID = "valid"
 innr public abstract interface static AtomicAction
 innr public abstract interface static HtmlStatus
 innr public abstract interface static Status
+innr public abstract static Environment
 intf java.io.Serializable
 meth protected final void fireFileStatusChanged(org.openide.filesystems.FileStatusEvent)
 meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
@@ -456,6 +465,14 @@ CLSS public abstract interface static org.openide.filesystems.FileSystem$AtomicA
  outer org.openide.filesystems.FileSystem
 meth public abstract void run() throws java.io.IOException
 
+CLSS public abstract static org.openide.filesystems.FileSystem$Environment
+ outer org.openide.filesystems.FileSystem
+ anno 0 java.lang.Deprecated()
+cons public init()
+meth public void addClassPath(java.lang.String)
+ anno 0 java.lang.Deprecated()
+supr java.lang.Object
+
 CLSS public abstract interface static org.openide.filesystems.FileSystem$HtmlStatus
  outer org.openide.filesystems.FileSystem
 intf org.openide.filesystems.FileSystem$Status
@@ -465,6 +482,61 @@ CLSS public abstract interface static org.openide.filesystems.FileSystem$Status
  outer org.openide.filesystems.FileSystem
 meth public abstract java.awt.Image annotateIcon(java.awt.Image,int,java.util.Set<? extends org.openide.filesystems.FileObject>)
 meth public abstract java.lang.String annotateName(java.lang.String,java.util.Set<? extends org.openide.filesystems.FileObject>)
+
+CLSS public org.openide.filesystems.FileSystemCapability
+ anno 0 java.lang.Deprecated()
+cons public init()
+fld public final static org.openide.filesystems.FileSystemCapability ALL
+fld public final static org.openide.filesystems.FileSystemCapability COMPILE
+ anno 0 java.lang.Deprecated()
+fld public final static org.openide.filesystems.FileSystemCapability DEBUG
+ anno 0 java.lang.Deprecated()
+fld public final static org.openide.filesystems.FileSystemCapability DOC
+ anno 0 java.lang.Deprecated()
+fld public final static org.openide.filesystems.FileSystemCapability EXECUTE
+ anno 0 java.lang.Deprecated()
+innr public static Bean
+meth public boolean capableOf(org.openide.filesystems.FileSystemCapability)
+meth public final java.util.Enumeration<? extends org.openide.filesystems.FileObject> findAll(java.lang.String,java.lang.String,java.lang.String)
+ anno 0 java.lang.Deprecated()
+meth public final org.openide.filesystems.FileObject find(java.lang.String,java.lang.String,java.lang.String)
+ anno 0 java.lang.Deprecated()
+meth public java.util.Enumeration<? extends org.openide.filesystems.FileObject> findAllResources(java.lang.String)
+ anno 0 java.lang.Deprecated()
+meth public java.util.Enumeration<? extends org.openide.filesystems.FileSystem> fileSystems()
+ anno 0 java.lang.Deprecated()
+meth public org.openide.filesystems.FileObject findResource(java.lang.String)
+ anno 0 java.lang.Deprecated()
+meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr java.lang.Object
+
+CLSS public static org.openide.filesystems.FileSystemCapability$Bean
+ outer org.openide.filesystems.FileSystemCapability
+ anno 0 java.lang.Deprecated()
+cons public init()
+intf java.io.Serializable
+meth public boolean capableOf(org.openide.filesystems.FileSystemCapability)
+meth public boolean getCompile()
+ anno 0 java.lang.Deprecated()
+meth public boolean getDebug()
+ anno 0 java.lang.Deprecated()
+meth public boolean getDoc()
+ anno 0 java.lang.Deprecated()
+meth public boolean getExecute()
+ anno 0 java.lang.Deprecated()
+meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void setCompile(boolean)
+ anno 0 java.lang.Deprecated()
+meth public void setDebug(boolean)
+ anno 0 java.lang.Deprecated()
+meth public void setDoc(boolean)
+ anno 0 java.lang.Deprecated()
+meth public void setExecute(boolean)
+ anno 0 java.lang.Deprecated()
+supr org.openide.filesystems.FileSystemCapability
+hfds compilation,debug,doc,execution,serialVersionUID,supp
 
 CLSS public final org.openide.filesystems.FileUtil
 meth public !varargs static java.lang.String getMIMEType(org.openide.filesystems.FileObject,java.lang.String[])
