@@ -67,10 +67,17 @@ public class CustomComponentTest extends GeneralKnockout {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(CustomComponentTest.class).addTest(
                         "createApplication",
-                        "testComponentCont",
-                        "testComponent",
-                        "testParams",
-                        "testAttributesCont"
+                        //                        "testComponentCont",
+                        //                        "testComponent",
+                        //                        "testParams",
+                        //                        "testAttributesCont",
+                        //                        "testCompBinding",
+                        //                        "testCompBindingParam",
+                        //                        "testCompBindingName",
+                        "testCompBindingName2"
+                //                        "testCompBindingParams",
+                //                        "testCompBindingNameCont",
+                //                        "testCompBindingName2Cont"
                 ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
@@ -89,19 +96,19 @@ public class CustomComponentTest extends GeneralKnockout {
 
     public void testComponentCont() {
         startTest();
-        testHtmlCompletion(9, new EditorOperator("component.html"), true);
+        testHtmlCompletion(9, new EditorOperator("component.html"), true, false);
         endTest();
     }
 
     public void testAttributesCont() {
         startTest();
-        testHtmlCompletion(12, new EditorOperator("component.html"), true);
+        testHtmlCompletion(12, new EditorOperator("component.html"), true, false);
         endTest();
     }
 
     public void testComponent() {
         startTest();
-        testHtmlCompletion(9, new EditorOperator("component.html"), false);
+        testHtmlCompletion(9, new EditorOperator("component.html"), false, false);
         endTest();
     }
 
@@ -111,7 +118,96 @@ public class CustomComponentTest extends GeneralKnockout {
         endTest();
     }
 
-    private void testHtmlCompletion(int lineNumber, EditorOperator eo, boolean continuous) {
+    public void testCompBinding() {
+        startTest();
+        testHtmlCompletion(16, new EditorOperator("component.html"), true, true);
+        endTest();
+    }
+
+    public void testCompBindingParam() {
+        startTest();
+        testHtmlCompletion(18, new EditorOperator("component.html"), true, true);
+        endTest();
+    }
+
+    public void testCompBindingName() {
+        startTest();
+        testHtmlCompletion(20, new EditorOperator("component.html"), false, true);
+        endTest();
+    }
+
+    public void testCompBindingName2() {
+        startTest();
+        EditorOperator eo = new EditorOperator("component.html");
+
+        int lineNumber = 22;
+        waitScanFinished();
+        String rawLine = eo.getText(lineNumber);
+        int start = rawLine.indexOf("<!--cc;");
+        String rawConfig = rawLine.substring(start + 2);
+        String[] config = rawConfig.split(";");
+        eo.setCaretPosition(lineNumber + 1, Integer.parseInt(config[1]));
+        eo.insert(config[2]);
+
+        int back = Integer.parseInt(config[3]);
+        for (int i = 0; i < back; i++) {
+            eo.pressKey(KeyEvent.VK_LEFT);
+        }
+
+        evt.waitNoEvent(100);
+
+        eo.typeKey(' ', InputEvent.CTRL_MASK);
+        CompletionInfo completion = getCompletion();
+        CompletionJListOperator cjo = completion.listItself;
+        checkCompletionHtmlItems(cjo, config[4].split(","));
+        String negResults = config[7].trim();
+        negResults = negResults.substring(0, negResults.lastIndexOf("--"));
+        checkCompletionDoesntContainHtmlItems(cjo, negResults.split(","));
+
+        if (config[5].length() > 0 && config[6].length() > 0) {
+            try {
+                String prefix = Character.toString(config[5].charAt(0));
+                type(eo, prefix);
+
+                completion = getCompletion();
+                cjo = completion.listItself;
+                checkCompletionHtmlMatchesPrefix(cjo.getCompletionItems(), prefix);
+                int index = findItemIndex(cjo, config[5]);
+                for (int j = 0; j < index; j++) {
+                    eo.pressKey(KeyEvent.VK_DOWN);
+                }
+
+                eo.pressKey(KeyEvent.VK_ENTER);
+
+                assertTrue("Wrong completion result", eo.getText(lineNumber).contains(config[6].replaceAll("\\|", "")));
+            } catch (Exception ex) {
+                Logger.getLogger(CustomComponentTest.class.getName()).log(Level.INFO, "", ex);
+                fail(ex.getMessage());
+            }
+        }
+
+        endTest();
+    }
+
+    public void testCompBindingNameCont() {
+        startTest();
+        testHtmlCompletion(20, new EditorOperator("component.html"), true, true);
+        endTest();
+    }
+
+    public void testCompBindingName2Cont() {
+        startTest();
+        testHtmlCompletion(22, new EditorOperator("component.html"), true, true);
+        endTest();
+    }
+
+    public void testCompBindingParams() {
+        startTest();
+        testHtmlCompletion(24, new EditorOperator("component.html"), false, true);
+        endTest();
+    }
+
+    private void testHtmlCompletion(int lineNumber, EditorOperator eo, boolean continuous, boolean fixQuotes) {
 
         waitScanFinished();
         String rawLine = eo.getText(lineNumber);
@@ -119,14 +215,48 @@ public class CustomComponentTest extends GeneralKnockout {
         String rawConfig = rawLine.substring(start + 2);
         String[] config = rawConfig.split(";");
         eo.setCaretPosition(lineNumber + 1, Integer.parseInt(config[1]));
-        type(eo, config[2]);
+        boolean isSingleMatch = false;
+        if (fixQuotes) {
+            int iLimit = config[2].length();
+            char currentChar;
+            String currentLetter;
+            String currentLine;
+            boolean isClosing;
+
+            for (int i = 0; i < iLimit; i++) {
+                currentChar = config[2].charAt(i);
+                currentLetter = Character.toString(currentChar);
+                eo.typeKey(currentChar);
+                if (currentLetter.equalsIgnoreCase("'") || currentLetter.equalsIgnoreCase("\"")) {
+                    currentLine = eo.getText(lineNumber + 1).trim();
+                    isClosing = Character.toString(currentLine.charAt(currentLine.length() - 2)).equals(currentLetter);
+                    if (isClosing) {
+                        eo.setCaretPositionToEndOfLine(lineNumber + 1);
+                        evt.waitNoEvent(30);
+                        eo.pressKey(KeyEvent.VK_BACK_SPACE);
+                        evt.waitNoEvent(50);
+                    }
+                }
+            }
+        } else {
+            type(eo, config[2]);
+        }
+
+        int back = Integer.parseInt(config[3]);
+        for (int i = 0; i < back; i++) {
+            eo.pressKey(KeyEvent.VK_LEFT);
+        }
+
         evt.waitNoEvent(100);
 
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         CompletionInfo completion = getCompletion();
         CompletionJListOperator cjo = completion.listItself;
         checkCompletionHtmlItems(cjo, config[4].split(","));
-        checkCompletionDoesntContainHtmlItems(cjo, config[7].split(","));
+
+        String negResults = config[7].trim();
+        negResults = negResults.substring(0, negResults.lastIndexOf("--"));
+        checkCompletionDoesntContainHtmlItems(cjo, negResults.split(","));
 
         if (config[5].length() > 0 && config[6].length() > 0) {
             try {
@@ -136,20 +266,21 @@ public class CustomComponentTest extends GeneralKnockout {
                     eo.pressKey(KeyEvent.VK_ESCAPE);
                     evt.waitNoEvent(100);
                     eo.typeKey(' ', InputEvent.CTRL_MASK);
+                    isSingleMatch = isSingleOption(prefix, cjo);
                 }
 
-                completion = getCompletion();
-                cjo = completion.listItself;
-                checkCompletionHtmlMatchesPrefix(cjo.getCompletionItems(), prefix);
-//                evt.waitNoEvent(500);
-                int index = findItemIndex(cjo, config[5]);
-                for (int j = 0; j < index; j++) {
-                    eo.pressKey(KeyEvent.VK_DOWN);
+                if (!isSingleMatch) {
+                    completion = getCompletion();
+                    cjo = completion.listItself;
+                    checkCompletionHtmlMatchesPrefix(cjo.getCompletionItems(), prefix);
+                    int index = findItemIndex(cjo, config[5]);
+                    for (int j = 0; j < index; j++) {
+                        eo.pressKey(KeyEvent.VK_DOWN);
+                    }
+
+                    eo.pressKey(KeyEvent.VK_ENTER);
                 }
-
-                eo.pressKey(KeyEvent.VK_ENTER);
-
-                assertTrue("Wrong completion result", eo.getText(lineNumber).contains(config[6].replaceAll("|", "")));
+                assertTrue("Wrong completion result", eo.getText(lineNumber).contains(config[6].replaceAll("\\|", "")));
             } catch (Exception ex) {
                 Logger.getLogger(CustomComponentTest.class.getName()).log(Level.INFO, "", ex);
                 fail(ex.getMessage());
@@ -180,6 +311,10 @@ public class CustomComponentTest extends GeneralKnockout {
         CompletionJListOperator cjo = completion.listItself;
         checkCompletionItems(cjo, config[4].split(","));
         checkCompletionDoesntContainItems(cjo, config[7].split(","));
+
+        String negResults = config[7].trim();
+        negResults = negResults.substring(0, negResults.lastIndexOf("--"));
+        checkCompletionDoesntContainItems(cjo, negResults.split(","));
 
         if (config[5].length() > 0 && config[6].length() > 0) {
             try {
