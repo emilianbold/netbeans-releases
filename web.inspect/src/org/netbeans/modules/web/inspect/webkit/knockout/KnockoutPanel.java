@@ -46,8 +46,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import org.netbeans.modules.web.inspect.PageModel;
-import org.openide.explorer.view.BeanTreeView;
+import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.OutlineView;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -56,19 +62,21 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Stola
  */
-public class KnockoutPanel extends javax.swing.JPanel {
+public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
+    /** Explorer manager provided by this panel. */
+    private final ExplorerManager manager = new ExplorerManager();
     /** Page model for this panel. */
-    private final PageModel pageModel;
-    /** Tree view that displays Knockout context of the selected node. */
-    private BeanTreeView treeView;
+    private final WebKitPageModel pageModel;
+    /** View that displays Knockout context of the selected node. */
+    private OutlineView contextView;
 
     /**
      * Creates a new {@code KnockoutPanel}.
      */
-    public KnockoutPanel(PageModel pageModel) {
+    public KnockoutPanel(WebKitPageModel pageModel) {
         this.pageModel = pageModel;
 
-        initTreeView();
+        initContextView();
         initComponents();
         if (pageModel == null) {
             messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.noInspection")); // NOI18N
@@ -80,13 +88,23 @@ public class KnockoutPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Initializes the tree view.
+     * Initializes the context view.
      */
-    private void initTreeView() {
-        treeView = new BeanTreeView();
-        treeView.setAllowedDragActions(DnDConstants.ACTION_NONE);
-        treeView.setAllowedDropActions(DnDConstants.ACTION_NONE);
-        treeView.setRootVisible(false);
+    private void initContextView() {
+        contextView = new OutlineView(
+                NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.contextView.name")); // NOI18N
+        contextView.setPopupAllowed(false);
+        contextView.setAllowedDragActions(DnDConstants.ACTION_NONE);
+        contextView.setAllowedDropActions(DnDConstants.ACTION_NONE);
+        contextView.addPropertyColumn(
+                KnockoutNode.ValueProperty.NAME,
+                NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.contextView.value")); // NOI18N
+        contextView.getOutline().setRootVisible(false);
+    }
+
+    @Override
+    public ExplorerManager getExplorerManager() {
+        return manager;
     }
 
     /**
@@ -102,10 +120,13 @@ public class KnockoutPanel extends javax.swing.JPanel {
             messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.noSingleSelection")); // NOI18N
             componentToShow = messageLabel;
         } else {
-            // Node selectedNode = selection.get(0);
-            // componentToShow = treeView;
-            messageLabel.setText("Coming soon ... ;-)");
-            componentToShow = messageLabel;
+            Node selectedNode = selection.get(0);
+            org.netbeans.modules.web.webkit.debugging.api.dom.Node webKitNode =
+                selectedNode.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
+            WebKitDebugging webKit = pageModel.getWebKit();
+            Node rootNode = new AbstractNode(Children.create(new KnockoutChildFactory(webKit, webKitNode), true));
+            getExplorerManager().setRootContext(rootNode);
+            componentToShow = contextView;
         }
         if (componentToShow.getParent() == null) {
             removeAll();
@@ -125,7 +146,7 @@ public class KnockoutPanel extends javax.swing.JPanel {
 
         messageLabel = new javax.swing.JLabel();
 
-        messageLabel.setBackground(treeView.getViewport().getView().getBackground());
+        messageLabel.setBackground(contextView.getViewport().getView().getBackground());
         messageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         messageLabel.setEnabled(false);
         messageLabel.setOpaque(true);
