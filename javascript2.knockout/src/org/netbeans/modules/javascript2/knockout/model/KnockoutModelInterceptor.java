@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,7 +68,7 @@ public class KnockoutModelInterceptor implements ModelInterceptor {
 
     @NbBundle.Messages("label_knockout=Knockout")
     @Override
-    public Collection<JsObject> interceptGlobal(ModelElementFactory factory) {
+    public Collection<JsObject> interceptGlobal(ModelElementFactory factory, FileObject fo) {
         if (disabled) {
             return Collections.emptySet();
         }

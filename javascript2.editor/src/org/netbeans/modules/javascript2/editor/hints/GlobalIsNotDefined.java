@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
@@ -61,6 +63,7 @@ import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelExtender;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.openide.filesystems.FileObject;
@@ -84,12 +87,20 @@ public class GlobalIsNotDefined extends JsAstRule {
         Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)globalObject);
         FileObject fo = context.parserResult.getSnapshot().getSource().getFileObject();
         JsIndex jsIndex = JsIndex.get(fo);
+        Set<String> namesFromFrameworks = new HashSet<String>();
+        for (JsObject globalFiles:  ModelExtender.getDefault().getExtendingGlobalObjects(context.getJsParserResult().getSnapshot().getSource().getFileObject())) {
+            for (JsObject global : globalFiles.getProperties().values()) {
+                namesFromFrameworks.add(global.getName());
+            }
+        }
         for (JsObject variable : variables) {
+            String varName = variable.getName();
             if(!variable.isDeclared() 
-                    && !KNOWN_GLOBAL_OBJECTS.contains(variable.getName())
+                    && !KNOWN_GLOBAL_OBJECTS.contains(varName)
+                    && !namesFromFrameworks.contains(varName)
                     && (variable.getJSKind() == JsElement.Kind.VARIABLE
                     || variable.getJSKind() == JsElement.Kind.OBJECT)) {
-                String varName = variable.getName();
+                
                 // check whether is defined as window property
                 Collection<? extends IndexResult> findByFqn = jsIndex.findByFqn("window." + varName, JsIndex.FIELD_BASE_NAME);
                 if (findByFqn.isEmpty()) {

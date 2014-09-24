@@ -46,6 +46,7 @@ import java.util.Collections;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -55,7 +56,7 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
 public class JQueryModelInterceptor implements ModelInterceptor {
 
     @Override
-    public Collection<JsObject> interceptGlobal(ModelElementFactory factory) {
+    public Collection<JsObject> interceptGlobal(ModelElementFactory factory, FileObject fo) {
         JsObject object = JQueryModel.getGlobalObject(factory);
         if (object != null) {
             return Collections.singleton(object);

@@ -76,4 +76,28 @@ public class AngularJsController {
     public int getOffset() {
         return offset;
     }
+
+    public static class ModuleConfigRegistration {
+
+        private final String controllerName;
+        private final String controllerAsName;
+
+        public ModuleConfigRegistration(String controllerName) {
+            this.controllerName = controllerName;
+            this.controllerAsName = null;
+        }
+
+        public ModuleConfigRegistration(String controllerName, String controllerAsName) {
+            this.controllerName = controllerName;
+            this.controllerAsName = controllerAsName;
+        }
+
+        public String getControllerName() {
+            return controllerName;
+        }
+
+        public String getControllerAsName() {
+            return controllerAsName;
+        }
+    }
 }

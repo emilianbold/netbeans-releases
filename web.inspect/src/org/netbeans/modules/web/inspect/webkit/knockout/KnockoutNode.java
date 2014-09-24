@@ -1,0 +1,133 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.web.inspect.webkit.knockout;
+
+import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
+
+/**
+ * Node that represents some JavaScript value in Knockout view.
+ *
+ * @author Jan Stola
+ */
+public class KnockoutNode extends AbstractNode {
+    /** {@code RemoteObject} wrapped by this node. */
+    private final RemoteObject remoteObject;
+
+    /**
+     * Creates a new {@code KnockoutNode} that wraps the given {@code RemoteObject}.
+     * 
+     * @param name name of the node.
+     * @param remoteObject {@code RemoteObject} to encapsulate.
+     */
+    KnockoutNode(String name, RemoteObject remoteObject) {
+        super((remoteObject == null) ? Children.LEAF : Children.create(new KnockoutChildFactory(remoteObject), true));
+        this.remoteObject = remoteObject;
+        setName(name);
+    }
+
+    @Override
+    protected Sheet createSheet() {
+        Sheet sheet = super.createSheet();
+        Sheet.Set set = Sheet.createPropertiesSet();
+        set.put(new ValueProperty(valueFor(remoteObject)));
+        sheet.put(set);
+        return sheet;
+    }
+
+    /**
+     * Returns {@code String} value of the given {@code RemoteObject}.
+     * 
+     * @param remoteObject object whose value should be returned.
+     * @return {@code String} value of the given {@code RemoteObject}.
+     */
+    private static String valueFor(RemoteObject remoteObject) {
+        String value;
+        if (remoteObject == null) {
+            value = null;
+        } else {
+            value = remoteObject.getDescription();
+            if (value == null) {
+                value = remoteObject.getValueAsString();
+            }
+        }
+        return value;
+    }
+
+    /**
+     * Value property.
+     */
+    static final class ValueProperty extends PropertySupport.ReadOnly<String> {
+        /** Name of the property. */
+        static final String NAME = "value"; // NOI18N
+        /** Display name of the property. */
+        private static final String DISPLAY_NAME = NbBundle.getMessage(
+                ValueProperty.class, "KnockoutNode.valueProperty.displayName"); // NOI18N
+        /** Description of the property. */
+        private static final String DESCRIPTION = NbBundle.getMessage(
+                ValueProperty.class, "KnockoutNode.valueProperty.description"); // NOI18N
+        /** Value of the property. */
+        private final String value;
+
+        /**
+         * Creates a new {@code ValueProperty}.
+         * 
+         * @param value value of the property.
+         */
+        ValueProperty(String value) {
+            super(NAME, String.class, DISPLAY_NAME, DESCRIPTION);
+            this.value = value;
+        }
+
+        @Override
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
+            return value;
+        }
+        
+    }
+    
+}

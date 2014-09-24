@@ -63,6 +63,7 @@ public class AngularWhenInterceptor implements FunctionInterceptor {
     private final static Pattern PATTERN = Pattern.compile("(.)*\\.when");  //NOI18N
     public final static String TEMPLATE_URL_PROP = "templateUrl";  //NOI18N
     public final static String CONTROLLER_PROP = "controller";     //NOI18N
+    public final static String CONTROLLER_AS_PROP = "controllerAs"; //NOI18N
 
     @Override
     public Pattern getNamePattern() {
@@ -79,6 +80,7 @@ public class AngularWhenInterceptor implements FunctionInterceptor {
                 JsObject aObject = (JsObject) arg.getValue();
                 JsObject url = aObject.getProperty(TEMPLATE_URL_PROP);
                 JsObject controller = aObject.getProperty(CONTROLLER_PROP);
+                JsObject controllerAs = aObject.getProperty(CONTROLLER_AS_PROP);
                 FileObject fo = globalObject.getFileObject();
                 if (url != null && controller != null && fo != null) {
                     String content = null;
@@ -87,8 +89,12 @@ public class AngularWhenInterceptor implements FunctionInterceptor {
                     if (content != null) {
                         String template = getStringValueAt(content, url.getOffsetRange().getStart());
                         String controllerName = getStringValueAt(content, controller.getOffsetRange().getStart());
+                        String controllerAsName = null;
+                        if (controllerAs != null) {
+                            controllerAsName = getStringValueAt(content, controllerAs.getOffsetRange().getStart());
+                        }
                         if (template != null && controllerName != null) {
-                            AngularJsIndexer.addTemplateController(fo.toURI(), Utils.cutQueryFromTemplateUrl(template), controllerName);
+                            AngularJsIndexer.addTemplateController(fo.toURI(), Utils.cutQueryFromTemplateUrl(template), controllerName, controllerAsName);
                         }
                     }
                 }

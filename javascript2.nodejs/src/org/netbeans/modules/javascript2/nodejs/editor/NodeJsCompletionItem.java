@@ -166,7 +166,7 @@ public class NodeJsCompletionItem implements CompletionProposal {
 
         @Override
         public NodeJsCompletionItem createGoUpItem(int anchor, Color color, ImageIcon icon) {
-            NodeJsElement element = new NodeJsElement("..", null, ElementKind.FILE);
+            NodeJsElement element = new NodeJsElement(null, "..", null, ElementKind.FILE);
             return new NodeJsCompletionItem(element, anchor);
         }
     }

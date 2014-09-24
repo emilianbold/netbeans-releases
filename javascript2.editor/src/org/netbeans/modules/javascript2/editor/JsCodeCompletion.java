@@ -175,7 +175,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 case GLOBAL:
                     HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
                     addedProperties.putAll(getDomCompletionResults(request));
-                    for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+                    for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects(fileObject)) {
                         for (JsObject object : libGlobal.getProperties().values()) {
                             addPropertyToMap(request, addedProperties, object);
                         }
@@ -484,7 +484,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
         
         // from libraries
-        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects(fo)) {
             for (JsObject object : libGlobal.getProperties().values()) {
                 addPropertyToMap(request, addedItems, object);
             }
@@ -887,7 +887,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             lastResolvedObjects.add(jsObject);
         }
 
-        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects(request.result.getSnapshot().getSource().getFileObject())) {
             JsObject found = ModelUtils.findJsObjectByName(libGlobal, type.getType());
             if (found != null && found != libGlobal) {
                 jsObject = found;

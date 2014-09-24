@@ -130,7 +130,7 @@ public class AngularJsIndex {
         return Collections.emptyList();
     }
 
-    public Collection<String> getControllersForTemplate(@NonNull final URI uri) {
+    public Collection<AngularJsController.ModuleConfigRegistration> getControllersForTemplate(@NonNull final URI uri) {
         Collection<? extends IndexResult> result = null;
 
         try {
@@ -140,14 +140,20 @@ public class AngularJsIndex {
         }
         if (result != null && !result.isEmpty()) {
             String path = uri.toString();
-            Collection<String> controllers = new HashSet<>();
+            Collection<AngularJsController.ModuleConfigRegistration> controllers = new HashSet<>();
             for (IndexResult indexResult : result) {
                 String[] values = indexResult.getValues(AngularJsIndexer.FIELD_TEMPLATE_CONTROLLER);
                 for (String value : values) {
                     int index = value.indexOf(':');
                     String fileNamePart = value.substring(0, index);
                     if (path.endsWith(fileNamePart)) {
-                        controllers.add(value.substring(index + 1));
+                        String controllerPart = value.substring(index + 1);
+                        if (controllerPart.contains(":")) { //NOI18N
+                            String[] controllerNames = controllerPart.split(":"); //NOI18N
+                            controllers.add(new AngularJsController.ModuleConfigRegistration(controllerNames[0], controllerNames[1]));
+                        } else {
+                            controllers.add(new AngularJsController.ModuleConfigRegistration(controllerPart));
+                        }
                     }
                 }
             }

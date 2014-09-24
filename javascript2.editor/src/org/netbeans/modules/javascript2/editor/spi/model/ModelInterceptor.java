@@ -47,6 +47,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collection;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.openide.filesystems.FileObject;
 
 /**
  * The objects are not a part of the model.
@@ -54,7 +55,7 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
  */
 public interface ModelInterceptor {
 
-    Collection<JsObject> interceptGlobal(ModelElementFactory factory);
+    Collection<JsObject> interceptGlobal(ModelElementFactory factory, FileObject fo);
 
     @Retention(RetentionPolicy.SOURCE)
     @Target(ElementType.TYPE)

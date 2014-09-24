@@ -48,6 +48,7 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
 import org.netbeans.modules.javascript2.nodejs.editor.NodeJsDataProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -58,15 +59,16 @@ public class NodeJsModelInterceptor implements ModelInterceptor {
 
     private static Collection<JsObject> globals = null;
     
+    
     @Override
-    public Collection<JsObject> interceptGlobal(ModelElementFactory factory) {
-        return getGlobalObjects(factory);
+    public Collection<JsObject> interceptGlobal(ModelElementFactory factory, FileObject fo) {
+        return getGlobalObjects(factory, fo);
     }
     
     
-    private Collection<JsObject> getGlobalObjects(ModelElementFactory factory) {
+    private Collection<JsObject> getGlobalObjects(ModelElementFactory factory, FileObject fo) {
         if (globals == null) {
-            globals = NodeJsDataProvider.getDefault().getGlobalObjects(factory);
+            globals = NodeJsDataProvider.getDefault(fo).getGlobalObjects(factory);
         }
         return globals;
     }
