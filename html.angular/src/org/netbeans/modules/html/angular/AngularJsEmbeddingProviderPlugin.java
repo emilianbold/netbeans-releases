@@ -444,6 +444,11 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     int keyPos = expression.indexOf(keyValue[0]);
                     // map the key name
                     embeddings.add(snapshot.create(tokenSequence.offset() + 1 + keyPos, keyValue[0].length(), Constants.JAVASCRIPT_MIMETYPE));
+                    if (keyValue.length == 1) {
+                        // add a comma after variable name to trigger the error if an identifier for value is missing
+                        // e.g., ng-repeat="(key, ) in expression" instead of ng-repeat="(key, value) in expression"
+                        embeddings.add(snapshot.create(",", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                    }
                     // map " in " 
                     embeddings.add(snapshot.create(" in ", Constants.JAVASCRIPT_MIMETYPE));  //NOI18N
                     if (forParts.length == 2 && propertyToFqn.containsKey(forParts[1])) {
@@ -455,10 +460,15 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         // map the collection
                         embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[1].length(), Constants.JAVASCRIPT_MIMETYPE));
                     }
-                    embeddings.add(snapshot.create(") {\nvar ", Constants.JAVASCRIPT_MIMETYPE));    //NOI18N
-                    int valuePos = expression.indexOf(keyValue[1]);
-                    embeddings.add(snapshot.create(tokenSequence.offset() + 1 + valuePos, keyValue[1].length(), Constants.JAVASCRIPT_MIMETYPE));
-                    embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE));      //NOI18N
+                    if (keyValue.length == 2) {
+                        // both identfiers, for key and value are present: ng-repeat="(key, value) in expression"
+                        embeddings.add(snapshot.create(") {\nvar ", Constants.JAVASCRIPT_MIMETYPE));    //NOI18N
+                        int valuePos = expression.indexOf(keyValue[1]);
+                        embeddings.add(snapshot.create(tokenSequence.offset() + 1 + valuePos, keyValue[1].length(), Constants.JAVASCRIPT_MIMETYPE));
+                        embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE));      //NOI18N
+                    } else {
+                        embeddings.add(snapshot.create(") {\n", Constants.JAVASCRIPT_MIMETYPE));      //NOI18N
+                    }
                 }
                 // the for cycle should be closed in appropriate CLOSE_TAG token
                 processed = true;
