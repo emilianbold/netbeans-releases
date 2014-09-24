@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
+import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.util.NbBundle;
@@ -100,7 +101,7 @@ public final class KnockoutTC extends TopComponent {
         if (EventQueue.isDispatchThread()) {
             PageModel pageModel = PageInspectorImpl.getDefault().getPage();
             removeAll();
-            KnockoutPanel panel = new KnockoutPanel(pageModel);
+            KnockoutPanel panel = new KnockoutPanel((WebKitPageModel)pageModel);
             add(panel);
         } else {
             EventQueue.invokeLater(new Runnable() {
