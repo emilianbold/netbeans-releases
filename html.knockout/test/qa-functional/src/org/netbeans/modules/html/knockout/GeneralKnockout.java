@@ -361,7 +361,7 @@ public class GeneralKnockout extends JellyTestCase {
             if (item instanceof HtmlCompletionItem) {
                 itemValue = ((HtmlCompletionItem) item).getItemText().toLowerCase();
             } else {
-                itemValue = item.toString();
+                itemValue = item.toString().toLowerCase();
             }
 
             if (!itemValue.startsWith(prefix)) {
@@ -402,7 +402,7 @@ public class GeneralKnockout extends JellyTestCase {
                     completion.add(item.toString());
                 }
             }
-            for (String sCode : invalidList) {
+                for (String sCode : invalidList) {
                 if (completion.contains(sCode)) {
                     fail("Completion list contains invalid item:" + sCode);
                 }
@@ -454,6 +454,28 @@ public class GeneralKnockout extends JellyTestCase {
 
     }
 
+    protected boolean isSingleOption(String pattern, CompletionJListOperator jList) {
+        try {
+            pattern = pattern.toLowerCase();
+            List items = jList.getCompletionItems();
+            Object item;
+            int matches = 0;
+            for (int i = 0; i < items.size(); i++) {
+                item = items.get(i);
+                if (item instanceof HtmlCompletionItem) {
+                    if (((HtmlCompletionItem) item).getItemText().toLowerCase().startsWith(pattern)) {
+                        matches++;
+                    }
+                } else if (item.toString().toLowerCase().startsWith(pattern)) {
+                    matches++;
+                }
+            }
+            return matches == 1;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+    
     protected void checkCompletionDoesntContainItems(CompletionJListOperator jlist, String[] invalidList) {
         for (String sCode : invalidList) {
             int iIndex = jlist.findItemIndex(sCode, new CFulltextStringComparator());

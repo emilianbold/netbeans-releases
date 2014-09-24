@@ -113,7 +113,7 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                             Collection<String> modules = NodeJsDataProvider.getDefault(fo).getRuntimeModules();
                             for(String module: modules) {
                                 if (module.startsWith(prefix)) {
-                                    NodeJsElement handle = new NodeJsElement.NodeJsModuleElement(module);
+                                    NodeJsElement handle = new NodeJsElement.NodeJsModuleElement(fo, module);
                                     result.add(new NodeJsCompletionItem.NodeJsModuleCompletionItem(handle, eOffset - prefix.length()));
                                 }
                             }
@@ -128,7 +128,7 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                     if (tokenId == JsTokenId.OPERATOR_ASSIGNMENT) {
                         // offer require()
                         if (prefix.isEmpty() || REQUIRE.startsWith(prefix)) {
-                            NodeJsElement handle = new NodeJsElement(REQUIRE, NodeJsDataProvider.getDefault(fo).getDocumentationForGlobalObject(REQUIRE), TEMPLATE_REQUIRE, ElementKind.METHOD);
+                            NodeJsElement handle = new NodeJsElement(fo, REQUIRE, NodeJsDataProvider.getDefault(fo).getDocumentationForGlobalObject(REQUIRE), TEMPLATE_REQUIRE, ElementKind.METHOD);
                             result.add(new NodeJsCompletionItem(handle, eOffset - prefix.length()));
                         }
                     }

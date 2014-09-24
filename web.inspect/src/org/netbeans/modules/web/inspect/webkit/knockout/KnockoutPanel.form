@@ -5,7 +5,7 @@
     <Component class="javax.swing.JLabel" name="messageLabel">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="treeView.getViewport().getView().getBackground()" type="code"/>
+          <Connection code="contextView.getViewport().getView().getBackground()" type="code"/>
         </Property>
         <Property name="horizontalAlignment" type="int" value="0"/>
         <Property name="enabled" type="boolean" value="false"/>

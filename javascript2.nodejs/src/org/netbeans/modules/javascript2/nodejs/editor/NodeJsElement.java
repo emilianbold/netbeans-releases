@@ -60,21 +60,23 @@ public class NodeJsElement implements ElementHandle {
     private final ElementKind kind;
     private final String documentation;
     private final String template;
+    private final FileObject fo;
 
-    public NodeJsElement(String name, String documentation, ElementKind kind) {
-        this(name, documentation, null, kind);
+    public NodeJsElement(FileObject fo, String name, String documentation, ElementKind kind) {
+        this(fo, name, documentation, null, kind);
     }
     
-    public NodeJsElement(String name, String documentation, String template, ElementKind kind) {
+    public NodeJsElement(FileObject fo, String name, String documentation, String template, ElementKind kind) {
         this.name = name;
         this.kind = kind;
         this.documentation = documentation;
         this.template = template;
+        this.fo = fo;
     }
 
     @Override
     public FileObject getFileObject() {
-        return null;
+        return fo;
     }
 
     @Override
@@ -121,10 +123,8 @@ public class NodeJsElement implements ElementHandle {
     }
 
     public static class NodeJsFileElement extends NodeJsElement {
-        private final FileObject fo;
         public NodeJsFileElement(FileObject file) {
-            super(file.getNameExt(), null, ElementKind.FILE);
-            this.fo = file;
+            super(file, file.getNameExt(), null, ElementKind.FILE);
         }
 
         @Override
@@ -139,24 +139,25 @@ public class NodeJsElement implements ElementHandle {
         
         @Override
         public String getMimeType() {
-            return fo.getMIMEType();
+            return getFileObject().getMIMEType();
         }
 
         @Override
         public String getName() {
+            FileObject fo = getFileObject();
             return fo.isFolder() ? fo.getNameExt() : fo.getName();
         }
         
         @Override
         public boolean signatureEquals(ElementHandle handle) {
-            return fo.equals(handle.getFileObject());
+            return getFileObject().equals(handle.getFileObject());
         }
     }
     
     public static class NodeJsModuleElement extends NodeJsElement {
 
-        public NodeJsModuleElement(final String name) {
-            super(name, null, ElementKind.MODULE);
+        public NodeJsModuleElement(final FileObject fo, final String name) {
+            super(fo, name, null, ElementKind.MODULE);
         }
 
         @Override
