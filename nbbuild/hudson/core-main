@@ -18,6 +18,7 @@ ant.freeform,\
 api.java,\
 api.java.classpath,\
 api.progress,\
+api.progress.nb,\
 api.visual,\
 apisupport.ant,\
 apisupport.crudsample,\
@@ -83,6 +84,8 @@ openide.dialogs,\
 openide.execution,\
 openide.explorer,\
 openide.filesystems,\
+openide.filesystems.compat8,\
+openide.filesystems.nb,\
 openide.loaders,\
 openide.modules,\
 openide.nodes,\
