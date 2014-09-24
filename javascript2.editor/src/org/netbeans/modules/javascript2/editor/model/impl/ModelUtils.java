@@ -1288,8 +1288,14 @@ public class ModelUtils {
      */
     public static Collection <? extends TypeUsage> getTypeFromWith(Model model, int offset) {
         JsObject jsObject = ModelUtils.findJsObject(model, offset);
+        JsObject previous = jsObject;
         while (jsObject != null && jsObject.isAnonymous() && jsObject.getJSKind() != JsElement.Kind.WITH_OBJECT) {
             jsObject = ModelUtils.findJsObject(model, jsObject.getOffset() - 1);
+            if (jsObject.getFullyQualifiedName().endsWith(previous.getFullyQualifiedName())) {
+                break;
+            } else {
+                previous = jsObject;
+            }
         }
         while(jsObject != null && jsObject.getJSKind() != JsElement.Kind.WITH_OBJECT) {
             jsObject = jsObject.getParent();

@@ -56,6 +56,7 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 public final class KarmaUtils {
 
@@ -172,16 +173,12 @@ public final class KarmaUtils {
     @CheckForNull
     public static File findKarma(Project project) {
         // first, project karma
-        FileObject projectKarma = findValidFile(project.getProjectDirectory(),
-                KarmaExecutable.PROJECT_KARMA_LONG_PATH_1,
-                KarmaExecutable.PROJECT_KARMA_LONG_PATH_2,
-                KarmaExecutable.PROJECT_KARMA_PATH_1,
-                KarmaExecutable.PROJECT_KARMA_PATH_2);
+        FileObject projectKarma = findValidFile(project.getProjectDirectory(), getProjectKarmas());
         if (projectKarma != null) {
             return FileUtil.toFile(projectKarma);
         }
         // search on user's PATH
-        List<String> karmas = FileUtils.findFileOnUsersPath(KarmaExecutable.KARMA_LONG_NAME, KarmaExecutable.KARMA_NAME);
+        List<String> karmas = FileUtils.findFileOnUsersPath(getGlobalKarmas());
         if (!karmas.isEmpty()) {
             return new File(karmas.get(0));
         }
@@ -200,6 +197,35 @@ public final class KarmaUtils {
             }
         }
         return null;
+    }
+
+    // #247302
+    private static String[] getProjectKarmas() {
+        if (Utilities.isWindows()) {
+            return new String[] {
+                KarmaExecutable.PROJECT_KARMA_LONG_PATH_1,
+                KarmaExecutable.PROJECT_KARMA_LONG_PATH_2,
+            };
+        }
+        return new String[] {
+            KarmaExecutable.PROJECT_KARMA_LONG_PATH_1,
+            KarmaExecutable.PROJECT_KARMA_LONG_PATH_2,
+            KarmaExecutable.PROJECT_KARMA_PATH_1,
+            KarmaExecutable.PROJECT_KARMA_PATH_2,
+        };
+    }
+
+    // #247302
+    private static String[] getGlobalKarmas() {
+        if (Utilities.isWindows()) {
+            return new String[] {
+                KarmaExecutable.KARMA_LONG_NAME,
+            };
+        }
+        return new String[] {
+            KarmaExecutable.KARMA_LONG_NAME,
+            KarmaExecutable.KARMA_NAME,
+        };
     }
 
 }

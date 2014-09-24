@@ -1211,22 +1211,38 @@ public class ModelVisitor extends PathNodeVisitor {
                             Identifier name = nodeName.get(nodeName.size() - 1);
                             DeclarationScopeImpl ds = modelBuilder.getCurrentDeclarationScope();
                             String referenceName = reference.getIdent().getName();
-                            JsObject property = ds.getProperty(referenceName);
-                            while (property != null && !(property instanceof JsFunction)) {
+                            JsObject originalFnc = ds.getProperty(referenceName);
+                            while (originalFnc != null && !(originalFnc instanceof JsFunction)) {
                                 if (ds.getParentScope() != null) {
                                     ds = (DeclarationScopeImpl)ds.getParentScope();
-                                    property = ds.getProperty(referenceName);
+                                    originalFnc = ds.getProperty(referenceName);
                                 } else {
-                                    property = null;
+                                    originalFnc = null;
                                 }
                             }
-                            if (property != null && property instanceof JsFunction) {
+                            if (originalFnc != null && originalFnc instanceof JsFunction) {
                                 //property contains the definition of the function
-                                JsObject newRef = new JsFunctionReference(jsObject.getParent(), name, (JsFunction)property, true, jsObject.getModifiers());
+                                JsObject newRef = new JsFunctionReference(jsObject.getParent(), name, (JsFunction)originalFnc, true, jsObject.getModifiers());
                                 jsObject.getParent().addProperty(jsObject.getName(), newRef);
                                 for (Occurrence occurence : jsObject.getOccurrences()) {
                                     newRef.addOccurrence(occurence.getOffsetRange());
                                 }
+                                if (originalFnc instanceof JsFunctionImpl) {
+//                                    ((JsFunctionImpl)originalFnc).setAnonymous(true);
+                                    JsObject parent = jsObject.getParent();
+                                    if (ModelUtils.PROTOTYPE.equals(parent.getName())) {
+                                        parent = parent.getParent();
+                                    }
+                                    if (parent != null) {
+                                        Collection<JsObject> propertiesCopy = new ArrayList(originalFnc.getProperties().values());
+                                        for (JsObject property : propertiesCopy) {
+                                            if (!property.getModifiers().contains(Modifier.PRIVATE)) {
+                                                ModelUtils.moveProperty(parent, property);
+                                            }
+                                        }
+                                    }
+                                }
+                                
                             }
                             
                         }
