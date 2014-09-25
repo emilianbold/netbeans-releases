@@ -1353,6 +1353,10 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.netbeans.modules.editor.lib" release="3" spec="4.0"/>
                 <module codenamebase="org.netbeans.modules.editor.document" spec="1.0"/>
             </replace>
+            <replace codenamebase="org.netbeans.modules.editor.lib2" addcompiletime="true">
+                <module codenamebase="org.netbeans.modules.editor.lib2" release="1" spec="2.0"/>
+                <module codenamebase="org.netbeans.modules.editor.document" spec="1.0"/>
+            </replace>
             <fileset dir="nbproject" >
                 <include name="project.xml" />
             </fileset>
