@@ -1366,6 +1366,10 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.netbeans.modules.java.source" spec="0.136"/>
                 <module codenamebase="org.netbeans.modules.java.source.compat8" spec="9.0"/>
             </replace>
+            <replace codenamebase="org.netbeans.modules.project.libraries" addcompiletime="true">
+                <module codenamebase="org.netbeans.modules.project.libraries" release="1" spec="1.48"/>
+                <module codenamebase="org.netbeans.modules.project.libraries.ui" release="1" spec="1.48"/>
+            </replace>
             <fileset dir="nbproject" >
                 <include name="project.xml" />
             </fileset>
