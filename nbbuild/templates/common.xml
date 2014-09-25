@@ -1361,6 +1361,11 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.netbeans.api.progress" release="1" spec="1.40"/>
                 <module codenamebase="org.netbeans.api.progress.nb" spec="1.40"/>
             </replace>
+            <replace codenamebase="org.netbeans.modules.java.source" addcompiletime="true">
+                <module codenamebase="org.netbeans.modules.java.source.base" spec="1.1"/>
+                <module codenamebase="org.netbeans.modules.java.source" spec="0.136"/>
+                <module codenamebase="org.netbeans.modules.java.source.compat8" spec="9.0"/>
+            </replace>
             <fileset dir="nbproject" >
                 <include name="project.xml" />
             </fileset>
