@@ -79,16 +79,6 @@ public class ControllersAsGlobalTest extends GeneralAngular {
                         "testControllers",
                         "testAlias",
                         "testAliasExp"
-//                        "testGoTo28",
-//                        "testGoTo29",
-//                        "testGoTo30",
-//                        "testGoTo31",
-//                        "testGoTo32",
-//                        "testGoTo33",
-//                        "testGoTo34",
-//                        "testGoTo35",
-//                        "testGoTo36",
-//                        "testGoTo37"
                 ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
@@ -194,66 +184,6 @@ public class ControllersAsGlobalTest extends GeneralAngular {
     public void testAliasExp() throws Exception {
         startTest();
         testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 41);
-        endTest();
-    }
-
-    public void testGoTo28() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 28);
-        endTest();
-    }
-
-    public void testGoTo29() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 29);
-        endTest();
-    }
-
-    public void testGoTo30() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 30);
-        endTest();
-    }
-
-    public void testGoTo31() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 31);
-        endTest();
-    }
-
-    public void testGoTo32() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 32);
-        endTest();
-    }
-
-    public void testGoTo33() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 33);
-        endTest();
-    }
-
-    public void testGoTo34() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 34);
-        endTest();
-    }
-
-    public void testGoTo35() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 35);
-        endTest();
-    }
-
-    public void testGoTo36() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 36);
-        endTest();
-    }
-
-    public void testGoTo37() throws Exception {
-        startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 37);
         endTest();
     }
 
