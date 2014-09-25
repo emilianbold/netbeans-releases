@@ -1345,6 +1345,10 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.netbeans.modules.java.project" release="1" spec="1.60"/>
                 <module codenamebase="org.netbeans.modules.java.project.ui" spec="1.60"/>
             </replace>
+            <replace codenamebase="org.netbeans.api.xml" addcompiletime="true">
+                <module codenamebase="org.netbeans.api.xml" release="1" spec="1.41"/>
+                <module codenamebase="org.netbeans.api.xml.ui" release="1" spec="1.41"/>
+            </replace>
             <fileset dir="nbproject" >
                 <include name="project.xml" />
             </fileset>
