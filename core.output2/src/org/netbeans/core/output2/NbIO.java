@@ -53,35 +53,18 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.EnumSet;
 import org.netbeans.core.output2.options.OutputOptions;
-import org.openide.io.base.BaseColor;
-import org.openide.io.base.BaseIOColorLines;
-import org.openide.io.base.BaseIOColorPrint;
-import org.openide.io.base.BaseIOColors;
-import org.openide.io.base.BaseIOFolding;
-import org.openide.io.base.BaseIOHyperlink;
-import org.openide.io.base.BaseIOLinkInfo;
-import org.openide.io.base.BaseIOPosition;
-import org.openide.io.base.BaseIOSelect;
-import org.openide.io.base.BaseIOTab;
-import org.openide.io.base.BaseInputOutput;
-import org.openide.io.base.BaseOutputEvent;
-import org.openide.io.base.BaseOutputListener;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOColorPrint;
 import org.openide.windows.IOColors;
-import org.openide.windows.IOColors.OutputType;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOFolding;
 import org.openide.windows.IOPosition;
 import org.openide.windows.IOSelect;
-import org.openide.windows.IOSelect.AdditionalOperation;
 import org.openide.windows.IOTab;
-import org.openide.windows.OutputEvent;
 
 /** Implementation of InputOutput.  Implements calls as a set of
  * "commands" which are passed up to Dispatcher to be run on the event
@@ -89,7 +72,7 @@ import org.openide.windows.OutputEvent;
  *
  * @author  Tim Boudreau
  */
-class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
+class NbIO implements InputOutput, Lookup.Provider {
 
     private Boolean focusTaken = null;
     private volatile boolean closed = false;
@@ -280,7 +263,6 @@ class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
         return actions;
     }
     
-    @Override
     public void reset() {
         if (Controller.LOG) Controller.log (this + ": reset");
         closed = false;
@@ -345,8 +327,7 @@ class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
             ioColors = new IOColorsImpl();
             lookup = Lookups.fixed(ioTab, ioColors, new IOPositionImpl(),
                     new IOColorLinesImpl(), new IOColorPrintImpl(),
-                    new IOSelectImpl(), new BaseIOSelectImpl(),
-                    new IOFoldingImpl(), new BaseIOHyperlinkImpl(), options);
+                    new IOSelectImpl(), new IOFoldingImpl(), options);
         }
         return lookup;
     }
@@ -504,7 +485,7 @@ class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
         return ioColors != null ? ioColors.getColor(type) : AbstractLines.getDefColors()[type.ordinal()];
     }
 
-    private class IOTabImpl extends IOTab implements BaseIOTab.Provider {
+    private class IOTabImpl extends IOTab {
         Icon icon;
         String toolTip;
 
@@ -514,7 +495,7 @@ class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
         }
 
         @Override
-        public String getToolTipText() {
+        protected String getToolTipText() {
             return toolTip;
         }
 
@@ -525,17 +506,16 @@ class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
         }
 
         @Override
-        public void setToolTipText(String text) {
+        protected void setToolTipText(String text) {
             toolTip = text;
             post(NbIO.this, IOEvent.CMD_SET_TOOLTIP, toolTip);
         }
     }
 
-    private class IOPositionImpl extends IOPosition
-            implements BaseIOPosition.Provider {
+    private class IOPositionImpl extends IOPosition {
 
         @Override
-        public PositionImpl currentPosition() {
+        protected Position currentPosition() {
             OutWriter out = out();
             int size = 0;
             if (out != null) {
@@ -545,8 +525,7 @@ class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
         }
     }
 
-    private class PositionImpl implements IOPosition.Position,
-            BaseIOPosition.Position {
+    private class PositionImpl implements IOPosition.Position {
         private int pos;
 
         public PositionImpl(int pos) {
@@ -558,7 +537,7 @@ class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
         }
     }
 
-    private class IOColorLinesImpl extends IOColorLines implements BaseIOColorLines.Provider {
+    private class IOColorLinesImpl extends IOColorLines {
 
         @Override
         protected void println(CharSequence text, OutputListener listener, boolean important, Color color) throws IOException {
@@ -567,37 +546,15 @@ class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
                 out.print(text, listener, important, color, null, OutputKind.OUT, true);
             }
         }
-
-        @Override
-        public void println(CharSequence text, boolean important, BaseColor color,
-                BaseIOLinkInfo... extendedInfo) throws IOException {
-            OutWriter out = out();
-            if (out != null) {
-                OutputListener l = findAndConvertOutputListener(extendedInfo);
-                out.print(text, l, important, convertToColor(color), null,
-                        OutputKind.OUT, true);
-            }
-        }
     }
 
-    private class IOColorPrintImpl extends IOColorPrint implements BaseIOColorPrint.Provider {
+    private class IOColorPrintImpl extends IOColorPrint {
 
         @Override
         protected void print(CharSequence text, OutputListener listener, boolean important, Color color) throws IOException {
             OutWriter out = out();
             if (out != null) {
                 out.print(text, listener, important, color, null, OutputKind.OUT, false);
-            }
-        }
-
-        @Override
-        public void print(CharSequence text, boolean important, BaseColor color,
-                BaseIOLinkInfo... extendedInfo) throws IOException {
-            OutWriter out = out();
-            if (out != null) {
-                OutputListener l = findAndConvertOutputListener(extendedInfo);
-                out.print(text, l, important, convertToColor(color), null,
-                        OutputKind.OUT, false);
             }
         }
     }
@@ -611,19 +568,7 @@ class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
 	}
     }
 
-    private class BaseIOSelectImpl implements BaseIOSelect.Provider {
-
-        @Override
-        public void select(Set<BaseIOSelect.AdditionalOperation> extraOps) {
-            if (Controller.LOG) {
-                Controller.log(this + ": IOSelect.select");             //NOI18N
-            }
-            NbIO.post(NbIO.this, IOEvent.CMD_FINE_SELECT,
-                    convertIOSelectOps(extraOps));
-        }
-    }
-
-    private class IOColorsImpl extends IOColors implements BaseIOColors.Provider {
+    private class IOColorsImpl extends IOColors {
         Color[] clrs = new Color[OutputType.values().length];
 
         @Override
@@ -636,22 +581,12 @@ class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
             clrs[type.ordinal()] = color;
             post(NbIO.this, IOEvent.CMD_DEF_COLORS, type);
         }
-
-        @Override
-        public BaseColor getColor(BaseIOColors.OutputType type) {
-            return convertToBaseColor(getColor(convertOutputType(type)));
-        };
-
-        @Override
-        public void setColor(BaseIOColors.OutputType type, BaseColor color) {
-            setColor(convertOutputType(type), convertToColor(color));
-        }
     }
 
-    private class IOFoldingImpl extends IOFolding implements BaseIOFolding.Provider {
+    private class IOFoldingImpl extends IOFolding {
 
         @Override
-        public NbIoFoldHandleDefinition startFold(boolean expanded) {
+        protected FoldHandleDefinition startFold(boolean expanded) {
             synchronized (outOrException()) {
                 if (currentFold != null) {
                     throw new IllegalStateException(
@@ -662,8 +597,7 @@ class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
             }
         }
 
-        class NbIoFoldHandleDefinition extends IOFolding.FoldHandleDefinition
-            implements BaseIOFolding.FoldHandleDefinition{
+        class NbIoFoldHandleDefinition extends IOFolding.FoldHandleDefinition {
 
             private final NbIoFoldHandleDefinition parent;
             private final int start;
@@ -701,7 +635,7 @@ class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
             }
 
             @Override
-            public NbIoFoldHandleDefinition startFold(boolean expanded) {
+            public FoldHandleDefinition startFold(boolean expanded) {
                 synchronized (outOrException()) {
                     if (end != -1) {
                         throw new IllegalStateException(
@@ -755,25 +689,6 @@ class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
         }
     }
 
-    private class BaseIOHyperlinkImpl implements BaseIOHyperlink.Provider {
-
-        @Override
-        public boolean isSupported(Class<? extends BaseIOLinkInfo> cls) {
-            return BaseOutputListener.class.isAssignableFrom(cls);
-        }
-
-        @Override
-        public void println(BaseIOHyperlink.Type type, String s,
-                boolean important, BaseIOLinkInfo... linkInfo) throws IOException {
-            OutputWriter writer = BaseIOHyperlink.Type.ERR.equals(type)
-                    ? getErr() : getOut();
-            if (writer != null) {
-                OutputListener l = findAndConvertOutputListener(linkInfo);
-                writer.println(s, l, important);
-            }
-        }
-    }
-
     private int getLastLineNumber() {
         return Math.max(0, out().getLines().getLineCount() - 2);
     }
@@ -791,101 +706,5 @@ class NbIO implements InputOutput, BaseInputOutput, Lookup.Provider {
      */
     OutputOptions getOptions() {
         return this.options;
-    }
-
-    /**
-     * Find the first {@link BaseOutputListener} in the list of hyperlink
-     * extension objects, convert it to {@link OutputListener} and return it.
-     */
-    private OutputListener findAndConvertOutputListener(BaseIOLinkInfo... exts) {
-        for (Object o : exts) {
-            if (o instanceof BaseOutputListener) {
-                return convertToOutputListener((BaseOutputListener) o);
-            }
-        }
-        return null;
-    }
-
-    private OutputListener convertToOutputListener(final BaseOutputListener l) {
-        return new OutputListener() {
-
-            @Override
-            public void outputLineSelected(OutputEvent ev) {
-            }
-
-            @Override
-            public void outputLineAction(OutputEvent ev) {
-                l.outputLineAction(convertToOutputEventBase(ev));
-            }
-
-            @Override
-            public void outputLineCleared(OutputEvent ev) {
-            }
-        };
-    }
-
-    private BaseOutputEvent convertToOutputEventBase(final OutputEvent e) {
-        InputOutput origIO = e.getInputOutput();
-        BaseInputOutput src = origIO instanceof BaseInputOutput
-                ? (BaseInputOutput) origIO : this;
-        return new BaseOutputEvent(src) {
-            @Override
-            public String getLine() {
-                return e.getLine();
-            }
-        };
-    }
-
-    private Set<AdditionalOperation> convertIOSelectOps(
-            Set<BaseIOSelect.AdditionalOperation> ops) {
-        Set<AdditionalOperation> s = EnumSet.noneOf(AdditionalOperation.class);
-        for (BaseIOSelect.AdditionalOperation bo : ops) {
-            switch (bo) {
-                case OPEN:
-                    s.add(AdditionalOperation.OPEN);
-                    break;
-                case REQUEST_ACTIVE:
-                    s.add(AdditionalOperation.REQUEST_ACTIVE);
-                    break;
-                case REQUEST_VISIBLE:
-                    s.add(AdditionalOperation.REQUEST_VISIBLE);
-                    break;
-            }
-        }
-        return s;
-    }
-
-    private OutputType convertOutputType(BaseIOColors.OutputType baseType) {
-        switch (baseType) {
-            case INPUT:
-                return OutputType.INPUT;
-            case OUTPUT:
-                return OutputType.OUTPUT;
-            case ERROR:
-                return OutputType.ERROR;
-            case HYPERLINK:
-                return OutputType.HYPERLINK;
-            case HYPERLINK_IMPORTANT:
-                return OutputType.HYPERLINK_IMPORTANT;
-            case LOG_DEBUG:
-                return OutputType.LOG_DEBUG;
-            case LOG_SUCCESS:
-                return OutputType.LOG_SUCCESS;
-            case LOG_WARNING:
-                return OutputType.LOG_WARNING;
-            case LOG_FAILURE:
-                return OutputType.LOG_FAILURE;
-            default:
-                throw new IllegalArgumentException(
-                        "Unknown output type " + baseType);             //NOI18N
-        }
-    }
-
-    private Color convertToColor(BaseColor baseColor) {
-        return new Color(baseColor.getRGB(), true);
-    }
-
-    private BaseColor convertToBaseColor(Color color) {
-        return new BaseColor(color.getRGB(), true);
     }
 }
