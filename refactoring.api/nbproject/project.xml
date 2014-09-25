@@ -23,6 +23,13 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.api.progress.nb</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.diff</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

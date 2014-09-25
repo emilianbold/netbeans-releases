@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
             </trigger-dependency>
             <implies>
                 <result>
-                    <module-dependency codenamebase="org.netbeans.api.progress.nb"/>
+                    <module-dependency codenamebase="org.netbeans.api.progress.nb" spec="1.40"/>
                 </result>
             </implies>
         </transformation>
