@@ -1343,7 +1343,7 @@ made subject to such option by the copyright holder.
             </replace>
             <replace codenamebase="org.netbeans.modules.java.project" addcompiletime="true">
                 <module codenamebase="org.netbeans.modules.java.project" release="1" spec="1.60"/>
-                <module codenamebase="org.netbeans.modules.java.project.ui" spec="1.60"/>
+                <module codenamebase="org.netbeans.modules.java.project.ui" release="1" spec="1.61"/>
             </replace>
             <replace codenamebase="org.netbeans.api.xml" addcompiletime="true">
                 <module codenamebase="org.netbeans.api.xml" release="1" spec="1.41"/>
