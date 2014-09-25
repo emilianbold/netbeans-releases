@@ -1334,8 +1334,8 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.netbeans.modules.parsing.indexing" spec="9.0"/>
             </replace>
             <replace codenamebase="org.netbeans.modules.projectuiapi" addcompiletime="true">
-                <module codenamebase="org.netbeans.modules.projectuiapi" release="1" spec="1.78.0"/>
-                <module codenamebase="org.netbeans.modules.projectuiapi.base" spec="1.78.0"/>
+                <module codenamebase="org.netbeans.modules.projectuiapi" release="1" spec="1.78"/>
+                <module codenamebase="org.netbeans.modules.projectuiapi.base" release="1" spec="1.78"/>
             </replace>
             <replace codenamebase="org.netbeans.modules.project.ant" addcompiletime="true">
                 <module codenamebase="org.netbeans.modules.project.ant" release="1" spec="1.61"/>
@@ -1344,6 +1344,31 @@ made subject to such option by the copyright holder.
             <replace codenamebase="org.netbeans.modules.java.project" addcompiletime="true">
                 <module codenamebase="org.netbeans.modules.java.project" release="1" spec="1.60"/>
                 <module codenamebase="org.netbeans.modules.java.project.ui" spec="1.60"/>
+            </replace>
+            <replace codenamebase="org.netbeans.api.xml" addcompiletime="true">
+                <module codenamebase="org.netbeans.api.xml" release="1" spec="1.41"/>
+                <module codenamebase="org.netbeans.api.xml.ui" release="1" spec="1.41"/>
+            </replace>
+            <replace codenamebase="org.netbeans.modules.editor.lib" addcompiletime="true">
+                <module codenamebase="org.netbeans.modules.editor.lib" release="3" spec="4.0"/>
+                <module codenamebase="org.netbeans.modules.editor.document" spec="1.0"/>
+            </replace>
+            <replace codenamebase="org.netbeans.modules.editor.lib2" addcompiletime="true">
+                <module codenamebase="org.netbeans.modules.editor.lib2" release="1" spec="2.0"/>
+                <module codenamebase="org.netbeans.modules.editor.document" spec="1.0"/>
+            </replace>
+            <replace codenamebase="org.netbeans.api.progress" addcompiletime="true">
+                <module codenamebase="org.netbeans.api.progress" release="1" spec="1.40"/>
+                <module codenamebase="org.netbeans.api.progress.nb" spec="1.40"/>
+            </replace>
+            <replace codenamebase="org.netbeans.modules.java.source" addcompiletime="true">
+                <module codenamebase="org.netbeans.modules.java.source.base" spec="1.1"/>
+                <module codenamebase="org.netbeans.modules.java.source" spec="0.136"/>
+                <module codenamebase="org.netbeans.modules.java.source.compat8" spec="9.0"/>
+            </replace>
+            <replace codenamebase="org.netbeans.modules.project.libraries" addcompiletime="true">
+                <module codenamebase="org.netbeans.modules.project.libraries" release="1" spec="1.48"/>
+                <module codenamebase="org.netbeans.modules.project.libraries.ui" release="1" spec="1.48"/>
             </replace>
             <fileset dir="nbproject" >
                 <include name="project.xml" />
