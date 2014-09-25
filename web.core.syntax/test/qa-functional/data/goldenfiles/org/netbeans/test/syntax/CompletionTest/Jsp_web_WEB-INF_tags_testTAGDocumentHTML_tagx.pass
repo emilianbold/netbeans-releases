@@ -84,6 +84,7 @@ onsuspend
 ontimeupdate
 onvolumechange
 onwaiting
+role
 spellcheck
 style
 tabindex

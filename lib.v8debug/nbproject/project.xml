@@ -74,7 +74,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.nodejs.debug</friend>
+                <friend>org.netbeans.modules.javascript.v8debug</friend>
                 <package>org.netbeans.lib.v8debug</package>
                 <package>org.netbeans.lib.v8debug.client</package>
                 <package>org.netbeans.lib.v8debug.commands</package>

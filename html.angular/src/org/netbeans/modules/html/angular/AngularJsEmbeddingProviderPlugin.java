@@ -287,8 +287,13 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 }
             }
 
+            embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
+            sb = new StringBuilder();
+
             if (!fqn.isEmpty()) {
-                sb.append(parts[1]).append(" = "); //NOI18N
+                int propNameOffset = controllerName.indexOf(parts[1].trim());
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1 + propNameOffset, parts[1].trim().length(), Constants.JAVASCRIPT_MIMETYPE));
+                sb.append(" = "); //NOI18N
                 sb.append(fqn);
                 sb.append(";\n"); //NOI18N
             }
