@@ -99,7 +99,7 @@ public final class ClientConnection {
         this.serverOut = serverOut;
     }
     
-    public void runEventLoop(Listener listener) throws IOException, ParseException {
+    public void runEventLoop(Listener listener) throws IOException {
         int n;
         int contentLength = -1;
         int[] beginPos = new int[] { 0 };
@@ -142,7 +142,7 @@ public final class ClientConnection {
                     } catch (ThreadDeath td) {
                         throw td;
                     } catch (ParseException pex) {
-                        throw pex;
+                        throw new IOException(pex.getLocalizedMessage(), pex);
                     } catch (Throwable t) {
                         LOG.log(Level.SEVERE, message.toString(), t);
                     }
