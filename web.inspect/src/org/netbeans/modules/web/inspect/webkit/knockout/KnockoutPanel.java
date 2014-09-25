@@ -202,7 +202,8 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
          */
         public NoIconRenderer(TableCellRenderer originalRenderer) {
             this.originalRenderer = originalRenderer;
-            this.emptyIcon = new EmptyIcon(new JLabel().getIconTextGap(), 1);
+            // Icons with zero width/height are ignored
+            this.emptyIcon = new EmptyIcon(1, 1);
         }
 
         @Override
