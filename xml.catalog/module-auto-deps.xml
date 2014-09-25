@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
             </trigger-dependency>
             <implies>
                 <result>
-                    <module-dependency codenamebase="org.netbeans.modules.xml.catalog.ui"/>
+                    <module-dependency codenamebase="org.netbeans.modules.xml.catalog.ui" spec="1.0"/>
                 </result>
             </implies>
         </transformation>
