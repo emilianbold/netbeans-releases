@@ -117,6 +117,8 @@ public class NodeJsDataProvider {
     private static final String AP_STRING = "&#39;"; //NOI18N
     private static final String REQUIRE_STRING = "= require(" + AP_STRING;     //NOI18N
 
+    private static final String JS_EXT = "js";  //NOI18N
+    
     // name of the json fields in api file
     private static final String MODULES = "modules"; //NOI18N
     private static final String NAME = "name"; //NOI18N
@@ -194,11 +196,27 @@ public class NodeJsDataProvider {
     }
 
     public Collection<String> getRuntimeModules() {
+        HashSet<String> modules = new HashSet<String>();
+        if (docFolder != null) {
+            FileObject libFolder = docFolder.getFileObject("../lib"); // NOI18N
+            if (libFolder != null) {
+                FileObject[] children = libFolder.getChildren();
+                for (int i = 0; i < children.length; i++) {
+                    FileObject module = children[i];
+                    if (!module.isFolder() && JS_EXT.equals(module.getExt()) && module.getName().charAt(0) != '_' ) {
+                        modules.add(module.getName());
+                    }
+                    
+                }
+                if (!modules.isEmpty()) {
+                    return modules;
+                }
+            }
+        }
         String content = getContentApiFile();
         int index = 0;
         int lenghtOfRequire = REQUIRE_STRING.length();
         index = content.indexOf(REQUIRE_STRING, index);
-        HashSet<String> modules = new HashSet<String>();
         while (index != -1) {
             index += lenghtOfRequire;
             if (content.charAt(index) != '.') {
