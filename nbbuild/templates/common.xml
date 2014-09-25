@@ -1334,8 +1334,8 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.netbeans.modules.parsing.indexing" spec="9.0"/>
             </replace>
             <replace codenamebase="org.netbeans.modules.projectuiapi" addcompiletime="true">
-                <module codenamebase="org.netbeans.modules.projectuiapi" release="1" spec="1.78.0"/>
-                <module codenamebase="org.netbeans.modules.projectuiapi.base" spec="1.78.0"/>
+                <module codenamebase="org.netbeans.modules.projectuiapi" release="1" spec="1.78"/>
+                <module codenamebase="org.netbeans.modules.projectuiapi.base" release="1" spec="1.78"/>
             </replace>
             <replace codenamebase="org.netbeans.modules.project.ant" addcompiletime="true">
                 <module codenamebase="org.netbeans.modules.project.ant" release="1" spec="1.61"/>
