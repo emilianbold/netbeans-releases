@@ -189,16 +189,27 @@ public class TopSecurityManager extends SecurityManager {
         }
     }
     
+    private static final ThreadLocal<Boolean> INIT_STACK = new ThreadLocal<Boolean>();
     static boolean officialExit = false;
     static Class[] getStack() {
         SecurityManager s = System.getSecurityManager();
-        TopSecurityManager t;
+        TopSecurityManager t = null;
         if (s instanceof TopSecurityManager) {
             t = (TopSecurityManager)s;
         } else {
-            t = new TopSecurityManager();
+            if (!Boolean.TRUE.equals(INIT_STACK.get())) {
+                try {
+                    INIT_STACK.set(true);
+                    t = new TopSecurityManager();
+                } catch (LinkageError err) {
+                    // ignore and go on
+                    LOG.log(Level.FINEST, null, err);
+                } finally {
+                    INIT_STACK.set(false);
+                }
+            }
         }
-        return t.getClassContext();
+        return t == null ? new Class[0] : t.getClassContext();
     }
     
     /** Can be called from core classes to exit the system.
