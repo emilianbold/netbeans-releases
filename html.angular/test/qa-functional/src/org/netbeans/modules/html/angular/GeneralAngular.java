@@ -67,6 +67,7 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.openide.util.Exceptions;
 
 /**
@@ -314,6 +315,28 @@ public class GeneralAngular extends JellyTestCase {
             }
         }
     }
+    
+    protected boolean isSingleOption(String pattern, CompletionJListOperator jList) {
+        try {
+            pattern = pattern.toLowerCase();
+            List items = jList.getCompletionItems();
+            Object item;
+            int matches = 0;
+            for (int i = 0; i < items.size(); i++) {
+                item = items.get(i);
+                if (item instanceof HtmlCompletionItem) {
+                    if (((HtmlCompletionItem) item).getItemText().toLowerCase().startsWith(pattern)) {
+                        matches++;
+                    }
+                } else if (item.toString().toLowerCase().startsWith(pattern)) {
+                    matches++;
+                }
+            }
+            return matches == 1;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
 
     public void openFile(String fileName, String projectName) {
         if (projectName == null) {
@@ -404,13 +427,18 @@ public class GeneralAngular extends JellyTestCase {
          if (config[5].length() > 0 && config[6].length() > 0) {
              String prefix = Character.toString(config[5].charAt(0));
              type(eo, prefix);
+             evt.waitNoEvent(50);
              eo.typeKey(' ', InputEvent.CTRL_MASK);
-             completion = getCompletion();
-             cjo = completion.listItself;
-             checkCompletionMatchesPrefix(cjo.getCompletionItems(), prefix);
-             evt.waitNoEvent(500);
-             cjo.clickOnItem(config[5]);
-             eo.pressKey(KeyEvent.VK_ENTER);
+             evt.waitNoEvent(20);
+             if (!isSingleOption(prefix, cjo)) {
+                 completion = getCompletion();
+                 cjo = completion.listItself;
+                 checkCompletionMatchesPrefix(cjo.getCompletionItems(), prefix);
+                 evt.waitNoEvent(500);
+                 cjo.clickOnItem(config[5]);
+                 eo.pressKey(KeyEvent.VK_ENTER);
+             }
+
              assertTrue("Wrong completion result", eo.getText(lineNumber).contains(config[6].replaceAll("|", "")));
              completion.listItself.hideAll();
          }
