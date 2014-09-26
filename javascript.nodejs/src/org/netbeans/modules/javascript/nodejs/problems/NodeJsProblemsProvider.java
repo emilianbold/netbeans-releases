@@ -54,6 +54,7 @@ import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
+import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
 import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
@@ -152,7 +153,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         ProjectProblem problem = ProjectProblem.createError(
                 message,
                 message,
-                new CustomizerProblemResolver(project));
+                new CustomizerProblemResolver(project, validationResult));
         currentProblems.add(problem);
     }
 
@@ -196,7 +197,10 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         if (getNodeJsSupport().getPreferences().isDefaultNode()) {
             return new OptionsProblemResolver();
         }
-        return new CustomizerProblemResolver(project);
+        // pretend invalid node path
+        ValidationResult result = new ValidationResult();
+        ValidationUtils.validateNode(result, null);
+        return new CustomizerProblemResolver(project, result);
     }
 
     //~ Inner classes
