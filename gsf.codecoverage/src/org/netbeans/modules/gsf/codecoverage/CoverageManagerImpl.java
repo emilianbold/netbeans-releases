@@ -98,20 +98,20 @@ public class CoverageManagerImpl implements CoverageManager {
             enabledMimeTypes.addAll(mimeTypes);
         } else {
             enabledMimeTypes.removeAll(mimeTypes);
-        SwingUtilities.invokeLater(new Runnable() {
+        }
 
-                @Override
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                    for (JTextComponent target : EditorRegistry.componentList()) {
-                        Document document = target.getDocument();
-                        CoverageSideBar sb = CoverageSideBar.getSideBar(document);
-                        if (sb != null) {
-                            sb.showCoveragePanel(false);
-                        }
+                for (JTextComponent target : EditorRegistry.componentList()) {
+                    Document document = target.getDocument();
+                    CoverageSideBar sb = CoverageSideBar.getSideBar(document);
+                    if (sb != null) {
+                        sb.showCoveragePanel(enabled);
                     }
                 }
+            }
         });
-    }
         provider.setEnabled(enabled);
     }
 
