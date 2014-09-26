@@ -49,13 +49,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -219,7 +223,7 @@ public final class PatchByteCode {
                     // constructor, possibly annotated
                     for (AnnotationNode an : (Collection<AnnotationNode>)mn.invisibleAnnotations) {
                         if (DESC_CTOR_ANNOTATION.equals(an.desc)) {
-                            delegateToFactory(extenderClass, mn, theClass, defCtor);
+                            delegateToFactory(an, extenderClass, mn, theClass, defCtor);
                             break;
                         }
                     }
@@ -283,6 +287,9 @@ public final class PatchByteCode {
     private static class CallParametersWriter extends SignatureVisitor {
         private final MethodNode mn;
         private int localSize;
+        private int[] paramIndices;
+        int [] out = new int[10];
+        private int cnt;
         
         /**
          * Adds opcodes to the method's code
@@ -296,12 +303,37 @@ public final class PatchByteCode {
             this.paramIndex = firstSelf ? 0 : 1;
         }
         
-        private int paramIndex = 1;
+        public CallParametersWriter(MethodNode mn, int[] indices) {
+            super(Opcodes.ASM5);
+            this.mn = mn;
+            this.paramIndices = indices;
+        }
+        
+        private int paramIndex = 0;
+        
+        void storeLoads() {
+            for (int i : paramIndices) {
+                mn.visitVarInsn(out[i * 2], out[i * 2 + 1]);
+            }
+        }
+        
+        private void load(int opcode, int paramIndex) {
+            if (paramIndices == null) {
+                mn.visitVarInsn(opcode, paramIndex);
+            } else {
+                if (out.length <= paramIndex + 1) {
+                    out = Arrays.copyOf(out, out.length * 2);
+                }
+                out[cnt * 2]  = opcode;
+                out[cnt * 2 + 1] = paramIndex;
+            }
+            cnt++;
+        }
 
         @Override
         public void visitEnd() {
             // end of classtype
-            mn.visitVarInsn(Opcodes.ALOAD, paramIndex++);
+            load(Opcodes.ALOAD, paramIndex++);
             localSize++;
         }
 
@@ -319,7 +351,7 @@ public final class PatchByteCode {
                 default: opcode = Opcodes.ILOAD; break;
 
             }
-            mn.visitVarInsn(opcode, idx);
+            load(opcode, idx);
             localSize++;
         }
 
@@ -339,7 +371,7 @@ public final class PatchByteCode {
 
         @Override
         public SignatureVisitor visitArrayType() {
-            mn.visitVarInsn(Opcodes.ALOAD, paramIndex++);
+            load(Opcodes.ALOAD, paramIndex++);
             return new NullSignVisitor();
         }
 
@@ -387,11 +419,58 @@ public final class PatchByteCode {
         }
 
     }
+    
+    private static class CtorDelVisitor extends AnnotationVisitor {
+        int[]   indices;
+       
+        public CtorDelVisitor(int i) {
+            super(i);
+        }
 
-    private void delegateToFactory(ClassNode targetClass, MethodNode targetMethod, ClassNode clazz,
+        @Override
+        public void visit(String string, Object o) {
+            if ("delegateParams".equals(string)) {  // NOI18N
+                indices = (int[])o;
+            }
+            super.visit(string, o);
+        }
+    }
+    
+    private String[] splitDescriptor(String desc) {
+        List<String> arr = new ArrayList<>();
+        int lastPos = 0;
+        F: for (int i = 0; i < desc.length(); i++) {
+            char c = desc.charAt(i);
+            switch (c) {
+                case '(':
+                    lastPos = i+1;
+                    break;
+                case ')':
+                    break F;
+                case 'B': case 'C': case 'D': case 'F': case 'I': case 'J':
+                case 'S': case 'Z':
+                    arr.add(desc.substring(lastPos, i + 1));
+                    lastPos = i + 1;
+                    break;
+                    
+                case '[':
+                    break;
+                    
+                case 'L':
+                    i = desc.indexOf(';', i);
+                    arr.add(desc.substring(lastPos, i + 1));
+                    lastPos = i + 1;
+                    break;
+            }
+        }
+        return arr.toArray(new String[arr.size()]);
+    }
+    
+    private void delegateToFactory(AnnotationNode an, ClassNode targetClass, MethodNode targetMethod, ClassNode clazz,
             MethodNode noArgCtor) {
         String desc = targetMethod.desc;
-        // assume the first parameter is the class:
+        CtorDelVisitor v = new CtorDelVisitor(Opcodes.ASM5);
+        an.accept(v);
         int nextPos = desc.indexOf(';', 2); // NOI18N
         desc = "(" + desc.substring(nextPos + 1); // NOI18N
         MethodNode mn = new MethodNode(Opcodes.ASM5, 
@@ -399,7 +478,7 @@ public final class PatchByteCode {
                 desc,
                 targetMethod.signature,
                 (String[])targetMethod.exceptions.toArray(new String[targetMethod.exceptions.size()]));
-        
+
         mn.visibleAnnotations = targetMethod.visibleAnnotations;
         mn.visibleParameterAnnotations = targetMethod.visibleParameterAnnotations;
         mn.parameters = targetMethod.parameters;
@@ -407,10 +486,31 @@ public final class PatchByteCode {
         mn.visitCode();
         // this();
         mn.visitVarInsn(Opcodes.ALOAD, 0);
-        mn.visitMethodInsn(Opcodes.INVOKESPECIAL, 
-                clazz.name, 
-                noArgCtor.name, noArgCtor.desc, false);
-        
+        if (v.indices == null) {
+            // assume the first parameter is the class:
+            mn.visitMethodInsn(Opcodes.INVOKESPECIAL, 
+                    clazz.name, 
+                    noArgCtor.name, noArgCtor.desc, false);
+        } else {
+            String[] paramDescs = splitDescriptor(targetMethod.desc);
+            StringBuilder sb = new StringBuilder();
+            sb.append("(");
+            for (int i : v.indices) {
+                sb.append(paramDescs[i]);
+            }
+            sb.append(")V");
+            SignatureReader r = new SignatureReader(targetMethod.desc);
+            CallParametersWriter callWr = new CallParametersWriter(mn, v.indices);
+            r.accept(callWr);
+            // generate all the parameter loads:
+            for (int i : v.indices) {
+                mn.visitVarInsn(callWr.out[i * 2], callWr.out[i * 2 + 1]);
+            }
+            mn.visitMethodInsn(Opcodes.INVOKESPECIAL, 
+                    clazz.name, 
+                    "<init>", sb.toString(), false);
+        }
+        // finally call the static method
         // push parameters
         SignatureReader r = new SignatureReader(targetMethod.desc);
         CallParametersWriter callWr = new CallParametersWriter(mn, true);

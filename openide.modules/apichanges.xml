@@ -50,6 +50,22 @@ made subject to such option by the copyright holder.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="PatchSuper-ctors">
+        <api name="modules"/>
+        <summary>Better support for constructor invocation</summary>
+        <version major="7" minor="45"/>
+        <date day="26" month="9" year="2014"/>
+        <author login="sdedic"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible"/>
+        <description>
+            <p>
+                Allows the generated constructor to call any constructor, signature is derived from specified
+                static method parameters. See javadoc for <a href="@TOP@/org/openide/modules/ConstructorDelegate.html">@ConstructorDelegate</a>
+            </p>
+        </description>
+        <class package="org.netbeans.modules" name="ConstructorDelegate"/>
+        <issue number="243561"/>
+    </change>
     <change id="PatchSuper">
         <api name="modules"/>
         <summary>Support for binary compatibility patches</summary>

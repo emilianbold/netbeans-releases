@@ -85,8 +85,30 @@ import java.lang.annotation.Target;
  *          JarFileSystemCompat.createJarFileSystemCompat(this, c);
  *      }
  * </pre></code>
- * Invocation of other constructors than the default one is not supported.
+ * <p/>
+ * In the case it is necessary to invoke a <b>non-default</b> constructor, the
+ * {@link #delegateParams()} attribute enumerates which parameters of the static 
+ * annotated method are also passed to the non-default constructor. Parameter positions
+ * are zero-based (0 = the object type itself) and must be listed in the same order 
+ * and have the same types as in the invoked constructor declaration.
  *
+ * <code><pre>
+ *  &#064PatchFor(JarFileSystem.class)
+ * public abstract class JarFileSystemCompat extends AbstractFileSystem {
+ *    &#064ConstructorDelegate(delegateParams = {1, 2} )
+ *   public static void createJarFileSystemCompat(JarFileSystemCompat jfs, FileSystemCapability cap, File f) throws IOException {
+ *     ...
+ *   }
+ * }
+ * </pre></code>
+ * will produce an equivalent of
+ * <code><pre>
+ *      JarFileSystem(FileSystemCapability cap, File f) throws IOException {
+ *          this(f);
+ *          JarFileSystemCompat.createJarFileSystemCompat(this, cap, f);
+ *      }
+ * </pre></code>
+ * 
  * @see PatchFor
  * @since 7.44
  * @author sdedic
@@ -94,4 +116,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.METHOD})
 public @interface ConstructorDelegate {
+    /**
+     * Specifies the position of parameters passed to the real class' constructor.
+     * The array must contain an item for each parameter passed to the real constructor, in the
+     * order specified by the invoked constructor signature.
+     * Each item is a zero-based parameter position in the static creation method signature.
+     * Order and type of the referenced parameters must match the target constructor signature.
+     * @return 
+     */
+    public int[] delegateParams() default -1;
 }
