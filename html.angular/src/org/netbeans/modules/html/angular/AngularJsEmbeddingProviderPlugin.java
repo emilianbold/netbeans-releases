@@ -404,10 +404,27 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private boolean processRepeat(String expression) {
         processTemplate();
         boolean processed = false;
+
+        String repeatExpression = expression;
+
+        // split the expression with "track by"
+        // if present, it should be the last thing in expression
+        String[] trackByParts = expression.split(" track by "); //NOI18N
+        if (trackByParts.length == 2) {
+            repeatExpression = trackByParts[0];
+        }
+
+        // split the expression with "as"
+        // if present, it should be now the last thing in expression (after we have taken care of "track by")
+        String[] asParts = repeatExpression.split(" as "); //NOI18N
+        if (asParts.length == 2) {
+            repeatExpression = asParts[0];
+        }
+
         // split the expression with |
         // we expect that the first part is the for cycle and the rest are conditions
         // and attributes like orderby, filter etc.
-        String[] parts = expression.split("\\|");
+        String[] parts = repeatExpression.split("\\|"); //NOI18N
         if (parts.length > 0) {
             // try to create the for cycle in virtual source
              if (parts[0].contains(" in ")) {
@@ -511,6 +528,20 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 }
                 lastPartPos = lastPartPos + parts[partIndex].length() + 1;
                 partIndex++;
+            }
+
+            // now insert the embeddings for "as" alias expression and/or "track by" tracking expression
+            if (asParts.length == 2) {
+                String asPropName = asParts[1].trim();
+                int asPropNameOffset = expression.indexOf(asPropName);
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1 + asPropNameOffset, asPropName.length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(" = [];\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+            }
+            if (trackByParts.length == 2) {
+                String trackingExpr = trackByParts[1].trim();
+                int trackingExprOffset = expression.indexOf(trackingExpr);
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1 + trackingExprOffset, trackingExpr.length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
             }
         }
         return processed;

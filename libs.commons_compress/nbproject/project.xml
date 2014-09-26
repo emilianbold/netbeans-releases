@@ -52,24 +52,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.javascript.nodejs</friend>
                 <package>org.apache.commons.compress.archivers</package>
-                <package>org.apache.commons.compress.archivers.ar</package>
-                <package>org.apache.commons.compress.archivers.arj</package>
-                <package>org.apache.commons.compress.archivers.cpio</package>
-                <package>org.apache.commons.compress.archivers.dump</package>
-                <package>org.apache.commons.compress.archivers.jar</package>
-                <package>org.apache.commons.compress.archivers.sevenz</package>
                 <package>org.apache.commons.compress.archivers.tar</package>
-                <package>org.apache.commons.compress.archivers.zip</package>
-                <package>org.apache.commons.compress.changes</package>
-                <package>org.apache.commons.compress.compressors</package>
-                <package>org.apache.commons.compress.compressors.bzip2</package>
-                <package>org.apache.commons.compress.compressors.gzip</package>
-                <package>org.apache.commons.compress.compressors.lzma</package>
-                <package>org.apache.commons.compress.compressors.pack200</package>
-                <package>org.apache.commons.compress.compressors.snappy</package>
-                <package>org.apache.commons.compress.compressors.xz</package>
-                <package>org.apache.commons.compress.compressors.z</package>
-                <package>org.apache.commons.compress.utils</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/commons-compress-1.8.1.jar</runtime-relative-path>
