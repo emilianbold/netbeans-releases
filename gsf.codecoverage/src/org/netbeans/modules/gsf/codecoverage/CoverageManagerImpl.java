@@ -105,9 +105,20 @@ public class CoverageManagerImpl implements CoverageManager {
             public void run() {
                 for (JTextComponent target : EditorRegistry.componentList()) {
                     Document document = target.getDocument();
-                    CoverageSideBar sb = CoverageSideBar.getSideBar(document);
-                    if (sb != null) {
-                        sb.showCoveragePanel(enabled);
+                    FileObject fileForDocument = GsfUtilities.findFileObject(document);
+                    // show/hide code coverage toolbar in all open file editors belonging only to this project
+                    if (project.equals(FileOwnerQuery.getOwner(fileForDocument))) {
+                        CoverageSideBar sb = CoverageSideBar.getSideBar(document);
+                        if (sb != null) {
+                            sb.showCoveragePanel(enabled);
+                        }
+                    }
+                }
+                // code coverage is being disabled, so close the report window for this project
+                if(!enabled) {
+                    CoverageReportTopComponent report = showingReports.get(project);
+                    if(report != null) {
+                        report.close();
                     }
                 }
             }
