@@ -47,506 +47,352 @@ package org.netbeans.api.editor.document;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
-import javax.swing.text.Segment;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.modules.editor.document.BaseFinderFactory;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.document.DocumentServices;
+import org.netbeans.modules.editor.document.TextSearchUtils;
 import org.netbeans.modules.editor.document.implspi.CharClassifier;
 import org.netbeans.modules.editor.lib2.AcceptorFactory;
-import org.netbeans.modules.editor.lib2.DocumentPreferencesKeys;
 import org.netbeans.spi.editor.document.DocumentFactory;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
-* Various useful editor functions. Some of the methods have
-* the same names and signatures like in javax.swing.Utilities but
-* there is also many other useful methods.
-* All the methods are static so there's no reason to instantiate Utilities.
-*
-* All the methods working with the document rely on that it is locked against
-* modification so they don't acquire document read/write lock by themselves
-* to guarantee the full thread safety of the execution.
-* It's the user's task to lock the document appropriately
-* before using methods described here.
-* 
-* The utilities were moved from the former Editor Library 2's Utilities
-* and work with {@link LineDocument} only. The methods work only with document
-* data. Utilities that connect document with the UI elements (Swing) can be
-* still found in Editor Library (2).
-*
-* @author Miloslav Metelka
-* @version 0.10
-*/
+ * Line and word related utility methods.
+ * <br/>
+ * All the methods working with the document assume that the document is locked against
+ * a parallel modification e.g. by including the call within
+ * {@link Document#render(java.lang.Runnable)}.
+ * <br/>
+ * The utilities were moved from the former Editor Library 2's Utilities
+ * and work with {@link LineDocument} only. The methods work only with document
+ * data. Utilities that connect document with the UI elements (Swing) can be
+ * still found in Editor Library (2).
+ *
+ * @author Miloslav Metelka
+ */
 
 public final class LineDocumentUtils {
 
     private static final String WRONG_POSITION_LOCALE = "wrong_position"; // NOI18N
 
-//    /** Switch the case to capital letters. Used in changeCase() */
-//    public static final int CASE_UPPER = 0;
-//
-//    /** Switch the case to small letters. Used in changeCase() */
-//    public static final int CASE_LOWER = 1;
-//
-//    /** Switch the case to reverse. Used in changeCase() */
-//    public static final int CASE_SWITCH = 2;
-//    
     private LineDocumentUtils() {
         // instantiation has no sense
     }
 
-    /** Get the starting position of the row.
-    * @param doc document to operate on
-    * @param offset position in document where to start searching
-    * @return position of the start of the row or -1 for invalid position
-    */
-    public static int getRowStart(LineDocument doc, int offset)
-    throws BadLocationException {
-        return getRowStart(doc, offset, 0);
+    /**
+     * Get start offset of a (newline character separated) line.
+     * @param doc non-null document to operate on
+     * @param offset position in document where to start searching
+     * @return offset of character right above newline prior the given offset or zero.
+     */
+    public static int getLineStart(@NonNull LineDocument doc, int offset) {
+        return doc.getParagraphElement(offset).getStartOffset();
     }
 
-    /** Get the starting position of the row while providing relative count
-    * of row how the given position should be shifted. This is the most
-    * efficient way how to move by lines in the document based on some
-    * position. There is no similair getRowEnd() method that would have
-    * shifting parameter.
-    * @param doc document to operate on
-    * @param offset position in document where to start searching
-    * @param lineShift shift the given offset forward/back relatively
-    *  by some amount of lines
-    * @return position of the start of the row or -1 for invalid position
-    */
-    public static int getRowStart(LineDocument doc, int offset, int lineShift)
-    throws BadLocationException {
-        
+    public static int getLineEnd(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
         checkOffsetValid(doc, offset);
-
-        if (lineShift != 0) {
-            Element lineRoot = doc.getParagraphElement(0).getParentElement();
-            int line = lineRoot.getElementIndex(offset);
-            line += lineShift;
-            if (line < 0 || line >= lineRoot.getElementCount()) {
-                return -1; // invalid line shift
-            }
-            return lineRoot.getElement(line).getStartOffset();
-
-        } else { // no shift
-            return doc.getParagraphElement(offset).getStartOffset();
-        }
+        return doc.getParagraphElement(offset).getEndOffset() - 1;
     }
-
-    /** Get the first non-white character on the line.
-    * The document.isWhitespace() is used to test whether the particular
-    * character is white space or not.
-    * @param doc document to operate on
-    * @param offset position in document anywhere on the line
-    * @return position of the first non-white char on the line or -1
-    *   if there's no non-white character on that line.
-    */
-    public static int getRowFirstNonWhite(LineDocument doc, int offset)
-    throws BadLocationException {
-        
+    
+    /**
+     * Get the first non-whitespace character on a line represented by the given
+     * offset.
+     *
+     * @param doc document to operate on
+     * @param offset position in document anywhere on the line
+     * @return position of the first non-white char on the line or -1 if there's
+     * no non-white character on that line.
+     */
+    public static int getLineFirstNonWhitespace(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
         checkOffsetValid(doc, offset);
-
+        CharClassifier classifier = getValidClassifier(doc);
+        CharSequence docText = DocumentUtilities.getText(doc);
         Element lineElement = doc.getParagraphElement(offset);
-        return getFirstNonWhiteFwd(doc,
+        return TextSearchUtils.getNextNonWhitespace(docText, classifier,
             lineElement.getStartOffset(),
             lineElement.getEndOffset() - 1
         );
     }
 
-    /** Get the last non-white character on the line.
-    * The document.isWhitespace() is used to test whether the particular
-    * character is white space or not.
-    * @param doc document to operate on
-    * @param offset position in document anywhere on the line
-    * @return position of the last non-white char on the line or -1
-    *   if there's no non-white character on that line.
-    */
-    public static int getRowLastNonWhite(LineDocument doc, int offset)
-    throws BadLocationException {
-        
+    /**
+     * Get the last non-white character on the line. The document.isWhitespace()
+     * is used to test whether the particular character is white space or not.
+     *
+     * @param doc document to operate on
+     * @param offset position in document anywhere on the line
+     * @return position of the last non-white char on the line or -1 if there's
+     * no non-white character on that line.
+     */
+    public static int getLineLastNonWhitespace(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
         checkOffsetValid(doc, offset);
-
+        CharClassifier classifier = getValidClassifier(doc);
+        CharSequence docText = DocumentUtilities.getText(doc);
         Element lineElement = doc.getParagraphElement(offset);
-        return getFirstNonWhiteBwd(doc,
+        return TextSearchUtils.getPreviousNonWhitespace(docText, classifier,
             lineElement.getEndOffset() - 1,
             lineElement.getStartOffset()
         );
     }
 
-    /** Get indentation on the current line. If this line is white then
-    * return -1.
-    * @param doc document to operate on
-    * @param offset position in document anywhere on the line
-    * @return indentation or -1 if the line is white
-    public static int getRowIndent(LineDocument doc, int offset)
-    throws BadLocationException {
-        offset = getRowFirstNonWhite(doc, offset);
-        if (offset == -1) {
-            return -1;
-        }
-        return doc.getVisColFromPos(offset);
+    public static int getWordStart(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
+        checkOffsetValid(doc, offset);
+        CharClassifier classifier = getValidClassifier(doc);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        return TextSearchUtils.getWordStart(docText, classifier, offset);
     }
-    */
 
-    /** Get indentation on the current line. If this line is white then
-    * go either up or down an return indentation of the first non-white row.
-    * The <tt>getRowFirstNonWhite()</tt> is used to find the indentation
-    * on particular line.
-    * @param doc document to operate on
-    * @param offset position in document anywhere on the line
-    * @param downDir if this flag is set to true then if the row is white
-    *   then the indentation of the next first non-white row is returned. If it's
-    *   false then the indentation of the previous first non-white row is returned.
-    * @return indentation or -1 if there's no non-white line in the specified direction
-    public static int getRowIndent(LineDocument doc, int offset, boolean downDir)
-    throws BadLocationException {
-        int p = getRowFirstNonWhite(doc, offset);
-        if (p == -1) {
-            p = getFirstNonWhiteRow(doc, offset, downDir);
-            if (p == -1) {
-                return -1; // non-white line not found
-            }
-            p = getRowFirstNonWhite(doc, p);
-            if (p == -1) {
-                return -1; // non-white line not found
-            }
-        }
-        return doc.getVisColFromPos(p);
+    public static int getWordEnd(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
+        checkOffsetValid(doc, offset);
+        CharClassifier classifier = getValidClassifier(doc);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        return TextSearchUtils.getWordEnd(docText, classifier, offset);
     }
-    */
 
-    public static int getRowEnd(LineDocument doc, int offset)
+    /**
+     * Get the word at given offset.
+     * @param doc document to operate on
+     * @param wordStartOffset offset of word start.
+     * @return word starting at offset.
+     */
+    public static String getWord(@NonNull LineDocument doc, int wordStartOffset)
+    throws BadLocationException
+    {
+        checkOffsetValid(doc, wordStartOffset);
+        CharClassifier classifier = getValidClassifier(doc);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        return TextSearchUtils.getWord(docText, classifier, wordStartOffset).toString();
+    }
+
+    public static int getNextWordStart(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
+        checkOffsetValid(doc, offset);
+        CharClassifier classifier = getValidClassifier(doc);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        return TextSearchUtils.getNextWordStart(docText, classifier, offset);
+    }
+
+    public static int getPreviousWordEnd(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
+        checkOffsetValid(doc, offset);
+        CharClassifier classifier = getValidClassifier(doc);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        return TextSearchUtils.getPreviousWordEnd(docText, classifier, offset);
+    }
+
+    /**
+     * Get first whitespace character in document in forward direction.
+     *
+     * @param doc document to operate on
+     * @param offset position in document where to start searching
+     * @return position of the next WS character or -1 if not found.
+     */
+    public static int getNextWhitespace(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
+        return getNextWhitespace(doc, offset, doc.getLength() + 1);
+    }
+
+    /**
+     * Get first whitespace character in document in forward direction.
+     *
+     * @param doc document to operate on
+     * @param offset position in document where to start searching
+     * @param limitOffset offset above the last character to examine for WS.
+     * @return position of the next WS character or -1 if not found.
+     */
+    public static int getNextWhitespace(@NonNull LineDocument doc, int offset, int limitOffset)
+    throws BadLocationException
+    {
+        checkOffsetValid(doc, offset);
+        CharClassifier classifier = getValidClassifier(doc);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        return TextSearchUtils.getNextWhitespace(docText, classifier, offset, limitOffset);
+    }
+
+    /**
+     * Get first whitespace character in document in backward direction.
+     *
+     * @param doc document to operate on
+     * @param offset offset above first character to examine for WS.
+     * @return position of the previous WS character or -1 if not found.
+     */
+    public static int getPreviousWhitespace(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
+        return getPreviousWhitespace(doc, offset, 0);
+    }
+
+    /**
+     * Get first whitespace character in document in backward direction.
+     *
+     * @param doc document to operate on
+     * @param offset offset above first character to examine for WS.
+     * @param limitOffset offset of the last character (in backward direction) to examine for WS.
+     * @return position of the previous WS character or -1 if not found.
+     */
+    public static int getPreviousWhitespace(@NonNull LineDocument doc, int offset, int limitOffset)
+    throws BadLocationException
+    {
+        checkOffsetValid(doc, offset);
+        CharClassifier classifier = getValidClassifier(doc);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        return TextSearchUtils.getPreviousWhitespace(docText, classifier, offset, limitOffset);
+    }
+
+    /**
+     * Get first non-whitespace character in document in forward direction.
+     *
+     * @param doc document to operate on
+     * @param offset offset of first character to examine for WS.
+     * @return position of the next non-WS character or -1 if not found.
+     */
+    public static int getNextNonWhitespace(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
+        return getNextNonWhitespace(doc, offset, doc.getLength() + 1);
+    }
+
+    /**
+     * Get first non-whitespace character in document in forward direction.
+     *
+     * @param doc document to operate on
+     * @param offset offset of first character to examine for WS.
+     * @param limitOffset offset above the last character to examine for WS.
+     * @return position of the next non-WS character or -1 if not found.
+     */
+    public static int getNextNonWhitespace(@NonNull LineDocument doc, int offset, int limitOffset)
+    throws BadLocationException
+    {
+        checkOffsetValid(doc, offset);
+        CharClassifier classifier = getValidClassifier(doc);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        return TextSearchUtils.getNextNonWhitespace(docText, classifier, offset, limitOffset);
+    }
+    
+    /**
+     * Get first non-whitespace character in document in forward direction.
+     *
+     * @param doc document to operate on
+     * @param offset offset of first character to examine for WS.
+     * @return position of the next non-WS character or -1 if not found.
+     */
+    public static int getPreviousNonWhitespace(@NonNull LineDocument doc, int offset)
+    throws BadLocationException {
+        return getPreviousNonWhitespace(doc, offset, 0);
+    }
+
+    /**
+     * Get first non-whitespace character in document in forward direction.
+     *
+     * @param doc document to operate on
+     * @param offset offset of first character to examine for WS.
+     * @param limitOffset offset above the last character to examine for WS.
+     * @return position of the next non-WS character or -1 if not found.
+     */
+    public static int getPreviousNonWhitespace(@NonNull LineDocument doc, int offset, int limitOffset)
     throws BadLocationException {
         checkOffsetValid(doc, offset);
-
-        return doc.getParagraphElement(offset).getEndOffset() - 1;
-    }
-    
-    public static int getWordStart(LineDocument doc, int offset)
-    throws BadLocationException {
-        return doc.find(new BaseFinderFactory.PreviousWordBwdFinder(getClassifier(doc), false, true),
-                        offset, 0);
+        CharClassifier classifier = getValidClassifier(doc);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        return TextSearchUtils.getPreviousNonWhitespace(docText, classifier, offset, limitOffset);
     }
 
-    public static int getWordEnd(LineDocument doc, int offset)
-    throws BadLocationException {
-        int ret = doc.find(new BaseFinderFactory.NextWordFwdFinder(getClassifier(doc), false, true),
-                        offset, -1);
-        return (ret > 0) ? ret : doc.getLength();
-    }
-
-    public static int getNextWord(LineDocument doc, int offset)
-    throws BadLocationException {
-        Finder nextWordFinder = (Finder)doc.getProperty(DocumentPreferencesKeys.NEXT_WORD_FINDER);
-        offset = doc.find(nextWordFinder, offset, -1);
-        if (offset < 0) {
-            offset = doc.getLength();
-        }
-        return offset;
-    }
-
-    public static int getPreviousWord(LineDocument doc, int offset)
-    throws BadLocationException {
-        Finder prevWordFinder = (Finder)doc.getProperty(DocumentPreferencesKeys.PREVIOUS_WORD_FINDER);
-        offset = doc.find(prevWordFinder, offset, 0);
-        if (offset < 0) {
-            offset = 0;
-        }
-        return offset;
-    }
-
-    /** Get first white character in document in forward direction
-    * @param doc document to operate on
-    * @param offset position in document where to start searching
-    * @return position of the first white character or -1
-    */
-    public static int getFirstWhiteFwd(LineDocument doc, int offset)
-    throws BadLocationException {
-        return getFirstWhiteFwd(doc, offset, -1);
-    }
-
-    /** Get first white character in document in forward direction
-    * @param doc document to operate on
-    * @param offset position in document where to start searching
-    * @param limitPos position in document (greater or equal than offset) where
-    *   the search will stop reporting unsuccessful search by returning -1
-    * @return position of the first non-white character or -1
-    */
-    public static int getFirstWhiteFwd(LineDocument doc, int offset, int limitPos)
-    throws BadLocationException {
-        return doc.find(new BaseFinderFactory.WhiteFwdFinder(getClassifier(doc)), offset, limitPos);
-    }
-
-    /** Get first non-white character in document in forward direction
-    * @param doc document to operate on
-    * @param offset position in document where to start searching
-    * @return position of the first non-white character or -1
-    */
-    public static int getFirstNonWhiteFwd(LineDocument doc, int offset)
-    throws BadLocationException {
-        return getFirstNonWhiteFwd(doc, offset, -1);
-    }
-
-    /** Get first non-white character in document in forward direction
-    * @param doc document to operate on
-    * @param offset position in document where to start searching
-    * @param limitPos position in document (greater or equal than offset) where
-    *   the search will stop reporting unsuccessful search by returning -1
-    * @return position of the first non-white character or -1
-    */
-    public static int getFirstNonWhiteFwd(LineDocument doc, int offset, int limitPos)
-    throws BadLocationException {
-        return doc.find(new BaseFinderFactory.NonWhiteFwdFinder(getClassifier(doc)), offset, limitPos);
-    }
-    
-    private static CharClassifier getClassifier(Document doc) {
-        return as(doc, CharClassifier.class);
-    }
-    
-    private static final CharClassifier DEFAULT_CLASSIFIER = new CharClassifier() {
-
-        @Override
-        public boolean isIdentifierPart(char ch) {
-            return AcceptorFactory.LETTER_DIGIT.accept(ch);
-        }
-
-        @Override
-        public boolean isWhitespace(char ch) {
-            return AcceptorFactory.WHITESPACE.accept(ch);
-        }
-        
-    };
-
-    /** Get first white character in document in backward direction.
-    * The character right before the character at position offset will
-    * be searched as first.
-    * @param doc document to operate on
-    * @param offset position in document where to start searching
-    * @return position of the first white character or -1
-    */
-    public static int getFirstWhiteBwd(LineDocument doc, int offset)
-    throws BadLocationException {
-        return getFirstWhiteBwd(doc, offset, 0);
-    }
-
-    /** Get first white character in document in backward direction.
-    * The character right before the character at position offset will
-    * be searched as first.
-    * @param doc document to operate on
-    * @param offset position in document where to start searching
-    * @param limitPos position in document (lower or equal than offset) where
-    *   the search will stop reporting unsuccessful search by returning -1
-    * @return position of the first white character or -1
-    */
-    public static int getFirstWhiteBwd(LineDocument doc, int offset, int limitPos)
-    throws BadLocationException {
-        return doc.find(new BaseFinderFactory.WhiteBwdFinder(getClassifier(doc)), offset, limitPos);
-    }
-
-    /** Get first non-white character in document in backward direction.
-    * The character right before the character at position offset will
-    * be searched as first.
-    * @param doc document to operate on
-    * @param offset position in document where to start searching
-    * @return position of the first non-white character or -1
-    */
-    public static int getFirstNonWhiteBwd(LineDocument doc, int offset)
-    throws BadLocationException {
-        return getFirstNonWhiteBwd(doc, offset, 0);
-    }
-
-    /** Get first non-white character in document in backward direction.
-    * The character right before the character at position offset will
-    * be searched as first.
-    * @param doc document to operate on
-    * @param offset position in document where to start searching
-    * @param limitPos position in document (lower or equal than offset) where
-    *   the search will stop reporting unsuccessful search by returning -1
-    * @return position of the first non-white character or -1
-    */
-    public static int getFirstNonWhiteBwd(LineDocument doc, int offset, int limitPos)
-    throws BadLocationException {
-        return doc.find(new BaseFinderFactory.NonWhiteBwdFinder(getClassifier(doc)), offset, limitPos);
-    }
-
-    /** Return line offset (line number - 1) for some position in the document
-    * @param doc document to operate on
-    * @param offset position in document where to start searching
-    */
-    public static int getLineOffset(LineDocument doc, int offset)
-    throws BadLocationException {
-        
+    /**
+     * Return line index (line number - 1) for the given offset in the document.
+     *
+     * @param doc document to operate on
+     * @param offset position in document where to start searching
+     */
+    public static int getLineIndex(@NonNull LineDocument doc, int offset) throws BadLocationException {
         checkOffsetValid(doc, offset);
-
         Element lineRoot = doc.getParagraphElement(0).getParentElement();
         return lineRoot.getElementIndex(offset);
     }
 
-    /** Return start offset of the line
-    * @param lineIndex line index starting from 0
-    * @return start position of the line or -1 if lineIndex was invalid
-    */
-    public static int getRowStartFromLineOffset(LineDocument doc, int lineIndex) {
+    /**
+     * Return start offset of the line with the given index.
+     *
+     * @param lineIndex line index starting from 0
+     * @return start offset of the line or -1 if lineIndex was invalid
+     */
+    public static int getLineStartFromIndex(@NonNull LineDocument doc, int lineIndex) {
         Element lineRoot = doc.getParagraphElement(0).getParentElement();
         if (lineIndex < 0 || lineIndex >= lineRoot.getElementCount()) {
             return -1; // invalid line number
-
         } else {
             return lineRoot.getElement(lineIndex).getStartOffset();
         }
     }
 
-    /** Return visual column (with expanded tabs) on the line.
-    * @param doc document to operate on
-    * @param offset position in document for which the visual column should be found
-    * @return visual column on the line determined by position
-    public static int getVisualColumn(LineDocument doc, int offset)
-    throws BadLocationException {
-        
-        int docLen = doc.getLength();
-        if (offset == docLen + 1) { // at ending extra '\n' => make docLen to proceed without BLE
-            offset = docLen;
-        }
-
-        return doc.getVisColFromPos(offset);
-    }
-    */
-
-    /** Get the word at given position.
-    */
-    public static String getWord(LineDocument doc, int offset)
-    throws BadLocationException {
-        int wordEnd = getWordEnd(doc, offset);
-        if (wordEnd != -1) {
-            Segment s = new Segment();
-            doc.getText(offset, wordEnd - offset, s);
-            return new String(s.array, 0, wordEnd - offset);
-        }
-        return null;
-    }
-
-    /** Tests whether the line contains no characters except the ending new-line.
-    * @param doc document to operate on
-    * @param offset position anywhere on the tested line
-    * @return whether the line is empty or not
-    */
-    public static boolean isRowEmpty(LineDocument doc, int offset)
-    throws BadLocationException {
-        Element lineElement = doc.getParagraphElement(offset);
-        return (lineElement.getStartOffset() + 1 == lineElement.getEndOffset());
-    }
-
-    public static int getFirstNonEmptyRow(LineDocument doc, int offset, boolean downDir)
-    throws BadLocationException {
-        while (offset != -1 && isRowEmpty(doc, offset)) {
-            offset = getRowStart(doc, offset, downDir ? +1 : -1);
-        }
-        return offset;
+    /**
+     * Tests whether the line at the given offset contains no characters except the ending new-line.
+     * @param doc document to operate on
+     * @param offset position anywhere on the tested line
+     * @return whether the line is empty or not
+     */
+    public static boolean isLineEmpty(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
+        checkOffsetValid(doc, offset);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        return TextSearchUtils.isLineEmpty(docText, offset);
     }
 
     /** Tests whether the line contains only whitespace characters.
-    * @param doc document to operate on
-    * @param offset position anywhere on the tested line
-    * @return whether the line is empty or not
-    */
-    public static boolean isRowWhite(LineDocument doc, int offset)
-    throws BadLocationException {
-        Element lineElement = doc.getParagraphElement(offset);
-        offset = doc.find(new BaseFinderFactory.NonWhiteFwdFinder(getClassifier(doc)),
-              lineElement.getStartOffset(), lineElement.getEndOffset() - 1);
-        return (offset == -1);
+     * @param doc document to operate on
+     * @param offset position anywhere on the tested line
+     * @return whether the line is empty or not
+     */
+    public static boolean isLineWhitespace(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
+        checkOffsetValid(doc, offset);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        return TextSearchUtils.isLineEmpty(docText, offset);
     }
 
-    public static int getFirstNonWhiteRow(LineDocument doc, int offset, boolean downDir)
-    throws BadLocationException {
-        if (isRowWhite(doc, offset)) {
-            if (downDir) { // search down for non-white line
-                offset = getFirstNonWhiteFwd(doc, offset);
-            } else { // search up for non-white line
-                offset = getFirstNonWhiteBwd(doc, offset);
-            }
-        }
-        return offset;
+    public static int getNextNonNewline(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
+        checkOffsetValid(doc, offset);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        return TextSearchUtils.getNextNonNewline(docText, offset, doc.getLength() + 1);
     }
 
-    /** Count of rows between these two positions */
-    public static int getRowCount(LineDocument doc, int startPos, int endPos)
-    throws BadLocationException {
-        if (startPos > endPos) {
-            return 0;
-        }
-        Element lineRoot = doc.getParagraphElement(0).getParentElement();
-        return lineRoot.getElementIndex(endPos) - lineRoot.getElementIndex(startPos) + 1;
+    public static int getPreviousNonNewline(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
+        checkOffsetValid(doc, offset);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        return TextSearchUtils.getPreviousNonNewline(docText, offset, 0);
     }
 
-    /** Get the total count of lines in the document */
-    public static int getRowCount(LineDocument doc) {
+    public static int getLineCount(@NonNull LineDocument doc) {
         return doc.getParagraphElement(0).getParentElement().getElementCount();
     }
 
-    /** Get the visual column corresponding to the position after pressing
-     * the TAB key.
-     * @param doc document to work with
-     * @param offset position at which the TAB was pressed
-    public static int getNextTabColumn(LineDocument doc, int offset)
-    throws BadLocationException {
-        int col = getVisualColumn(doc, offset);
-        // FIXME - consult CodeStylePreferences
-        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
-        int tabSize = prefs.getInt(DocumentPreferencesKeys.SPACES_PER_TAB, DocumentPreferencesDefaults.defaultSpacesPerTab);
-        int tabSize = DocumentPreferencesDefaults.defaultSpacesPerTab;
-        return tabSize <= 0 ? col : (col + tabSize) / tabSize * tabSize;
-    }
-        */
-
-    public static String debugPosition(LineDocument doc, int offset) {
-        return debugPosition(doc, offset, ":");
-    }
-
-    /**
-     * @param doc non-null document.
-     * @param offset offset to translate to line and column info.
-     * @param separator non-null separator of line and column info (either single charater or a string).s
-     * @return non-null line and column info for the given offset.
-     * @since 1.40
-     */
-    public static String debugPosition(LineDocument doc, int offset, String separator) {
-        String ret;
-
-        if (offset >= 0) {
-            try {
-                int line = getLineOffset(doc, offset) + 1;
-                int col = offset - getRowStart(doc, offset) + 1;
-                ret = String.valueOf(line) + separator + String.valueOf(col); // NOI18N
-            } catch (BadLocationException e) {
-                ret = NbBundle.getBundle(LineDocumentUtils.class).getString( WRONG_POSITION_LOCALE )
-                      + ' ' + offset + " > " + doc.getLength(); // NOI18N
-            }
-        } else {
-            ret = String.valueOf(offset);
+    /** Count of rows between these two positions */
+    public static int getLineCount(@NonNull LineDocument doc, int startOffset, int endOffset) {
+        if (startOffset > endOffset) {
+            return 0;
         }
-
-        return ret;
-    }
-    
-    public static String offsetToLineColumnString(LineDocument doc, int offset) {
-        return String.valueOf(offset) + "[" + debugPosition(doc, offset) + "]"; // NOI18N
-    }
-
-    /** Display the identity of the document together with the title property
-     * and stream-description property.
-     */
-    public static String debugDocument(Document doc) {
-        return "<" + System.identityHashCode(doc) // NOI18N
-            + ", title='" + doc.getProperty(Document.TitleProperty)
-            + "', stream='" + doc.getProperty(Document.StreamDescriptionProperty)
-            + ", " + doc.toString() + ">"; // NOI18N
+        Element lineRoot = doc.getParagraphElement(0).getParentElement();
+        return lineRoot.getElementIndex(endOffset) - lineRoot.getElementIndex(startOffset) + 1;
     }
 
     private static void checkOffsetValid(Document doc, int offset) throws BadLocationException {
@@ -559,6 +405,11 @@ public final class LineDocumentUtils {
                 + " not within <0, " + limitOffset + ">", // NOI18N
                 offset);
         }
+    }
+    
+    private static CharClassifier getValidClassifier(Document doc) {
+        CharClassifier cc = as(doc, CharClassifier.class);
+        return (cc != null) ? cc : TextSearchUtils.DEFAULT_CLASSIFIER;
     }
     
     private static final Object NOT_FOUND = new Object();
@@ -696,4 +547,5 @@ public final class LineDocumentUtils {
         }
         return ldoc;
     }
+
 }

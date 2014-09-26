@@ -42,13 +42,9 @@
 
 package org.netbeans.modules.editor.document;
 
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Segment;
-import org.netbeans.api.editor.document.AdjustFinder;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.AtomicLockListener;
-import org.netbeans.api.editor.document.Finder;
 import org.netbeans.modules.editor.document.implspi.CharClassifier;
 import org.netbeans.modules.editor.document.implspi.DocumentServiceFactory;
 import org.netbeans.modules.editor.lib2.AcceptorFactory;

@@ -33,13 +33,4 @@ public interface LineDocument extends Document {
      */
     public Position createPosition(int offset, Position.Bias bias) throws BadLocationException;
 
-    /** Find something in document using a finder.
-     * See {@link Finder} interface for a complete description
-    * @param finder finder to be used for the search
-    * @param startPos position in the document where the search will start
-    * @param limitPos position where the search will be end with reporting
-    *   that nothing was found.
-    * @see Finder
-    */
-    public int find(Finder finder, int startPos, int limitPos) throws BadLocationException;
 }
