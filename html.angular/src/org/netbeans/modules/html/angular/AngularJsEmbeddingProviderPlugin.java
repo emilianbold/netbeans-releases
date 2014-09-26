@@ -68,6 +68,7 @@ import org.openide.util.Exceptions;
 /**
  *
  * @author Petr Pisl, mfukala@netbeans.org
+ * @author Roman Svitanic
  */
 @MimeRegistration(mimeType = "text/html", service = JsEmbeddingProviderPlugin.class)
 public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
@@ -183,6 +184,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             processed = processModel(value);
                             break;
                         case repeat:
+                        case repeatStart:
                             processed = processRepeat(value);
                             stack.peek().addFinishText("}\n"); //NOI18N
                             break;

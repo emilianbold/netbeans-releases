@@ -112,6 +112,10 @@ public enum Directive {
     //TODO add sub directives
     readonly(false, true, false, false, expression),
     repeat  (true,  true, true,  false, repeatExpression),
+    repeatStart
+            (true,  true, false,  false, repeatExpression),
+    repeatEnd
+            (false,  true, false,  false, noValue),
     selected(false, true, false, false, expression),
     show    (true,  true, true,  false, expression),
     src     (true,  true, false, false, template),
