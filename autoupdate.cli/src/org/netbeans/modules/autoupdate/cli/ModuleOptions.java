@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.autoupdate.cli;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
@@ -62,14 +60,12 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import javax.swing.JLabel;
 import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
@@ -78,6 +74,10 @@ import org.netbeans.spi.sendopts.OptionProcessor;
 import org.openide.util.*;
 
 import static org.netbeans.modules.autoupdate.cli.Bundle.*;
+import org.netbeans.modules.progress.spi.Controller;
+import org.netbeans.modules.progress.spi.InternalHandle;
+import org.netbeans.modules.progress.spi.ProgressEvent;
+import org.netbeans.modules.progress.spi.ProgressUIWorker;
 
 /**
  *
@@ -335,36 +335,15 @@ public class ModuleOptions extends OptionProcessor {
             return;
         }
         env.getOutputStream().println("updates=" + operate.listAll().size()); // NOI18N
-        ProgressHandle downloadHandle = ProgressHandleFactory.createHandle("downloading-updates"); // NOI18N
+        ProgressHandle downloadHandle = new CLIInternalHandle("downloading-updates", env).createProgressHandle(); // NOI18N
         downloadHandle.setInitialDelay(0);
-        JLabel downloadDetailLabel = ProgressHandleFactory.createDetailLabelComponent(downloadHandle);
-        downloadDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("text".equals(evt.getPropertyName())) { // NOI18N
-                    env.getOutputStream().println(
-                            Bundle.MSG_Download(evt.getNewValue()));
-                    LOG.fine("  ... downloading update " + evt.getNewValue());
-                }
-            }
-        });
         try {
             final Validator res1 = support.doDownload(downloadHandle, null, false);
 
             Installer res2 = support.doValidate(res1, null);
 
-            ProgressHandle installHandle = ProgressHandleFactory.createHandle("installing-updates"); // NOI18N
+            ProgressHandle installHandle = new CLIInternalHandle("installing-updates", env).createProgressHandle(); // NOI18N
             installHandle.setInitialDelay(0);
-            JLabel installDetailLabel = ProgressHandleFactory.createDetailLabelComponent(installHandle);
-            installDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if ("text".equals(evt.getPropertyName())) {
-                        env.getOutputStream().println(evt.getNewValue());
-                        LOG.fine("  ... installing update " + evt.getNewValue());
-                    }
-                }
-            });
             Restarter res3 = support.doInstall(res2, installHandle);
             if (res3 != null) {
                 support.doRestart(res3, null);
@@ -445,35 +424,14 @@ public class ModuleOptions extends OptionProcessor {
         }
         try {
             env.getOutputStream().println("modules=" + operate.listAll().size()); // NOI18N
-            ProgressHandle downloadHandle = ProgressHandleFactory.createHandle("downloading-modules"); // NOI18N
+            ProgressHandle downloadHandle = new CLIInternalHandle("downloading-modules", env).createProgressHandle(); // NOI18N
             downloadHandle.setInitialDelay(0);
-            JLabel downloadDetailLabel = ProgressHandleFactory.createDetailLabelComponent(downloadHandle);
-            downloadDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if ("text".equals(evt.getPropertyName())) { // NOI18N
-                        env.getOutputStream().println(
-                                Bundle.MSG_Download(evt.getNewValue()));
-                        LOG.fine("  ... downloading module " + evt.getNewValue());
-                    }
-                }
-            });
             final Validator res1 = support.doDownload(downloadHandle, null, false);
 
             Installer res2 = support.doValidate(res1, null);
 
-            ProgressHandle installHandle = ProgressHandleFactory.createHandle("installing-modules"); // NOI18N
+            ProgressHandle installHandle = new CLIInternalHandle("installing-modules", env).createProgressHandle(); // NOI18N
             installHandle.setInitialDelay(0);
-            JLabel installDetailLabel = ProgressHandleFactory.createDetailLabelComponent(installHandle);
-            installDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if ("text".equals(evt.getPropertyName())) { // NOI18N
-                        env.getOutputStream().println(evt.getNewValue());
-                        LOG.fine("  ... installing module " + evt.getNewValue());
-                    }
-                }
-            });
             Restarter res3 = support.doInstall(res2, installHandle);
             if (res3 != null) {
                 support.doRestart(res3, null);
@@ -535,6 +493,28 @@ public class ModuleOptions extends OptionProcessor {
             res.add (en.nextToken ().trim ());
         }
         return res;
+    }
+    
+    private class CLIInternalHandle extends InternalHandle {
+        public CLIInternalHandle(String displayName, Env env) {
+            super(displayName, null, false);
+            setController(new Controller(new CLIProgressUIWorker(env)));
+        }
+    }
+
+    private class CLIProgressUIWorker implements ProgressUIWorker { 
+        private final Env env;
+        public CLIProgressUIWorker(Env env) {
+            this.env = env;
+        }
+        @Override
+        public void processProgressEvent(ProgressEvent event) {
+            env.getOutputStream().println(event.getMessage());
+        }
+        @Override
+        public void processSelectedProgressEvent(ProgressEvent event) {
+            env.getOutputStream().println(event.getMessage());
+        }
     }
     
 }
