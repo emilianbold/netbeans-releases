@@ -48,6 +48,7 @@ import static org.netbeans.lib.v8debug.JSONConstants.*;
 import org.netbeans.lib.v8debug.commands.Backtrace;
 import org.netbeans.lib.v8debug.commands.ChangeBreakpoint;
 import org.netbeans.lib.v8debug.commands.ClearBreakpoint;
+import org.netbeans.lib.v8debug.commands.ClearBreakpointGroup;
 import org.netbeans.lib.v8debug.commands.Continue;
 import org.netbeans.lib.v8debug.commands.Evaluate;
 import org.netbeans.lib.v8debug.commands.Flags;
@@ -121,6 +122,7 @@ public class JSONWriter {
                 storeIf(sbargs.isEnabled(), obj, BREAK_ENABLED);
                 storeIf(sbargs.getCondition(), obj, BREAK_CONDITION);
                 storeIf(sbargs.getIgnoreCount(), obj, BREAK_IGNORE_COUNT);
+                storeIf(sbargs.getGroupId(), obj, BREAK_GROUP_ID);
                 return obj;
             case Changebreakpoint:
                 ChangeBreakpoint.Arguments chbargs = (ChangeBreakpoint.Arguments) arguments;
@@ -132,6 +134,10 @@ public class JSONWriter {
             case Clearbreakpoint:
                 ClearBreakpoint.Arguments cbargs = (ClearBreakpoint.Arguments) arguments;
                 obj.put(BREAK_POINT, cbargs.getBreakpoint());
+                return obj;
+            case Clearbreakpointgroup:
+                ClearBreakpointGroup.Arguments cbgargs = (ClearBreakpointGroup.Arguments) arguments;
+                obj.put(BREAK_GROUP_ID, cbgargs.getGroupId());
                 return obj;
             case Setexceptionbreak:
                 SetExceptionBreak.Arguments sebargs = (SetExceptionBreak.Arguments) arguments;

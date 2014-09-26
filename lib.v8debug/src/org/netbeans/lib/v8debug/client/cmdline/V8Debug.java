@@ -563,7 +563,7 @@ public class V8Debug {
                 ci += 3;
                 condition = lineStr.substring(ci).trim();
             }
-            cc.send(SetBreakpoint.createRequest(requestSequence++, V8Breakpoint.Type.scriptName, scriptName, line-1, column, true, condition, null));
+            cc.send(SetBreakpoint.createRequest(requestSequence++, V8Breakpoint.Type.scriptName, scriptName, line-1, column, true, condition, null, null));
         } else {
             cc.send(SetBreakpoint.createRequest(requestSequence++, V8Breakpoint.Type.scriptName, scriptName, line-1, column));
         }

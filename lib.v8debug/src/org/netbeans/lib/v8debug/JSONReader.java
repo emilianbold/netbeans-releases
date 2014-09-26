@@ -50,6 +50,7 @@ import org.json.simple.JSONObject;
 import static org.netbeans.lib.v8debug.JSONConstants.*;
 import org.netbeans.lib.v8debug.commands.Backtrace;
 import org.netbeans.lib.v8debug.commands.ClearBreakpoint;
+import org.netbeans.lib.v8debug.commands.ClearBreakpointGroup;
 import org.netbeans.lib.v8debug.commands.Continue;
 import org.netbeans.lib.v8debug.commands.Evaluate;
 import org.netbeans.lib.v8debug.commands.Flags;
@@ -187,6 +188,9 @@ public class JSONReader {
             case Clearbreakpoint:
                 bpId = getLong(obj, BREAK_POINT);
                 return new ClearBreakpoint.ResponseBody(bpId);
+            case Clearbreakpointgroup:
+                long[] bpIds = getLongArray((JSONArray) obj.get(BREAK_POINTS));
+                return new ClearBreakpointGroup.ResponseBody(bpIds);
             case Backtrace:
                 long fromFrame = getLong(obj, FROM_FRAME);
                 long toFrame = getLong(obj, TO_FRAME);

@@ -39,49 +39,49 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug;
+package org.netbeans.lib.v8debug.commands;
+
+import org.netbeans.lib.v8debug.V8Arguments;
+import org.netbeans.lib.v8debug.V8Body;
+import org.netbeans.lib.v8debug.V8Breakpoint;
+import org.netbeans.lib.v8debug.V8Command;
+import org.netbeans.lib.v8debug.V8Request;
 
 /**
  *
  * @author Martin Entlicher
  */
-public enum V8Command {
+public final class ClearBreakpointGroup {
     
-    Continue,
-    Evaluate,
-    Lookup,
-    References,
-    Backtrace,
-    Frame,
-    Scope,
-    Scopes,
-    Scripts,
-    Source,
-    Setbreakpoint,
-    Changebreakpoint,
-    Clearbreakpoint,
-    Clearbreakpointgroup,
-    Setexceptionbreak,
-    Threads,
-    Flags,
-    V8flags,
-    Version,
-    Disconnect,
-    Gc,
-    Listbreakpoints,
-    SetVariableValue,
-    Restartframe;
+    private ClearBreakpointGroup() {}
     
-    @Override
-    public String toString() {
-        String commandName = super.toString();
-        commandName = Character.toLowerCase(commandName.charAt(0)) + commandName.substring(1);
-        return commandName;
+    public static V8Request createRequest(long sequence, long groupId) {
+        return new V8Request(sequence, V8Command.Clearbreakpointgroup, new Arguments(groupId));
     }
     
-    public static V8Command fromString(String commandName) {
-        commandName = Character.toUpperCase(commandName.charAt(0)) + commandName.substring(1);
-        return V8Command.valueOf(commandName);
-    }
+    public static final class Arguments extends V8Arguments {
         
+        private final long groupId;
+        
+        public Arguments(long groupId) {
+            this.groupId = groupId;
+        }
+
+        public long getGroupId() {
+            return groupId;
+        }
+    }
+    
+    public static final class ResponseBody extends V8Body {
+        
+        private final long[] breakpointsCleared;
+        
+        public ResponseBody(long[] breakpointsCleared) {
+            this.breakpointsCleared = breakpointsCleared;
+        }
+
+        public long[] getBreakpointsCleared() {
+            return breakpointsCleared;
+        }
+    }
 }

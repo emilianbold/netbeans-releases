@@ -78,6 +78,7 @@ import org.netbeans.lib.v8debug.V8StepAction;
 import org.netbeans.lib.v8debug.commands.Backtrace;
 import org.netbeans.lib.v8debug.commands.ChangeBreakpoint;
 import org.netbeans.lib.v8debug.commands.ClearBreakpoint;
+import org.netbeans.lib.v8debug.commands.ClearBreakpointGroup;
 import org.netbeans.lib.v8debug.commands.Continue;
 import org.netbeans.lib.v8debug.commands.Evaluate;
 import org.netbeans.lib.v8debug.commands.Flags;
@@ -418,6 +419,8 @@ public class V8DebugTest {
         commandsToTest.remove(V8Command.Listbreakpoints);
         commandsToTest.remove(V8Command.Clearbreakpoint);
         commandsToTest.remove(V8Command.Changebreakpoint);
+        checkClearBreakpointGroup();
+        commandsToTest.remove(V8Command.Clearbreakpointgroup);
         
         checkReferences();
         commandsToTest.remove(V8Command.References);
@@ -1549,7 +1552,7 @@ public class V8DebugTest {
         // Conditional breakpoint:
         String condition = "sum == 55";
         Long ignoreCount = 2l;
-        V8Debug.TestAccess.send(v8dbg, SetBreakpoint.createRequest(123, V8Breakpoint.Type.scriptName, testFilePath, (long) LINE_BRKP_COND-1, null, false, condition, ignoreCount));
+        V8Debug.TestAccess.send(v8dbg, SetBreakpoint.createRequest(123, V8Breakpoint.Type.scriptName, testFilePath, (long) LINE_BRKP_COND-1, null, false, condition, ignoreCount, null));
         lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
         assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
@@ -1637,12 +1640,89 @@ public class V8DebugTest {
         checkLocalVar("i", 51l, false);
         checkLocalVar("sum", 1275l, false);
     }
+    
+    private void checkClearBreakpointGroup() throws IOException, InterruptedException {
+        long testGroupId = 654321;
+        V8Debug.TestAccess.send(v8dbg, SetBreakpoint.createRequest(123,
+                                                                   V8Breakpoint.Type.scriptName,
+                                                                   testFilePath,
+                                                                   (long) LINE_BRKP_COND+2-1,
+                                                                   null, null, null, null,
+                                                                   testGroupId));
+        V8Response lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        SetBreakpoint.ResponseBody sbrb = (SetBreakpoint.ResponseBody) lastResponse.getBody();
+        long cbNum1 = sbrb.getBreakpoint();
+        
+        V8Debug.TestAccess.send(v8dbg, SetBreakpoint.createRequest(123,
+                                                                   V8Breakpoint.Type.scriptName,
+                                                                   testFilePath,
+                                                                   (long) LINE_BRKP_COND+3-1,
+                                                                   null, null, null, null,
+                                                                   testGroupId));
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        sbrb = (SetBreakpoint.ResponseBody) lastResponse.getBody();
+        assertEquals(cbNum1+1, sbrb.getBreakpoint());
+        
+        V8Debug.TestAccess.send(v8dbg, SetBreakpoint.createRequest(123,
+                                                                   V8Breakpoint.Type.scriptName,
+                                                                   testFilePath,
+                                                                   (long) LINE_BRKP_COND+4-1,
+                                                                   null, null, null, null,
+                                                                   testGroupId));
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        sbrb = (SetBreakpoint.ResponseBody) lastResponse.getBody();
+        long cbNum2 = sbrb.getBreakpoint();
+        assertEquals(cbNum1+2, cbNum2);
+        
+        V8Debug.TestAccess.doCommand(v8dbg, "breakpoints");
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Listbreakpoints, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        ListBreakpoints.ResponseBody lbrb = (ListBreakpoints.ResponseBody) lastResponse.getBody();
+        V8Breakpoint[] breakpoints = lbrb.getBreakpoints();
+        long cbNumGroup = cbNum2 - cbNum1 + 1;
+        assertEquals(5 + cbNumGroup, breakpoints.length);
+        
+        for (long i = cbNum1; i <= cbNum2; i++) {
+            V8Breakpoint gbp = breakpoints[(int) i - 2 - 1]; // 2 breakpoints deleted in tests before.
+            assertTrue(gbp.getGroupId().hasValue());
+            assertEquals(testGroupId, gbp.getGroupId().getValue());
+        }
+        
+        V8Debug.TestAccess.send(v8dbg, ClearBreakpointGroup.createRequest(123, testGroupId));
+        lastResponse = responseHandler.getLastResponse();
+        assertEquals(V8Command.Clearbreakpointgroup, lastResponse.getCommand());
+        assertNull(lastResponse.getErrorMessage(), lastResponse.getErrorMessage());
+        assertTrue(lastResponse.isSuccess());
+        assertFalse(lastResponse.isRunning());
+        ClearBreakpointGroup.ResponseBody cbgrb = (ClearBreakpointGroup.ResponseBody) lastResponse.getBody();
+        long[] bpCleared = cbgrb.getBreakpointsCleared();
+        assertEquals(cbNumGroup, bpCleared.length);
+        int j = 0;
+        for (long i = cbNum1; i <= cbNum2; i++) {
+            assertEquals(i, bpCleared[j++]);
+        }
+    }
 
     private void checkReferences() throws IOException, InterruptedException {
         V8Debug.TestAccess.doCommand(v8dbg, "stop at "+testFilePath+":"+LINE_BRKP_REFS);
         V8Response lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Setbreakpoint, lastResponse.getCommand());
-        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 8, testFilePath, LINE_BRKP_REFS-1, -1, 4);
+        checkBRResponse((SetBreakpoint.ResponseBody) lastResponse.getBody(), 11, testFilePath, LINE_BRKP_REFS-1, -1, 4);
         V8Debug.TestAccess.doCommand(v8dbg, "cont");
         lastResponse = responseHandler.getLastResponse();
         assertEquals(V8Command.Continue, lastResponse.getCommand());
