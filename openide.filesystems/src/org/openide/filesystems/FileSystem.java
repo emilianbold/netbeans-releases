@@ -885,7 +885,7 @@ public abstract class FileSystem implements Serializable {
         }
     }
 
-    private static final Status SFS_STATUS = new Status() {
+    private static Status SFS_STATUS = new Status() {
 
         public String annotateName(String s, Set<? extends FileObject> files) {
             // Look for a localized file name.
