@@ -54,11 +54,11 @@ import org.netbeans.lib.v8debug.vars.V8Value;
  *
  * @author Martin Entlicher
  */
-public class Restartframe {
+public class RestartFrame {
     
     public static final String RESULT_STACK_UPDATE_NEEDS_STEP_IN = "stack_update_needs_step_in";
     
-    private Restartframe() {}
+    private RestartFrame() {}
     
     public static V8Request createRequest(long sequence) {
         return new V8Request(sequence, V8Command.Restartframe, new Arguments(null));

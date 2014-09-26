@@ -56,7 +56,7 @@ import org.netbeans.lib.v8debug.commands.Frame;
 import org.netbeans.lib.v8debug.commands.GC;
 import org.netbeans.lib.v8debug.commands.Lookup;
 import org.netbeans.lib.v8debug.commands.References;
-import org.netbeans.lib.v8debug.commands.Restartframe;
+import org.netbeans.lib.v8debug.commands.RestartFrame;
 import org.netbeans.lib.v8debug.commands.Scope;
 import org.netbeans.lib.v8debug.commands.Scopes;
 import org.netbeans.lib.v8debug.commands.Scripts;
@@ -160,7 +160,7 @@ public class JSONWriter {
                 storeIf(fargs.getFrameNumber(), obj, NUMBER);
                 return obj;
             case Restartframe:
-                Restartframe.Arguments ra = (Restartframe.Arguments) arguments;
+                RestartFrame.Arguments ra = (RestartFrame.Arguments) arguments;
                 PropertyLong frame = ra.getFrame();
                 if (frame.hasValue()) {
                     obj.put(FRAME, frame.getValue());
