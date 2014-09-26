@@ -134,6 +134,30 @@ class JSONConstants {
     public static final String IDs = "ids";
     public static final String CONTEXT = "context";
     
+    public static final String PREVIEW_ONLY = "preview_only";
+    public static final String NEW_SOURCE = "new_source";
+    public static final String STEP_IN_RECOMMENDED = "stepin_recommended";
+    public static final String CHANGE_TREE = "change_tree";
+    public static final String TEXTUAL_DIFF = "textual_diff";
+    public static final String OLD_LEN = "old_len";
+    public static final String NEW_LEN = "new_len";
+    public static final String CHUNKS = "chunks";
+    public static final String UPDATED = "updated";
+    public static final String STACK_MODIFIED = "stack_modified";
+    public static final String STACK_UPDATE_NEEDS_STEP_IN = "stack_update_needs_step_in";
+    public static final String CREATED_SCRIPT_NAME = "created_script_name";
+    public static final String STATUS = "status";
+    public static final String STATUS_EXPLANATION = "status_explanation";
+    public static final String POSITIONS = "positions";
+    public static final String NEW_POSITIONS = "new_positions";
+    public static final String START_POSITION = "start_position";
+    public static final String END_POSITION = "end_position";
+    public static final String CHILDREN = "children";
+    public static final String NEW_CHILDREN = "new_children";
+    public static final String CHANGE_LOG = "change_log";
+    public static final String BREAK_POINTS_UPDATE = "break_points_update";
+    public static final String LINKED_TO_OLD_SCRIPT = "linked_to_old_script";
+    
     public static final String INCLUDE_SOURCE = "includeSource";
     public static final String FILTER = "filter";
     public static final String FROM_LINE = "fromLine";

@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -39,47 +39,77 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug;
+
+package org.netbeans.modules.javascript.v8debug.actions;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Logger;
+import static org.netbeans.api.debugger.ActionsManager.*;
+import org.netbeans.modules.javascript.v8debug.V8Debugger;
+import org.netbeans.modules.javascript.v8debug.V8DebuggerSessionProvider;
+import org.netbeans.spi.debugger.ActionsProvider;
+import org.netbeans.spi.debugger.ActionsProviderSupport;
+import org.netbeans.spi.debugger.ContextProvider;
 
 /**
  *
  * @author Martin Entlicher
  */
-public final class V8Event extends V8Packet {
+@ActionsProvider.Registration(path=V8DebuggerSessionProvider.SESSION_NAME)
+public class V8DebugActionsProvider extends ActionsProviderSupport implements V8Debugger.Listener {
     
-    public static enum Kind {
-        Break,
-        Exception,
-        AfterCompile;
-        // TODO: ScriptCollected;
+    private static final Logger LOG = Logger.getLogger(V8DebugActionsProvider.class.getName());
 
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
+    private static final Set<Object> ACTIONS =
+            Collections.unmodifiableSet(
+                new HashSet<>(
+                    Arrays.asList(new Object[] {
+                        ACTION_START,
+                        ACTION_KILL,
+                        ACTION_CONTINUE,
+                        ACTION_PAUSE,
+                        ACTION_STEP_INTO,
+                        ACTION_STEP_OVER,
+                        ACTION_STEP_OUT,
+                        ACTION_RUN_TO_CURSOR,
+                        ACTION_EVALUATE,
+                    })));
+    
+    private final V8Debugger debugger;
+    
+    public V8DebugActionsProvider(ContextProvider contextProvider) {
+        debugger = contextProvider.lookupFirst(null, V8Debugger.class);
+        debugger.addListener(this);
+        setEnabled(ACTION_START, true);
+        setEnabled(ACTION_KILL, true);
+    }
+    
+    @Override
+    public void doAction(Object action) {
+        LOG.fine("doAction("+action+")");
+        if (action == ACTION_START) {
+            debugger.start();
+        } else if (action == ACTION_KILL) {
+            debugger.finish();
         }
-        
-        static Kind fromString(String eventName) {
-            eventName = Character.toUpperCase(eventName.charAt(0)) + eventName.substring(1);
-            return Kind.valueOf(eventName);
-        }
-        
-    }
-    
-    private final Kind eventKind;
-    private final V8Body body;
-    
-    V8Event(long sequence, Kind eventKind, V8Body body) {
-        super(sequence, V8Type.event);
-        this.eventKind = eventKind;
-        this.body = body;
     }
 
-    public Kind getKind() {
-        return eventKind;
+    @Override
+    public Set getActions() {
+        return ACTIONS;
     }
 
-    public V8Body getBody() {
-        return body;
+    @Override
+    public void notifySuspended(boolean suspended) {
+        
+    }
+
+    @Override
+    public void notifyFinished() {
+        
     }
     
 }

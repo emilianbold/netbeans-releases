@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -39,47 +39,47 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug;
+
+package org.netbeans.modules.javascript.v8debug;
+
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerEngineProvider;
 
 /**
  *
  * @author Martin Entlicher
  */
-public final class V8Event extends V8Packet {
+@DebuggerEngineProvider.Registration(path=V8DebuggerSessionProvider.SESSION_NAME)
+public class V8DebuggerEngineProvider extends DebuggerEngineProvider {
     
-    public static enum Kind {
-        Break,
-        Exception,
-        AfterCompile;
-        // TODO: ScriptCollected;
-
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
-        }
-        
-        static Kind fromString(String eventName) {
-            eventName = Character.toUpperCase(eventName.charAt(0)) + eventName.substring(1);
-            return Kind.valueOf(eventName);
-        }
-        
-    }
+    public static final String LANGUAGE = "JavaScript";                         // NOI18N
+    public static final String ENGINE_NAME = "javascript-v8engine";             // NOI18N
     
-    private final Kind eventKind;
-    private final V8Body body;
+    private final V8Debugger dbg;
     
-    V8Event(long sequence, Kind eventKind, V8Body body) {
-        super(sequence, V8Type.event);
-        this.eventKind = eventKind;
-        this.body = body;
+    public V8DebuggerEngineProvider(ContextProvider contextProvider) {
+        dbg = contextProvider.lookupFirst(null, V8Debugger.class);
     }
 
-    public Kind getKind() {
-        return eventKind;
+    @Override
+    public String[] getLanguages() {
+        return new String[] { LANGUAGE };
     }
 
-    public V8Body getBody() {
-        return body;
+    @Override
+    public String getEngineTypeID() {
+        return ENGINE_NAME;
+    }
+
+    @Override
+    public Object[] getServices() {
+        return new Object[0];
+    }
+
+    @Override
+    public void setDestructor(DebuggerEngine.Destructor destructor) {
+        dbg.setEngineDestructor(destructor);
     }
     
 }

@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -39,47 +39,46 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug;
+
+package org.netbeans.modules.javascript.v8debug;
+
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.lib.v8debug.V8Script;
 
 /**
  *
  * @author Martin Entlicher
  */
-public final class V8Event extends V8Packet {
+public class ScriptsHandler {
     
-    public static enum Kind {
-        Break,
-        Exception,
-        AfterCompile;
-        // TODO: ScriptCollected;
+    private final Map<Long, V8Script> scriptsById = new HashMap<>();
 
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
+    private final boolean doPathTranslation;
+    @NullAllowed
+    private final String localPath;
+    @NullAllowed
+    private final String serverPath;
+    
+    ScriptsHandler(@NullAllowed String localPath,
+                   @NullAllowed String serverPath) {
+        if (localPath != null && serverPath != null) {
+            this.doPathTranslation = true;
+            this.localPath = localPath;
+            this.serverPath = serverPath;
+        } else {
+            this.doPathTranslation = false;
+            this.localPath = this.serverPath = null;
         }
-        
-        static Kind fromString(String eventName) {
-            eventName = Character.toUpperCase(eventName.charAt(0)) + eventName.substring(1);
-            return Kind.valueOf(eventName);
+    }
+
+    void add(V8Script script) {
+        synchronized (scriptsById) {
+            scriptsById.put(script.getId(), script);
         }
-        
     }
     
-    private final Kind eventKind;
-    private final V8Body body;
     
-    V8Event(long sequence, Kind eventKind, V8Body body) {
-        super(sequence, V8Type.event);
-        this.eventKind = eventKind;
-        this.body = body;
-    }
-
-    public Kind getKind() {
-        return eventKind;
-    }
-
-    public V8Body getBody() {
-        return body;
-    }
     
 }

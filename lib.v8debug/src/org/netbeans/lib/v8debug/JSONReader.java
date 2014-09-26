@@ -49,7 +49,9 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import static org.netbeans.lib.v8debug.JSONConstants.*;
 import org.netbeans.lib.v8debug.commands.Backtrace;
+import org.netbeans.lib.v8debug.commands.ChangeLive;
 import org.netbeans.lib.v8debug.commands.ClearBreakpoint;
+import org.netbeans.lib.v8debug.commands.ClearBreakpointGroup;
 import org.netbeans.lib.v8debug.commands.Continue;
 import org.netbeans.lib.v8debug.commands.Evaluate;
 import org.netbeans.lib.v8debug.commands.Flags;
@@ -58,7 +60,7 @@ import org.netbeans.lib.v8debug.commands.GC;
 import org.netbeans.lib.v8debug.commands.ListBreakpoints;
 import org.netbeans.lib.v8debug.commands.Lookup;
 import org.netbeans.lib.v8debug.commands.References;
-import org.netbeans.lib.v8debug.commands.Restartframe;
+import org.netbeans.lib.v8debug.commands.RestartFrame;
 import org.netbeans.lib.v8debug.commands.Scope;
 import org.netbeans.lib.v8debug.commands.Scopes;
 import org.netbeans.lib.v8debug.commands.Scripts;
@@ -187,6 +189,9 @@ public class JSONReader {
             case Clearbreakpoint:
                 bpId = getLong(obj, BREAK_POINT);
                 return new ClearBreakpoint.ResponseBody(bpId);
+            case Clearbreakpointgroup:
+                long[] bpIds = getLongArray((JSONArray) obj.get(BREAK_POINTS));
+                return new ClearBreakpointGroup.ResponseBody(bpIds);
             case Backtrace:
                 long fromFrame = getLong(obj, FROM_FRAME);
                 long toFrame = getLong(obj, TO_FRAME);
@@ -201,7 +206,16 @@ public class JSONReader {
                 if (resultObj == null) {
                     return null;
                 }
-                return new Restartframe.ResponseBody(resultObj);
+                return new RestartFrame.ResponseBody(resultObj);
+            case Changelive:
+                resultObj = (JSONObject) obj.get(RESULT);
+                if (resultObj == null) {
+                    return null;
+                }
+                ChangeLive.ChangeLog changeLog = getChangeLog((JSONArray) obj.get(CHANGE_LOG));
+                ChangeLive.Result result = getChangeLiveResult(resultObj);
+                Boolean stepInRecommended = getBooleanOrNull(obj, STEP_IN_RECOMMENDED);
+                return new ChangeLive.ResponseBody(changeLog, result, stepInRecommended);
             case Lookup:
                 Map<Long, V8Value> valuesByHandle = new LinkedHashMap<>();
                 for (Object element : obj.values()) {
@@ -327,6 +341,14 @@ public class JSONReader {
         Object prop = obj.get(propertyName);
         if (prop == null) {
             return false;
+        }
+        return (Boolean) prop;
+    }
+    
+    private static Boolean getBooleanOrNull(JSONObject obj, String propertyName) {
+        Object prop = obj.get(propertyName);
+        if (prop == null) {
+            return null;
         }
         return (Boolean) prop;
     }
@@ -705,6 +727,89 @@ public class JSONReader {
             threads.put(getLong(obj, ID), getBoolean(obj, CURRENT));
         }
         return threads;
+    }
+    
+    private static ChangeLive.Result getChangeLiveResult(JSONObject resultObj) {
+        ChangeLive.Result.ChangeTree changeTree = getChangeTree((JSONObject) resultObj.get(CHANGE_TREE));
+        ChangeLive.Result.TextualDiff diff = getTextualDiff((JSONObject) resultObj.get(TEXTUAL_DIFF));
+        boolean updated = getBoolean(resultObj, UPDATED);
+        Boolean stackModified = getBooleanOrNull(resultObj, STACK_MODIFIED);
+        Boolean stackUpdateNeedsStepIn = getBooleanOrNull(resultObj, STACK_UPDATE_NEEDS_STEP_IN);
+        String createdScriptName = getString(resultObj, CREATED_SCRIPT_NAME);
+        return new ChangeLive.Result(changeTree, diff, updated, stackModified, stackUpdateNeedsStepIn, createdScriptName);
+    }
+
+    private static ChangeLive.Result.ChangeTree getChangeTree(JSONObject obj) {
+        String name = getString(obj, NAME);
+        ChangeLive.Result.ChangeTree.Positions positions = getChangeTreePositions((JSONObject) obj.get(POSITIONS));
+        ChangeLive.Result.ChangeTree.Positions newPositions = getChangeTreePositions((JSONObject) obj.get(NEW_POSITIONS));
+        ChangeLive.Result.ChangeTree.FunctionStatus status;
+        String statusStr = getString(obj, STATUS);
+        if (statusStr != null) {
+            status = ChangeLive.Result.ChangeTree.FunctionStatus.fromString(statusStr);
+        } else {
+            status = null;
+        }
+        String statusExplanation = getString(obj, STATUS_EXPLANATION);
+        ChangeLive.Result.ChangeTree[] children = getChangeTreeChildren((JSONArray) obj.get(CHILDREN));
+        ChangeLive.Result.ChangeTree[] newChildren = getChangeTreeChildren((JSONArray) obj.get(NEW_CHILDREN));
+        return new ChangeLive.Result.ChangeTree(name, positions, newPositions, status, statusExplanation, children, newChildren);
+    }
+    
+    private static ChangeLive.Result.ChangeTree[] getChangeTreeChildren(JSONArray array) {
+        if (array == null) {
+            return null;
+        }
+        int n = array.size();
+        ChangeLive.Result.ChangeTree[] ch = new ChangeLive.Result.ChangeTree[n];
+        for (int i = 0; i < n; i++) {
+            ch[i] = getChangeTree((JSONObject) array.get(i));
+        }
+        return ch;
+    }
+
+    private static ChangeLive.Result.TextualDiff getTextualDiff(JSONObject obj) {
+        long oldLen = getLong(obj, OLD_LEN);
+        long newLen = getLong(obj, NEW_LEN);
+        long[] chunks = getLongArray((JSONArray) obj.get(CHUNKS));
+        return new ChangeLive.Result.TextualDiff(oldLen, newLen, chunks);
+    }
+    
+    private static ChangeLive.Result.ChangeTree.Positions getChangeTreePositions(JSONObject obj) {
+        if (obj == null) {
+            return null;
+        }
+        long startPosition = getLong(obj, START_POSITION);
+        long endPosition = getLong(obj, END_POSITION);
+        return new ChangeLive.Result.ChangeTree.Positions(startPosition, endPosition);
+    }
+
+    private static ChangeLive.ChangeLog getChangeLog(JSONArray array) {
+        int n = array.size();
+        if (n == 0) {
+            return null;
+        }
+        long[] breakpointsUpdate = null;
+        String[] namesLinkedToOldScript = null;
+        for (Object aelem : array) {
+            if (!(aelem instanceof JSONObject)) {
+                continue;
+            }
+            JSONObject obj = (JSONObject) aelem;
+            JSONArray breakpointsUpdateArr = (JSONArray) obj.get(BREAK_POINTS_UPDATE);
+            if (breakpointsUpdateArr != null) {
+                breakpointsUpdate = getLongArray(breakpointsUpdateArr);
+            }
+            JSONArray linkedToOldScriptArr = (JSONArray) obj.get(LINKED_TO_OLD_SCRIPT);
+            if (linkedToOldScriptArr != null) {
+                int l = linkedToOldScriptArr.size();
+                namesLinkedToOldScript = new String[l];
+                for (int i = 0; i < l; i++) {
+                    namesLinkedToOldScript[i] = getString((JSONObject) linkedToOldScriptArr.get(i), NAME);
+                }
+            }
+        }
+        return new ChangeLive.ChangeLog(breakpointsUpdate, namesLinkedToOldScript);
     }
 
 }

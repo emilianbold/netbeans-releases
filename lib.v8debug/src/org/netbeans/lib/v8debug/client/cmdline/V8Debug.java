@@ -563,7 +563,7 @@ public class V8Debug {
                 ci += 3;
                 condition = lineStr.substring(ci).trim();
             }
-            cc.send(SetBreakpoint.createRequest(requestSequence++, V8Breakpoint.Type.scriptName, scriptName, line-1, column, true, condition, null));
+            cc.send(SetBreakpoint.createRequest(requestSequence++, V8Breakpoint.Type.scriptName, scriptName, line-1, column, true, condition, null, null));
         } else {
             cc.send(SetBreakpoint.createRequest(requestSequence++, V8Breakpoint.Type.scriptName, scriptName, line-1, column));
         }
@@ -1077,6 +1077,17 @@ public class V8Debug {
         
         static boolean isClosed(V8Debug v8dbg) {
             return v8dbg.cc.isClosed();
+        }
+        
+        static V8Script getScriptByName(V8Debug v8dbg, String name) {
+            synchronized (v8dbg.scriptsById) {
+                for (V8Script s : v8dbg.scriptsById.values()) {
+                    if (name.equals(s.getName())) {
+                        return s;
+                    }
+                }
+            }
+            return null;
         }
         
     }
