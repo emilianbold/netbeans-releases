@@ -41,90 +41,38 @@
  */
 package org.netbeans.modules.javascript.nodejs.ui.actions;
 
-import java.awt.EventQueue;
 import java.io.File;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
-import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
-import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
-import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
-import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.RunInfo;
-import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
 
-abstract class Command {
+final class RunProjectCommand extends Command {
 
-    protected final Project project;
-
-
-    Command(Project project) {
-        assert project != null;
-        this.project = project;
+    public RunProjectCommand(Project project) {
+        super(project);
     }
 
-    public abstract String getCommandId();
-
-    public abstract boolean isEnabled(Lookup context);
-
-    abstract void runInternal(Lookup context);
-
-    public void run(Lookup context) {
-        assert !EventQueue.isDispatchThread();
-        runInternal(context);
+    @Override
+    public String getCommandId() {
+        return ActionProvider.COMMAND_RUN;
     }
 
-    @CheckForNull
-    protected NodeExecutable getNode() {
-        return NodeExecutable.forProject(project, true);
+    @Override
+    public boolean isEnabled(Lookup context) {
+        return true;
     }
 
-    @CheckForNull
-    protected RunInfo getRunInfo() {
-        RunInfo runInfo = new RunInfo(project);
-        ValidationResult result = new NodeJsPreferencesValidator()
-                .validateRun(runInfo.getStartFile(), runInfo.getStartArgs(), runInfo.getDebugPort())
-                .getResult();
-        if (!result.isFaultless()) {
-            NodeJsCustomizerProvider.openCustomizer(project, result);
-            return null;
+    @Override
+    void runInternal(Lookup context) {
+        NodeExecutable node = getNode();
+        if (node != null) {
+            RunInfo runInfo = getRunInfo();
+            if (runInfo != null) {
+                node.run(new File(runInfo.getStartFile()), runInfo.getStartArgs());
+            }
         }
-        return runInfo;
-    }
-
-    @CheckForNull
-    protected FileObject lookupFileObject(Lookup context) {
-        return context.lookup(FileObject.class);
-    }
-
-    @CheckForNull
-    protected File lookupFile(Lookup context) {
-        FileObject fo = lookupFileObject(context);
-        if (fo == null) {
-            return null;
-        }
-        File file = FileUtil.toFile(fo);
-        assert file != null : fo;
-        return file;
-    }
-
-    @CheckForNull
-    protected File lookupJavaScriptFile(Lookup context) {
-        FileObject file = lookupFileObject(context);
-        if (file == null) {
-            return null;
-        }
-        if (!FileUtils.isJavaScriptFile(file)) {
-            return null;
-        }
-        return FileUtil.toFile(file);
-    }
-
-    private NodeJsSupport getNodeJsSupport() {
-        return NodeJsSupport.forProject(project);
     }
 
 }

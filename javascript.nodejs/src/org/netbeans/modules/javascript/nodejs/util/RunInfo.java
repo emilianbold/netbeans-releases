@@ -39,70 +39,42 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.ui.actions;
+package org.netbeans.modules.javascript.nodejs.util;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
+import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
+import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 
-public final class NodeJsActionProvider implements ActionProvider {
+public final class RunInfo {
 
-    private static final RequestProcessor RP = new RequestProcessor(NodeJsActionProvider.class);
-
-    private final Project project;
-    private final Map<String, Command> commands = new ConcurrentHashMap<>();
-    private final List<String> supportedActions;
+    private final String startFile;
+    private final String startArgs;
+    private final int debugPort;
 
 
-    public NodeJsActionProvider(Project project) {
-        assert project != null;
-        this.project = project;
-        fillCommands();
-        supportedActions = new ArrayList<>(commands.keySet());
+    public RunInfo(Project project) {
+        NodeJsPreferences preferences = NodeJsSupport.forProject(project).getPreferences();
+        startFile = preferences.getStartFile();
+        startArgs = preferences.getStartArgs();
+        debugPort = preferences.getDebugPort();
     }
 
-    private void fillCommands() {
-        Command[] allCommands = new Command[] {
-            new RunProjectCommand(project),
-            new RunFileCommand(project),
-            new DebugProjectCommand(project),
-            new DebugFileCommand(project),
-        };
-        for (Command command : allCommands) {
-            Command old = commands.put(command.getCommandId(), command);
-            assert old == null : "Command already set for " + command.getCommandId();
-        }
+    public RunInfo(String startFile, String startArgs, int debugPort) {
+        this.startFile = startFile;
+        this.startArgs = startArgs;
+        this.debugPort = debugPort;
     }
 
-    @Override
-    public String[] getSupportedActions() {
-        return supportedActions.toArray(new String[supportedActions.size()]);
+    public String getStartFile() {
+        return startFile;
     }
 
-    @Override
-    public void invokeAction(String command, final Lookup context) {
-        final Command runCommand = commands.get(command);
-        assert runCommand != null : command;
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                runCommand.run(context);
-            }
-        });
+    public String getStartArgs() {
+        return startArgs;
     }
 
-    @Override
-    public boolean isActionEnabled(String command, Lookup context) {
-        Command runCommand = commands.get(command);
-        if (runCommand == null) {
-            return false;
-        }
-        return runCommand.isEnabled(context);
+    public int getDebugPort() {
+        return debugPort;
     }
 
 }
