@@ -41,15 +41,22 @@
  */
 package org.netbeans.modules.web.inspect.webkit.knockout;
 
+import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.dnd.DnDConstants;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
 import org.openide.nodes.AbstractNode;
@@ -99,7 +106,13 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
         contextView.addPropertyColumn(
                 KnockoutNode.ValueProperty.NAME,
                 NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.contextView.value")); // NOI18N
-        contextView.getOutline().setRootVisible(false);
+
+        Outline outline = contextView.getOutline();
+        outline.setRootVisible(false);
+        TableCellRenderer renderer = outline.getDefaultRenderer(Object.class);
+        if (renderer != null) {
+            outline.setDefaultRenderer(Object.class, new NoIconRenderer(renderer));
+        }
     }
 
     @Override
@@ -169,6 +182,74 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
             if (PageModel.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 update();
             }
+        }
+        
+    }
+
+    /**
+     * Renderer that delegates to the given renderer but doesn't paint icons.
+     */
+    final static class NoIconRenderer implements TableCellRenderer {
+        /** The original table cell renderer. */
+        private final TableCellRenderer originalRenderer;
+        /** Icon used instead of the original icons. */
+        private final Icon emptyIcon;
+
+        /**
+         * Creates a new {@code NoIconRenderer} for the specified renderer.
+         * 
+         * @param originalRenderer renderer whose icon should be removed.
+         */
+        public NoIconRenderer(TableCellRenderer originalRenderer) {
+            this.originalRenderer = originalRenderer;
+            // Icons with zero width/height are ignored
+            this.emptyIcon = new EmptyIcon(1, 1);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component component = originalRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if (component instanceof JLabel) {
+                JLabel label = (JLabel)component;
+                if (label.getIcon() != null) {
+                    label.setIcon(emptyIcon);
+                }
+            }
+            return component;
+        }
+
+    }
+
+    /**
+     * Empty (transparent) icon.
+     */
+    final static class EmptyIcon implements Icon {
+        private final int width;
+        private final int height;
+
+        /**
+         * Creates a new {@code EmptyIcon}.
+         * 
+         * @param width width of the icon.
+         * @param height height of the icon.
+         */
+        EmptyIcon(int width, int height) {
+            this.width = width;
+            this.height = height;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+        }
+
+        @Override
+        public int getIconWidth() {
+            return width;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return height;
         }
         
     }

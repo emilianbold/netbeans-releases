@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.javascript2.nodejs.editor.model;
 
+import java.util.Collection;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.spi.model.ObjectInterceptor;
 import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
@@ -63,6 +65,26 @@ public class NodeJsObjectInterceptor implements ObjectInterceptor {
             JsObject module = global.getProperty(MODULE);
             if (module != null) {
                 exports = module.getProperty(EXPORTS);
+            }
+        }
+        if (exports != null && exports.getProperties().size() == 0) {
+            // probably there is something like var name = exports;
+            // used in for example in fs.js
+           
+            // find the variable, where the exports global object is assigned
+            for (JsObject variable : global.getProperties().values()) {
+                Collection<? extends TypeUsage> assignments = variable.getAssignments();
+                boolean isThis = false;
+                for (TypeUsage type : assignments) {
+                    if (EXPORTS.equals(type.getType())) {
+                        isThis = true;
+                        break;
+                    }
+                }
+                if (isThis) {
+                    exports = variable;
+                    break;
+                }
             }
         }
         if (exports != null) {
