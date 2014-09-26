@@ -39,35 +39,51 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.progress.ui;
+package org.netbeans.modules.progress.spi;
 
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.progress.spi.Controller;
-import org.netbeans.modules.progress.spi.ProgressEnvironment;
-import org.netbeans.modules.progress.spi.SwingController;
-import org.openide.util.Cancellable;
-import org.openide.util.lookup.ServiceProvider;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.Timer;
+import org.openide.modules.PatchFor;
 
 /**
- *
+ * This is a compatibility class for Controller SPI.
+ * Timer field was removed, and the getVisualComponent method as well.
+ * The timer is initially initialized using ordinary Swing Timer, and it triggers
+ * runEvents method as in the SwingController class. If a client instantiates Controller
+ * directly (not the SwingController subclass), it will get a non-null timer that fires events.
+ * <p/>
+ * SwingController contains a hack which will reflectively call the {@link #compatPostInit}
+ * to provide the same timer instance as actually used for scheduling for better compatibility.
  * @author sdedic
  */
-@ServiceProvider(service = ProgressEnvironment.class)
-public class ProgressUI implements ProgressEnvironment {
-
-    @Override
-    public ProgressHandle createHandle(String displayname, Cancellable c, boolean userInit) {
-        if (userInit) {
-            return ProgressHandleFactory.createHandle(displayname, c, null);
-        } else {
-            return ProgressHandleFactory.createSystemHandle(displayname, c, null);
+@PatchFor(Controller.class)
+public class ControllerCompat {
+    /**
+     * This field is added for compatibility
+     */
+    protected Timer     timer;
+    
+    public Component getVisualComponent() {
+        Object component = ((Controller)(Object)this).getProgressUIWorker();
+        if (component instanceof Component) {
+            return (Component)component;
         }
-    }
-
-    @Override
-    public Controller getController() {
-        return SwingController.getDefault();
+        return null;
     }
     
+    public ControllerCompat() {
+       timer = new Timer(400, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ((Controller)(Object)this).runEvents();
+            }
+        });
+        timer.setRepeats(false);
+    }
+    
+    protected void compatPostInit(Timer timer) {
+        this.timer = timer;
+    }
 }

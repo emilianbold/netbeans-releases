@@ -56,6 +56,7 @@ import org.netbeans.modules.progress.spi.Controller;
 import org.netbeans.modules.progress.spi.UIInternalHandle;
 import org.netbeans.modules.progress.spi.ProgressEvent;
 import org.netbeans.modules.progress.spi.ProgressUIWorker;
+import org.netbeans.modules.progress.spi.SwingController;
 import org.openide.util.Cancellable;
 
 /**
@@ -73,14 +74,14 @@ public class ProgressHandleFactoryTest extends NbTestCase {
      */
     public void testCreateHandle() {
         
-        ProgressHandle handle = ProgressUIHandle.createUIHandle("task 1");
+        ProgressHandle handle = ProgressHandleFactory.createHandle("task 1");
         UIInternalHandle internal = (UIInternalHandle)handle.getInternalHandle();
         assertEquals("task 1", internal.getDisplayName());
         assertFalse(internal.isAllowCancel());
         assertFalse(internal.isCustomPlaced());
         assertEquals(UIInternalHandle.STATE_INITIALIZED, internal.getState());
         
-        handle = ProgressUIHandle.createUIHandle("task 2", new TestCancel());
+        handle = ProgressHandleFactory.createHandle("task 2", new TestCancel());
         internal = (UIInternalHandle)handle.getInternalHandle();
         assertEquals("task 2", internal.getDisplayName());
         assertTrue(internal.isAllowCancel());
@@ -93,9 +94,10 @@ public class ProgressHandleFactoryTest extends NbTestCase {
     public void testCustomComponentIsInitialized() {
         Controller.defaultInstance = new TestController();
         
-        ProgressUIHandle handle = ProgressUIHandle.createUIHandle("task 1");
+        ProgressHandle handle = ProgressHandleFactory.createHandle("task 1");
+
+        // Warning, this will make the handle to work with a new Controller, not TestController.
         JComponent component = ProgressHandleFactory.createProgressComponent(handle);
-        
         handle.start(15);
         handle.progress(2);
         waitForTimerFinish();
@@ -103,7 +105,7 @@ public class ProgressHandleFactoryTest extends NbTestCase {
         assertEquals(15, ((JProgressBar) component).getMaximum());
         assertEquals(2, ((JProgressBar) component).getValue());
         
-        handle = ProgressUIHandle.createUIHandle("task 2");
+        handle = ProgressHandleFactory.createHandle("task 2");
         component = ProgressHandleFactory.createProgressComponent(handle);
         
         handle.start(20);
@@ -172,7 +174,7 @@ public class ProgressHandleFactoryTest extends NbTestCase {
    }
    
      
-    private class TestController extends Controller {
+    private class TestController extends SwingController {
         public TestController() {
             super(new ProgressUIWorker() {
                 public void processProgressEvent(ProgressEvent event) { }
@@ -181,7 +183,7 @@ public class ProgressHandleFactoryTest extends NbTestCase {
         }
         
         public Timer getTestTimer() {
-            return timer;
+            return getTimer();
         }
     }
     

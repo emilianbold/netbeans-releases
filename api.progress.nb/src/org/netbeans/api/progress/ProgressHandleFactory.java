@@ -109,16 +109,20 @@ public final class ProgressHandleFactory {
      * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
      */
     public static ProgressHandle createHandle(String displayName, Cancellable allowToCancel, Action linkOutput) {
-        return ProgressUIHandle.createUIHandle(displayName, allowToCancel, linkOutput);
+        return new UIInternalHandle(displayName, allowToCancel, true, linkOutput).createProgressHandle();
     }
     
+    private static UIInternalHandle ih(ProgressHandle h) {
+        return (UIInternalHandle)h.getInternalHandle();
+    }
+
     /**
      * Get the progress bar component for use in custom dialogs, the task won't 
      * show in the progress bar anymore.
      * @return the component to use in custom UI.
      */
     public static JComponent createProgressComponent(ProgressHandle handle) {
-        return ((ProgressUIHandle)handle).extractComponent();
+        return ih(handle).extractComponent();
     }
 
     /**
@@ -128,7 +132,7 @@ public final class ProgressHandleFactory {
      * @since org.netbeans.api.progress 1.8
      */
     public static JLabel createMainLabelComponent(ProgressHandle handle) {
-        return ((ProgressUIHandle)handle).extractMainLabel();
+        return ih(handle).extractMainLabel();
     }
     
     /**
@@ -138,7 +142,7 @@ public final class ProgressHandleFactory {
      * @since org.netbeans.api.progress 1.8
      */
     public static JLabel createDetailLabelComponent(ProgressHandle handle) {
-        return ((ProgressUIHandle)handle).extractDetailLabel();
+        return ih(handle).extractDetailLabel();
     }
     
     /**
@@ -176,6 +180,6 @@ public final class ProgressHandleFactory {
      *
      */
     public static ProgressHandle createSystemHandle(String displayName, Cancellable allowToCancel, Action linkOutput) {
-        return new ProgressUIHandle(new UIInternalHandle(displayName, allowToCancel, false, linkOutput));
+        return new UIInternalHandle(displayName, allowToCancel, false, linkOutput).createProgressHandle();
     }    
 }

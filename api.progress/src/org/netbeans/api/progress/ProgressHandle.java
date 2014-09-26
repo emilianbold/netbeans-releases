@@ -48,6 +48,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.progress.spi.InternalHandle;
 import org.netbeans.progress.module.DefaultHandleFactory;
+import org.netbeans.progress.module.ProgressApiAccessor;
+import org.openide.modules.PatchedPublic;
 import org.openide.util.Cancellable;
 
 /**
@@ -61,7 +63,7 @@ import org.openide.util.Cancellable;
  * 
  * @author Milos Kleint (mkleint@netbeans.org)
  */
-public class ProgressHandle {
+public final class ProgressHandle {
 
     private static final Logger LOG = Logger.getLogger(ProgressHandle.class.getName());
 
@@ -102,7 +104,7 @@ public class ProgressHandle {
     }
 
     /** Creates a new instance of ProgressHandle */
-    protected ProgressHandle(InternalHandle internal) {
+    ProgressHandle(InternalHandle internal) {
         LOG.fine(internal.getDisplayName());
         this.internal = internal;
     }
@@ -258,7 +260,8 @@ public class ProgressHandle {
     /**
      * for unit testing only..
      */
-    protected final InternalHandle getInternalHandle() {
+    @PatchedPublic
+    final InternalHandle getInternalHandle() {
         return internal;
     }
 
@@ -267,5 +270,22 @@ public class ProgressHandle {
         synchronized (internal) {
             return internal.getDisplayName();
         }
+    }
+    
+    static class Accessor extends ProgressApiAccessor {
+
+        @Override
+        public ProgressHandle create(InternalHandle h) {
+            return new ProgressHandle(h);
+        }
+
+        @Override
+        public InternalHandle getInternalHandle(ProgressHandle h) {
+            return h.getInternalHandle();
+        }
+    }
+    
+    static {
+        ProgressApiAccessor.setInstance(new Accessor());
     }
 }

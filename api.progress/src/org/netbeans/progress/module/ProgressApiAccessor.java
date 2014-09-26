@@ -39,30 +39,31 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.api.progress;
+package org.netbeans.progress.module;
 
-import java.lang.reflect.Method;
-import javax.swing.JLabel;
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.progress.spi.InternalHandle;
 
 /**
  *
- * @author Jaroslav Tulach &lt;jtulach@netbeans.org&gt;
+ * @author sdedic
  */
-public class ProgressAPICompatTest extends NbTestCase {
-    public ProgressAPICompatTest(String name) {
-        super(name);
+public abstract class ProgressApiAccessor {
+    private static ProgressApiAccessor INSTANCE;
+    
+    static {
+        ProgressHandle.createHandle("");
     }
     
-    public static Test suite() {
-        return NbModuleSuite.create(ProgressAPICompatTest.class, null, null);
+    public static void setInstance(ProgressApiAccessor inst) {
+        INSTANCE = inst;
     }
     
-    public void testExtractMainLabel() throws Exception {
-        Method m = InternalHandle.class.getMethod("extractMainLabel");
-        assertEquals("Returns JLabel", JLabel.class, m.getReturnType());
+    public static ProgressApiAccessor getInstance() {
+        return INSTANCE;
     }
+    
+    public abstract InternalHandle getInternalHandle(ProgressHandle h);
+    
+    public abstract ProgressHandle create(InternalHandle h);
 }
