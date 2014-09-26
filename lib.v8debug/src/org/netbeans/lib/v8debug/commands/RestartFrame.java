@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -39,47 +39,58 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug;
+
+package org.netbeans.lib.v8debug.commands;
+
+import java.util.Map;
+import org.netbeans.lib.v8debug.PropertyLong;
+import org.netbeans.lib.v8debug.V8Arguments;
+import org.netbeans.lib.v8debug.V8Body;
+import org.netbeans.lib.v8debug.V8Command;
+import org.netbeans.lib.v8debug.V8Request;
+import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
  *
  * @author Martin Entlicher
  */
-public final class V8Event extends V8Packet {
+public class RestartFrame {
     
-    public static enum Kind {
-        Break,
-        Exception,
-        AfterCompile;
-        // TODO: ScriptCollected;
-
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
-        }
+    public static final String RESULT_STACK_UPDATE_NEEDS_STEP_IN = "stack_update_needs_step_in";
+    
+    private RestartFrame() {}
+    
+    public static V8Request createRequest(long sequence) {
+        return new V8Request(sequence, V8Command.Restartframe, new Arguments(null));
+    }
+    
+    public static V8Request createRequest(long sequence, long frame) {
+        return new V8Request(sequence, V8Command.Restartframe, new Arguments(frame));
+    }
+    
+    public static final class Arguments extends V8Arguments {
         
-        static Kind fromString(String eventName) {
-            eventName = Character.toUpperCase(eventName.charAt(0)) + eventName.substring(1);
-            return Kind.valueOf(eventName);
-        }
+        private final PropertyLong frame;
         
-    }
-    
-    private final Kind eventKind;
-    private final V8Body body;
-    
-    V8Event(long sequence, Kind eventKind, V8Body body) {
-        super(sequence, V8Type.event);
-        this.eventKind = eventKind;
-        this.body = body;
-    }
+        public Arguments(Long frame) {
+            this.frame = new PropertyLong(frame);
+        }
 
-    public Kind getKind() {
-        return eventKind;
-    }
-
-    public V8Body getBody() {
-        return body;
+        public PropertyLong getFrame() {
+            return frame;
+        }
     }
     
+    public static final class ResponseBody extends V8Body {
+        
+        private final Map<String, Object> result;
+        
+        public ResponseBody(Map<String, Object> result) {
+            this.result = result;
+        }
+
+        public Map<String, Object> getResult() {
+            return result;
+        }
+    }
 }

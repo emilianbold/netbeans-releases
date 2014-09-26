@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -39,47 +39,60 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug;
+
+package org.netbeans.modules.javascript.v8debug;
+
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.SessionProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Martin Entlicher
  */
-public final class V8Event extends V8Packet {
+@SessionProvider.Registration(path=V8DebuggerSessionProvider.DEBUG_INFO)
+public class V8DebuggerSessionProvider extends SessionProvider {
     
-    public static enum Kind {
-        Break,
-        Exception,
-        AfterCompile;
-        // TODO: ScriptCollected;
+    public static final String SESSION_NAME = "javascript-v8session";           // NOI18N
+    static final String DEBUG_INFO = "javascript-v8debuginfo";                  // NOI18N
+    
+    private final ContextProvider context;
+    
+    public V8DebuggerSessionProvider(ContextProvider context) {
+        this.context = context;
+    }
 
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
+    @NbBundle.Messages({"# {0} - host name", "# {1} - port number",
+                        "CTL_V8RemoteAttach=Node.js at {0}:{1}",
+                        "# {0} - port number",
+                        "CTL_V8LocalAttach=Node.js at port {0}"})
+    public static String getSessionName(@NullAllowed String host, int port) {
+        if (host != null && !host.isEmpty()) {
+            return Bundle.CTL_V8RemoteAttach(host, port);
+        } else {
+            return Bundle.CTL_V8LocalAttach(port);
         }
-        
-        static Kind fromString(String eventName) {
-            eventName = Character.toUpperCase(eventName.charAt(0)) + eventName.substring(1);
-            return Kind.valueOf(eventName);
-        }
-        
     }
     
-    private final Kind eventKind;
-    private final V8Body body;
-    
-    V8Event(long sequence, Kind eventKind, V8Body body) {
-        super(sequence, V8Type.event);
-        this.eventKind = eventKind;
-        this.body = body;
+    @Override
+    public String getSessionName() {
+        V8Debugger dbg = context.lookupFirst(null, V8Debugger.class);
+        return getSessionName(dbg.getHost(), dbg.getPort());
     }
 
-    public Kind getKind() {
-        return eventKind;
+    @Override
+    public String getLocationName() {
+        return null;
     }
 
-    public V8Body getBody() {
-        return body;
+    @Override
+    public String getTypeID() {
+        return SESSION_NAME;
     }
-    
+
+    @Override
+    public Object[] getServices() {
+        return new Object[] {};
+    }
 }

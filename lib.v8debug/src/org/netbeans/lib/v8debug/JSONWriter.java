@@ -47,7 +47,9 @@ import org.json.simple.JSONObject;
 import static org.netbeans.lib.v8debug.JSONConstants.*;
 import org.netbeans.lib.v8debug.commands.Backtrace;
 import org.netbeans.lib.v8debug.commands.ChangeBreakpoint;
+import org.netbeans.lib.v8debug.commands.ChangeLive;
 import org.netbeans.lib.v8debug.commands.ClearBreakpoint;
+import org.netbeans.lib.v8debug.commands.ClearBreakpointGroup;
 import org.netbeans.lib.v8debug.commands.Continue;
 import org.netbeans.lib.v8debug.commands.Evaluate;
 import org.netbeans.lib.v8debug.commands.Flags;
@@ -55,7 +57,7 @@ import org.netbeans.lib.v8debug.commands.Frame;
 import org.netbeans.lib.v8debug.commands.GC;
 import org.netbeans.lib.v8debug.commands.Lookup;
 import org.netbeans.lib.v8debug.commands.References;
-import org.netbeans.lib.v8debug.commands.Restartframe;
+import org.netbeans.lib.v8debug.commands.RestartFrame;
 import org.netbeans.lib.v8debug.commands.Scope;
 import org.netbeans.lib.v8debug.commands.Scopes;
 import org.netbeans.lib.v8debug.commands.Scripts;
@@ -121,6 +123,7 @@ public class JSONWriter {
                 storeIf(sbargs.isEnabled(), obj, BREAK_ENABLED);
                 storeIf(sbargs.getCondition(), obj, BREAK_CONDITION);
                 storeIf(sbargs.getIgnoreCount(), obj, BREAK_IGNORE_COUNT);
+                storeIf(sbargs.getGroupId(), obj, BREAK_GROUP_ID);
                 return obj;
             case Changebreakpoint:
                 ChangeBreakpoint.Arguments chbargs = (ChangeBreakpoint.Arguments) arguments;
@@ -132,6 +135,10 @@ public class JSONWriter {
             case Clearbreakpoint:
                 ClearBreakpoint.Arguments cbargs = (ClearBreakpoint.Arguments) arguments;
                 obj.put(BREAK_POINT, cbargs.getBreakpoint());
+                return obj;
+            case Clearbreakpointgroup:
+                ClearBreakpointGroup.Arguments cbgargs = (ClearBreakpointGroup.Arguments) arguments;
+                obj.put(BREAK_GROUP_ID, cbgargs.getGroupId());
                 return obj;
             case Setexceptionbreak:
                 SetExceptionBreak.Arguments sebargs = (SetExceptionBreak.Arguments) arguments;
@@ -154,7 +161,7 @@ public class JSONWriter {
                 storeIf(fargs.getFrameNumber(), obj, NUMBER);
                 return obj;
             case Restartframe:
-                Restartframe.Arguments ra = (Restartframe.Arguments) arguments;
+                RestartFrame.Arguments ra = (RestartFrame.Arguments) arguments;
                 PropertyLong frame = ra.getFrame();
                 if (frame.hasValue()) {
                     obj.put(FRAME, frame.getValue());
@@ -205,6 +212,12 @@ public class JSONWriter {
                 scope.put(NUMBER, svargs.getScopeNumber());
                 storeIf(svargs.getScopeFrameNumber(), scope, FRAME_NUMBER);
                 obj.put(SCOPE, scope);
+                return obj;
+            case Changelive:
+                ChangeLive.Arguments chlargs = (ChangeLive.Arguments) arguments;
+                obj.put(SCRIPT_ID, chlargs.getScriptId());
+                storeIf(chlargs.isPreviewOnly(), obj, PREVIEW_ONLY);
+                obj.put(NEW_SOURCE, chlargs.getNewSource());
                 return obj;
             case Gc:
                 GC.Arguments gcargs = (GC.Arguments) arguments;

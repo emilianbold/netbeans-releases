@@ -59,13 +59,13 @@ public final class SetBreakpoint {
     
     public static V8Request createRequest(long sequence, V8Breakpoint.Type type,
                                           String target, Long line, Long column) {
-        return new V8Request(sequence, V8Command.Setbreakpoint, new Arguments(type, target, line, column, null, null, null));
+        return new V8Request(sequence, V8Command.Setbreakpoint, new Arguments(type, target, line, column, null, null, null, null));
     }
     
     public static V8Request createRequest(long sequence, V8Breakpoint.Type type,
                                           String target, Long line, Long column,
-                                          Boolean enabled, String condition, Long ignoreCount) {
-        return new V8Request(sequence, V8Command.Setbreakpoint, new Arguments(type, target, line, column, enabled, condition, ignoreCount));
+                                          Boolean enabled, String condition, Long ignoreCount, Long groupId) {
+        return new V8Request(sequence, V8Command.Setbreakpoint, new Arguments(type, target, line, column, enabled, condition, ignoreCount, groupId));
     }
     
     public static final class Arguments extends V8Arguments {
@@ -77,10 +77,11 @@ public final class SetBreakpoint {
         private final PropertyBoolean enabled;
         private final String condition;
         private final PropertyLong ignoreCount;
+        private final PropertyLong groupId;
         
         public Arguments(V8Breakpoint.Type type, String target,
                          Long line, Long column, Boolean enabled,
-                         String condition, Long ignoreCount) {
+                         String condition, Long ignoreCount, Long groupId) {
             this.type = type;
             this.target = target;
             this.line = new PropertyLong(line);
@@ -88,6 +89,7 @@ public final class SetBreakpoint {
             this.enabled = new PropertyBoolean(enabled);
             this.condition = condition;
             this.ignoreCount = new PropertyLong(ignoreCount);
+            this.groupId = new PropertyLong(groupId);
         }
 
         public V8Breakpoint.Type getType() {
@@ -116,6 +118,10 @@ public final class SetBreakpoint {
 
         public PropertyLong getIgnoreCount() {
             return ignoreCount;
+        }
+
+        public PropertyLong getGroupId() {
+            return groupId;
         }
     }
     

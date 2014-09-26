@@ -48,6 +48,7 @@ package org.netbeans.lib.v8debug;
 public enum V8Command {
     
     Continue,
+    Suspend,
     Evaluate,
     Lookup,
     References,
@@ -60,6 +61,7 @@ public enum V8Command {
     Setbreakpoint,
     Changebreakpoint,
     Clearbreakpoint,
+    Clearbreakpointgroup,
     Setexceptionbreak,
     Threads,
     Flags,
@@ -69,7 +71,8 @@ public enum V8Command {
     Gc,
     Listbreakpoints,
     SetVariableValue,
-    Restartframe;
+    Restartframe,
+    Changelive;
     
     @Override
     public String toString() {

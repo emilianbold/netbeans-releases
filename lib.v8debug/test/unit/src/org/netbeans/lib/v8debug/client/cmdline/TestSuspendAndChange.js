@@ -1,4 +1,4 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -40,57 +40,28 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.v8debug.commands;
+var changing = require('./TestTheChangingScript');
 
-import java.util.Map;
-import org.netbeans.lib.v8debug.PropertyLong;
-import org.netbeans.lib.v8debug.V8Arguments;
-import org.netbeans.lib.v8debug.V8Body;
-import org.netbeans.lib.v8debug.V8Command;
-import org.netbeans.lib.v8debug.V8Request;
-import org.netbeans.lib.v8debug.vars.V8Value;
+numLoops = 10;
 
-/**
- *
- * @author Martin Entlicher
- */
-public class Restartframe {
-    
-    public static final String RESULT_STACK_UPDATE_NEEDS_STEP_IN = "stack_update_needs_step_in";
-    
-    private Restartframe() {}
-    
-    public static V8Request createRequest(long sequence) {
-        return new V8Request(sequence, V8Command.Restartframe, new Arguments(null));
-    }
-    
-    public static V8Request createRequest(long sequence, long frame) {
-        return new V8Request(sequence, V8Command.Restartframe, new Arguments(frame));
-    }
-    
-    public static final class Arguments extends V8Arguments {
-        
-        private final PropertyLong frame;
-        
-        public Arguments(Long frame) {
-            this.frame = new PropertyLong(frame);
-        }
-
-        public PropertyLong getFrame() {
-            return frame;
-        }
-    }
-    
-    public static final class ResponseBody extends V8Body {
-        
-        private final Map<String, Object> result;
-        
-        public ResponseBody(Map<String, Object> result) {
-            this.result = result;
-        }
-
-        public Map<String, Object> getResult() {
-            return result;
-        }
+/*
+function RunLoop() {
+    var toChange = "to change";
+    var changed;
+    changed = changing.changingFunction(toChange);
+    console.log(changed);
+    if (--numLoops > 0) {
+        setTimeout(RunLoop, 500);
     }
 }
+*/
+function RunLoop() {
+    var n = 100000000*numLoops;
+    var i = 0;
+    var s = 0;
+    for (i = 0; i < n; i++) {
+        s = changing.sum(i);
+    }
+    console.log("s = "+s);
+}
+RunLoop();
