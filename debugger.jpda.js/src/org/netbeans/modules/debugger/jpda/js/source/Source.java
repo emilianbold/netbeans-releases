@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.debugger.jpda.js.source;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -219,8 +220,16 @@ public final class Source {
         if (name.startsWith("\"") && name.endsWith("\"")) {
             name = name.substring(1, name.length() - 1);
         }
-        if (!name.endsWith(".js") && !name.endsWith(".JS")) {
+        int nl = name.length();
+        if (nl < 4 || !name.substring(nl - 3, nl).toLowerCase().equals(".js")) {
             name = name + ".js";
+        }
+        // Check whether the file happens to exist
+        File nameFile = new File(name);
+        if (nameFile.isAbsolute() && nameFile.exists()) {
+            try {
+                url = nameFile.toURI().toURL();
+            } catch (MalformedURLException ex) {}
         }
         Source src = new Source(name, classType, url, compareContent, hash, content);
         synchronized (knownSources) {
