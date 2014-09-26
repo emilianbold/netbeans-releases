@@ -54,6 +54,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.PasswordAuthentication;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -128,7 +129,21 @@ public class ODCSRepository implements PropertyChangeListener {
         this(createInfo(project.getDisplayName(), project.getFeatureLocation(), project)); // use name as id - can'npe be changed anyway
         assert project != null;
         this.project = project;
-        TeamAccessorUtils.getTeamAccessor(project.getFeatureLocation()).addPropertyChangeListener(this, project.getWebLocation().toString());
+        
+        TeamAccessor teamAccessor = TeamAccessorUtils.getTeamAccessor(project.getFeatureLocation());
+        assert teamAccessor != null;
+        if(teamAccessor != null) {
+            URL webLocation = project.getWebLocation();
+            assert webLocation != null;
+            if(webLocation != null) {
+                teamAccessor.addPropertyChangeListener(this, webLocation.toString());
+            } else {
+                ODCS.LOG.log(Level.WARNING, "no WebLocation available for {0}", project.getName());
+            }
+        } else {
+            ODCS.LOG.log(Level.WARNING, "no TeamAccessor available for {0} {1}", new Object[]{project.getName(), project.getWebLocation()});
+        }
+        
     }
     
     public ODCSRepository() {
