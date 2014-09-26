@@ -43,6 +43,7 @@
 package org.netbeans.modules.javascript.nodejs.exec;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -79,7 +80,6 @@ import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.Version;
-import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -91,8 +91,9 @@ public class NodeExecutable {
     private static final Logger LOGGER = Logger.getLogger(NodeExecutable.class.getName());
 
     public static final String NODE_NAME;
+    public static final int DEFAULT_DEBUG_PORT = 9292;
 
-    private static final String DEBUG_COMMAND = "debug"; // NOI18N
+    private static final String DEBUG_COMMAND = "--debug-brk=%d"; // NOI18N
     private static final String VERSION_PARAM = "--version"; // NOI18N
 
     private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
@@ -165,16 +166,16 @@ public class NodeExecutable {
         if (preferences.isDefaultNode()) {
             return getDefault(project, showCustomizer);
         }
+        String node = preferences.getNode();
         ValidationResult result = new NodeJsPreferencesValidator()
-                .validate(project)
+                .validateNode(node)
                 .getResult();
         if (validateResult(result) != null) {
             if (showCustomizer) {
-                project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(NodeJsCustomizerProvider.CUSTOMIZER_IDENT, null);
+                NodeJsCustomizerProvider.openCustomizer(project, result);
             }
             return null;
         }
-        String node = preferences.getNode();
         assert node != null;
         if (Utilities.isMac()) {
             return new MacNodeExecutable(node, project);
@@ -233,11 +234,26 @@ public class NodeExecutable {
         "NodeExecutable.run=Node.js ({0})",
     })
     @CheckForNull
-    public Future<Integer> run(File script) {
+    public Future<Integer> run(File script, String args) {
         assert project != null;
         String projectName = ProjectUtils.getInformation(project).getDisplayName();
         Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName))
-                .additionalParameters(getRunParams(script))
+                .additionalParameters(getRunParams(script, args))
+                .run(getDescriptor());
+        assert task != null : nodePath;
+        return task;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "NodeExecutable.debug=Node.js ({0})",
+    })
+    @CheckForNull
+    public Future<Integer> debug(int port, File script, String args) {
+        assert project != null;
+        String projectName = ProjectUtils.getInformation(project).getDisplayName();
+        Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName))
+                .additionalParameters(getDebugParams(port, script, args))
                 .run(getDescriptor());
         assert task != null : nodePath;
         return task;
@@ -288,18 +304,34 @@ public class NodeExecutable {
         return workDir;
     }
 
-    private List<String> getRunParams(File script) {
-        assert script != null;
-        return getParams(script.getAbsolutePath());
+    private List<String> getRunParams(File script, String args) {
+        return getParams(getScriptArgsParams(script, args));
+    }
+
+    private List<String> getDebugParams(int port, File script, String args) {
+        List<String> params = new ArrayList<>();
+        params.add(String.format(DEBUG_COMMAND, port));
+        getScriptArgsParams(script, args);
+        return getParams(params);
     }
 
     private List<String> getVersionParams() {
-        return getParams(VERSION_PARAM);
+        return getParams(Collections.singletonList(VERSION_PARAM));
     }
 
-    List<String> getParams(String... params) {
+    private List<String> getScriptArgsParams(File script, String args) {
+        assert script != null;
+        List<String> params = new ArrayList<>();
+        params.add(script.getAbsolutePath());
+        if (StringUtils.hasText(args)) {
+            params.addAll(Arrays.asList(Utilities.parseParameters(args)));
+        }
+        return params;
+    }
+
+    List<String> getParams(List<String> params) {
         assert params != null;
-        return Arrays.asList(params);
+        return params;
     }
 
     @CheckForNull
@@ -330,7 +362,7 @@ public class NodeExecutable {
         }
 
         @Override
-        List<String> getParams(String... params) {
+        List<String> getParams(List<String> params) {
             StringBuilder sb = new StringBuilder(200);
             sb.append("\""); // NOI18N
             sb.append(nodePath);
