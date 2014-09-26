@@ -50,6 +50,7 @@ import org.netbeans.api.extexecution.base.input.InputReaderTask;
 import org.netbeans.api.extexecution.print.LineProcessors;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.optional.ErrorLineConvertor;
 import org.netbeans.modules.j2ee.weblogic9.optional.NonProxyHostsHelper;
 import org.netbeans.modules.weblogic.common.api.WebLogicRuntime;
 import org.openide.util.RequestProcessor;
@@ -88,7 +89,7 @@ public class ServerLogManager {
                 }
             }
             if (!runtime.isProcessRunning()) {
-                task = runtime.createLogReaderTask(LineProcessors.printing(writer, true), new Callable<String>() {
+                task = runtime.createLogReaderTask(LineProcessors.printing(writer, new ErrorLineConvertor(), true), new Callable<String>() {
 
                     @Override
                     public String call() throws Exception {
