@@ -39,47 +39,29 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug;
 
-/**
- *
- * @author Martin Entlicher
- */
-public final class V8Event extends V8Packet {
-    
-    public static enum Kind {
-        Break,
-        Exception,
-        AfterCompile;
-        // TODO: ScriptCollected;
+var changing = require('./TestTheChangingScript');
 
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
-        }
-        
-        static Kind fromString(String eventName) {
-            eventName = Character.toUpperCase(eventName.charAt(0)) + eventName.substring(1);
-            return Kind.valueOf(eventName);
-        }
-        
-    }
-    
-    private final Kind eventKind;
-    private final V8Body body;
-    
-    V8Event(long sequence, Kind eventKind, V8Body body) {
-        super(sequence, V8Type.event);
-        this.eventKind = eventKind;
-        this.body = body;
-    }
+numLoops = 10;
 
-    public Kind getKind() {
-        return eventKind;
+/*
+function RunLoop() {
+    var toChange = "to change";
+    var changed;
+    changed = changing.changingFunction(toChange);
+    console.log(changed);
+    if (--numLoops > 0) {
+        setTimeout(RunLoop, 500);
     }
-
-    public V8Body getBody() {
-        return body;
-    }
-    
 }
+*/
+function RunLoop() {
+    var n = 100000000*numLoops;
+    var i = 0;
+    var s = 0;
+    for (i = 0; i < n; i++) {
+        s = changing.sum(i);
+    }
+    console.log("s = "+s);
+}
+RunLoop();

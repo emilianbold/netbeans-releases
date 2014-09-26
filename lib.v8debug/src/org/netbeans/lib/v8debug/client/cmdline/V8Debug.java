@@ -1079,6 +1079,17 @@ public class V8Debug {
             return v8dbg.cc.isClosed();
         }
         
+        static V8Script getScriptByName(V8Debug v8dbg, String name) {
+            synchronized (v8dbg.scriptsById) {
+                for (V8Script s : v8dbg.scriptsById.values()) {
+                    if (name.equals(s.getName())) {
+                        return s;
+                    }
+                }
+            }
+            return null;
+        }
+        
     }
     
     static interface Testeable {

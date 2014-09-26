@@ -47,6 +47,7 @@ import org.json.simple.JSONObject;
 import static org.netbeans.lib.v8debug.JSONConstants.*;
 import org.netbeans.lib.v8debug.commands.Backtrace;
 import org.netbeans.lib.v8debug.commands.ChangeBreakpoint;
+import org.netbeans.lib.v8debug.commands.ChangeLive;
 import org.netbeans.lib.v8debug.commands.ClearBreakpoint;
 import org.netbeans.lib.v8debug.commands.ClearBreakpointGroup;
 import org.netbeans.lib.v8debug.commands.Continue;
@@ -211,6 +212,12 @@ public class JSONWriter {
                 scope.put(NUMBER, svargs.getScopeNumber());
                 storeIf(svargs.getScopeFrameNumber(), scope, FRAME_NUMBER);
                 obj.put(SCOPE, scope);
+                return obj;
+            case Changelive:
+                ChangeLive.Arguments chlargs = (ChangeLive.Arguments) arguments;
+                obj.put(SCRIPT_ID, chlargs.getScriptId());
+                storeIf(chlargs.isPreviewOnly(), obj, PREVIEW_ONLY);
+                obj.put(NEW_SOURCE, chlargs.getNewSource());
                 return obj;
             case Gc:
                 GC.Arguments gcargs = (GC.Arguments) arguments;

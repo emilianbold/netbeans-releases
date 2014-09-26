@@ -116,11 +116,9 @@ import org.netbeans.lib.v8debug.vars.V8Value;
  * 
  * @author Martin Entlicher
  */
-public class V8DebugTest {
+public class V8DebugTest extends AbstractTestBase {
     
     private static final String TEST_FILE = "TestDebug.js"; // NOI18N
-    private static final String NODE_EXE = "node";          // NOI18N
-    private static final String NODE_EXE_PROP = "nodeBinary";   // NOI18N
     private static final String NODE_ARG_DBG = "--debug-brk";   // NOI18N
     
     private static final int TEST_NUM_LINES = 244;
@@ -155,10 +153,6 @@ public class V8DebugTest {
     
     private static final Object VALUE_UNDEFINED = new String("<undefined>");
     
-    private String testFilePath;
-    private V8Debug v8dbg;
-    private ResponseHandler responseHandler;
-    
     public V8DebugTest() {
     }
     
@@ -184,47 +178,12 @@ public class V8DebugTest {
     
     @Before
     public void setUp() throws IOException {
-        int port = startNodeDebug(V8DebugTest.class.getResourceAsStream(TEST_FILE));
-        assertTrue("Invalid port: "+port, port > 0);
-        responseHandler = new ResponseHandler();
-        v8dbg = V8Debug.TestAccess.createV8Debug("localhost", port, responseHandler);
+        startUp(V8DebugTest.class.getResourceAsStream(TEST_FILE), TEST_FILE, NODE_ARG_DBG);
     }
     
     @After
     public void tearDown() throws InterruptedException {
         Thread.sleep(2000); // To recover
-    }
-    
-    private int startNodeDebug(InputStream testSource) throws IOException {
-        File testFile = File.createTempFile(TEST_FILE.substring(0, TEST_FILE.indexOf('.')), ".js");
-        testFile.deleteOnExit();
-        Files.copy(testSource, testFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        ProcessBuilder pb = new ProcessBuilder();
-        String nodeBinary = System.getProperty(NODE_EXE_PROP);
-        if (nodeBinary == null) {
-            nodeBinary = pb.environment().get(NODE_EXE_PROP);
-        }
-        if (nodeBinary == null) {
-            nodeBinary = NODE_EXE;
-        }
-        this.testFilePath = testFile.getAbsolutePath();
-        pb.command(nodeBinary, NODE_ARG_DBG, testFile.getAbsolutePath());
-        pb.redirectErrorStream(true);
-        Process node = pb.start();
-        InputStream stdOut = node.getInputStream();
-        BufferedReader bso = new BufferedReader(new InputStreamReader(stdOut));
-        String line;
-        while ((line = bso.readLine()) != null) {
-            int space = line.lastIndexOf(' ');
-            if (space > 0) {
-                try {
-                    int port = Integer.parseInt(line.substring(space).trim());
-                    return port;
-                } catch (NumberFormatException nfex) {}
-            }
-            System.err.println(line);
-        }
-        return -1;
     }
     
     /**
@@ -238,6 +197,9 @@ public class V8DebugTest {
         Set<V8Command> commandsToTest = new HashSet<>(Arrays.asList(V8Command.values()));
         // Exception breakpoints are tested explicitly
         commandsToTest.remove(V8Command.Setexceptionbreak);
+        // Suspend and ChangeLive are subject of a different test (V8SuspendAndChangeTest)
+        commandsToTest.remove(V8Command.Suspend);
+        commandsToTest.remove(V8Command.Changelive);
         
         // Wait to stop first:
         V8Event lastEvent;
@@ -1958,57 +1920,6 @@ public class V8DebugTest {
                 }
             }
         }
-    }
-    
-    private final class ResponseHandler implements V8Debug.Testeable {
-        
-        private V8Response lastResponse;
-        private V8Event lastEvent;
-        private boolean closed;
-
-        @Override
-        public synchronized void notifyResponse(V8Response response) {
-            this.lastResponse = response;
-            this.notifyAll();
-        }
-
-        @Override
-        public synchronized void notifyEvent(V8Event event) {
-            this.lastEvent = event;
-            this.notifyAll();
-        }
-
-        @Override
-        public void notifyClosed() {
-            this.closed = true;
-        }
-        
-        public synchronized V8Response getLastResponse() throws InterruptedException {
-            while (lastResponse == null) {
-                this.wait();
-            }
-            V8Response response = lastResponse;
-            lastResponse = null;
-            return response;
-        }
-        
-        public synchronized void clearLastResponse() {
-            lastResponse = null;
-        }
-        
-        public synchronized V8Event getLastEvent() throws InterruptedException {
-            while (lastEvent == null) {
-                this.wait();
-            }
-            V8Event event = lastEvent;
-            lastEvent = null;
-            return event;
-        }
-        
-        public boolean isClosed() {
-            return closed;
-        }
-        
     }
     
 }
