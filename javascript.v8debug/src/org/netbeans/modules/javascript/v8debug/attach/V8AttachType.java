@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -39,47 +39,41 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug;
+
+package org.netbeans.modules.javascript.v8debug.attach;
+
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import javax.swing.JComponent;
+import org.netbeans.spi.debugger.ui.AttachType;
+import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Martin Entlicher
  */
-public final class V8Event extends V8Packet {
+@NbBundle.Messages("CTL_Connector_name=Node.js Server")
+//@AttachType.Registration(displayName="#CTL_Connector_name")
+public class V8AttachType extends AttachType {
     
-    public static enum Kind {
-        Break,
-        Exception,
-        AfterCompile;
-        // TODO: ScriptCollected;
+    private Reference<AttachCustomizer> customizerRef = new WeakReference<>(null);
 
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
+    @Override
+    public JComponent getCustomizer() {
+        AttachCustomizer ac = new AttachCustomizer();
+        customizerRef = new WeakReference<>(ac);
+        return ac;
+    }
+
+    @Override
+    public Controller getController() {
+        AttachCustomizer panel = customizerRef.get();
+        if (panel != null) {
+            return panel.getController();
+        } else {
+            return null;
         }
-        
-        static Kind fromString(String eventName) {
-            eventName = Character.toUpperCase(eventName.charAt(0)) + eventName.substring(1);
-            return Kind.valueOf(eventName);
-        }
-        
-    }
-    
-    private final Kind eventKind;
-    private final V8Body body;
-    
-    V8Event(long sequence, Kind eventKind, V8Body body) {
-        super(sequence, V8Type.event);
-        this.eventKind = eventKind;
-        this.body = body;
-    }
-
-    public Kind getKind() {
-        return eventKind;
-    }
-
-    public V8Body getBody() {
-        return body;
     }
     
 }

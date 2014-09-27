@@ -89,6 +89,8 @@ public enum Directive {
     keyup   (true,  true, true,  false, expression),
     list    (true,  true, true,  false, string),
     model   (true,  true, true,  false, expression),
+    modelOptions
+            (true,  true, false,  false, object),
     mousedown
             (true,  true, true,  false, expression),
     mouseenter

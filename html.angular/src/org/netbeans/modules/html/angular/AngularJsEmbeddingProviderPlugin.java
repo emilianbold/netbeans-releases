@@ -188,6 +188,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             processed = processRepeat(value);
                             stack.peek().addFinishText("}\n"); //NOI18N
                             break;
+                        case modelOptions:
+                            processed = processObject(value);
+                            break;
                         default:   
                             processed = processExpression(value);
                     }
@@ -402,7 +405,20 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         }
         return true;
     }
-    
+
+    private boolean processObject(String value) {
+        processTemplate();
+        embeddings.add(snapshot.create("( function () {\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+        if (value.isEmpty()) {
+            embeddings.add(snapshot.create(tokenSequence.offset() + 1, 0, Constants.JAVASCRIPT_MIMETYPE));
+        } else {
+            embeddings.add(snapshot.create("var value = ", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+            embeddings.add(snapshot.create(tokenSequence.offset() + 1, value.length(), Constants.JAVASCRIPT_MIMETYPE));
+        }
+        embeddings.add(snapshot.create(";\n})();\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+        return true;
+    }
+
     private boolean processRepeat(String expression) {
         processTemplate();
         boolean processed = false;

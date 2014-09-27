@@ -39,47 +39,49 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug;
+package org.netbeans.lib.v8debug.commands;
+
+import org.netbeans.lib.v8debug.V8Arguments;
+import org.netbeans.lib.v8debug.V8Body;
+import org.netbeans.lib.v8debug.V8Breakpoint;
+import org.netbeans.lib.v8debug.V8Command;
+import org.netbeans.lib.v8debug.V8Request;
 
 /**
  *
  * @author Martin Entlicher
  */
-public final class V8Event extends V8Packet {
+public final class ClearBreakpointGroup {
     
-    public static enum Kind {
-        Break,
-        Exception,
-        AfterCompile;
-        // TODO: ScriptCollected;
-
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
-        }
+    private ClearBreakpointGroup() {}
+    
+    public static V8Request createRequest(long sequence, long groupId) {
+        return new V8Request(sequence, V8Command.Clearbreakpointgroup, new Arguments(groupId));
+    }
+    
+    public static final class Arguments extends V8Arguments {
         
-        static Kind fromString(String eventName) {
-            eventName = Character.toUpperCase(eventName.charAt(0)) + eventName.substring(1);
-            return Kind.valueOf(eventName);
-        }
+        private final long groupId;
         
-    }
-    
-    private final Kind eventKind;
-    private final V8Body body;
-    
-    V8Event(long sequence, Kind eventKind, V8Body body) {
-        super(sequence, V8Type.event);
-        this.eventKind = eventKind;
-        this.body = body;
-    }
+        public Arguments(long groupId) {
+            this.groupId = groupId;
+        }
 
-    public Kind getKind() {
-        return eventKind;
-    }
-
-    public V8Body getBody() {
-        return body;
+        public long getGroupId() {
+            return groupId;
+        }
     }
     
+    public static final class ResponseBody extends V8Body {
+        
+        private final long[] breakpointsCleared;
+        
+        public ResponseBody(long[] breakpointsCleared) {
+            this.breakpointsCleared = breakpointsCleared;
+        }
+
+        public long[] getBreakpointsCleared() {
+            return breakpointsCleared;
+        }
+    }
 }
