@@ -43,18 +43,21 @@ package org.netbeans.modules.javascript.nodejs.ui.actions;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
-import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.RunInfo;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 abstract class Command {
 
@@ -123,8 +126,17 @@ abstract class Command {
         return FileUtil.toFile(file);
     }
 
-    private NodeJsSupport getNodeJsSupport() {
-        return NodeJsSupport.forProject(project);
+    protected void warnUser(String message) {
+        NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notifyLater(descriptor);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - reason",
+        "Command.warn.debug=Cannot run debugger. Reason:\n\n{0}",
+    })
+    protected void warnCannotDebug(IOException ex) {
+        warnUser(Bundle.Command_warn_debug(ex.getLocalizedMessage()));
     }
 
 }

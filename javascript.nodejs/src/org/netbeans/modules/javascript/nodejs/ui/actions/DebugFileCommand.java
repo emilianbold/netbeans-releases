@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript.nodejs.ui.actions;
 
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.util.RunInfo;
@@ -70,7 +71,11 @@ final class DebugFileCommand extends Command {
         assert file != null;
         NodeExecutable node = getNode();
         if (node != null) {
-            node.debug(new RunInfo(project).getDebugPort(), file, null);
+            try {
+                node.debug(new RunInfo(project).getDebugPort(), file, null);
+            } catch (IOException ex) {
+                warnCannotDebug(ex);
+            }
         }
     }
 

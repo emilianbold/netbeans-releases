@@ -43,6 +43,7 @@
 package org.netbeans.modules.javascript.nodejs.exec;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -78,6 +79,7 @@ import org.netbeans.modules.javascript.nodejs.util.ExternalExecutable;
 import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
+import org.netbeans.modules.javascript.v8debug.api.Connector;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.Version;
 import org.openide.filesystems.FileObject;
@@ -249,13 +251,14 @@ public class NodeExecutable {
         "NodeExecutable.debug=Node.js ({0})",
     })
     @CheckForNull
-    public Future<Integer> debug(int port, File script, String args) {
+    public Future<Integer> debug(int port, File script, String args) throws IOException {
         assert project != null;
         String projectName = ProjectUtils.getInformation(project).getDisplayName();
         Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName))
                 .additionalParameters(getDebugParams(port, script, args))
                 .run(getDescriptor());
         assert task != null : nodePath;
+        Connector.connect(new Connector.Properties("localhost", port), null); // NOI18N
         return task;
     }
 
