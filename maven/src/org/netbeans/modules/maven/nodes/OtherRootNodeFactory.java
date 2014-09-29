@@ -122,9 +122,7 @@ public class OtherRootNodeFactory implements NodeFactory {
                 // the content of OtherRoots can change from keys() to node(String)
                 if (fls.length > 0 && fls[0].getParentFile() != null) {
                     FileObject fo = FileUtil.toFileObject(fls[0].getParentFile());
-                    if(VisibilityQuery.getDefault().isVisible(fo)) {
-                        return new OthersRootNode(project, false, fo);
-                    }
+                    return new OthersRootNode(project, false, fo);
                 }
                 return null;
             } else if (KEY_OTHER_TEST.equals(key)) {
@@ -132,9 +130,7 @@ public class OtherRootNodeFactory implements NodeFactory {
                 // the content of OtherRoots can change from keys() to node(String)
                 if (fls.length > 0 && fls[0].getParentFile() != null) {
                     FileObject fo = FileUtil.toFileObject(fls[0].getParentFile());
-                    if(VisibilityQuery.getDefault().isVisible(fo)) {
-                        return new OthersRootNode(project, true, fo);
-                    }
+                    return new OthersRootNode(project, true, fo);
                 }
                 return null;
             }
