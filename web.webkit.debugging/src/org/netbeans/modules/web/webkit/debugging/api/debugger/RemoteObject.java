@@ -193,6 +193,17 @@ public class RemoteObject extends AbstractObject {
         return properties;
     }
 
+    /**
+     * Invokes the function with the given declaration on this object
+     * (i.e. invokes the function with its {@code this} set to this object).
+     * 
+     * @param functionDeclaration declaration of the function.
+     * @return {@code RemoteObject} representing the return value of the function.
+     */
+    public RemoteObject apply(String functionDeclaration) {
+        return getWebkit().getRuntime().callFunctionOn(this, functionDeclaration);
+    }
+
     public void release() {
         getWebkit().getRuntime().releaseObject(this);
     }
