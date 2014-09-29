@@ -49,6 +49,7 @@ public final class RunInfo {
 
     private final String startFile;
     private final String startArgs;
+    private final boolean debug;
     private final int debugPort;
 
 
@@ -56,13 +57,8 @@ public final class RunInfo {
         NodeJsPreferences preferences = NodeJsSupport.forProject(project).getPreferences();
         startFile = preferences.getStartFile();
         startArgs = preferences.getStartArgs();
+        debug = preferences.isDebug();
         debugPort = preferences.getDebugPort();
-    }
-
-    public RunInfo(String startFile, String startArgs, int debugPort) {
-        this.startFile = startFile;
-        this.startArgs = startArgs;
-        this.debugPort = debugPort;
     }
 
     public String getStartFile() {
@@ -71,6 +67,10 @@ public final class RunInfo {
 
     public String getStartArgs() {
         return startArgs;
+    }
+
+    public boolean isDebug() {
+        return debug;
     }
 
     public int getDebugPort() {

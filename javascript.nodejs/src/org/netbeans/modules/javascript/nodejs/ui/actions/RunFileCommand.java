@@ -42,8 +42,10 @@
 package org.netbeans.modules.javascript.nodejs.ui.actions;
 
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
+import org.netbeans.modules.javascript.nodejs.util.RunInfo;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
 
@@ -69,7 +71,17 @@ final class RunFileCommand extends Command {
         assert file != null;
         NodeExecutable node = getNode();
         if (node != null) {
-            node.run(file, null);
+            // create runInfo without (!) validation
+            RunInfo runInfo = new RunInfo(project);
+            if (runInfo.isDebug()) {
+                try {
+                    node.debug(runInfo.getDebugPort(), file, null);
+                } catch (IOException ex) {
+                    warnCannotDebug(ex);
+                }
+            } else {
+                node.run(file, null);
+            }
         }
     }
 
