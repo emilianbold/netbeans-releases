@@ -92,7 +92,7 @@ public class KnockoutNode extends AbstractNode {
     /**
      * Script used to unwrap Knockout observables.
      */
-    final String UNWRAP_SCRIPT = "function() {return [ko.isObservable(this), ko.unwrap(this)]}"; // NOI18N
+    final String UNWRAP_SCRIPT = "function() {return [ko.isObservable(this), ko.utils.unwrapObservable(this)]}"; // NOI18N
     
     /**
      * Attempts to unwrap the value represented by this node.
