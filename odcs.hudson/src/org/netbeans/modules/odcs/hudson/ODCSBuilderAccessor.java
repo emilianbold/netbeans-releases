@@ -127,11 +127,14 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         }
         ODCSPasswordAuthorizer.ProjectHandleRegistry.registerProjectHandle(
                 projectHandle);
+        String buildURL = projectHandle.getTeamProject().getBuildUrl();
+        if (buildURL == null) {
+            return Collections.emptyList();
+        }
         Persistence pers = Persistence.tranzient(Bundle.MSG_from_odcs_project(),
                 getNewBuildAction(projectHandle));
         HudsonInstance hi = HudsonManager.addInstance(
-                projectHandle.getDisplayName(),
-                projectHandle.getTeamProject().getBuildUrl(), 1, pers);
+                projectHandle.getDisplayName(), buildURL, 1, pers);
         if (hi == null) {
             return Collections.emptyList();
         }
