@@ -87,7 +87,7 @@ public class MarkOccurrencesHighlighter extends MarkOccurrencesHighlighterBase {
 
     protected void process(CompilationInfo info, Document doc, SchedulerEvent event) {
         if (doc == null) {
-            Logger.getLogger(MarkOccurrencesHighlighterBase.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");
+            Logger.getLogger(MarkOccurrencesHighlighter.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");
             return ;
         }
         
@@ -174,7 +174,7 @@ public class MarkOccurrencesHighlighter extends MarkOccurrencesHighlighterBase {
             return;
         
         getHighlightsBag(doc).setHighlights(obag);
-        OccurrencesMarkProvider.get(doc).setOccurrences(OccurrencesMarkProvider.createMarks(doc, bag, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighterBase.class, "LBL_ES_TOOLTIP")));
+        OccurrencesMarkProvider.get(doc).setOccurrences(OccurrencesMarkProvider.createMarks(doc, bag, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
         
     }
 
