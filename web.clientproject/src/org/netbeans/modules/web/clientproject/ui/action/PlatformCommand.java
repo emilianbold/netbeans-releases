@@ -39,68 +39,69 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.ui.actions;
+package org.netbeans.modules.web.clientproject.ui.action;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
-public final class NodeJsActionProvider implements ActionProvider {
+public class PlatformCommand extends Command {
 
-    private static final RequestProcessor RP = new RequestProcessor(NodeJsActionProvider.class);
-
-    private final Project project;
-    private final Map<String, Command> commands = new ConcurrentHashMap<>();
-    private final List<String> supportedActions;
+    private final String commandId;
 
 
-    public NodeJsActionProvider(Project project) {
-        assert project != null;
-        this.project = project;
-        fillCommands();
-        supportedActions = new ArrayList<>(commands.keySet());
-    }
-
-    private void fillCommands() {
-        Command[] allCommands = new Command[] {
-            new RunProjectCommand(project),
-            new RunFileCommand(project),
-        };
-        for (Command command : allCommands) {
-            Command old = commands.put(command.getCommandId(), command);
-            assert old == null : "Command already set for " + command.getCommandId();
-        }
+    public PlatformCommand(ClientSideProject project, String commandId) {
+        super(project);
+        assert commandId != null;
+        this.commandId = commandId;
     }
 
     @Override
-    public String[] getSupportedActions() {
-        return supportedActions.toArray(new String[supportedActions.size()]);
+    public String getCommandId() {
+        return commandId;
     }
 
     @Override
-    public void invokeAction(String command, final Lookup context) {
-        final Command runCommand = commands.get(command);
-        assert runCommand != null : command;
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                runCommand.run(context);
+    boolean isActionEnabledInternal(Lookup context) {
+        for (PlatformProvider provider : project.getPlatformProviders()) {
+            ActionProvider actionProvider = provider.getActionProvider(project);
+            if (actionProvider != null
+                    && isSupportedAction(commandId, actionProvider)) {
+                return true;
             }
-        });
+        }
+        return false;
     }
 
     @Override
-    public boolean isActionEnabled(String command, Lookup context) {
-        Command runCommand = commands.get(command);
-        if (runCommand == null) {
-            return false;
+    void invokeActionInternal(final Lookup context) {
+        for (PlatformProvider provider : project.getPlatformProviders()) {
+            final ActionProvider actionProvider = provider.getActionProvider(project);
+            if (actionProvider != null
+                    && isSupportedAction(commandId, actionProvider)) {
+                runInEventThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        actionProvider.invokeAction(commandId, context);
+                    }
+                });
+            }
         }
-        return runCommand.isEnabled(context);
+    }
+
+    public List<String> getSupportedActions() {
+        List<String> supportedActions = new ArrayList<>();
+        for (PlatformProvider provider : project.getPlatformProviders()) {
+            ActionProvider actionProvider = provider.getActionProvider(project);
+            if (actionProvider != null) {
+                supportedActions.addAll(Arrays.asList(actionProvider.getSupportedActions()));
+            }
+        }
+        return supportedActions;
     }
 
 }

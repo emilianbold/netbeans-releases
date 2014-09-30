@@ -68,7 +68,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
-public final class NodeJsCustomizerPanel extends JPanel {
+final class NodeJsCustomizerPanel extends JPanel {
 
     private final ProjectCustomizer.Category category;
     private final NodeJsPreferences preferences;
@@ -146,7 +146,7 @@ public final class NodeJsCustomizerPanel extends JPanel {
 
     void validateData() {
         ValidationResult result = new NodeJsPreferencesValidator()
-                .validate(enabled, defaultNode, node)
+                .validateCustomizer(enabled, defaultNode, node)
                 .getResult();
         if (result.hasErrors()) {
             category.setErrorMessage(result.getFirstErrorMessage());
