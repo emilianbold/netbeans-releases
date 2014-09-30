@@ -39,23 +39,49 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.util;
+package org.netbeans.modules.javascript.nodejs.ui.actions;
 
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
+import org.netbeans.modules.javascript.nodejs.util.RunInfo;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.Lookup;
 
-public final class ValidationUtils {
+final class RunFileCommand extends Command {
 
-    public static final String NODE_PATH = "node.path"; // NOI18N
-
-
-    private ValidationUtils() {
+    public RunFileCommand(Project project) {
+        super(project);
     }
 
-    @NbBundle.Messages("ValidationUtils.node.name=Node")
-    public static void validateNode(ValidationResult result, String node) {
-        String warning = ExternalExecutableValidator.validateCommand(node, Bundle.ValidationUtils_node_name());
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message(NODE_PATH, warning)); // NOI18N
+    @Override
+    public String getCommandId() {
+        return ActionProvider.COMMAND_RUN_SINGLE;
+    }
+
+    @Override
+    public boolean isEnabled(Lookup context) {
+        return lookupJavaScriptFile(context) != null;
+    }
+
+    @Override
+    void runInternal(Lookup context) {
+        File file = lookupJavaScriptFile(context);
+        assert file != null;
+        NodeExecutable node = getNode();
+        if (node != null) {
+            // create runInfo without (!) validation
+            RunInfo runInfo = new RunInfo(project);
+            if (runInfo.isDebug()) {
+                try {
+                    node.debug(runInfo.getDebugPort(), file, null);
+                } catch (IOException ex) {
+                    warnCannotDebug(ex);
+                }
+            } else {
+                node.run(file, null);
+            }
         }
     }
 

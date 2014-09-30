@@ -91,6 +91,7 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhanced
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
+import org.netbeans.modules.web.clientproject.ui.action.ClientSideProjectActionProvider;
 import org.netbeans.modules.web.clientproject.ui.action.ProjectOperations;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;

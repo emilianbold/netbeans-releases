@@ -39,24 +39,32 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.util;
+package org.netbeans.modules.web.clientproject.ui.action;
 
-import org.openide.util.NbBundle;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
+import org.openide.util.Lookup;
 
-public final class ValidationUtils {
+public class MoveCommand extends Command {
 
-    public static final String NODE_PATH = "node.path"; // NOI18N
-
-
-    private ValidationUtils() {
+    public MoveCommand(ClientSideProject project) {
+        super(project);
     }
 
-    @NbBundle.Messages("ValidationUtils.node.name=Node")
-    public static void validateNode(ValidationResult result, String node) {
-        String warning = ExternalExecutableValidator.validateCommand(node, Bundle.ValidationUtils_node_name());
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message(NODE_PATH, warning)); // NOI18N
-        }
+    @Override
+    public String getCommandId() {
+        return ActionProvider.COMMAND_MOVE;
+    }
+
+    @Override
+    boolean isActionEnabledInternal(Lookup context) {
+        return true;
+    }
+
+    @Override
+    void invokeActionInternal(Lookup context) {
+        DefaultProjectOperations.performDefaultMoveOperation(project);
     }
 
 }
