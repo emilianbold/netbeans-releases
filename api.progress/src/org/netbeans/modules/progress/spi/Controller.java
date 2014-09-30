@@ -111,7 +111,7 @@ public class Controller {
         if (component == null)
         {
             ProgressUIWorkerWithModel prgUIWorker = createWorker();
-            prgUIWorker.setModel(defaultInstance.getModel());
+            prgUIWorker.setModel(getDefault().getModel());
             component = prgUIWorker;
         }
         return component;
