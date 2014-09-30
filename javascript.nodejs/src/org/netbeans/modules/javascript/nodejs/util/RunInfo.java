@@ -41,22 +41,40 @@
  */
 package org.netbeans.modules.javascript.nodejs.util;
 
-import org.openide.util.NbBundle;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
+import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 
-public final class ValidationUtils {
+public final class RunInfo {
 
-    public static final String NODE_PATH = "node.path"; // NOI18N
+    private final String startFile;
+    private final String startArgs;
+    private final boolean debug;
+    private final int debugPort;
 
 
-    private ValidationUtils() {
+    public RunInfo(Project project) {
+        NodeJsPreferences preferences = NodeJsSupport.forProject(project).getPreferences();
+        startFile = preferences.getStartFile();
+        startArgs = preferences.getStartArgs();
+        debug = preferences.isDebug();
+        debugPort = preferences.getDebugPort();
     }
 
-    @NbBundle.Messages("ValidationUtils.node.name=Node")
-    public static void validateNode(ValidationResult result, String node) {
-        String warning = ExternalExecutableValidator.validateCommand(node, Bundle.ValidationUtils_node_name());
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message(NODE_PATH, warning)); // NOI18N
-        }
+    public String getStartFile() {
+        return startFile;
+    }
+
+    public String getStartArgs() {
+        return startArgs;
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public int getDebugPort() {
+        return debugPort;
     }
 
 }

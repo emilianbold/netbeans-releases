@@ -44,7 +44,10 @@ package org.netbeans.modules.javascript.nodejs.ui.customizer;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
+import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -78,6 +81,12 @@ public final class NodeJsCustomizerProvider implements ProjectCustomizer.Composi
             position = 320)
     public static NodeJsCustomizerProvider createCustomizer() {
         return new NodeJsCustomizerProvider();
+    }
+
+    public static void openCustomizer(Project project, ValidationResult result) {
+        CustomizerProvider2 customizerProvider = project.getLookup().lookup(CustomizerProvider2.class);
+        assert customizerProvider != null : "CustomizerProvider2 must be found in lookup of " + project.getClass().getName();
+        customizerProvider.showCustomizer(NodeJsPreferencesValidator.getCustomizerCategory(result), null);
     }
 
 }
