@@ -133,7 +133,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     @TemplateRegistration(folder="Project/ClientSide",
             displayName="#ClientSideProjectWizardIterator.newLibrary.displayName",
             description="../resources/NewClientSideLibraryDescription.html",
-            iconBase=ClientSideProject.JS_LIBRARY_PROJECT_ICON,
+            iconBase=ClientSideProject.HTML5_PROJECT_ICON,
             position=200)
     @NbBundle.Messages("ClientSideProjectWizardIterator.newLibrary.displayName=JavaScript Library")
     public static ClientSideProjectWizardIterator newLibraryProject() {
@@ -143,7 +143,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     @TemplateRegistration(folder="Project/ClientSide",
             displayName="#ClientSideProjectWizardIterator.existingLibrary.displayName",
             description="../resources/ExistingClientSideLibraryDescription.html",
-            iconBase=ClientSideProject.JS_LIBRARY_PROJECT_ICON,
+            iconBase=ClientSideProject.HTML5_PROJECT_ICON,
             position=210)
     @NbBundle.Messages("ClientSideProjectWizardIterator.existingLibrary.displayName=JavaScript Library with Existing Sources")
     public static ClientSideProjectWizardIterator existingLibraryProject() {
