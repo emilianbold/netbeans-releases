@@ -96,7 +96,7 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
             properties[PROPERTY_shortDescription] = new PropertyDescriptor ( "shortDescription", XCatalog.class, "getShortDescription", null );
             properties[PROPERTY_shortDescription].setDisplayName (PROP_xcatalog_info());
             properties[PROPERTY_shortDescription].setShortDescription (PROP_xcatalog_info_desc());
-            properties[PROPERTY_icon] = new IndexedPropertyDescriptor ( "icon", XCatalog.class, null, null, "getIcon", null );
+            properties[PROPERTY_icon] = new IndexedPropertyDescriptor ( "iconResource", XCatalog.class, null, null, "getIconResource", null );
             properties[PROPERTY_icon].setHidden ( true );
         }
         catch( IntrospectionException e) {}                          

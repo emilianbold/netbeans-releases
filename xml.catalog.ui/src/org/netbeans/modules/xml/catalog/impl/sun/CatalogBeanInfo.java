@@ -97,7 +97,7 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
             properties[PROPERTY_shortDescription] = new PropertyDescriptor ( "shortDescription", Catalog.class, "getShortDescription", null );
             properties[PROPERTY_shortDescription].setDisplayName (PROP_catalog_info());
             properties[PROPERTY_shortDescription].setShortDescription (PROP_catalog_info_desc());
-            properties[PROPERTY_icon] = new IndexedPropertyDescriptor ( "icon", Catalog.class, null, null, "getIcon", null );
+            properties[PROPERTY_icon] = new IndexedPropertyDescriptor ( "iconResource", Catalog.class, null, null, "getIconResource", null );
             properties[PROPERTY_icon].setHidden ( true );
         }
         catch( IntrospectionException e) {}
