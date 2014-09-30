@@ -97,12 +97,14 @@ public final class KnockoutTC extends TopComponent {
     /**
      * Updates the content of this {@code TopComponent}.
      */
-    private void update() {
+    final void update() {
         if (EventQueue.isDispatchThread()) {
             PageModel pageModel = PageInspectorImpl.getDefault().getPage();
             removeAll();
             KnockoutPanel panel = new KnockoutPanel((WebKitPageModel)pageModel);
             add(panel);
+            revalidate();
+            repaint();
         } else {
             EventQueue.invokeLater(new Runnable() {
                 @Override

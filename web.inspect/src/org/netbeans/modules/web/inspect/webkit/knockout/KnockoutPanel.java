@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.inspect.webkit.knockout;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.dnd.DnDConstants;
 import java.beans.PropertyChangeEvent;
@@ -124,6 +125,15 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
      * Updates the panel (according to the current selection).
      */
     final void update() {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    update();
+                }
+            });
+            return;
+        }
         List<? extends Node> selection = pageModel.getSelectedNodes();
         JComponent componentToShow;
         if (selection.isEmpty()) {
@@ -145,6 +155,7 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
             removeAll();
             add(componentToShow);
         }
+        revalidate();
         repaint();
     }
 
