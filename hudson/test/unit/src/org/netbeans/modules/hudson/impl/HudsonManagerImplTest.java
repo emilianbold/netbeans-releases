@@ -89,6 +89,7 @@ public class HudsonManagerImplTest {
                                         "0"));
                     } catch (Throwable e) {
                         thrown[0] = e;
+                        e.printStackTrace();
                         break;
                     }
                 }
@@ -102,6 +103,7 @@ public class HudsonManagerImplTest {
                 HudsonManagerImpl.getDefault().getInstances();
             } catch (Throwable e) {
                 thrown[0] = e;
+                e.printStackTrace();
                 break;
             }
         }
