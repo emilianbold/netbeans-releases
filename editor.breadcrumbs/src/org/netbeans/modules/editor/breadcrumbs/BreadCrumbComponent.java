@@ -79,6 +79,7 @@ import org.openide.explorer.view.ListView;
 import org.openide.explorer.view.NodeRenderer;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -106,16 +107,20 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
     public static final int COMPONENT_HEIGHT = USABLE_HEIGHT;
 
     private ExplorerManager seenManager;
+    
+    private PropertyChangeListener weakPCL;
 
     private ExplorerManager findManager() {
         ExplorerManager manager = ExplorerManager.find(this);
 
         if (seenManager != manager) {
-            if (seenManager != null) {
-                seenManager.removePropertyChangeListener(this);
+            if (seenManager != null && weakPCL != null) {
+                seenManager.removePropertyChangeListener(weakPCL);
+                weakPCL = null;
             }
             if (manager != null) {
-                manager.addPropertyChangeListener(this);
+                weakPCL = WeakListeners.propertyChange(this, manager);
+                manager.addPropertyChangeListener(weakPCL);
             }
             seenManager = manager;
         }

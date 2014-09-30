@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -396,7 +397,11 @@ public final class PresenterUpdater implements PropertyChangeListener, ActionLis
     public void actionPerformed(ActionEvent evt) {
         // If text component is set into the presenter, then run the actions
         // like if they are invoked from the component
-        JTextComponent c = (JTextComponent) presenter.getClientProperty(JTextComponent.class);
+        Object jtcOrRef = presenter.getClientProperty(JTextComponent.class);
+        JTextComponent c = (JTextComponent)
+                ((jtcOrRef instanceof Reference)
+                    ? ((Reference)jtcOrRef).get()
+                    : jtcOrRef);
         if (c != null) {
             evt = new ActionEvent(c, evt.getID(), evt.getActionCommand(), evt.getWhen(), evt.getModifiers());
         }

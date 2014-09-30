@@ -151,7 +151,7 @@ public final class EditorContextDispatcher {
     private final Map<String, PropertyChangeSupport> pcsByMIMEType = new HashMap<String, PropertyChangeSupport>();
     
     private String lastFiredMIMEType = null;
-    private Map<String, Object> lastMIMETypeEvents = new HashMap<String, Object>();
+    private Map<String, Reference<Object>> lastMIMETypeEvents = new HashMap<String, Reference<Object>>();
 
     private static final Reference<FileObject> NO_FILE = new WeakReference<FileObject>(null);
     private static final Reference<JTextComponent> NO_TEXT_COMPONENT = new WeakReference<JTextComponent>(null);
@@ -503,7 +503,7 @@ public final class EditorContextDispatcher {
             // registered for a particular MIME type:
             if (oldMIMEType != null && !oldMIMEType.equals(newMIMEType) && pcsMIMEOld != null) {
                 String lastMIMEType;
-                Map<String, Object> lastEvents;
+                Map<String, Reference<Object>> lastEvents;
                 synchronized (this) {
                     lastMIMEType = lastFiredMIMEType;
                     lastEvents = new HashMap(lastMIMETypeEvents);
@@ -516,7 +516,7 @@ public final class EditorContextDispatcher {
                 }
                 if (lastEvents != null) {
                     for (String property : lastEvents.keySet()) {
-                        pcsMIMEOld.firePropertyChange(property, lastEvents.get(property), null);
+                        pcsMIMEOld.firePropertyChange(property, lastEvents.get(property).get(), null);
                     }
                 }
             }
@@ -534,7 +534,8 @@ public final class EditorContextDispatcher {
             synchronized (this) {
                 if (pcsMIME != null) {
                     lastFiredMIMEType = preferredMIMEType;
-                    lastMIMETypeEvents.put(evt.getPropertyName(), evt.getNewValue());
+                    // evt.getNewValue() may be a JEditorPane instance which disables its GC
+                    lastMIMETypeEvents.put(evt.getPropertyName(), new WeakReference<Object>(evt.getNewValue()));
                 } else {
                     lastFiredMIMEType = null;
                     lastMIMETypeEvents.clear();

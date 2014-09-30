@@ -42,6 +42,8 @@
 package org.netbeans.core.multiview;
 
 import java.awt.event.ActionEvent;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -163,11 +165,12 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 	"LBL_ValueSplitHorizontal=splitHorizontally"})
     private static class SplitDocumentAction extends AbstractAction {
 
-	private final TopComponent tc;
+	private final Reference<TopComponent> tcRef;
 	private final int orientation;
 
 	public SplitDocumentAction(TopComponent tc, int orientation) {
-	    this.tc = tc;
+            // Replaced by weak ref since strong ref led to leaking of editor panes
+	    this.tcRef = new WeakReference<TopComponent>(tc);
 	    this.orientation = orientation;
 	    putValue(Action.NAME, orientation == JSplitPane.VERTICAL_SPLIT ? Bundle.LBL_SplitDocumentActionVertical() : Bundle.LBL_SplitDocumentActionHorizontal());
 	    //hack to insert extra actions into JDev's popup menu
@@ -182,7 +185,10 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 
 	@Override
 	public void actionPerformed(ActionEvent evt) {
-	    splitWindow(tc, orientation);
+            TopComponent tc = tcRef.get();
+            if (tc != null) {
+                splitWindow(tc, orientation);
+            }
 	}
     }
 
@@ -190,10 +196,11 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 	"LBL_ValueClearSplit=clearSplit"})
     private static class ClearSplitAction extends AbstractAction {
 
-	private final TopComponent tc;
+	private final Reference<TopComponent> tcRef;
 
 	public ClearSplitAction(TopComponent tc) {
-	    this.tc = tc;
+            // Replaced by weak ref since strong ref led to leaking of editor panes
+	    this.tcRef = new WeakReference<TopComponent>(tc);
 	    putValue(Action.NAME, Bundle.LBL_ClearSplitAction());
 	    //hack to insert extra actions into JDev's popup menu
 	    putValue("_nb_action_id_", Bundle.LBL_ValueClearSplit()); //NOI18N
@@ -206,7 +213,10 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 
 	@Override
 	public void actionPerformed(ActionEvent evt) {
-	    clearSplit(tc, -1);
+            TopComponent tc = tcRef.get();
+            if (tc != null) {
+                clearSplit(tc, -1);
+            }
 	}
     }
 
