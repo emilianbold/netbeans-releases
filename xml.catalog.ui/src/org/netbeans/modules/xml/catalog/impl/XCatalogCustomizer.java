@@ -41,13 +41,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.catalog.impl.sun;
+package org.netbeans.modules.xml.catalog.impl;
 
 import java.beans.*;
 import java.io.File;
 import java.net.MalformedURLException;
 import org.netbeans.modules.xml.catalog.impl.XCatalog;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.xml.catalog.impl.res.Bundle.*;
 
 /**
  * XML catalog customizer. It allows to customize catalog location.
@@ -66,9 +66,9 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
     public XCatalogCustomizer() {
         initComponents ();
 
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(XCatalogCustomizer.class, "ACSD_XCatalogCustomizer"));
-        locationLabel.setDisplayedMnemonic((NbBundle.getMessage(XCatalogCustomizer.class, "XCatalogCustomizer.locationLabel.mne")).charAt(0));
-        locationTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(XCatalogCustomizer.class, "ACSD_locationTextField"));
+        this.getAccessibleContext().setAccessibleDescription(ACSD_XCatalogCustomizer());
+        locationLabel.setDisplayedMnemonic(XCatalogCustomizer_locationLabel_mne().charAt(0));
+        locationTextField.getAccessibleContext().setAccessibleDescription(ACSD_locationTextField());
     }
 
     /** This method is called from within the constructor to
@@ -88,7 +88,7 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
         setLayout(new java.awt.GridBagLayout());
 
         locationLabel.setLabelFor(locationTextField);
-        locationLabel.setText(NbBundle.getMessage(XCatalogCustomizer.class, "XCatalogCustomizer.locationLabel.text")); // NOI18N
+        locationLabel.setText(XCatalogCustomizer_locationLabel_text());
         add(locationLabel, new java.awt.GridBagConstraints());
 
         locationTextField.setColumns(20);
@@ -112,7 +112,7 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
         descTextArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
         descTextArea.setForeground(new java.awt.Color(102, 102, 153));
         descTextArea.setLineWrap(true);
-        descTextArea.setText(NbBundle.getMessage(XCatalogCustomizer.class, "DESC_xcatalog_fmts")); // NOI18N
+        descTextArea.setText(DESC_xcatalog_fmts());
         descTextArea.setWrapStyleWord(true);
         descTextArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
         descTextArea.setEnabled(false);
@@ -128,7 +128,7 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(descTextArea, gridBagConstraints);
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/catalog/impl/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/catalog/impl/res/Bundle"); // NOI18N
         selectButton.setText(bundle.getString("PROP_choose_file")); // NOI18N
         selectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

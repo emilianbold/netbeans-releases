@@ -20,8 +20,8 @@
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="locationTextField" type="code"/>
         </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/Bundle.properties" key="XCatalogCustomizer.locationLabel.text" replaceFormat="NbBundle.getMessage(XCatalogCustomizer.class, &quot;{key}&quot;)"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="XCatalogCustomizer_locationLabel_text()" type="code"/>
         </Property>
       </Properties>
       <Constraints>
@@ -54,8 +54,8 @@
           <Color blue="99" green="66" red="66" type="rgb"/>
         </Property>
         <Property name="lineWrap" type="boolean" value="true"/>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/Bundle.properties" key="DESC_xcatalog_fmts" replaceFormat="NbBundle.getMessage(XCatalogCustomizer.class, &quot;{key}&quot;)"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="DESC_xcatalog_fmts()" type="code"/>
         </Property>
         <Property name="wrapStyleWord" type="boolean" value="true"/>
         <Property name="disabledTextColor" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
@@ -73,7 +73,7 @@
     <Component class="javax.swing.JButton" name="selectButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/Bundle.properties" key="PROP_choose_file" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/res/Bundle.properties" key="PROP_choose_file" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>

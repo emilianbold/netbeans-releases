@@ -20,8 +20,8 @@
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="locationTextField" type="code"/>
         </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/sun/Bundle.properties" key="CatalogCustomizer.locationLabel.text" replaceFormat="NbBundle.getMessage(CatalogCustomizer.class, &quot;{key}&quot;)"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="CatalogCustomizer_locationLabel_text()" type="code"/>
         </Property>
       </Properties>
       <Constraints>
@@ -47,7 +47,7 @@
     <Component class="javax.swing.JButton" name="selectButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/sun/Bundle.properties" key="PROP_choose_file" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/sun/res/Bundle.properties" key="PROP_choose_file" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -62,10 +62,10 @@
     <Component class="javax.swing.JCheckBox" name="preferCheckBox">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/sun/Bundle.properties" key="LBL_preference" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/sun/res/Bundle.properties" key="LBL_preference" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/sun/Bundle.properties" key="HINT_pp" replaceFormat="NbBundle.getMessage(CatalogCustomizer.class, &quot;{key}&quot;)"/>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="HINT_pp()" type="code"/>
         </Property>
       </Properties>
       <Events>
@@ -79,8 +79,8 @@
     </Component>
     <Component class="javax.swing.JTextArea" name="descTextArea">
       <Properties>
-        <Property name="columns" type="int" value="40"/>
         <Property name="editable" type="boolean" value="false"/>
+        <Property name="columns" type="int" value="40"/>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="javax.swing.UIManager.getFont (&quot;Label.font&quot;)" type="code"/>
         </Property>
@@ -89,8 +89,8 @@
         </Property>
         <Property name="lineWrap" type="boolean" value="true"/>
         <Property name="rows" type="int" value="4"/>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/sun/Bundle.properties" key="DESC_catalog_fmts" replaceFormat="NbBundle.getMessage(CatalogCustomizer.class, &quot;{key}&quot;)"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="DESC_catalog_fmts()" type="code"/>
         </Property>
         <Property name="wrapStyleWord" type="boolean" value="true"/>
         <Property name="disabledTextColor" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
