@@ -117,6 +117,7 @@
             </module-dependencies>
             <test-dependencies/>
             <friend-packages>
+                <friend>com.oracle.netbeans.bugdb</friend>
                 <friend>org.netbeans.modules.bugzilla</friend>
                 <friend>org.netbeans.modules.jira.rest</friend>
                 <friend>org.netbeans.modules.jira.xmlrpc</friend>
