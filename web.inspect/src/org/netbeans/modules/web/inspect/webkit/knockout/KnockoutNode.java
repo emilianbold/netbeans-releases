@@ -84,8 +84,13 @@ public class KnockoutNode extends AbstractNode {
      * @return {@code Children} for the given {@code RemoteObject}.
      */
     final static Children childrenFor(RemoteObject remoteObject) {
-        RemoteObject.Type type = (remoteObject == null) ? null : remoteObject.getType();
-        boolean isLeaf = (type == null) || (type != RemoteObject.Type.OBJECT);
+        boolean isLeaf = true;
+        if (remoteObject != null) {
+            RemoteObject.Type type = remoteObject.getType();
+            if (type == RemoteObject.Type.OBJECT && remoteObject.getDescription() != null) {
+                isLeaf = false;
+            }
+        }
         return isLeaf ? Children.LEAF : Children.create(new KnockoutChildFactory(remoteObject), true);
     }
 
@@ -145,7 +150,7 @@ public class KnockoutNode extends AbstractNode {
             value = null;
         } else {
             value = remoteObject.getDescription();
-            if (value == null) {
+            if (value == null && remoteObject.getType() != RemoteObject.Type.OBJECT) {
                 value = remoteObject.getValueAsString();
             }
         }
