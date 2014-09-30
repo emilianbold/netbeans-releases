@@ -369,8 +369,10 @@ public class ModelUtils {
     private static Collection<TypeUsage> tryResolveWindowProperty(Model model, JsIndex jsIndex, String name) {
         // since issue #215863
         String fqn = null;
+        int offset = -1;
         for (IndexedElement indexedElement : jsIndex.getProperties("window")) { //NOI18N
             if (indexedElement.getName().equals(name)) {
+                offset = indexedElement.getOffset();
                 fqn = "window." + name;
                 break;
             }
@@ -378,6 +380,7 @@ public class ModelUtils {
         if (fqn == null) {
             for (IndexedElement indexedElement : jsIndex.getProperties("Window.prototype")) { //NOI18N
                 if (indexedElement.getName().equals(name)) {
+                    offset = indexedElement.getOffset();
                     fqn = "Window.prototype." + name; //NOI18N
                     break;
                 }
@@ -385,7 +388,7 @@ public class ModelUtils {
         }
         if (fqn != null) {
             List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
-            resolveAssignments(model, jsIndex, fqn, fromAssignment);
+            resolveAssignments(model, jsIndex, fqn, offset, fromAssignment);
             if (fromAssignment.isEmpty()) {
                 fromAssignment.add(new TypeUsageImpl(fqn));
             } 
@@ -850,7 +853,7 @@ public class ModelUtils {
 //                            }
 //                        } else {
                         if ("@pro".equals(kind) && jsIndex != null) { //NOI18N
-                            resolveAssignments(model, jsIndex, name, fromAssignments);
+                            resolveAssignments(model, jsIndex, name, -1,  fromAssignments);
                         } 
 //                        }
                         lastResolvedTypes.addAll(fromAssignments);
@@ -863,7 +866,7 @@ public class ModelUtils {
                                     sType = sType.substring(5);
                                     sType = sType.replace("@pro;", ".");
                                 }   
-                                ModelUtils.resolveAssignments(model, jsIndex, sType, fromAssignments);
+                                ModelUtils.resolveAssignments(model, jsIndex, sType, typeUsage.getOffset(), fromAssignments);
                                 for (TypeUsage typeUsage1 : fromAssignments) {
                                     String localFqn = localObject != null ? localObject.getFullyQualifiedName() : null;
                                     if (localFqn != null  && name.startsWith(localFqn) && name.length() > localFqn.length() ) {
@@ -901,6 +904,16 @@ public class ModelUtils {
                                 if (lObject.getJSKind().isFunction()) {
                                     // if it's a method call, add all retuturn types
                                     lastResolvedTypes.addAll(((JsFunction) lObject).getReturnTypes());
+                                }
+                                int lastCallOffset = -1;
+                                for (Occurrence occurrence : lObject.getOccurrences()) {
+                                    if (lastCallOffset < occurrence.getOffsetRange().getStart() && occurrence.getOffsetRange().getStart() <= offset) {
+                                        lastCallOffset = occurrence.getOffsetRange().getStart();
+                                    }
+                                }
+                                Collection<TypeUsage> returnTypesFromFrameworks = model.getReturnTypesFromFrameworks(lObject.getName(), lastCallOffset);
+                                if (returnTypesFromFrameworks != null && !returnTypesFromFrameworks.isEmpty()) {
+                                    lastResolvedTypes.addAll(returnTypesFromFrameworks);
                                 }
                             } else if ("@arr".equals(kind) && lObject instanceof JsArray) {
                                 lastResolvedTypes.addAll(((JsArray) lObject).getTypesInArray());
@@ -1009,7 +1022,7 @@ public class ModelUtils {
                             if (checkProperty) {
                                 String propertyFQN = propertyToCheck != null ? propertyToCheck : typeName + "." + name;
                                 List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
-                                resolveAssignments(model, jsIndex, propertyFQN, fromAssignment);
+                                resolveAssignments(model, jsIndex, propertyFQN, -1, fromAssignment);
                                 if (fromAssignment.isEmpty()) {
                                     ModelUtils.addUniqueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
                                 } else {
@@ -1167,15 +1180,15 @@ public class ModelUtils {
         }
     }
     
-    private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, List<TypeUsage> resolved) {
+    private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, int offset, List<TypeUsage> resolved) {
         Set<String> alreadyProcessed = new HashSet<String>();
         for(TypeUsage type : resolved) {
             alreadyProcessed.add(type.getType());
         }
-        resolveAssignments(model, jsIndex, fqn, resolved, alreadyProcessed);
+        resolveAssignments(model, jsIndex, fqn, offset, resolved, alreadyProcessed);
     }
     
-    private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, List<TypeUsage> resolved, Set<String> alreadyProcessed) {
+    private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, int offset,  List<TypeUsage> resolved, Set<String> alreadyProcessed) {
         if (!alreadyProcessed.contains(fqn)) {
             alreadyProcessed.add(fqn);
             if (!fqn.startsWith("@")) {
@@ -1193,7 +1206,7 @@ public class ModelUtils {
                                     break;
                                 }
                                 if (!alreadyProcessed.contains(type.getType())) {
-                                    resolveAssignments(model, jsIndex, type.getType(), resolved, alreadyProcessed);
+                                    resolveAssignments(model, jsIndex, type.getType(), type.getOffset(), resolved, alreadyProcessed);
                                 }
                             }
                         }
@@ -1216,7 +1229,7 @@ public class ModelUtils {
                                 }
                                 for (TypeUsage type : toProcess) {
                                     if (!alreadyProcessed.contains(type.getType())) {
-                                        resolveAssignments(model, jsIndex, type.getType(), resolved, alreadyProcessed);
+                                        resolveAssignments(model, jsIndex, type.getType(), type.getOffset(), resolved, alreadyProcessed);
                                     }
                                 }
                             }
@@ -1233,11 +1246,11 @@ public class ModelUtils {
 
 
                     if(!hasAssignments || isType) {
-                        ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, -1, true));
+                        ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, offset, true));
                     }
                 }
             } else {
-                ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, -1, false));
+                ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, offset, false));
             }
         }
     }
