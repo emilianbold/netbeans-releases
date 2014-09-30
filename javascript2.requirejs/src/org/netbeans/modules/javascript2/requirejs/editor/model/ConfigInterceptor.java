@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.requirejs.editor.model;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -53,6 +54,7 @@ import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
@@ -76,9 +78,10 @@ public class ConfigInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (!RequireJsIndexer.Factory.isScannerThread()) {
-            return;
+            return Collections.emptyList();
+
         }
         FunctionArgument fArg = null;
         for (FunctionArgument farg : args) {
@@ -96,7 +99,7 @@ public class ConfigInterceptor implements FunctionInterceptor {
             if (paths != null || baseUrl != null) {
                 FileObject fo = globalObject.getFileObject();
                 if (fo == null) {
-                    return;
+                     return Collections.emptyList(); 
                 }
                 Source source = Source.create(fo);
                 TokenHierarchy<?> th = source.createSnapshot().getTokenHierarchy();
@@ -105,7 +108,7 @@ public class ConfigInterceptor implements FunctionInterceptor {
                     TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, paths.getOffset());
                     Token<? extends JsTokenId> token;
                     if (ts == null) {
-                        return;
+                        return Collections.emptyList();
                     }
                     Map<String, String> mapping = new HashMap<String, String>();
                     for (JsObject path : paths.getProperties().values()) {
@@ -134,7 +137,7 @@ public class ConfigInterceptor implements FunctionInterceptor {
                         // find defined mappings 
                         ts = LexUtilities.getJsTokenSequence(th, baseUrl.getOffset());
                         if (ts == null) {
-                            return;
+                            return Collections.emptyList();
                         }
                         ts.move(baseUrl.getOffset());
                         String target = null;
@@ -155,6 +158,7 @@ public class ConfigInterceptor implements FunctionInterceptor {
                 }
             }
         }
+        return Collections.emptyList();
     }
 
 }
