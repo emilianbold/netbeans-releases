@@ -373,7 +373,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             if (id == JsTokenId.IDENTIFIER || id.isKeyword()) {
                 prefix = token.text().toString();
                 if (upToOffset) {
-                    prefix = prefix.substring(0, offset - ts.offset());
+                    if (offset - ts.offset() >= 0) {
+                        prefix = prefix.substring(0, offset - ts.offset());
+                    }
                 }
             }
             if (id == JsTokenId.DOC_COMMENT) {
