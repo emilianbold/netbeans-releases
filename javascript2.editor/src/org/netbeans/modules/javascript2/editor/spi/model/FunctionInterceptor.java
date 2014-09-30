@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.regex.Pattern;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
  *
@@ -58,7 +59,16 @@ public interface FunctionInterceptor {
 
     Pattern getNamePattern();
 
-    void intercept(String name, JsObject globalObject, DeclarationScope scope,
+    /**
+     * 
+     * @param name
+     * @param globalObject
+     * @param scope
+     * @param factory
+     * @param args
+     * @return  the return types of the function, or empty collection.
+     */
+    Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope,
             ModelElementFactory factory, Collection<FunctionArgument> args);
 
     @Retention(RetentionPolicy.SOURCE)

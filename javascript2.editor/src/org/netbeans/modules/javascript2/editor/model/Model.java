@@ -54,6 +54,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -140,6 +141,8 @@ public final class Model {
     
     private ModelVisitor visitor;
     
+    private Map<String, Map<Integer, List<TypeUsage>>> returnTypesFromFrameworks;
+    
     /**
      * contains with expression?
      */
@@ -150,6 +153,7 @@ public final class Model {
         this.occurrencesSupport = new OccurrencesSupport(this);
         this.occurrenceBuilder = new OccurrenceBuilder(parserResult);
         this.resolveWithObjects = false;
+        this.returnTypesFromFrameworks = new HashMap<String, Map<Integer, List<TypeUsage>>>();
     }
 
     private synchronized ModelVisitor getModelVisitor() {
@@ -175,8 +179,25 @@ public final class Model {
                     Collection<ModelVisitor.FunctionCall> fncCalls = entry.getValue();
                     if (fncCalls != null && !fncCalls.isEmpty()) {
                         for (ModelVisitor.FunctionCall call : fncCalls) {
-                            entry.getKey().intercept(call.getName(),
+                            Collection<TypeUsage> returnTypes = entry.getKey().intercept(call.getName(),
                                     visitor.getGlobalObject(), call.getScope(), elementFactory, call.getArguments());
+                            if (returnTypes != null) {
+                                Map<Integer, List<TypeUsage>> functionCalls = returnTypesFromFrameworks.get(call.getName());
+                                if (functionCalls == null) {
+                                    functionCalls = new HashMap<Integer, List<TypeUsage>>();
+                                    returnTypesFromFrameworks.put(call.getName(), functionCalls);
+                                }
+                                List<TypeUsage> types = functionCalls.get(call.getCallOffset());
+                                if (types == null) {
+                                    types = new ArrayList();
+                                    functionCalls.put(new Integer(call.getCallOffset()), types);
+                                }
+                                for (TypeUsage type: returnTypes) {
+                                    if (!types.contains(type)) {
+                                        types.add(type);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -469,6 +490,19 @@ public final class Model {
         return getModelVisitor().getGlobalObject();
     }
     
+    /**
+     * This returns types of a function call that starts on the offsetCall. 
+     * These return types can be influenced by the call arguments and are obtained
+     * from the function interceptors defined in the frameworks. 
+     * @param name the name of the function
+     * @param offsetCall offset where the call starts (the first letter of the method name)
+     * @return 
+     */
+    public Collection<TypeUsage> getReturnTypesFromFrameworks(String name, int offsetCall) {
+        Map<Integer, List<TypeUsage>> returnTypes = returnTypesFromFrameworks.get(name);
+        return  (returnTypes != null) ? returnTypes.get(offsetCall) : null;
+    }
+    
     public synchronized void resolve() {
         if (visitor == null) {
             getModelVisitor();
@@ -498,6 +532,8 @@ public final class Model {
         }
         return result;
     }
+    
+    
 
     private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder) {
         Set<String> alreadyResolved = new HashSet<String>();

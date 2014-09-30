@@ -374,8 +374,12 @@ public class ModelVisitor extends PathNodeVisitor {
                             calls = new ArrayList<FunctionCall>();
                             functionCalls.put(interceptor, calls);
                         }
-                        calls.add(new FunctionCall(name, modelBuilder.getCurrentDeclarationScope(), funcArg));
-
+                        int callOffset = callNode.getFunction().getStart();
+                        if (callNode.getFunction() instanceof AccessNode) {
+                            AccessNode anode = (AccessNode)callNode.getFunction();
+                            callOffset = anode.getProperty().getStart();
+                        }
+                        calls.add(new FunctionCall(name, modelBuilder.getCurrentDeclarationScope(), funcArg, callOffset));
                     }
                 }
             }
@@ -2170,12 +2174,15 @@ public class ModelVisitor extends PathNodeVisitor {
         private final DeclarationScope scope;
 
         private final Collection<FunctionArgument> arguments;
+        
+        private final int callOffset;
 
         public FunctionCall(String name, DeclarationScope scope,
-                Collection<FunctionArgument> arguments) {
+                Collection<FunctionArgument> arguments, int callOffset) {
             this.name = name;
             this.scope = scope;
             this.arguments = arguments;
+            this.callOffset = callOffset;
         }
 
         public String getName() {
@@ -2189,5 +2196,11 @@ public class ModelVisitor extends PathNodeVisitor {
         public Collection<FunctionArgument> getArguments() {
             return arguments;
         }
+
+        public int getCallOffset() {
+            return callOffset;
+        }
+        
+        
     }
 }
