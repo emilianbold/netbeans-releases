@@ -46,12 +46,10 @@ package org.netbeans.modules.xml.catalog.impl.sun;
 import java.beans.*;
 import java.awt.Image;
 import org.netbeans.modules.xml.catalog.impl.sun.Catalog;
+import static org.netbeans.modules.xml.catalog.impl.sun.res.Bundle.*;
 
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
-
 import org.netbeans.modules.xml.catalog.spi.*;
-import org.openide.util.NbBundle;
 
 public class CatalogBeanInfo extends SimpleBeanInfo {
 
@@ -66,8 +64,8 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
      */
     public BeanDescriptor getBeanDescriptor() {
 	BeanDescriptor beanDescriptor = new BeanDescriptor  ( Catalog.class , CatalogCustomizer.class );
-        beanDescriptor.setDisplayName ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_Catalog") );
-        beanDescriptor.setShortDescription ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_Catalog_desc") );                              
+        beanDescriptor.setDisplayName (PROP_Catalog());
+        beanDescriptor.setShortDescription (PROP_Catalog_desc());
 
         // Here you can add code for customizing the BeanDescriptor.
 
@@ -94,15 +92,15 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
 
         try {
             properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", Catalog.class, "getDisplayName", null );
-            properties[PROPERTY_displayName].setDisplayName ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_catalog_name") );
-            properties[PROPERTY_displayName].setShortDescription ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_catalog_name_desc") );
+            properties[PROPERTY_displayName].setDisplayName (PROP_catalog_name());
+            properties[PROPERTY_displayName].setShortDescription (PROP_catalog_name_desc());
             properties[PROPERTY_shortDescription] = new PropertyDescriptor ( "shortDescription", Catalog.class, "getShortDescription", null );
-            properties[PROPERTY_shortDescription].setDisplayName ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_catalog_info") );
-            properties[PROPERTY_shortDescription].setShortDescription ( NbBundle.getMessage(CatalogBeanInfo.class, "PROP_catalog_info_desc") );
+            properties[PROPERTY_shortDescription].setDisplayName (PROP_catalog_info());
+            properties[PROPERTY_shortDescription].setShortDescription (PROP_catalog_info_desc());
             properties[PROPERTY_icon] = new IndexedPropertyDescriptor ( "icon", Catalog.class, null, null, "getIcon", null );
             properties[PROPERTY_icon].setHidden ( true );
         }
-        catch( IntrospectionException e) {}                          
+        catch( IntrospectionException e) {}
         properties[PROPERTY_shortDescription].setName(CatalogDescriptorBase.PROP_CATALOG_DESC);
         properties[PROPERTY_displayName].setName(CatalogDescriptorBase.PROP_CATALOG_NAME);
         properties[PROPERTY_icon].setName(CatalogDescriptorBase.PROP_CATALOG_ICON);

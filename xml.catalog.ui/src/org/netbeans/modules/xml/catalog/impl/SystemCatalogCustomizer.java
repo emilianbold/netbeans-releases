@@ -41,10 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.catalog.impl.sun;
+package org.netbeans.modules.xml.catalog.impl;
 
 import java.beans.*;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.xml.catalog.impl.res.Bundle.*;
 
 /**
  * Customizer for Netbeans IDE catalog is read only because the catalog
@@ -61,7 +61,7 @@ public class SystemCatalogCustomizer extends javax.swing.JPanel implements Custo
     /** Creates new form CatalogCustomizer */
     public SystemCatalogCustomizer() {
         initComponents ();
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SystemCatalogCustomizer.class, "ACSD_SystemCatalogCustomizer"));
+        this.getAccessibleContext().setAccessibleDescription(ACSD_SystemCatalogCustomizer());
     }
 
     /** This method is called from within the constructor to
@@ -81,13 +81,13 @@ public class SystemCatalogCustomizer extends javax.swing.JPanel implements Custo
 
         setLayout(new java.awt.GridBagLayout());
 
-        jTextArea1.setColumns(40);
         jTextArea1.setEditable(false);
+        jTextArea1.setColumns(40);
         jTextArea1.setFont(javax.swing.UIManager.getFont ("Label.font"));
         jTextArea1.setForeground(new java.awt.Color(102, 102, 153));
         jTextArea1.setLineWrap(true);
         jTextArea1.setRows(4);
-        jTextArea1.setText(NbBundle.getMessage(SystemCatalogCustomizer.class, "SystemCatalogCustomizer.readOnly.text")); // NOI18N
+        jTextArea1.setText(SystemCatalogCustomizer_readOnly_text());
         jTextArea1.setWrapStyleWord(true);
         jTextArea1.setBorder(null);
         jTextArea1.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));

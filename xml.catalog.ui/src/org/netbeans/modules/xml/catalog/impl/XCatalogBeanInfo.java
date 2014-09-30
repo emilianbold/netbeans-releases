@@ -41,17 +41,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.xml.catalog.impl.sun;
+package org.netbeans.modules.xml.catalog.impl;
 
 import java.beans.*;
 import java.awt.Image;
 import org.netbeans.modules.xml.catalog.impl.XCatalog;
+import static org.netbeans.modules.xml.catalog.impl.res.Bundle.*;
 
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
-
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptorBase;
-import org.openide.util.NbBundle;
 
 public class XCatalogBeanInfo extends SimpleBeanInfo {
 
@@ -64,9 +62,8 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
      */
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor beanDescriptor = new BeanDescriptor  ( XCatalog.class , XCatalogCustomizer.class );
-        beanDescriptor.setDisplayName ( NbBundle.getMessage(XCatalogBeanInfo.class, "NAME_x_catalog") );
-        beanDescriptor.setShortDescription ( NbBundle.getMessage(XCatalogBeanInfo.class, "TEXT_x_catalog_desc") );
-        
+        beanDescriptor.setDisplayName (NAME_x_catalog());
+        beanDescriptor.setShortDescription (TEXT_x_catalog_desc());
 	return beanDescriptor;
     }
 
@@ -91,14 +88,14 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
         try {
             properties[PROPERTY_source] = new PropertyDescriptor ( "source", XCatalog.class, "getSource", "setSource" );
             properties[PROPERTY_source].setExpert ( true );
-            properties[PROPERTY_source].setDisplayName ( NbBundle.getMessage(XCatalogBeanInfo.class, "PROP_xcatalog_location") );
-            properties[PROPERTY_source].setShortDescription ( NbBundle.getMessage(XCatalogBeanInfo.class, "PROP_xcatalog_location_desc") );
+            properties[PROPERTY_source].setDisplayName (PROP_xcatalog_location());
+            properties[PROPERTY_source].setShortDescription (PROP_xcatalog_location_desc());
             properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", XCatalog.class, "getDisplayName", null );
-            properties[PROPERTY_displayName].setDisplayName ( NbBundle.getMessage(XCatalogBeanInfo.class, "PROP_xcatalog_name") );
-            properties[PROPERTY_displayName].setShortDescription ( NbBundle.getMessage(XCatalogBeanInfo.class, "PROP_xcatalog_name_desc") );
+            properties[PROPERTY_displayName].setDisplayName (PROP_xcatalog_name());
+            properties[PROPERTY_displayName].setShortDescription (PROP_xcatalog_name_desc());
             properties[PROPERTY_shortDescription] = new PropertyDescriptor ( "shortDescription", XCatalog.class, "getShortDescription", null );
-            properties[PROPERTY_shortDescription].setDisplayName ( NbBundle.getMessage(XCatalogBeanInfo.class, "PROP_xcatalog_info") );
-            properties[PROPERTY_shortDescription].setShortDescription ( NbBundle.getMessage(XCatalogBeanInfo.class, "PROP_xcatalog_info_desc") );
+            properties[PROPERTY_shortDescription].setDisplayName (PROP_xcatalog_info());
+            properties[PROPERTY_shortDescription].setShortDescription (PROP_xcatalog_info_desc());
             properties[PROPERTY_icon] = new IndexedPropertyDescriptor ( "icon", XCatalog.class, null, null, "getIcon", null );
             properties[PROPERTY_icon].setHidden ( true );
         }
