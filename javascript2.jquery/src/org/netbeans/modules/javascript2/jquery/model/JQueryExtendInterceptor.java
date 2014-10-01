@@ -2,10 +2,12 @@ package org.netbeans.modules.javascript2.jquery.model;
 
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
@@ -108,7 +110,7 @@ public class JQueryExtendInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (args.size() == 1) {
             FunctionArgument arg = args.iterator().next();
             if (arg.getKind() == FunctionArgument.Kind.ANONYMOUS_OBJECT) {
@@ -121,5 +123,6 @@ public class JQueryExtendInterceptor implements FunctionInterceptor {
                 }
             }
         }
+        return Collections.emptyList();
     }
 }
