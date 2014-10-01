@@ -41,69 +41,42 @@
  */
 package org.netbeans.modules.javascript.nodejs.ui.actions;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.io.File;
+import java.io.IOException;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
+import org.netbeans.modules.javascript.nodejs.util.RunInfo;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
-public final class NodeJsActionProvider implements ActionProvider {
+final class DebugFileCommand extends Command {
 
-    private static final RequestProcessor RP = new RequestProcessor(NodeJsActionProvider.class);
-
-    private final Project project;
-    private final Map<String, Command> commands = new ConcurrentHashMap<>();
-    private final List<String> supportedActions;
-
-
-    public NodeJsActionProvider(Project project) {
-        assert project != null;
-        this.project = project;
-        fillCommands();
-        supportedActions = new ArrayList<>(commands.keySet());
-    }
-
-    private void fillCommands() {
-        Command[] allCommands = new Command[] {
-            new RunProjectCommand(project),
-            new RunFileCommand(project),
-            // for debug, we have checkbox
-            // new DebugProjectCommand(project),
-            // new DebugFileCommand(project),
-        };
-        for (Command command : allCommands) {
-            Command old = commands.put(command.getCommandId(), command);
-            assert old == null : "Command already set for " + command.getCommandId();
-        }
+    public DebugFileCommand(Project project) {
+        super(project);
     }
 
     @Override
-    public String[] getSupportedActions() {
-        return supportedActions.toArray(new String[supportedActions.size()]);
+    public String getCommandId() {
+        return ActionProvider.COMMAND_DEBUG_SINGLE;
     }
 
     @Override
-    public void invokeAction(String command, final Lookup context) {
-        final Command runCommand = commands.get(command);
-        assert runCommand != null : command;
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                runCommand.run(context);
+    public boolean isEnabled(Lookup context) {
+        return lookupJavaScriptFile(context) != null;
+    }
+
+    @Override
+    void runInternal(Lookup context) {
+        File file = lookupJavaScriptFile(context);
+        assert file != null;
+        NodeExecutable node = getNode();
+        if (node != null) {
+            try {
+                node.debug(new RunInfo(project).getDebugPort(), file, null);
+            } catch (IOException ex) {
+                warnCannotDebug(ex);
             }
-        });
-    }
-
-    @Override
-    public boolean isActionEnabled(String command, Lookup context) {
-        Command runCommand = commands.get(command);
-        if (runCommand == null) {
-            return false;
         }
-        return runCommand.isEnabled(context);
     }
 
 }
