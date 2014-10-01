@@ -43,27 +43,33 @@ package org.netbeans.progress.module;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.progress.spi.InternalHandle;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author sdedic
  */
 public abstract class ProgressApiAccessor {
-    private static ProgressApiAccessor INSTANCE;
-    
-    static {
-        ProgressHandle.createHandle("");
-    }
-    
+    private static volatile ProgressApiAccessor INSTANCE;
+
     public static void setInstance(ProgressApiAccessor inst) {
+        assert inst != null;
         INSTANCE = inst;
     }
-    
-    public static ProgressApiAccessor getInstance() {
+
+    public synchronized static ProgressApiAccessor getInstance() {
+        if (INSTANCE == null) {
+            try {
+                Class.forName(ProgressHandle.class.getName(), true, ProgressApiAccessor.class.getClassLoader());
+                assert INSTANCE != null;
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         return INSTANCE;
     }
-    
+
     public abstract InternalHandle getInternalHandle(ProgressHandle h);
-    
+
     public abstract ProgressHandle create(InternalHandle h);
 }
