@@ -714,6 +714,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                                     sb.append(";\n"); //NOI18N
                                 } else {
                                     sb.append(controllerRegistration.getControllerName());
+                                    sb.append(";\n"); //NOI18N
                                 }
                                 sb.append("{ \n"); //NOI18N
                             }
