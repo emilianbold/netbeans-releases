@@ -492,33 +492,35 @@ public final class Watcher extends AnnotationProvider {
         return null;
     }
     
-    public static synchronized void lock(FileObject fileObject) {
+    public static void lock(FileObject fileObject) {
         if (fileObject.isData()) {
             fileObject = fileObject.getParent();
         }
-        
-        int[] arr = MODIFIED.get(fileObject);
-        if (arr == null) {
-            MODIFIED.put(fileObject, arr = new int[] { 0 });
+        synchronized (Watcher.class) {
+            int[] arr = MODIFIED.get(fileObject);
+            if (arr == null) {
+                MODIFIED.put(fileObject, arr = new int[]{0});
+            }
+            arr[0]++;
         }
-        arr[0]++;
     }
     
     static synchronized boolean isLocked(FileObject fo) {
         return MODIFIED.get(fo) != null;
     }
 
-    public static synchronized void unlock(FileObject fo) {
+    public static void unlock(FileObject fo) {
         if (fo.isData()) {
             fo = fo.getParent();
         }
-        
-        int[] arr = MODIFIED.get(fo);
-        if (arr == null) {
-            return;
-        }
-        if (--arr[0] == 0) {
-            MODIFIED.remove(fo);
+        synchronized (Watcher.class) {
+            int[] arr = MODIFIED.get(fo);
+            if (arr == null) {
+                return;
+            }
+            if (--arr[0] == 0) {
+                MODIFIED.remove(fo);
+            }
         }
     }
 }
