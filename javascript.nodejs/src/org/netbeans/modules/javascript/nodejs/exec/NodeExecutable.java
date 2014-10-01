@@ -44,6 +44,8 @@ package org.netbeans.modules.javascript.nodejs.exec;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,8 +53,10 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -63,6 +67,8 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -76,6 +82,7 @@ import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValid
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
 import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController;
 import org.netbeans.modules.javascript.nodejs.util.ExternalExecutable;
+import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
@@ -85,12 +92,16 @@ import org.netbeans.modules.web.common.api.Version;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 public class NodeExecutable {
 
-    private static final Logger LOGGER = Logger.getLogger(NodeExecutable.class.getName());
+    static final Logger LOGGER = Logger.getLogger(NodeExecutable.class.getName());
 
     public static final String NODE_NAME;
     public static final int DEFAULT_DEBUG_PORT = 9292;
@@ -253,12 +264,29 @@ public class NodeExecutable {
     @CheckForNull
     public Future<Integer> debug(int port, File script, String args) throws IOException {
         assert project != null;
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        Runnable countDownTask = new Runnable() {
+            @Override
+            public void run() {
+                countDownLatch.countDown();
+            }
+        };
         String projectName = ProjectUtils.getInformation(project).getDisplayName();
-        Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName))
+        final Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName))
                 .additionalParameters(getDebugParams(port, script, args))
-                .run(getDescriptor());
+                .run(getDescriptor(countDownTask));
         assert task != null : nodePath;
-        Connector.connect(new Connector.Properties("localhost", port), null); // NOI18N
+        try {
+            countDownLatch.await(15, TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+        Connector.connect(new Connector.Properties("localhost", port), new Runnable() { // NOI18N
+            @Override
+            public void run() {
+                task.cancel(true);
+            }
+        });
         return task;
     }
 
@@ -271,13 +299,20 @@ public class NodeExecutable {
     }
 
     private ExecutionDescriptor getDescriptor() {
+        return getDescriptor(null);
+    }
+
+    private ExecutionDescriptor getDescriptor(@NullAllowed Runnable debuggerStartTask) {
+        assert project != null;
+        List<URL> sourceRoots = NodeJsSupport.forProject(project).getSourceRoots();
         return new ExecutionDescriptor()
                 .frontWindow(true)
                 .frontWindowOnError(false)
                 .controllable(true)
                 .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
-                .errLineBased(true);
+                .errLineBased(true)
+                .outConvertorFactory(new LineConvertorFactoryImpl(sourceRoots, debuggerStartTask));
     }
 
     private static ExecutionDescriptor getSilentDescriptor() {
@@ -421,5 +456,137 @@ public class NodeExecutable {
 
     }
 
+    private static final class LineConvertorFactoryImpl implements ExecutionDescriptor.LineConvertorFactory {
+
+        private final List<URL> sourceRoots;
+        private final Runnable debuggerStartTask;
+
+
+        public LineConvertorFactoryImpl(List<URL> sourceRoots, @NullAllowed Runnable debuggerStartTask) {
+            assert sourceRoots != null;
+            this.sourceRoots = sourceRoots;
+            this.debuggerStartTask = debuggerStartTask;
+        }
+
+        @Override
+        public LineConvertor newLineConvertor() {
+            List<File> files = new ArrayList<>(sourceRoots.size());
+            for (URL sourceRoot : sourceRoots) {
+                try {
+                    files.add(Utilities.toFile(sourceRoot.toURI()));
+                } catch (URISyntaxException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                }
+            }
+            return new LineConvertorImpl(new FileLineParser(files), debuggerStartTask);
+        }
+
+    }
+
+    private static final class LineConvertorImpl implements LineConvertor {
+
+        private final FileLineParser fileLineParser;
+
+        // @GuardedBy("thread")
+        private Runnable debuggerStartTask;
+
+
+        public LineConvertorImpl(FileLineParser fileLineParser, @NullAllowed Runnable debuggerStartTask) {
+            assert fileLineParser != null;
+            this.fileLineParser = fileLineParser;
+            this.debuggerStartTask = debuggerStartTask;
+        }
+
+        @Override
+        public List<ConvertedLine> convert(String line) {
+            // debugger?
+            if (debuggerStartTask != null
+                    && line.startsWith("debugger listening on port")) { // NOI18N
+                debuggerStartTask.run();
+                debuggerStartTask = null;
+            }
+            // process output
+            OutputListener outputListener = null;
+            Pair<File, Integer> fileLine = fileLineParser.getOutputFileLine(line);
+            if (fileLine != null) {
+                outputListener = new FileOutputListener(fileLine.first(), fileLine.second());
+            }
+            return Collections.singletonList(ConvertedLine.forText(line, outputListener));
+        }
+
+    }
+
+    private static final class FileOutputListener implements OutputListener {
+
+        final File file;
+        final int line;
+
+
+        public FileOutputListener(File file, int line) {
+            assert file != null;
+            this.file = file;
+            this.line = line;
+        }
+
+        @Override
+        public void outputLineSelected(OutputEvent ev) {
+            // noop
+        }
+
+        @Override
+        public void outputLineAction(OutputEvent ev) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    FileUtils.openFile(file, line);
+                }
+            });
+        }
+
+        @Override
+        public void outputLineCleared(OutputEvent ev) {
+            // noop
+        }
+
+    }
+
+    static final class FileLineParser {
+
+        // node.js:906:3
+        // (/home/gapon/NetBeansProjects/JsLibrary6/src/main.js:9:1)
+        // ^/home/gapon/NetBeansProjects/JsLibrary6/src/main.js:9$
+        static final Pattern OUTPUT_FILE_LINE_PATTERN = Pattern.compile("(?:at |\\(|^)(?<FILE>[^:(]+?):(?<LINE>\\d+)(?::\\d+)?(?:\\)|$)"); // NOI18N
+
+        private final List<File> sourceRoots;
+
+
+        public FileLineParser(List<File> sourceRoots) {
+            assert sourceRoots != null;
+            this.sourceRoots = sourceRoots;
+        }
+
+        Pair<File, Integer> getOutputFileLine(String line) {
+            Matcher matcher = OUTPUT_FILE_LINE_PATTERN.matcher(line);
+            if (!matcher.find()) {
+                return null;
+            }
+            String filepath = matcher.group("FILE"); // NOI18N
+            Integer lineNumber = Integer.valueOf(matcher.group("LINE")); // NOI18N
+            // complete path?
+            File file = new File(filepath);
+            if (file.isFile()) {
+                return Pair.of(file, lineNumber);
+            }
+            // incomplete path?
+            for (File sourceRoot : sourceRoots) {
+                file = new File(sourceRoot, filepath);
+                if (file.isFile()) {
+                    return Pair.of(file, lineNumber);
+                }
+            }
+            return null;
+        }
+
+    }
 
 }
