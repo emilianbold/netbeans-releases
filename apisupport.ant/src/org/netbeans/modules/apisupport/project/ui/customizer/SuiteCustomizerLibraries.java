@@ -794,6 +794,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         // but they *are* shown in JNLP apps because currently even unused autoloads are enabled under JNLP:
         // Just annoying; e.g. shows Runtime tab prominently.
         DISABLED_PLATFORM_MODULES.add("org.openide.execution"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.openide.execution.compat8"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.netbeans.core.execution"); // NOI18N
         // Similar - unlikely to really be wanted by typical platform apps, and show some GUI.
         /* XXX #107870: currently org.netbeans.core.actions.LogAction needs OW:
