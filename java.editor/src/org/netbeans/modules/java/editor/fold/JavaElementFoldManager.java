@@ -43,21 +43,12 @@
  */
 package org.netbeans.modules.java.editor.fold;
 
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -73,16 +64,10 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldType;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.api.java.source.support.CancellableTreePathScanner;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.java.JavaFoldManager;
+import org.netbeans.modules.java.editor.base.fold.JavaElementFoldVisitor;
 import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
-import org.netbeans.modules.java.editor.base.semantic.Utilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldInfo;
 import org.netbeans.spi.editor.fold.FoldOperation;
@@ -246,31 +231,56 @@ public class JavaElementFoldManager extends JavaFoldManager {
             }
             
             final JavaElementFoldVisitor v = new JavaElementFoldVisitor(info, 
-                    cu, info.getTrees().getSourcePositions(), doc);
+                    cu, info.getTrees().getSourcePositions(), doc, new JavaElementFoldVisitor.FoldCreator<FoldInfo>() {
+                @Override
+                public FoldInfo createImportsFold(int start, int end) {
+                    return FoldInfo.range(start, end, IMPORTS_FOLD_TYPE);
+                }
+
+                @Override
+                public FoldInfo createInnerClassFold(int start, int end) {
+                    return FoldInfo.range(start, end, INNERCLASS_TYPE);
+                }
+
+                @Override
+                public FoldInfo createCodeBlockFold(int start, int end) {
+                    return FoldInfo.range(start, end, CODE_BLOCK_FOLD_TYPE);
+                }
+
+                @Override
+                public FoldInfo createJavadocFold(int start, int end) {
+                    return FoldInfo.range(start, end, JAVADOC_FOLD_TYPE);
+                }
+
+                @Override
+                public FoldInfo createInitialCommentFold(int start, int end) {
+                    return FoldInfo.range(start, end, INITIAL_COMMENT_FOLD_TYPE);
+                }
+            });
             
             scan(v, cu, null);
             
             final long stamp = version.get();
             
-            if (v.stopped || isCancelled())
+            if (v.isStopped() || isCancelled())
                 return ;
             
             //check for initial fold:
             v.checkInitialFold();
             
-            if (v.stopped || isCancelled())
+            if (v.isStopped() || isCancelled())
                 return ;
             
             if (mgrs instanceof JavaElementFoldManager) {
                 SwingUtilities.invokeLater(
-                        ((JavaElementFoldManager)mgrs).new CommitFolds(doc, v.folds, v.anchors, version, stamp)
+                        ((JavaElementFoldManager)mgrs).new CommitFolds(doc, v.getFolds(), v.getAnchors(), version, stamp)
                 );
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
                     Collection<JavaElementFoldManager> jefms = (Collection<JavaElementFoldManager>)mgrs;
                     public void run() {
                         for (JavaElementFoldManager jefm : jefms) {
-                            jefm.new CommitFolds(doc, v.folds, v.anchors, version, stamp).run();
+                            jefm.new CommitFolds(doc, v.getFolds(), v.getAnchors(), version, stamp).run();
                         }
                 }});
             }
@@ -386,192 +396,4 @@ public class JavaElementFoldManager extends JavaFoldManager {
                     new Object[] {file, endTime - startTime});
         }
     }
-
-    private static final class JavaElementFoldVisitor extends CancellableTreePathScanner<Object, Object> {
-        private List<Integer> anchors = new ArrayList<Integer>();
-        private List<FoldInfo> folds = new ArrayList<FoldInfo>();
-        private CompilationInfo info;
-        private CompilationUnitTree cu;
-        private SourcePositions sp;
-        private boolean stopped;
-        private int initialCommentStopPos = Integer.MAX_VALUE;
-        private Document doc;
-        int expandMembersAtCaret = -1;
-        
-        public JavaElementFoldVisitor(CompilationInfo info, CompilationUnitTree cu, SourcePositions sp, Document doc) {
-            this.info = info;
-            this.cu = cu;
-            this.sp = sp;
-            this.doc = doc;
-        }
-        
-        private void addFold(FoldInfo f, int anchor) {
-            this.folds.add(f);
-            this.anchors.add(anchor);
-        }
-        
-        public void checkInitialFold() {
-            try {
-                TokenHierarchy<?> th = info.getTokenHierarchy();
-                TokenSequence<JavaTokenId>  ts = th.tokenSequence(JavaTokenId.language());
-                
-                while (ts.moveNext()) {
-                    if (ts.offset() >= initialCommentStopPos)
-                        break;
-                    
-                    Token<JavaTokenId> token = ts.token();
-                    
-                    if (token.id() == JavaTokenId.BLOCK_COMMENT || token.id() == JavaTokenId.JAVADOC_COMMENT) {
-                        int startOffset = ts.offset();
-                        addFold(FoldInfo.range(startOffset, startOffset + token.length(), INITIAL_COMMENT_FOLD_TYPE), startOffset);
-                        break;
-                    }
-                }
-            } catch (ConcurrentModificationException e) {
-                //from TokenSequence, document probably changed, stop
-                stopped = true;
-            }
-        }
-        
-        private void handleJavadoc(Tree t) throws BadLocationException, ConcurrentModificationException {
-            int start = (int) sp.getStartPosition(cu, t);
-            
-            if (start == (-1))
-                return ;
-            
-            if (start < initialCommentStopPos)
-                initialCommentStopPos = start;
-
-            TokenHierarchy<?> th = info.getTokenHierarchy();
-            TokenSequence<JavaTokenId>  ts = th.tokenSequence(JavaTokenId.language());
-            
-            if (ts.move(start) == Integer.MAX_VALUE) {
-                return;//nothing
-            }
-            
-            while (ts.movePrevious()) {
-                Token<JavaTokenId> token = ts.token();
-                
-                if (token.id() == JavaTokenId.JAVADOC_COMMENT) {
-                    int startOffset = ts.offset();
-                    addFold(FoldInfo.range(startOffset, startOffset + token.length(), JAVADOC_FOLD_TYPE), startOffset);
-                    if (startOffset < initialCommentStopPos)
-                        initialCommentStopPos = startOffset;
-                }
-                if (   token.id() != JavaTokenId.WHITESPACE
-                    && token.id() != JavaTokenId.BLOCK_COMMENT
-                    && token.id() != JavaTokenId.LINE_COMMENT)
-                    break;
-            }
-        }
-        
-        private void handleTree(Tree node, Tree javadocTree, boolean handleOnlyJavadoc) {
-            handleTree((int)sp.getStartPosition(cu, node), node, javadocTree, handleOnlyJavadoc);
-        }
-        
-        private void handleTree(int symStart, Tree node, Tree javadocTree, boolean handleOnlyJavadoc) {
-            try {
-                if (!handleOnlyJavadoc) {
-                    int start = (int)sp.getStartPosition(cu, node);
-                    int end   = (int)sp.getEndPosition(cu, node);
-                    
-                    if (start != (-1) && end != (-1)) {
-                        FoldInfo fi = FoldInfo.range(start, end, CODE_BLOCK_FOLD_TYPE);
-                        addFold(fi, symStart);
-                    }
-                }
-                
-                handleJavadoc(javadocTree != null ? javadocTree : node);
-            } catch (BadLocationException e) {
-                //the document probably changed, stop
-                stopped = true;
-            } catch (ConcurrentModificationException e) {
-                //from TokenSequence, document probably changed, stop
-                stopped = true;
-            }
-        }
-        
-        @Override
-        public Object visitMethod(MethodTree node, Object p) {
-            super.visitMethod(node, p);
-            handleTree((int)sp.getStartPosition(cu, node), node.getBody(), node, false);
-            return null;
-        }
-
-        @Override
-        public Object visitClass(ClassTree node, Object p) {
-            super.visitClass(node, Boolean.TRUE);
-            try {
-                if (p == Boolean.TRUE) {
-                    int start = Utilities.findBodyStart(node, cu, sp, doc);
-                    int end   = (int)sp.getEndPosition(cu, node);
-                    
-                    if (start != (-1) && end != (-1)) {
-                        addFold(FoldInfo.range(start, end, INNERCLASS_TYPE), (int)sp.getStartPosition(cu, node));
-		      }
-                }
-                
-                handleJavadoc(node);
-            } catch (BadLocationException e) {
-                //the document probably changed, stop
-                stopped = true;
-            } catch (ConcurrentModificationException e) {
-                //from TokenSequence, document probably changed, stop
-                stopped = true;
-            }
-            return null;
-        }
-        
-        @Override
-        public Object visitVariable(VariableTree node,Object p) {
-            super.visitVariable(node, p);
-            if (TreeUtilities.CLASS_TREE_KINDS.contains(getCurrentPath().getParentPath().getLeaf().getKind()))
-                handleTree(node, null, true);
-            return null;
-        }
-        
-        @Override
-        public Object visitBlock(BlockTree node, Object p) {
-            super.visitBlock(node, p);
-            //check static/dynamic initializer:
-            TreePath path = getCurrentPath();
-            
-            if (TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())) {
-                handleTree(node, null, false);
-            }
-            
-            return null;
-        }
-        
-        @Override
-        public Object visitCompilationUnit(CompilationUnitTree node, Object p) {
-            int importsStart = Integer.MAX_VALUE;
-            int importsEnd   = -1;
-            
-            for (ImportTree imp : node.getImports()) {
-                int start = (int) sp.getStartPosition(cu, imp);
-                int end   = (int) sp.getEndPosition(cu, imp);
-                
-                if (importsStart > start)
-                    importsStart = start;
-                
-                if (end > importsEnd) {
-                    importsEnd = end;
-                }
-            }
-            
-            if (importsEnd != (-1) && importsStart != (-1)) {
-                if (importsStart < initialCommentStopPos) {
-                    initialCommentStopPos = importsStart;
-                }
-                importsStart += 7/*"import ".length()*/;
-
-                if (importsStart < importsEnd) {
-                    addFold(FoldInfo.range(importsStart , importsEnd, IMPORTS_FOLD_TYPE), importsStart);
-                }
-            }
-            return super.visitCompilationUnit(node, p);
-        }
-    }
-    
 }
