@@ -552,7 +552,7 @@ public class NodeExecutable {
 
     static final class FileLineParser {
 
-        // node.js:906:3
+        // at node.js:906:3
         // (/home/gapon/NetBeansProjects/JsLibrary6/src/main.js:9:1)
         // ^/home/gapon/NetBeansProjects/JsLibrary6/src/main.js:9$
         static final Pattern OUTPUT_FILE_LINE_PATTERN = Pattern.compile("(?:at |\\(|^)(?<FILE>[^:(]+?):(?<LINE>\\d+)(?::\\d+)?(?:\\)|$)"); // NOI18N
