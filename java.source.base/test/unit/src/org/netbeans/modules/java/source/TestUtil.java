@@ -69,6 +69,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.spi.editor.document.DocumentFactory;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Utilities;
 
 
@@ -394,7 +395,14 @@ public class TestUtil {
 
             @Override
             public FileObject getFileObject(Document document) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                Object sdp = document.getProperty(Document.StreamDescriptionProperty);
+                if (sdp instanceof FileObject) {
+                    return (FileObject)sdp;
+                }
+                if (sdp instanceof DataObject) {
+                    return ((DataObject)sdp).getPrimaryFile();
+                }
+                return null;
             }
 
             @Override
