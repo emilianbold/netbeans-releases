@@ -202,6 +202,14 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         String value = tokenSequence.token().text().toString();
                         int indexStart = 0;
                         boolean parenRemoved = false;
+                        // check if one-time binding "{{::expr}}" is present
+                        int oneTimeBindingShift = 0;                        
+                        if (value.trim().startsWith("::")) { //NOI18N
+                            // remove double colon
+                            int doubleColonIndex = value.indexOf("::");
+                            value = value.substring(doubleColonIndex + 2);
+                            oneTimeBindingShift = doubleColonIndex + 2;
+                        }
                         String name = value.trim();
                         if (value.startsWith("(")) {
                             name = value.substring(1);
@@ -215,11 +223,11 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         processTemplate();
                         if (propertyToFqn.containsKey(name)) {
                             embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-                            embeddings.add(snapshot.create(tokenSequence.offset(), value.length(), Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(tokenSequence.offset() + oneTimeBindingShift, value.length(), Constants.JAVASCRIPT_MIMETYPE));
                             embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                             processed = true;
                         } else if (!name.contains("|") && !name.contains(":")){ //NOI18N
-                            embeddings.add(snapshot.create(tokenSequence.offset(), value.length(), Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(tokenSequence.offset() + oneTimeBindingShift, value.length(), Constants.JAVASCRIPT_MIMETYPE));
                             embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                             processed = true;
                         } else if (name.contains("|")){
@@ -237,11 +245,11 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             }
                             if(propertyToFqn.containsKey(name)) {
                                 embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-                                embeddings.add(snapshot.create(tokenSequence.offset() + indexStart, name.length(), Constants.JAVASCRIPT_MIMETYPE));
+                                embeddings.add(snapshot.create(tokenSequence.offset() + indexStart + oneTimeBindingShift, name.length(), Constants.JAVASCRIPT_MIMETYPE));
                                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                                 processed = true;
                             } else {
-                                embeddings.add(snapshot.create(tokenSequence.offset() + indexStart, name.length(), Constants.JAVASCRIPT_MIMETYPE));
+                                embeddings.add(snapshot.create(tokenSequence.offset() + indexStart + oneTimeBindingShift, name.length(), Constants.JAVASCRIPT_MIMETYPE));
                                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                                 processed = true;
                             }
@@ -452,6 +460,16 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     return false;
                 }
                 embeddings.add(snapshot.create("for (var ", Constants.JAVASCRIPT_MIMETYPE));
+                // one-time binding in repeat expression (e.g., ng-repeat="item in ::items")
+                boolean oneTimeBinding = false;
+                int oneTimeBindingShift = 0;
+                if (forParts[1].trim().startsWith("::")) { //NOI18N
+                    // one-time binding was found in repeat expression, remove double colon from collection name
+                    int doubleColonIndex = forParts[1].indexOf("::"); //NOI18N
+                    forParts[1] = forParts[1].substring(doubleColonIndex + 2);
+                    oneTimeBindingShift = doubleColonIndex + 2;
+                    oneTimeBinding = true;
+                }
                 // forParts keeps value, collection
                 // now need to check, whether the value is simple or (key, value) - issue #230223
                 if (!forParts[0].contains(",")) {
@@ -459,12 +477,19 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     if (forParts.length == 2 && propertyToFqn.containsKey(forParts[1])) {
                         // if we know the collection from a controller ....
                         int lastPartPos = expression.indexOf(forParts[1]); // the start position of the collection name
-                        embeddings.add(snapshot.create(tokenSequence.offset() + 1, lastPartPos, Constants.JAVASCRIPT_MIMETYPE));
+                        embeddings.add(snapshot.create(tokenSequence.offset() + 1, lastPartPos - oneTimeBindingShift, Constants.JAVASCRIPT_MIMETYPE));
                         embeddings.add(snapshot.create(propertyToFqn.get(forParts[1]) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                         embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[1].length(), Constants.JAVASCRIPT_MIMETYPE));
                     } else {
-                        // if we don't know the collection from a controller, put it to the virtual source at it is
-                        embeddings.add(snapshot.create(tokenSequence.offset() + 1, parts[0].length(), Constants.JAVASCRIPT_MIMETYPE));
+                        if (oneTimeBinding) {
+                            // we don't know the collection from controller and we have one-time binding present
+                            int lastPartPos = expression.indexOf(forParts[1]); // the start position of the collection name
+                            embeddings.add(snapshot.create(tokenSequence.offset() + 1, lastPartPos - oneTimeBindingShift, Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[1].length(), Constants.JAVASCRIPT_MIMETYPE));
+                        } else {
+                            // if we don't know the collection from a controller, put it to the virtual source as it is
+                            embeddings.add(snapshot.create(tokenSequence.offset() + 1, parts[0].length(), Constants.JAVASCRIPT_MIMETYPE));
+                        }
                     }
                     embeddings.add(snapshot.create(") {\n", Constants.JAVASCRIPT_MIMETYPE));  //NOI18N
                 } else {
@@ -576,6 +601,15 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         } else {
             int lastPartPos = 0;
             int valueTrimPos = 0;
+            int oneTimeBindingShift = 0;
+            boolean oneTimeBinding = false;
+            if (value.trim().startsWith("::")) { //NOI18N
+                // one-time binding "::expr" was found, remove double colon from expression
+                int doubleColonIndex = value.indexOf("::");
+                value = value.substring(doubleColonIndex + 2);
+                oneTimeBindingShift = doubleColonIndex + 2;
+                oneTimeBinding = true;
+            }
             if (value.startsWith("{")) {
                 value = value.substring(1);
                 lastPartPos = 1;
@@ -601,7 +635,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         if(conditionParts.length > 1) {
                             String propName = conditionParts[1].trim();
                             if (!propName.startsWith("//")) {
-                                int position = lastPartPos + part.indexOf(propName) + 1;
+                                int position = lastPartPos + part.indexOf(propName) + oneTimeBindingShift + 1;
                                 if (propName.charAt(0) == '"' || propName.charAt(0) == '\'') {
                                     propName = propName.substring(1);
                                     position++;
@@ -622,8 +656,14 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 }
             }
             if (!valueTrim.isEmpty()) {
-                embeddings.add(snapshot.create(tokenSequence.offset() + lastPartPos + 1, valueTrim.length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(tokenSequence.offset() + lastPartPos + oneTimeBindingShift + 1, valueTrim.length(), Constants.JAVASCRIPT_MIMETYPE));
                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+            }
+            if (oneTimeBinding && !processed) {
+                // we have one-time binding expression "::expr" which hasn't been processed yet
+                embeddings.add(snapshot.create(tokenSequence.offset() + oneTimeBindingShift + 1, value.length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                processed = true;
             }
         }
         return processed;
@@ -674,6 +714,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                                     sb.append(";\n"); //NOI18N
                                 } else {
                                     sb.append(controllerRegistration.getControllerName());
+                                    sb.append(";\n"); //NOI18N
                                 }
                                 sb.append("{ \n"); //NOI18N
                             }

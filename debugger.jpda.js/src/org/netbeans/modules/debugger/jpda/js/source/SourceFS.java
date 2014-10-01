@@ -110,6 +110,14 @@ final class SourceFS extends AbstractFileSystem {
     }
     
     public FileObject createFile(String path, String content) {
+        while (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        int pl;
+        do {
+            pl = path.length();
+            path = path.replace("//", "/");
+        } while (path.length() < pl);
         int i = path.lastIndexOf('/');
         String name = (i >= 0) ? path.substring(i + 1) : path;
         Item item = new Item(name, content);

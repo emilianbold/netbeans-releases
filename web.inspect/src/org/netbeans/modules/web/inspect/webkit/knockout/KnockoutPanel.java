@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.inspect.webkit.knockout;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.dnd.DnDConstants;
 import java.beans.PropertyChangeEvent;
@@ -63,6 +64,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * A panel for Knockout-related information about the inspected page.
@@ -70,6 +72,8 @@ import org.openide.util.NbBundle;
  * @author Jan Stola
  */
 public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
+    /** Request processor used by this class. */
+    private static final RequestProcessor RP = new RequestProcessor(KnockoutPanel.class);
     /** Explorer manager provided by this panel. */
     private final ExplorerManager manager = new ExplorerManager();
     /** Page model for this panel. */
@@ -124,6 +128,15 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
      * Updates the panel (according to the current selection).
      */
     final void update() {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    update();
+                }
+            });
+            return;
+        }
         List<? extends Node> selection = pageModel.getSelectedNodes();
         JComponent componentToShow;
         if (selection.isEmpty()) {
@@ -139,13 +152,36 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
             WebKitDebugging webKit = pageModel.getWebKit();
             Node rootNode = new AbstractNode(Children.create(new KnockoutChildFactory(webKit, webKitNode), true));
             getExplorerManager().setRootContext(rootNode);
+            expandDataNode();
             componentToShow = contextView;
         }
         if (componentToShow.getParent() == null) {
             removeAll();
             add(componentToShow);
         }
+        revalidate();
         repaint();
+    }
+
+    /**
+     * Expands the {@code $data} node of the binding context.
+     */
+    private void expandDataNode() {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                for (final Node node : manager.getRootContext().getChildren().getNodes(true)) {
+                    if ("$data".equals(node.getName())) { // NOI18N
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                contextView.expandNode(node);
+                            }
+                        });
+                    }
+                }
+            }
+        });
     }
 
     /**

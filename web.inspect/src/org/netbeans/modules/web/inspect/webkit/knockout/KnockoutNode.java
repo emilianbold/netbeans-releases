@@ -41,13 +41,14 @@
  */
 package org.netbeans.modules.web.inspect.webkit.knockout;
 
-import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.PropertyDescriptor;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Node that represents some JavaScript value in Knockout view.
@@ -55,8 +56,12 @@ import org.openide.util.NbBundle;
  * @author Jan Stola
  */
 public class KnockoutNode extends AbstractNode {
+    /** Request processor for this class. */
+    private static final RequestProcessor RP = new RequestProcessor(KnockoutNode.class);
     /** {@code RemoteObject} wrapped by this node. */
     private final RemoteObject remoteObject;
+    /** Value property of this node. */
+    private final ValueProperty valueProperty;
 
     /**
      * Creates a new {@code KnockoutNode} that wraps the given {@code RemoteObject}.
@@ -65,16 +70,70 @@ public class KnockoutNode extends AbstractNode {
      * @param remoteObject {@code RemoteObject} to encapsulate.
      */
     KnockoutNode(String name, RemoteObject remoteObject) {
-        super((remoteObject == null) ? Children.LEAF : Children.create(new KnockoutChildFactory(remoteObject), true));
+        super(childrenFor(remoteObject));
         this.remoteObject = remoteObject;
+        this.valueProperty = new ValueProperty(valueFor(remoteObject));
         setName(name);
+        unwrap();
+    }
+
+    /**
+     * Returns {@code Children} for the given {@code RemoteObject}.
+     * 
+     * @param remoteObject remote object for which the children should be returned.
+     * @return {@code Children} for the given {@code RemoteObject}.
+     */
+    final static Children childrenFor(RemoteObject remoteObject) {
+        boolean isLeaf = true;
+        if (remoteObject != null) {
+            RemoteObject.Type type = remoteObject.getType();
+            if (type == RemoteObject.Type.OBJECT && remoteObject.getDescription() != null) {
+                isLeaf = false;
+            }
+        }
+        return isLeaf ? Children.LEAF : Children.create(new KnockoutChildFactory(remoteObject), true);
+    }
+
+    /**
+     * Script used to unwrap Knockout observables.
+     */
+    final String UNWRAP_SCRIPT = "function() {return [ko.isObservable(this), ko.utils.unwrapObservable(this)]}"; // NOI18N
+    
+    /**
+     * Attempts to unwrap the value represented by this node.
+     */
+    final void unwrap() {
+        if (remoteObject != null && remoteObject.getType() == RemoteObject.Type.FUNCTION) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    RemoteObject observableInfo = remoteObject.apply(UNWRAP_SCRIPT);
+                    boolean isObservable = false;
+                    RemoteObject observable = null;
+                    for (PropertyDescriptor descriptor : observableInfo.getProperties()) {
+                        String name = descriptor.getName();
+                        if ("0".equals(name)) { // NOI18N
+                            isObservable = "true".equals(descriptor.getValue().getValueAsString()); // NOI18N
+                        } else if ("1".equals(name)) { // NOI18N
+                            observable = descriptor.getValue();
+                        }
+                    }
+                    if (isObservable) {
+                        setChildren(childrenFor(observable));
+                        setName(getName()+"()"); // NOI18N
+                        valueProperty.setValueInternal(valueFor(observable));
+                        firePropertyChange(ValueProperty.NAME, null, null);
+                    }
+                }
+            });
+        }
     }
 
     @Override
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
         Sheet.Set set = Sheet.createPropertiesSet();
-        set.put(new ValueProperty(valueFor(remoteObject)));
+        set.put(valueProperty);
         sheet.put(set);
         return sheet;
     }
@@ -91,7 +150,7 @@ public class KnockoutNode extends AbstractNode {
             value = null;
         } else {
             value = remoteObject.getDescription();
-            if (value == null) {
+            if (value == null && remoteObject.getType() != RemoteObject.Type.OBJECT) {
                 value = remoteObject.getValueAsString();
             }
         }
@@ -111,7 +170,7 @@ public class KnockoutNode extends AbstractNode {
         private static final String DESCRIPTION = NbBundle.getMessage(
                 ValueProperty.class, "KnockoutNode.valueProperty.description"); // NOI18N
         /** Value of the property. */
-        private final String value;
+        private String value;
 
         /**
          * Creates a new {@code ValueProperty}.
@@ -124,8 +183,17 @@ public class KnockoutNode extends AbstractNode {
         }
 
         @Override
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() {
             return value;
+        }
+
+        /**
+         * Sets the value of this property.
+         * 
+         * @param value new value of this property.
+         */
+        void setValueInternal(String value) {
+            this.value = value;
         }
         
     }

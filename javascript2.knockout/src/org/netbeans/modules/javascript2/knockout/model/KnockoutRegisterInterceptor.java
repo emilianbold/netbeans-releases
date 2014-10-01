@@ -42,10 +42,12 @@
 package org.netbeans.modules.javascript2.knockout.model;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.regex.Pattern;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
@@ -68,9 +70,9 @@ public class KnockoutRegisterInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (!KnockoutIndexer.isScannerThread()) {
-            return;
+            return Collections.emptyList();
         }
         String customElementName = null;
         int functionOffset = -1;
@@ -107,6 +109,7 @@ public class KnockoutRegisterInterceptor implements FunctionInterceptor {
                 }
             }
         }
+        return Collections.emptyList();
     }
 
 }

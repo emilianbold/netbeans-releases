@@ -42,15 +42,44 @@
 
 package org.netbeans.modules.javascript.nodejs.preferences;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
+import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
+import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
+import org.openide.util.NbBundle;
 
 public final class NodeJsPreferencesValidator {
 
+    private static final String START_FILE = "start.file"; // NOI18N
+    private static final String DEBUG_PORT = "debug.port"; // NOI18N
+
     private final ValidationResult result = new ValidationResult();
 
+
+    public static String getCustomizerCategory(ValidationResult result) {
+        assert !result.isFaultless() : result.getFirstErrorMessage() + " + " + result.getFirstWarningMessage();
+        List<ValidationResult.Message> messages = new ArrayList<>();
+        messages.addAll(result.getErrors());
+        messages.addAll(result.getWarnings());
+        for (ValidationResult.Message message : messages) {
+            switch (message.getSource().toString()) {
+                case ValidationUtils.NODE_PATH:
+                    return NodeJsCustomizerProvider.CUSTOMIZER_IDENT;
+                case START_FILE:
+                case DEBUG_PORT:
+                    // XXX
+                    return "RUN"; // NOI18N
+                default:
+                    assert false : "Unknown validation source: " + message.getSource().toString();
+            }
+        }
+        assert false;
+        return NodeJsCustomizerProvider.CUSTOMIZER_IDENT;
+    }
 
     public ValidationResult getResult() {
         return result;
@@ -62,14 +91,45 @@ public final class NodeJsPreferencesValidator {
             return this;
         }
         validateNode(preferences.isDefaultNode(), preferences.getNode());
+        validateRun(preferences.getStartFile(), preferences.getStartArgs(), preferences.getDebugPort());
         return this;
     }
 
-    public NodeJsPreferencesValidator validate(boolean enabled, boolean defaultNode, String node) {
+    public NodeJsPreferencesValidator validateNode(String node) {
+        ValidationUtils.validateNode(result, node);
+        return this;
+    }
+
+    public NodeJsPreferencesValidator validateCustomizer(boolean enabled, boolean defaultNode, String node) {
         if (!enabled) {
             return this;
         }
         validateNode(defaultNode, node);
+        return this;
+    }
+
+    public NodeJsPreferencesValidator validateRun(String startFile, String args, int debugPort) {
+        return validateRun(startFile, args, String.valueOf(debugPort));
+    }
+
+    @NbBundle.Messages({
+        "NodeJsPreferencesValidator.startFile.name=Start file",
+        "NodeJsPreferencesValidator.debugPort.invalid=Debug port is invalid",
+    })
+    public NodeJsPreferencesValidator validateRun(String startFile, String args, String debugPort) {
+        String warning = FileUtils.validateFile(Bundle.NodeJsPreferencesValidator_startFile_name(), startFile, false);
+        if (warning != null) {
+            result.addWarning(new ValidationResult.Message(START_FILE, warning));
+        }
+        try {
+            int parsedPort = Integer.parseInt(debugPort);
+            if (parsedPort < 0
+                    || parsedPort > 65535) {
+                result.addWarning(new ValidationResult.Message(DEBUG_PORT, Bundle.NodeJsPreferencesValidator_debugPort_invalid()));
+            }
+        } catch (NumberFormatException ex) {
+            result.addWarning(new ValidationResult.Message(DEBUG_PORT, Bundle.NodeJsPreferencesValidator_debugPort_invalid()));
+        }
         return this;
     }
 
