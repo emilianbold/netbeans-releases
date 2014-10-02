@@ -62,6 +62,7 @@ import org.netbeans.modules.apisupport.project.layers.SynchronousStatus;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Utilities;
 
@@ -185,7 +186,7 @@ public class LayerUtil {
     public static String getAnnotatedName(FileObject fo) {
         String name = fo.getNameExt();
         try {
-            FileSystem.Status status = fo.getFileSystem().getStatus();
+            StatusDecorator status = fo.getFileSystem().getDecorator();
             if (status instanceof SynchronousStatus) {
                 return ((SynchronousStatus) status).annotateNameSynch(name, Collections.singleton(fo));
             } else {

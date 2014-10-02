@@ -162,13 +162,14 @@ public abstract class FileSystem implements Serializable {
     private transient static ThreadLocal<EventControl> thrLocal = new ThreadLocal<EventControl>();
 
     /** Empty status */
-    private static final Status STATUS_NONE = new Status() {
+    private static final StatusDecorator STATUS_NONE = new StatusDecorator() {
             public String annotateName(String name, Set<? extends FileObject> files) {
                 return name;
             }
 
-            public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-                return icon;
+            @Override
+            public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+                return null;
             }
         };
 
@@ -440,13 +441,13 @@ public abstract class FileSystem implements Serializable {
         return getSystemName() + "[" + super.toString() + "]"; // NOI18N
     }
     
-    private static volatile Lookup.Result<FileSystem.Status> statusResult;
+    private static volatile Lookup.Result<StatusDecorator> statusResult;
     
-    private static FileSystem.Status defaultStatus() {
+    private static StatusDecorator defaultStatus() {
         if (statusResult == null) {
-            statusResult = Lookup.getDefault().lookupResult(FileSystem.Status.class);
+            statusResult = Lookup.getDefault().lookupResult(StatusDecorator.class);
         }
-        Iterator<? extends FileSystem.Status> it = statusResult.allInstances().iterator();
+        Iterator<? extends StatusDecorator> it = statusResult.allInstances().iterator();
         return it.hasNext() ? it.next() : SFS_STATUS;
     }
 
@@ -473,10 +474,10 @@ public abstract class FileSystem implements Serializable {
      * </dl>
      * @return the status object for this filesystem
      */
-    public Status getStatus() {
+    public StatusDecorator getDecorator() {
         return isDefault() ? defaultStatus() : STATUS_NONE;
     }
-
+    
     /** Executes atomic action. The atomic action represents a set of
     * operations constituting one logical unit. It is guaranteed that during
     * execution of such an action no events about changes in the filesystem
@@ -552,7 +553,7 @@ public abstract class FileSystem implements Serializable {
     public final void addFileStatusListener(FileStatusListener listener) {
         synchronized (internLock) {
             // JST: Ok? Do not register listeners when the fs cannot change status?
-            if (getStatus() == STATUS_NONE) {
+            if (getDecorator() == STATUS_NONE) {
                 return;
             }
 
@@ -767,84 +768,6 @@ public abstract class FileSystem implements Serializable {
         boolean isAsynchronous();
     }
 
-    /** Allows a filesystem to annotate a group of files (typically comprising a data object) with additional markers.
-     * <p>This could be useful, for
-    * example, for a filesystem supporting version control.
-    * It could annotate names and icons of data nodes according to whether the files were current, locked, etc.
-    */
-    public static interface Status {
-        /** Annotate the name of a file cluster.
-        * @param name the name suggested by default
-        * @param files an immutable set of {@link FileObject}s belonging to this filesystem
-        * @return the annotated name (may be the same as the passed-in name)
-        * @exception ClassCastException if the files in the set are not of valid types
-        */
-        public String annotateName(String name, Set<? extends FileObject> files);
-
-        /** Annotate the icon of a file cluster.
-         * <p>Please do <em>not</em> modify the original; create a derivative icon image,
-         * using a weak-reference cache if necessary.
-        * @param icon the icon suggested by default
-        * @param iconType an icon type from {@link java.beans.BeanInfo}
-        * @param files an immutable set of {@link FileObject}s belonging to this filesystem
-        * @return the annotated icon (may be the same as the passed-in icon)
-        * @exception ClassCastException if the files in the set are not of valid types
-        */
-        public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files);
-    }
-
-    /** Extension interface for Status provides HTML-formatted annotations.
-     * Principally this is used to deemphasize status text by presenting
-     * it in a lighter color, by placing it inside
-     * &lt;font color=!controlShadow&gt; tags.  Note that it is preferable to
-     * use logical colors (such as controlShadow) which are resolved by calling
-     * UIManager.getColor(key) - this way they will always fit with the
-     * look and feel.  To use a logical color, prefix the color name with a
-     * ! character.
-     * <p>
-     * Please use only the limited markup subset of HTML supported by the
-     * lightweight HTML renderer.
-     * @see <a href="@org-openide-awt@/org/openide/awt/HtmlRenderer.html"><code>HtmlRenderer</code></a>
-     * @since 4.30
-     */
-    public static interface HtmlStatus extends Status {
-        /** Annotate a name such that the returned value contains HTML markup.
-         * The return value less the HTML content should typically be the same
-         * as the return value from <code>annotateName()</code>.  This is used,
-         * for example, by VCS filesystems to deemphasize the status information
-         * included in the file name by using a light grey font color.
-         * <p>
-         * For consistency with <code>Node.getHtmlDisplayName()</code>,
-         * filesystems that proxy other filesystems (and so must implement
-         * this interface to supply HTML annotations) should return null if
-         * the filesystem they proxy does not provide an implementation of
-         * {@link FileSystem.HtmlStatus}.
-         * <p>Note that since the {@code name} argument must be free of HTML,
-         * it is tricky to use this decorator on a {@code Node} arising from
-         * foreign code, to chain decorators, or otherwise when you wish to add
-         * decorations to an HTML label whose creation you do not control.
-         * As a workaround, pass in an arbitrary but HTML-free string as an argument
-         * (something unlikely to occur elsewhere) and replace that string in the
-         * result with the original HTML label - under the assumption that the
-         * decorator does not inspect its argument but merely adds some prefix
-         * and/or suffix.
-         *
-         * @param name the name suggested by default. It cannot contain HTML
-         * markup tags but must escape HTML metacharacters. For example
-         * "&lt;default package&gt;" is illegal but "&amp;lt;default package&amp;gt;"
-         * is fine.
-         * @param files an immutable set of {@link FileObject}s belonging to this filesystem
-         * @return the annotated name. It may be the same as the passed-in name.
-         * It may be null if getStatus returned status that doesn't implement
-         * HtmlStatus but plain Status.
-         *
-         * @since 4.30
-         * @see <a href="@org-openide-loaders@/org/openide/loaders/DataNode.html#getHtmlDisplayName()"><code>DataNode.getHtmlDisplayName()</code></a>
-         * @see <a href="@org-openide-nodes@/org/openide/nodes/Node.html#getHtmlDisplayName"><code>Node.getHtmlDisplayName()</code></a>
-         **/
-        public String annotateNameHtml(String name, Set<? extends FileObject> files);
-    }
-
     /** Class used to notify events for the filesystem.
     */
     static abstract class EventDispatcher extends Object implements Runnable {
@@ -885,8 +808,16 @@ public abstract class FileSystem implements Serializable {
         }
     }
 
-    private static Status SFS_STATUS = new Status() {
+    @SuppressWarnings("FieldMayBeFinal")
+    private static StatusDecorator SFS_STATUS = new StatusDecorator() {
 
+        @Override
+        public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+            // no HTML annotation
+            return null;
+        }
+
+        @Override
         public String annotateName(String s, Set<? extends FileObject> files) {
             // Look for a localized file name.
             // Note: all files in the set are checked. But please only place the attribute
@@ -929,6 +860,7 @@ public abstract class FileSystem implements Serializable {
             return "Cannot load " + name + " for " + fo + " defined by " + by; // NOI18N
         }
 
+        /*
         public Image annotateIcon(Image im, int type, Set<? extends FileObject> files) {
             for (FileObject fo : files) {
                 Image img = annotateIcon(fo, type);
@@ -940,7 +872,6 @@ public abstract class FileSystem implements Serializable {
         }
 
         private Image annotateIcon(FileObject fo, int type) {
-        /*
             String attr = null;
             if (type == BeanInfo.ICON_COLOR_16x16) {
                 attr = "SystemFileSystem.icon"; // NOI18N
@@ -968,10 +899,9 @@ public abstract class FileSystem implements Serializable {
                     return ImageUtilities.loadImage(insertBeforeSuffix(base, "_32"), true); // NOI18N
                 }
             }
-            */
             return null;
         }
+            */
 
     };
-
 }

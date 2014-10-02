@@ -183,8 +183,7 @@ public class AutoupdateCatalogFactory {
         if (fo != null) {
             try {
                 FileSystem fs = fo.getFileSystem ();
-                FileSystem.Status s = fs.getStatus ();
-                String x = s.annotateName ("", Collections.singleton (fo)); // NOI18N
+                String x = fs.getDecorator().annotateName ("", Collections.singleton (fo)); // NOI18N
                 if (!x.isEmpty()) {
                     displayName = x;
                 }

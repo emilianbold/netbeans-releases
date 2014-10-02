@@ -1063,7 +1063,7 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     final ProvidedExtensions getProvidedExtensions() {
-        FileBasedFileSystem.StatusImpl status = (FileBasedFileSystem.StatusImpl) FileBasedFileSystem.getInstance().getStatus();
+        FileBasedFileSystem.StatusImpl status = (FileBasedFileSystem.StatusImpl) FileBasedFileSystem.getInstance().getDecorator();
         ProvidedExtensions extensions = status.getExtensions();
         return extensions;
     }

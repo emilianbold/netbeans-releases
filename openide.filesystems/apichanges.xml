@@ -49,6 +49,24 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileSystemStatus.icons2">
+            <api name="filesystems"/>
+            <summary>FileSystem.Status API removed</summary>
+            <version major="9" minor="1"/>
+            <date year="2014" month="10" day="3"/>
+            <author login="sdedic"/>
+            <compatibility modification="yes" deletion="yes" addition="yes" binary="compatible" source="compatible" semantic="incompatible"/>
+            <description>
+                <p>
+                    The FileSystem.Status was entirely removed, as it references class java.awt.Image, which 
+                    is not available in compact jdk profiles and may trigger GUI system initialization. See
+                    javadocs of <a href="@TOP@org/openide/filesystems/StatusDecorator.html">StatusDecorator</a>
+                    for details.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="StatusDecorator"/>
+            <issue number="247200"/>
+        </change>
         <change id="FileSystemStatus.icons">
             <api name="filesystems"/>
             <summary>FileSystem.Status icon annotation moved</summary>
@@ -70,7 +88,6 @@ made subject to such option by the copyright holder.
             </description>
             <issue number="243561"/>
         </change>
-    
         <change id="getActionsDeprecated">
             <api name="filesystems"/>
             <summary>Deprecating FileSystem.getActions</summary>

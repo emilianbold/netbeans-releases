@@ -60,6 +60,7 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUIUtils;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -125,10 +126,10 @@ final class URLPresenter implements Presenter.Menu,
                     "org/netbeans/modules/url/urlObject.png");              //NOI18N
             try {
                 FileObject file = dataObject.getPrimaryFile();
-                FileSystem.Status fsStatus = file.getFileSystem().getStatus();
-                icon = fsStatus.annotateIcon(icon,
-                                             BeanInfo.ICON_COLOR_16x16,
-                                             dataObject.files());
+                icon = FileUIUtils.getImageDecorator(file.getFileSystem()).
+                        annotateIcon(icon,
+                            BeanInfo.ICON_COLOR_16x16,
+                            dataObject.files());
             } catch (FileStateInvalidException fsie) {
                 // OK, so we use the default icon
             }
@@ -165,8 +166,7 @@ final class URLPresenter implements Presenter.Menu,
 
         try {
             FileObject file = dataObject.getPrimaryFile();
-            FileSystem.Status fsStatus = file.getFileSystem().getStatus();
-            name = fsStatus.annotateName(name, dataObject.files());
+            name = file.getFileSystem().getDecorator().annotateName(name, dataObject.files());
         } catch (FileStateInvalidException fsie) {
             /* OK, so we use the default name */
         }

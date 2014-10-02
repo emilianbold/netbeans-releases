@@ -81,6 +81,12 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.openide.actions.FileSystemRefreshAction;
 import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.ImageDecorator;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.io.NbObjectInputStream;
@@ -692,7 +698,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
 
     @Override
-    public Status getStatus() {
+    public StatusDecorator getDecorator() {
         return status;
     }
     
@@ -850,7 +856,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
 
-    private final class StatusImpl implements FileSystem.HtmlStatus, LookupListener, FileStatusListener {
+    private final class StatusImpl implements StatusDecorator, ImageDecorator, LookupListener, FileStatusListener {
 
         /** result with providers */
         private final Lookup.Result<AnnotationProvider> annotationProviders;

@@ -124,7 +124,7 @@ class OthersRootNode extends AnnotatedAbstractNode {
     public String getDisplayName () {
         String s = super.getDisplayName ();
         try {            
-            s = file.getFileSystem ().getStatus ().annotateName (s, Collections.singleton(file));
+            s = file.getFileSystem ().getDecorator ().annotateName (s, Collections.singleton(file));
         } catch (FileStateInvalidException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
@@ -135,18 +135,13 @@ class OthersRootNode extends AnnotatedAbstractNode {
     @Override
     public String getHtmlDisplayName() {
          try {
-             FileSystem.Status stat = file.getFileSystem().getStatus();
-             if (stat instanceof FileSystem.HtmlStatus) {
-                 FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
+            String result = file.getFileSystem().getDecorator().annotateNameHtml (
+                super.getDisplayName(), Collections.singleton(file));
 
-                 String result = hstat.annotateNameHtml (
-                     super.getDisplayName(), Collections.singleton(file));
-
-                 //Make sure the super string was really modified
-                 if (!super.getDisplayName().equals(result)) {
-                     return result;
-                 }
-             }
+            //Make sure the super string was really modified
+            if (result != null && !super.getDisplayName().equals(result)) {
+                return result;
+            }
          } catch (FileStateInvalidException e) {
              ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
          }

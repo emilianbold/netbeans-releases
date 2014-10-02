@@ -46,6 +46,7 @@ package org.netbeans.spi.palette;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.palette.Model;
 import org.openide.filesystems.FileObject;
@@ -53,6 +54,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
@@ -229,18 +231,20 @@ public abstract class AbstractPaletteTestHid extends NbTestCase {
     }
 
     static class StatusFileSystem extends LocalFileSystem {
-        Status status = new Status () {
+        StatusDecorator status = new StatusDecorator () {
             public String annotateName (String name, java.util.Set files) {
                 return name;
             }
 
-            public java.awt.Image annotateIcon (java.awt.Image icon, int iconType, java.util.Set files) {
-                return icon;
+            @Override
+            public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+                return null;
             }
+
         };        
         
         @Override
-        public org.openide.filesystems.FileSystem.Status getStatus() {
+        public StatusDecorator getDecorator() {
             return status;
         }
         

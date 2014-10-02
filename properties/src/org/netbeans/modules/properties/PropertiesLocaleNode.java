@@ -75,6 +75,7 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
@@ -225,17 +226,13 @@ public final class PropertiesLocaleNode extends FileEntryNode
     @Override
     public String getHtmlDisplayName() { // inspired by DataNode
         try {
-            FileSystem.Status stat = getFileEntry().getFile().getFileSystem().getStatus();
-            if (stat instanceof FileSystem.HtmlStatus) {
-                FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
+            StatusDecorator stat = getFileEntry().getFile().getFileSystem().getDecorator();
+            String result = stat.annotateNameHtml (
+                super.getDisplayName(), Collections.singleton(getFileEntry().getFile()));
 
-                String result = hstat.annotateNameHtml (
-                    super.getDisplayName(), Collections.singleton(getFileEntry().getFile()));
-
-                //Make sure the super string was really modified
-                if (!super.getDisplayName().equals(result)) {
-                    return result;
-                }
+            //Make sure the super string was really modified
+            if (result != null && !super.getDisplayName().equals(result)) {
+                return result;
             }
         } catch (FileStateInvalidException e) {
             //do nothing and fall through

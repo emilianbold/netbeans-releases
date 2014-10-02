@@ -261,7 +261,7 @@ public final class PatchByteCode {
             AbstractInsnNode aIns = (AbstractInsnNode)it.next();
             if (aIns.getOpcode() == Opcodes.INVOKESPECIAL) {
                 MethodInsnNode mins = (MethodInsnNode)aIns;
-                if (CONSTRUCTOR_NAME.equals(mins.name) && !mins.owner.equals(theClass.name)) {
+                if (CONSTRUCTOR_NAME.equals(mins.name) && mins.owner.equals(extenderClass.superName)) {
                     // replace with the extender class name
                     mins.owner = extenderClass.name;
                 }

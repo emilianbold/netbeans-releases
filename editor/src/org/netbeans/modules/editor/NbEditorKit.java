@@ -622,7 +622,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                 return (String) displayName;
             } else {
                 try {
-                    return f.getFileSystem().getStatus().annotateName(
+                    return f.getFileSystem().getDecorator().annotateName(
                         f.getNameExt(),
                         Collections.singleton(f));
                 } catch (FileStateInvalidException e) {
@@ -1132,7 +1132,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                 return (String) displayName;
             } else {
                 try {
-                    return f.getFileSystem().getStatus().annotateName(
+                    return f.getFileSystem().getDecorator().annotateName(
                         f.getNameExt(),
                         Collections.singleton(f));
                 } catch (FileStateInvalidException e) {

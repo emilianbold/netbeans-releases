@@ -13,10 +13,8 @@ import java.awt.Image;
 import java.beans.BeanInfo;
 import java.util.*;
 
-import org.openide.ErrorManager;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.filesystems.*;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -52,10 +50,9 @@ public final class CollabContentTypeImpl extends CollabContentType {
         Image icon = ImageUtilities.loadImage("org/netbeans/modules/collab/channel/chat/resources/chat_bubble.png");
 
         try {
-            FileSystem.Status status = fo.getFileSystem ().getStatus ();
             Set s = Collections.singleton(fo);
-            displayName = status.annotateName (displayName, s);
-            icon = status.annotateIcon (icon, BeanInfo.ICON_COLOR_16x16, s);
+            displayName = fo.getFileSystem().getDecorator().annotateName (displayName, s);
+            icon = FileUIUtils.getImageDecorator(fo.getFileSystem()).annotateIcon (icon, BeanInfo.ICON_COLOR_16x16, s);
         } catch (FileStateInvalidException ex) {
             // not fatal, report and continue
             org.openide.ErrorManager.getDefault().notify(ex);

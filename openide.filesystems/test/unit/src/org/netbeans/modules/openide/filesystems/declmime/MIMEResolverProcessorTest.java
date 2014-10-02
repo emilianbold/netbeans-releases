@@ -114,7 +114,7 @@ public class MIMEResolverProcessorTest extends NbTestCase {
             + "org-netbeans-modules-openide-filesystems-declmime-MIMEResolverProcessorTest-Registration.xml";
         FileObject fo = FileUtil.getConfigFile(PATH);
         assertNotNull("Registration found", fo);
-        String dispName = fo.getFileSystem().getStatus().annotateName(fo.getName(), Collections.singleton(fo));
+        String dispName = fo.getFileSystem().getDecorator().annotateName(fo.getName(), Collections.singleton(fo));
         assertEquals("Proper display name", Bundle.MYNAME(), dispName);
         
         assertNotNull("Declaration found", fo);
@@ -135,7 +135,7 @@ public class MIMEResolverProcessorTest extends NbTestCase {
                 + "org-netbeans-modules-openide-filesystems-declmime-MIMEResolverProcessorTest-Extension.xml";
         FileObject fo = FileUtil.getConfigFile(PATH);
         assertNotNull("Registration found", fo);
-        String dispName = fo.getFileSystem().getStatus().annotateName(fo.getName(), Collections.singleton(fo));
+        String dispName = fo.getFileSystem().getDecorator().annotateName(fo.getName(), Collections.singleton(fo));
         assertEquals("Proper display name", Bundle.EXTNAME(), dispName);
 
         assertNotNull("Declaration found", fo);
