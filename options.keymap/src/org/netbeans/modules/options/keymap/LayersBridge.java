@@ -202,7 +202,7 @@ public class LayersBridge extends KeymapManager implements KeymapManager.WithRev
                 String displayName;
 
                 try {
-                    displayName = f.getFileSystem().getStatus().annotateName(name, Collections.singleton(f));
+                    displayName = f.getFileSystem().getDecorator().annotateName(name, Collections.singleton(f));
                 } catch (FileStateInvalidException fsie) {
                     // ignore
                     displayName = name;

@@ -153,7 +153,7 @@ public final class ProviderModel {
         for (FileObject curFO : sortedCats) {
             String displayName = null;
             try {
-                displayName = curFO.getFileSystem().getStatus().annotateName(
+                displayName = curFO.getFileSystem().getDecorator().annotateName(
                         curFO.getNameExt(), Collections.singleton(curFO));
             } catch (FileStateInvalidException ex) {
                 Logger.getLogger(ProviderModel.class.getName()).log(Level.WARNING,

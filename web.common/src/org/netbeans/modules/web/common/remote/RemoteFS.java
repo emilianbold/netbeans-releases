@@ -55,8 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.filesystems.AbstractFileSystem;
-import org.openide.filesystems.FileObject;
+import org.openide.filesystems.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -70,7 +69,7 @@ public class RemoteFS extends AbstractFileSystem {
     
     private static RemoteFS DEFAULT = new RemoteFS();
     private final Map<String, URL> urlCache;
-    private final Status status;
+    private final StatusDecorator status;
 
     private RemoteFS() {
         this.urlCache = new HashMap<String, URL>();
@@ -155,7 +154,7 @@ public class RemoteFS extends AbstractFileSystem {
     }
 
     @Override
-    public Status getStatus() {
+    public StatusDecorator getDecorator() {
         return status;
     }
 
@@ -316,9 +315,14 @@ public class RemoteFS extends AbstractFileSystem {
     }
 
     @NbBundle.Messages("LBL_RemoteFiles=Remote Files")
-    private class RemoteStatus implements Status {
+    private class RemoteStatus implements StatusDecorator, ImageDecorator {
 
         RemoteStatus() {}
+
+        @Override
+        public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+            return null;
+        }
 
         @Override
         public String annotateName(String name, Set<? extends FileObject> files) {

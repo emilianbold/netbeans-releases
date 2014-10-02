@@ -61,7 +61,7 @@
                     <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>1.11</specification-version>
+                        <specification-version>2.50</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

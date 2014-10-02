@@ -77,6 +77,7 @@ import org.openide.actions.FileSystemAction;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUIUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
@@ -624,7 +625,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
                     FileObject f = dobj.getPrimaryFile();
                     Image icon = PackageDisplayUtils.getIcon(f, false);
                     try {
-                        icon = f.getFileSystem().getStatus().annotateIcon(icon, type, Collections.singleton(f));
+                        icon = FileUIUtils.getImageDecorator(f.getFileSystem()).annotateIcon(icon, type, Collections.singleton(f));
                     } catch (FileStateInvalidException x) {
                         Exceptions.printStackTrace(x);
                     }

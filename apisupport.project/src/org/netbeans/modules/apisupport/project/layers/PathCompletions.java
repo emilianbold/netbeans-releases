@@ -67,7 +67,6 @@ import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileSystem.Status;
 
 /** Provides code completion items for any annotation that needs to understand
  * the content of a layer.
@@ -154,8 +153,7 @@ public final class PathCompletions implements Processor {
                     String localizedName = null;
                     final String name = fo.getNameExt();
                     try {
-                        final Status status = fo.getFileSystem().getStatus();
-                        String n = status.annotateName(name, Collections.singleton(fo));
+                        String n = fo.getFileSystem().getDecorator().annotateName(name, Collections.singleton(fo));
                         if (!n.equals(name)) {
                             localizedName = n;
                         }

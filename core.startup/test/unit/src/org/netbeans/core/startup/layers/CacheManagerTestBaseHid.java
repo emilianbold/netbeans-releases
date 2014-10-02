@@ -58,10 +58,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.*;
 import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
 /** Test layer cache managers generally.
@@ -194,16 +191,17 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
         assertEquals("val/map2", attr(mfs, "foo/29356", "map2"));
         assertEquals("Ahoj", attr(mfs, "foo/29356", "mapDisplayName"));
 
-        FileSystem.Status s = FileUtil.getConfigRoot().getFileSystem().getStatus();
+        StatusDecorator s = FileUtil.getConfigRoot().getFileSystem().getDecorator();
+        ImageDecorator id = FileUIUtils.getImageDecorator(FileUtil.getConfigRoot().getFileSystem());
         FileObject annot = f.findResource("foo/29356");
         String annotName = s.annotateName(null, Collections.singleton(annot));
         assertEquals("Ahoj", annotName);
 
-        Image img = s.annotateIcon(null, BeanInfo.ICON_COLOR_16x16, Collections.singleton(annot));
+        Image img = id.annotateIcon(null, BeanInfo.ICON_COLOR_16x16, Collections.singleton(annot));
         assertNotNull("Icon provided", img);
         assertEquals("height", 16, img.getHeight(this));
         assertEquals("width", 16, img.getHeight(this));
-        Image img32 = s.annotateIcon(null, BeanInfo.ICON_COLOR_32x32, Collections.singleton(annot));
+        Image img32 = id.annotateIcon(null, BeanInfo.ICON_COLOR_32x32, Collections.singleton(annot));
         assertNotNull("Icon 32 provided", img32);
         assertEquals("height", 32, img32.getHeight(this));
         assertEquals("width", 32, img32.getHeight(this));

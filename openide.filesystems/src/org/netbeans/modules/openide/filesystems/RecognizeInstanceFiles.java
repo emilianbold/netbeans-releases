@@ -362,7 +362,7 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
         public String getDisplayName() {
             String n = fo.getName();
             try {
-                n = fo.getFileSystem().getStatus().annotateName(n, Collections.singleton(fo));
+                n = fo.getFileSystem().getDecorator().annotateName(n, Collections.singleton(fo));
             } catch (FileStateInvalidException ex) {
                 LOG.log(Level.WARNING, ex.getMessage(), ex);
             }

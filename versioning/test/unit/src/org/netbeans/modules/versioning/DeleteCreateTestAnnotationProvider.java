@@ -50,7 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.netbeans.modules.masterfs.providers.BaseAnnotationProvider;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions.DeleteHandler;
@@ -67,7 +67,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author tomas
  */
-public class DeleteCreateTestAnnotationProvider extends AnnotationProvider {
+public class DeleteCreateTestAnnotationProvider extends BaseAnnotationProvider {
 
     static DeleteCreateTestAnnotationProvider instance = null;
     List<String> events = new ArrayList<String>();
@@ -101,20 +101,10 @@ public class DeleteCreateTestAnnotationProvider extends AnnotationProvider {
     }
 
     @Override
-    public Image annotateIcon(Image icon, int iconType, Set files) {
-        return null;
-    }
-
-    @Override
     public String annotateNameHtml(String name, Set files) {
         return "";
     }
 
-    @Override
-    public Action[] actions(Set files) {
-        return new Action[]{};
-    }
-    
     @Override
     public InterceptionListener getInterceptionListener() {
         return interceptor;

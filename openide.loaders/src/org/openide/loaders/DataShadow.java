@@ -863,7 +863,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             }
             String n = format.format (createArguments ());
             try {
-                return obj.getPrimaryFile().getFileSystem().getStatus().annotateName(n, obj.files());
+                return obj.getPrimaryFile().getFileSystem().getDecorator().annotateName(n, obj.files());
             } catch (FileStateInvalidException fsie) {
                 // ignore
                 return n;
@@ -875,9 +875,10 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             }
             try {
                 String n = XMLUtil.toElementContent(format.format(createArguments()));
-                FileSystem.Status s = obj.getPrimaryFile().getFileSystem().getStatus();
-                if (s instanceof FileSystem.HtmlStatus) {
-                    return ((FileSystem.HtmlStatus) s).annotateNameHtml(n, obj.files());
+                StatusDecorator d = obj.getPrimaryFile().getFileSystem().getDecorator();
+                String r = d.annotateNameHtml(n, obj.files());
+                if (r != null) {
+                    return r;
                 }
             } catch (IOException e) {
                 // ignore, OK
@@ -956,7 +957,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                     try {
                         Image i = Introspector.getBeanInfo(fs.getClass()).getIcon(type);
                         if (i != null) {
-                            return fs.getStatus().annotateIcon(i, type, obj.original.files());
+                            return FileUIUtils.getImageDecorator(fs).annotateIcon(i, type, obj.original.files());
                         }
                     } catch (IntrospectionException ie) {
                         Logger.getLogger(DataShadow.class.getName()).log(Level.WARNING, null, ie);
