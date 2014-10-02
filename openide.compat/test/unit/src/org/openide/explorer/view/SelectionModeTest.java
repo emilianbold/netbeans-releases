@@ -52,10 +52,13 @@ import java.util.Arrays;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Tests for control selection mode on TreeView (test on BeanTreeView).
@@ -122,9 +125,7 @@ public class SelectionModeTest extends NbTestCase {
     @SuppressWarnings("deprecation")
     @Override
     protected void setUp () {
-        // disable any lookup, to isolate the test from other registered 
-        // subsystems like core/windows
-        System.setProperty ("org.openide.util.Lookup", "-");
+        System.setProperty ("org.openide.util.Lookup", Lkp.class.getName());
         
         // create tree:
         // root +--- parent_one +--- one1
@@ -334,6 +335,12 @@ public class SelectionModeTest extends NbTestCase {
             fail ("IllegalAccessException thrown from setSelectionMode.");
         } catch (InvocationTargetException ite) {
             fail ("InvocationTargetException thrown from setSelectionMode.");
+        }
+    }
+
+    public static final class Lkp extends ProxyLookup {
+        public Lkp() {
+            setLookups(Lookups.singleton(new NbMutexEventProvider()));
         }
     }
 
