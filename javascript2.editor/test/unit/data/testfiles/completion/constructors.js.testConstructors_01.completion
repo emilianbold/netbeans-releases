@@ -7,7 +7,7 @@ CLASS      Context                         [PUBLIC]   constructors.js
 METHOD     MyObject(): undefined           [PRIVATE]  constructors.js
 METHOD     test()                          [PUBLIC]   constructors.js
 METHOD     yourObject(): undefined         [PRIVATE]  constructors.js
-VARIABLE   address                         [PRIVATE]  constructors.js
+VARIABLE   address: MyObject               [PRIVATE]  constructors.js
 VARIABLE   arguments: Arguments            [PRIVATE]  constructors.js
 VARIABLE   hisObject: MyObject             [PRIVATE]  constructors.js
 KEYWORD    break                                      null

@@ -251,14 +251,14 @@ public final class Model {
         JsObject fromType = null;
         if (outerExpression == null) {
             outerExpression = ech;
-            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, ech, offset));
-            resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult, true);
+            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, ech, offset, true));
+            resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult, true, true);
             withTypes.addAll(resolveTypeFromExpression);
         } else {
             ech.addAll(outerExpression);
             boolean resolved = false;
-            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, ech, offset));
-            resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult, true);
+            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, ech, offset, true));
+            resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult, true, true);
             for(TypeUsage type : resolveTypeFromExpression) {
                 fromType = ModelUtils.findJsObjectByName(visitor.getGlobalObject(), type.getType());
                 if (fromType != null) {
@@ -270,8 +270,8 @@ public final class Model {
             }
             if (!resolved) {
                 resolveTypeFromExpression.clear();
-                resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, originalExp, offset));
-                resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult, true);
+                resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, originalExp, offset, true));
+                resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult, true, true);
                 for (TypeUsage type : resolveTypeFromExpression) {
                     fromType = ModelUtils.findJsObjectByName(visitor.getGlobalObject(), type.getType());
                     if (fromType != null) {
@@ -293,7 +293,7 @@ public final class Model {
             fromType = ModelUtils.findJsObjectByName(visitor.getGlobalObject(), type.getType());
             if (fromType != null) {
                 processWithExpressionOccurrences(fromType, ((JsWithObjectImpl)with).getExpressionRange(), originalExp);
-                Collection<TypeUsage> assignments = ModelUtils.resolveTypes(fromType.getAssignments(), parserResult, true);
+                Collection<TypeUsage> assignments = ModelUtils.resolveTypes(fromType.getAssignments(), parserResult, true, true);
                 for (TypeUsage assignment : assignments) {
                     Collection<IndexedElement> properties = jsIndex.getProperties(assignment.getType());
                     for (IndexedElement indexedElement : properties) {
@@ -808,7 +808,7 @@ public final class Model {
 
                 Collection<? extends TypeUsage> ret = function.getReturnTypes();
                 if (parseResult != null) {
-                    ret = ModelUtils.resolveTypes(ret, parseResult, true);
+                    ret = ModelUtils.resolveTypes(ret, parseResult, true, true);
                 }
                 List<TypeUsage> returnTypes = new ArrayList<TypeUsage>(ret);
                 Collections.sort(returnTypes, RETURN_TYPES_COMPARATOR);
