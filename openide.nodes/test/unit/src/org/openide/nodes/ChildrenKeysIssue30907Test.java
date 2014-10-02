@@ -49,6 +49,7 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 
 public class ChildrenKeysIssue30907Test extends NbTestCase {
 
@@ -341,6 +342,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
         private Lkp (org.openide.util.lookup.InstanceContent ic) {
             super (ic);
             ic.add (new ErrManager ());
+            ic.add (new NbMutexEventProvider());
         }
     }
     

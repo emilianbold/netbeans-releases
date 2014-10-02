@@ -51,6 +51,7 @@ import junit.framework.AssertionFailedError;
 import org.openide.ErrorManager;
 
 import org.netbeans.junit.*;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.util.RequestProcessor;
 
 
@@ -173,6 +174,7 @@ public class AddRemoveNotifyRaceConditionTest extends NbTestCase {
         private Lkp (org.openide.util.lookup.InstanceContent ic) {
             super (ic);
             ic.add (new ErrManager ());
+            ic.add (new NbMutexEventProvider());
         }
     }
     
