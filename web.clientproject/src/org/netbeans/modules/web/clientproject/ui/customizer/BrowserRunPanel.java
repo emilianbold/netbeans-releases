@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
  *
  * @author david
  */
-public class RunPanel extends JPanel implements DocumentListener, ItemListener, HelpCtx.Provider {
+public class BrowserRunPanel extends JPanel implements DocumentListener, ItemListener, HelpCtx.Provider {
 
     private static final long serialVersionUID = 98712411454L;
 
@@ -91,7 +91,7 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     private final ClientSideProjectProperties uiProperties;
 
 
-    public RunPanel(ProjectCustomizer.Category category, ClientSideProjectProperties uiProperties) {
+    public BrowserRunPanel(ProjectCustomizer.Category category, ClientSideProjectProperties uiProperties) {
         assert category != null;
         assert uiProperties != null;
 
@@ -122,7 +122,7 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         String info;
         if (siteRootValid) {
             assert siteRoot != null;
-            info = NbBundle.getMessage(RunPanel.class, "URL_DESCRIPTION", siteRoot.getAbsolutePath());
+            info = NbBundle.getMessage(BrowserRunPanel.class, "URL_DESCRIPTION", siteRoot.getAbsolutePath());
         } else {
             info = " "; // NOI18N
         }
@@ -320,28 +320,28 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         jConfigurationPlaceholder = new javax.swing.JPanel();
         jProjectURLDescriptionLabel = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jLabel1.text")); // NOI18N
 
-        jFileToRunTextField.setText(org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jFileToRunTextField.text")); // NOI18N
+        jFileToRunTextField.setText(org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jFileToRunTextField.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jBrowseButton, org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jBrowseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jBrowseButton, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jBrowseButton.text")); // NOI18N
         jBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBrowseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jLabel2.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jWebRootLabel, org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jWebRootLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jWebRootLabel, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jWebRootLabel.text")); // NOI18N
 
-        jWebRootTextField.setText(org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jWebRootTextField.text")); // NOI18N
+        jWebRootTextField.setText(org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jWebRootTextField.text")); // NOI18N
 
         jWebRootExampleLabel.setFont(jWebRootExampleLabel.getFont().deriveFont(jWebRootExampleLabel.getFont().getSize()-1f));
-        org.openide.awt.Mnemonics.setLocalizedText(jWebRootExampleLabel, org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jWebRootExampleLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jWebRootExampleLabel, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jWebRootExampleLabel.text")); // NOI18N
         jWebRootExampleLabel.setEnabled(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jLabel3.text")); // NOI18N
 
         jBrowserComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -349,14 +349,14 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jProjectURLLabel, org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jProjectURLLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jProjectURLLabel, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jProjectURLLabel.text")); // NOI18N
 
-        jProjectURLTextField.setText(org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jProjectURLTextField.text")); // NOI18N
+        jProjectURLTextField.setText(org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jProjectURLTextField.text")); // NOI18N
 
         jConfigurationPlaceholder.setLayout(new java.awt.BorderLayout());
 
         jProjectURLDescriptionLabel.setFont(jProjectURLDescriptionLabel.getFont().deriveFont(jProjectURLDescriptionLabel.getFont().getSize()-1f));
-        org.openide.awt.Mnemonics.setLocalizedText(jProjectURLDescriptionLabel, org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jProjectURLDescriptionLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jProjectURLDescriptionLabel, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jProjectURLDescriptionLabel.text")); // NOI18N
         jProjectURLDescriptionLabel.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -466,7 +466,7 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
             }
             s.append(ctx);
         }
-        jWebRootExampleLabel.setText(NbBundle.getMessage(RunPanel.class, "RunPanel.jWebRootExampleLabel.text", s.toString()));
+        jWebRootExampleLabel.setText(NbBundle.getMessage(BrowserRunPanel.class, "RunPanel.jWebRootExampleLabel.text", s.toString()));
     }
 
     private boolean isEmbeddedServer() {

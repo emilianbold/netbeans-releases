@@ -134,7 +134,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         if (SOURCES.equals(categoryName)) {
             return new SourcesPanel(category, uiProperties);
         } else if (RUN.equals(categoryName)) {
-            return new RunPanel(category, uiProperties);
+            return new BrowserRunPanel(category, uiProperties);
         } else if (LICENSE.equals(categoryName)) {
             return CustomizerUtilities.createLicenseHeaderCustomizerPanel(category, uiProperties.getLicenseSupport());
         }
