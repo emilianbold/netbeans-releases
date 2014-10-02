@@ -665,7 +665,7 @@ public final class Utilities {
     * @throws IllegalArgumentException if the array element type is not primitive
     */
     public static Object[] toObjectArray(Object array) {
-        return toObjectArray(array);
+        return BaseUtilities.toObjectArray(array);
     }
 
     /**
@@ -675,7 +675,7 @@ public final class Utilities {
     * @return object type (e.g. <code>Integer</code>)
     */
     public static Class<?> getObjectType(Class<?> c) {
-        return getObjectType(c);
+        return BaseUtilities.getObjectType(c);
     }
 
     /**
@@ -685,7 +685,7 @@ public final class Utilities {
     * @return primitive type (e.g. <code>int</code>)
     */
     public static Class<?> getPrimitiveType(Class<?> c) {
-        return getPrimitiveType(c);
+        return BaseUtilities.getPrimitiveType(c);
     }
 
     /** Find a focus-traverable component.
