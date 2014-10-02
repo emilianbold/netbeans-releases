@@ -49,7 +49,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.progress.module.DefaultHandleFactory;
-import org.netbeans.progress.module.TrivialProgressUIWorkerProvider;
+import org.netbeans.progress.module.TrivialProgressBaseWorkerProvider;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -98,7 +98,7 @@ public class Controller {
      */
     protected ProgressUIWorkerWithModel createWorker() {
         Logger.getLogger(Controller.class.getName()).log(Level.CONFIG, "Using fallback trivial progress implementation");
-        return new TrivialProgressUIWorkerProvider().getDefaultWorker();
+        return new TrivialProgressBaseWorkerProvider().getDefaultWorker();
     }
     
     /**

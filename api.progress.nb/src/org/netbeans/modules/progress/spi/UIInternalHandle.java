@@ -48,7 +48,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import static org.netbeans.modules.progress.spi.InternalHandle.STATE_INITIALIZED;
-import org.netbeans.progress.module.TrivialProgressUIWorkerProvider;
+import org.netbeans.progress.module.TrivialProgressBaseWorkerProvider;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 
@@ -98,7 +98,7 @@ public final class UIInternalHandle extends InternalHandle {
             ProgressUIWorkerProvider prov = Lookup.getDefault().lookup(ProgressUIWorkerProvider.class);
             if (prov == null) {
                 LOG.log(Level.CONFIG, "Using fallback trivial progress implementation");
-                prov = new TrivialProgressUIWorkerProvider();
+                prov = new TrivialProgressBaseWorkerProvider();
             }
             component = prov.getExtractedComponentWorker();
             setController(new SwingController(component));

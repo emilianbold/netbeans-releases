@@ -54,9 +54,9 @@ import org.netbeans.modules.progress.spi.TaskModel;
  * @author Jesse Glick
  * @see "issue #87812"
  */
-public class TrivialProgressUIWorkerProvider implements ProgressUIWorkerWithModel {
+public class TrivialProgressBaseWorkerProvider implements ProgressUIWorkerWithModel {
 
-    public TrivialProgressUIWorkerProvider() {}
+    public TrivialProgressBaseWorkerProvider() {}
 
     public ProgressUIWorkerWithModel getDefaultWorker() {
         return this;
