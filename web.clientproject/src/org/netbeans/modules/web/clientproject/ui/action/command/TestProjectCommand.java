@@ -39,61 +39,45 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.action;
+package org.netbeans.modules.web.clientproject.ui.action.command;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectType;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
+
+public class TestProjectCommand extends Command {
+
+    private final UsageLogger jsTestRunUsageLogger = UsageLogger.jsTestRunUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
 
 
-public abstract class Command {
-
-    protected final ClientSideProject project;
-
-
-    public Command(ClientSideProject project) {
-        assert project != null;
-        this.project = project;
+    public TestProjectCommand(ClientSideProject project) {
+        super(project);
     }
 
-    public abstract String getCommandId();
+    @Override
+    public String getCommandId() {
+        return ActionProvider.COMMAND_TEST;
+    }
 
-    abstract boolean isActionEnabledInternal(Lookup context);
+    @Override
+    boolean isActionEnabledInternal(Lookup context) {
+        return true;
+    }
 
-    abstract void invokeActionInternal(Lookup context);
-
-    public final boolean isActionEnabled(Lookup context) {
-        if (project.isBroken(false)) {
-            // will be handled in invokeAction(), see below
-            return true;
+    @Override
+    void invokeActionInternal(Lookup context) {
+        JsTestingProvider testingProvider = project.getJsTestingProvider(true);
+        if (testingProvider != null) {
+            jsTestRunUsageLogger.log(ClientSideProjectType.TYPE, testingProvider.getIdentifier());
+            TestRunInfo testRunInfo = new TestRunInfo.Builder()
+                    .build();
+            testingProvider.runTests(project, testRunInfo);
         }
-        return isActionEnabledInternal(context);
-    }
-
-    public final void invokeAction(Lookup context, AtomicBoolean warnUser) {
-        if (!validateInvokeAction(context, warnUser)) {
-            return;
-        }
-        invokeActionInternal(context);
-    }
-
-    protected boolean validateInvokeAction(Lookup context, AtomicBoolean warnUser) {
-        return !project.isBroken(warnUser.compareAndSet(true, false));
-    }
-
-    protected static boolean isSupportedAction(String command, ActionProvider actionProvider) {
-        for (String action : actionProvider.getSupportedActions()) {
-            if (command.equals(action)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected static void runInEventThread(Runnable task) {
-        Mutex.EVENT.readAccess(task);
     }
 
 }

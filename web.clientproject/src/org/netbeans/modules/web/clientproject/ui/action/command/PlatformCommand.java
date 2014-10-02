@@ -39,32 +39,71 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.action;
+package org.netbeans.modules.web.clientproject.ui.action.command;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.util.Lookup;
 
-public class RenameCommand extends Command {
+public class PlatformCommand extends Command {
 
-    public RenameCommand(ClientSideProject project) {
+    private final String commandId;
+
+
+    public PlatformCommand(ClientSideProject project, String commandId) {
         super(project);
+        assert commandId != null;
+        this.commandId = commandId;
     }
 
     @Override
     public String getCommandId() {
-        return ActionProvider.COMMAND_RENAME;
+        return commandId;
     }
 
     @Override
     boolean isActionEnabledInternal(Lookup context) {
-        return true;
+        for (PlatformProvider provider : project.getPlatformProviders()) {
+            ActionProvider actionProvider = provider.getActionProvider(project);
+            if (actionProvider != null
+                    && isSupportedAction(commandId, actionProvider)
+                    && actionProvider.isActionEnabled(commandId, context)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
-    void invokeActionInternal(Lookup context) {
-        DefaultProjectOperations.performDefaultRenameOperation(project, null);
+    void invokeActionInternal(final Lookup context) {
+        for (PlatformProvider provider : project.getPlatformProviders()) {
+            final ActionProvider actionProvider = provider.getActionProvider(project);
+            if (actionProvider != null
+                    && isSupportedAction(commandId, actionProvider)
+                    && actionProvider.isActionEnabled(commandId, context)) {
+                runInEventThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        actionProvider.invokeAction(commandId, context);
+                    }
+                });
+            }
+        }
+    }
+
+    public List<String> getSupportedActions() {
+        List<String> supportedActions = new ArrayList<>();
+        for (PlatformProvider provider : project.getPlatformProviders()) {
+            ActionProvider actionProvider = provider.getActionProvider(project);
+            if (actionProvider != null) {
+                supportedActions.addAll(Arrays.asList(actionProvider.getSupportedActions()));
+            }
+        }
+        return supportedActions;
     }
 
 }

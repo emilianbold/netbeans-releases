@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.action;
+package org.netbeans.modules.web.clientproject.ui.action.command;
 
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.spi.project.ActionProvider;

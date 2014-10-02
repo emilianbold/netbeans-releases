@@ -39,32 +39,61 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.action;
+package org.netbeans.modules.web.clientproject.ui.action.command;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 
-public class CopyCommand extends Command {
 
-    public CopyCommand(ClientSideProject project) {
-        super(project);
+public abstract class Command {
+
+    protected final ClientSideProject project;
+
+
+    public Command(ClientSideProject project) {
+        assert project != null;
+        this.project = project;
     }
 
-    @Override
-    public String getCommandId() {
-        return ActionProvider.COMMAND_COPY;
+    public abstract String getCommandId();
+
+    abstract boolean isActionEnabledInternal(Lookup context);
+
+    abstract void invokeActionInternal(Lookup context);
+
+    public final boolean isActionEnabled(Lookup context) {
+        if (project.isBroken(false)) {
+            // will be handled in invokeAction(), see below
+            return true;
+        }
+        return isActionEnabledInternal(context);
     }
 
-    @Override
-    boolean isActionEnabledInternal(Lookup context) {
-        return true;
+    public final void invokeAction(Lookup context, AtomicBoolean warnUser) {
+        if (!validateInvokeAction(context, warnUser)) {
+            return;
+        }
+        invokeActionInternal(context);
     }
 
-    @Override
-    void invokeActionInternal(Lookup context) {
-        DefaultProjectOperations.performDefaultCopyOperation(project);
+    protected boolean validateInvokeAction(Lookup context, AtomicBoolean warnUser) {
+        return !project.isBroken(warnUser.compareAndSet(true, false));
+    }
+
+    protected static boolean isSupportedAction(String command, ActionProvider actionProvider) {
+        for (String action : actionProvider.getSupportedActions()) {
+            if (command.equals(action)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected static void runInEventThread(Runnable task) {
+        Mutex.EVENT.readAccess(task);
     }
 
 }

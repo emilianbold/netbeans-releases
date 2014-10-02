@@ -39,22 +39,26 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.action;
+package org.netbeans.modules.web.clientproject.ui.action.command;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
+import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
-public class PlatformCommand extends Command {
+// unfortunately, this class represents Cordova as well :/
+public class BrowserCommand extends Command {
 
     private final String commandId;
 
 
-    public PlatformCommand(ClientSideProject project, String commandId) {
+    public BrowserCommand(ClientSideProject project, String commandId) {
         super(project);
         assert commandId != null;
         this.commandId = commandId;
@@ -67,26 +71,37 @@ public class PlatformCommand extends Command {
 
     @Override
     boolean isActionEnabledInternal(Lookup context) {
-        for (PlatformProvider provider : project.getPlatformProviders()) {
-            ActionProvider actionProvider = provider.getActionProvider(project);
-            if (actionProvider != null
-                    && isSupportedAction(commandId, actionProvider)) {
-                return true;
-            }
+        if (project.isJsLibrary()) {
+            return false;
+        }
+        if (isJsFileCommand(context)) {
+            return false;
+        }
+        ActionProvider actionProvider = getBrowserActionProvider();
+        if (actionProvider != null
+                && isSupportedAction(getCommandId(), actionProvider)) {
+            return actionProvider.isActionEnabled(getCommandId(), context);
         }
         return false;
     }
 
     @Override
     void invokeActionInternal(final Lookup context) {
-        for (PlatformProvider provider : project.getPlatformProviders()) {
-            final ActionProvider actionProvider = provider.getActionProvider(project);
-            if (actionProvider != null
-                    && isSupportedAction(commandId, actionProvider)) {
+        if (project.isJsLibrary()) {
+            return;
+        }
+        if (isJsFileCommand(context)) {
+            return;
+        }
+        project.logBrowserUsage();
+        final ActionProvider actionProvider = getBrowserActionProvider();
+        if (actionProvider != null) {
+            assert isSupportedAction(getCommandId(), actionProvider) : getCommandId() + " :: " + actionProvider;
+            if (actionProvider.isActionEnabled(commandId, context)) {
                 runInEventThread(new Runnable() {
                     @Override
                     public void run() {
-                        actionProvider.invokeAction(commandId, context);
+                        actionProvider.invokeAction(getCommandId(), context);
                     }
                 });
             }
@@ -94,14 +109,26 @@ public class PlatformCommand extends Command {
     }
 
     public List<String> getSupportedActions() {
-        List<String> supportedActions = new ArrayList<>();
-        for (PlatformProvider provider : project.getPlatformProviders()) {
-            ActionProvider actionProvider = provider.getActionProvider(project);
-            if (actionProvider != null) {
-                supportedActions.addAll(Arrays.asList(actionProvider.getSupportedActions()));
-            }
+        ActionProvider actionProvider = getBrowserActionProvider();
+        if (actionProvider == null) {
+            return Collections.emptyList();
         }
-        return supportedActions;
+        return Arrays.asList(actionProvider.getSupportedActions());
+    }
+
+    @CheckForNull
+    private ActionProvider getBrowserActionProvider() {
+        ClientProjectEnhancedBrowserImplementation browserImplementation = project.getEnhancedBrowserImpl();
+        if (browserImplementation != null) {
+            return browserImplementation.getActionProvider();
+        }
+        return null;
+    }
+
+    private boolean isJsFileCommand(Lookup context) {
+        FileObject fo = context.lookup(FileObject.class);
+        return fo != null
+                && FileUtilities.isJavaScriptFile(fo);
     }
 
 }

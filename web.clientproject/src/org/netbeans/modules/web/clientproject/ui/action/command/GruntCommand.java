@@ -39,26 +39,29 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.action;
+package org.netbeans.modules.web.clientproject.ui.action.command;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.api.annotations.common.CheckForNull;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
-import org.netbeans.modules.web.clientproject.util.FileUtilities;
-import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.modules.web.clientproject.grunt.GruntfileExecutor;
+import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
-// unfortunately, this class represents Cordova as well :/
-public class BrowserCommand extends Command {
+public class GruntCommand extends Command {
+
+    private static final Logger LOGGER = Logger.getLogger(GruntCommand.class.getName());
 
     private final String commandId;
 
 
-    public BrowserCommand(ClientSideProject project, String commandId) {
+    public GruntCommand(ClientSideProject project, String commandId) {
         super(project);
         assert commandId != null;
         this.commandId = commandId;
@@ -71,62 +74,41 @@ public class BrowserCommand extends Command {
 
     @Override
     boolean isActionEnabledInternal(Lookup context) {
-        if (project.isJsLibrary()) {
-            return false;
-        }
-        if (isJsFileCommand(context)) {
-            return false;
-        }
-        ActionProvider actionProvider = getBrowserActionProvider();
-        if (actionProvider != null
-                && isSupportedAction(getCommandId(), actionProvider)) {
-            return actionProvider.isActionEnabled(getCommandId(), context);
-        }
-        return false;
+        return true;
     }
 
     @Override
-    void invokeActionInternal(final Lookup context) {
-        if (project.isJsLibrary()) {
-            return;
-        }
-        if (isJsFileCommand(context)) {
-            return;
-        }
-        project.logBrowserUsage();
-        final ActionProvider actionProvider = getBrowserActionProvider();
-        if (actionProvider != null) {
-            assert isSupportedAction(getCommandId(), actionProvider) : getCommandId() + " :: " + actionProvider;
-            runInEventThread(new Runnable() {
-                @Override
-                public void run() {
-                    actionProvider.invokeAction(getCommandId(), context);
+    void invokeActionInternal(Lookup context) {
+        tryTask(true, false);
+    }
+
+    @NbBundle.Messages({
+        "GruntCommand.configure=Do you want to configure project actions to call Grunt tasks?"
+    })
+    public boolean tryTask(boolean showCustomizer, boolean waitFinished) {
+        FileObject gruntFile = project.getProjectDirectory().getFileObject("Gruntfile.js"); // NOI18N
+        if (gruntFile != null) {
+            String gruntBuild = project.getEvaluator().getProperty("grunt.action." + commandId); // NOI18N
+            if (gruntBuild != null) {
+                try {
+                    ExecutorTask execute = new GruntfileExecutor(gruntFile, gruntBuild.split(" ")).execute(); // NOI18N
+                    if (waitFinished) {
+                        execute.result();
+                    }
+                    return true;
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
                 }
-            });
+            } else if (showCustomizer) {
+                NotifyDescriptor desc = new NotifyDescriptor.Confirmation(Bundle.GruntCommand_configure(), NotifyDescriptor.YES_NO_OPTION);
+                Object option = DialogDisplayer.getDefault().notify(desc);
+                if (option == NotifyDescriptor.YES_OPTION) {
+                    project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer("grunt"); // NOI18N
+                }
+                return true;
+            }
         }
-    }
-
-    public List<String> getSupportedActions() {
-        ActionProvider actionProvider = getBrowserActionProvider();
-        if (actionProvider == null) {
-            return Collections.emptyList();
-        }
-        return Arrays.asList(actionProvider.getSupportedActions());
-    }
-
-    @CheckForNull
-    private ActionProvider getBrowserActionProvider() {
-        ClientProjectEnhancedBrowserImplementation browserImplementation = project.getEnhancedBrowserImpl();
-        if (browserImplementation != null) {
-            return browserImplementation.getActionProvider();
-        }
-        return null;
-    }
-
-    private boolean isJsFileCommand(Lookup context) {
-        FileObject fo = context.lookup(FileObject.class);
-        return fo != null
-                && FileUtilities.isJavaScriptFile(fo);
+        return false;
     }
 
 }

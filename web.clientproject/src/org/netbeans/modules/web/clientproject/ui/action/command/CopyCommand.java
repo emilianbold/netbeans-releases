@@ -39,22 +39,22 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.action;
+package org.netbeans.modules.web.clientproject.ui.action.command;
 
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.util.Lookup;
 
-public class DeleteCommand extends Command {
+public class CopyCommand extends Command {
 
-    public DeleteCommand(ClientSideProject project) {
+    public CopyCommand(ClientSideProject project) {
         super(project);
     }
 
     @Override
     public String getCommandId() {
-        return ActionProvider.COMMAND_DELETE;
+        return ActionProvider.COMMAND_COPY;
     }
 
     @Override
@@ -64,7 +64,7 @@ public class DeleteCommand extends Command {
 
     @Override
     void invokeActionInternal(Lookup context) {
-        DefaultProjectOperations.performDefaultDeleteOperation(project);
+        DefaultProjectOperations.performDefaultCopyOperation(project);
     }
 
 }
