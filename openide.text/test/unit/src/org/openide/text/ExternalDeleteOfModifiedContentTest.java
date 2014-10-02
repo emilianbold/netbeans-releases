@@ -59,6 +59,7 @@ import javax.swing.text.Document;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.LocalFileSystem;
@@ -231,6 +232,7 @@ implements CloneableEditorSupport.Env  {
         private Lkp (org.openide.util.lookup.InstanceContent ic) {
             super (ic);
             ic.add (new DD ());
+            ic.add (new NbMutexEventProvider());
         }
     }
 
