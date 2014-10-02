@@ -285,6 +285,15 @@ public class FSCompletionUtils {
                 if (result != null) {
                     return result;
                 }
+                FileObject parentFO = parent;
+                String projectDirectoryPath = project.getProjectDirectory().getPath();
+                while (parentFO != null && parentFO.getPath().contains(projectDirectoryPath)) {
+                    result = parentFO.getFileObject(path);
+                    if (result != null) {
+                        return result;
+                    }
+                    parentFO = parentFO.getParent();
+                }
             }
             result = findFileObject(parent, composePath(pathToFile));
         }

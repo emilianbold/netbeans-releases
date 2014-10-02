@@ -146,7 +146,6 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                             // try to find on the local file system
                             if (project != null && folders.length == 1) {
                                 targetFO = fo.getParent();
-
                                 while (!targetFO.equals(project.getProjectDirectory())) {
                                     for (Enumeration<? extends FileObject> children = targetFO.getChildren(false); children.hasMoreElements();) {
                                         FileObject child = children.nextElement();
@@ -168,6 +167,19 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                         rIndex = RequireJsIndex.get(project);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
+                    }
+                    if (!writtenPath.isEmpty() && writtenPath.indexOf('/') > -1){
+                        //try to find in the folder structure upto the project root
+                        String possiblePath = FSCompletionUtils.removePlugin(writtenPath.substring(0, writtenPath.lastIndexOf('/')));
+                        FileObject parentFO = fo.getParent();
+                        FileObject targetFO = null;
+                        while (!parentFO.equals(project.getProjectDirectory())) {
+                            targetFO = parentFO.getFileObject(possiblePath);
+                            if (targetFO != null && !relativeTo.contains(parentFO)) {
+                                relativeTo.add(parentFO);
+                            }
+                            parentFO = parentFO.getParent();
+                        }
                     }
                 }
 
