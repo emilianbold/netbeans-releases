@@ -148,6 +148,8 @@ public class KnockoutNode extends AbstractNode {
         String value;
         if (remoteObject == null) {
             value = null;
+        } else if (remoteObject.getType() == RemoteObject.Type.UNDEFINED) {
+            value = NbBundle.getMessage(KnockoutNode.class, "KnockoutNode.valueUndefined"); // NOI18N
         } else {
             value = remoteObject.getDescription();
             if (value == null && remoteObject.getType() != RemoteObject.Type.OBJECT) {
