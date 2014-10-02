@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -744,7 +745,7 @@ public class ModelUtils {
         return result;
     }
     
-    public static Collection<TypeUsage> resolveTypeFromExpression (Model model, @NullAllowed JsIndex jsIndex, List<String> exp, int offset) {
+    public static Collection<TypeUsage> resolveTypeFromExpression (Model model, @NullAllowed JsIndex jsIndex, List<String> exp, int offset, boolean includeAllPossible) {
         List<JsObject> localObjects = new ArrayList<JsObject>();
         List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
         List<TypeUsage> lastResolvedTypes = new ArrayList<TypeUsage>();
@@ -1064,13 +1065,30 @@ public class ModelUtils {
                 if (jsObject.isDeclared()) {
                     String fqn = jsObject.getFullyQualifiedName();
                     if (!resultTypes.containsKey(fqn)) {
-                        resultTypes.put(fqn, new TypeUsageImpl(fqn, offset));
+                        if (includeAllPossible || hasDeclaredProperty(jsObject)) {
+                            resultTypes.put(fqn, new TypeUsageImpl(fqn, offset));
+                        }
                     }
                 }
             }
             return resultTypes.values();
     }
 
+    public static boolean hasDeclaredProperty(JsObject jsObject) {
+        boolean result =  false;
+        
+        Iterator<? extends JsObject> it = jsObject.getProperties().values().iterator();
+        while (!result && it.hasNext()) {
+            JsObject property = it.next();
+            result = property.isDeclared();
+            if (!result) {
+                result = hasDeclaredProperty(property);
+            } 
+        }
+
+        return result;
+    }
+    
     public static List<String> expressionFromType(TypeUsage type) {
         String sexp = type.getType();
         if ((sexp.startsWith("@exp;") || sexp.startsWith("@new;") || sexp.startsWith("@arr;") || sexp.startsWith("@pro;")
@@ -1098,7 +1116,7 @@ public class ModelUtils {
         }
     }
     
-    public static Collection<TypeUsage> resolveTypes(Collection<? extends TypeUsage> unresolved, JsParserResult parserResult, boolean useIndex) {
+    public static Collection<TypeUsage> resolveTypes(Collection<? extends TypeUsage> unresolved, JsParserResult parserResult, boolean useIndex, boolean includeAllPossible) {
         //assert !SwingUtilities.isEventDispatchThread() : "Type resolution may block AWT due to index search";
         Collection<TypeUsage> types = new ArrayList<TypeUsage>(unresolved);
         if (types.size() == 1 && types.iterator().next().isResolved()) {
@@ -1127,7 +1145,7 @@ public class ModelUtils {
                     if (nExp.size() > 1) {
                         // passing original prevents the unresolved return types
                         // when recursion in place
-                        ModelUtils.addUniqueType(resolved, original, ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, typeUsage.getOffset()));
+                        ModelUtils.addUniqueType(resolved, original, ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, typeUsage.getOffset(), includeAllPossible));
                     } else {
                         ModelUtils.addUniqueType(resolved, new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
                     }
