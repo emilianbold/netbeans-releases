@@ -190,7 +190,7 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                         relativeTo.add(fo.getParent());
                         if (!basePaths.isEmpty()) {
                             for (String path : basePaths) {
-                                FileObject findFO = FSCompletionUtils.findFileObject(fo, path);
+                                FileObject findFO = FSCompletionUtils.findFileObject(fo, path, false);
                                 if (findFO != null) {
                                     relativeTo.add(findFO);
                                 }
