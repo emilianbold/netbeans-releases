@@ -72,6 +72,9 @@ public class FileSystemTest extends NbTestCase {
         fs = new ExtraFS(getWorkDir());
     }
 
+    /*
+    FileSystems are free from Action usage; test moved to filesystem.{compat8/nb} modules.
+    
     public void testFindExtraUIForActions() {
         FileObject fo = fs.findResource("test.txt");
         assertNotNull("test.txt found", fo);
@@ -88,6 +91,7 @@ public class FileSystemTest extends NbTestCase {
         
         assertSame("The same action is returned", actions[0], extraAct.iterator().next());
     }
+    */
     
     private static final class ExtraFS extends LocalFileSystem {
         public ExtraFS(File f) throws Exception {

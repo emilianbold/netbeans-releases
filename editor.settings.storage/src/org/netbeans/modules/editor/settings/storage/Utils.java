@@ -92,7 +92,7 @@ public class Utils {
     
     public static String getLocalizedName(FileObject fo, String defaultValue) {
         try {
-            return fo.getFileSystem().getStatus().annotateName(defaultValue, Collections.singleton(fo));
+            return fo.getFileSystem().getDecorator().annotateName(defaultValue, Collections.singleton(fo));
         } catch (FileStateInvalidException ex) {
             if (LOG.isLoggable(Level.FINE)) {
                 logOnce(LOG, Level.FINE, "Can't find localized name of " + fo, ex); //NOI18N

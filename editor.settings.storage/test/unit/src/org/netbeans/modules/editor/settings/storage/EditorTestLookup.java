@@ -64,6 +64,7 @@ import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderLookup;
@@ -235,7 +236,7 @@ public class EditorTestLookup extends ProxyLookup {
         }
     }
     
-    private static class SystemFileSystem extends MultiFileSystem implements FileSystem.Status {
+    private static class SystemFileSystem extends MultiFileSystem implements StatusDecorator {
         public SystemFileSystem(FileSystem [] orig) {
             super(orig);
         }
@@ -249,8 +250,12 @@ public class EditorTestLookup extends ProxyLookup {
             }
         }
 
-        public @Override FileSystem.Status getStatus() {
+        public @Override StatusDecorator getDecorator() {
             return this;
+        }
+        
+        public String annotateNameHtml (String name, java.util.Set files) {
+            return null;
         }
         
         public String annotateName (String name, java.util.Set files) {
@@ -292,10 +297,6 @@ public class EditorTestLookup extends ProxyLookup {
             }
 
             return name;
-        }
-
-        public java.awt.Image annotateIcon (java.awt.Image icon, int iconType, java.util.Set files) {
-            return icon;
         }
     } // End of SystemFileSystem class
     

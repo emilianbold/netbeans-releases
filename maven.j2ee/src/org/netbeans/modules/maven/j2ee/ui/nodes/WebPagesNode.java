@@ -100,7 +100,7 @@ class WebPagesNode extends FilterNode {
             }
 
             try {
-                displayName = file.getFileSystem().getStatus().annotateName(displayName, Collections.singleton(file));
+                displayName = file.getFileSystem().getDecorator().annotateName(displayName, Collections.singleton(file));
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -117,19 +117,14 @@ class WebPagesNode extends FilterNode {
             return getOriginal().getHtmlDisplayName();
         }
          try {
-             FileSystem.Status stat = file.getFileSystem().getStatus();
-             if (stat instanceof FileSystem.HtmlStatus) {
-                 FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
+            String s = LBL_Web_Pages();
+            String result = file.getFileSystem().getDecorator().annotateNameHtml (
+                s, Collections.singleton(file));
 
-                 String s = LBL_Web_Pages();
-                 String result = hstat.annotateNameHtml (
-                     s, Collections.singleton(file));
-
-                 //Make sure the super string was really modified
-                 if (!s.equals(result)) {
-                     return result;
-                 }
-             }
+            //Make sure the super string was really modified
+            if (result != null && !s.equals(result)) {
+                return result;
+            }
          } catch (FileStateInvalidException e) {
              ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
          }

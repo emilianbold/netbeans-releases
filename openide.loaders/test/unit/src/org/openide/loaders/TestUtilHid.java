@@ -47,6 +47,7 @@ package org.openide.loaders;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Set;
 
 import org.openide.filesystems.*;
 
@@ -85,18 +86,19 @@ public class TestUtilHid {
     }
 
     static class StatusFileSystem extends LocalFileSystem {
-        Status status = new Status () {
+        StatusDecorator status = new StatusDecorator () {
             public String annotateName (String name, java.util.Set files) {
                 return name;
             }
 
-            public java.awt.Image annotateIcon (java.awt.Image icon, int iconType, java.util.Set files) {
-                return icon;
+            @Override
+            public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+                return null;
             }
         };        
         
         @Override
-        public org.openide.filesystems.FileSystem.Status getStatus() {
+        public StatusDecorator getDecorator() {
             return status;
         }
         

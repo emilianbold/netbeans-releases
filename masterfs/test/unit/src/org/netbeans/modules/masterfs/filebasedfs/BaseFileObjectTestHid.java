@@ -1357,7 +1357,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     }
     
     private class IgnoreDirFileSystem extends LocalFileSystem {
-        org.openide.filesystems.FileSystem.Status status = new org.openide.filesystems.FileSystem.HtmlStatus() {
+        org.openide.filesystems.StatusDecorator status = new org.openide.filesystems.StatusDecorator() {
             @Override
             public String annotateName (String name, java.util.Set files) {
                 StringBuilder sb = new StringBuilder (name);
@@ -1377,11 +1377,6 @@ public class BaseFileObjectTestHid extends TestBaseHid{
             }
 
             @Override
-            public java.awt.Image annotateIcon (java.awt.Image icon, int iconType, java.util.Set files) {
-                return icon;
-            }
-
-            @Override
             public String annotateNameHtml(String name, Set files) {
                 return annotateName (name, files);
             }            
@@ -1389,7 +1384,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         };        
         
         @Override
-        public org.openide.filesystems.FileSystem.Status getStatus() {
+        public org.openide.filesystems.StatusDecorator getDecorator() {
             return status;
         }
         

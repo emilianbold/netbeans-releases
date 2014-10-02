@@ -286,16 +286,11 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         if (files != null && files.iterator().hasNext()) {
             try {
                 FileObject fo = (FileObject) files.iterator().next();
-                FileSystem.Status stat = fo.getFileSystem().getStatus();
-                if (stat instanceof FileSystem.HtmlStatus) {
-                    FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
+                String annotated = fo.getFileSystem().getDecorator().annotateNameHtml(htmlDisplayName, files);
 
-                    String annotated = hstat.annotateNameHtml(htmlDisplayName, files);
-
-                    // Make sure the super string was really modified (XXX why?)
-                    if (!htmlDisplayName.equals(annotated)) {
-                        result = annotated;
-                    }
+                // Make sure the super string was really modified (XXX why?)
+                if (annotated != null && !htmlDisplayName.equals(annotated)) {
+                    result = annotated;
                 }
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);

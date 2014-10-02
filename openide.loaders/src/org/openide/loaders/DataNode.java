@@ -180,7 +180,7 @@ public class DataNode extends AbstractNode {
 
 
     /** Get the display name for the node.
-     * A filesystem may {@link org.openide.filesystems.FileSystem#getStatus specially alter} this.
+     * A filesystem may {@link org.openide.filesystems.FileSystem#getDecorator specially alter} this.
      * Subclassers overriding this method should consider the recommendations
      * in {@link DataObject#createNodeDelegate}.
      * @return the desired name
@@ -190,7 +190,7 @@ public class DataNode extends AbstractNode {
         String s = super.getDisplayName ();
 
         try {
-            s = obj.getPrimaryFile ().getFileSystem ().getStatus ().annotateName (s, new LazyFilesSet());
+            s = obj.getPrimaryFile ().getFileSystem ().getDecorator().annotateName (s, new LazyFilesSet());
         } catch (FileStateInvalidException e) {
             // no fs, do nothing
         }
@@ -199,37 +199,33 @@ public class DataNode extends AbstractNode {
     }
 
      
-     /** Get a display name formatted using the limited HTML subset supported
-      * by <code>HtmlRenderer</code>.  If the underlying 
-      * <code>FileSystem.Status</code> is an instance of HmlStatus,
-      * this method will return non-null if status information is added.
-      *
-      * @return a string containing compliant HTML markup or null
-      * @see org.openide.awt.HtmlRenderer
-      * @see org.openide.nodes.Node#getHtmlDisplayName
-      * @since 4.13 
-      */
-     @Override
-     public String getHtmlDisplayName() {
-         try {
-             FileSystem.Status stat = 
-                 obj.getPrimaryFile().getFileSystem().getStatus();
-             if (stat instanceof FileSystem.HtmlStatus) {
-                 FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
-                 
-                 String result = hstat.annotateNameHtml (
-                     super.getDisplayName(), new LazyFilesSet());
-                 
-                 //Make sure the super string was really modified
-                 if (!super.getDisplayName().equals(result)) {
-                     return result;
-                 }
-             }
-         } catch (FileStateInvalidException e) {
-             //do nothing and fall through
-         }
-         return super.getHtmlDisplayName();
-     }    
+    /**
+     * Get a display name formatted using the limited HTML subset supported by
+     * <code>HtmlRenderer</code>. If the underlying
+     * <code>StatusDecorator</code> supports HTML annotations, this method
+     * will return non-null if status information is added.
+     *
+     * @return a string containing compliant HTML markup or null
+     * @see org.openide.awt.HtmlRenderer
+     * @see org.openide.nodes.Node#getHtmlDisplayName
+     * @since 4.13
+     */
+    @Override
+    public String getHtmlDisplayName() {
+        try {
+            StatusDecorator stat = obj.getPrimaryFile().getFileSystem().getDecorator();
+            String result = stat.annotateNameHtml(
+                    super.getDisplayName(), new LazyFilesSet());
+
+            //Make sure the super string was really modified
+            if (result != null && !super.getDisplayName().equals(result)) {
+                return result;
+            }
+        } catch (FileStateInvalidException e) {
+            //do nothing and fall through
+        }
+        return super.getHtmlDisplayName();
+    }
      
      private java.awt.Image getImageFromFactory(int type) {
          MimeFactory<?> fact = getLookup().lookup(MimeFactory.class);
@@ -251,7 +247,7 @@ public class DataNode extends AbstractNode {
         }
 
         try {
-            img = obj.getPrimaryFile ().getFileSystem ().getStatus ().annotateIcon (img, type, new LazyFilesSet());
+            img = FileUIUtils.getImageDecorator(obj.getPrimaryFile ().getFileSystem ()).annotateIcon (img, type, new LazyFilesSet());
         } catch (FileStateInvalidException e) {
             // no fs, do nothing
         }
@@ -274,7 +270,7 @@ public class DataNode extends AbstractNode {
         }
 
         try {
-            img = obj.getPrimaryFile ().getFileSystem ().getStatus ().annotateIcon (img, type, new LazyFilesSet());
+            img = FileUIUtils.getImageDecorator(obj.getPrimaryFile ().getFileSystem ()).annotateIcon (img, type, new LazyFilesSet());
         } catch (FileStateInvalidException e) {
             // no fs, do nothing
         }

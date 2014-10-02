@@ -53,7 +53,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.ImageDecorator;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -61,13 +62,16 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
+ * The default implementation of FileSystem status. For compatibility with 
+ * NB &lt; 9.0, it must provide name and icon annotations.
+ * 
  * @author sdedic
  */
-@ServiceProvider(service = FileSystem.Status.class)
-public final class FileSystemStatus implements FileSystem.Status{
+@ServiceProvider(service = StatusDecorator.class)
+public final class FileSystemStatus implements StatusDecorator, ImageDecorator {
     private static final Logger LOG = Logger.getLogger(FileSystemStatus.class.getName());
     
+    @Override
     public String annotateName(String s, Set<? extends FileObject> files) {
         // Look for a localized file name.
         // Note: all files in the set are checked. But please only place the attribute
@@ -118,6 +122,11 @@ public final class FileSystemStatus implements FileSystem.Status{
             }
         }
         return im;
+    }
+
+    @Override
+    public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+        return null;
     }
 
     private Image annotateIcon(FileObject fo, int type) {

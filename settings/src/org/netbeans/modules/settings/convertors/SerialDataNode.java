@@ -75,8 +75,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import org.openide.actions.ToolsAction;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.*;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
@@ -196,7 +195,8 @@ public final class SerialDataNode extends DataNode {
         }
         try {
             DataObject dobj = getDataObject();
-            return dobj.getPrimaryFile().getFileSystem().getStatus().annotateIcon(img, type, dobj.files());
+            return FileUIUtils.getImageDecorator(dobj.getPrimaryFile().getFileSystem()).
+                    annotateIcon(img, type, dobj.files());
         } catch (FileStateInvalidException e) {
             // no fs, do nothing
             return img;
@@ -445,8 +445,8 @@ public final class SerialDataNode extends DataNode {
         if (name == null) {
             try {
                 String def = "\b"; // NOI18N
-                FileSystem.Status fsStatus = getDataObject().getPrimaryFile().
-                    getFileSystem().getStatus();
+                StatusDecorator fsStatus = getDataObject().getPrimaryFile().
+                    getFileSystem().getDecorator();
                 name = fsStatus.annotateName(def, getDataObject().files());
                 if (name.indexOf(def) < 0) {
                     return name;
