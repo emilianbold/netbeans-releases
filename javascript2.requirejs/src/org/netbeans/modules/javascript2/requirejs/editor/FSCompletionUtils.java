@@ -219,7 +219,7 @@ public class FSCompletionUtils {
         FileObject result = null;
         if (parent != null && pathParts.length > 0) {
             if (pathParts[pathParts.length - 1].indexOf('.') > 0) {
-                result = findFileObject(parent, path);
+                result = findFileObject(parent, path, true);
                 if (result != null) {
                     return result;
                 }
@@ -252,7 +252,7 @@ public class FSCompletionUtils {
             if (!alias.isEmpty()) {
                 path = configPaths.get(alias) + pathToFile.substring(alias.length());
                 if (basePaths.isEmpty()) {
-                    result = findFileObject(parent, composePath(path));
+                    result = findFileObject(parent, composePath(path), true);
                     if (result != null) {
                         return result;
                     }
@@ -261,7 +261,7 @@ public class FSCompletionUtils {
             // try directly the base path
             for (String value : basePaths) {
                 String composedPath = composePath(value, path);
-                result = findFileObject(parent, composedPath);
+                result = findFileObject(parent, composedPath, true);
                 if (result != null) {
                     return result;
                 }
@@ -281,18 +281,27 @@ public class FSCompletionUtils {
             }
             if (!alias.isEmpty()) {
                 path = pathMappings.get(alias) + pathToFile.substring(alias.length());
-                result = findFileObject(parent, composePath(path));
+                result = findFileObject(parent, composePath(path), true);
                 if (result != null) {
                     return result;
                 }
+                FileObject parentFO = parent;
+                String projectDirectoryPath = project.getProjectDirectory().getPath();
+                while (parentFO != null && parentFO.getPath().contains(projectDirectoryPath)) {
+                    result = parentFO.getFileObject(path);
+                    if (result != null) {
+                        return result;
+                    }
+                    parentFO = parentFO.getParent();
+                }
             }
-            result = findFileObject(parent, composePath(pathToFile));
+            result = findFileObject(parent, composePath(pathToFile), true);
         }
 
         return result;
     }
 
-    public static FileObject findFileObject(final FileObject fromFO, final String path) {
+    public static FileObject findFileObject(final FileObject fromFO, final String path, boolean filesOnly) {
         FileObject parent = fromFO;
         FileObject targetFO;
         Project project = FileOwnerQuery.getOwner(fromFO);
@@ -304,7 +313,7 @@ public class FSCompletionUtils {
         if (parent != null && !path.isEmpty()) {
             while (parent != null && parent.getPath().contains(projectDirectoryPath)) {
                 targetFO = parent.getFileObject(path);
-                if (targetFO != null && !targetFO.isFolder()) {
+                if (targetFO != null && (!filesOnly || (filesOnly && !targetFO.isFolder()))) {
                     return targetFO;
                 }
                 targetFO = parent.getFileObject(path + ".js");
