@@ -547,7 +547,6 @@ public class ActionFactory {
                                     // get line text
                                     Element startLineElement = rootElement.getElement(zeroBaseStartLineNumber);
                                     int startLineStartOffset = startLineElement.getStartOffset();
-                                    
 
                                     Element endLineElement = rootElement.getElement(zeroBaseEndLineNumber);
                                     int endLineEndOffset = endLineElement.getEndOffset();
@@ -574,8 +573,13 @@ public class ActionFactory {
                                     if (selection) {
                                         // select moved lines
                                         if (backwardSelection) {
-                                            caret.setDot(nextLineEndOffset  - (endLineEndOffset - startLineStartOffset) + column);
-                                            caret.moveDot(nextLineEndOffset - (endLineEndOffset - end - 1));
+                                            if (doc.getLength() <  nextLineEndOffset) {
+                                                caret.setDot(doc.getLength()  - (endLineEndOffset - startLineStartOffset) + column + 1);
+                                                caret.moveDot(doc.getLength());
+                                            } else {
+                                                caret.setDot(nextLineEndOffset - (endLineEndOffset - startLineStartOffset) + column);
+                                                caret.moveDot(nextLineEndOffset - (endLineEndOffset - end - 1));
+                                            }
                                         } else {
                                             caret.setDot(nextLineEndOffset - (endLineEndOffset - end - 1));
                                             caret.moveDot(nextLineEndOffset  - (endLineEndOffset - startLineStartOffset) + column);
