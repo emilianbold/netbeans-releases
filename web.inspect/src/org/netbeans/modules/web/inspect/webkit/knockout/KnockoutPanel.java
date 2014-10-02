@@ -104,7 +104,6 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
     private void initContextView() {
         contextView = new OutlineView(
                 NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.contextView.name")); // NOI18N
-        contextView.setPopupAllowed(false);
         contextView.setAllowedDragActions(DnDConstants.ACTION_NONE);
         contextView.setAllowedDropActions(DnDConstants.ACTION_NONE);
         contextView.addPropertyColumn(

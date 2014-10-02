@@ -117,6 +117,14 @@ public class KnockoutChildFactory extends ChildFactory<PropertyDescriptor> {
     }
 
     /**
+     * Refreshes the children.
+     */
+    void refresh() {
+        remoteObject.resetProperties();
+        refresh(false);
+    }
+
+    /**
      * Comparator for {@PropertyDescriptor}s.
      */
     private static class PropertyDescriptorComparator implements Comparator<PropertyDescriptor> {

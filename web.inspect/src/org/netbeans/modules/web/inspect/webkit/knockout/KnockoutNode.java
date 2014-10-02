@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.inspect.webkit.knockout;
 
+import javax.swing.Action;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.PropertyDescriptor;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.openide.nodes.AbstractNode;
@@ -49,6 +50,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Node that represents some JavaScript value in Knockout view.
@@ -62,6 +64,25 @@ public class KnockoutNode extends AbstractNode {
     private final RemoteObject remoteObject;
     /** Value property of this node. */
     private final ValueProperty valueProperty;
+    /** Factory for children of this node. */
+    KnockoutChildFactory childFactory;
+
+    /**
+     * Creates a new {@code KnockoutNode} that wraps the given {@code RemoteObject}.
+     * 
+     * @param name name of the node.
+     * @param remoteObject {@code RemoteObject} to encapsulate.
+     * @param childFactory factory for children of the node (or {@code null}
+     * when the node should have no children).
+     */
+    private KnockoutNode(String name, RemoteObject remoteObject, KnockoutChildFactory childFactory) {
+        super(childFactory == null ? Children.LEAF : Children.create(childFactory, true));
+        this.childFactory = childFactory;
+        this.remoteObject = remoteObject;
+        this.valueProperty = new ValueProperty(valueFor(remoteObject));
+        setName(name);
+        unwrap();
+    }
 
     /**
      * Creates a new {@code KnockoutNode} that wraps the given {@code RemoteObject}.
@@ -70,20 +91,17 @@ public class KnockoutNode extends AbstractNode {
      * @param remoteObject {@code RemoteObject} to encapsulate.
      */
     KnockoutNode(String name, RemoteObject remoteObject) {
-        super(childrenFor(remoteObject));
-        this.remoteObject = remoteObject;
-        this.valueProperty = new ValueProperty(valueFor(remoteObject));
-        setName(name);
-        unwrap();
+        this(name, remoteObject, childFactoryFor(remoteObject));
     }
 
     /**
-     * Returns {@code Children} for the given {@code RemoteObject}.
+     * Returns child factory for the given {@code RemoteObject}.
      * 
-     * @param remoteObject remote object for which the children should be returned.
-     * @return {@code Children} for the given {@code RemoteObject}.
+     * @param remoteObject remote object for which a child factory should be returned.
+     * @return {@code KnockoutChildFactory} (possibly {@code null})
+     * for the given {@code RemoteObject}
      */
-    final static Children childrenFor(RemoteObject remoteObject) {
+    final static KnockoutChildFactory childFactoryFor(RemoteObject remoteObject) {
         boolean isLeaf = true;
         if (remoteObject != null) {
             RemoteObject.Type type = remoteObject.getType();
@@ -91,7 +109,7 @@ public class KnockoutNode extends AbstractNode {
                 isLeaf = false;
             }
         }
-        return isLeaf ? Children.LEAF : Children.create(new KnockoutChildFactory(remoteObject), true);
+        return isLeaf ? null : new KnockoutChildFactory(remoteObject);
     }
 
     /**
@@ -119,7 +137,8 @@ public class KnockoutNode extends AbstractNode {
                         }
                     }
                     if (isObservable) {
-                        setChildren(childrenFor(observable));
+                        childFactory = childFactoryFor(observable);
+                        setChildren(childFactory == null ? Children.LEAF : Children.create(childFactory, true));
                         setName(getName()+"()"); // NOI18N
                         valueProperty.setValueInternal(valueFor(observable));
                         firePropertyChange(ValueProperty.NAME, null, null);
@@ -136,6 +155,22 @@ public class KnockoutNode extends AbstractNode {
         set.put(valueProperty);
         sheet.put(set);
         return sheet;
+    }
+
+    /**
+     * Refreshes the children of this node.
+     */
+    void refresh() {
+        if (childFactory != null) {
+            childFactory.refresh();
+        }
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[] {
+            SystemAction.get(RefreshAction.class)
+        };
     }
 
     /**
