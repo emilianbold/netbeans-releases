@@ -52,6 +52,7 @@ import org.openide.filesystems.*;
 import java.io.IOException;
 import java.util.*;
 import org.netbeans.junit.*;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.util.Lookup;
 
 /** Test basic functionality of data loader pool.
@@ -253,6 +254,7 @@ public class DataLoaderPoolTest extends NbTestCase {
         private Lkp (org.openide.util.lookup.InstanceContent ic) {
             super (ic);
             ic.add (new Pool ());
+            ic.add (new NbMutexEventProvider());
         }
     }
     

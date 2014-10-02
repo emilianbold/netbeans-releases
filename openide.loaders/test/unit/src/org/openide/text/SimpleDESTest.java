@@ -49,6 +49,7 @@ import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.*;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.*;
@@ -205,6 +206,7 @@ public class SimpleDESTest extends NbTestCase {
         private Lkp (org.openide.util.lookup.InstanceContent ic) {
             super (ic);
             ic.add (new DLP ());
+            ic.add (new NbMutexEventProvider());
         }
     }
     

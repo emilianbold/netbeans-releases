@@ -64,6 +64,7 @@ import javax.swing.text.Document;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
@@ -714,6 +715,7 @@ public class DataEditorSupportTest extends NbTestCase {
             
             ic.add (new Pool ());
             ic.add (FileEncodingQueryImpl.getDefault());
+            ic.add (new NbMutexEventProvider());
         }
         
     } // end of Lkp

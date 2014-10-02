@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import javax.swing.text.Document;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
@@ -263,9 +264,10 @@ public class DataEditorReadOnlyTest extends NbTestCase {
         
         private Lkp (org.openide.util.lookup.InstanceContent ic) {
             super (ic);
-            
+
             ic.add (new Pool ());
             ic.add (FileEncodingQueryImpl.getDefault());
+            ic.add (new NbMutexEventProvider());
         }
         
     } // end of Lkp

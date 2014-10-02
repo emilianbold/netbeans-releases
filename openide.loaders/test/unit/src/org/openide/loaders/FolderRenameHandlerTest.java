@@ -45,6 +45,7 @@
 package org.openide.loaders;
 
 import junit.framework.*;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.filesystems.*;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -104,11 +105,16 @@ public class FolderRenameHandlerTest extends TestCase {
     }
     
     public static class Lkp extends ProxyLookup {
+        private static final Lookup mandatorySerices =
+            Lookups.singleton(new NbMutexEventProvider());
         public Lkp() {
-            super(new Lookup[0]);
+            super(new Lookup[]{mandatorySerices});
         }
         public void register(Object[] instances) {
-            setLookups(new Lookup[] {Lookups.fixed(instances)});
+            setLookups(new Lookup[] {
+                mandatorySerices,
+                Lookups.fixed(instances)
+            });
         }
     }    
     private static final class FolderRenameHandlerImpl implements FolderRenameHandler {

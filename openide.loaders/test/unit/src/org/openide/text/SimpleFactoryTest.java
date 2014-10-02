@@ -57,6 +57,7 @@ import junit.framework.TestSuite;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.actions.Savable;
 import org.netbeans.junit.*;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataLoader;
@@ -185,6 +186,7 @@ public final class SimpleFactoryTest extends NbTestCase {
         private Lkp (org.openide.util.lookup.InstanceContent ic) {
             super (ic);
             ic.add (new DLP ());
+            ic.add (new NbMutexEventProvider());
         }
     }
     

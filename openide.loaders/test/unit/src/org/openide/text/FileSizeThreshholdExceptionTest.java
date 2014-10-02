@@ -48,6 +48,7 @@ import java.io.OutputStream;
 
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.cookies.EditCookie;
 
 import org.openide.cookies.OpenCookie;
@@ -210,6 +211,7 @@ public class FileSizeThreshholdExceptionTest extends NbTestCase {
             super(ic);
 
             ic.add(new Pool());
+            ic.add(new NbMutexEventProvider());
         }
     } // end of Lkp
 
