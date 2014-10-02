@@ -349,7 +349,7 @@ public class NodeExecutable {
     private List<String> getDebugParams(int port, File script, String args) {
         List<String> params = new ArrayList<>();
         params.add(String.format(DEBUG_COMMAND, port));
-        getScriptArgsParams(script, args);
+        params.addAll(getScriptArgsParams(script, args));
         return getParams(params);
     }
 
