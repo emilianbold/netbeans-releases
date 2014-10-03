@@ -65,7 +65,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import org.openide.util.datatransfer.ClipboardEvent;
 import org.openide.util.datatransfer.ClipboardListener;
 
@@ -86,13 +86,13 @@ public class NbClipboardTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         System.getProperties().remove("netbeans.slow.system.clipboard.hack");
-        Field f = Class.forName(Utilities.class.getName()).getDeclaredField("operatingSystem");
+        Field f = Class.forName(BaseUtilities.class.getName()).getDeclaredField("operatingSystem");
         f.setAccessible(true);
         f.set(null, -1);
     }
 
     public void testDefaultOnJDK15AndLater() throws Exception {
-        if (Utilities.isMac()) {
+        if (BaseUtilities.isMac()) {
             macCheck();
         } else {
             NbClipboard ec = new NbClipboard();
@@ -117,7 +117,7 @@ public class NbClipboardTest extends NbTestCase {
     }
 
     private void macCheck() throws NoSuchFieldException, SecurityException, ClassNotFoundException, IllegalAccessException, IllegalArgumentException {
-        assertTrue("Is mac", Utilities.isMac());
+        assertTrue("Is mac", BaseUtilities.isMac());
 
         NbClipboard ec = new NbClipboard();
         assertFalse("MAC seems to have fast clipboard", ec.slowSystemClipboard);
