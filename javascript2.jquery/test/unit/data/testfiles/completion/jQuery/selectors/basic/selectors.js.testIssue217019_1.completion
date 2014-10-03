@@ -150,6 +150,7 @@ ATTRIBUTE  readonly                                   null
 ATTRIBUTE  rel                                        null
 ATTRIBUTE  required                                   null
 ATTRIBUTE  reversed                                   null
+ATTRIBUTE  role                                       null
 ATTRIBUTE  rows                                       null
 ATTRIBUTE  rowspan                                    null
 ATTRIBUTE  sandbox                                    null
