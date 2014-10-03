@@ -47,6 +47,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.jstestdriver.preferences.JsTestDriverPreferences;
 import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
+import org.openide.util.NbBundle;
 
 public final class CustomizerPanel implements CustomizerPanelImplementation {
 
@@ -59,6 +60,17 @@ public final class CustomizerPanel implements CustomizerPanelImplementation {
     public CustomizerPanel(Project project) {
         assert project != null;
         this.project = project;
+    }
+
+    @Override
+    public String getIdentifier() {
+        return "JsTestDriver"; // NOI18N
+    }
+
+    @NbBundle.Messages("CustomizerPanel.displayName=JS Test Driver")
+    @Override
+    public String getDisplayName() {
+        return Bundle.CustomizerPanel_displayName();
     }
 
     @Override

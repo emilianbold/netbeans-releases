@@ -47,6 +47,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
+import org.openide.util.NbBundle;
 
 public final class KarmaCustomizerPanel implements CustomizerPanelImplementation {
 
@@ -59,6 +60,17 @@ public final class KarmaCustomizerPanel implements CustomizerPanelImplementation
     public KarmaCustomizerPanel(Project project) {
         assert project != null;
         this.project = project;
+    }
+
+    @Override
+    public String getIdentifier() {
+        return "Karma"; // NOI18N
+    }
+
+    @NbBundle.Messages("KarmaCustomizerPanel.displayName=Karma")
+    @Override
+    public String getDisplayName() {
+        return Bundle.KarmaCustomizerPanel_displayName();
     }
 
     @Override

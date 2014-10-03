@@ -44,6 +44,8 @@ package org.netbeans.modules.web.clientproject.spi;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Provides support for configuration (typically via Project Properties dialog).
@@ -52,18 +54,35 @@ import javax.swing.event.ChangeListener;
 public interface CustomizerPanelImplementation {
 
     /**
+     * Returns the <b>non-localized (usually english)</b> identifier of this panel.
+     * @return the <b>non-localized (usually english)</b> identifier; never {@code null}.
+     * @since 1.71
+     */
+    @NonNull
+    String getIdentifier();
+
+    /**
+     * Returns the display name of this panel. The display name can be used
+     * in the UI.
+     * @return the display name; never {@code null}
+     * @since 1.71
+     */
+    @NonNull
+    String getDisplayName();
+
+    /**
      * Attaches a change listener that is to be notified of changes
      * in the panel (e.g., the result of the {@link #isValid} method
      * has changed.
      * @param  listener a listener.
      */
-    void addChangeListener(ChangeListener listener);
+    void addChangeListener(@NonNull ChangeListener listener);
 
     /**
      * Removes a change listener.
      * @param  listener a listener.
      */
-    void removeChangeListener(ChangeListener listener);
+    void removeChangeListener(@NonNull ChangeListener listener);
 
     /**
      * Returns a UI component used to allow the user to customize this panel.
@@ -71,6 +90,7 @@ public interface CustomizerPanelImplementation {
      *         This method might be called more than once and it is expected to always
      *         return the same instance.
      */
+    @NonNull
     JComponent getComponent();
 
     /**
@@ -92,6 +112,7 @@ public interface CustomizerPanelImplementation {
      * @see #isValid()
      * @see #getWarningMessage()
      */
+    @CheckForNull
     String getErrorMessage();
 
     /**
@@ -101,6 +122,7 @@ public interface CustomizerPanelImplementation {
      * @see #isValid()
      * @see #getErrorMessage()
      */
+    @CheckForNull
     String getWarningMessage();
 
     /**
