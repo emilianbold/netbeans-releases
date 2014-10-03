@@ -6,7 +6,7 @@ CONSTRUCTO Player234373                    [PUBLIC]   issue234373.js
 CLASS      console                         [PUBLIC]   issue234373.js
 CLASS      window                          [PUBLIC]   issue234373.js
 METHOD     play(): undefined               [PROTECTE  issue234373.js
-FIELD      brand                           [PUBLIC]   issue234373.js
+FIELD      brand: String                   [PUBLIC]   issue234373.js
 VARIABLE   arguments: Arguments            [PRIVATE]  issue234373.js
 KEYWORD    break                                      null
 KEYWORD    case                                       null

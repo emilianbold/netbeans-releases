@@ -117,6 +117,14 @@ public class KnockoutChildFactory extends ChildFactory<PropertyDescriptor> {
     }
 
     /**
+     * Refreshes the children.
+     */
+    void refresh() {
+        remoteObject.resetProperties();
+        refresh(false);
+    }
+
+    /**
      * Comparator for {@PropertyDescriptor}s.
      */
     private static class PropertyDescriptorComparator implements Comparator<PropertyDescriptor> {
@@ -138,20 +146,48 @@ public class KnockoutChildFactory extends ChildFactory<PropertyDescriptor> {
         public int compare(PropertyDescriptor descriptor1, PropertyDescriptor descriptor2) {
             String name1 = descriptor1.getName();
             String name2 = descriptor2.getName();
-            // Make sure that prototype is at the end
-            if (PROTOTYPE.equals(name1)) {
-                if (PROTOTYPE.equals(name2)) {
-                    return 0;
-                } else {
-                    return 1;
-                }
-            } else {
-                if (PROTOTYPE.equals(name2)) {
-                    return -1;
-                } else {
-                    return name1.compareTo(name2);
-                }                
+            Data data1 = data(name1);
+            Data data2 = data(name2);
+            int diff = data1.group - data2.group;
+            if (diff == 0) {
+                diff = data1.item.compareTo(data2.item);
             }
+            return diff;
+        }
+
+        /**
+         * Returns comparison data for the given name of {@code PropertyDescriptor}.
+         * 
+         * @param name name of a property descriptor.
+         * @return comparison data for the given name.
+         */
+        private static Data data(String name) {
+            Data data = new Data();
+            if (PROTOTYPE.equals(name)) {
+                // Prototype should be at the end
+                data.item = name;
+                data.group = 3;
+            } else {
+                try {
+                    // Numeric items (i.e. array items) should be at the beginning
+                    data.item = Long.parseLong(name);
+                    data.group = 1;
+                } catch (NumberFormatException nfex) {
+                    data.item = name;
+                    data.group = 2;
+                }
+            }
+            return data;
+        }
+
+        /**
+         * Comparison data for a (name of) {@code PropertyDescriptor}.
+         */
+        static class Data {
+            /** Group where the property should be placed. */
+            int group;
+            /** Item to use for comparisons to determine the position within the group. */
+            Comparable item;
         }
         
     }

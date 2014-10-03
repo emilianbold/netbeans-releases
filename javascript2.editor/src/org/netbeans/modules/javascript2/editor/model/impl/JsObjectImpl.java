@@ -342,8 +342,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.kind = kind;
     }
 
-    protected Collection<TypeUsage> resolveAssignments(JsObject jsObject, int offset) {
-        Collection<String> visited = new HashSet();  // for preventing infinited loops
+    protected Collection<TypeUsage> resolveAssignments(JsObject jsObject, int offset) {        Collection<String> visited = new HashSet();  // for preventing infinited loops
         return resolveAssignments(jsObject, offset, visited);
     }
 

@@ -42,10 +42,18 @@
 
 package org.netbeans.modules.javascript.v8debug;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.lib.v8debug.V8Script;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -53,24 +61,39 @@ import org.netbeans.lib.v8debug.V8Script;
  */
 public class ScriptsHandler {
     
+    private static final Logger LOG = Logger.getLogger(ScriptsHandler.class.getName());
+
     private final Map<Long, V8Script> scriptsById = new HashMap<>();
 
     private final boolean doPathTranslation;
     @NullAllowed
-    private final String localPath;
+    private final String localPathPrefix;
+    private final char localPathSeparator;
     @NullAllowed
-    private final String serverPath;
+    private final FileObject localRoot;
+    @NullAllowed
+    private final String serverPathPrefix;
+    private final char serverPathSeparator;
     
     ScriptsHandler(@NullAllowed String localPath,
                    @NullAllowed String serverPath) {
         if (localPath != null && serverPath != null) {
             this.doPathTranslation = true;
-            this.localPath = localPath;
-            this.serverPath = serverPath;
+            this.localPathPrefix = stripSeparator(localPath);
+            this.localPathSeparator = findSeparator(localPath);
+            this.serverPathPrefix = stripSeparator(serverPath);
+            this.serverPathSeparator = findSeparator(serverPath);
+            this.localRoot = FileUtil.toFileObject(new File(localPath));
         } else {
             this.doPathTranslation = false;
-            this.localPath = this.serverPath = null;
+            this.localPathPrefix = this.serverPathPrefix = null;
+            this.localPathSeparator = this.serverPathSeparator = 0;
+            this.localRoot = null;
         }
+        LOG.log(Level.FINE,
+                "ScriptsHandler: doPathTranslation = {0}, localPathPrefix = {1}, separator = {2}, serverPathPrefix = {3}, separator = {4}",
+                new Object[]{doPathTranslation, localPathPrefix, localPathSeparator, serverPathPrefix, serverPathSeparator});
+        
     }
 
     void add(V8Script script) {
@@ -79,6 +102,119 @@ public class ScriptsHandler {
         }
     }
     
+    void add(V8Script[] scripts) {
+        synchronized (scriptsById) {
+            for (V8Script script : scripts) {
+                scriptsById.put(script.getId(), script);
+            }
+        }
+    }
     
+    public V8Script getScript(long id) {
+        synchronized (scriptsById) {
+            return scriptsById.get(id);
+        }
+    }
     
+    public Collection<V8Script> getScripts() {
+        synchronized (scriptsById) {
+            return new ArrayList<>(scriptsById.values());
+        }
+    }
+    
+    public boolean containsLocalFile(FileObject fo) {
+        if (localRoot == null) {
+            return true;
+        }
+        if (fo == null) {
+            return false;
+        }
+        return FileUtil.isParentOf(localRoot, fo);
+    }
+    
+    public String getLocalPath(@NonNull String serverPath) throws OutOfScope {
+        if (!doPathTranslation) {
+            return serverPath;
+        } else {
+            return translate(serverPath, serverPathPrefix, serverPathSeparator, localPathPrefix, localPathSeparator);
+        }
+    }
+    
+    public String getServerPath(@NonNull String localPath) throws OutOfScope {
+        if (!doPathTranslation) {
+            return localPath;
+        } else {
+            return translate(localPath, localPathPrefix, localPathSeparator, serverPathPrefix, serverPathSeparator);
+        }
+    }
+    
+    private static String translate(String path, String pathPrefix, char pathSeparator, String otherPathPrefix, char otherPathSeparator) throws OutOfScope {
+        if (!path.startsWith(pathPrefix)) {
+            throw new OutOfScope(path, pathPrefix);
+        }
+        int l = pathPrefix.length();
+        if (!isRootPath(pathPrefix)) { // When the prefix is the root, do not do further checks.
+            if (path.length() > l && !isSeparator(path.charAt(l))) {
+                throw new OutOfScope(path, pathPrefix);
+            }
+        }
+        while (path.length() > l && isSeparator(path.charAt(l))) {
+            l++;
+        }
+        String otherPath = path.substring(l);
+        if (pathSeparator != otherPathSeparator) {
+            otherPath = otherPath.replace(pathSeparator, otherPathSeparator);
+        }
+        if (otherPath.isEmpty()) {
+            return otherPathPrefix;
+        } else {
+            if (isRootPath(otherPathPrefix)) { // Do not append further slashes to the root
+                return otherPathPrefix + otherPath;
+            } else {
+                return otherPathPrefix + otherPathSeparator + otherPath;
+            }
+        }
+    }
+    
+    private static char findSeparator(String path) {
+        if (path.indexOf('/') >= 0) {
+            return '/';
+        }
+        if (path.indexOf('\\') >= 0) {
+            return '\\';
+        }
+        return '/';
+    }
+
+    private static boolean isSeparator(char c) {
+        return c == '/' || c == '\\';
+    }
+    
+    private static String stripSeparator(String path) {
+        if (isRootPath(path)) { // Do not remove slashes the root
+            return path;
+        }
+        while (path.length() > 1 && (path.endsWith("/") || path.endsWith("\\"))) {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path;
+    }
+    
+    private static boolean isRootPath(String path) {
+        if ("/".equals(path)) {
+            return true;
+        }
+        if (path.length() == 4 && path.endsWith(":\\\\")) { // "C:\\"
+            return true;
+        }
+        return false;
+    }
+
+    public static final class OutOfScope extends Exception {
+        
+        private OutOfScope(String path, String scope) {
+            super(path);
+        }
+    }
+
 }

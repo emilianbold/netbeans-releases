@@ -60,7 +60,6 @@ public final class NodeJsPreferences {
     public static final String NODE_DEFAULT = "node.default"; // NOI18N
     public static final String START_FILE = "start.file"; // NOI18N
     public static final String START_ARGS = "start.args"; // NOI18N
-    public static final String DEBUG = "debug"; // NOI18N
     public static final String DEBUG_PORT = "debug.port"; // NOI18N
 
     private final Project project;
@@ -123,14 +122,6 @@ public final class NodeJsPreferences {
 
     public void setStartArgs(String startArgs) {
         getPreferences().put(START_ARGS, startArgs);
-    }
-
-    public boolean isDebug() {
-        return getPreferences().getBoolean(DEBUG, false);
-    }
-
-    public void setDebug(boolean debug) {
-        getPreferences().putBoolean(DEBUG, debug);
     }
 
     public int getDebugPort() {
