@@ -53,6 +53,7 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -70,32 +71,29 @@ import org.netbeans.modules.web.clientproject.validation.ProjectFoldersValidator
 import org.netbeans.modules.web.clientproject.validation.RunProjectValidator;
 import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.spi.project.ProjectConfiguration;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.HelpCtx;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author david
  */
-public class BrowserRunPanel extends JPanel implements DocumentListener, ItemListener, HelpCtx.Provider {
+public class BrowserRunPanel extends JPanel implements DocumentListener, ItemListener {
 
     private static final long serialVersionUID = 98712411454L;
 
     private final ClientSideProject project;
     private final ComboBoxModel webServerModel;
-    private final ProjectCustomizer.Category category;
     private final ClientSideProjectProperties uiProperties;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
-    public BrowserRunPanel(ProjectCustomizer.Category category, ClientSideProjectProperties uiProperties) {
-        assert category != null;
+    BrowserRunPanel(ClientSideProjectProperties uiProperties) {
         assert uiProperties != null;
 
-        this.category = category;
         this.uiProperties = uiProperties;
         project = uiProperties.getProject();
         webServerModel = new DefaultComboBoxModel(ClientSideProjectProperties.ProjectServer.values());
@@ -103,11 +101,6 @@ public class BrowserRunPanel extends JPanel implements DocumentListener, ItemLis
         initComponents();
         init();
         initListeners();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.customizer.RunPanel"); // NOI18N
     }
 
     @Override
@@ -126,75 +119,84 @@ public class BrowserRunPanel extends JPanel implements DocumentListener, ItemLis
         } else {
             info = " "; // NOI18N
         }
-        jProjectURLDescriptionLabel.setText(info);
-        jFileToRunTextField.setEnabled(siteRootValid);
-        jBrowseButton.setEnabled(siteRootValid);
-        validateData();
+        projectUrlDescriptionLabel.setText(info);
+        startFileTextField.setEnabled(siteRootValid);
+        startFileBrowseButton.setEnabled(siteRootValid);
+        storeAndFireChange();
     }
 
     private void init() {
         // start file
-        jFileToRunTextField.setText(uiProperties.getStartFile());
+        startFileTextField.setText(uiProperties.getStartFile());
         // server
-        jServerComboBox.setModel(webServerModel);
-        jServerComboBox.setRenderer(new ServerRenderer(jServerComboBox.getRenderer()));
-        jServerComboBox.setSelectedItem(uiProperties.getProjectServer());
+        webServerComboBox.setModel(webServerModel);
+        webServerComboBox.setRenderer(new ServerRenderer(webServerComboBox.getRenderer()));
+        webServerComboBox.setSelectedItem(uiProperties.getProjectServer());
         //jServerComboBox.setSelectedIndex(cfg.isUseServer() ? 1 : 0); // XXX: indexes are obsolete, use enums directly
         // url
-        jProjectURLTextField.setText(uiProperties.getProjectUrl());
+        projectUrlTextField.setText(uiProperties.getProjectUrl());
         // web root
-        jWebRootTextField.setText(uiProperties.getWebRoot());
+        webRootTextField.setText(uiProperties.getWebRoot());
         // configuration customizer
         updateConfigurationCustomizer();
     }
 
     private void initListeners() {
         // config
-        jBrowserComboBox.addItemListener(new ItemListener() {
+        browserComboBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged( ItemEvent e ) {
                 if( e.getStateChange() == ItemEvent.DESELECTED )
                     return;
-                validateAndStore();
+                storeAndFireChange();
             }
         });
         // start file
-        jFileToRunTextField.getDocument().addDocumentListener(this);
+        startFileTextField.getDocument().addDocumentListener(this);
         // server
-        jServerComboBox.addItemListener(this);
+        webServerComboBox.addItemListener(this);
         // url
-        jProjectURLTextField.getDocument().addDocumentListener(this);
+        projectUrlTextField.getDocument().addDocumentListener(this);
         // web root
-        jWebRootTextField.getDocument().addDocumentListener(this);
+        webRootTextField.getDocument().addDocumentListener(this);
     }
 
-    void validateAndStore() {
-        validateData();
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    public String getErrorMessage() {
+        ValidationResult result = validateData();
+        if (result.hasErrors()) {
+            return result.getErrors().get(0).getMessage();
+        }
+        return null;
+    }
+
+    public String getWarningMessage() {
+        ValidationResult result = validateData();
+        if (result.hasWarnings()) {
+            return result.getWarnings().get(0).getMessage();
+        }
+        return null;
+    }
+
+    void storeAndFireChange() {
         storeData();
+        changeSupport.fireChange();
     }
 
-    private void validateData() {
+    private ValidationResult validateData() {
         RunProjectValidator validator = new RunProjectValidator()
                 .validateStartFile(getSiteRoot(), getResolvedStartFile());
-        if (jProjectURLTextField.isVisible()) {
+        if (projectUrlTextField.isVisible()) {
             validator.validateProjectUrl(getProjectUrl());
         }
-        ValidationResult result = validator.getResult();
-        // errors
-        if (result.hasErrors()) {
-            category.setErrorMessage(result.getErrors().get(0).getMessage());
-            category.setValid(false);
-            return;
-        }
-        // warnings
-        if (result.hasWarnings()) {
-            category.setErrorMessage(result.getWarnings().get(0).getMessage());
-            category.setValid(true);
-            return;
-        }
-        // all ok
-        category.setErrorMessage(" "); // NOI18N
-        category.setValid(true);
+        return validator.getResult();
     }
 
     private void storeData() {
@@ -206,14 +208,14 @@ public class BrowserRunPanel extends JPanel implements DocumentListener, ItemLis
     }
 
     private void updateConfigurationCustomizer() {
-        jConfigurationPlaceholder.removeAll();
+        configurationPlaceholder.removeAll();
         WebBrowser wb = getSelectedBrowser();
         ClientProjectEnhancedBrowserImplementation enhancedBrowser =
                 uiProperties.createEnhancedBrowserSettings(wb);
         if (enhancedBrowser != null) {
             ProjectConfigurationCustomizer customizerPanel = enhancedBrowser.getProjectConfigurationCustomizer();
             if (customizerPanel != null) {
-                jConfigurationPlaceholder.add(customizerPanel.createPanel(), BorderLayout.CENTER);
+                configurationPlaceholder.add(customizerPanel.createPanel(), BorderLayout.CENTER);
                 EnumSet<ProjectConfigurationCustomizer.HiddenProperties> hiddenProperties = customizerPanel.getHiddenProperties();
                 showWebServer(!hiddenProperties.contains(ProjectConfigurationCustomizer.HiddenProperties.WEB_SERVER));
             } else {
@@ -225,18 +227,18 @@ public class BrowserRunPanel extends JPanel implements DocumentListener, ItemLis
     }
 
     private void showWebServer(boolean visible) {
-        jLabel2.setVisible(visible);
-        jServerComboBox.setVisible(visible);
-        jProjectURLDescriptionLabel.setVisible(visible);
-        jProjectURLLabel.setVisible(visible);
-        jProjectURLTextField.setVisible(visible);
-        jWebRootExampleLabel.setVisible(visible);
-        jWebRootLabel.setVisible(visible);
-        jWebRootTextField.setVisible(visible);
+        webServerLabel.setVisible(visible);
+        webServerComboBox.setVisible(visible);
+        projectUrlDescriptionLabel.setVisible(visible);
+        projectUrlLabel.setVisible(visible);
+        projectUrlTextField.setVisible(visible);
+        webRootExampleLabel.setVisible(visible);
+        webRootLabel.setVisible(visible);
+        webRootTextField.setVisible(visible);
         if (visible) {
             updateWebRootEnablement();
         } else {
-            validateAndStore();
+            storeAndFireChange();
         }
     }
 
@@ -246,15 +248,15 @@ public class BrowserRunPanel extends JPanel implements DocumentListener, ItemLis
     }
 
     private String getStartFile() {
-        return jFileToRunTextField.getText();
+        return startFileTextField.getText();
     }
 
     private String getSelectedBrowserId() {
-        return ((BrowserComboBoxModel)jBrowserComboBox.getModel()).getSelectedBrowserId();
+        return ((BrowserComboBoxModel)browserComboBox.getModel()).getSelectedBrowserId();
     }
 
     private WebBrowser getSelectedBrowser() {
-        return ((BrowserComboBoxModel)jBrowserComboBox.getModel()).getSelectedBrowser();
+        return ((BrowserComboBoxModel)browserComboBox.getModel()).getSelectedBrowser();
     }
 
     @CheckForNull
@@ -285,15 +287,15 @@ public class BrowserRunPanel extends JPanel implements DocumentListener, ItemLis
     }
 
     private ClientSideProjectProperties.ProjectServer getProjectServer() {
-        return (ProjectServer) jServerComboBox.getSelectedItem();
+        return (ProjectServer) webServerComboBox.getSelectedItem();
     }
 
     private String getProjectUrl() {
-        return jProjectURLTextField.getText();
+        return projectUrlTextField.getText();
     }
 
     private String getWebRoot() {
-        return jWebRootTextField.getText();
+        return webRootTextField.getText();
     }
 
     /**
@@ -305,59 +307,58 @@ public class BrowserRunPanel extends JPanel implements DocumentListener, ItemLis
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jFileToRunTextField = new javax.swing.JTextField();
-        jBrowseButton = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
-        jServerComboBox = new javax.swing.JComboBox();
-        jWebRootLabel = new javax.swing.JLabel();
-        jWebRootTextField = new javax.swing.JTextField();
-        jWebRootExampleLabel = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jBrowserComboBox = createBrowserComboBox();
-        jProjectURLLabel = new javax.swing.JLabel();
-        jProjectURLTextField = new javax.swing.JTextField();
-        jConfigurationPlaceholder = new javax.swing.JPanel();
-        jProjectURLDescriptionLabel = new javax.swing.JLabel();
+        browserLabel = new javax.swing.JLabel();
+        browserComboBox = createBrowserComboBox();
+        configurationPlaceholder = new javax.swing.JPanel();
+        startFileLabel = new javax.swing.JLabel();
+        startFileTextField = new javax.swing.JTextField();
+        startFileBrowseButton = new javax.swing.JButton();
+        webServerLabel = new javax.swing.JLabel();
+        webServerComboBox = new javax.swing.JComboBox();
+        projectUrlLabel = new javax.swing.JLabel();
+        projectUrlTextField = new javax.swing.JTextField();
+        projectUrlDescriptionLabel = new javax.swing.JLabel();
+        webRootLabel = new javax.swing.JLabel();
+        webRootTextField = new javax.swing.JTextField();
+        webRootExampleLabel = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jLabel1.text")); // NOI18N
+        browserLabel.setLabelFor(browserComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(browserLabel, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.browserLabel.text")); // NOI18N
 
-        jFileToRunTextField.setText(org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jFileToRunTextField.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jBrowseButton, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jBrowseButton.text")); // NOI18N
-        jBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+        browserComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jBrowseButtonActionPerformed(evt);
+                browserComboBoxActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jLabel2.text")); // NOI18N
+        configurationPlaceholder.setLayout(new java.awt.BorderLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(jWebRootLabel, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jWebRootLabel.text")); // NOI18N
+        startFileLabel.setLabelFor(startFileTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(startFileLabel, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.startFileLabel.text")); // NOI18N
 
-        jWebRootTextField.setText(org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jWebRootTextField.text")); // NOI18N
-
-        jWebRootExampleLabel.setFont(jWebRootExampleLabel.getFont().deriveFont(jWebRootExampleLabel.getFont().getSize()-1f));
-        org.openide.awt.Mnemonics.setLocalizedText(jWebRootExampleLabel, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jWebRootExampleLabel.text")); // NOI18N
-        jWebRootExampleLabel.setEnabled(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jLabel3.text")); // NOI18N
-
-        jBrowserComboBox.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(startFileBrowseButton, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.startFileBrowseButton.text")); // NOI18N
+        startFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jBrowserComboBoxActionPerformed(evt);
+                startFileBrowseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jProjectURLLabel, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jProjectURLLabel.text")); // NOI18N
+        webServerLabel.setLabelFor(webServerComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(webServerLabel, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.webServerLabel.text")); // NOI18N
 
-        jProjectURLTextField.setText(org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jProjectURLTextField.text")); // NOI18N
+        projectUrlLabel.setLabelFor(projectUrlTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(projectUrlLabel, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.projectUrlLabel.text")); // NOI18N
 
-        jConfigurationPlaceholder.setLayout(new java.awt.BorderLayout());
+        projectUrlDescriptionLabel.setFont(projectUrlDescriptionLabel.getFont().deriveFont(projectUrlDescriptionLabel.getFont().getSize()-1f));
+        org.openide.awt.Mnemonics.setLocalizedText(projectUrlDescriptionLabel, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.projectUrlDescriptionLabel.text")); // NOI18N
+        projectUrlDescriptionLabel.setEnabled(false);
 
-        jProjectURLDescriptionLabel.setFont(jProjectURLDescriptionLabel.getFont().deriveFont(jProjectURLDescriptionLabel.getFont().getSize()-1f));
-        org.openide.awt.Mnemonics.setLocalizedText(jProjectURLDescriptionLabel, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.jProjectURLDescriptionLabel.text")); // NOI18N
-        jProjectURLDescriptionLabel.setEnabled(false);
+        webRootLabel.setLabelFor(webRootTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(webRootLabel, org.openide.util.NbBundle.getMessage(BrowserRunPanel.class, "BrowserRunPanel.webRootLabel.text")); // NOI18N
+
+        webRootExampleLabel.setFont(webRootExampleLabel.getFont().deriveFont(webRootExampleLabel.getFont().getSize()-1f));
+        org.openide.awt.Mnemonics.setLocalizedText(webRootExampleLabel, "EXAMPLE"); // NOI18N
+        webRootExampleLabel.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -365,99 +366,103 @@ public class BrowserRunPanel extends JPanel implements DocumentListener, ItemLis
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel1)
-                    .addComponent(jWebRootLabel)
-                    .addComponent(jProjectURLLabel))
+                    .addComponent(browserLabel)
+                    .addComponent(webServerLabel)
+                    .addComponent(startFileLabel)
+                    .addComponent(webRootLabel)
+                    .addComponent(projectUrlLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jWebRootExampleLabel)
+                    .addComponent(webRootExampleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jFileToRunTextField)
+                        .addComponent(startFileTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jBrowseButton))
-                    .addComponent(jBrowserComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jServerComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jProjectURLTextField)
-                    .addComponent(jWebRootTextField)
-                    .addComponent(jConfigurationPlaceholder, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jProjectURLDescriptionLabel)))
+                        .addComponent(startFileBrowseButton))
+                    .addComponent(browserComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(webServerComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(projectUrlTextField)
+                    .addComponent(webRootTextField)
+                    .addComponent(configurationPlaceholder, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(projectUrlDescriptionLabel)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(jBrowserComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(browserLabel)
+                    .addComponent(browserComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jConfigurationPlaceholder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(configurationPlaceholder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jFileToRunTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jBrowseButton))
+                    .addComponent(startFileLabel)
+                    .addComponent(startFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(startFileBrowseButton))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(jServerComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(webServerLabel)
+                    .addComponent(webServerComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jProjectURLLabel)
-                    .addComponent(jProjectURLTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(projectUrlLabel)
+                    .addComponent(projectUrlTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jProjectURLDescriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(projectUrlDescriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jWebRootLabel)
-                    .addComponent(jWebRootTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(webRootLabel)
+                    .addComponent(webRootTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jWebRootExampleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(webRootExampleLabel)
                 .addGap(0, 2, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowseButtonActionPerformed
+    private void startFileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startFileBrowseButtonActionPerformed
         FileObject siteRootFolder = FileUtil.toFileObject(getSiteRoot());
         assert siteRootFolder != null;
         FileObject selectedFile = BrowseFolders.showDialog(new FileObject[] {siteRootFolder}, DataObject.class, getStartFile());
         if (selectedFile != null) {
-            jFileToRunTextField.setText(FileUtil.getRelativePath(siteRootFolder, selectedFile));
+            startFileTextField.setText(FileUtil.getRelativePath(siteRootFolder, selectedFile));
         }
-    }//GEN-LAST:event_jBrowseButtonActionPerformed
+    }//GEN-LAST:event_startFileBrowseButtonActionPerformed
 
-    private void jBrowserComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowserComboBoxActionPerformed
+    private void browserComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browserComboBoxActionPerformed
         updateConfigurationCustomizer();
-    }//GEN-LAST:event_jBrowserComboBoxActionPerformed
+    }//GEN-LAST:event_browserComboBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jBrowseButton;
-    private javax.swing.JComboBox jBrowserComboBox;
-    private javax.swing.JPanel jConfigurationPlaceholder;
-    private javax.swing.JTextField jFileToRunTextField;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jProjectURLDescriptionLabel;
-    private javax.swing.JLabel jProjectURLLabel;
-    private javax.swing.JTextField jProjectURLTextField;
-    private javax.swing.JComboBox jServerComboBox;
-    private javax.swing.JLabel jWebRootExampleLabel;
-    private javax.swing.JLabel jWebRootLabel;
-    private javax.swing.JTextField jWebRootTextField;
+    private javax.swing.JComboBox browserComboBox;
+    private javax.swing.JLabel browserLabel;
+    private javax.swing.JPanel configurationPlaceholder;
+    private javax.swing.JLabel projectUrlDescriptionLabel;
+    private javax.swing.JLabel projectUrlLabel;
+    private javax.swing.JTextField projectUrlTextField;
+    private javax.swing.JButton startFileBrowseButton;
+    private javax.swing.JLabel startFileLabel;
+    private javax.swing.JTextField startFileTextField;
+    private javax.swing.JLabel webRootExampleLabel;
+    private javax.swing.JLabel webRootLabel;
+    private javax.swing.JTextField webRootTextField;
+    private javax.swing.JComboBox webServerComboBox;
+    private javax.swing.JLabel webServerLabel;
     // End of variables declaration//GEN-END:variables
 
+    @NbBundle.Messages({
+        "# {0} - part of URL",
+        "BrowserRunPanel.webRoot.example=<html>The project''s URL will be http://localhost:{0}",
+    })
     private void updateWebRooExample() {
-        if (!jWebRootTextField.isVisible()) {
+        if (!webRootTextField.isVisible()) {
             return;
         }
-        if (!jWebRootTextField.isEnabled()) {
-            jWebRootExampleLabel.setText(" "); //NOI18N
+        if (!webRootTextField.isEnabled()) {
+            webRootExampleLabel.setText(" "); //NOI18N
             return;
         }
         StringBuilder s = new StringBuilder();
         s.append(WebServer.getWebserver().getPort());
-        String ctx = jWebRootTextField.getText();
+        String ctx = webRootTextField.getText();
         if (ctx.trim().length() == 0) {
             s.append("/"); //NOI18N
         } else {
@@ -466,45 +471,46 @@ public class BrowserRunPanel extends JPanel implements DocumentListener, ItemLis
             }
             s.append(ctx);
         }
-        jWebRootExampleLabel.setText(NbBundle.getMessage(BrowserRunPanel.class, "RunPanel.jWebRootExampleLabel.text", s.toString()));
+        webRootExampleLabel.setText(Bundle.BrowserRunPanel_webRoot_example(s.toString()));
     }
 
     private boolean isEmbeddedServer() {
-        return jServerComboBox.getSelectedItem() == ClientSideProjectProperties.ProjectServer.INTERNAL;
+        return webServerComboBox.getSelectedItem() == ClientSideProjectProperties.ProjectServer.INTERNAL;
     }
 
     private void updateWebRootEnablement() {
-        jWebRootTextField.setVisible(isEmbeddedServer());
-        jWebRootLabel.setVisible(isEmbeddedServer());
-        jWebRootExampleLabel.setVisible(isEmbeddedServer());
-        jProjectURLLabel.setVisible(!isEmbeddedServer());
-        jProjectURLTextField.setVisible(!isEmbeddedServer());
-        jProjectURLDescriptionLabel.setVisible(!isEmbeddedServer());
+        webRootTextField.setVisible(isEmbeddedServer());
+        webRootLabel.setVisible(isEmbeddedServer());
+        webRootExampleLabel.setVisible(isEmbeddedServer());
+        projectUrlLabel.setVisible(!isEmbeddedServer());
+        projectUrlTextField.setVisible(!isEmbeddedServer());
+        projectUrlDescriptionLabel.setVisible(!isEmbeddedServer());
         updateWebRooExample();
-        validateAndStore();
     }
+
 
     @Override
     public void insertUpdate(DocumentEvent e) {
         updateWebRooExample();
-        validateAndStore();
+        storeAndFireChange();
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
         updateWebRooExample();
-        validateAndStore();
+        storeAndFireChange();
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
         updateWebRooExample();
-        validateAndStore();
+        storeAndFireChange();
     }
 
     @Override
     public void itemStateChanged(ItemEvent e) {
         updateWebRootEnablement();
+        storeAndFireChange();
     }
 
     private JComboBox createBrowserComboBox() {

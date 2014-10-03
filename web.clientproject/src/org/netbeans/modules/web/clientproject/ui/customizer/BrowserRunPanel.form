@@ -18,26 +18,26 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jWebRootLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="jProjectURLLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="browserLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="webServerLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="startFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="webRootLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="projectUrlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jWebRootExampleLabel" max="32767" attributes="0"/>
+                  <Component id="webRootExampleLabel" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
-                      <Component id="jFileToRunTextField" max="32767" attributes="0"/>
+                      <Component id="startFileTextField" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jBrowseButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="startFileBrowseButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jBrowserComboBox" alignment="0" max="32767" attributes="0"/>
-                  <Component id="jServerComboBox" alignment="0" max="32767" attributes="0"/>
-                  <Component id="jProjectURLTextField" alignment="0" max="32767" attributes="0"/>
-                  <Component id="jWebRootTextField" max="32767" attributes="0"/>
-                  <Component id="jConfigurationPlaceholder" max="32767" attributes="0"/>
-                  <Component id="jProjectURLDescriptionLabel" alignment="0" max="32767" attributes="0"/>
+                  <Component id="browserComboBox" alignment="0" max="32767" attributes="0"/>
+                  <Component id="webServerComboBox" alignment="0" max="32767" attributes="0"/>
+                  <Component id="projectUrlTextField" alignment="0" max="32767" attributes="0"/>
+                  <Component id="webRootTextField" max="32767" attributes="0"/>
+                  <Component id="configurationPlaceholder" max="32767" attributes="0"/>
+                  <Component id="projectUrlDescriptionLabel" alignment="0" max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -46,145 +46,143 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jBrowserComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="browserLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="browserComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jConfigurationPlaceholder" min="-2" max="-2" attributes="0"/>
+              <Component id="configurationPlaceholder" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jFileToRunTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="startFileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="startFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="startFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jServerComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="webServerLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="webServerComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jProjectURLLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jProjectURLTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="projectUrlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="projectUrlTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jProjectURLDescriptionLabel" min="-2" max="-2" attributes="0"/>
+              <Component id="projectUrlDescriptionLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jWebRootLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jWebRootTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="webRootLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="webRootTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jWebRootExampleLabel" min="-2" max="-2" attributes="0"/>
+              <Component id="webRootExampleLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="0" pref="2" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="jLabel1">
+    <Component class="javax.swing.JLabel" name="browserLabel">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="browserComboBox"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.jLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.browserLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="jFileToRunTextField">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.jFileToRunTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="jBrowseButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.jBrowseButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
+    <Component class="javax.swing.JComboBox" name="browserComboBox">
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBrowseButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabel2">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.jLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="jServerComboBox">
-    </Component>
-    <Component class="javax.swing.JLabel" name="jWebRootLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.jWebRootLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="jWebRootTextField">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.jWebRootTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jWebRootExampleLabel">
-      <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-          <FontInfo relative="true">
-            <Font component="jWebRootExampleLabel" property="font" relativeSize="true" size="-1"/>
-          </FontInfo>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.jWebRootExampleLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabel3">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.jLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="jBrowserComboBox">
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBrowserComboBoxActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browserComboBoxActionPerformed"/>
       </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createBrowserComboBox()"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JLabel" name="jProjectURLLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.jProjectURLLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="jProjectURLTextField">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.jProjectURLTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Container class="javax.swing.JPanel" name="jConfigurationPlaceholder">
+    <Container class="javax.swing.JPanel" name="configurationPlaceholder">
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
     </Container>
-    <Component class="javax.swing.JLabel" name="jProjectURLDescriptionLabel">
+    <Component class="javax.swing.JLabel" name="startFileLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="startFileTextField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.startFileLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="startFileTextField">
+    </Component>
+    <Component class="javax.swing.JButton" name="startFileBrowseButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.startFileBrowseButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startFileBrowseButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="webServerLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="webServerComboBox"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.webServerLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="webServerComboBox">
+    </Component>
+    <Component class="javax.swing.JLabel" name="projectUrlLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="projectUrlTextField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.projectUrlLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="projectUrlTextField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="projectUrlDescriptionLabel">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
           <FontInfo relative="true">
-            <Font component="jProjectURLDescriptionLabel" property="font" relativeSize="true" size="-1"/>
+            <Font component="projectUrlDescriptionLabel" property="font" relativeSize="true" size="-1"/>
           </FontInfo>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.jProjectURLDescriptionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.projectUrlDescriptionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="webRootLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="webRootTextField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/customizer/Bundle.properties" key="BrowserRunPanel.webRootLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="webRootTextField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="webRootExampleLabel">
+      <Properties>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+          <FontInfo relative="true">
+            <Font component="webRootExampleLabel" property="font" relativeSize="true" size="-1"/>
+          </FontInfo>
+        </Property>
+        <Property name="text" type="java.lang.String" value="EXAMPLE" noResource="true"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
