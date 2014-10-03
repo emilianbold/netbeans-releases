@@ -92,7 +92,7 @@ made subject to such option by the copyright holder.
                         <release-version>1</release-version>
                         <specification-version>1.60</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.java.source.base</code-name-base>
                     <build-prerequisite/>
@@ -225,6 +225,10 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.parsing.nb</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

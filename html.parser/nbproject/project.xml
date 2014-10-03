@@ -119,13 +119,17 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.html</code-name-base>
+                        <recursive/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.html</code-name-base>
-                        <recursive/>
-                        <test/>
+                        <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
+                        <compile-dependency/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>
