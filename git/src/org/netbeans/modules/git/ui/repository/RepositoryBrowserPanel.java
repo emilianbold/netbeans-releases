@@ -190,10 +190,24 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 null, new File[0], null);
     }
 
-    public RepositoryBrowserPanel (EnumSet<Option> options, File repository, File[] roots, RepositoryInfo info) {
+    public RepositoryBrowserPanel (final EnumSet<Option> options, File repository, File[] roots, RepositoryInfo info) {
         Parameters.notNull("roots", roots);
         this.currRepository = repository;
-        this.root = options.contains(Option.DISPLAY_ALL_REPOSITORIES) ? new AbstractNode(new RepositoriesChildren()) : new RepositoryNode(repository, info);
+        this.root = options.contains(Option.DISPLAY_ALL_REPOSITORIES)
+                ? new AbstractNode(new RepositoriesChildren()) {
+
+                    @Override
+                    public Action[] getActions (boolean context) {
+                        if (options.contains(Option.ENABLE_POPUP)) {
+                            return new Action[] {
+                                new OpenRepositoryAction()
+                            };
+                        } else {
+                            return super.getActions(context);
+                        }
+                    }
+
+                } : new RepositoryNode(repository, info);
         this.manager = new ExplorerManager();
         this.options = options;
         this.roots = roots;
@@ -589,6 +603,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
     }
 
+    @NbBundle.Messages({
+        "CTL_CloseRepositoryAction.name=Close Repository"
+    })
     private class RepositoryNode extends RepositoryBrowserNode implements PropertyChangeListener {
         private PropertyChangeListener list;
         private final File repository;
@@ -671,7 +688,16 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         @Override
         protected Action[] getPopupActions (boolean context) {
             VCSContext ctx = VCSContext.forNodes(new Node[] { this });
-            return Git.getInstance().getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
+            Action[] actions = Git.getInstance().getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
+            actions = Arrays.copyOf(actions, actions.length + 2);
+            actions[actions.length - 1] = new AbstractAction(Bundle.CTL_CloseRepositoryAction_name()) {
+
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    GitRepositories.getInstance().remove(repository, true);
+                }
+            };
+            return actions;
         }
 
         @Override
