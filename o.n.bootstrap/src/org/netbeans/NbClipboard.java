@@ -364,8 +364,12 @@ implements LookupListener, FlavorListener, AWTEventListener
             lastWindowDeactivated = System.currentTimeMillis();
             lastWindowDeactivatedSource = new WeakReference<Object>(ev.getSource());
             anyWindowIsActivated = false;
+            //#247585 - even listening to clipboard changes when the window isn't active 
+            //may throw a MS Windows error as the 'clipboard copy' action doesn't have enough time to finish
+            systemClipboard.removeFlavorListener(this);
         }
         if (ev.getID() == WindowEvent.WINDOW_ACTIVATED) {
+            systemClipboard.addFlavorListener(this);
             anyWindowIsActivated = true;
             if (System.currentTimeMillis() - lastWindowDeactivated < 100 &&
                 ev.getSource() == lastWindowDeactivatedSource.get()) {
