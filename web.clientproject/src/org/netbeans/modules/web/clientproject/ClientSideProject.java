@@ -456,6 +456,9 @@ public class ClientSideProject implements Project {
         return JsTestingProviders.getDefault().getJsTestingProvider(this, showSelectionPanel);
     }
 
+    /**
+     * @return list of <b>enabled</b> platform providers in this project
+     */
     public List<PlatformProvider> getPlatformProviders() {
         List<PlatformProvider> allProviders = PlatformProviders.getDefault().getPlatformProviders();
         List<PlatformProvider> enabledProviders = new ArrayList<>(allProviders.size());
