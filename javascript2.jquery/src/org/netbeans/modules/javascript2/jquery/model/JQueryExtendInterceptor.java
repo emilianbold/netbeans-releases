@@ -1,10 +1,8 @@
 package org.netbeans.modules.javascript2.jquery.model;
 
-import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Pattern;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;

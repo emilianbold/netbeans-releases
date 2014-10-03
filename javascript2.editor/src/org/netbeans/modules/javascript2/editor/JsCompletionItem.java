@@ -310,7 +310,11 @@ public class JsCompletionItem implements CompletionProposal {
             StringBuilder template = new StringBuilder();
             template.append(getName());
             if (!asObject()) {
-                template.append("(${cursor})");     //NOI18N
+                if (parametersTypes.isEmpty()) {
+                    template.append("()${cursor}");     //NOI18N
+                } else {
+                    template.append("(${cursor})");     //NOI18N
+                }
             } else {
                 template.append("${cursor}");       //NOI18N
             }
