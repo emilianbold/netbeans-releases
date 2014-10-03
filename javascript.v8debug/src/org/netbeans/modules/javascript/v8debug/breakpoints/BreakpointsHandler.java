@@ -163,15 +163,19 @@ public class BreakpointsHandler {
         public void notifyResponse(V8Request request, V8Response response) {
             JSLineBreakpoint lb;
             synchronized (submittingBreakpoints) {
-                lb = submittingBreakpoints.get(request.getArguments());
+                lb = submittingBreakpoints.remove(request.getArguments());
             }
             if (lb == null) {
                 LOG.log(Level.INFO, "Did not find a submitting breakpoint for response {0}, request was {1}",
                         new Object[]{response, request});
                 return ;
             }
-            long id = ((SetBreakpoint.ResponseBody) response.getBody()).getBreakpoint();
-            SubmittedBreakpoint sb = new SubmittedBreakpoint(lb, id, dbg);
+            if (response != null) {
+                long id = ((SetBreakpoint.ResponseBody) response.getBody()).getBreakpoint();
+                SubmittedBreakpoint sb = new SubmittedBreakpoint(lb, id, dbg);
+            } else {
+                // TODO invalidate lb
+            }
         }
         
     }
