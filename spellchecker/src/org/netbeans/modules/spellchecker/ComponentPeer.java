@@ -126,6 +126,8 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
 
     private static final Logger LOG = Logger.getLogger(ComponentPeer.class.getName());
     
+    private DocumentListener weakDocL;
+    
     public static void assureInstalled(JTextComponent pane) {
         if (pane.getClientProperty(ComponentPeer.class) == null) {
             pane.putClientProperty(ComponentPeer.class, new ComponentPeer(pane));
@@ -135,10 +137,12 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     public synchronized void propertyChange(PropertyChangeEvent evt) {
         if (document != pane.getDocument()) {
             if (document != null) {
-                document.removeDocumentListener(this);
+                document.removeDocumentListener(weakDocL);
+                weakDocL = null;
             }
             document = pane.getDocument();
-            document.addDocumentListener(this);
+            weakDocL = WeakListeners.document(this, document);
+            document.addDocumentListener(weakDocL);
             document = pane.getDocument();
             synchronized (tokenListLock) {
                 tokenList = null;
@@ -202,7 +206,8 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         pane.addCaretListener(this);
         pane.addAncestorListener(this);
         document = pane.getDocument();
-        document.addDocumentListener(this);
+        weakDocL = WeakListeners.document(this, document);
+        document.addDocumentListener(weakDocL);
 
         ancestorAdded(null);
     }

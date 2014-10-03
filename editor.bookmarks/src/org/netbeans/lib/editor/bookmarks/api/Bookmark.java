@@ -45,6 +45,7 @@
 package org.netbeans.lib.editor.bookmarks.api;
 
 import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -74,7 +75,7 @@ public final class Bookmark {
     public static final String BOOKMARK_ANNOTATION_TYPE = "editor-bookmark"; // NOI18N
 
     // cary mary fuk!
-    private static Map<Line,Reference<AAnnotation>> lineToAnnotation = new WeakHashMap<Line,Reference<AAnnotation>> (); // Hanziii;)
+    private static Map<Line,Reference<Annotation>> lineToAnnotation = new WeakHashMap<Line,Reference<Annotation>> (); // Hanziii;)
 
     /**
      * Bookmark list to which this bookmark belongs.
@@ -111,10 +112,10 @@ public final class Bookmark {
                 _line.getLookup().lookup (DataObject.class).equals (dataObject)
             ) {
                 this.line = _line;
-                Reference<AAnnotation> annoRef = lineToAnnotation.get (_line);
-                info.setAnnotation(annoRef.get());
-                if (info.getAnnotation() != null) {
-                    return;
+                Reference<Annotation> annoRef = lineToAnnotation.get (_line);
+                Annotation a = annoRef.get();
+                if (a != null) {
+                    info.setAnnotationRef(annoRef);
                 }
             }
         }
@@ -122,8 +123,8 @@ public final class Bookmark {
         if (line != null) { // In tests it may be null
             if (info.getAnnotation() == null) {
                 AAnnotation annotation = new AAnnotation ();
-                info.setAnnotation(annotation);
-                info.getAnnotation().attach (line);
+                info.setAnnotationRef(new WeakReference<Annotation>(annotation));
+                annotation.attach (line);
             } 
         }
     }
