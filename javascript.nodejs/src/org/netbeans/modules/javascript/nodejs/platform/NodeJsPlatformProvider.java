@@ -44,12 +44,15 @@ package org.netbeans.modules.javascript.nodejs.platform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.PlatformProviderImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.PlatformProviderImplementationListener;
 import org.netbeans.spi.project.ActionProvider;
@@ -108,6 +111,11 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
     public ActionProvider getActionProvider(Project project) {
         assert project != null;
         return NodeJsSupport.forProject(project).getActionProvider();
+    }
+
+    @Override
+    public List<CustomizerPanelImplementation> getRunCustomizerPanels(Project project) {
+        return Collections.<CustomizerPanelImplementation>singletonList(new NodeJsRunPanel(project));
     }
 
     @Override
