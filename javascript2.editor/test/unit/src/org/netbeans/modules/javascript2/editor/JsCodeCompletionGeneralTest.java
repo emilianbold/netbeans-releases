@@ -70,6 +70,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
     public void testIssue217029_01() throws Exception {
         checkCompletion("testfiles/completion/issue217029.js", "element.ch^arAt(10);", false);
     }
+    
+    public void testIssue217029_02() throws Exception {
+        checkCompletion("testfiles/completion/issue217029.js", "element.ch^        //here", false);
+    }
 
     public void testIssue215861_01() throws Exception {
         checkCompletion("testfiles/completion/issue215861.js", "console.log(\"Browser \"+navigator.^);", false);

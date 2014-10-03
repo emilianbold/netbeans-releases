@@ -310,7 +310,11 @@ public class JsCompletionItem implements CompletionProposal {
             StringBuilder template = new StringBuilder();
             template.append(getName());
             if (!asObject()) {
-                template.append("(${cursor})");     //NOI18N
+                if (parametersTypes.isEmpty()) {
+                    template.append("()${cursor}");     //NOI18N
+                } else {
+                    template.append("(${cursor})");     //NOI18N
+                }
             } else {
                 template.append("${cursor}");       //NOI18N
             }
@@ -513,7 +517,7 @@ public class JsCompletionItem implements CompletionProposal {
                             if (element instanceof JsFunction) {
                                 // count return types
                                 Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(((JsFunction) element).getReturnTypes(), (JsParserResult)request.info,
-                                        OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution());
+                                        OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution(), false);
                                 returnTypes.addAll(Utils.getDisplayNames(resolveTypes));
                                 // count parameters type
                                 for (JsObject jsObject : ((JsFunction) element).getParameters()) {
@@ -539,7 +543,7 @@ public class JsCompletionItem implements CompletionProposal {
                                     returnTypeUsages.add(new TypeUsageImpl(type, -1, false));
                                 }
                                 Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(returnTypeUsages, (JsParserResult)request.info,
-                                        OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution());
+                                        OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution(), false);
                                 returnTypes.addAll(Utils.getDisplayNames(resolveTypes));
                                 // count parameters type
                                 LinkedHashMap<String, Collection<String>> parameters = ((IndexedElement.FunctionIndexedElement) element).getParameters();
@@ -577,7 +581,7 @@ public class JsCompletionItem implements CompletionProposal {
                             Collection<? extends TypeUsage> assignment = null;
                             if (element instanceof JsObject) {
                                 JsObject jsObject = (JsObject) element;
-                                assignment = jsObject.getAssignmentForOffset(request.anchor);
+                                assignment = jsObject.getAssignments();
                             } else if (element instanceof IndexedElement) {
                                 IndexedElement iElement = (IndexedElement) element;
                                 assignment = iElement.getAssignments();
@@ -594,7 +598,7 @@ public class JsCompletionItem implements CompletionProposal {
                                             toResolve.add(type);
                                             resolvedType = new HashSet(1);
                                             Collection<TypeUsage> resolved = ModelUtils.resolveTypes(toResolve, request.result,
-                                                    OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution());
+                                                    OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution(), false);
                                             for (TypeUsage rType : resolved) {
                                                 String displayName = rType.getDisplayName();
                                                 if (!displayName.isEmpty()) {

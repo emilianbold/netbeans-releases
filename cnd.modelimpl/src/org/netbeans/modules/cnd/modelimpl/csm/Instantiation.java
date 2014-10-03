@@ -1982,6 +1982,19 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
         
         protected CsmClassifier cacheResolved(List<CsmInstantiation> instantiations, CsmClassifier resolved) {
+            // FIXME: disabling cache in http://hg.netbeans.org/cnd-main/rev/bc1384664e04 was too agressive
+            // new timing bacome:
+            // FileMaps Cache: HITS=414,034, Used 174,633ms, SavedTime=828,068ms, Cached 1 Values (NULLs=0) ([88]Code Model Client Request :Go to declaration)
+            // OrigClassifier Cache: HITS=120,470, Used 174,656ms, SavedTime=120,470ms, Cached 85 Values (NULLs=0) ([88]Code Model Client Request :Go to declaration)
+            // SELECT Cache: HITS=363,349, Used 174,656ms, SavedTime=363,349ms, Cached 194 Values (NULLs=0) ([88]Code Model Client Request :Go to declaration)
+            // Resolver3 Cache: HITS=414,289, Used 174,638ms, SavedTime=510ms, Cached 7 Values (NULLs=4) ([88]Code Model Client Request :Go to declaration)
+            //FROM previous:
+            //FileMaps Cache: HITS=106, Used 655ms, SavedTime=388ms, Cached 6 Values (NULLs=0) ([58]Code Model Client Request :Go to declaration)
+            //OrigClassifier Cache: HITS=11, Used 665ms, SavedTime=11ms, Cached 4 Values (NULLs=0) ([58]Code Model Client Request :Go to declaration)
+            //SELECT Cache: HITS=74, Used 671ms, SavedTime=74ms, Cached 11 Values (NULLs=0) ([58]Code Model Client Request :Go to declaration)
+            //Resolver3 Cache: HITS=107, Used 671ms, SavedTime=1,605ms, Cached 32 Values (NULLs=22) ([58]Code Model Client Request :Go to declaration)
+            //
+            if (true) cachedResolved = resolved;
             if (cachedResolved != resolved) {
                 if (!instantiations.isEmpty() && instantiations.get(0) == instantiation) {
                     // We should cache resolved classifier only if this type is on top (knows full context).

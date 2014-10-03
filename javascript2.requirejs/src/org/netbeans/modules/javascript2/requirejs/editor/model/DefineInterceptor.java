@@ -90,7 +90,7 @@ public class DefineInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         FunctionArgument fArg = null;
         FunctionArgument modules = null;
 
@@ -116,7 +116,7 @@ public class DefineInterceptor implements FunctionInterceptor {
         FileObject fo = globalObject.getFileObject();
         if (fo == null) {
             // no action
-            return;
+            return Collections.emptyList();
         }
 
         if (fArg != null) {
@@ -137,7 +137,7 @@ public class DefineInterceptor implements FunctionInterceptor {
                     if (modules != null) {
                         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), modules.getOffset());
                         if (ts == null) {
-                            return;
+                            return Collections.emptyList();
                         }
                         ts.move(modules.getOffset());
                         if (ts.moveNext()) {
@@ -180,7 +180,7 @@ public class DefineInterceptor implements FunctionInterceptor {
                     } else if (modules != null && modules.getValue() instanceof JsArray) {
                         Project project = FileOwnerQuery.getOwner(fo);
                         if (project == null || !RequireJsPreferences.getBoolean(project, RequireJsPreferences.ENABLED)) {
-                            return;
+                            return Collections.emptyList();
                         }
                         // add assignments for the parameters
                         if (!paths.isEmpty()) {
@@ -215,11 +215,11 @@ public class DefineInterceptor implements FunctionInterceptor {
             Source source = Source.create(fo);
             Project project = FileOwnerQuery.getOwner(fo);
             if (project == null || !RequireJsPreferences.getBoolean(project, RequireJsPreferences.ENABLED)) {
-                return;
+                return Collections.emptyList();
             }
             TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), modules.getOffset());
             if (ts == null) {
-                return;
+                return Collections.emptyList();
             }
             ts.move(modules.getOffset());
             if (ts.movePrevious()) {
@@ -269,6 +269,7 @@ public class DefineInterceptor implements FunctionInterceptor {
             }
 
         }
+        return Collections.emptyList();
     }
 
     private boolean saveToIndex() {

@@ -47,6 +47,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 
 /**
@@ -57,6 +58,9 @@ public final class NodeJsPreferences {
     public static final String ENABLED = "enabled"; // NOI18N
     public static final String NODE_PATH = "node.path"; // NOI18N
     public static final String NODE_DEFAULT = "node.default"; // NOI18N
+    public static final String START_FILE = "start.file"; // NOI18N
+    public static final String START_ARGS = "start.args"; // NOI18N
+    public static final String DEBUG_PORT = "debug.port"; // NOI18N
 
     private final Project project;
 
@@ -100,6 +104,32 @@ public final class NodeJsPreferences {
 
     public void setDefaultNode(boolean defaultNode) {
         getPreferences().putBoolean(NODE_DEFAULT, defaultNode);
+    }
+
+    @CheckForNull
+    public String getStartFile() {
+        return FileUtils.resolvePath(project, getPreferences().get(START_FILE, null));
+    }
+
+    public void setStartFile(String startFile) {
+        getPreferences().put(START_FILE, FileUtils.relativizePath(project, startFile));
+    }
+
+    @CheckForNull
+    public String getStartArgs() {
+        return getPreferences().get(START_ARGS, null);
+    }
+
+    public void setStartArgs(String startArgs) {
+        getPreferences().put(START_ARGS, startArgs);
+    }
+
+    public int getDebugPort() {
+        return getPreferences().getInt(DEBUG_PORT, NodeExecutable.DEFAULT_DEBUG_PORT);
+    }
+
+    public void setDebugPort(int debugPort) {
+        getPreferences().putInt(DEBUG_PORT, debugPort);
     }
 
     private synchronized Preferences getPreferences() {

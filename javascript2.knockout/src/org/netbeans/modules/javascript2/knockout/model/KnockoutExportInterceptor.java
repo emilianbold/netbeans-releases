@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.knockout.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -82,7 +83,7 @@ public class KnockoutExportInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public void intercept(String functionName, JsObject globalObject, DeclarationScope scope,
+    public Collection<TypeUsage> intercept(String functionName, JsObject globalObject, DeclarationScope scope,
             ModelElementFactory factory, Collection<FunctionArgument> args) {
 
         if (args.size() == 3) {
@@ -198,7 +199,7 @@ public class KnockoutExportInterceptor implements FunctionInterceptor {
                                     foundParent = property;
                                 }
                                 if (skip) {
-                                    return;
+                                    return Collections.emptyList();
                                 }
                             }
                         }
@@ -226,6 +227,7 @@ public class KnockoutExportInterceptor implements FunctionInterceptor {
 
             }
         }
+        return Collections.emptyList();
     }
 
     private static JsObject getReference(DeclarationScope scope,

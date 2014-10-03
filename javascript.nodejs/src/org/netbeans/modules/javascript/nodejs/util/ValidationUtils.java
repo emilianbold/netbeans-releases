@@ -45,6 +45,9 @@ import org.openide.util.NbBundle;
 
 public final class ValidationUtils {
 
+    public static final String NODE_PATH = "node.path"; // NOI18N
+
+
     private ValidationUtils() {
     }
 
@@ -52,7 +55,7 @@ public final class ValidationUtils {
     public static void validateNode(ValidationResult result, String node) {
         String warning = ExternalExecutableValidator.validateCommand(node, Bundle.ValidationUtils_node_name());
         if (warning != null) {
-            result.addWarning(new ValidationResult.Message("node.path", warning)); // NOI18N
+            result.addWarning(new ValidationResult.Message(NODE_PATH, warning)); // NOI18N
         }
     }
 

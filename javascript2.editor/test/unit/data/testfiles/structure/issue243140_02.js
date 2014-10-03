@@ -15,3 +15,5 @@ var myModule = (function()
 })();  
 
 var yourModule = myModule;
+console.log(myModule.address.street);
+console.log(yourModule.address.town);

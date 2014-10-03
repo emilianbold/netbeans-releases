@@ -91,6 +91,7 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhanced
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
+import org.netbeans.modules.web.clientproject.ui.action.ClientSideProjectActionProvider;
 import org.netbeans.modules.web.clientproject.ui.action.ProjectOperations;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
@@ -151,8 +152,6 @@ public class ClientSideProject implements Project {
 
     @StaticResource
     public static final String HTML5_PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/html5-project.png"; // NOI18N
-    @StaticResource
-    public static final String JS_LIBRARY_PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/js-library-project.png"; // NOI18N
 
     final UsageLogger projectBrowserUsageLogger = UsageLogger.projectBrowserUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
 
@@ -586,8 +585,7 @@ public class ClientSideProject implements Project {
 
         @Override
         public Icon getIcon() {
-            String icon = isJsLibrary() ? ClientSideProject.JS_LIBRARY_PROJECT_ICON : ClientSideProject.HTML5_PROJECT_ICON;
-            return new ImageIcon(ImageUtilities.loadImage(icon));
+            return new ImageIcon(ImageUtilities.loadImage(ClientSideProject.HTML5_PROJECT_ICON));
         }
 
         @Override

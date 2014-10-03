@@ -729,6 +729,10 @@ public final class NbMavenProjectImpl implements Project {
                 return FileVisitResult.CONTINUE;
             }
 
+            if(!VisibilityQuery.getDefault().isVisible(dir.toFile())) {
+                return FileVisitResult.SKIP_SUBTREE;
+            }
+            
             for (OtherSourcesExclude rp : lookup.lookupAll(OtherSourcesExclude.class)) {
                 for (Path folder : rp.excludedFolders()) {
                     // In case of excluded folders (e.g. src/main/java) we can simply skip whole subtree

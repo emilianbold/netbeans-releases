@@ -3,8 +3,8 @@ jQuery.|event.customEvent.test();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      event                           [PUBLIC]   jQueryFragment01.js
-METHOD     Callbacks(flags): Callbacks     [PUBLIC]   <font color=#999999>jquery-api.xml</font>
-METHOD     Deferred(beforeStart, deferred  [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     Callbacks                       [PUBLIC]   <font color=#999999>jquery-api.xml</font>
+METHOD     Deferred                        [PUBLIC]   <font color=#999999>jquery-api.xml</font>
 METHOD     add(html): jQuery               [PUBLIC]   <font color=#999999>jquery-api.xml</font>
 METHOD     addBack(selector): jQuery       [PUBLIC]   <font color=#999999>jquery-api.xml</font>
 METHOD     addClass(className): jQuery     [PUBLIC]   <font color=#999999>jquery-api.xml</font>
