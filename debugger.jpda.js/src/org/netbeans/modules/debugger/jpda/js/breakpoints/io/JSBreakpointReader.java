@@ -58,6 +58,7 @@ import org.netbeans.modules.javascript2.debug.breakpoints.FutureLine;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.modules.javascript2.debug.breakpoints.io.BreakpointsFromGroup;
 import org.netbeans.modules.javascript2.debug.breakpoints.io.BreakpointsFromGroup.TestGroupProperties;
+import org.netbeans.modules.javascript2.debug.sources.SourceFilesCache;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -101,7 +102,7 @@ public class JSBreakpointReader implements Properties.Reader {
                 URL url = new URL(urlStr);
                 FileObject fo = URLMapper.findFileObject(url);
                 if (fo == null) {
-                    if (Source.URL_PROTOCOL.equals(url.getProtocol())) {
+                    if (SourceFilesCache.URL_PROTOCOL.equals(url.getProtocol())) {
                         Line line = new FutureLine(url, lineNumber - 1);
                         return new JSLineBreakpoint(line);
                     } else {

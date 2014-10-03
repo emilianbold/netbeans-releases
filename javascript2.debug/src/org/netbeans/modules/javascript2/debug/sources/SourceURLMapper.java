@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.js.source;
+package org.netbeans.modules.javascript2.debug.sources;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -104,7 +104,7 @@ public final class SourceURLMapper extends URLMapper {
         }
         try {
             //return new URL(null, PROTOCOL + "://fs" + fs.getID() + "/" + path, new SourceURLHandler());
-            return new URL(Source.URL_PROTOCOL, "fs" + fs.getID(), -1, "/" + percentEncode(path), new SourceURLHandler());
+            return new URL(SourceFilesCache.URL_PROTOCOL, "fs" + fs.getID(), -1, "/" + percentEncode(path), new SourceURLHandler());
         } catch (MalformedURLException x) {
             throw new AssertionError(x);
         }
@@ -112,7 +112,7 @@ public final class SourceURLMapper extends URLMapper {
     
     private static final Pattern HOST = Pattern.compile("fs(\\d+)"); // NOI18N
     static FileObject find(URL url) {
-        if (!Source.URL_PROTOCOL.equals(url.getProtocol())) {
+        if (!SourceFilesCache.URL_PROTOCOL.equals(url.getProtocol())) {
             return null;
         }
         Matcher m = HOST.matcher(url.getHost());
@@ -232,7 +232,7 @@ public final class SourceURLMapper extends URLMapper {
     }
     
 
-    @URLStreamHandlerRegistration(protocol=Source.URL_PROTOCOL)
+    @URLStreamHandlerRegistration(protocol=SourceFilesCache.URL_PROTOCOL)
     public static final class SourceURLHandler extends URLStreamHandler {
         
         protected @Override URLConnection openConnection(URL u) throws IOException {

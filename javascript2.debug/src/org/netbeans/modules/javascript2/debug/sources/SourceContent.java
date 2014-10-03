@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.js.source;
+package org.netbeans.modules.javascript2.debug.sources;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.Places;
 
 /**
  *
- * @author Martin
+ * @author Martin Entlicher
  */
-final class SourceFilesCache {
+public interface SourceContent {
     
-    private static final SourceFilesCache DEFAULT = new SourceFilesCache();
+    public String getContent() throws IOException;
     
-    private final SourceFS fs;
+    public long getLength();
     
-    private SourceFilesCache() {
-        fs = new SourceFS();
-    }
-    
-    public static SourceFilesCache getDefault() {
-        return DEFAULT;
-    }
-    
-    public URL getSourceFile(String name, int hash, String content) throws IOException {
-        String path = Integer.toHexString(hash) + '/' + name;
-        FileObject fo = fs.findResource(path);
-        if (fo == null) {
-            fo = fs.createFile(path, content);
-        }
-        return fo.toURL();
-    }
-
 }

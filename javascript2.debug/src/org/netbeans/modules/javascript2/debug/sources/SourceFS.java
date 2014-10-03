@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.js.source;
+package org.netbeans.modules.javascript2.debug.sources;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -109,7 +109,7 @@ final class SourceFS extends AbstractFileSystem {
         return id;
     }
     
-    public FileObject createFile(String path, String content) {
+    public FileObject createFile(String path, SourceContent content) {
         int i = path.lastIndexOf('/');
         String name = (i >= 0) ? path.substring(i + 1) : path;
         Item item = new Item(name, content);
@@ -413,11 +413,11 @@ final class SourceFS extends AbstractFileSystem {
     private static class Item {
         
         public final String name;
-        public final String content;
+        public final SourceContent content;
         public final Date date;
         private final Map<String, Object> attrs = new HashMap<>();
         
-        public Item(String name, String content) {
+        public Item(String name, SourceContent content) {
             this.name = name;
             this.content = content;
             this.date = new Date();
@@ -425,7 +425,7 @@ final class SourceFS extends AbstractFileSystem {
 
         private long getSize() {
             if (content != null) {
-                return content.length();
+                return content.getLength();
             } else {
                 return 0l;
             }
@@ -433,7 +433,7 @@ final class SourceFS extends AbstractFileSystem {
 
         private InputStream getInputStream() throws FileNotFoundException {
             try {
-                return new ReaderInputStream(new StringReader(content));
+                return new ReaderInputStream(new StringReader(content.getContent()));
             } catch (IOException ex) {
                 throw new FileNotFoundException(ex.getLocalizedMessage());
             }

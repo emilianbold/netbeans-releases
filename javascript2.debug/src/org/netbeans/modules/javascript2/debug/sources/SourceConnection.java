@@ -40,8 +40,9 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.js.source;
+package org.netbeans.modules.javascript2.debug.sources;
 
+import org.netbeans.modules.javascript2.debug.sources.SourceURLMapper;
 import java.io.FileNotFoundException;
 import java.io.FilePermission;
 import java.io.IOException;
