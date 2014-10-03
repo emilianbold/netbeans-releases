@@ -48,6 +48,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 import org.netbeans.spi.project.ActionProvider;
 
 /**
@@ -118,6 +119,17 @@ public interface PlatformProviderImplementation {
      */
     @CheckForNull
     ActionProvider getActionProvider(@NonNull Project project);
+
+    /**
+     * Get list of panels for run customization.
+     * <p>
+     * These panels can be used to configure properties needed for running this platform provider,
+     * like e.g. debugger port, default/index file etc.
+     * @param project project to be source of the customization
+     * @return list of panels for run customization, can be empty but never {@code null}
+     * @since 1.71
+     */
+    List<CustomizerPanelImplementation> getRunCustomizerPanels(@NonNull Project project);
 
     /**
      * Notifies provider that the given project is being opened.
