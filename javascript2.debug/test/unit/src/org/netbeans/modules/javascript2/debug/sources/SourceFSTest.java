@@ -40,7 +40,7 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.js.source;
+package org.netbeans.modules.javascript2.debug.sources;
 
 import java.io.IOException;
 import static junit.framework.Assert.*;
@@ -69,7 +69,7 @@ public class SourceFSTest {
     }
     
     private FileObject checkFileCreation(SourceFS fs, String name, String content) throws IOException {
-        FileObject fo = fs.createFile(name, content);
+        FileObject fo = fs.createFile(name, new SourceFilesCache.StringContent(content));
         assertNotNull(name, fo);
         assertEquals(content, fo.asText());
         return fo;

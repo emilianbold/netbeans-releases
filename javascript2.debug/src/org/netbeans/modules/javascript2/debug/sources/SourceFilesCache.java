@@ -79,7 +79,7 @@ public final class SourceFilesCache {
         return fo.toURL();
     }
     
-    private static final class StringContent implements SourceContent {
+    static final class StringContent implements SourceContent {
         
         private final String content;
         
