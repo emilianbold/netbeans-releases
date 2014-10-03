@@ -176,7 +176,7 @@ public final class FileUtils {
         return getRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST);
     }
 
-    private static List<File> getRoots(Project project, String type) {
+    public static List<File> getRoots(Project project, String type) {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(type);
         List<File> roots = new ArrayList<>(sourceGroups.length);
         for (SourceGroup sourceGroup : sourceGroups) {
