@@ -1233,14 +1233,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                             @Override
                             public void run () {
                                 SearchHistoryAction.openSearch(repo, new File[] { repo }, branch,
-                                        Utils.getContextDisplayName(VCSContext.forNodes(new Node[] {
-                                            new AbstractNode(Children.LEAF, Lookups.fixed(repo)) {
-                                                @Override
-                                                public String getDisplayName () {
-                                                    return repo.getName();
-                                                }
-                                            }
-                                        })));
+                                        Utils.getContextDisplayName(GitUtils.getContextForFile(repo)));
                             }
                         });
                     }
@@ -1267,18 +1260,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 if (!remote) {
                     actions.add(null);
                     if (trackedBranch != null) {
-                        final Node rootNode = new AbstractNode(Children.LEAF, Lookups.fixed(repo)) {
-
-                            @Override
-                            public String getName () {
-                                return repo.getName();
-                            }
-
-                        };
                         actions.add(new AbstractAction(Bundle.LBL_DiffToTrackedBranchAction_PopupName(trackedBranch.getName())) {
                             @Override
                             public void actionPerformed (ActionEvent e) {
-                                SystemAction.get(DiffAction.class).diff(VCSContext.forNodes(new Node[] { rootNode }),
+                                SystemAction.get(DiffAction.class).diff(GitUtils.getContextForFile(repo),
                                         new Revision.BranchReference(branchName, branchId),
                                         new Revision.BranchReference(trackedBranch));
                             }
@@ -2129,14 +2114,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     }
 
     private static String getContextDisplayName (final File repo) {
-        return Utils.getContextDisplayName(VCSContext.forNodes(new Node[] {
-            new AbstractNode(Children.LEAF, Lookups.fixed(repo)) {
-                @Override
-                public String getDisplayName () {
-                    return repo.getName();
-                }
-            }
-        }));
+        return Utils.getContextDisplayName(GitUtils.getContextForFile(repo));
     }
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
