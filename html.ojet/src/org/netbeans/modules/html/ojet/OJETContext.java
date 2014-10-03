@@ -89,6 +89,8 @@ public enum OJETContext {
                         if (dataBindTs.isEmpty()) {
                             return DATA_BINDING;
                         }
+                    } else {
+                        return UNKNOWN;
                     }
                     int ediff = dataBindTs.move(offset);
                     if (ediff == 0 && dataBindTs.movePrevious() || dataBindTs.moveNext()) {
