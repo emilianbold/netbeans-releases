@@ -70,6 +70,8 @@ public final class NodeJsActionProvider implements ActionProvider {
         Command[] allCommands = new Command[] {
             new RunProjectCommand(project),
             new RunFileCommand(project),
+            new DebugProjectCommand(project),
+            new DebugFileCommand(project),
         };
         for (Command command : allCommands) {
             Command old = commands.put(command.getCommandId(), command);

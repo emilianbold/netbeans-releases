@@ -47,29 +47,44 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.lib.v8debug.PropertyBoolean;
+import org.netbeans.lib.v8debug.V8Arguments;
+import org.netbeans.lib.v8debug.V8Breakpoint;
+import org.netbeans.lib.v8debug.V8Command;
 import org.netbeans.lib.v8debug.V8Event;
+import org.netbeans.lib.v8debug.V8Request;
 import org.netbeans.lib.v8debug.V8Response;
 import org.netbeans.lib.v8debug.V8Script;
 import org.netbeans.lib.v8debug.client.ClientConnection;
+import org.netbeans.lib.v8debug.commands.Scripts;
+import org.netbeans.lib.v8debug.commands.SetBreakpoint;
 import org.netbeans.lib.v8debug.events.AfterCompileEventBody;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
 import org.netbeans.lib.v8debug.events.ExceptionEventBody;
 import org.netbeans.modules.javascript.v8debug.api.Connector;
+import org.netbeans.modules.javascript.v8debug.breakpoints.BreakpointsHandler;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
+import org.openide.DialogDisplayer;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Martin Entlicher
  */
-public class V8Debugger {
+public final class V8Debugger {
     
     private static final Logger LOG = Logger.getLogger(V8Debugger.class.getName());
     
@@ -77,14 +92,17 @@ public class V8Debugger {
     private final int port;
     private final ClientConnection connection;
     private final ScriptsHandler scriptsHandler;
+    private final BreakpointsHandler breakpointsHandler;
     @NullAllowed
     private final Runnable finishCallback;
     private DebuggerEngine engine;
     private DebuggerEngine.Destructor engineDestructor;
     private final RequestProcessor rp = new RequestProcessor(V8Debugger.class);
-    private final Set<Listener> listeners = new LinkedHashSet<>();
+    private final Set<Listener> listeners = new CopyOnWriteArraySet<>();
     
-    private long requestSequence = 1l;
+    private final AtomicLong requestSequence = new AtomicLong(1l);
+    private final Map<Long, Pair<V8Request, CommandResponseCallback>> commandCallbacks = new HashMap<>();
+    private volatile boolean suspended = false;
     private volatile boolean finished = false;
     
     public static DebuggerEngine startSession(Connector.Properties properties,
@@ -108,6 +126,7 @@ public class V8Debugger {
         this.port = properties.getPort();
         this.connection = new ClientConnection(properties.getHostName(), properties.getPort());
         this.scriptsHandler = new ScriptsHandler(properties.getLocalPath(), properties.getServerPath());
+        this.breakpointsHandler = new BreakpointsHandler(this);
         this.finishCallback = finishCallback;
     }
 
@@ -121,6 +140,7 @@ public class V8Debugger {
     
     public void start() {
         spawnResponseLoop();
+        initScripts();
     }
     
     public void finish() {
@@ -131,10 +151,48 @@ public class V8Debugger {
         try {
             connection.close();
         } catch (IOException ioex) {}
+        notifyFinished();
         engineDestructor.killEngine();
         if (finishCallback != null) {
             finishCallback.run();
         }
+    }
+    
+    public ScriptsHandler getScriptsHandler() {
+        return scriptsHandler;
+    }
+    
+    public BreakpointsHandler getBreakpointsHandler() {
+        return breakpointsHandler;
+    }
+    
+    @CheckForNull
+    public V8Request sendCommandRequest(V8Command cmd, V8Arguments args) {
+        return sendCommandRequest(cmd, args, null);
+    }
+    
+    @CheckForNull
+    public V8Request sendCommandRequest(V8Command cmd, V8Arguments args, CommandResponseCallback callback) {
+        V8Request request = new V8Request(requestSequence.getAndIncrement(), cmd, args);
+        if (callback != null) {
+            synchronized (commandCallbacks) {
+                commandCallbacks.put(request.getSequence(), Pair.of(request, callback));
+            }
+        }
+        try {
+            connection.send(request);
+            return request;
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+    
+    public boolean isSuspended() {
+        return suspended;
+    }
+
+    public void addListener(Listener listener) {
+        listeners.add(listener);
     }
 
     private void spawnResponseLoop() {
@@ -187,9 +245,33 @@ public class V8Debugger {
     }
     
     private void handleResponse(V8Response response) {
+        long requestSequenceNum = response.getRequestSequence();
+        synchronized (commandCallbacks) {
+            Pair<V8Request, CommandResponseCallback> callback;
+            synchronized (commandCallbacks) {
+                callback = commandCallbacks.get(requestSequenceNum);
+            }
+            if (callback != null) {
+                callback.second().notifyResponse(callback.first(), response);
+            }
+        }
+        String errorMessage = response.getErrorMessage();
+        if (errorMessage != null) {
+            //DialogDisplayer.getDefault().notify(null);
+            StatusDisplayer.getDefault().setStatusText(errorMessage);
+            return ;
+        }
+        if (!response.isSuccess()) {
+            return ;
+        }
+        notifySuspended(!response.isRunning());
+        switch (response.getCommand()) {
+            
+        }
     }
 
     private void handleEvent(V8Event event) {
+        notifySuspended(event.isRunning().getValueOr(true));
         switch (event.getKind()) {
             case AfterCompile:
                 AfterCompileEventBody aceb = (AfterCompileEventBody) event.getBody();
@@ -198,6 +280,10 @@ public class V8Debugger {
                 break;
             case Break:
                 BreakEventBody beb = (BreakEventBody) event.getBody();
+                long[] breakpoints = beb.getBreakpoints();
+                if (breakpoints != null && breakpoints.length > 0) {
+                    breakpointsHandler.event(beb);
+                }
                 //System.out.println("stopped at "+beb.getScript().getName()+", line = "+(beb.getSourceLine()+1)+" : "+beb.getSourceColumn()+"\ntext = "+beb.getSourceLineText());
                 break;
             case Exception:
@@ -205,16 +291,26 @@ public class V8Debugger {
                 //System.out.println("exception '"+eeb.getException()+"' stopped in "+eeb.getScript().getName()+", line = "+(eeb.getSourceLine()+1)+" : "+eeb.getSourceColumn()+"\ntext = "+eeb.getSourceLineText());
                 break;
             default:
-                throw new IllegalStateException("Unknown event: "+event.getKind());
+                LOG.info("Unknown event: "+event.getKind());
         }
     }
     
-    public void addListener(Listener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
+    private void notifySuspended(boolean suspended) {
+        if (this.suspended == suspended) {
+            return ;
+        }
+        this.suspended = suspended;
+        for (Listener l : listeners) {
+            l.notifySuspended(suspended);
         }
     }
-
+    
+    private void notifyFinished() {
+        for (Listener l : listeners) {
+            l.notifyFinished();
+        }
+    }
+    
     private void setEngine(DebuggerEngine debuggerEngine) {
         this.engine = debuggerEngine;
     }
@@ -223,12 +319,29 @@ public class V8Debugger {
         this.engineDestructor = destructor;
     }
 
+    private void initScripts() {
+        Scripts.Arguments sa = new Scripts.Arguments(null, null, false, null);
+        sendCommandRequest(V8Command.Scripts, sa, new CommandResponseCallback() {
+            @Override
+            public void notifyResponse(V8Request request, V8Response response) {
+                Scripts.ResponseBody srb = (Scripts.ResponseBody) response.getBody();
+                V8Script[] scripts = srb.getScripts();
+                scriptsHandler.add(scripts);
+            }
+        });
+    }
+
     public interface Listener {
         
         void notifySuspended(boolean suspended);
         
         void notifyFinished();
         
+    }
+    
+    public interface CommandResponseCallback {
+        
+        void notifyResponse(V8Request request, V8Response response);
     }
 
     

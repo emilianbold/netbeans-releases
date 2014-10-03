@@ -337,7 +337,7 @@ public class JsStructureScanner implements StructureScanner {
             result = property.isDeclared();
             if (!result) {
                 result = hasDeclaredProperty(property);
-            }
+            } 
         }
 
         return result;
@@ -482,7 +482,7 @@ public class JsStructureScanner implements StructureScanner {
         public JsFunctionStructureItem(JsFunction elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
             super(elementHandle, children, "fn", parserResult); //NOI18N
             Collection<? extends TypeUsage> returnTypes = getFunctionScope().getReturnTypes();
-            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(returnTypes, parserResult, true));
+            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(returnTypes, parserResult, true, false));
         }
 
         public final JsFunction getFunctionScope() {
@@ -600,7 +600,7 @@ public class JsStructureScanner implements StructureScanner {
             this.object = elementHandle;
 
             Collection<? extends TypeUsage> assignmentForOffset = object.getAssignmentForOffset(object.getDeclarationName().getOffsetRange().getEnd());
-            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(assignmentForOffset, parserResult, true));
+            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(assignmentForOffset, parserResult, true, false));
         }
 
         

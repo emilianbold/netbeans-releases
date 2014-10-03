@@ -194,6 +194,15 @@ public class RemoteObject extends AbstractObject {
     }
 
     /**
+     * Clears the fetched properties. Fresh properties will be loaded when
+     * {@code getProperties()} method is invoked next time.
+     */
+    public void resetProperties() {
+        assert getType() == Type.OBJECT;
+        properties = null;
+    }
+
+    /**
      * Invokes the function with the given declaration on this object
      * (i.e. invokes the function with its {@code this} set to this object).
      * 

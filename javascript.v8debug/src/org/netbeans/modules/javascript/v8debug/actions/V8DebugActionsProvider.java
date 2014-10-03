@@ -48,6 +48,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 import static org.netbeans.api.debugger.ActionsManager.*;
+import org.netbeans.lib.v8debug.V8Command;
+import org.netbeans.lib.v8debug.V8StepAction;
+import org.netbeans.lib.v8debug.commands.Continue;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
 import org.netbeans.modules.javascript.v8debug.V8DebuggerSessionProvider;
 import org.netbeans.spi.debugger.ActionsProvider;
@@ -78,22 +81,38 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
                         ACTION_EVALUATE,
                     })));
     
-    private final V8Debugger debugger;
+    private final V8Debugger dbg;
     
     public V8DebugActionsProvider(ContextProvider contextProvider) {
-        debugger = contextProvider.lookupFirst(null, V8Debugger.class);
-        debugger.addListener(this);
+        dbg = contextProvider.lookupFirst(null, V8Debugger.class);
+        dbg.addListener(this);
         setEnabled(ACTION_START, true);
         setEnabled(ACTION_KILL, true);
+        notifySuspended(false);
     }
     
     @Override
     public void doAction(Object action) {
         LOG.fine("doAction("+action+")");
         if (action == ACTION_START) {
-            debugger.start();
+            dbg.start();
         } else if (action == ACTION_KILL) {
-            debugger.finish();
+            dbg.finish();
+        } else if (action == ACTION_CONTINUE) {
+            dbg.sendCommandRequest(V8Command.Continue, null);
+        } else if (action == ACTION_PAUSE) {
+            dbg.sendCommandRequest(V8Command.Suspend, null);
+        } else if (action == ACTION_STEP_INTO) {
+            Continue.Arguments ca = new Continue.Arguments(V8StepAction.in);
+            dbg.sendCommandRequest(V8Command.Continue, ca);
+        } else if (action == ACTION_STEP_OVER) {
+            Continue.Arguments ca = new Continue.Arguments(V8StepAction.next);
+            dbg.sendCommandRequest(V8Command.Continue, ca);
+        } else if (action == ACTION_STEP_OUT) {
+            Continue.Arguments ca = new Continue.Arguments(V8StepAction.out);
+            dbg.sendCommandRequest(V8Command.Continue, ca);
+        } else if (action == ACTION_RUN_TO_CURSOR) {
+            
         }
     }
 
@@ -104,7 +123,13 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
 
     @Override
     public void notifySuspended(boolean suspended) {
-        
+        setEnabled(ACTION_CONTINUE, suspended);
+        setEnabled(ACTION_PAUSE, !suspended);
+        setEnabled(ACTION_STEP_INTO, suspended);
+        setEnabled(ACTION_STEP_OVER, suspended);
+        setEnabled(ACTION_STEP_OUT, suspended);
+        setEnabled(ACTION_RUN_TO_CURSOR, suspended);
+        setEnabled(ACTION_EVALUATE, suspended);
     }
 
     @Override

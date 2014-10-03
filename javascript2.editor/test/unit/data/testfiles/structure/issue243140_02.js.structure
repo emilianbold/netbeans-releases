@@ -5,4 +5,4 @@ myModule:VARIABLE:[PUBLIC]:ESCAPED{myModule}:
     zip:FIELD:[PUBLIC]:ESCAPED{zip}<font color="#999999">ESCAPED{ : }String</font>:
   bar:FIELD:[PUBLIC]:ESCAPED{bar}:
   foo:METHOD:[PUBLIC]:ESCAPED{foo}:
-yourModule:VARIABLE:[PUBLIC]:ESCAPED{yourModule}<font color="#999999">ESCAPED{ : }myModule</font>:
+yourModule:VARIABLE:[PUBLIC]:ESCAPED{yourModule}:

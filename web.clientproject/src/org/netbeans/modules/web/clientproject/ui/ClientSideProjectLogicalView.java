@@ -233,6 +233,10 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
     private static final class ClientSideProjectNode extends AbstractNode implements ChangeListener, PropertyChangeListener {
 
         @StaticResource
+        private static final String HTML5_BADGE_ICON = "org/netbeans/modules/web/clientproject/ui/resources/html5-badge.png"; // NOI18N
+        @StaticResource
+        private static final String JS_LIBRARY_BADGE_ICON = "org/netbeans/modules/web/clientproject/ui/resources/js-library-badge.png"; // NOI18N
+        @StaticResource
         private static final String PLACEHOLDER_BADGE_ICON = "org/netbeans/modules/web/clientproject/ui/resources/placeholder-badge.png"; // NOI18N
         private static final URL PLACEHOLDER_BADGE_URL = ClientSideProjectNode.class.getResource(PLACEHOLDER_BADGE_ICON);
         private static final String ICON_TOOLTIP = "<img src=\"%s\">&nbsp;%s"; // NOI18N
@@ -340,7 +344,10 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         private Image annotateImage(Image image) {
-            Image badged = image;
+            // project type
+            Image projectBadge = ImageUtilities.loadImage(project.isJsLibrary() ? JS_LIBRARY_BADGE_ICON : HTML5_BADGE_ICON);
+            Image badged = ImageUtilities.mergeImages(image, projectBadge, 0, 0);
+            // platform providers
             boolean first = true;
             for (PlatformProvider provider : project.getPlatformProviders()) {
                 BadgeIcon badgeIcon = provider.getBadgeIcon();

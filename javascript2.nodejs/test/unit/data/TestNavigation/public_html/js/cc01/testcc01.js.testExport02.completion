@@ -1,0 +1,9 @@
+Code completion result for source line:
+simple.|message.setCode(23);
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CONSTRUCTO Out                             [PUBLIC]   simpleModule.js
+METHOD     resolve()                       [PUBLIC]   <font color=#999999>NodeJS</font>
+FIELD      cache                           [PUBLIC]   <font color=#999999>NodeJS</font>
+FIELD      extensions                      [PUBLIC]   <font color=#999999>NodeJS</font>
+FIELD      message: Message                [PUBLIC]   simpleModule.js
