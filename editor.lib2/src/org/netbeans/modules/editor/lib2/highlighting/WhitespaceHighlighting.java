@@ -78,8 +78,6 @@ implements DocumentListener, LookupListener
 
     private static final String TRAILING_ATTRS_FCS_NAME = "trailing-whitespace"; // NOI18N
     
-    private final JTextComponent component;
-    
     private final Document doc;
     
     private final CharSequence docText;
@@ -95,7 +93,6 @@ implements DocumentListener, LookupListener
     private Lookup.Result<FontColorSettings> result;
 
     WhitespaceHighlighting(JTextComponent c) {
-        this.component = c;
         // Upon doc change all layers become recreated by infrastructure (no need to listen for doc change)
         this.doc = c.getDocument();
         this.docText = DocumentUtilities.getText(doc);

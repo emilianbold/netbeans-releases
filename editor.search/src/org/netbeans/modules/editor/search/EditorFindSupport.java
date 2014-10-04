@@ -268,7 +268,7 @@ public final class EditorFindSupport {
                         cacheContent = DocumentFinder.findBlocks(doc, so, eo, props, blocks);
                     } catch (BadLocationException ble) {
                         cacheContent = Arrays.copyOf(blocks, blocks.length);
-                        LOG.log(Level.WARNING, ble.getMessage(), ble);
+                        LOG.log(Level.INFO, ble.getMessage(), ble);
                     }
 
                 }

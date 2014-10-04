@@ -93,6 +93,7 @@ import org.netbeans.modules.editor.errorstripe.privatespi.Status;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -130,6 +131,8 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     
     private static final Icon busyIcon;
     
+    private DocumentListener weakDocL;
+
     static {
         busyIcon = new ImageIcon(AnnotationView.class.getResource("resources/hodiny.gif"));
     }
@@ -148,9 +151,10 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         repaintTask = WORKER.create(repaintTaskRunnable = new RepaintTask());
         this.data = new AnnotationViewDataImpl(this, pane);
         this.scrollBar = UIManager.getInsets("Nb.Editor.ErrorStripe.ScrollBar.Insets"); // NOI18N
-        
-        FoldHierarchy.get(pane).addFoldHierarchyListener(this);
-        pane.addPropertyChangeListener(this);
+
+        FoldHierarchy fh = FoldHierarchy.get(pane);
+        fh.addFoldHierarchyListener(WeakListeners.create(FoldHierarchyListener.class, this, fh));
+        pane.addPropertyChangeListener(WeakListeners.propertyChange(this, pane));
 
         updateForNewDocument();
         
@@ -170,14 +174,15 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         data.unregister();
         Document newDocument = pane.getDocument();
         
-        if (this.doc != null) {
-            this.doc.removeDocumentListener(this);
+        if (weakDocL != null && this.doc != null) {
+            this.doc.removeDocumentListener(weakDocL);
             this.doc = null;
         }
         
         if (newDocument instanceof BaseDocument) {
             this.doc = (BaseDocument) pane.getDocument();
-            this.doc.addDocumentListener(this);
+            weakDocL = WeakListeners.document(this, this.doc);
+            this.doc.addDocumentListener(weakDocL);
         }
         
         data.register(this.doc);
