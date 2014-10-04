@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,45 +40,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.js.source;
+package org.netbeans.modules.javascript.v8debug.annotation;
 
-import java.io.IOException;
-import static junit.framework.Assert.*;
-import org.junit.Test;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.javascript.v8debug.EditorUtils;
+import org.openide.text.Annotatable;
+import org.openide.text.Annotation;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author Martin Entlicher
- */
-public class SourceFSTest {
-    
-    @Test
-    public void testFilesCreation() throws IOException {
-        SourceFS fs = new SourceFS();
-        checkFileCreation(fs, "simpleName", "Simple Content");
-        checkFileCreation(fs, "simpleName.js", "Simple JS Content");
-        checkFileCreation(fs, "<eval>.js", "Eval");
-        checkFileCreation(fs, "a/b/c/d.js", "ABCD");
-        checkFileCreation(fs, "/e/f/g/h.js", "Absolute ABCD");
-        checkFileCreation(fs, "a//bb.js", "Two slashes file");
-        checkFileCreation(fs, "6911ca99//Users/someone/tools/scripts/script.js#15:15<eval>@1.js", "Wild eval file");
-        assertEquals("Simple JS Content", fs.findResource("simpleName.js").asText());
-        assertEquals("ABCD", fs.findResource("a/b/c/d.js").asText());
-        assertEquals("Wild eval file", fs.findResource("6911ca99//Users/someone/tools/scripts/script.js#15:15<eval>@1.js").asText());
+@NbBundle.Messages({"CurrentLineAnnotationDesc=Current Line"})
+public final class CurrentLineAnnotation extends Annotation {
+        
+    public CurrentLineAnnotation(Annotatable annotatable) {
+        attach(annotatable);
     }
     
-    private FileObject checkFileCreation(SourceFS fs, String name, String content) throws IOException {
-        FileObject fo = fs.createFile(name, content);
-        assertNotNull(name, fo);
-        assertEquals(content, fo.asText());
-        return fo;
+    public String getAnnotationType() {
+        return EditorUtils.CURRENT_LINE_ANNOTATION_TYPE;
     }
     
+    public String getShortDescription() {
+        return Bundle.CurrentLineAnnotationDesc();
+    }
+    
+
 }

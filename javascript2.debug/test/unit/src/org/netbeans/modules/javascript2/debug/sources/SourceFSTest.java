@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.js.source;
+package org.netbeans.modules.javascript2.debug.sources;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
+import static junit.framework.Assert.*;
+import org.junit.Test;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.Places;
 
 /**
  *
- * @author Martin
+ * @author Martin Entlicher
  */
-final class SourceFilesCache {
+public class SourceFSTest {
     
-    private static final SourceFilesCache DEFAULT = new SourceFilesCache();
-    
-    private final SourceFS fs;
-    
-    private SourceFilesCache() {
-        fs = new SourceFS();
+    @Test
+    public void testFilesCreation() throws IOException {
+        SourceFS fs = new SourceFS();
+        checkFileCreation(fs, "simpleName", "Simple Content");
+        checkFileCreation(fs, "simpleName.js", "Simple JS Content");
+        checkFileCreation(fs, "<eval>.js", "Eval");
+        checkFileCreation(fs, "a/b/c/d.js", "ABCD");
+        checkFileCreation(fs, "/e/f/g/h.js", "Absolute ABCD");
+        checkFileCreation(fs, "a//bb.js", "Two slashes file");
+        checkFileCreation(fs, "6911ca99//Users/someone/tools/scripts/script.js#15:15<eval>@1.js", "Wild eval file");
+        assertEquals("Simple JS Content", fs.findResource("simpleName.js").asText());
+        assertEquals("ABCD", fs.findResource("a/b/c/d.js").asText());
+        assertEquals("Wild eval file", fs.findResource("6911ca99//Users/someone/tools/scripts/script.js#15:15<eval>@1.js").asText());
     }
     
-    public static SourceFilesCache getDefault() {
-        return DEFAULT;
+    private FileObject checkFileCreation(SourceFS fs, String name, String content) throws IOException {
+        FileObject fo = fs.createFile(name, new SourceFilesCache.StringContent(content));
+        assertNotNull(name, fo);
+        assertEquals(content, fo.asText());
+        return fo;
     }
     
-    public URL getSourceFile(String name, int hash, String content) throws IOException {
-        String path = Integer.toHexString(hash) + '/' + name;
-        FileObject fo = fs.findResource(path);
-        if (fo == null) {
-            fo = fs.createFile(path, content);
-        }
-        return fo.toURL();
-    }
-
 }

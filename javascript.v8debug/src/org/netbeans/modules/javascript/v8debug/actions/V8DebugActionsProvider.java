@@ -56,6 +56,7 @@ import org.netbeans.modules.javascript.v8debug.V8DebuggerSessionProvider;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -82,6 +83,7 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
                     })));
     
     private final V8Debugger dbg;
+    private final RequestProcessor killActionRP = new RequestProcessor(V8DebugActionsProvider.class.getName()+".kill");
     
     public V8DebugActionsProvider(ContextProvider contextProvider) {
         dbg = contextProvider.lookupFirst(null, V8Debugger.class);
@@ -90,14 +92,31 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
         setEnabled(ACTION_KILL, true);
         notifySuspended(false);
     }
+
+    @Override
+    public void postAction(Object action, final Runnable actionPerformedNotifier) {
+        // Be able to kill the debugger at any time, not to be blocked by other actions.
+        if (action == ACTION_KILL) {
+            killActionRP.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        dbg.finish();
+                    } finally {
+                        actionPerformedNotifier.run();
+                    }
+                }
+            });
+        } else {
+            super.postAction(action, actionPerformedNotifier);
+        }
+    }
     
     @Override
     public void doAction(Object action) {
         LOG.fine("doAction("+action+")");
         if (action == ACTION_START) {
             dbg.start();
-        } else if (action == ACTION_KILL) {
-            dbg.finish();
         } else if (action == ACTION_CONTINUE) {
             dbg.sendCommandRequest(V8Command.Continue, null);
         } else if (action == ACTION_PAUSE) {
