@@ -98,6 +98,7 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
 import org.openide.text.DataEditorSupport;
@@ -277,7 +278,14 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                     v.getValue ();
             }
         } catch (InvalidExpressionException e) {
-            String typeName = resolveTypeName(offset, doc);
+            FileObject fo = lp.getLine ().getLookup().lookup(FileObject.class);
+            Source src;
+            if (fo != null) {
+                src = Source.create(fo);
+            } else {
+                src = Source.create(doc);
+            }
+            String typeName = resolveTypeName(offset, src);
             if (typeName != null) {
                 toolTipText = typeName;
             } else {
@@ -653,11 +661,11 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         } while(fqn != null);
     }
 
-    private String resolveTypeName (final int offset, Document doc) {
+    private String resolveTypeName (final int offset, Source source) {
         final String[] result = new String[1];
         result[0] = null;
         try {
-            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     Result res = resultIterator.getParserResult(offset);
