@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,6 +72,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Caret;
@@ -427,6 +429,19 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                 component.removePropertyChangeListener(this);
                 component.removeFocusListener(focusL);
                 component.removeMouseListener(this);
+
+                // Detach and clear JTextComponent.inputMethodRequestsHandler since it's strongly held by document
+                try {
+                    Field inputMethodRequestsHandlerField = JTextComponent.class.getDeclaredField("inputMethodRequestsHandler"); //NOI18N
+                    inputMethodRequestsHandlerField.setAccessible(true);
+                    Object value = inputMethodRequestsHandlerField.get(component);
+                    if (value instanceof DocumentListener) {
+                        component.getDocument().removeDocumentListener((DocumentListener) value);
+                        inputMethodRequestsHandlerField.set(component, null);
+                    }
+                } catch (Exception e) {
+                    // Ignore exception -> it means a possible mem leak until all clones of a document get closed
+                }
             }
 
             BaseDocument doc = getDocument();
@@ -434,9 +449,10 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                 modelChanged(doc, null);
             }
 
+            extComponent = null;
             component = null;
             putProperty(COMPONENT_PROPERTY, null);
-
+            
             // Clear the font-metrics cache
             FontMetricsCache.clear();
         }
