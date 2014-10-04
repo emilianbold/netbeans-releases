@@ -527,12 +527,12 @@ class DiffViewManager implements ChangeListener {
         } else {
             int halfScreen = rightPane.getScrollPane().getVerticalScrollBar().getVisibleAmount() / 2;
             rightOffet += halfScreen;
-            if (checkFileEdge && rightOffet + halfScreen >= rightPane.getScrollPane().getVerticalScrollBar().getMaximum()) {
+            if (checkFileEdge && rightOffet >= rightPane.getScrollPane().getVerticalScrollBar().getMaximum()) {
                 rightOffet = map.length - 1;
             }
             if (rightOffet >= map.length) return;
             leftPane.getScrollPane().getVerticalScrollBar().setValue(map[rightOffet]
-                    - leftPane.getScrollPane().getVerticalScrollBar().getVisibleAmount() / 2);
+                    - halfScreen);
         }
     }
 
@@ -772,9 +772,9 @@ class DiffViewManager implements ChangeListener {
         private void interpolate (int[] scrollMap, int start, int end) {
             if (end > start) {
                 int rightHeight = end - start;
-                int leftHeight = scrollMap[end] - scrollMap[start];
+                long leftHeight = scrollMap[end] - scrollMap[start];
                 for (int pos = 1; pos < end - start; ++pos) {
-                    scrollMap[pos + start] = (leftHeight * pos) / rightHeight + scrollMap[start];
+                    scrollMap[pos + start] = (int) ((leftHeight * pos) / rightHeight + scrollMap[start]);
                 }
             }
         }

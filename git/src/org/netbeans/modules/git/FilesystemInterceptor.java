@@ -1003,7 +1003,7 @@ class FilesystemInterceptor extends VCSInterceptor {
                     remove = true;
                 }
                 if (remove) {
-                    gitRepositories.remove(gitFolder.getParentFile());
+                    gitRepositories.remove(gitFolder.getParentFile(), false);
                     gitToMetadataFolder.remove(gitFolder);
                     metadataToGitFolder.remove(metadataFolder);
                 } else if (add) {
@@ -1012,7 +1012,7 @@ class FilesystemInterceptor extends VCSInterceptor {
                         // guess this is needed, versionedFilesChanged might not have been called yet (see InitAction)
                         Git.getInstance().versionedFilesChanged();
                     }
-                    gitRepositories.add(repository);
+                    gitRepositories.add(repository, false);
                 }
             }
         }

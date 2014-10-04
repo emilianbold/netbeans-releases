@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,15 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-#define COMPANY "Oracle Corporation"
-#define COMPONENT "NetBeans IDE"
-#define VER "8.1.0.0"
-#define FVER 8,1,0,0
-#define BUILD_ID "10032014"
-#define INTERNAL_NAME "netbeans"
-#define COPYRIGHT "\xA9 2007, 2014 Oracle and/or its affiliates. All rights reserved."
-#define NAME "NetBeans IDE 8.1"
+package org.netbeans.modules.git.ui.status;
 
+import java.io.File;
+import java.util.Set;
+import org.netbeans.modules.git.ui.actions.GitAction;
+import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+
+/**
+ *
+ * @author ondra
+ */
+@ActionID(id = "org.netbeans.modules.git.ui.status.StatusAllAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_StatusAllAction_Name")
+@NbBundle.Messages({
+    "LBL_StatusAllAction_Name=Show All Changes - Repository"
+})
+public class StatusAllAction extends GitAction {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/show_changes.png"; //NOI18N
+    
+    public StatusAllAction () {
+        super(ICON_RESOURCE);
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
+    
+    @Override
+    protected final void performContextAction (Node[] nodes) {
+        VCSContext context = getCurrentContext(nodes);
+        Set<File> roots = GitUtils.getRepositoryRoots(context);
+        SystemAction.get(StatusAction.class).performContextAction(GitUtils.getContextForFiles(roots.toArray(new File[roots.size()])));
+    }
+
+}
