@@ -107,7 +107,7 @@ public class CoverageManagerImpl implements CoverageManager {
                     Document document = target.getDocument();
                     FileObject fileForDocument = GsfUtilities.findFileObject(document);
                     // show/hide code coverage toolbar in all open file editors belonging only to this project
-                    if (project.equals(FileOwnerQuery.getOwner(fileForDocument))) {
+                    if (fileForDocument != null && FileOwnerQuery.getOwner(fileForDocument) == project) {
                         CoverageSideBar sb = CoverageSideBar.getSideBar(document);
                         if (sb != null) {
                             sb.showCoveragePanel(enabled);
