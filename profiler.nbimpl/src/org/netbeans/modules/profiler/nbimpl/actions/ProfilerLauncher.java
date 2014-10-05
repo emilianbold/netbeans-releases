@@ -110,7 +110,7 @@ public class ProfilerLauncher {
 
         public boolean start() {
             Project project = (Project)getProject();
-            getProfiler().setProfiledProject(project, getFile());
+            ((NetBeansProfiler)getProfiler()).setProfiledProject(project, getFile());
             
             final ProfilingSettings pSettings = getProfilingSettings();
             
