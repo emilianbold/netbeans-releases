@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -57,6 +58,8 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel.SelectedLibrary;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -148,6 +151,7 @@ public final class ClientSideProjectProperties {
                 public Void run() throws IOException {
                     saveProperties();
                     saveEnhancedBrowserConfiguration();
+                    fireProperties();
                     ProjectManager.getDefault().saveProject(project);
                     return null;
                 }
@@ -222,6 +226,14 @@ public final class ClientSideProjectProperties {
         assert ProjectManager.mutex().isWriteAccess() : "Write mutex required"; //NOI18N
         if (enhancedBrowserSettings != null) {
             enhancedBrowserSettings.save();
+        }
+    }
+
+    void fireProperties() {
+        if (runAs != null) {
+            String runAsValue = runAs.get();
+            PlatformProviders.getDefault().notifyPropertyChanged(project,
+                    new PropertyChangeEvent(project, PlatformProvider.PROP_RUN_CONFIGRATION, null, runAsValue));
         }
     }
 
