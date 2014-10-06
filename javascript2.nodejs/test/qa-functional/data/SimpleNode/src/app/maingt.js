@@ -63,24 +63,38 @@ o8.mana;//gt;7;ins.js;51;9
 var o9 = require("../exp/insref");
 o9.witch.origin;//gt;13;insref.js;12;10
 
+var o10 = require("../exp/fnc");
+o10.foobar;//gt;7;fnc.js;41;9
+o10.innerFnc;//gt;7;fnc.js;42;9
+o10.foobar.stObj.foo;//gt;15;fnc.js;28;7
+
+var p10 = new o10.foobar();
+p10.bar();//gt;5;func.js;8;10
+p10.ale2.f;//gt;5;func.js;4;10
+new o10.foobar().bar();//gt;11;func.js;8;10
+console.log(p10.attempt);//gt;19;func.js;37;22
+console.log(p10.getAttempt().aa);//gt;19;func.js;38;22
 
 var _1 = o1;
-_1.obj;
+_1.obj;//gt;5;literal.js;17;5
 
 var _2 = o2;
-_2.pokus2;
+_2.pokus2;//gt;7;literalRef.js;18;5
 
 var _3 = p;
-p.bar();
+p.bar();//gt;5;func.js;8;10
 
 var _4 = o4;
-_4.fakeOrigin;
-
-var _5 = o5;
-_5.getAttempt();
+_4.fakeOrigin;//gt;11;instance.js;46;18
 
 var _7 = o7;
-o7.mars.jejda;
+o7.mars.jejda;//gt;6;litref.js;22;9
 
 var _oo = o6;
 _oo.myobj;//gt;7;lit.js;14;9
+
+var _8 = o8;
+_8.spell();//gt;7;ins.js;50;9
+
+var _9 = o9;
+_9.witch.origin;//gt;6;insref.js;54;9
