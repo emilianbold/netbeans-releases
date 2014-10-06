@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
         <fail message="${cp}">
             <condition>
                 <not>
-                    <contains string="${cp}" substring="org-openide-util.jar"/>
+                    <contains string="${cp}" substring="org-openide-util-base.jar"/>
                 </not>
             </condition>
         </fail>
