@@ -82,6 +82,8 @@ public final class ClientSideProjectProperties {
     private volatile AtomicReference<String> testFolder = null;
     private volatile String jsLibFolder = null;
     private volatile String encoding = null;
+    private volatile Boolean runBrowser = null;
+    private volatile AtomicReference<String> runAs = null;
     private volatile String startFile = null;
     private volatile String selectedBrowser = null;
     private volatile String webRoot = null;
@@ -189,6 +191,15 @@ public final class ClientSideProjectProperties {
             }
         }
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_ENCODING, encoding);
+        if (runAs != null) {
+            String runAsValue = runAs.get();
+            if (runAsValue != null) {
+                putProperty(projectProperties, ClientSideProjectConstants.PROJECT_RUN_AS, runAsValue);
+            } else {
+                projectProperties.remove(ClientSideProjectConstants.PROJECT_RUN_AS);
+            }
+        }
+        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_RUN_BROWSER, runBrowser);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_START_FILE, startFile);
         // #227995: store PROJECT_SELECTED_BROWSER in private.properties:
         projectProperties.remove(ClientSideProjectConstants.PROJECT_SELECTED_BROWSER);
@@ -266,6 +277,28 @@ public final class ClientSideProjectProperties {
 
     public void setEncoding(String encoding) {
         this.encoding = encoding;
+    }
+
+    public AtomicReference<String> getRunAs() {
+        if (runAs == null) {
+            runAs = new AtomicReference(getProjectProperty(ClientSideProjectConstants.PROJECT_RUN_AS, null));
+        }
+        return runAs;
+    }
+
+    public void setRunAs(String runAs) {
+        this.runAs = new AtomicReference<>(runAs);
+    }
+
+    public boolean isRunBrowser() {
+        if (runBrowser == null) {
+            runBrowser = project.isRunBrowser();
+        }
+        return runBrowser;
+    }
+
+    public void setRunBrowser(boolean runBrowser) {
+        this.runBrowser = runBrowser;
     }
 
     public String getStartFile() {
@@ -403,6 +436,12 @@ public final class ClientSideProjectProperties {
     private void putProperty(EditableProperties properties, String property, String value) {
         if (value != null) {
             properties.put(property, value);
+        }
+    }
+
+    private void putProperty(EditableProperties properties, String property, Boolean value) {
+        if (value != null) {
+            properties.put(property, value.toString());
         }
     }
 
