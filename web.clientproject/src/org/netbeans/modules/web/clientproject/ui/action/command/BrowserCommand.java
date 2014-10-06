@@ -74,6 +74,9 @@ public class BrowserCommand extends Command {
         if (project.isJsLibrary()) {
             return false;
         }
+        if (!project.isRunBrowser()) {
+            return false;
+        }
         if (isJsFileCommand(context)) {
             return false;
         }
@@ -88,6 +91,9 @@ public class BrowserCommand extends Command {
     @Override
     void invokeActionInternal(final Lookup context) {
         if (project.isJsLibrary()) {
+            return;
+        }
+        if (!project.isRunBrowser()) {
             return;
         }
         if (isJsFileCommand(context)) {
