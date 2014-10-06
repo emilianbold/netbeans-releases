@@ -214,7 +214,9 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (PageModel.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+            String propName = evt.getPropertyName();
+            if (PageModel.PROP_SELECTED_NODES.equals(propName)
+                    || PageModel.PROP_DOCUMENT.equals(propName)) {
                 update();
             }
         }
