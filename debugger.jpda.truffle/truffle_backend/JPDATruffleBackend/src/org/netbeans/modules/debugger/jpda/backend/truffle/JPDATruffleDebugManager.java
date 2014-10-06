@@ -16,6 +16,7 @@ import com.oracle.truffle.api.frame.FrameInstanceVisitor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrument.SyntaxTag;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
@@ -32,6 +33,7 @@ import com.oracle.truffle.js.nodes.instrument.JSNodeProber;
 import com.oracle.truffle.js.parser.JSEngine;
 import com.oracle.truffle.js.parser.env.Environment;
 import com.oracle.truffle.js.runtime.JSContext;
+import com.oracle.truffle.js.runtime.JSFrameUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -161,7 +163,8 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
                     position.id, position.name, position.path,
                     position.line, position.code,
                     fi.slots, fi.slotNames, fi.slotTypes,
-                    fi.stackTrace, fi.topFrame);
+                    fi.stackTrace, fi.topFrame,
+                    new TruffleObject(context, "this", fi.thisObject));
             
             topFrameHolder.currentTopFrame = null;
             topFrameHolder.currentNode = null;
@@ -214,7 +217,8 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
                         position.id, position.name, position.path,
                         position.line, position.code,
                         fi.slots, fi.slotNames, fi.slotTypes,
-                        fi.stackTrace, fi.topFrame);
+                        fi.stackTrace, fi.topFrame,
+                        new TruffleObject(context, "this", fi.thisObject));
             }
             delegateCallback.callEntering(astNode, name);
         }
@@ -234,6 +238,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
         private final String[] slotTypes;
         private final FrameInstance[] stackTrace;
         private final String topFrame;
+        private final Object thisObject;
         
         public FrameInfo(MaterializedFrame frame, Visualizer visualizer,
                          Node astNode) {
@@ -257,6 +262,19 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
                 slotNames[i] = visualizer.displayIdentifier(slots[i]);// slots[i].getIdentifier().toString();
                 slotTypes[i] = slots[i].getKind().toString();
             }
+            //System.err.println("FrameInfo: arguments = "+Arrays.toString(arguments));
+            //System.err.println("           identifiers = "+frameDescriptor.getIdentifiers());
+            if (frame instanceof VirtualFrame) {
+                Object thisObj = JSFrameUtil.getThisObj((VirtualFrame) frame);
+                //System.err.println("           this = "+thisObj);
+                thisObject = thisObj;
+            } else if (arguments.length > 1) {
+                thisObject = arguments[0];
+            } else {
+                thisObject = null;
+            }
+            
+            //thisObject = new TruffleObject(context, "this", thisObj);
             /*
             System.err.println("JPDADebugClient: HALTED AT "+astNode+", "+frame+
                                "\n                 src. pos. = "+

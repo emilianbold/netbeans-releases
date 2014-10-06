@@ -108,15 +108,17 @@ public class TruffleStackInfo {
             Field[] framesInfos = ((ObjectVariable) framesVar).getFields(0, Integer.MAX_VALUE);
             String framesDesc = (String) framesInfos[0].createMirrorObject();
             Field[] codes = ((ObjectVariable) framesInfos[1]).getFields(0, Integer.MAX_VALUE);
+            Field[] thiss = ((ObjectVariable) framesInfos[2]).getFields(0, Integer.MAX_VALUE);
             int i1 = 0;
             int i2;
             int depth = 1;
             List<TruffleStackFrame> truffleFrames = new ArrayList<>();
             while ((i2 = framesDesc.indexOf("\n\n", i1)) > 0) {
                 StringReference codeRef = (StringReference) ((JDIVariable) codes[depth-1]).getJDIValue();
-                TruffleStackFrame tsf = new TruffleStackFrame(debugger, depth++, stackTrace, framesDesc.substring(i1, i2), codeRef, null);
+                TruffleStackFrame tsf = new TruffleStackFrame(debugger, depth, stackTrace, framesDesc.substring(i1, i2), codeRef, null, (ObjectVariable) thiss[depth-1]);
                 truffleFrames.add(tsf);
                 i1 = i2 + 2;
+                depth++;
             }
             return truffleFrames.toArray(new TruffleStackFrame[truffleFrames.size()]);
         } catch (InvalidExpressionException | NoSuchMethodException ex) {

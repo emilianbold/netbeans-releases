@@ -44,11 +44,14 @@ package org.netbeans.modules.debugger.jpda.truffle.vars.models;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.truffle.access.CurrentPCInfo;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleSlotVariable;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariableImpl;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -87,7 +90,16 @@ public class TruffleLocalVariablesTreeModel extends TruffleVariablesTreeModel {
                 }
                 TruffleStackFrame selectedStackFrame = currentPCInfo.getSelectedStackFrame();
                 //return currentPCInfo.getVars();
-                return selectedStackFrame.getVars();
+                TruffleSlotVariable[] vars = selectedStackFrame.getVars();
+                ObjectVariable thisObj = selectedStackFrame.getThis();
+                if (thisObj == null) {
+                    return vars;
+                } else {
+                    Object[] children = new Object[vars.length + 1];
+                    children[0] = TruffleVariableImpl.get(thisObj);
+                    System.arraycopy(vars, 0, children, 1, vars.length);
+                    return children;
+                }
             }
         } else if (parent instanceof TruffleVariable) {
             return ((TruffleVariable) parent).getChildren();

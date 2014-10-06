@@ -124,6 +124,7 @@ public class TruffleAccess implements JPDABreakpointListener {
     private static final String VAR_SLOT_TYPES = "slotTypes";                   // NOI18N
     private static final String VAR_STACK_TRACE = "stackTrace";
     private static final String VAR_TOP_FRAME = "topFrame";                     // NOI18N
+    private static final String VAR_THIS_OBJECT = "thisObject";                 // NOI18N
     
     private static final String METHOD_GET_FRAME_SLOTS = "getFrameSlots";       // NOI18N
     private static final String METHOD_GET_FRAME_SLOTS_SGN = "(Lcom/oracle/truffle/api/frame/FrameInstance;)[Ljava/lang/Object;";   // NOI18N
@@ -305,6 +306,7 @@ public class TruffleAccess implements JPDABreakpointListener {
             StringReference path = null;
             StringReference code = null;
             String topFrameDescription = null;
+            ObjectVariable thisObject = null;
             for (LocalVariable lv : localVariables) {
                 switch (lv.getName()) {
                     case VAR_FRAME:     frame = (ObjectVariable) lv;
@@ -335,6 +337,8 @@ public class TruffleAccess implements JPDABreakpointListener {
                                         break;
                     case VAR_TOP_FRAME: topFrameDescription = (String) lv.createMirrorObject();
                                         break;
+                    case VAR_THIS_OBJECT:thisObject = (ObjectVariable) lv;
+                                        break;
                 }
             }
             if (id >= 0 && line >= 0) {
@@ -347,7 +351,7 @@ public class TruffleAccess implements JPDABreakpointListener {
                     frameSlots = new Variable[]{};
                 }
                 TruffleSlotVariable[] vars = createVars(debugger, frame, frameSlots, slotNames, slotTypes);
-                TruffleStackFrame topFrame = new TruffleStackFrame(debugger, 0, stackTrace, topFrameDescription, code, vars);
+                TruffleStackFrame topFrame = new TruffleStackFrame(debugger, 0, stackTrace, topFrameDescription, code, vars, thisObject);
                 TruffleStackInfo stack = new TruffleStackInfo(debugger, frameSlots, stackTrace);
                 return new CurrentPCInfo(thread, sp, vars, topFrame, stack);
             } else {

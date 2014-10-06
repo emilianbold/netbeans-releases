@@ -70,6 +70,7 @@ public class TruffleStackFrame {
     private final int    sourceLine;
     private final StringReference codeRef;
     private TruffleSlotVariable[] vars;
+    private final ObjectVariable thisObject;
     
     /*
     TruffleStackFrame(int depth, String callTargetName, String methodName, String sourceLocation) {
@@ -82,7 +83,7 @@ public class TruffleStackFrame {
 
     public TruffleStackFrame(JPDADebugger debugger, int depth, ObjectVariable stackTrace,
                              String frameDefinition, StringReference codeRef,
-                             TruffleSlotVariable[] vars) {
+                             TruffleSlotVariable[] vars, ObjectVariable thisObject) {
         this.debugger = debugger;
         this.depth = depth;
         this.stackTrace = stackTrace;
@@ -108,6 +109,7 @@ public class TruffleStackFrame {
         sourceLine = Integer.parseInt(frameDefinition.substring(i1));
         this.codeRef = codeRef;
         this.vars = vars;
+        this.thisObject = thisObject;
     }
     
     public final JPDADebugger getDebugger() {
@@ -152,6 +154,10 @@ public class TruffleStackFrame {
             vars = TruffleAccess.createVars(debugger, getStackFrameInstance());
         }
         return vars;
+    }
+    
+    public ObjectVariable getThis() {
+        return thisObject;
     }
     
 }

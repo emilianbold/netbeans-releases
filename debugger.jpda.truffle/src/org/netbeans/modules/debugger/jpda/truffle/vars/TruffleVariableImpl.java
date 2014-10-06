@@ -84,7 +84,22 @@ public class TruffleVariableImpl implements TruffleVariable {
             String name = (String) truffleObj.getField(FIELD_NAME).createMirrorObject();
             String type = (String) truffleObj.getField(FIELD_TYPE).createMirrorObject();
             String dispVal = (String) truffleObj.getField(FIELD_DISPLAY_VALUE).createMirrorObject();
-            boolean leaf = (Boolean) truffleObj.getField(FIELD_LEAF).createMirrorObject();
+            boolean leaf;
+            if (truffleObj.getField(FIELD_LEAF) == null) {
+                System.err.println("No "+FIELD_LEAF+" field on "+truffleObj+", class "+truffleObj.getClassType().getName());
+                leaf = false;
+            } else {
+                try {
+                    leaf = (Boolean) truffleObj.getField(FIELD_LEAF).createMirrorObject();
+                } catch (NullPointerException npe) {
+                    Boolean mirrorLeaf = (Boolean) truffleObj.getField(FIELD_LEAF).createMirrorObject();
+                    if (mirrorLeaf == null) {
+                        leaf = false;
+                    } else {
+                        leaf = mirrorLeaf;
+                    }
+                }
+            }
             return new TruffleVariableImpl(truffleObj, name, type, dispVal, leaf);
         } else {
             return null;

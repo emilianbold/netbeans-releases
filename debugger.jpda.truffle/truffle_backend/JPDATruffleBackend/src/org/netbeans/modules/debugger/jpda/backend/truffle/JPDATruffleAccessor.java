@@ -50,11 +50,13 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.debug.Breakpoint;
 import com.oracle.truffle.debug.LineBreakpoint;
+import com.oracle.truffle.js.runtime.JSFrameUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -130,7 +132,7 @@ public class JPDATruffleAccessor extends Object {
     static void executionHalted(Node astNode, MaterializedFrame frame,
                                 long srcId, String srcName, String srcPath, int line, String code,
                                 FrameSlot[] frameSlots, String[] slotNames, String[] slotTypes,
-                                FrameInstance[] stackTrace, String topFrame) {
+                                FrameInstance[] stackTrace, String topFrame, Object thisObject) {
         // Called when the execution is halted.
         setCommand();
     }
@@ -138,7 +140,7 @@ public class JPDATruffleAccessor extends Object {
     static void executionStepInto(Node astNode, String name,
                                   long srcId, String srcName, String srcPath, int line, String code,
                                   FrameSlot[] frameSlots, String[] slotNames, String[] slotTypes,
-                                  FrameInstance[] stackTrace, String topFrame) {
+                                  FrameInstance[] stackTrace, String topFrame, Object thisObject) {
         // Called when the execution steps into a call.
         setCommand();
     }
@@ -209,6 +211,7 @@ public class JPDATruffleAccessor extends Object {
         //TruffleFrame[] frameInfos = new TruffleFrame[n];
         StringBuilder frameInfos = new StringBuilder();
         String[] codes = new String[n];
+        Object[] thiss = new Object[n];
         for (int i = 0; i < n; i++) {
             FrameInstance fi = frames[i];
             //TruffleFrame tf = new TruffleFrame();
@@ -238,8 +241,13 @@ public class JPDATruffleAccessor extends Object {
             frameInfos.append("\n\n");
             
             codes[i] = position.code;
+            
+            Frame f = fi.getFrame(FrameInstance.FrameAccess.READ_ONLY, false);
+            if (f instanceof VirtualFrame) {
+                thiss[i] = JSFrameUtil.getThisObj((VirtualFrame) f);
+            }
         }
-        return new Object[] { frameInfos.toString(), codes };
+        return new Object[] { frameInfos.toString(), codes, thiss };
     }
     
     static void debuggerAccess() {
