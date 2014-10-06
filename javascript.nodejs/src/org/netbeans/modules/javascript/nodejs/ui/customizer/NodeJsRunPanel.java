@@ -53,6 +53,7 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -74,6 +75,7 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
     private final Project project;
     private final NodeJsPreferences preferences;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final SpinnerNumberModel debugPortModel;
 
     private volatile String startFile;
     private volatile String args;
@@ -85,6 +87,7 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
 
         this.project = project;
         preferences = NodeJsSupport.forProject(project).getPreferences();
+        debugPortModel = new SpinnerNumberModel(65534, 1, 65534, 1);
 
         initComponents();
         init();
@@ -95,13 +98,14 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         startFileTextField.setText(startFile);
         args = preferences.getStartArgs();
         argsTextField.setText(args);
+        debugPortSpinner.setModel(debugPortModel);
         debugPort = preferences.getDebugPort();
-        debugPortSpinner.setValue(debugPort);
+        debugPortModel.setValue(debugPort);
         // listeners
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         startFileTextField.getDocument().addDocumentListener(defaultDocumentListener);
         argsTextField.getDocument().addDocumentListener(defaultDocumentListener);
-        debugPortSpinner.addChangeListener(new DefaultChangeListener());
+        debugPortModel.addChangeListener(new DefaultChangeListener());
     }
 
     @Override
