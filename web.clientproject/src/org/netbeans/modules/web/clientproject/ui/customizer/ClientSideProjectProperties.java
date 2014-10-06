@@ -151,8 +151,8 @@ public final class ClientSideProjectProperties {
                 public Void run() throws IOException {
                     saveProperties();
                     saveEnhancedBrowserConfiguration();
-                    fireProperties();
                     ProjectManager.getDefault().saveProject(project);
+                    fireProperties();
                     return null;
                 }
             });
