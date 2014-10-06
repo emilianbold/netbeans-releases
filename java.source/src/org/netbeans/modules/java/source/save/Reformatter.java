@@ -980,7 +980,7 @@ public class Reformatter implements ReformatTask {
                         }
                         if (id == LPAREN)
                             accept(RPAREN);
-                        continuationIndent = true;
+                        continuationIndent = false;
                         ClassTree body = nct.getClassBody();
                         if (body != null)
                             scan(body, p);
