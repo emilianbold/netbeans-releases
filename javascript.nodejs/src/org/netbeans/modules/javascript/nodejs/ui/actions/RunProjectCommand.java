@@ -48,7 +48,7 @@ import org.netbeans.modules.javascript.nodejs.util.RunInfo;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
 
-final class RunProjectCommand extends Command {
+final class RunProjectCommand extends ProjectCommand {
 
     public RunProjectCommand(Project project) {
         super(project);
@@ -60,7 +60,7 @@ final class RunProjectCommand extends Command {
     }
 
     @Override
-    public boolean isEnabled(Lookup context) {
+    public boolean isEnabledInternal(Lookup context) {
         return true;
     }
 

@@ -61,6 +61,7 @@ public final class NodeJsPreferences {
     public static final String NODE_DEFAULT = "node.default"; // NOI18N
     public static final String START_FILE = "start.file"; // NOI18N
     public static final String START_ARGS = "start.args"; // NOI18N
+    public static final String RUN_ENABLED = "run.enabled"; // NOI18N
     public static final String DEBUG_PORT = "debug.port"; // NOI18N
 
     private final Project project;
@@ -131,6 +132,14 @@ public final class NodeJsPreferences {
         } else {
             getPreferences().put(START_ARGS, startArgs);
         }
+    }
+
+    public boolean isRunEnabled() {
+        return getPreferences().getBoolean(RUN_ENABLED, false);
+    }
+
+    public void setRunEnabled(boolean enabled) {
+        getPreferences().putBoolean(RUN_ENABLED, enabled);
     }
 
     public int getDebugPort() {

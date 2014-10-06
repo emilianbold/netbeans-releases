@@ -136,8 +136,21 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
     }
 
     @Override
-    public void notifyEnabled(Project project, boolean enabled) {
-        NodeJsSupport.forProject(project).getPreferences().setEnabled(enabled);
+    public void notifyPropertyChanged(Project project, PropertyChangeEvent event) {
+        String propertyName = event.getPropertyName();
+        if (PROP_ENABLED.equals(propertyName)) {
+            NodeJsSupport.forProject(project).getPreferences().setEnabled((boolean) event.getNewValue());
+        } else if (PROP_RUN_CONFIGRATION.equals(propertyName)) {
+            Object activeRunConfig = event.getNewValue();
+            boolean runEnabled = false;
+            for (CustomizerPanelImplementation panel : getRunCustomizerPanels(project)) {
+                if (panel.getIdentifier().equals(activeRunConfig)) {
+                    runEnabled = true;
+                    break;
+                }
+            }
+            NodeJsSupport.forProject(project).getPreferences().setRunEnabled(runEnabled);
+        }
     }
 
     @Override

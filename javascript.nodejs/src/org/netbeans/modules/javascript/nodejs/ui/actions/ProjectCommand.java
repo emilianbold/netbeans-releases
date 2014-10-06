@@ -41,43 +41,24 @@
  */
 package org.netbeans.modules.javascript.nodejs.ui.actions;
 
-import java.io.File;
-import java.io.IOException;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
-import org.netbeans.modules.javascript.nodejs.util.RunInfo;
-import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.openide.util.Lookup;
 
-final class DebugProjectCommand extends ProjectCommand {
+abstract class ProjectCommand extends Command {
 
-    public DebugProjectCommand(Project project) {
+    public ProjectCommand(Project project) {
         super(project);
     }
 
-    @Override
-    public String getCommandId() {
-        return ActionProvider.COMMAND_DEBUG;
-    }
+    protected abstract boolean isEnabledInternal(Lookup context);
 
     @Override
-    public boolean isEnabledInternal(Lookup context) {
-        return true;
-    }
-
-    @Override
-    void runInternal(Lookup context) {
-        NodeExecutable node = getNode();
-        if (node != null) {
-            RunInfo runInfo = getRunInfo();
-            if (runInfo != null) {
-                try {
-                    node.debug(runInfo.getDebugPort(), new File(runInfo.getStartFile()), runInfo.getStartArgs());
-                } catch (IOException ex) {
-                    warnCannotDebug(ex);
-                }
-            }
+    public final boolean isEnabled(Lookup context) {
+        if (!NodeJsSupport.forProject(project).getPreferences().isRunEnabled()) {
+            return false;
         }
+        return isEnabledInternal(context);
     }
 
 }
