@@ -429,6 +429,19 @@ public class ClientSideProject implements Project {
         return ctx;
     }
 
+    @CheckForNull
+    public String getRunAs() {
+        return getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_RUN_AS);
+    }
+
+    public boolean isRunBrowser() {
+        String property = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_RUN_BROWSER);
+        if (property == null) {
+            return true;
+        }
+        return Boolean.parseBoolean(property);
+    }
+
     public AntProjectHelper getProjectHelper() {
         return projectHelper;
     }
