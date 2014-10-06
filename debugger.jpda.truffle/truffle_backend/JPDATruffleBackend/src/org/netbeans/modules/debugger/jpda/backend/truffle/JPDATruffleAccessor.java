@@ -149,9 +149,9 @@ public class JPDATruffleAccessor extends Object {
         switch (stepCmd) {
             case 0: debugManager.prepareContinue();
                     break;
-            case 1: debugManager.prepareStep(1);
+            case 1: debugManager.prepareStepInto(1);
                     break;
-            case 2: debugManager.prepareNext(1);
+            case 2: debugManager.prepareStepOver(1);
                     break;
             case 3: boolean success = debugManager.prepareStepOut();
                     //System.err.println("Successful step out = "+success);

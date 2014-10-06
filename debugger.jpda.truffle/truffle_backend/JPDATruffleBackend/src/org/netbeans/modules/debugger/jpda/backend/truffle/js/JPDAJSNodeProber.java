@@ -56,7 +56,7 @@ public class JPDAJSNodeProber implements JSNodeProber {
         JSWrapper wrapper = null;
         if (jsn instanceof JSWrapper) {
             wrapper = (JSWrapper) jsn;
-            if (!wrapper.isTaggedAs(CALL)) {
+            if (!wrapper.getProbe().isTaggedAs(CALL)) {
                 wrapper.tagAs(CALL);
                 wrapper.getProbe().addInstrument(new DebugCallInstrument(jsContext, instrumentCallback, callName));
             }

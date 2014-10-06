@@ -47,9 +47,23 @@ public class TruffleObject {
     }
     
     private static boolean isLeaf(Object object) {
+        return isLeafJS(object);
+    }
+    
+    private static boolean isLeafJS(Object object) {
         if (object instanceof DynamicObject) {
-            if (((DynamicObject) object).getShape().getPropertyCount() > 0 ||
-                ((DynamicObject) object).getShape().getEnumerablePropertyCount() > 0) {
+            DynamicObject dobj = (DynamicObject) object;
+            Iterable<Property> enumerableProperties = JSObject.getEnumerableProperties(dobj);
+            return !enumerableProperties.iterator().hasNext();
+        } else {
+            return true;
+        }
+    }
+    
+    private static boolean isLeafGeneric(Object object) {
+        if (object instanceof DynamicObject) {
+            if (((DynamicObject) object).getShape().getPropertyCount() > 0 ) {//||
+                //((DynamicObject) object).getShape().getEnumerablePropertyCount() > 0) {
                 return false;
             } else {
                 return true;
@@ -59,15 +73,17 @@ public class TruffleObject {
         }
     }
     
-    public Object[] getChildrenJS() {
-        if (object instanceof JSObject) {
-            JSObject jso = (JSObject) object;
-            //jso.getShape().
-            Iterable<Property> enumerableProperties = jso.getEnumerableProperties();
+    private Object[] getChildrenJS() {
+        //if (object instanceof JSObject) {
+        //    JSObject jso = (JSObject) object;
+        if (object instanceof DynamicObject) {
+            DynamicObject dobj = (DynamicObject) object;
+            Iterable<Property> enumerableProperties = JSObject.getEnumerableProperties(dobj);
             List<Object> ch = new ArrayList<>();
             for (Property p : enumerableProperties) {
-                String name = p.getName();
-                Object obj = jso.getProperty((JSContext) context, name);
+                String name = p.getName().toString();
+                Object obj = JSObject.getProperty(dobj, name);
+                //Object obj = p.get(dobj, );//jso.getProperty((JSContext) context, name);
                 ch.add(new TruffleObject(context, name, obj));
             }
             return ch.toArray();
@@ -76,14 +92,15 @@ public class TruffleObject {
         }
     }
     
-    public Object[] getChildrenGeneric() {
+    private Object[] getChildrenGeneric() {
         if (object instanceof DynamicObject) {
             DynamicObject dobj = (DynamicObject) object;
+            //System.err.println("getChildrenGeneric("+object+"): property count = "+dobj.getShape().getPropertyCount()+", property map = "+dobj.getShape().getPropertyMap()+", property list = "+dobj.getShape().getPropertyList());
             List<Property> props = dobj.getShape().getPropertyListInternal(true);
             int n = props.size();
             Object[] ch = new Object[n];
             for (int i = 0; i < n; i++) {
-                String name = props.get(i).getName();
+                String name = props.get(i).getName().toString();
                 Object obj = props.get(i).get(dobj, true);
                 ch[i] = new TruffleObject(context, name, obj);
             }

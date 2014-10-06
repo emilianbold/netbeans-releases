@@ -20,10 +20,13 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrument.SyntaxTag;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.LineLocation;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.debug.DebugClient;
+import com.oracle.truffle.debug.LineBreakpoint;
 import com.oracle.truffle.debug.impl.AbstractDebugManager;
+import com.oracle.truffle.debug.impl.DebugException;
 import com.oracle.truffle.debug.instrument.DebugInstrumentCallback;
 import com.oracle.truffle.js.engine.TruffleJSEngine;
 import com.oracle.truffle.js.engine.TruffleJSEngineFactory;
@@ -34,6 +37,7 @@ import com.oracle.truffle.js.parser.JSEngine;
 import com.oracle.truffle.js.parser.env.Environment;
 import com.oracle.truffle.js.runtime.JSContext;
 import com.oracle.truffle.js.runtime.JSFrameUtil;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -140,6 +144,35 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
         String code = source.getCode();
         return new SourcePosition(source, name, path, line, code);
     }
+
+    /*
+    // Logging only
+    @Override
+    public LineBreakpoint setLineBreakpoint(LineLocation lineLocation) throws DebugException {
+        LineBreakpoint lb = super.setLineBreakpoint(lineLocation);
+        System.err.println("setLineBreakpoint("+lineLocation+"):");
+        System.err.println("  state = "+lb.getStateDescription());
+        System.err.println("  Line Breakpoint Support = "+lineBreaks);
+        try {
+            Object l2pm = linesToProbesMap;
+            Field l2pmf = l2pm.getClass().getDeclaredField("lineToProbesMap");
+            l2pmf.setAccessible(true);
+            System.err.println("  linesToProbesMap = "+linesToProbesMap);
+            System.err.println("  linesToProbesMap.lineToProbesMap = "+l2pmf.get(linesToProbesMap));
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        try {
+            Object lbs = lineBreaks;
+            Field lineToProbesMapField = lbs.getClass().getDeclaredField("lineToProbesMap");
+            lineToProbesMapField.setAccessible(true);
+            System.err.println("  lineBreaks.lineToProbesMap = "+lineToProbesMapField.get(lineBreaks));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return lb;
+    }*/
     
     private static class JPDADebugClient implements DebugClient {
         
