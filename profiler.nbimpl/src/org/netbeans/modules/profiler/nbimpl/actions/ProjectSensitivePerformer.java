@@ -49,6 +49,7 @@ import org.netbeans.modules.profiler.v2.ProfilerSession;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -104,26 +105,30 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
     }
 
     @Override
-    public void perform(Project project) {
-        ProfilerSession session = null;
+    public void perform(final Project project) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                ProfilerSession session = null;
         
-        Lookup projectLookup = project.getLookup();
-        if (attach) {
-            Lookup context = new ProxyLookup(projectLookup, Lookups.fixed(project));
-            session = ProfilerSession.forContext(context);
-        } else {
-            ActionProvider ap = projectLookup.lookup(ActionProvider.class);
-            if (ap != null) {
-                ProfilerLauncher.Command _command = new ProfilerLauncher.Command(command);
-                Lookup context = new ProxyLookup(projectLookup, Lookups.fixed(project, _command));
-                session = ProfilerSession.forContext(context);
+                Lookup projectLookup = project.getLookup();
+                if (attach) {
+                    Lookup context = new ProxyLookup(projectLookup, Lookups.fixed(project));
+                    session = ProfilerSession.forContext(context);
+                } else {
+                    ActionProvider ap = projectLookup.lookup(ActionProvider.class);
+                    if (ap != null) {
+                        ProfilerLauncher.Command _command = new ProfilerLauncher.Command(command);
+                        Lookup context = new ProxyLookup(projectLookup, Lookups.fixed(project, _command));
+                        session = ProfilerSession.forContext(context);
+                    }
+                }
+
+                if (session != null) {
+                    session.setAttach(attach);
+                    session.open();
+                }
             }
-        }
-        
-        if (session != null) {
-            session.setAttach(attach);
-            session.requestActive();
-        }
+        });
     }
     
     private static boolean contains(String[] actions, String action) {

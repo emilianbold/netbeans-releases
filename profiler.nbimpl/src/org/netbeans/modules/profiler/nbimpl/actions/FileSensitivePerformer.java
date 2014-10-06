@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -95,14 +96,18 @@ public class FileSensitivePerformer implements FileActionPerformer {
     }
 
     @Override
-    public void perform(FileObject file) {
-        Project p = FileOwnerQuery.getOwner(file);
-        ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
-        if (ap != null) {
-            Lookup context = getContext(file, p);
-            ProfilerSession session = ProfilerSession.forContext(context);
-            if (session != null) session.requestActive();
-        }
+    public void perform(final FileObject file) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                Project p = FileOwnerQuery.getOwner(file);
+                ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
+                if (ap != null) {
+                    Lookup context = getContext(file, p);
+                    ProfilerSession session = ProfilerSession.forContext(context);
+                    if (session != null) session.open();
+                }
+            }
+        });
     }
 
     private Lookup getContext(FileObject file, Project p) {
