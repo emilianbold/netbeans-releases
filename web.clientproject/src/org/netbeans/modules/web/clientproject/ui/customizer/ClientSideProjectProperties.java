@@ -152,10 +152,10 @@ public final class ClientSideProjectProperties {
                     saveProperties();
                     saveEnhancedBrowserConfiguration();
                     ProjectManager.getDefault().saveProject(project);
-                    fireProperties();
                     return null;
                 }
             });
+            fireProperties();
         } catch (MutexException | IOException e) {
             LOGGER.log(Level.WARNING, null, e);
         }
