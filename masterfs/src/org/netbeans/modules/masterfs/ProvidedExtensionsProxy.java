@@ -53,7 +53,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.netbeans.modules.masterfs.providers.BaseAnnotationProvider;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions.IOHandler;
@@ -65,7 +65,7 @@ import org.openide.filesystems.FileSystem;
  * @author Radek Matous
  */
 public class ProvidedExtensionsProxy extends ProvidedExtensions {
-    private Collection<AnnotationProvider> annotationProviders;
+    private Collection<BaseAnnotationProvider> annotationProviders;
     private static ThreadLocal  reentrantCheck = new ThreadLocal();
     
     /** Creates a new instance of ProvidedExtensionsProxy */
@@ -79,8 +79,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
             return null;
         }
         IOHandler retValue = null;
-        for (Iterator it = annotationProviders.iterator(); it.hasNext() && retValue == null;) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext() && retValue == null;) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 ProvidedExtensions.IOHandler delgate = ((ProvidedExtensions)iListener).getCopyHandler(from, to);
@@ -92,8 +92,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
 
     public ProvidedExtensions.DeleteHandler getDeleteHandler(final File f) {
         ProvidedExtensions.DeleteHandler retValue = null;
-        for (Iterator it = annotationProviders.iterator(); it.hasNext() && retValue == null;) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext() && retValue == null;) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 ProvidedExtensions.DeleteHandler delegate = ((ProvidedExtensions)iListener).getDeleteHandler(f);
@@ -106,8 +106,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
     public ProvidedExtensions.IOHandler getRenameHandler(final File from, final String newName) {
         final File to = new File(from.getParentFile(), newName);
         IOHandler retValue = null;
-        for (Iterator it = annotationProviders.iterator(); it.hasNext() && retValue == null;) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext() && retValue == null;) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 ProvidedExtensions.IOHandler delgate = ((ProvidedExtensions)iListener).getRenameHandler(from, newName);
@@ -122,8 +122,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
             return null;
         }
         IOHandler retValue = null;
-        for (Iterator it = annotationProviders.iterator(); it.hasNext() && retValue == null;) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext() && retValue == null;) {
+            BaseAnnotationProvider provider = it.next();
             InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 ProvidedExtensions.IOHandler delgate = ((ProvidedExtensions)iListener).getMoveHandler(from, to);
@@ -134,8 +134,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
     }
     
     public void createFailure(final FileObject parent, final String name, final boolean isFolder) {
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener != null) {
                 runCheckCode(new Runnable() {
@@ -148,8 +148,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
     }
     
     public void beforeCreate(final FileObject parent, final String name, final boolean isFolder) {
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener != null) {
                 runCheckCode(new Runnable() {
@@ -162,8 +162,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
     }
     
     public void deleteSuccess(final FileObject fo) {
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener != null) {
                 runCheckCode(new Runnable() {
@@ -176,8 +176,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
     }
     
     public void deleteFailure(final FileObject fo) {
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener != null) {
                 runCheckCode(new Runnable() {
@@ -190,8 +190,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
     }
     
     public void createSuccess(final FileObject fo) {
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener != null) {
                 runCheckCode(new Runnable() {
@@ -204,8 +204,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
     }
     
     public void beforeDelete(final FileObject fo) {
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener != null) {
                 runCheckCode(new Runnable() {
@@ -219,8 +219,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
 
     public boolean canWrite(final File f) {
         final Boolean ret[] = new Boolean [] { null };
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new Runnable() {
@@ -243,8 +243,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
         
     
     public void beforeChange(final FileObject f) {    
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new Runnable() {
@@ -258,8 +258,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
 
     @Override
     public void fileLocked(final FileObject fo) throws IOException {
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new FileSystem.AtomicAction() {
@@ -273,8 +273,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
     }
 
     public void fileUnlocked(final FileObject fo) {
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new Runnable() {
@@ -289,7 +289,7 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
     @Override
     public Object getAttribute(final File file, final String attrName) {
         final AtomicReference<Object> value = new AtomicReference();
-        for (AnnotationProvider provider : annotationProviders) {
+        for (BaseAnnotationProvider provider : annotationProviders) {
             final InterceptionListener iListener = (provider != null) ? provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new Runnable() {
@@ -307,8 +307,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
 
     @Override
     public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ? provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 ProvidedExtensions pe = (ProvidedExtensions)iListener;
@@ -329,8 +329,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
     
     @Override
     public void createdExternally(final FileObject fo) {
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new Runnable() {
@@ -344,8 +344,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
 
     @Override
     public void deletedExternally(final FileObject fo) {
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new Runnable() {
@@ -359,8 +359,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
 
     @Override
     public void fileChanged(final FileObject fo) {
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new Runnable() {
@@ -377,8 +377,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
         if (to == null) {
             return;
         }
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new Runnable() {
@@ -395,8 +395,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
         if (to == null) {
             return;
         }
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new Runnable() {
@@ -413,8 +413,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
         if (to == null) {
             return;
         }
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new Runnable() {
@@ -431,8 +431,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
         if (to == null) {
             return;
         }
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new Runnable() {
@@ -449,8 +449,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
         if (to == null) {
             return;
         }
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new Runnable() {
@@ -467,8 +467,8 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
         if (to == null) {
             return;
         }
-        for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
-            AnnotationProvider provider = (AnnotationProvider) it.next();
+        for (Iterator<BaseAnnotationProvider> it = annotationProviders.iterator(); it.hasNext();) {
+            BaseAnnotationProvider provider = it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
                 runCheckCode(new Runnable() {

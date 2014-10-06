@@ -54,7 +54,7 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.netbeans.modules.masterfs.providers.BaseAnnotationProvider;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.masterfs.watcher.Watcher;
@@ -106,7 +106,7 @@ public class WatcherDeadlockTest extends NbTestCase {
         FileUtil.addRecursiveListener(l2, root);
     }
 
-    public static class AnnotationProviderImpl extends AnnotationProvider  {
+    public static class AnnotationProviderImpl extends BaseAnnotationProvider  {
         private ProvidedExtensionsImpl impl = new ProvidedExtensionsImpl();
         @Override
         public InterceptionListener getInterceptionListener() {
@@ -118,19 +118,10 @@ public class WatcherDeadlockTest extends NbTestCase {
             return name;
         }
 
-        @Override
-        public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-            return icon;
-        }
 
         @Override
         public String annotateNameHtml(String name, Set<? extends FileObject> files) {
             return name;
-        }
-
-        @Override
-        public Action[] actions(Set<? extends FileObject> files) {
-            return null;
         }
     }
     
