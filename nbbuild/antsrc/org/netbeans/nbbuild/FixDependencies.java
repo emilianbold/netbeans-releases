@@ -340,11 +340,15 @@ public class FixDependencies extends Task {
                                     cleanTask.execute ();
                                     compiled = false;
                                 }
-                                log ("Executing target " + tgt + " in " + script, Project.MSG_INFO);
-                                task.execute ();
-                                log ("Dependency on " + m + " is sufficient, skipping the rest", Project.MSG_INFO);
-                                compiled = true;
-                                continue DEPS;
+                                if (!compiled && task != null) {
+                                    log ("Executing target " + tgt + " in " + script, Project.MSG_INFO);
+                                    task.execute ();
+                                    log ("Dependency on " + m + " is sufficient, skipping the rest", Project.MSG_INFO);
+                                    compiled = true;
+                                    continue DEPS;
+                                } else {
+                                    log ("Cannot verify dependency on " + m + " no build target, clean target or build script set.", Project.MSG_INFO);
+                                }
                             } catch (BuildException ex) {
                                 log ("Compilation failed: ", ex, Project.MSG_INFO);
                                 fw = new FileWriter (file);
@@ -373,7 +377,7 @@ public class FixDependencies extends Task {
             }
         } finally {
             // leave compiled so other modules may benefit from the module-auto-deps
-            if (!compiled) {
+            if (!compiled && task != null) {
                 log ("Executing target " + tgt + " in " + script, Project.MSG_INFO);
                 task.execute ();
             }
