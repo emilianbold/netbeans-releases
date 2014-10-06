@@ -418,7 +418,7 @@ public class CleanTest extends AbstractGitTestCase {
             DirCacheEntry e = cache.getEntry(relativePath);
             assertNotNull(e);
             assertEquals(relativePath, e.getPathString());
-            assertEquals(f.lastModified(), e.getLastModified());
+            assertEquals((f.lastModified() / 1000) * 1000, e.getLastModified());
             InputStream in = new FileInputStream(f);
             try {
                 assertEquals(e.getObjectId(), repository.newObjectInserter().idFor(Constants.OBJ_BLOB, f.length(), in));
