@@ -39,22 +39,22 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.action;
+package org.netbeans.modules.web.clientproject.ui.action.command;
 
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.util.Lookup;
 
-public class CopyCommand extends Command {
+public class MoveCommand extends Command {
 
-    public CopyCommand(ClientSideProject project) {
+    public MoveCommand(ClientSideProject project) {
         super(project);
     }
 
     @Override
     public String getCommandId() {
-        return ActionProvider.COMMAND_COPY;
+        return ActionProvider.COMMAND_MOVE;
     }
 
     @Override
@@ -64,7 +64,7 @@ public class CopyCommand extends Command {
 
     @Override
     void invokeActionInternal(Lookup context) {
-        DefaultProjectOperations.performDefaultCopyOperation(project);
+        DefaultProjectOperations.performDefaultMoveOperation(project);
     }
 
 }

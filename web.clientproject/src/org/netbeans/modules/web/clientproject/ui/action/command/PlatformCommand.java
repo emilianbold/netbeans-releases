@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.action;
+package org.netbeans.modules.web.clientproject.ui.action.command;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,7 +70,8 @@ public class PlatformCommand extends Command {
         for (PlatformProvider provider : project.getPlatformProviders()) {
             ActionProvider actionProvider = provider.getActionProvider(project);
             if (actionProvider != null
-                    && isSupportedAction(commandId, actionProvider)) {
+                    && isSupportedAction(commandId, actionProvider)
+                    && actionProvider.isActionEnabled(commandId, context)) {
                 return true;
             }
         }
@@ -82,7 +83,8 @@ public class PlatformCommand extends Command {
         for (PlatformProvider provider : project.getPlatformProviders()) {
             final ActionProvider actionProvider = provider.getActionProvider(project);
             if (actionProvider != null
-                    && isSupportedAction(commandId, actionProvider)) {
+                    && isSupportedAction(commandId, actionProvider)
+                    && actionProvider.isActionEnabled(commandId, context)) {
                 runInEventThread(new Runnable() {
                     @Override
                     public void run() {

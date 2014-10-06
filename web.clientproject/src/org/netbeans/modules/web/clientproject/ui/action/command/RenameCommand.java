@@ -39,37 +39,22 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.action;
+package org.netbeans.modules.web.clientproject.ui.action.command;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.grunt.GruntfileExecutor;
-import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileObject;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
-public class GruntCommand extends Command {
+public class RenameCommand extends Command {
 
-    private static final Logger LOGGER = Logger.getLogger(GruntCommand.class.getName());
-
-    private final String commandId;
-
-
-    public GruntCommand(ClientSideProject project, String commandId) {
+    public RenameCommand(ClientSideProject project) {
         super(project);
-        assert commandId != null;
-        this.commandId = commandId;
     }
 
     @Override
     public String getCommandId() {
-        return commandId;
+        return ActionProvider.COMMAND_RENAME;
     }
 
     @Override
@@ -79,36 +64,7 @@ public class GruntCommand extends Command {
 
     @Override
     void invokeActionInternal(Lookup context) {
-        tryTask(true, false);
-    }
-
-    @NbBundle.Messages({
-        "GruntCommand.configure=Do you want to configure project actions to call Grunt tasks?"
-    })
-    public boolean tryTask(boolean showCustomizer, boolean waitFinished) {
-        FileObject gruntFile = project.getProjectDirectory().getFileObject("Gruntfile.js"); // NOI18N
-        if (gruntFile != null) {
-            String gruntBuild = project.getEvaluator().getProperty("grunt.action." + commandId); // NOI18N
-            if (gruntBuild != null) {
-                try {
-                    ExecutorTask execute = new GruntfileExecutor(gruntFile, gruntBuild.split(" ")).execute(); // NOI18N
-                    if (waitFinished) {
-                        execute.result();
-                    }
-                    return true;
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                }
-            } else if (showCustomizer) {
-                NotifyDescriptor desc = new NotifyDescriptor.Confirmation(Bundle.GruntCommand_configure(), NotifyDescriptor.YES_NO_OPTION);
-                Object option = DialogDisplayer.getDefault().notify(desc);
-                if (option == NotifyDescriptor.YES_OPTION) {
-                    project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer("grunt"); // NOI18N
-                }
-                return true;
-            }
-        }
-        return false;
+        DefaultProjectOperations.performDefaultRenameOperation(project, null);
     }
 
 }

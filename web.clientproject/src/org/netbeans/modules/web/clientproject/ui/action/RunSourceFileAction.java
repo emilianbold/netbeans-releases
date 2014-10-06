@@ -39,45 +39,54 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.ui.actions;
+package org.netbeans.modules.web.clientproject.ui.action;
 
-import java.io.File;
-import java.io.IOException;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
-import org.netbeans.modules.javascript.nodejs.util.RunInfo;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.FileSensitiveActions;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
+import org.openide.awt.DynamicMenuContent;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
-final class DebugProjectCommand extends ProjectCommand {
+@NbBundle.Messages({
+    "RunSourceFileAction.name.long=Run File",
+    "RunSourceFileAction.name.short=Run",
+})
+@ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.RunSourceFileAction", category = "Project")
+// XXX how to remove action from shortcuts?
+@ActionRegistration(lazy = false, displayName = "#RunSourceFileAction.name.long", menuText = "#RunSourceFileAction.name.short",
+        popupText = "#RunSourceFileAction.name.short")
+@ActionReferences({
+        @ActionReference(path = "Loaders/text/javascript/Actions", position = 250),
+        @ActionReference(path = "Editors/text/javascript/Popup", position = 800),
+})
+public class RunSourceFileAction extends AbstractAction implements ContextAwareAction {
 
-    public DebugProjectCommand(Project project) {
-        super(project);
+    public RunSourceFileAction() {
+        putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+        putValue(Action.NAME, Bundle.RunSourceFileAction_name_long());
+        setEnabled(false);
     }
 
     @Override
-    public String getCommandId() {
-        return ActionProvider.COMMAND_DEBUG;
+    public void actionPerformed(ActionEvent e) {
+        assert false;
     }
 
     @Override
-    public boolean isEnabledInternal(Lookup context) {
-        return true;
-    }
-
-    @Override
-    void runInternal(Lookup context) {
-        NodeExecutable node = getNode();
-        if (node != null) {
-            RunInfo runInfo = getRunInfo();
-            if (runInfo != null) {
-                try {
-                    node.debug(runInfo.getDebugPort(), new File(runInfo.getStartFile()), runInfo.getStartArgs());
-                } catch (IOException ex) {
-                    warnCannotDebug(ex);
-                }
-            }
+    public Action createContextAwareInstance(Lookup actionContext) {
+        if (FileUtilities.lookupSourceFileOnly(actionContext) == null) {
+            return this;
         }
+        return FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_RUN_SINGLE, Bundle.RunSourceFileAction_name_long(), null);
     }
 
 }

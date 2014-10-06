@@ -39,61 +39,37 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.action;
+package org.netbeans.modules.web.clientproject;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Lookup;
-import org.openide.util.Mutex;
+import org.netbeans.modules.web.clientproject.api.CustomizerPanel;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 
+public abstract class CustomizerPanelAccessor {
 
-public abstract class Command {
-
-    protected final ClientSideProject project;
+    private static volatile CustomizerPanelAccessor accessor;
 
 
-    public Command(ClientSideProject project) {
-        assert project != null;
-        this.project = project;
-    }
-
-    public abstract String getCommandId();
-
-    abstract boolean isActionEnabledInternal(Lookup context);
-
-    abstract void invokeActionInternal(Lookup context);
-
-    public final boolean isActionEnabled(Lookup context) {
-        if (project.isBroken(false)) {
-            // will be handled in invokeAction(), see below
-            return true;
+    public static synchronized CustomizerPanelAccessor getDefault() {
+        if (accessor != null) {
+            return accessor;
         }
-        return isActionEnabledInternal(context);
-    }
-
-    public final void invokeAction(Lookup context, AtomicBoolean warnUser) {
-        if (!validateInvokeAction(context, warnUser)) {
-            return;
+        Class<?> c = CustomizerPanel.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException ex) {
+            assert false : ex;
         }
-        invokeActionInternal(context);
+        assert accessor != null;
+        return accessor;
     }
 
-    protected boolean validateInvokeAction(Lookup context, AtomicBoolean warnUser) {
-        return !project.isBroken(warnUser.compareAndSet(true, false));
-    }
-
-    protected static boolean isSupportedAction(String command, ActionProvider actionProvider) {
-        for (String action : actionProvider.getSupportedActions()) {
-            if (command.equals(action)) {
-                return true;
-            }
+    public static void setDefault(CustomizerPanelAccessor accessor) {
+        if (CustomizerPanelAccessor.accessor != null) {
+            throw new IllegalStateException("Already initialized accessor");
         }
-        return false;
+        CustomizerPanelAccessor.accessor = accessor;
     }
 
-    protected static void runInEventThread(Runnable task) {
-        Mutex.EVENT.readAccess(task);
-    }
+    public abstract CustomizerPanel create(CustomizerPanelImplementation customizerPanelImplementation);
 
 }

@@ -39,45 +39,26 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.action;
+package org.netbeans.modules.javascript.nodejs.ui.actions;
 
-import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.ClientSideProjectType;
-import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
-import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
-import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
-import org.netbeans.modules.web.common.api.UsageLogger;
-import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.openide.util.Lookup;
 
-public class TestProjectCommand extends Command {
+abstract class ProjectCommand extends Command {
 
-    private final UsageLogger jsTestRunUsageLogger = UsageLogger.jsTestRunUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
-
-
-    public TestProjectCommand(ClientSideProject project) {
+    public ProjectCommand(Project project) {
         super(project);
     }
 
-    @Override
-    public String getCommandId() {
-        return ActionProvider.COMMAND_TEST;
-    }
+    protected abstract boolean isEnabledInternal(Lookup context);
 
     @Override
-    boolean isActionEnabledInternal(Lookup context) {
-        return true;
-    }
-
-    @Override
-    void invokeActionInternal(Lookup context) {
-        JsTestingProvider testingProvider = project.getJsTestingProvider(true);
-        if (testingProvider != null) {
-            jsTestRunUsageLogger.log(ClientSideProjectType.TYPE, testingProvider.getIdentifier());
-            TestRunInfo testRunInfo = new TestRunInfo.Builder()
-                    .build();
-            testingProvider.runTests(project, testRunInfo);
+    public final boolean isEnabled(Lookup context) {
+        if (!NodeJsSupport.forProject(project).getPreferences().isRunEnabled()) {
+            return false;
         }
+        return isEnabledInternal(context);
     }
 
 }

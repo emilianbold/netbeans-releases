@@ -72,7 +72,6 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
@@ -87,9 +86,7 @@ import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
 import org.netbeans.modules.javascript.v8debug.api.Connector;
-import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.Version;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -331,11 +328,9 @@ public class NodeExecutable {
         if (packageJson.exists()) {
             return new File(packageJson.getPath()).getParentFile();
         }
-        for (SourceGroup sourceGroup : ProjectUtils.getSources(project).getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5)) {
-            FileObject rootFolder = sourceGroup.getRootFolder();
-            File root = FileUtil.toFile(rootFolder);
-            assert root != null : rootFolder;
-            return root;
+        File sourceRoot = FileUtils.getSourceRoot(project);
+        if (sourceRoot != null) {
+            return sourceRoot;
         }
         File workDir = FileUtil.toFile(project.getProjectDirectory());
         assert workDir != null : project.getProjectDirectory();
@@ -349,7 +344,7 @@ public class NodeExecutable {
     private List<String> getDebugParams(int port, File script, String args) {
         List<String> params = new ArrayList<>();
         params.add(String.format(DEBUG_COMMAND, port));
-        getScriptArgsParams(script, args);
+        params.addAll(getScriptArgsParams(script, args));
         return getParams(params);
     }
 

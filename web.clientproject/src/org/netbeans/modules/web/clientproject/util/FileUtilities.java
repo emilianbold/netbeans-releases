@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -52,10 +53,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  * Miscellaneous utility methods for files.
@@ -110,6 +116,36 @@ public final class FileUtilities {
         for (FileObject child : fileObject.getChildren()) {
             child.delete();
         }
+    }
+
+    @CheckForNull
+    public static FileObject lookupSourceFileOnly(Lookup context) {
+        Collection<? extends FileObject> fileObjects = context.lookupAll(FileObject.class);
+        if (fileObjects.size() != 1) {
+            return null;
+        }
+        FileObject fileObject = fileObjects.iterator().next();
+        Project project = FileOwnerQuery.getOwner(fileObject);
+        if (project == null) {
+            return null;
+        }
+        ClientSideProject clientSideProject = project.getLookup().lookup(ClientSideProject.class);
+        if (clientSideProject == null) {
+            return null;
+        }
+        FileObject sourcesFolder = clientSideProject.getSourcesFolder();
+        if (sourcesFolder == null) {
+            return null;
+        }
+        if (!FileUtil.isParentOf(sourcesFolder, fileObject)) {
+            return null;
+        }
+        FileObject siteRootFolder = clientSideProject.getSiteRootFolder();
+        if (siteRootFolder != null
+                && FileUtil.isParentOf(siteRootFolder, fileObject)) {
+            return null;
+        }
+        return fileObject;
     }
 
     /**

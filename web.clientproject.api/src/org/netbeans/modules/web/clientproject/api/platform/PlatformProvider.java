@@ -41,13 +41,19 @@
  */
 package org.netbeans.modules.web.clientproject.api.platform;
 
+import java.beans.PropertyChangeEvent;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.CustomizerPanelAccessor;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
+import org.netbeans.modules.web.clientproject.api.CustomizerPanel;
 import org.netbeans.modules.web.clientproject.platform.PlatformProviderAccessor;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.PlatformProviderImplementation;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Parameters;
@@ -76,6 +82,11 @@ public final class PlatformProvider {
      * @since 1.70
      */
     public static final String PROP_START_FILE = PlatformProviderImplementation.PROP_START_FILE;
+    /**
+     * Property name for changes in run configuration.
+     * @since 1.71
+     */
+    public static final String PROP_RUN_CONFIGRATION = PlatformProviderImplementation.PROP_RUN_CONFIGRATION;
 
 
     private final PlatformProviderImplementation delegate;
@@ -154,6 +165,31 @@ public final class PlatformProvider {
         return delegate.getActionProvider(project);
     }
 
+    /**
+     * Get list of panels for run customization.
+     * <p>
+     * These panels can be used to configure properties needed for running this platform provider,
+     * like e.g. debugger port, default/index file etc.
+     * @param project project to be source of the customization
+     * @return list of panels for run customization, can be empty but never {@code null}
+     * @since 1.71
+     */
+    public List<CustomizerPanel> getRunCustomizerPanels(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
+        List<CustomizerPanelImplementation> delegatePanels = delegate.getRunCustomizerPanels(project);
+        if (delegatePanels.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<CustomizerPanel> panels = new ArrayList<>(delegatePanels.size());
+        for (CustomizerPanelImplementation delegatePanel : delegatePanels) {
+            if (delegatePanel == null) {
+                throw new IllegalStateException("Run customizer panel cannot be null for " + delegate.getClass().getName());
+            }
+            panels.add(CustomizerPanelAccessor.getDefault().create(delegatePanel));
+        }
+        return panels;
+    }
+
     void projectOpened(@NonNull Project project) {
         Parameters.notNull("project", project); // NOI18N
         delegate.projectOpened(project);
@@ -168,9 +204,10 @@ public final class PlatformProvider {
         return delegate;
     }
 
-    void notifyEnabled(@NonNull Project project, boolean enabled) {
+    void notifyPropertyChanged(@NonNull Project project, @NonNull PropertyChangeEvent event) {
         Parameters.notNull("project", project); // NOI18N
-        delegate.notifyEnabled(project, enabled);
+        Parameters.notNull("event", event); // NOI18N
+        delegate.notifyPropertyChanged(project, event);
     }
 
 }

@@ -429,6 +429,19 @@ public class ClientSideProject implements Project {
         return ctx;
     }
 
+    @CheckForNull
+    public String getRunAs() {
+        return getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_RUN_AS);
+    }
+
+    public boolean isRunBrowser() {
+        String property = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_RUN_BROWSER);
+        if (property == null) {
+            return true;
+        }
+        return Boolean.parseBoolean(property);
+    }
+
     public AntProjectHelper getProjectHelper() {
         return projectHelper;
     }
@@ -456,6 +469,9 @@ public class ClientSideProject implements Project {
         return JsTestingProviders.getDefault().getJsTestingProvider(this, showSelectionPanel);
     }
 
+    /**
+     * @return list of <b>enabled</b> platform providers in this project
+     */
     public List<PlatformProvider> getPlatformProviders() {
         List<PlatformProvider> allProviders = PlatformProviders.getDefault().getPlatformProviders();
         List<PlatformProvider> enabledProviders = new ArrayList<>(allProviders.size());

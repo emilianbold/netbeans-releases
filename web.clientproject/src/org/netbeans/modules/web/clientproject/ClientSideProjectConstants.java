@@ -59,6 +59,8 @@ public class ClientSideProjectConstants {
     public static final String PROJECT_AUTO_REFRESH = "browser.autorefresh"; //NOI18N
     public static final String PROJECT_HIGHLIGHT_SELECTION = "browser.highlightselection"; //NOI18N
     public static final String PROJECT_SELECTED_BROWSER = "browser"; //NOI18N
+    public static final String PROJECT_RUN_BROWSER = "browser.run"; //NOI18N
+    public static final String PROJECT_RUN_AS = "run.as"; //NOI18N
 
     // default paths:
     public static final String DEFAULT_SOURCE_FOLDER = "src"; //NOI18N

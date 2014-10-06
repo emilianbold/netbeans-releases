@@ -39,22 +39,29 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.action;
+package org.netbeans.modules.web.clientproject.ui.action.command;
 
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectType;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.util.Lookup;
 
-public class MoveCommand extends Command {
+public class TestProjectCommand extends Command {
 
-    public MoveCommand(ClientSideProject project) {
+    private final UsageLogger jsTestRunUsageLogger = UsageLogger.jsTestRunUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
+
+
+    public TestProjectCommand(ClientSideProject project) {
         super(project);
     }
 
     @Override
     public String getCommandId() {
-        return ActionProvider.COMMAND_MOVE;
+        return ActionProvider.COMMAND_TEST;
     }
 
     @Override
@@ -64,7 +71,13 @@ public class MoveCommand extends Command {
 
     @Override
     void invokeActionInternal(Lookup context) {
-        DefaultProjectOperations.performDefaultMoveOperation(project);
+        JsTestingProvider testingProvider = project.getJsTestingProvider(true);
+        if (testingProvider != null) {
+            jsTestRunUsageLogger.log(ClientSideProjectType.TYPE, testingProvider.getIdentifier());
+            TestRunInfo testRunInfo = new TestRunInfo.Builder()
+                    .build();
+            testingProvider.runTests(project, testRunInfo);
+        }
     }
 
 }

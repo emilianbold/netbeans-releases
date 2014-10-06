@@ -39,50 +39,74 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.web.clientproject.spi;
+package org.netbeans.modules.web.clientproject.api;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.web.clientproject.CustomizerPanelAccessor;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 
 /**
  * Provides support for configuration (typically via Project Properties dialog).
- * @since 1.67
+ * @since 1.71
  */
-public interface CustomizerPanelImplementation {
+public final class CustomizerPanel {
+
+    private final CustomizerPanelImplementation delegate;
+
+    static {
+        CustomizerPanelAccessor.setDefault(new CustomizerPanelAccessor() {
+            @Override
+            public CustomizerPanel create(CustomizerPanelImplementation customizerPanelImplementation) {
+                return new CustomizerPanel(customizerPanelImplementation);
+            }
+        });
+    }
+
+
+    private CustomizerPanel(CustomizerPanelImplementation delegate) {
+        assert delegate != null;
+        this.delegate = delegate;
+    }
 
     /**
      * Returns the <b>non-localized (usually english)</b> identifier of this panel.
      * @return the <b>non-localized (usually english)</b> identifier; never {@code null}.
-     * @since 1.71
      */
     @NonNull
-    String getIdentifier();
+    public String getIdentifier() {
+        return delegate.getIdentifier();
+    }
 
     /**
      * Returns the display name of this panel. The display name can be used
      * in the UI.
      * @return the display name; never {@code null}
-     * @since 1.71
      */
     @NonNull
-    String getDisplayName();
+    public String getDisplayName() {
+        return delegate.getDisplayName();
+    }
 
     /**
      * Attaches a change listener that is to be notified of changes
      * in the panel (e.g., the result of the {@link #isValid} method
      * has changed.
-     * @param  listener a listener.
+     * @param listener a listener.
      */
-    void addChangeListener(@NonNull ChangeListener listener);
+    public void addChangeListener(@NonNull ChangeListener listener) {
+        delegate.addChangeListener(listener);
+    }
 
     /**
      * Removes a change listener.
-     * @param  listener a listener.
+     * @param listener a listener.
      */
-    void removeChangeListener(@NonNull ChangeListener listener);
+    public void removeChangeListener(@NonNull ChangeListener listener) {
+        delegate.removeChangeListener(listener);
+    }
 
     /**
      * Returns a UI component used to allow the user to customize this panel.
@@ -91,7 +115,9 @@ public interface CustomizerPanelImplementation {
      *         return the same instance.
      */
     @NonNull
-    JComponent getComponent();
+    public JComponent getComponent() {
+        return delegate.getComponent();
+    }
 
     /**
      * Checks if this panel is valid (e.g., if the configuration set
@@ -104,7 +130,9 @@ public interface CustomizerPanelImplementation {
      * @see #getErrorMessage()
      * @see #getWarningMessage()
      */
-    boolean isValid();
+    public boolean isValid() {
+        return delegate.isValid();
+    }
 
     /**
      * Gets error message or {@code null} if the {@link #getComponent component} is {@link #isValid() valid}.
@@ -113,7 +141,9 @@ public interface CustomizerPanelImplementation {
      * @see #getWarningMessage()
      */
     @CheckForNull
-    String getErrorMessage();
+    public String getErrorMessage() {
+        return delegate.getErrorMessage();
+    }
 
     /**
      * Gets warning message that can be not {@code null} even for {@link #isValid() valid} panel.
@@ -123,7 +153,9 @@ public interface CustomizerPanelImplementation {
      * @see #getErrorMessage()
      */
     @CheckForNull
-    String getWarningMessage();
+    public String getWarningMessage() {
+        return delegate.getWarningMessage();
+    }
 
     /**
      * Called to extend project. This method
@@ -134,6 +166,8 @@ public interface CustomizerPanelImplementation {
      * so it should finish as fast as possible.</b>
      * @see #isValid()
      */
-    void save();
+    public void save() {
+        delegate.save();
+    }
 
 }

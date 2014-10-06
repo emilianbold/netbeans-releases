@@ -39,45 +39,32 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.ui.actions;
+package org.netbeans.modules.web.clientproject.ui.action.command;
 
-import java.io.File;
-import java.io.IOException;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
-import org.netbeans.modules.javascript.nodejs.util.RunInfo;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.util.Lookup;
 
-final class DebugProjectCommand extends ProjectCommand {
+public class CopyCommand extends Command {
 
-    public DebugProjectCommand(Project project) {
+    public CopyCommand(ClientSideProject project) {
         super(project);
     }
 
     @Override
     public String getCommandId() {
-        return ActionProvider.COMMAND_DEBUG;
+        return ActionProvider.COMMAND_COPY;
     }
 
     @Override
-    public boolean isEnabledInternal(Lookup context) {
+    boolean isActionEnabledInternal(Lookup context) {
         return true;
     }
 
     @Override
-    void runInternal(Lookup context) {
-        NodeExecutable node = getNode();
-        if (node != null) {
-            RunInfo runInfo = getRunInfo();
-            if (runInfo != null) {
-                try {
-                    node.debug(runInfo.getDebugPort(), new File(runInfo.getStartFile()), runInfo.getStartArgs());
-                } catch (IOException ex) {
-                    warnCannotDebug(ex);
-                }
-            }
-        }
+    void invokeActionInternal(Lookup context) {
+        DefaultProjectOperations.performDefaultCopyOperation(project);
     }
 
 }
