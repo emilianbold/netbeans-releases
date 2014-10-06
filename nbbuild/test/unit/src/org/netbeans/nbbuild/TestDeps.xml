@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
     <property name="xtest.testtype" value="testtype"/>
 
     <target name="test-deps" >
-        <parseprojectxml projectfile="${project.file}" project="${nb_all}/java.project/">
+        <parseprojectxml projectfile="${project.file}" project="${nb_all}/java.project.ui/">
             <testtype name="unit" folder="unit.dist.folder" compilecp="unit.compile.cp" runtimecp="unit.runtime.cp"/>
             <testtype name="qa-functional" folder="qa.dist.folder" compilecp="qa.compile.cp" runtimecp="qa.runtime.cp"/>
         </parseprojectxml>        
@@ -84,7 +84,7 @@ made subject to such option by the copyright holder.
                 <contains string="${unit.runtime.cp}" substring="platform/core/org-openide-filesystems.jar"/>
                 <contains string="${unit.runtime.cp}" substring="platform/modules/org-openide-nodes.jar"/>
                 <contains string="${unit.runtime.cp}" substring="${test.dist.dir}/unit/platform/org-openide-nodes/tests.jar"/>
-                <contains string="${unit.runtime.cp}" substring="platform/lib/org-openide-util.jar"/>
+                <contains string="${unit.runtime.cp}" substring="platform/lib/org-openide-util-base.jar"/>
                 <contains string="${unit.runtime.cp}" substring="platform/modules/org-netbeans-modules-queries.jar"/>
             </and>
         </condition> 
@@ -124,7 +124,7 @@ made subject to such option by the copyright holder.
     </target>
  
      <target name="test-deps-no-test-deps" >
-        <parseprojectxml projectfile="${project.file}" project="${nb_all}/java.project/">
+        <parseprojectxml projectfile="${project.file}" project="${nb_all}/java.project.ui/">
             <testtype name="unit" folder="unit.dist.folder" compilecp="unit.compile.cp2" runtimecp="unit.runtime.cp2"/>
             <testtype name="qa-functional" folder="qa.dist.folder" compilecp="qa.compile.cp2" runtimecp="qa.runtime.cp2"/>
         </parseprojectxml>        
@@ -196,7 +196,7 @@ made subject to such option by the copyright holder.
   </target>
 
      <target name="test-deps-missing-module-entry-test-deps" >
-        <parseprojectxml projectfile="${project.file}" project="${nb_all}/java.project/">
+        <parseprojectxml projectfile="${project.file}" project="${nb_all}/java.project.ui/">
             <testtype name="unit" folder="unit.dist.folder" compilecp="unit.compile.cp2" runtimecp="unit.runtime.cp2"/>
             <testtype name="qa-functional" folder="qa.dist.folder" compilecp="qa.compile.cp2" runtimecp="qa.runtime.cp2"/>
         </parseprojectxml>        
