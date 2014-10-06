@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.api.platform;
 
+import java.beans.PropertyChangeEvent;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -81,6 +82,11 @@ public final class PlatformProvider {
      * @since 1.70
      */
     public static final String PROP_START_FILE = PlatformProviderImplementation.PROP_START_FILE;
+    /**
+     * Property name for changes in run configuration.
+     * @since 1.71
+     */
+    public static final String PROP_RUN_CONFIGRATION = PlatformProviderImplementation.PROP_RUN_CONFIGRATION;
 
 
     private final PlatformProviderImplementation delegate;
@@ -198,9 +204,10 @@ public final class PlatformProvider {
         return delegate;
     }
 
-    void notifyEnabled(@NonNull Project project, boolean enabled) {
+    void notifyPropertyChanged(@NonNull Project project, @NonNull PropertyChangeEvent event) {
         Parameters.notNull("project", project); // NOI18N
-        delegate.notifyEnabled(project, enabled);
+        Parameters.notNull("event", event); // NOI18N
+        delegate.notifyPropertyChanged(project, event);
     }
 
 }
