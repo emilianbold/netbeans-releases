@@ -42,7 +42,7 @@
 
 package org.netbeans.spi.project.support.ant.ui;
 
-import org.netbeans.modules.project.ant.VariablesPanel;
+import org.netbeans.modules.project.ant.ui.VariablesPanel;
 
 /**
  * Helper methods for variable based path manipulation.

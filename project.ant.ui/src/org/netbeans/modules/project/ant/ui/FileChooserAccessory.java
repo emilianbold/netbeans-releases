@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.project.ant;
+package org.netbeans.modules.project.ant.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -59,8 +59,7 @@ import javax.swing.ButtonModel;
 import javax.swing.JFileChooser;
 import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.queries.CollocationQuery;
-import static org.netbeans.modules.project.ant.Bundle.*;
-import org.netbeans.modules.project.ant.VariablesModel.Variable;
+import org.netbeans.modules.project.ant.ui.VariablesModel.Variable;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -70,6 +69,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
+import static org.netbeans.modules.project.ant.ui.Bundle.*;
 
 /**
  * Accessory allowing to choose how file is referenced from a project - relative

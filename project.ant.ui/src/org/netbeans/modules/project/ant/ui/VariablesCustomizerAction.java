@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.project.ant;
+package org.netbeans.modules.project.ant.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

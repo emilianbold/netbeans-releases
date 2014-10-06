@@ -40,12 +40,13 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.project.ant;
+package org.netbeans.modules.project.ant.ui;
 
+import org.netbeans.modules.project.ant.ui.VariablesModel;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.project.ant.VariablesModel.Variable;
+import org.netbeans.modules.project.ant.ui.VariablesModel.Variable;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /**

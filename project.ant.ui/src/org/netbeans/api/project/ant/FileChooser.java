@@ -52,7 +52,7 @@ import javax.swing.JFileChooser;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.project.ant.FileChooserAccessory;
+import org.netbeans.modules.project.ant.ui.FileChooserAccessory;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;

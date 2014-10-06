@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.project.ant;
+package org.netbeans.modules.project.ant.ui;
 
 import java.io.File;
 import java.io.IOException;

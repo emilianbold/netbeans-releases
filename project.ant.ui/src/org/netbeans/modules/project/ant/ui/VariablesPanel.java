@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.project.ant;
+package org.netbeans.modules.project.ant.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
@@ -51,7 +51,7 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.modules.project.ant.VariablesModel.Variable;
+import org.netbeans.modules.project.ant.ui.VariablesModel.Variable;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

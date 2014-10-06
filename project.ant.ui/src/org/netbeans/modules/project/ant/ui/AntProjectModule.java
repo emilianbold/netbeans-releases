@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.project.ant;
+package org.netbeans.modules.project.ant.ui;
 
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
