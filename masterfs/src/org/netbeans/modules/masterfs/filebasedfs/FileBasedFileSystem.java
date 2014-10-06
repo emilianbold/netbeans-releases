@@ -72,6 +72,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.BaseUtilities;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * @author Radek Matous
@@ -374,5 +375,13 @@ public class FileBasedFileSystem extends FileSystem {
     
     public static interface  FSCallable<V>  {
         public V call() throws IOException;                
+    }
+    
+    @ServiceProvider(service = MasterFileSystemFactory.class)
+    public static class Factory implements MasterFileSystemFactory {
+        @Override
+        public FileBasedFileSystem createFileSystem() {
+            return new FileBasedFileSystem();
+        }
     }
 }

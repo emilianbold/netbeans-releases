@@ -39,58 +39,13 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.masterfs.ui;
-
-import java.awt.Image;
-import java.util.Iterator;
-import java.util.Set;
-import org.netbeans.modules.masterfs.filebasedfs.MasterFileSystemFactory;
-import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
-import org.netbeans.modules.masterfs.providers.BaseAnnotationProvider;
-import org.openide.filesystems.*;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.modules.masterfs.filebasedfs;
 
 /**
- * Simple extension of master filesystem which provides 
- * icons for files.
- * 
+ * Friend-only interface to get the real instance of filesystem, potentially
+ * with some extensions
  * @author sdedic
  */
-public class FileBasedFSWithUI extends FileBasedFileSystem {
-    private final StatusDecorator uiDecorator = new UiDecorator();
-    
-    @Override
-    public StatusDecorator getDecorator() {
-        return uiDecorator;
-    }
-    
-    private class UiDecorator extends StatusImpl implements ImageDecorator {
-        @Override
-        public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-            Image retVal = null;
-
-            Iterator<? extends BaseAnnotationProvider> it = annotationProviders.allInstances().iterator();
-            while (retVal == null && it.hasNext()) {
-                BaseAnnotationProvider ap = it.next();
-                if (ap instanceof AnnotationProvider) {
-                    retVal = ((AnnotationProvider)ap).annotateIcon(icon, iconType, files);
-                }
-            }
-            if (retVal != null) {
-                return retVal;
-            }
-
-            return icon;
-        }
-    }
-    
-    @ServiceProvider(service = MasterFileSystemFactory.class, 
-            supersedes = "org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem.Factory")
-    public static class Factory implements MasterFileSystemFactory {
-        @Override
-        public FileBasedFileSystem createFileSystem() {
-            return new FileBasedFSWithUI();
-        }
-    }
+public interface MasterFileSystemFactory {
+    public FileBasedFileSystem createFileSystem();
 }
