@@ -77,7 +77,8 @@ public class BrowserCommand extends Command {
         if (!project.isRunBrowser()) {
             return false;
         }
-        if (isJsFileCommand(context)) {
+        if (isFileCommand()
+                && isJsFileCommand(context)) {
             return false;
         }
         ActionProvider actionProvider = getBrowserActionProvider();
@@ -96,7 +97,8 @@ public class BrowserCommand extends Command {
         if (!project.isRunBrowser()) {
             return;
         }
-        if (isJsFileCommand(context)) {
+        if (isFileCommand()
+                && isJsFileCommand(context)) {
             return;
         }
         project.logBrowserUsage();
@@ -129,6 +131,16 @@ public class BrowserCommand extends Command {
             return browserImplementation.getActionProvider();
         }
         return null;
+    }
+
+    private boolean isFileCommand() {
+        switch (commandId) {
+            case ActionProvider.COMMAND_RUN_SINGLE:
+            case ActionProvider.COMMAND_DEBUG_SINGLE:
+                return true;
+            default:
+                return false;
+        }
     }
 
     private boolean isJsFileCommand(Lookup context) {
