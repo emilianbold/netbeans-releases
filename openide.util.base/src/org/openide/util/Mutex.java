@@ -44,11 +44,12 @@
 
 package org.openide.util;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 import org.openide.util.MutexException;
-import org.openide.util.Union2;
 import org.netbeans.modules.openide.util.DefaultMutexImplementation;
+import org.netbeans.modules.openide.util.LazyMutexImplementation;
 import org.openide.util.spi.MutexEventProvider;
 import org.openide.util.spi.MutexImplementation;
 
@@ -140,17 +141,23 @@ public final class Mutex {
      */
     public static final Mutex EVENT;
     static {
-        final MutexEventProvider provider = Lookup.getDefault().lookup(MutexEventProvider.class);
-        if (provider == null) {
-            throw new IllegalStateException("No MutexEventProvider found in default Lookup.");  //NOI18N
-        }
-        final MutexImplementation mutexImpl = provider.createMutex();
-        if (mutexImpl == null) {
-            throw new IllegalStateException(String.format(
-                "Null value from %s.createMutex()", //NOI18N
-                provider.getClass()));
-        }
-        EVENT = new Mutex(mutexImpl);
+        final Callable<MutexImplementation> c = new Callable<MutexImplementation>() {
+            @Override
+            public MutexImplementation call() throws Exception {
+                final MutexEventProvider provider = Lookup.getDefault().lookup(MutexEventProvider.class);
+                if (provider == null) {
+                    throw new IllegalStateException("No MutexEventProvider found in default Lookup.");  //NOI18N
+                }
+                final MutexImplementation mutexImpl = provider.createMutex();
+                if (mutexImpl == null) {
+                    throw new IllegalStateException(String.format(
+                        "Null value from %s.createMutex()", //NOI18N
+                        provider.getClass()));
+                }
+                return mutexImpl;
+            }
+        };
+        EVENT = new Mutex(new LazyMutexImplementation(c));
     }
 
     // lock mode constants
