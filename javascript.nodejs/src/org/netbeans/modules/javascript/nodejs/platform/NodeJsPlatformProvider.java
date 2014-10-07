@@ -140,7 +140,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
         String propertyName = event.getPropertyName();
         if (PROP_ENABLED.equals(propertyName)) {
             NodeJsSupport.forProject(project).getPreferences().setEnabled((boolean) event.getNewValue());
-        } else if (PROP_RUN_CONFIGRATION.equals(propertyName)) {
+        } else if (PROP_RUN_CONFIGURATION.equals(propertyName)) {
             Object activeRunConfig = event.getNewValue();
             boolean runEnabled = false;
             for (CustomizerPanelImplementation panel : getRunCustomizerPanels(project)) {

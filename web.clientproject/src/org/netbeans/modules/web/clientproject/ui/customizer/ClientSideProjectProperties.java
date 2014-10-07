@@ -233,7 +233,7 @@ public final class ClientSideProjectProperties {
         if (runAs != null) {
             String runAsValue = runAs.get();
             PlatformProviders.getDefault().notifyPropertyChanged(project,
-                    new PropertyChangeEvent(project, PlatformProvider.PROP_RUN_CONFIGRATION, null, runAsValue));
+                    new PropertyChangeEvent(project, PlatformProvider.PROP_RUN_CONFIGURATION, null, runAsValue));
         }
     }
 

@@ -84,9 +84,9 @@ public final class PlatformProvider {
     public static final String PROP_START_FILE = PlatformProviderImplementation.PROP_START_FILE;
     /**
      * Property name for changes in run configuration.
-     * @since 1.71
+     * @since 1.72
      */
-    public static final String PROP_RUN_CONFIGRATION = PlatformProviderImplementation.PROP_RUN_CONFIGRATION;
+    public static final String PROP_RUN_CONFIGURATION = PlatformProviderImplementation.PROP_RUN_CONFIGURATION;
 
 
     private final PlatformProviderImplementation delegate;
