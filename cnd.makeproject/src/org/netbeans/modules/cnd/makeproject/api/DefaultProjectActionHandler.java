@@ -400,7 +400,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             }
         }
         
-        if (actionType == PredefinedType.COMPILE_SINGLE) {
+        if (actionType == PredefinedType.PRE_BUILD ||
+            actionType == PredefinedType.COMPILE_SINGLE) {
             io.getOut().println(buf.toString());
         }
 

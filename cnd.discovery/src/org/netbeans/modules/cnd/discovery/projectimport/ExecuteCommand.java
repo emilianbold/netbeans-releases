@@ -148,7 +148,6 @@ public class ExecuteCommand {
             } catch (IOException ioe) {
             }
             inputOutput = tab;
-            inputOutput.getOut().println(command);
         }
         RemoteSyncWorker syncWorker = RemoteSyncSupport.createSyncWorker(project, inputOutput.getOut(), inputOutput.getErr());
         if (syncWorker != null) {
@@ -206,6 +205,9 @@ public class ExecuteCommand {
                 postMessageDisplayer(new PostMessageDisplayer.Default(name)).
                 errConvertorFactory(processChangeListener).
                 outConvertorFactory(processChangeListener);
+
+        descr.noReset(true);
+        inputOutput.getOut().println(command);       
 
         return NativeExecutionService.newService(npb, descr, name);
     }
