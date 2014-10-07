@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
@@ -265,6 +266,7 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
             } catch (FileStateInvalidException ex) {
             }
             PreBuildArtifact scriptArtifact = getScriptArtifact();
+            BuildFile makeArtifact = null;
             if (scriptArtifact != null) {
                 settings.putProperty(WizardConstants.PROPERTY_RUN_CONFIGURE, Boolean.TRUE);
                 FileObject script = scriptArtifact.getScript();
@@ -274,14 +276,23 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
                 settings.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS, args);
                 String command = scriptArtifact.getCommandLine(args, script.getParent().getPath());
                 settings.putProperty(WizardConstants.PROPERTY_CONFIGURE_COMMAND, command);
+                
+                String makefile = script.getParent().getPath()+"/Makefile";
+                ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+                if (env != null) {
+                    makefile = RemoteFileUtil.normalizeAbsolutePath(makefile, env);
+                }
+                makeArtifact = BuildSupport.scriptToBuildFile(makefile);
             }
-            BuildFile makeArtifact = getMakeArtifact();
+            if (makeArtifact == null) {
+                makeArtifact = getMakeArtifact();
+            }
             if (makeArtifact != null) {
                 settings.putProperty(WizardConstants.PROPERTY_RUN_REBUILD, Boolean.TRUE);
-                settings.putProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH, getMake());
-                settings.putProperty(WizardConstants.PROPERTY_WORKING_DIR, CndPathUtilities.getDirName(getMake()));
-                settings.putProperty(WizardConstants.PROPERTY_BUILD_COMMAND, makeArtifact.getBuildCommandLine(null, CndPathUtilities.getDirName(getMake())));
-                settings.putProperty(WizardConstants.PROPERTY_CLEAN_COMMAND, makeArtifact.getCleanCommandLine(null, CndPathUtilities.getDirName(getMake())));
+                settings.putProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH, makeArtifact.getFile());
+                settings.putProperty(WizardConstants.PROPERTY_WORKING_DIR, CndPathUtilities.getDirName(makeArtifact.getFile()));
+                settings.putProperty(WizardConstants.PROPERTY_BUILD_COMMAND, makeArtifact.getBuildCommandLine(null, CndPathUtilities.getDirName(makeArtifact.getFile())));
+                settings.putProperty(WizardConstants.PROPERTY_CLEAN_COMMAND, makeArtifact.getCleanCommandLine(null, CndPathUtilities.getDirName(makeArtifact.getFile())));
             }
         }
         
