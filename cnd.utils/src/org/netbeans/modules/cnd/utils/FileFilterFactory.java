@@ -44,12 +44,12 @@ package org.netbeans.modules.cnd.utils;
 
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.filters.AllBinaryFileFilter;
 import org.netbeans.modules.cnd.utils.filters.AllFileFilter;
 import org.netbeans.modules.cnd.utils.filters.AllLibraryFileFilter;
 import org.netbeans.modules.cnd.utils.filters.AllSourceFileFilter;
 import org.netbeans.modules.cnd.utils.filters.CCSourceFileFilter;
+import org.netbeans.modules.cnd.utils.filters.CMakeFileFilter;
 import org.netbeans.modules.cnd.utils.filters.CSourceFileFilter;
 import org.netbeans.modules.cnd.utils.filters.ConfigureFileFilter;
 import org.netbeans.modules.cnd.utils.filters.CoreFileFilter;
@@ -64,12 +64,13 @@ import org.netbeans.modules.cnd.utils.filters.MakefileFileFilter;
 import org.netbeans.modules.cnd.utils.filters.PeDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.utils.filters.PeExecutableFileFilter;
 import org.netbeans.modules.cnd.utils.filters.PeStaticLibraryFileFilter;
+import org.netbeans.modules.cnd.utils.filters.QMakeFileFilter;
 import org.netbeans.modules.cnd.utils.filters.QtFileFilter;
 import org.netbeans.modules.cnd.utils.filters.ResourceFileFilter;
+import org.netbeans.modules.cnd.utils.filters.SconsFileFilter;
 import org.netbeans.modules.cnd.utils.filters.ShellFileFilter;
 import org.netbeans.modules.cnd.utils.filters.WorkshopProjectFilter;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -166,6 +167,12 @@ public final class FileFilterFactory {
     public static AbstractFileAndFileObjectFilter getConfigureFileFilter(){
         return ConfigureFileFilter.getInstance();
     }
+    public static AbstractFileAndFileObjectFilter getCMakeFileFilter(){
+        return CMakeFileFilter.getInstance();
+    }
+    public static AbstractFileAndFileObjectFilter getQMakeFileFilter(){
+        return QMakeFileFilter.getInstance();
+    }
     public static AbstractFileAndFileObjectFilter getElfDynamicLibraryFileFilter(){
         return ElfDynamicLibraryFileFilter.getInstance();
     }
@@ -189,6 +196,9 @@ public final class FileFilterFactory {
     }
     public static AbstractFileAndFileObjectFilter getMakefileFileFilter(){
         return MakefileFileFilter.getInstance();
+    }
+    public static AbstractFileAndFileObjectFilter getSconsFileFilter(){
+        return SconsFileFilter.getInstance();
     }
     public static AbstractFileAndFileObjectFilter getPeDynamicLibraryFileFilter(){
         return PeDynamicLibraryFileFilter.getInstance();

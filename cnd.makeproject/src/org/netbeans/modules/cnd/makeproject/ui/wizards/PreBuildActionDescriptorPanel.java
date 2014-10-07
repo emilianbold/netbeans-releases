@@ -56,22 +56,22 @@ import org.openide.util.NbBundle;
 /**
  * Panel just asking for basic info.
  */
-final class MakefileOrConfigureDescriptorPanel implements WizardDescriptor.Panel<WizardDescriptor>, NamedPanel, ChangeListener {
+final class PreBuildActionDescriptorPanel implements WizardDescriptor.Panel<WizardDescriptor>, NamedPanel, ChangeListener {
 
     private WizardDescriptor wizardDescriptor;
-    private MakefileOrConfigurePanel component;
+    private PreBuildActionPanel component;
     private final String name;
     //private boolean initialized = false;
 
     /** Create the wizard panel descriptor. */
-    public MakefileOrConfigureDescriptorPanel() {
+    public PreBuildActionDescriptorPanel() {
         name = NbBundle.getMessage(BuildActionsDescriptorPanel.class, "MakefileOrConfigureName"); // NOI18N
     }
 
     @Override
-    public MakefileOrConfigurePanel getComponent() {
+    public PreBuildActionPanel getComponent() {
         if (component == null) {
-            component = new MakefileOrConfigurePanel(this);
+            component = new PreBuildActionPanel(this);
             component.setName(name);
         }
         return component;

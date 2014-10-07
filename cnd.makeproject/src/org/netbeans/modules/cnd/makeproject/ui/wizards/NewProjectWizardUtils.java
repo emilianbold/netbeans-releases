@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -49,7 +50,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;

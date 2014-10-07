@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.utils.filters;
 
+import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
 import java.io.File;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;

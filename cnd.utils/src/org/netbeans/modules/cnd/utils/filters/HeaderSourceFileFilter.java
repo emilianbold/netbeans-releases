@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.utils.filters;
 
+import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
 import java.io.File;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;

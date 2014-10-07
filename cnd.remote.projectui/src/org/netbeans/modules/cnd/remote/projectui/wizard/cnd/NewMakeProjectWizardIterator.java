@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.remote.projectui.wizard.cnd;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,6 +70,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
@@ -81,7 +81,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -379,11 +378,15 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         String projectName = (String) wiz.getProperty(WizardConstants.PROPERTY_NAME);
         String makefileName = (String) wiz.getProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME);
         if (isSimple()) {
-            ImportRemoteProject importRemoteProject = new ImportRemoteProject(getSelectModePanel().getWizardStorage().getAdapter());
-            resultSet.addAll(importRemoteProject.create());
+            IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+            if (extension != null) {
+                resultSet.addAll(extension.createProject(wiz));
+            }
         } else if (wizardtype == TYPE_MAKEFILE) { // thp
-            ImportRemoteProject importRemoteProject = new ImportRemoteProject(wiz);
-            resultSet.addAll(importRemoteProject.create());
+            IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+            if (extension != null) {
+                resultSet.addAll(extension.createProject(wiz));
+            }
         } else if (wizardtype == TYPE_BINARY) {
             String binary = (String) wiz.getProperty(WizardConstants.PROPERTY_BUILD_RESULT);
             boolean trueSourceRoot = (Boolean)wiz.getProperty(WizardConstants.PROPERTY_TRUE_SOURCE_ROOT);

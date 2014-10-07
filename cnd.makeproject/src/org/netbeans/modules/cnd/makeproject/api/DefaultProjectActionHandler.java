@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -161,6 +162,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         final Type actionType = pae.getType();
 
         if (actionType != ProjectActionEvent.PredefinedType.RUN
+                && actionType != ProjectActionEvent.PredefinedType.PRE_BUILD
                 && actionType != ProjectActionEvent.PredefinedType.BUILD
                 && actionType != ProjectActionEvent.PredefinedType.COMPILE_SINGLE
                 && actionType != ProjectActionEvent.PredefinedType.CLEAN
@@ -319,6 +321,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             if (args == null) {
                 args = pae.getArguments();
             }
+            if (actionType == ProjectActionEvent.PredefinedType.PRE_BUILD) {
+                ArrayList<String> expandedArgs = new ArrayList<>();
+                for(String s :args) {
+                    expandedArgs.add(PreBuildSupport.expandMacros(s, cs));
+                }
+                args = expandedArgs;
+            }
+
             npb.setExecutable(exe).setArguments(args.toArray(new String[args.size()]));
             buf.append(exe);
             for(String a : args) {
@@ -327,7 +337,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             }
         }
         
-        if (actionType == ProjectActionEvent.PredefinedType.BUILD ||
+        if (actionType == ProjectActionEvent.PredefinedType.PRE_BUILD ||
+            actionType == ProjectActionEvent.PredefinedType.BUILD ||
             actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             npb.redirectError();
         }
@@ -372,7 +383,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 outConvertorFactory(processChangeListener).
                 keepInputOutputOnFinish();
 
-        if (actionType == PredefinedType.BUILD ||
+        if (actionType == PredefinedType.PRE_BUILD ||
+            actionType == PredefinedType.BUILD ||
             actionType == PredefinedType.COMPILE_SINGLE ||
             actionType == PredefinedType.CLEAN) {
             descr.noReset(true);

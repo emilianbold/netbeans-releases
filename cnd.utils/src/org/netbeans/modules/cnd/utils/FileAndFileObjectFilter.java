@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.utils.filters;
+package org.netbeans.modules.cnd.utils;
 
 import java.io.File;
 import org.netbeans.modules.cnd.utils.FileFilterFactory.AbstractFileAndFileObjectFilter;

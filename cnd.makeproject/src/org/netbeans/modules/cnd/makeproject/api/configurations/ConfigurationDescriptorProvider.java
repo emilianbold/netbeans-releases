@@ -478,6 +478,56 @@ public abstract class ConfigurationDescriptorProvider {
             LOGGER.log(Level.FINE, "initialized config files {2} for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory, System.identityHashCode(this), trackedConfigFiles}); // NOI18N
         }
     }
+
+    /**
+     * Method also is called from org.netbeans.modules.cnd.discovery.projectimport.ImportProject.updateRemoteProjectImpl()
+     */
+    private void resetConfiguration() {
+        AtomicBoolean writeLock = MakeConfigurationDescriptor.getWriteLock(project);
+        if (writeLock.get()) {
+            // configuration is being saved right now
+            return;
+        }
+        if (projectDescriptor.isModified()) {
+            if (interrupter.cancelled()) {
+                return;
+            }
+            if (project instanceof MakeProject) {
+                if (((MakeProject)project).isDeleted()) {
+                    return;
+                }
+            }
+            // Ask user if descriptor is modified in memory.
+            String txt = NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationText", project.getProjectDirectory().getPath()); //NOI18N
+            if (CndUtils.isStandalone()) {
+                System.err.print(txt);
+                System.err.println(NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationText.auto")); //NOI18N
+            } else {
+                NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt,
+                        NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationTitle"), // NOI18N
+                        NotifyDescriptor.YES_NO_OPTION);
+                if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                    return;
+                }
+            }
+        }
+        synchronized (readLock) {
+            LOGGER.log(Level.FINE, "Mark to reload project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)}); // NOI18N
+            synchronized(isOpened) {
+                if (isOpened.get()) {
+                    needReload = true;
+                    hasTried = false;
+                }
+            }
+            RP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    getConfigurationDescriptor(true);
+                }
+            });
+        }
+    }
             
     /**
      * This listener will be notified about updates of files
@@ -487,53 +537,6 @@ public abstract class ConfigurationDescriptorProvider {
      * See IZ#146701: can't update project through subversion, or any other
      */
     private class ConfigurationXMLChangeListener implements FileChangeListener {
-
-        private void resetConfiguration() {
-            AtomicBoolean writeLock = MakeConfigurationDescriptor.getWriteLock(project);
-            if (writeLock.get()) {
-                // configuration is being saved right now
-                return;
-            }
-            if (projectDescriptor.isModified()) {
-                if (interrupter.cancelled()) {
-                    return;
-                }
-                if (project instanceof MakeProject) {
-                    if (((MakeProject)project).isDeleted()) {
-                        return;
-                    }
-                }
-                // Ask user if descriptor is modified in memory.
-                String txt = NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationText", project.getProjectDirectory().getPath()); //NOI18N
-                if (CndUtils.isStandalone()) {
-                    System.err.print(txt);
-                    System.err.println(NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationText.auto")); //NOI18N
-                } else {
-                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt,
-                            NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationTitle"), // NOI18N
-                            NotifyDescriptor.YES_NO_OPTION);
-                    if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
-                        return;
-                    }
-                }
-            }
-            synchronized (readLock) {
-                LOGGER.log(Level.FINE, "Mark to reload project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)}); // NOI18N
-                synchronized(isOpened) {
-                    if (isOpened.get()) {
-                        needReload = true;
-                        hasTried = false;
-                    }
-                }
-                RP.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        getConfigurationDescriptor(true);
-                    }
-                });
-            }
-        }
 
         @Override
         public void fileFolderCreated(FileEvent fe) {

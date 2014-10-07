@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.io.File;
@@ -75,7 +76,6 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
