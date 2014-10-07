@@ -94,6 +94,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.common.api.DependencyType;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Lines;
@@ -525,16 +526,19 @@ public class CPCssEditorModule extends CssEditorModule {
                                     public void run(ResultIterator resultIterator) throws Exception {
                                         ResultIterator cssRI = WebUtils.getResultIterator(resultIterator, "text/css");
                                         if (cssRI != null) {
-                                            CssParserResult result = (CssParserResult) cssRI.getParserResult();
-                                            CPModel model = CPModel.getModel(result);
-                                            for (CPElementHandle mixin : im.getMixins()) {
-                                                if (mixin.getType() == CPElementType.MIXIN_DECLARATION
-                                                        && LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
-                                                    CPElement element = mixin.resolve(model);
-                                                    if (element != null) {
-                                                        locations.add(Pair.of(new CPCslElementHandle(
-                                                                file, mixin.getName(), element.getRange(), mixin.getType()),
-                                                                result.getSnapshot()));
+                                            Parser.Result parserResult = cssRI.getParserResult();
+                                            if (parserResult instanceof CssParserResult) {
+                                                CssParserResult result = (CssParserResult) parserResult;
+                                                CPModel model = CPModel.getModel(result);
+                                                for (CPElementHandle mixin : im.getMixins()) {
+                                                    if (mixin.getType() == CPElementType.MIXIN_DECLARATION
+                                                            && LexerUtils.equals(searchedMixinName, mixin.getName(), false, false)) {
+                                                        CPElement element = mixin.resolve(model);
+                                                        if (element != null) {
+                                                            locations.add(Pair.of(new CPCslElementHandle(
+                                                                    file, mixin.getName(), element.getRange(), mixin.getType()),
+                                                                    result.getSnapshot()));
+                                                        }
                                                     }
                                                 }
                                             }

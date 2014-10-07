@@ -161,7 +161,7 @@ public class KODataBindLexer implements Lexer<KODataBindTokenId> {
 
             switch (state) {
                 case INIT:
-                    if (Character.isLetter(c)) {
+                    if (Character.isLetter(c) || c == '_' || c == '$') {
                         state = State.IN_KEY;
                     } else if (Character.isWhitespace(c)) {
                         input.backup(1); //backup the ws
@@ -172,7 +172,7 @@ public class KODataBindLexer implements Lexer<KODataBindTokenId> {
                     break;
 
                 case IN_WS_BEFORE_KEY:
-                    if (Character.isLetter(c)) {
+                    if (Character.isLetter(c) || c == '_' || c == '$') {
                         state = State.IN_KEY;
                         input.backup(1); //backup the first key char
                         return tokenFactory.createToken(KODataBindTokenId.WS);
@@ -186,7 +186,7 @@ public class KODataBindLexer implements Lexer<KODataBindTokenId> {
                     break;
 
                 case IN_KEY:
-                    if (!Character.isLetter(c) && c != '_') {
+                    if (!Character.isLetter(c) && !Character.isDigit(c) && c != '_' && c != '$') {
                         if (c == ':') {
                             state = State.AFTER_KEY;
                             input.backup(1); //backup the colon
