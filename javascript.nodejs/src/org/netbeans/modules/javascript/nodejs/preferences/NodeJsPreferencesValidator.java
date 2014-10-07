@@ -68,9 +68,9 @@ public final class NodeJsPreferencesValidator {
         for (ValidationResult.Message message : messages) {
             switch (message.getSource().toString()) {
                 case ValidationUtils.NODE_PATH:
+                case DEBUG_PORT:
                     return NodeJsCustomizerProvider.CUSTOMIZER_IDENT;
                 case START_FILE:
-                case DEBUG_PORT:
                     // XXX
                     return "RUN"; // NOI18N
                 default:
@@ -91,7 +91,6 @@ public final class NodeJsPreferencesValidator {
             return this;
         }
         validateNode(preferences.isDefaultNode(), preferences.getNode());
-        validateRun(preferences.getStartFile(), preferences.getStartArgs(), preferences.getDebugPort());
         return this;
     }
 
@@ -100,34 +99,28 @@ public final class NodeJsPreferencesValidator {
         return this;
     }
 
-    public NodeJsPreferencesValidator validateCustomizer(boolean enabled, boolean defaultNode, String node) {
+    public NodeJsPreferencesValidator validateCustomizer(boolean enabled, boolean defaultNode, String node, int debugPort) {
         if (!enabled) {
             return this;
         }
         validateNode(defaultNode, node);
+        validateDebugPort(debugPort);
         return this;
     }
 
-    public NodeJsPreferencesValidator validateRun(String startFile, String args, int debugPort) {
-        return validateRun(startFile, args, String.valueOf(debugPort));
-    }
-
-    @NbBundle.Messages({
-        "NodeJsPreferencesValidator.startFile.name=Start file",
-        "NodeJsPreferencesValidator.debugPort.invalid=Debug port is invalid",
-    })
-    public NodeJsPreferencesValidator validateRun(String startFile, String args, String debugPort) {
+    @NbBundle.Messages("NodeJsPreferencesValidator.startFile.name=Start file")
+    public NodeJsPreferencesValidator validateRun(String startFile, String args) {
         String warning = FileUtils.validateFile(Bundle.NodeJsPreferencesValidator_startFile_name(), startFile, false);
         if (warning != null) {
             result.addWarning(new ValidationResult.Message(START_FILE, warning));
         }
-        try {
-            int parsedPort = Integer.parseInt(debugPort);
-            if (parsedPort < 0
-                    || parsedPort > 65535) {
-                result.addWarning(new ValidationResult.Message(DEBUG_PORT, Bundle.NodeJsPreferencesValidator_debugPort_invalid()));
-            }
-        } catch (NumberFormatException ex) {
+        return this;
+    }
+
+    @NbBundle.Messages("NodeJsPreferencesValidator.debugPort.invalid=Debug port is invalid")
+    public NodeJsPreferencesValidator validateDebugPort(int debugPort) {
+        if (debugPort < 0
+                || debugPort > 65535) {
             result.addWarning(new ValidationResult.Message(DEBUG_PORT, Bundle.NodeJsPreferencesValidator_debugPort_invalid()));
         }
         return this;
