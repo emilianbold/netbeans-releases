@@ -1393,7 +1393,7 @@ public final class MakeActionProvider implements ActionProvider {
         if (command.equals(COMMAND_CLEAN)) {
             return true;
         } else if (command.equals(COMMAND_PRE_BUILD)) {
-            return conf.isMakefileConfiguration();
+            return conf.isMakefileConfiguration() && !conf.getPreBuildConfiguration().getPreBuildCommand().getValue().isEmpty();
         } else if (command.equals(COMMAND_BUILD)) {
             return true;
         } else if (command.equals(COMMAND_BUILD_PACKAGE)) {
