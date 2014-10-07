@@ -214,11 +214,13 @@ public class CsmOffsetResolver {
             }
         } else if (CsmKindUtilities.isVariable(lastObj)) {
             CsmType type = ((CsmVariable)lastObj).getType();
-            // Function pointer type contains the whole declaration (except initilizer)
-            // and will be handled later.
-            if (!CsmKindUtilities.isFunctionPointerType(type) && !CsmOffsetUtilities.sameOffsets(lastObj, type) && CsmOffsetUtilities.isInObject(type, offset)) {
-                context.setLastObject(type);
-                last = type;
+            if (!CsmOffsetUtilities.sameOffsets(lastObj, type) && CsmOffsetUtilities.isInObject(type, offset)) {
+                // Function pointer type contains the whole declaration (except initilizer)
+                // and will be handled later.
+                if (!CsmKindUtilities.isFunctionPointerType(type) && !CompletionUtilities.isAutoVariableType(type)) {
+                    context.setLastObject(type);
+                    last = type;
+                }
             }
             MutableObject<CsmObject> innerObj = new MutableObject<CsmObject>();
             if (findInExpression(((CsmVariable)lastObj).getInitialValue(), lastObj, offset, context, innerObj)) {
