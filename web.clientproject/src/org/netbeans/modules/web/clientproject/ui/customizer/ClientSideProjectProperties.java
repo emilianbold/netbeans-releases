@@ -114,7 +114,7 @@ public final class ClientSideProjectProperties {
                     return null;
                 }
             });
-            fireProperties();
+            firePropertyChanges();
         } catch (MutexException | IOException e) {
             LOGGER.log(Level.WARNING, null, e);
         }
@@ -188,7 +188,7 @@ public final class ClientSideProjectProperties {
         }
     }
 
-    void fireProperties() {
+    void firePropertyChanges() {
         if (runAs != null) {
             String runAsValue = runAs.get();
             PlatformProviders.getDefault().notifyPropertyChanged(project,
