@@ -645,7 +645,8 @@ public class SelectModePanel extends javax.swing.JPanel {
                         if (makefile != null) {
                             BuildFile scriptFile = BuildSupport.scriptToBuildFile(makefile);
                             if (scriptFile != null) {
-                                tool = makefile;
+                                SelectModePanel.this.controller.getWizardStorage().getProjectPath();
+                                tool = CndPathUtilities.getRelativePath(((EditableComboBox)sourceFolder).getText().trim(), makefile);
                                 BuildFileProvider buildFileProvider = BuildSupport.getBuildFileProvider(scriptFile);
                                 toolsInfo = buildFileProvider.getHint();
                             }
