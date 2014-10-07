@@ -45,7 +45,9 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
+import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
 import org.netbeans.modules.javascript.nodejs.util.RunInfo;
+import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
 
@@ -66,16 +68,28 @@ final class DebugFileCommand extends Command {
     }
 
     @Override
+    ValidationResult validateRunInfo(RunInfo runInfo) {
+        return new NodeJsPreferencesValidator()
+                .validateDebugPort(runInfo.getDebugPort())
+                .getResult();
+    }
+
+    @Override
     void runInternal(Lookup context) {
         File file = lookupJavaScriptFile(context);
         assert file != null;
         NodeExecutable node = getNode();
-        if (node != null) {
-            try {
-                node.debug(new RunInfo(project).getDebugPort(), file, null);
-            } catch (IOException ex) {
-                warnCannotDebug(ex);
-            }
+        if (node == null) {
+            return;
+        }
+        RunInfo runInfo = getRunInfo();
+        if (runInfo == null) {
+            return;
+        }
+        try {
+            node.debug(runInfo.getDebugPort(), file, null);
+        } catch (IOException ex) {
+            warnCannotDebug(ex);
         }
     }
 

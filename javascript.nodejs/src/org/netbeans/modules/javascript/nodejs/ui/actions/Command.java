@@ -47,7 +47,6 @@ import java.io.IOException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
-import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.RunInfo;
@@ -75,6 +74,8 @@ abstract class Command {
 
     abstract void runInternal(Lookup context);
 
+    abstract ValidationResult validateRunInfo(RunInfo runInfo);
+
     public void run(Lookup context) {
         assert !EventQueue.isDispatchThread();
         runInternal(context);
@@ -88,9 +89,7 @@ abstract class Command {
     @CheckForNull
     protected RunInfo getRunInfo() {
         RunInfo runInfo = new RunInfo(project);
-        ValidationResult result = new NodeJsPreferencesValidator()
-                .validateRun(runInfo.getStartFile(), runInfo.getStartArgs(), runInfo.getDebugPort())
-                .getResult();
+        ValidationResult result = validateRunInfo(runInfo);
         if (!result.isFaultless()) {
             NodeJsCustomizerProvider.openCustomizer(project, result);
             return null;

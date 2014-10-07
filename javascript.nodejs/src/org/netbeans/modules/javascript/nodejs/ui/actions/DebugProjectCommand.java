@@ -45,7 +45,9 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
+import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
 import org.netbeans.modules.javascript.nodejs.util.RunInfo;
+import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
 
@@ -63,6 +65,14 @@ final class DebugProjectCommand extends ProjectCommand {
     @Override
     public boolean isEnabledInternal(Lookup context) {
         return true;
+    }
+
+    @Override
+    ValidationResult validateRunInfo(RunInfo runInfo) {
+        return new NodeJsPreferencesValidator()
+                .validateRun(runInfo.getStartFile(), runInfo.getStartArgs())
+                .validateDebugPort(runInfo.getDebugPort())
+                .getResult();
     }
 
     @Override

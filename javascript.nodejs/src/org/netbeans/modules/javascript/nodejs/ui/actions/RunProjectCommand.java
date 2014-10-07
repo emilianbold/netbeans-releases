@@ -44,7 +44,9 @@ package org.netbeans.modules.javascript.nodejs.ui.actions;
 import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
+import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
 import org.netbeans.modules.javascript.nodejs.util.RunInfo;
+import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
 
@@ -65,14 +67,23 @@ final class RunProjectCommand extends ProjectCommand {
     }
 
     @Override
+    ValidationResult validateRunInfo(RunInfo runInfo) {
+        return new NodeJsPreferencesValidator()
+                .validateRun(runInfo.getStartFile(), runInfo.getStartArgs())
+                .getResult();
+    }
+
+    @Override
     void runInternal(Lookup context) {
         NodeExecutable node = getNode();
-        if (node != null) {
-            RunInfo runInfo = getRunInfo();
-            if (runInfo != null) {
-                node.run(new File(runInfo.getStartFile()), runInfo.getStartArgs());
-            }
+        if (node == null) {
+            return;
         }
+        RunInfo runInfo = getRunInfo();
+        if (runInfo == null) {
+            return;
+        }
+        node.run(new File(runInfo.getStartFile()), runInfo.getStartArgs());
     }
 
 }
