@@ -277,7 +277,7 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
                 String command = scriptArtifact.getCommandLine(args, script.getParent().getPath());
                 settings.putProperty(WizardConstants.PROPERTY_CONFIGURE_COMMAND, command);
                 
-                String makefile = script.getParent().getPath()+"/Makefile";
+                String makefile = script.getParent().getPath()+"/Makefile"; //NOI18N
                 ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
                 if (env != null) {
                     makefile = RemoteFileUtil.normalizeAbsolutePath(makefile, env);
