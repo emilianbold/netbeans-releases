@@ -29,7 +29,8 @@ import org.netbeans.modules.team.commons.LogUtils;
 
 public class ODCSClientImpl implements ODCSClient {
     
-    private final String url;   
+    private final String url;
+    private final String organizationId;
     private final PasswordAuthentication pa;
     private final HttpClient httpClient = new HttpClient(WebUtil.getConnectionManager());
     
@@ -45,6 +46,8 @@ public class ODCSClientImpl implements ODCSClient {
             url = url + '/';
         }
         this.url = url;
+        String[] splitUrl = url.split("/"); // NOI18N
+        this.organizationId = splitUrl != null && splitUrl.length > 0 ? splitUrl[splitUrl.length-1] : null;
         this.pa = pa;
         WebUtil.configureHttpClient(httpClient, "");
         httpClient.getParams().setAuthenticationPreemptive(true);
@@ -77,7 +80,7 @@ public class ODCSClientImpl implements ODCSClient {
                 return mockDelegate.getMyProjects();
             }
             
-            QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(ProjectRelationship.MEMBER, null));
+            QueryResult<Project> r = getProfileClient().findProjects(createProjectsQuery(ProjectRelationship.MEMBER));
             return r != null ? r.getResultPage() : null;
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
@@ -172,8 +175,8 @@ public class ODCSClientImpl implements ODCSClient {
                 return mockDelegate.searchProjects(pattern);
             }
             
-            ProjectsQuery q = new ProjectsQuery(pattern, null);
-            q.setProjectRelationship(ProjectRelationship.ALL);
+            ProjectsQuery q = createProjectsQuery(ProjectRelationship.ALL);
+            q.setQueryString(pattern);
             QueryResult<Project> r = getProfileClient().findProjects(q);
             return r != null ? r.getResultPage() : null;
         } catch (WrappedCheckedException e) {
@@ -220,7 +223,7 @@ public class ODCSClientImpl implements ODCSClient {
                 return mockDelegate.getWatchedProjects();
             }
             
-            QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(ProjectRelationship.WATCHER, null));
+            QueryResult<Project> r = getProfileClient().findProjects(createProjectsQuery(ProjectRelationship.WATCHER));
             return r != null ? r.getResultPage() : null;
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
@@ -343,5 +346,11 @@ public class ODCSClientImpl implements ODCSClient {
         }
         return tasksServiceClient;     
     }
-    
+
+    private ProjectsQuery createProjectsQuery(ProjectRelationship rel) {
+        ProjectsQuery query = new ProjectsQuery(rel, null);
+        query.setOrganizationIdentifier(organizationId);
+        return query;
+    }
+
 }
