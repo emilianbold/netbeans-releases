@@ -85,6 +85,8 @@ import org.openide.windows.TopComponent;
 public final class KnockoutTC extends TopComponent {
     /** TopComponent ID. */
     public static final String ID = "KnockoutTC"; // NOI18N
+    /** Panel shown in this {@code TopComponent}. */
+    private KnockoutPanel currentPanel;
 
     /**
      * Creates a new {@code KnockoutTC}.
@@ -103,11 +105,14 @@ public final class KnockoutTC extends TopComponent {
      */
     final void update() {
         if (EventQueue.isDispatchThread()) {
-            PageModel pageModel = PageInspectorImpl.getDefault().getPage();
+            PageModel pageModel = isOpened() ? PageInspectorImpl.getDefault().getPage() : null;
             removeAll();
-            KnockoutPanel panel = new KnockoutPanel((WebKitPageModel)pageModel);
-            add(panel);
-            ((KnockoutTCLookup)getLookup()).setPanel(panel);
+            if (currentPanel != null) {
+                currentPanel.dispose();
+            }
+            currentPanel = new KnockoutPanel((WebKitPageModel)pageModel);
+            add(currentPanel);
+            ((KnockoutTCLookup)getLookup()).setPanel(currentPanel);
             revalidate();
             repaint();
         } else {
@@ -118,6 +123,18 @@ public final class KnockoutTC extends TopComponent {
                 }
             });
         }
+    }
+
+    @Override
+    protected void componentOpened() {
+        super.componentOpened();
+        update();
+    }
+
+    @Override
+    protected void componentClosed() {
+        super.componentClosed();
+        update();
     }
 
     /**
