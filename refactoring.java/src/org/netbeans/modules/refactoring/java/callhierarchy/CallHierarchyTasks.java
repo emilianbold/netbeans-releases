@@ -575,6 +575,9 @@ final class CallHierarchyTasks {
         }
         
         private void resolvePath(TreePath tpath) {
+            if(javac.getTreeUtilities().isSynthetic(tpath)) {
+                return;
+            }
             Element resolved = javac.getTrees().getElement(tpath);
             if (javac.getElementUtilities().isErroneous(resolved) &&
                 SourceUtils.isScanInProgress()) {
