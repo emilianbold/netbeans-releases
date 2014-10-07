@@ -61,7 +61,7 @@ public class RemoteBuildProjectActionHandlerFactory implements ProjectActionHand
 
     @Override
     public boolean canHandle(Type type, Lookup context, Configuration configuration) {
-        if (type == PredefinedType.BUILD || type == PredefinedType.BUILD_TESTS || type == PredefinedType.CLEAN) {
+        if (type == PredefinedType.PRE_BUILD || type == PredefinedType.BUILD || type == PredefinedType.BUILD_TESTS || type == PredefinedType.CLEAN) {
             if (configuration instanceof MakeConfiguration) {
                 MakeConfiguration conf = (MakeConfiguration) configuration;
                 if (conf.getDevelopmentHost().getExecutionEnvironment().isRemote()) {

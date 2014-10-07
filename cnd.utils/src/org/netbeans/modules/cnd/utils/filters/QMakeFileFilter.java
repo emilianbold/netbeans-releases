@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,56 +34,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.utils.filters;
 
-package org.netbeans.modules.cnd.makeproject.ui;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
+import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
+import java.io.File;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter;
 
-public class MoreBuildActionsAction extends AbstractAction implements Presenter.Menu, Presenter.Popup {
-    private JMenu subMenu = null;
-    Action[] actions;
+/**
+ *
+ * @author Alexander Simon
+ */
+public class QMakeFileFilter extends FileAndFileObjectFilter {
 
-    /** Creates a new instance of BrowserAction */
-    public MoreBuildActionsAction(Action[] actions) {
-        super(NbBundle.getMessage( MoreBuildActionsAction.class, "LBL_MoreBuildActionsAction_Name"), null);   // NOI18N
-        this.actions = actions;
-    }
-        
-    @Override
-    public void actionPerformed(java.awt.event.ActionEvent ev) {
-        // no operation
+    private static String suffixes[] = {"pro"}; // NOI18N
+    private static QMakeFileFilter instance = null;
+
+    public QMakeFileFilter() {
+        super();
     }
 
-    @Override
-    public JMenuItem getPopupPresenter() {
-        createSubMenu();
-        return subMenu;
-    }
-    
-    @Override
-    public JMenuItem getMenuPresenter() {
-        createSubMenu();
-        return subMenu;
-    }
-        
-    private void createSubMenu() {
-        if (subMenu == null) {
-            String label = getString("LBL_MoreBuildActionsAction_Name"); // NOI18N
-            subMenu = new JMenu(label);
-            for (Action action : actions) {
-                subMenu.add(action);
-            }
+    public static synchronized QMakeFileFilter getInstance() {
+        if (instance == null) {
+            instance = new QMakeFileFilter();
         }
-    }
-
-    private static String getString(String key) {
-        return NbBundle.getMessage(MoreBuildActionsAction.class, key);
+        return instance;
     }
     
+    @Override
+    public String getDescription() {
+        return NbBundle.getMessage(QMakeFileFilter.class, "FILECHOOSER_QMAKE_FILEFILTER"); // NOI18N
+    }
+    
+    @Override
+    protected String[] getSuffixes() {
+        return suffixes;
+    }
 }

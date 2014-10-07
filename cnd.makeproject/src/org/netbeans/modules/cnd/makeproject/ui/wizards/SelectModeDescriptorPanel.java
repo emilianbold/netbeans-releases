@@ -43,17 +43,22 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
+import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport.BuildFile;
+import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
-import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.WizardStorage;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport.PreBuildArtifact;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -213,9 +218,11 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
     @Override
     public void storeSettings(WizardDescriptor settings) {
         getComponent().store(settings);
+         if (Boolean.TRUE.equals(settings.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE))) {
+             wizardStorage.finishWizard(wizardDescriptor);
+         }
     }
 
-    @Override
     public WizardStorage getWizardStorage(){
         return wizardStorage;
     }
@@ -229,27 +236,66 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
     }
 
     private class MyWizardStorage implements WizardStorage {
-        private volatile String projectPath = ""; // NOI18N
-        private volatile FileObject sourceFileObject;
-        private volatile String flags = ""; // NOI18N
-        private volatile boolean setMain = true;
-        private volatile boolean buildProject = true;
-        private volatile CompilerSet cs;
-        private volatile boolean defaultCompilerSet;
-        private volatile ExecutionEnvironment buildEnv;
-        private volatile ExecutionEnvironment sourceEnv;
-        private volatile FileObject makefileFO;
+        volatile String projectPath = ""; // NOI18N
+        volatile FileObject sourceFileObject;
+        volatile String flags = ""; // NOI18N
+        volatile boolean setMain = true;
+        volatile boolean buildProject = true;
+        volatile CompilerSet cs;
+        volatile boolean defaultCompilerSet;
+        volatile ExecutionEnvironment buildEnv;
+        volatile ExecutionEnvironment sourceEnv;
+        volatile ExecutionEnvironment fullRemoteEnv;
+        volatile FileObject makefileFO;
 
         public MyWizardStorage() {
             buildEnv = ServerList.getDefaultRecord().getExecutionEnvironment();
             sourceEnv = NewProjectWizardUtils.getDefaultSourceEnvironment();
         }
 
-        @Override
-        public WizardDescriptor getAdapter() {
-            return new WizardDescriptorAdapter(this);
+        void finishWizard(WizardDescriptor settings) {
+            settings.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(getExecutionEnvironment()));
+            settings.putProperty(WizardConstants.PROPERTY_SOURCE_HOST_ENV, getSourceExecutionEnvironment());
+            settings.putProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT, isDefaultCompilerSet()?Boolean.TRUE:Boolean.FALSE);
+            settings.putProperty(WizardConstants.PROPERTY_TOOLCHAIN, getCompilerSet());
+            settings.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR, getSourcesFileObject().getPath());
+            settings.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO, getSourcesFileObject());
+            settings.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
+            try {
+                settings.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER,  new FSPath(getSourcesFileObject().getFileSystem(), getSourcesFileObject().getPath()));
+            } catch (FileStateInvalidException ex) {
+            }
+            PreBuildArtifact scriptArtifact = getScriptArtifact();
+            BuildFile makeArtifact = null;
+            if (scriptArtifact != null) {
+                settings.putProperty(WizardConstants.PROPERTY_RUN_CONFIGURE, Boolean.TRUE);
+                FileObject script = scriptArtifact.getScript();
+                settings.putProperty(WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER, script.getParent().getPath());
+                settings.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH, script.getPath());
+                String args = scriptArtifact.getArguments(buildEnv, cs, flags);
+                settings.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS, args);
+                String command = scriptArtifact.getCommandLine(args, script.getParent().getPath());
+                settings.putProperty(WizardConstants.PROPERTY_CONFIGURE_COMMAND, command);
+                
+                String makefile = script.getParent().getPath()+"/Makefile"; //NOI18N
+                ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+                if (env != null) {
+                    makefile = RemoteFileUtil.normalizeAbsolutePath(makefile, env);
+                }
+                makeArtifact = BuildSupport.scriptToBuildFile(makefile);
+            }
+            if (makeArtifact == null) {
+                makeArtifact = getMakeArtifact();
+            }
+            if (makeArtifact != null) {
+                settings.putProperty(WizardConstants.PROPERTY_RUN_REBUILD, Boolean.TRUE);
+                settings.putProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH, makeArtifact.getFile());
+                settings.putProperty(WizardConstants.PROPERTY_WORKING_DIR, CndPathUtilities.getDirName(makeArtifact.getFile()));
+                settings.putProperty(WizardConstants.PROPERTY_BUILD_COMMAND, makeArtifact.getBuildCommandLine(null, CndPathUtilities.getDirName(makeArtifact.getFile())));
+                settings.putProperty(WizardConstants.PROPERTY_CLEAN_COMMAND, makeArtifact.getCleanCommandLine(null, CndPathUtilities.getDirName(makeArtifact.getFile())));
+            }
         }
-
+        
         /**
          * @return the path
          */
@@ -288,11 +334,16 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
 
         @Override
         public String getConfigure(){
-            //if (projectPath.length() == 0) {
-            //    return null;
-            //}
+            PreBuildArtifact scriptArtifact = getScriptArtifact();
+            if (scriptArtifact != null) {
+                return scriptArtifact.getScript().getPath();
+            }
+            return null;
+        }
+
+        private PreBuildArtifact getScriptArtifact(){
             if (sourceFileObject != null) {
-                return ConfigureUtils.findConfigureScript(sourceFileObject);
+                return PreBuildSupport.findArtifactInFolder(sourceFileObject, sourceEnv, cs);
             } else {
                 if (wizardDescriptor != null) {
                     ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
@@ -300,12 +351,20 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
                         env = ExecutionEnvironmentFactory.getLocal();
                     }
                     FileSystem fileSystem = FileSystemProvider.getFileSystem(env);
-                    return ConfigureUtils.findConfigureScript(fileSystem.findResource(projectPath));
+                     return PreBuildSupport.findArtifactInFolder(fileSystem.findResource(projectPath), sourceEnv, cs);
                 }
             }
             return null;
         }
 
+        private BuildFile getMakeArtifact() {
+            if (makefileFO != null) {
+                return BuildSupport.scriptToBuildFile(makefileFO.getPath());
+            }
+            return null;
+        }
+
+        
         @Override
         public String getMake(){
             return (makefileFO == null) ? null : makefileFO.getPath();
@@ -325,20 +384,34 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
         }
 
         /**
-         * @return the flags
-         */
-        @Override
-        public String getRealFlags() {
-            return ConfigureUtils.getConfigureArguments(buildEnv, cs, getConfigure(), flags);
-        }
-
-        /**
          * @param flags the flags to set
          */
         @Override
         public void setFlags(String flags) {
             this.flags = flags;
             validate();
+        }
+
+        /**
+         * @return the arguments
+         */
+        @Override
+        public String getRealFlags() {
+            PreBuildArtifact scriptArtifact = getScriptArtifact();
+            if (scriptArtifact != null) {
+                return scriptArtifact.getArguments(buildEnv, cs, flags);
+            }
+            return null;
+        }
+
+        @Override
+        public String getRealCommand() {
+            PreBuildArtifact scriptArtifact = getScriptArtifact();
+            if (scriptArtifact != null) {
+                String args = scriptArtifact.getArguments(buildEnv, cs, flags);
+                return scriptArtifact.getCommandLine(args, scriptArtifact.getScript().getParent().getPath());
+            }
+            return null;
         }
 
         /**
@@ -414,54 +487,15 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
         public boolean isDefaultCompilerSet() {
             return defaultCompilerSet;
         }
-    }
 
-    private static class WizardDescriptorAdapter extends WizardDescriptor{
-        private final WizardStorage storage;
-        public WizardDescriptorAdapter(WizardStorage storage) {
-            this.storage = storage;
-        }
         @Override
-        public synchronized Object getProperty(String name) {
-            if ("realFlags".equals(name)) { // NOI18N
-                return storage.getRealFlags();
-            } else if ("buildProject".equals(name)) { // NOI18N
-                if (storage.isBuildProject()) {
-                    return Boolean.TRUE;
-                } else {
-                    return Boolean.FALSE;
-                }
-            } else if ("setMain".equals(name)) { // NOI18N
-                if (storage.isSetMain()) {
-                    return Boolean.TRUE;
-                } else {
-                    return Boolean.FALSE;
-                }
-            } else if (WizardConstants.PROPERTY_SIMPLE_MODE.equals(name)) { // NOI18N
-                return Boolean.TRUE;
-            } else if (WizardConstants.PROPERTY_USER_MAKEFILE_PATH.equals(name)) { // NOI18N
-                return storage.getMake();
-            } else if (WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.equals(name)) { // NOI18N
-                return storage.getConfigure();
-            } else if (WizardConstants.PROPERTY_HOST_UID.equals(name)) { // NOI18N
-                return ExecutionEnvironmentFactory.toUniqueID(storage.getExecutionEnvironment());
-            } else if (WizardConstants.PROPERTY_SOURCE_HOST_ENV.equals(name)) {
-                return storage.getSourceExecutionEnvironment();
-            } else if (WizardConstants.PROPERTY_TOOLCHAIN.equals(name)) { // NOI18N
-                return storage.getCompilerSet();
-            } else if (WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.equals(name)) { // NOI18N
-                return storage.isDefaultCompilerSet();
-            } else if (WizardConstants.PROPERTY_NATIVE_PROJ_DIR.equals(name)) { // NOI18N
-                return storage.getSourcesFileObject().getPath();
-            } else if (WizardConstants.PROPERTY_NATIVE_PROJ_FO.equals(name)) { // NOI18N
-                return storage.getSourcesFileObject();
-            } else if (WizardConstants.PROPERTY_PROJECT_FOLDER.equals(name)) { // NOI18N
-                try {
-                    return new FSPath(storage.getSourcesFileObject().getFileSystem(), storage.getSourcesFileObject().getPath());
-                } catch (FileStateInvalidException ex) {
-                }
-            }
-            return super.getProperty(name);
+        public void setFullRemoteEnv(ExecutionEnvironment fullRemoteEnv) {
+            this.fullRemoteEnv = fullRemoteEnv;
+        }
+
+        @Override
+        public ExecutionEnvironment getFullRemoteEnv() {
+            return fullRemoteEnv;
         }
     }
 }

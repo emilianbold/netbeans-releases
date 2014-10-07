@@ -44,20 +44,21 @@
 
 package org.netbeans.modules.cnd.utils.filters;
 
+import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
 import java.io.File;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 public class ConfigureFileFilter extends FileAndFileObjectFilter {
 
-    private static String suffixes[] = {"pro", "configure"}; // NOI18N
+    private static final String suffixes[] = {}; // NOI18N
     private static ConfigureFileFilter instance = null;
 
     public ConfigureFileFilter() {
         super();
     }
 
-    public static ConfigureFileFilter getInstance() {
+    public static synchronized ConfigureFileFilter getInstance() {
         if (instance == null) {
             instance = new ConfigureFileFilter();
         }
@@ -80,7 +81,7 @@ public class ConfigureFileFilter extends FileAndFileObjectFilter {
     }
 
     private boolean acceptName(String name) {
-        if(name != null && name.equals("CMakeLists.txt")) { // NOI18N
+        if(name != null && name.equals("configure")) { // NOI18N
             return true;
         }
         return false;

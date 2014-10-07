@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.awt.Component;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,7 +73,6 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -141,7 +141,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     public static List<WizardDescriptor.Panel<WizardDescriptor>> getPanels(int wizardtype, String name, String wizardTitle, String wizardACSD, boolean fullRemote) {
         List<WizardDescriptor.Panel<WizardDescriptor>> out = new ArrayList<>();
-        out.add(new MakefileOrConfigureDescriptorPanel());
+        out.add(new PreBuildActionDescriptorPanel());
         out.add(new BuildActionsDescriptorPanel());
         out.add(new SourceFoldersDescriptorPanel());
         out.add(new ParserConfigurationDescriptorPanel());
@@ -380,7 +380,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         if (isSimple()) {
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
-                resultSet.addAll(extension.createProject(getSelectModePanel().getWizardStorage().getAdapter()));
+                resultSet.addAll(extension.createProject(wiz));
             } else {
                 String message = NbBundle.getMessage(NewMakeProjectWizardIterator.class, "SERVICE_NOT_AVALIABLE"); // NOI18N
                 if (CndUtils.isStandalone() || CndUtils.isUnitTestMode()) {

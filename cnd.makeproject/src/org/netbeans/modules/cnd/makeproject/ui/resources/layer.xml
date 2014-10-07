@@ -319,6 +319,9 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-cnd-makeproject-ui-actions-BuildPackageAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.buildPackageAction"/>            
             </file>                           
+            <file name="org-netbeans-modules-cnd-makeproject-ui-actions-PreBuildAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.preBuildAction"/>            
+            </file>                           
             <file name="org-netbeans-modules-cnd-makeproject-ui-actions-DebugAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.debugAction"/>            
             </file>                           
@@ -395,6 +398,17 @@ made subject to such option by the copyright holder.
 
     <folder name="CND">
         <folder name="BuildAction">
+            <folder name="pre_build">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="pre-build">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
             <folder name="build">
                 <file name="save">
                     <attr name="position" intvalue="100"/>
@@ -609,6 +623,17 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>        <!-- BuildAction -->
         <folder name="NoBuildAction">
+            <folder name="pre_build">
+                <file name="save">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="validate-toolchain">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="pre-build">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
             <folder name="build">
                 <file name="save">
                     <attr name="position" intvalue="100"/>
@@ -751,6 +776,10 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-cnd-makeproject-ui-actions-BuildPackageAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-BuildPackageAction.instance"/>
                     <attr name="position" intvalue="300"/>
+                </file>                                
+                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-PreBuildAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-PreBuildAction.instance"/>
+                    <attr name="position" intvalue="400"/>
                 </file>                                
             </folder>
             

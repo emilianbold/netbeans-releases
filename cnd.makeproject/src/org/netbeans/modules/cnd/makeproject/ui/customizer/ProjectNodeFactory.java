@@ -183,6 +183,7 @@ public class ProjectNodeFactory {
 
         ArrayList<CustomizerNode> descriptions = new ArrayList<>();
         if (includeMakefileDescription) {
+            descriptions.add(createPreBuildDescription(lookup));
             descriptions.add(createMakefileDescription(lookup));
             descriptions.add(createCompileDescription(lookup));
         }
@@ -205,6 +206,12 @@ public class ProjectNodeFactory {
 
         return new BuildCustomizerNode(
                 "Build", getString("LBL_Config_Build"), descriptions.toArray(new CustomizerNode[descriptions.size()]), lookup); // NOI18N
+    }
+
+    // Pre-Build Node
+    private static CustomizerNode createPreBuildDescription(Lookup lookup) {
+        return new PreBuildCustomizerNode(
+                "PreBuild", getString("LBL_PRE_BUILD_NODE"), null, lookup); // NOI18N
     }
 
     // Make Node

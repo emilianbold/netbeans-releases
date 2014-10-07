@@ -162,7 +162,7 @@ public class SimpleScriptTestCase extends MakeProjectTestBase {
                     } else if (WizardConstants.PROPERTY_CLEAN_COMMAND.equals(name)) {
                         return "./clean.bash";
                     } else if (WizardConstants.PROPERTY_RUN_CONFIGURE.equals(name)) {
-                        return "true";
+                        return Boolean.TRUE;
                     } else if (WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER.equals(name)) {
                         return MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT;
                     } else if (WizardConstants.PROPERTY_SOURCE_FOLDERS.equals(name)) {

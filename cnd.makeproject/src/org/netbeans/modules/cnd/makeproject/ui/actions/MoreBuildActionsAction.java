@@ -64,13 +64,10 @@ import org.openide.util.actions.Presenter;
 public class MoreBuildActionsAction extends MakeProjectContextAwareAction implements Presenter.Menu, Presenter.Popup {
     private JMenu subMenu = null;
     private Project project;
-    
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        
     }
-        
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
@@ -83,18 +80,15 @@ public class MoreBuildActionsAction extends MakeProjectContextAwareAction implem
         if (pdp == null) {
             return false;
         }
+        subMenu = null;
         return true;
     }
-
-    
 
     @Override
     public HelpCtx getHelpCtx() {
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         return null;
     }
-
-
 
     @Override
     public JMenuItem getPopupPresenter() {

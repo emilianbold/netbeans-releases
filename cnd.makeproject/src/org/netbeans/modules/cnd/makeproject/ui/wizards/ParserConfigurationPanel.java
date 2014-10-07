@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
@@ -52,10 +53,7 @@ import java.util.StringTokenizer;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
@@ -71,7 +69,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
     private final ParserConfigurationDescriptorPanel controller;
     private boolean first = true;
-    private boolean enableBuildArtifacts;
 
     /*package-local*/ ParserConfigurationPanel(ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel) {
         initComponents();
@@ -83,23 +80,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         includeEditButton.getAccessibleContext().setAccessibleDescription(getString("INCLUDE_BROWSE_BUTTON_AD"));
         macroTextField.getAccessibleContext().setAccessibleDescription(getString("MACRO_LABEL_AD"));
         macroEditButton.getAccessibleContext().setAccessibleDescription(getString("MACRO_EDIT_BUTTON_AD"));
-        buildLogTextField.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                update(e);
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                update(e);
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                update(e);
-            }
-        });
     }
 
     @Override
@@ -115,16 +95,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         manualButton.setEnabled(true);
         automaticButton.setEnabled(true);
         automaticButton.setSelected(true);
-        if (!("true".equals(settings.getProperty(WizardConstants.PROPERTY_RUN_CONFIGURE)) || // NOI18N
-              "true".equals(settings.getProperty(WizardConstants.PROPERTY_RUN_REBUILD)))) { // NOI18N
-            enableBuildArtifacts = true;
-            Object property = settings.getProperty(WizardConstants.PROPERTY_BUILD_LOG);
-            if (property instanceof String) {
-                buildLogTextField.setText(property.toString());
-            }
-        } else {
-            enableBuildArtifacts = false;
-        }
         togglePanel(false);
         if (first) {
             first = false;
@@ -163,32 +133,16 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         if (manualButton.isSelected()) {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_INCLUDES, includeTextField.getText()); 
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_MACROS, macroTextField.getText());
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE, "true"); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE, Boolean.TRUE);
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_LOG, ""); // NOI18N
         } else {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_INCLUDES, ""); // NOI18N
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_MACROS, ""); // NOI18N
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE, "false"); // NOI18N
-            if (enableBuildArtifacts) {
-                wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_LOG, buildLogTextField.getText());
-            } else {
-                wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_LOG, ""); // NOI18N
-            }
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE, Boolean.FALSE);
         }
     }
 
     boolean valid(WizardDescriptor settings) {
-        if (enableBuildArtifacts && !manualButton.isSelected()) {
-            String path = buildLogTextField.getText().trim();
-            if (!path.isEmpty()) {
-                File file = new File(path);
-                boolean exists = file.exists() && file.canRead();
-                if (!exists) {
-                    settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("BUILD_LOG_NOT_EXISTS")); // NOI18N
-                }
-                return exists;
-            }
-        }
         return true;
     }
 
@@ -204,10 +158,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         automaticButton = new javax.swing.JRadioButton();
-        artifactsPanel = new javax.swing.JPanel();
-        buildLogLabel = new javax.swing.JLabel();
-        buildLogTextField = new javax.swing.JTextField();
-        buildLogButton = new javax.swing.JButton();
         manualButton = new javax.swing.JRadioButton();
         codeModelPanel = new javax.swing.JPanel();
         codeModelLabel = new javax.swing.JLabel();
@@ -217,7 +167,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         jLabel2 = new javax.swing.JLabel();
         macroTextField = new javax.swing.JTextField();
         macroEditButton = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
         instructionPanel = new javax.swing.JPanel();
         instructionsTextArea = new javax.swing.JTextArea();
 
@@ -240,43 +189,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         add(automaticButton, gridBagConstraints);
         automaticButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ParserConfigurationPanel.class, "ParserAutomaticConfiguration_AD")); // NOI18N
 
-        artifactsPanel.setLayout(new java.awt.GridBagLayout());
-
-        buildLogLabel.setLabelFor(buildLogTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(buildLogLabel, org.openide.util.NbBundle.getMessage(ParserConfigurationPanel.class, "BUILD_LOG_TEXT_FIELD")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        artifactsPanel.add(buildLogLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        artifactsPanel.add(buildLogTextField, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(buildLogButton, org.openide.util.NbBundle.getMessage(ParserConfigurationPanel.class, "BUILD_LOG_BROWSE_BUTTON")); // NOI18N
-        buildLogButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buildLogButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        artifactsPanel.add(buildLogButton, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 12, 0, 0);
-        add(artifactsPanel, gridBagConstraints);
-
         buttonGroup1.add(manualButton);
         org.openide.awt.Mnemonics.setLocalizedText(manualButton, bundle.getString("ParserManualConfiguration")); // NOI18N
         manualButton.addActionListener(new java.awt.event.ActionListener() {
@@ -286,7 +198,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(manualButton, gridBagConstraints);
         manualButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ParserConfigurationPanel.class, "ParserManualConfiguration_AD")); // NOI18N
@@ -360,17 +272,12 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 12, 0, 0);
         add(codeModelPanel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
 
         instructionPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -392,10 +299,11 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(24, 0, 0, 0);
         add(instructionPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
@@ -413,14 +321,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     private void togglePanel(boolean manual) {
         for (Component component : codeModelPanel.getComponents()) {
             component.setEnabled(manual);
-        }
-        if (enableBuildArtifacts) {
-            artifactsPanel.setVisible(true);
-            for (Component component : artifactsPanel.getComponents()) {
-                component.setEnabled(!manual);
-            }
-        } else {
-            artifactsPanel.setVisible(false);
         }
         if (manual) {
             instructionsTextArea.setText(getString("SourceFoldersInstructions")); // NOI18N
@@ -472,33 +372,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
             includeTextField.setText(includes.toString());
         }
     }//GEN-LAST:event_includeEditButtonActionPerformed
-
-    private void buildLogButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buildLogButtonActionPerformed
-        String seed;
-        if (buildLogTextField.getText().length() > 0) {
-            seed = buildLogTextField.getText();
-        } else if (FileChooser.getCurrentChooserFile() != null) {
-            seed = FileChooser.getCurrentChooserFile().getPath();
-        } else {
-            seed = System.getProperty("user.home"); // NOI18N
-        }
-        JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
-                controller.getWizardDescriptor(),
-                getString("BUILD_LOG_CHOOSER_TITLE_TXT"),
-                getString("BUILD_LOG_CHOOSER_BUTTON_TXT"),
-                JFileChooser.FILES_ONLY,
-                new FileFilter[] {new LogFileFilter()},
-                seed,
-                false
-                );
-        int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION) {
-            return;
-        }
-        String path = fileChooser.getSelectedFile().getPath();
-        path = CndPathUtilities.normalizeSlashes(path);
-        buildLogTextField.setText(path);
-    }//GEN-LAST:event_buildLogButtonActionPerformed
 
     private JPanel addOuterPanel(JPanel innerPanel) {
         JPanel outerPanel = new JPanel();
@@ -663,11 +536,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel artifactsPanel;
     private javax.swing.JRadioButton automaticButton;
-    private javax.swing.JButton buildLogButton;
-    private javax.swing.JLabel buildLogLabel;
-    private javax.swing.JTextField buildLogTextField;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel codeModelLabel;
     private javax.swing.JPanel codeModelPanel;
@@ -677,7 +546,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     private javax.swing.JPanel instructionPanel;
     private javax.swing.JTextArea instructionsTextArea;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JButton macroEditButton;
     private javax.swing.JTextField macroTextField;
     private javax.swing.JRadioButton manualButton;

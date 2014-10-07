@@ -86,15 +86,17 @@ public class WizardConstants {
     public static final String PROPERTY_CONFIGURE_SCRIPT_PATH = "configureName"; // String // NOI18N
     public static final String PROPERTY_CONFIGURE_SCRIPT_ARGS = "configureArguments"; // String // NOI18N
     public static final String PROPERTY_CONFIGURE_RUN_FOLDER = "configureRunFolder"; // String // NOI18N
-    public static final String PROPERTY_RUN_CONFIGURE = "runConfigure"; // String // NOI18N
+    public static final String PROPERTY_CONFIGURE_COMMAND = "configureCommand"; // String // NOI18N
+    public static final String PROPERTY_RUN_CONFIGURE = "runConfigure"; // Boolean // NOI18N
     public static final String PROPERTY_TEST_FOLDERS = "testFolders"; // String // NOI18N
-    public static final String PROPERTY_RUN_REBUILD = "makeProject"; // String // NOI18N
+    public static final String PROPERTY_RUN_REBUILD = "makeProject"; // Boolean // NOI18N
     public static final String PROPERTY_BUILD_LOG = "buildLog"; // String // NOI18N
-    public static final String PROPERTY_MANUAL_CODE_ASSISTANCE = "manualCA"; // String // NOI18N
+    public static final String PROPERTY_MANUAL_CODE_ASSISTANCE = "manualCA"; // Boolean // NOI18N
     public static final String PROPERTY_WORKING_DIR = "buildCommandWorkingDirTextField"; // String // NOI18N
     public static final String PROPERTY_SOURCE_FOLDER_PATH = "sourceFolderPath"; // String // NOI18N
     public static final String PROPERTY_SIMPLE_MODE_FOLDER = "simpleModeFolder"; // String // NOI18N
 
+    // the property is not null in case full remote project wizard
     public static final String PROPERTY_REMOTE_FILE_SYSTEM_ENV = "REMOTE_FILE_ENV"; //NOI18N
     
     public static ExecutionEnvironment getSourceExecutionEnvironment(WizardDescriptor wizardDescriptor) {

@@ -73,6 +73,7 @@ public final class ProjectActionEvent {
     }
 
     public static enum PredefinedType implements Type {
+        PRE_BUILD("PreBuild"), // NOI18N
         BUILD("Build"), // NOI18N
         COMPILE_SINGLE("CompileSingle"), // NOI18N
         CLEAN("Clean"), // NOI18N
@@ -127,7 +128,8 @@ public final class ProjectActionEvent {
 	this.profile = profile;
 	this.wait = wait;
         this.context = context;
-        if (type == PredefinedType.BUILD ||
+        if (type == PredefinedType.PRE_BUILD ||
+            type == PredefinedType.BUILD ||
             type == PredefinedType.COMPILE_SINGLE ||
             type == PredefinedType.CLEAN || 
             type == PredefinedType.BUILD_TESTS || 

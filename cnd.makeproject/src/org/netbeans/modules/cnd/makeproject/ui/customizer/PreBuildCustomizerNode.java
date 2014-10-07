@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
-package org.netbeans.modules.cnd.discovery.projectimport;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.wizards.ReconfigureProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.wizards.ReconfigureProvider.class)
-public class ReconfigureProviderImpl extends ReconfigureProvider {
+public class PreBuildCustomizerNode extends CustomizerNode {
 
-    @Override
-    public void reconfigure(Project makeProject, String cFlags, String cxxFlags, String linkerFlags) {
-        ReconfigureProject reconfigurator = ReconfigureProject.createReconfigureProject(makeProject);
-        if (reconfigurator != null) {
-            reconfigurator.reconfigure(cFlags, cxxFlags, linkerFlags, null);
-        }
+    public PreBuildCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
+        super(name, displayName, children, lookup);
     }
 
     @Override
-    public String getLastFlags(Project makeProject) {
-        ReconfigureProject reconfigurator = ReconfigureProject.createReconfigureProject(makeProject);
-        if (reconfigurator != null) {
-            return reconfigurator.getLastFlags();
-        }
-        return ""; //NOI18N
+    public Sheet getSheet(Configuration configuration) {
+        return ((MakeConfiguration) configuration).getPreBuildConfiguration().getSheet();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("ProjectPropsMake"); // NOI18N
     }
 }

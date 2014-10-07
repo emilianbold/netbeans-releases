@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.utils.filters;
 
+import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
