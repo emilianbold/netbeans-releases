@@ -214,19 +214,21 @@ public class NodeJsDataProvider {
             }
         }
         String content = getContentApiFile();
-        int index = 0;
-        int lenghtOfRequire = REQUIRE_STRING.length();
-        index = content.indexOf(REQUIRE_STRING, index);
-        while (index != -1) {
-            index += lenghtOfRequire;
-            if (content.charAt(index) != '.') {
-                int end = content.indexOf(AP_STRING, index);
-                if (end > -1) {
-                    String module = content.substring(index, end);
-                    modules.add(module);
-                }
-            }
+        if (content != null) {
+            int index = 0;
+            int lenghtOfRequire = REQUIRE_STRING.length();
             index = content.indexOf(REQUIRE_STRING, index);
+            while (index != -1) {
+                index += lenghtOfRequire;
+                if (content.charAt(index) != '.') {
+                    int end = content.indexOf(AP_STRING, index);
+                    if (end > -1) {
+                        String module = content.substring(index, end);
+                        modules.add(module);
+                    }
+                }
+                index = content.indexOf(REQUIRE_STRING, index);
+            }
         }
         return modules;
     }
