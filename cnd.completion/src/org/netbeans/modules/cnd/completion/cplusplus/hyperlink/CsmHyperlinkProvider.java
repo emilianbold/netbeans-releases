@@ -132,6 +132,7 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             }
             if(token.id() instanceof CppTokenId) {
                 switch ((CppTokenId)token.id()) {
+                    case AUTO: // TODO: should be allowed only in cpp11
                     case LTLT:
                     case IDENTIFIER:
                     case OPERATOR:
