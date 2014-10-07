@@ -134,13 +134,17 @@ public final class NodeJsPathPanel extends JPanel {
     }
 
     public void enablePanel(boolean enabled) {
+        nodeLabel.setEnabled(enabled);
         nodeTextField.setEnabled(enabled);
         nodeBrowseButton.setEnabled(enabled);
         nodeSearchButton.setEnabled(enabled);
+        nodeHintLabel.setEnabled(enabled);
+        versionLabel.setEnabled(enabled);
+        nodeVersionLabel.setEnabled(enabled);
+        versionInfoLabel.setEnabled(enabled);
+        downloadSourcesButton.setEnabled(false);
         if (enabled) {
             setVersion();
-        } else {
-            downloadSourcesButton.setEnabled(false);
         }
     }
 

@@ -294,8 +294,10 @@ final class NodeJsCustomizerPanel extends JPanel {
         @Override
         public void itemStateChanged(ItemEvent e) {
             defaultNode = defaultNodeRadioButton.isSelected();
-            enableAllFields();
-            validateData();
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                enableAllFields();
+                validateData();
+            }
         }
 
     }
