@@ -273,8 +273,8 @@ public class RunPanel extends JPanel implements HelpCtx.Provider, ChangeListener
     private void initComponents() {
 
         runAsHolder = new JPanel();
-        runAsComboBox = new JComboBox<CustomizerPanel>();
         runAsLabel = new JLabel();
+        runAsComboBox = new JComboBox<CustomizerPanel>();
         platformProviderPanelHolder = new JPanel();
         platformProviderPanel = new JPanel();
         runBrowserHolder = new JPanel();
