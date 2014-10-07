@@ -287,7 +287,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 return false;
             }
 
-            sb.append("(function () {\n"); //NOI18N
+            sb.append("(function () {\nvar "); //NOI18N
 
             String fqn = parts[0].trim();
             if (index != null) {
@@ -324,7 +324,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             return true;
         } else {
             // classic controller with $scope
-            sb.append("(function () {\n$scope = "); //NOI18N
+            sb.append("(function () {\nvar $scope = "); //NOI18N
 
             String fqn = controllerName.trim();
             if (index != null) {
@@ -696,7 +696,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             StringBuilder sb = new StringBuilder();
                             if (controllerRegistration.getControllerAsName() == null) {
                                 // classic Angular controller with $scope
-                                sb.append("(function () {\n$scope = "); //NOI18N
+                                sb.append("(function () {\nvar $scope = "); //NOI18N
                                 if (!fqn.isEmpty()) {
                                     sb.append(fqn);
                                 } else {
@@ -707,7 +707,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                                 sb.append("\nwith ($scope) { \n"); //NOI18N
                             } else {
                                 // we have controllerAs present in configuration
-                                sb.append("(function () {\n"); //NOI18N
+                                sb.append("(function () {\nvar "); //NOI18N
                                 sb.append(controllerRegistration.getControllerAsName()).append(" = "); //NOI18N
                                 if (!fqn.isEmpty()) {
                                     sb.append(fqn);
@@ -727,14 +727,14 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     StringBuilder sb = new StringBuilder();
                     if (controllerRegistration.getControllerAsName() == null) {
                         // classic Angular controller with $scope
-                        sb.append("(function () {\n$scope = "); //NOI18N
+                        sb.append("(function () {\nvar $scope = "); //NOI18N
                         sb.append(controllerRegistration.getControllerName());
                         sb.append("."); //NOI18N
                         sb.append("$scope;\n");   //NOI18N
                         sb.append("\nwith ($scope) { \n"); //NOI18N
                     } else {
                         // we have controllerAs present in configuration
-                        sb.append("(function () {\n"); //NOI18N
+                        sb.append("(function () {\nvar "); //NOI18N
                         sb.append(controllerRegistration.getControllerAsName());
                         sb.append(" = "); //NOI18N
                         sb.append(controllerRegistration.getControllerName());
