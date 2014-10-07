@@ -97,6 +97,7 @@ public class SelectModePanel extends javax.swing.JPanel {
 
     private final SelectModeDescriptorPanel controller;
     private volatile boolean initialized = false;
+    private volatile boolean firstTime = true;
     private static final String SOURCES_FILE_KEY = "sourcesField"; // NOI18N
     private ExecutionEnvironment env;
     private FileSystem fileSystem;
@@ -376,8 +377,11 @@ public class SelectModePanel extends javax.swing.JPanel {
         }
         fileSystem = FileSystemProvider.getFileSystem(env);
         ((EditableComboBox)sourceFolder).setStorage(SOURCES_FILE_KEY, NbPreferences.forModule(SelectModePanel.class));
-        ((EditableComboBox)sourceFolder).read("");
+        if (firstTime) {
+            ((EditableComboBox)sourceFolder).read("");
+        }
         refreshInstruction(false);
+        firstTime = false;
         
         String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
         CompilerSet cs = (CompilerSet) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
