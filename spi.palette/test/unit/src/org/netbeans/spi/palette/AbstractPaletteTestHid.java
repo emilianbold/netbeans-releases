@@ -47,7 +47,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
+
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.netbeans.modules.palette.Model;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -193,6 +195,7 @@ public abstract class AbstractPaletteTestHid extends NbTestCase {
             super (ic);
             
             ic.add (new Repository (createLocalFileSystem (Lkp.class.getName()+System.currentTimeMillis(), new String[0])));
+            ic.add (new NbMutexEventProvider());
         }
     }
 

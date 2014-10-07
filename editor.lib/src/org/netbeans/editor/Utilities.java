@@ -223,7 +223,7 @@ public class Utilities {
     */
     public static int getRowFirstNonWhite(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.getNextNonWhitespace(doc, offset);
+        return LineDocumentUtils.getLineFirstNonWhitespace(doc, offset);
     }
 
     /** Get the last non-white character on the line.
