@@ -94,12 +94,20 @@ public final class NodeJsPathPanel extends JPanel {
 
     @NbBundle.Messages({
         "# {0} - node.js file name",
-        "NodeJsPathPanel.node.hint=Full path of node file (typically {0}).",
+        "NodeJsPathPanel.node.hint1=Full path of node file (typically {0}).",
+        "# {0} - node.js file name",
+        "# {1} - node.js alternative file name",
+        "NodeJsPathPanel.node.hint2=Full path of node file (typically {0} or {1}).",
     })
     private void init() {
         errorLabel.setText(" "); // NOI18N
         nodeVersionLabel.setText(" "); // NOI18N
-        nodeHintLabel.setText(Bundle.NodeJsPathPanel_node_hint(NodeExecutable.NODE_NAME));
+        String[] nodes = NodeExecutable.NODE_NAMES;
+        if (nodes.length > 1) {
+            nodeHintLabel.setText(Bundle.NodeJsPathPanel_node_hint2(nodes[0], nodes[1]));
+        } else {
+            nodeHintLabel.setText(Bundle.NodeJsPathPanel_node_hint1(nodes[0]));
+        }
 
         DocumentListener defaultDocumentListener = new NodeDocumentListener();
         nodeTextField.getDocument().addDocumentListener(defaultDocumentListener);
@@ -350,7 +358,7 @@ public final class NodeJsPathPanel extends JPanel {
     @NbBundle.Messages("NodeJsPathPanel.node.none=No node executable was found.")
     private void nodeSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_nodeSearchButtonActionPerformed
         assert EventQueue.isDispatchThread();
-        for (String node : FileUtils.findFileOnUsersPath(NodeExecutable.NODE_NAME)) {
+        for (String node : FileUtils.findFileOnUsersPath(NodeExecutable.NODE_NAMES)) {
             nodeTextField.setText(new File(node).getAbsolutePath());
             return;
         }

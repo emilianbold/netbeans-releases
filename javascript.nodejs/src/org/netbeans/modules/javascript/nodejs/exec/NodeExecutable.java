@@ -100,7 +100,7 @@ public class NodeExecutable {
 
     static final Logger LOGGER = Logger.getLogger(NodeExecutable.class.getName());
 
-    public static final String NODE_NAME;
+    public static final String[] NODE_NAMES;
     public static final int DEFAULT_DEBUG_PORT = 9292;
 
     private static final String DEBUG_COMMAND = "--debug-brk=%d"; // NOI18N
@@ -117,9 +117,9 @@ public class NodeExecutable {
 
     static {
         if (Utilities.isWindows()) {
-            NODE_NAME = "node.exe"; // NOI18N
+            NODE_NAMES = new String[] {"node.exe"}; // NOI18N
         } else {
-            NODE_NAME = "node"; // NOI18N
+            NODE_NAMES = new String[] {"node", "nodejs"}; // NOI18N
         }
     }
 
