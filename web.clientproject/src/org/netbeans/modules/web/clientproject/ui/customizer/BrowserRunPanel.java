@@ -185,6 +185,22 @@ public class BrowserRunPanel extends JPanel implements DocumentListener, ItemLis
         return null;
     }
 
+    public void onlyExternalUrl(boolean enable) {
+        if (enable) {
+            webServerComboBox.setSelectedItem(ClientSideProjectProperties.ProjectServer.EXTERNAL);
+            projectUrlLabel.setVisible(true);
+            projectUrlTextField.setVisible(true);
+            projectUrlDescriptionLabel.setVisible(true);
+            webServerLabel.setVisible(false);
+            webServerComboBox.setVisible(false);
+            webRootLabel.setVisible(false);
+            webRootTextField.setVisible(false);
+            webRootExampleLabel.setVisible(false);
+        } else {
+            updateConfigurationCustomizer();
+        }
+    }
+
     void storeAndFireChange() {
         storeData();
         changeSupport.fireChange();

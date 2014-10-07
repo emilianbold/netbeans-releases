@@ -204,10 +204,12 @@ public class RunPanel extends JPanel implements HelpCtx.Provider, ChangeListener
             selectedPanel.addChangeListener(this);
             platformProviderPanel.add(selectedPanel.getComponent(), BorderLayout.CENTER);
             runBrowserHolder.setVisible(!project.isJsLibrary());
+            browserRunPanel.onlyExternalUrl(true);
         } else {
             // just browser
             platformProviderPanelHolder.setVisible(false);
             runBrowserHolder.setVisible(false);
+            browserRunPanel.onlyExternalUrl(false);
         }
         platformProviderPanelHolder.revalidate();
         platformProviderPanelHolder.repaint();
