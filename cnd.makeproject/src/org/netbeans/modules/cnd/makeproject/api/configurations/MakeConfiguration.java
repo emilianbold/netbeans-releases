@@ -701,6 +701,9 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
             return; // IZ 172628 (basedir is a valid directory but doesn't contain a project!)
         }
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (!pdp.gotDescriptor()) {
+            return;
+        }
         MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
 
         Folder root = makeConfigurationDescriptor.getLogicalFolders();
