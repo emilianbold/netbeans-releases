@@ -214,19 +214,21 @@ public class NodeJsDataProvider {
             }
         }
         String content = getContentApiFile();
-        int index = 0;
-        int lenghtOfRequire = REQUIRE_STRING.length();
-        index = content.indexOf(REQUIRE_STRING, index);
-        while (index != -1) {
-            index += lenghtOfRequire;
-            if (content.charAt(index) != '.') {
-                int end = content.indexOf(AP_STRING, index);
-                if (end > -1) {
-                    String module = content.substring(index, end);
-                    modules.add(module);
-                }
-            }
+        if (content != null) {
+            int index = 0;
+            int lenghtOfRequire = REQUIRE_STRING.length();
             index = content.indexOf(REQUIRE_STRING, index);
+            while (index != -1) {
+                index += lenghtOfRequire;
+                if (content.charAt(index) != '.') {
+                    int end = content.indexOf(AP_STRING, index);
+                    if (end > -1) {
+                        String module = content.substring(index, end);
+                        modules.add(module);
+                    }
+                }
+                index = content.indexOf(REQUIRE_STRING, index);
+            }
         }
         return modules;
     }
@@ -433,13 +435,13 @@ public class NodeJsDataProvider {
         con.setConnectTimeout(URL_CONNECTION_TIMEOUT);
         con.setReadTimeout(URL_READ_TIMEOUT);
         con.connect();
-        Reader r = new InputStreamReader(new BufferedInputStream(con.getInputStream()), charset);
-        char[] buf = new char[2048];
-        int read;
-        while ((read = r.read(buf)) != -1) {
-            writer.write(buf, 0, read);
+        try (Reader r = new InputStreamReader(new BufferedInputStream(con.getInputStream()), charset)) {
+            char[] buf = new char[2048];
+            int read;
+            while ((read = r.read(buf)) != -1) {
+                writer.write(buf, 0, read);
+            }
         }
-        r.close();
     }
 
     private String getFileContent(File file) throws IOException {
@@ -487,22 +489,17 @@ public class NodeJsDataProvider {
 
                 //if any of the files is not loaded yet, start the loading process
                 if (!loadingStarted) {
-                    loadingStarted = true;
                     startLoading();
                 }
                 //load from web and cache locally
                 loadDoc(cacheFile);
-                if (progress != null) {
-                    progress.progress(1);
-                    progress.finish();
-                    progress = null;
-                }
+                stopLoading();
 
                 LOG.log(Level.FINE, "Loading doc finished."); //NOI18N
             }
             result = getFileContent(cacheFile);
         } catch (URISyntaxException | IOException ex) {
-            loadingStarted = false;
+            stopLoading();
             LOG.log(Level.INFO, "Cannot load NodeJS documentation from \"{0}\".", new Object[]{getDocumentationURL()}); //NOI18N
             LOG.log(Level.INFO, "", ex);
         }
@@ -511,9 +508,18 @@ public class NodeJsDataProvider {
 
     private void startLoading() {
         LOG.fine("start loading doc"); //NOI18N
-
+        loadingStarted = true;
         progress = ProgressHandleFactory.createHandle(Bundle.doc_building());
         progress.start(1);
+    }
+    
+    private void stopLoading() {
+        loadingStarted = false;
+        if (progress != null) {
+            progress.progress(1);
+            progress.finish();
+            progress = null;
+        }
     }
 
     private void loadDoc(File cacheFile) throws URISyntaxException, MalformedURLException, IOException {
