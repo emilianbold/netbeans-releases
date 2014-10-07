@@ -332,6 +332,7 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(customCommandRadioButton, gridBagConstraints);
@@ -344,6 +345,8 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(6, 16, 0, 0);
         add(customCommandLabel, gridBagConstraints);
+
+        customCommandTextField.setToolTipText(org.openide.util.NbBundle.getMessage(PreBuildActionPanel.class, "customCommandTextField_TOOLTIP")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -362,6 +365,7 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(predefinedCommandRadioButton, gridBagConstraints);
@@ -718,7 +722,7 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
                         FileObject folder = NewProjectWizardUtils.getFileObject(configureRunFolderTextField.getText(), controller.getWizardDescriptor());
                         PreBuildArtifact otherArtifact = item.provider.findScriptInFolder(folder, ee, cs);
                         if (otherArtifact == null) {
-                            String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOTFOUNDCONFIGUREFILE"); // NOI18N
+                            String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOTFOUNDCONFIGUREFILE", item.provider.getDisplayName()); // NOI18N
                             controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                             return;
                         }
