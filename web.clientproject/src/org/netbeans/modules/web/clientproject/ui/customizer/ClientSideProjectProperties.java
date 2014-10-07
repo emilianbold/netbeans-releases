@@ -46,7 +46,6 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -99,46 +98,6 @@ public final class ClientSideProjectProperties {
 
     public ClientSideProjectProperties(ClientSideProject project) {
         this.project = project;
-    }
-
-    /**
-     * Add or replace project and/or private properties.
-     * <p>
-     * This method cannot be called in the UI thread.
-     * @param projectProperties project properties to be added to (replaced in) the current project properties
-     * @param privateProperties private properties to be added to (replaced in) the current private properties
-     */
-    public void save(final Map<String, String> projectProperties, final Map<String, String> privateProperties) {
-        assert !EventQueue.isDispatchThread();
-        assert !projectProperties.isEmpty() || !privateProperties.isEmpty() : "Neither project nor private properties to be saved";
-        try {
-            // store properties
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                @Override
-                public Void run() throws IOException {
-                    AntProjectHelper helper = project.getProjectHelper();
-
-                    mergeProperties(helper, AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-                    mergeProperties(helper, AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
-
-                    ProjectManager.getDefault().saveProject(project);
-                    return null;
-                }
-
-                private void mergeProperties(AntProjectHelper helper, String path, Map<String, String> properties) {
-                    if (properties.isEmpty()) {
-                        return;
-                    }
-                    EditableProperties currentProperties = helper.getProperties(path);
-                    for (Map.Entry<String, String> entry : properties.entrySet()) {
-                        currentProperties.put(entry.getKey(), entry.getValue());
-                    }
-                    helper.putProperties(path, currentProperties);
-                }
-            });
-        } catch (MutexException e) {
-            LOGGER.log(Level.WARNING, null, e.getException());
-        }
     }
 
     public void save() {
