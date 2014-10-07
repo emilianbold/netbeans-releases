@@ -81,6 +81,8 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
     private final WebKitPageModel pageModel;
     /** View that displays Knockout context of the selected node. */
     private OutlineView contextView;
+    /** Page model listener. */
+    private Listener pageModelListener;
     /** Determines whether we found Knockout in the current page already. */
     boolean knockoutFound;
     /** The current selected node. */
@@ -98,7 +100,8 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
             messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.noInspection")); // NOI18N
             add(messageLabel);
         } else {
-            pageModel.addPropertyChangeListener(new Listener());
+            pageModelListener = new Listener();
+            pageModel.addPropertyChangeListener(pageModelListener);
             update(true);
         }
     }
@@ -120,6 +123,16 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
         TableCellRenderer renderer = outline.getDefaultRenderer(Object.class);
         if (renderer != null) {
             outline.setDefaultRenderer(Object.class, new NoIconRenderer(renderer));
+        }
+    }
+
+    /**
+     * Disposes this panel.
+     */
+    void dispose() {
+        if (pageModelListener != null) {
+            pageModel.removePropertyChangeListener(pageModelListener);
+            pageModelListener = null;
         }
     }
 
