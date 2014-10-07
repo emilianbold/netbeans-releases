@@ -398,8 +398,8 @@ public class RunPanel extends JPanel implements HelpCtx.Provider, ChangeListener
             if (value == null) {
                 label = Bundle.RunAsRenderer_default();
             } else if (value instanceof String) {
-                // ??? happens not sure why...
-                label = "";
+                // see BasicComboBoxUI
+                label = (String) value;
             } else {
                 assert value instanceof CustomizerPanel : value.getClass().getName();
                 label = ((CustomizerPanel) value).getDisplayName();
