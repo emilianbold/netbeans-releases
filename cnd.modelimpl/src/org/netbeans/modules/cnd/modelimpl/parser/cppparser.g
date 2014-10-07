@@ -2480,37 +2480,34 @@ init_declarator[int kind]
 initializer
     {String s;}
     : 
-        // GCC designated initializer
-        (literal_ident COLON)=>
-            s=literal_ident 
-            COLON 
-            (options {greedy=true;} : initializer)? 
-    |
+        ((LITERAL___extension__)? cast_array_initializer_head) => (LITERAL___extension__)? cast_array_initializer
+    |   
         array_initializer
-    |
-        (   
-            ((LITERAL___extension__)? cast_array_initializer_head) => 
-                (LITERAL___extension__)? 
-                cast_array_initializer 
-                (options {greedy=true;} : lazy_expression[false, false, 0])?
+    | 
+        (
+            // GCC designated initializer
+            (literal_ident COLON)=>
+                s=literal_ident 
+                COLON 
+                (options {greedy=true;} : initializer)? 
         |
-            lazy_expression[false, false, 0]
+            lazy_expression[false, false, 0] 
+            (options {greedy=true;}:	
+                ( ASSIGNEQUAL
+                | TIMESEQUAL
+                | DIVIDEEQUAL
+                | MINUSEQUAL
+                | PLUSEQUAL
+                | MODEQUAL
+                | SHIFTLEFTEQUAL
+                | SHIFTRIGHTEQUAL
+                | BITWISEANDEQUAL
+                | BITWISEXOREQUAL
+                | BITWISEOREQUAL
+                )            
+                initializer
+            )?
         )
-        (options {greedy=true;}:	
-            ( ASSIGNEQUAL
-            | TIMESEQUAL
-            | DIVIDEEQUAL
-            | MINUSEQUAL
-            | PLUSEQUAL
-            | MODEQUAL
-            | SHIFTLEFTEQUAL
-            | SHIFTRIGHTEQUAL
-            | BITWISEANDEQUAL
-            | BITWISEXOREQUAL
-            | BITWISEOREQUAL
-            )            
-            initializer
-        )?
     ;
 
 cast_array_initializer:
@@ -3113,7 +3110,7 @@ superclass_init
 	: 
 	q = qualified_id 
         (
-            LPAREN (expression_list | array_initializer)? RPAREN
+            LPAREN! (expression_list | array_initializer)? RPAREN!
         |
             array_initializer
         )
@@ -4303,7 +4300,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
             |   TILDE
             |   ELLIPSIS
 
-            |   balanceParensInExpression (balanceCurlies)? // c99 and c++11 uniform initialization syntax
+            |   balanceParensInExpression 
             |   balanceSquaresInExpression 
                 ((lambda_expression_post_capture_predicate) => lambda_expression_post_capture)?
             |   constant

@@ -475,13 +475,7 @@ public final class FileMapsCollector {
                             list = new ArrayList<>();
                             out.usingDeclarations.put(name, list);
                         }
-                        // do not add using several times
-                        // it could be the case when outer container has several copies
-                        // with same offsets but different names (i.e. macro-based name)
-                        // we don't want to have infinite loop 
-                        if (!list.contains(usingDecl)) {
-                            list.add(usingDecl);
-                        }
+                        list.add(usingDecl);
 //                    CsmDeclaration decl = (usingDecl).getReferencedDeclaration();
 //                    if (decl != null) {
 //                        CharSequence id;

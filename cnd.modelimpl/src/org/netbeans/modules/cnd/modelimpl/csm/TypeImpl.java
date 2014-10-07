@@ -887,10 +887,6 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                         }
                     }
                 }
-                // And not instantiation as well (TODO: maybe that should be outside this if block)
-                while (CsmKindUtilities.isInstantiation(result) && CsmKindUtilities.isClassifier(((CsmInstantiation) result).getTemplateDeclaration())) {
-                    result = (CsmClassifier) ((CsmInstantiation) result).getTemplateDeclaration();
-                }
             }
         } finally {
             ResolverFactory.releaseResolver(resolver);
