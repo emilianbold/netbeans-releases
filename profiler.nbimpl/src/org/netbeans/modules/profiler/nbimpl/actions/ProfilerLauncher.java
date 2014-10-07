@@ -110,7 +110,7 @@ public class ProfilerLauncher {
 
         public boolean start() {
             Project project = (Project)getProject();
-            getProfiler().setProfiledProject(project, getFile());
+            ((NetBeansProfiler)getProfiler()).setProfiledProject(project, getFile());
             
             final ProfilingSettings pSettings = getProfilingSettings();
             
@@ -134,17 +134,15 @@ public class ProfilerLauncher {
                     }
                 });
             } else {
-                Command command = getContext().lookup(Command.class);
-                String _command = command == null ? null : command.get();
-                if (_command == null) { // Context action in editor/navigator
-                    _command = ActionProvider.COMMAND_PROFILE;
-                    if (!ProjectSensitivePerformer.supportsProfileProject(_command, project)) {
-                        ProfilerDialogs.displayError("Profile project not supported for " +
-                                                     ProjectUtilities.getDisplayName(project));
-                        return false;
-                    }
+                String command = normalizedCommand(getContext());
+                
+                if (!ProjectSensitivePerformer.supportsProfileProject(command, project)) {
+                    ProfilerDialogs.displayError("Profile project not supported for " +
+                                                 ProjectUtilities.getDisplayName(project));
+                    return false;
                 }
-                final Session s = newSession(_command, getContext());
+                
+                final Session s = newSession(command, getContext());
                 if (s != null) {
                     s.setProfilingSettings(pSettings);
                     s.run();
@@ -164,7 +162,7 @@ public class ProfilerLauncher {
             return true;
         }
 
-        public boolean terminate() {
+        public boolean stop() {
             ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                 public void run() {
                     if (isAttach()) getProfiler().detachFromApp();
@@ -182,9 +180,9 @@ public class ProfilerLauncher {
             if (!inProgress()) return true;
             
             // Compare commands
-            Command c = getContext().lookup(Command.class);
-            Command _c = _context.lookup(Command.class);
-            if (!Objects.equals(c, _c)) return false;
+            String command = normalizedCommand(getContext());
+            String _command = normalizedCommand(_context);
+            if (!Objects.equals(command, _command)) return false;
             
             // Compare files
             FileObject f = getContext().lookup(FileObject.class);
@@ -200,6 +198,13 @@ public class ProfilerLauncher {
         
         public FileObject getFile() {
             return getContext().lookup(FileObject.class);
+        }
+        
+        // Handles no command from context action in editor/navigator
+        private static String normalizedCommand(Lookup context) {
+            Command command = context.lookup(Command.class);
+            String _command = command == null ? null : command.get();
+            return _command == null ? ActionProvider.COMMAND_PROFILE : _command;
         }
         
     }
