@@ -63,6 +63,7 @@ import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 @ProjectServiceProvider(service = ProjectProblemsProvider.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
@@ -169,14 +170,21 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         "NodeJsProblemProvider.node.sources=Missing sources for version {0}",
     })
     void checkNode(Collection<ProjectProblem> currentProblems) {
-        NodeExecutable node = NodeExecutable.forProject(project, false);
+        final NodeExecutable node = NodeExecutable.forProject(project, false);
         if (node == null) {
             // already handled
             return;
         }
         if (EventQueue.isDispatchThread()
-                && !node.hasVersion()) {
+                && !node.versionDetected()) {
             // avoid ui flickering
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    node.getVersion();
+                    fireProblemsChanged();
+                }
+            });
             return;
         }
         Version version = node.getVersion();
