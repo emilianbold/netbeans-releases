@@ -45,12 +45,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Petr Hejl
  */
 public class KODataBindContext {
+
+    private static final Logger LOGGER = Logger.getLogger(KODataBindContext.class.getName());
 
     private final KODataBindContext original;
 
@@ -112,7 +116,8 @@ public class KODataBindContext {
 
     public void pop() {
         if (parents.isEmpty()) {
-            throw new IllegalStateException();
+            LOGGER.log(Level.WARNING, "Invalid state detected. Please check the HTML document validity."); //NOI18N
+            return;
         }
         ParentContext context = parents.remove(parents.size() - 1);
         data = context.getValue();
