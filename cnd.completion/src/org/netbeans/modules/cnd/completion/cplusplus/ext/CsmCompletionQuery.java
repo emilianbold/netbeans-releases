@@ -729,7 +729,13 @@ abstract public class CsmCompletionQuery {
     }
     
     private CsmCompletionTokenProcessor processTokensInExpression(CsmExpression expression) {
-        String expressionText = expression.getExpandedText().toString();        
+        // TODO: alter token processor to handle situations when we need to 
+        // keep ast for the whole expression. For now expression is placed
+        // inside parens: (<expression>)
+        String expressionText = 
+                CppTokenId.LPAREN.fixedText() + 
+                    expression.getExpandedText().toString() + 
+                CppTokenId.RPAREN.fixedText();
         int exprStartOffset = expression.getStartOffset();
         int exprEndOffset = exprStartOffset + expressionText.length();
         
