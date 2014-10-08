@@ -126,10 +126,9 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 switch ((CppTokenId)token.id()) {
                     case AUTO: // TODO: should be allowed only in cpp11
                         return true;
-                    default:
-                        return false;
                 }
             }
+            return false;
         }
         return true;
     }
