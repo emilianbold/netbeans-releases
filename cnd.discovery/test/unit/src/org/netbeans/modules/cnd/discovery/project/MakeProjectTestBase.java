@@ -83,7 +83,6 @@ import org.netbeans.modules.cnd.repository.support.RepositoryTestUtils;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -91,7 +90,6 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -248,25 +246,6 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
         }
         try {
             String path = download(URL, additionalScripts, tools)+subFolder;
-
-//            final File configure = detectConfigure(aPath);
-//            final String path;
-//            if (configure.exists()) {
-//                path = configure.getParent();
-//            } else {
-//                path = aPath;
-//            }
-//            final File makeFile = new File(path, "Makefile");
-//            if (!configure.exists()) {
-//                if (!makeFile.exists()){
-//                    assertTrue("Cannot find configure or Makefile in folder "+path, false);
-//                }
-//            }
-//            if (Utilities.isWindows()){
-//                // cygwin does not allow test discovery in real time, so disable tests on windows
-//                //return;
-//            }
-
             MyWizardDescriptor wizard = new MyWizardDescriptor(path, ExecutionEnvironmentFactory.getLocal(), ee, def);
             wizard.init();
             setupWizard(wizard);
@@ -652,69 +631,6 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
                 WizardConstants.PROPERTY_BUILD_COMMAND.put(this, makeArtifact.getBuildCommandLine(null, CndPathUtilities.getDirName(makeArtifact.getFile())));
                 WizardConstants.PROPERTY_CLEAN_COMMAND.put(this, makeArtifact.getCleanCommandLine(null, CndPathUtilities.getDirName(makeArtifact.getFile())));
             }
-            
         }
-        
-//        @Override
-//        public synchronized Object getProperty(String name) {
-//            } else if (WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.key().equals(name)) {
-//                if (optimizeNativeExecutions() && makeFile.exists()){// && !configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
-//                    // optimization on developer computer:
-//                    // run configure only once
-//                    return null;
-//                } else {
-//                    return configure.getAbsolutePath();
-//                }
-//            } else if ("realFlags".equals(name)) {
-//                if (path.indexOf("cmake-")>0 && subFolder.isEmpty()) {
-//                    if (isSUN) {
-//                        return "CMAKE_C_COMPILER=cc CMAKE_CXX_COMPILER=CC CFLAGS=-g CXXFLAGS=-g CMAKE_BUILD_TYPE=Debug CMAKE_CXX_FLAGS_DEBUG=-g CMAKE_C_FLAGS_DEBUG=-g";
-//                    } else {
-//                        return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\" CMAKE_BUILD_TYPE=Debug CMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" CMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\"";
-//                    }
-//                } else {
-//                    if (configure.getAbsolutePath().endsWith("configure")) {
-//                        if (isSUN) {
-//                            return "CC=cc CXX=CC CFLAGS=-g CXXFLAGS=-g";
-//                        } else {
-//                            return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\"";
-//                        }
-//                    } else if (configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
-//                        if (isSUN) {
-//                            return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=cc -DCMAKE_CXX_COMPILER=CC -DCMAKE_CXX_FLAGS_DEBUG=-g -DCMAKE_C_FLAGS_DEBUG=-g -DCMAKE_EXPORT_COMPILE_COMMANDS=ON";
-//                        } else {
-//                            return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON";
-//                        }
-//                    } else if (configure.getAbsolutePath().endsWith(".pro")) {
-//                        if (isSUN) {
-//                            return "-spec solaris-cc QMAKE_CC=cc QMAKE_CXX=CC QMAKE_CFLAGS=-g QMAKE_CXXFLAGS=-g";
-//                        } else {
-//                            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-//                                return "-spec macx-g++ QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
-//                            } else {
-//                                if (Utilities.isWindows()) {
-//                                    for (CompilerSet set : CompilerSetManager.get(ee).getCompilerSets()){
-//                                        if (set.getCompilerFlavor().isMinGWCompiler()) {
-//                                            CompilerSetManager.get(ee).setDefault(set);
-//                                            break;
-//                                        }
-//                                    }
-//                                }
-//                                return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
-//                            }
-//                        }
-//                    }
-//                }
-//            } else if ("buildProject".equals(name)) {
-//                if (optimizeNativeExecutions() && makeFile.exists() && findObjectFiles(path)) {
-//                    // optimization on developer computer:
-//                    // make only once
-//                    return Boolean.FALSE;
-//                } else {
-//                    return Boolean.TRUE;
-//                }
-//            }
-//            return null;
-//        }
     }
 }
