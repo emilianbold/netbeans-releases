@@ -91,13 +91,15 @@ public final class URLCache {
                 f = ref.get();
             }
             if (f != null && f.isValid() && (!validate || f.toURI().equals(uri))) {
-                LOG.log(
-                    Level.FINEST,
-                    "Found: {0} in cache for: {1}", //NOI18N
-                    new Object[]{
-                        f,
-                        url
-                    });
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.log(
+                        Level.FINEST,
+                        "Found: {0} in cache for: {1}", //NOI18N
+                        new Object[]{
+                            f,
+                            url
+                        });
+                }
                 return f;
             }
         }
@@ -105,13 +107,15 @@ public final class URLCache {
         f = URLMapper.findFileObject(url);
 
         if (uri != null && f != null && f.isValid()) {
-            LOG.log(
-               Level.FINEST,
-               "Caching: {0} for: {1}", //NOI18N
-               new Object[]{
-                   f,
-                   url
-               });
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(
+                   Level.FINEST,
+                   "Caching: {0} for: {1}", //NOI18N
+                   new Object[]{
+                       f,
+                       url
+                   });
+            }
             cache.put(uri, new CleanReference(f,uri));
         }
 

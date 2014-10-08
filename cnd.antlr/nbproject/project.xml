@@ -6,7 +6,10 @@
             <code-name-base>org.netbeans.modules.cnd.antlr</code-name-base>
             <module-dependencies/>
             <friend-packages>
+                <friend>com.microchip.mplab.nbide.csmbridge</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>com.sun.tools.dwarf.lwmodel</friend>
+                <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
                 <friend>org.netbeans.modules.cnd.apt</friend>
                 <friend>org.netbeans.modules.cnd.asm</friend>
                 <friend>org.netbeans.modules.cnd.folding</friend>
@@ -15,8 +18,6 @@
                 <friend>org.netbeans.modules.cnd.make2netbeans</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
                 <friend>org.netbeans.modules.cnd.modelui</friend>
-                <friend>com.sun.tools.dwarf.lwmodel</friend>
-                <friend>com.microchip.mplab.nbide.csmbridge</friend>
                 <package>org.netbeans.modules.cnd.antlr</package>
                 <package>org.netbeans.modules.cnd.antlr.ASdebug</package>
                 <package>org.netbeans.modules.cnd.antlr.collections</package>

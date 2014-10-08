@@ -223,7 +223,7 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
             }
             return sb.toString();
         } catch (GitException ex) {
-            LOG.log(Level.INFO, null, ex);
+            LOG.log(Level.FINE, null, ex);
             return commit;
         }
     }
@@ -433,7 +433,7 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
                 if (desc != null) {
                     boolean remove = desc.getType() == Type.BOTH_DELETED;
                     if (desc.getType() == Type.DELETED_BY_THEM || desc.getType() == Type.DELETED_BY_US) {
-                        ResolveTreeConflictPanel panel = new ResolveTreeConflictPanel(e.getKey(), desc.getType());
+                        ResolveTreeConflictPanel panel = new ResolveTreeConflictPanel(e.getKey(), e.getValue().getRelativePath(), desc.getType());
                         final JButton resolveButton = new JButton();
                         Mnemonics.setLocalizedText(resolveButton, NbBundle.getMessage(ResolveConflictsExecutor.class, "LBL_TreeConflict_ResolveButton.title")); //NOI18N
                         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ResolveConflictsExecutor.class, "LBL_TreeConflict.title"), //NOI18N
@@ -574,7 +574,7 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
         }
 
         private void repairEntries (File file) {
-            SystemAction.get(MarkResolvedAction.class).performAction(VCSContext.forNodes(new AbstractNode[] { new AbstractNode(Children.LEAF, Lookups.fixed(file)) }));
+            SystemAction.get(MarkResolvedAction.class).performAction(GitUtils.getContextForFile(file));
         }
     }
     

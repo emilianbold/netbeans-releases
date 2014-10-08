@@ -48,6 +48,8 @@ import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.IOException;
@@ -80,12 +82,15 @@ import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.TextUI;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
+import javax.swing.text.View;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -728,6 +733,7 @@ public class BaseKit extends DefaultEditorKit {
 
         BaseTextUI ui = createTextUI();
         c.setUI(ui);
+        c.addPropertyChangeListener(ClearUIForNullKitListener.INSTANCE);
 
         String propName = "netbeans.editor.noinputmethods"; // NOI18N
         Object noInputMethods = System.getProperty(propName);
@@ -833,7 +839,6 @@ public class BaseKit extends DefaultEditorKit {
         }
         
         BaseTextUI.uninstallUIWatcher(c);
-        c.updateUI();
         
         // #41209: reset ancestor override flag if previously set
         if (c.getClientProperty("ancestorOverride") != null) { // NOI18N
@@ -3509,4 +3514,78 @@ public class BaseKit extends DefaultEditorKit {
         if (badLocationExceptions[0] != null)
             throw badLocationExceptions [0];
     }
+
+    /**
+     * Set null TextUI to an editor pane upon setting a null editor kit.
+     */
+    private static final class ClearUIForNullKitListener implements PropertyChangeListener {
+        
+        static ClearUIForNullKitListener INSTANCE = new ClearUIForNullKitListener();
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if ("editorKit".equals(evt.getPropertyName())) {
+                if (evt.getNewValue() == null && (evt.getSource() instanceof JEditorPane)) {
+                    JEditorPane pane = (JEditorPane)evt.getSource();
+                    // It's necessary to detach BasicTextUI's handler from property listening on document
+                    // to allow GC of the pane and related objects.
+                    // BTW cannot verify that null kit is present since pane.getEditorKit() lazily creates the kit
+                    // Unfortunately JTextComponent.getUI() cannot return null since
+                    // JTextComponent's code assumes it to be non-null (while e.g. JComponent properly checks it for null).
+                    // Thus use an empty impl of a TextUI.
+                    pane.setUI(new NullTextUI());
+                    pane.removePropertyChangeListener(this);
+                }
+            }
+        }
+        
+    }
+    
+    private static final class NullTextUI extends TextUI {
+
+        @Override
+        public Rectangle modelToView(JTextComponent t, int pos) throws BadLocationException {
+            return null;
+        }
+
+        @Override
+        public Rectangle modelToView(JTextComponent t, int pos, Position.Bias bias) throws BadLocationException {
+            return null;
+        }
+
+        @Override
+        public int viewToModel(JTextComponent t, Point pt) {
+            return 0;
+        }
+
+        @Override
+        public int viewToModel(JTextComponent t, Point pt, Position.Bias[] biasReturn) {
+            return 0;
+        }
+
+        @Override
+        public int getNextVisualPositionFrom(JTextComponent t, int pos, Position.Bias b, int direction, Position.Bias[] biasRet) throws BadLocationException {
+            return 0;
+        }
+
+        @Override
+        public void damageRange(JTextComponent t, int p0, int p1) {
+        }
+
+        @Override
+        public void damageRange(JTextComponent t, int p0, int p1, Position.Bias firstBias, Position.Bias secondBias) {
+        }
+
+        @Override
+        public EditorKit getEditorKit(JTextComponent t) {
+            return null;
+        }
+
+        @Override
+        public View getRootView(JTextComponent t) {
+            return null;
+        }
+        
+    }
+
 }

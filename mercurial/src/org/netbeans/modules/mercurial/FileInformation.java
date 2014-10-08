@@ -298,7 +298,12 @@ public class FileInformation extends VCSFileInformation implements Serializable 
                 if (!EventQueue.isDispatchThread() && !entry.getOriginalFile().exists()
                         || (Mercurial.getInstance().getFileStatusCache().getStatus(entry.getOriginalFile()).getStatus()
                         & FileInformation.STATUS_VERSIONED_REMOVED) != 0) {
-                    return loc.getString("CTL_FileInfoStatus_AddedLocallyMoved"); // NOI18N   
+                    if (entry.getOriginalFile().getParentFile().getAbsolutePath()
+                            .equals(entry.getFile().getParentFile().getAbsolutePath())) {
+                        return loc.getString("CTL_FileInfoStatus_AddedLocallyRenamed"); // NOI18N
+                    } else {
+                        return loc.getString("CTL_FileInfoStatus_AddedLocallyMoved"); // NOI18N
+                    }
                 } else {
                     return loc.getString("CTL_FileInfoStatus_AddedLocallyCopied"); // NOI18N
                 }
@@ -343,7 +348,12 @@ public class FileInformation extends VCSFileInformation implements Serializable 
                 if (!EventQueue.isDispatchThread() && !entry.getOriginalFile().exists()
                         || (Mercurial.getInstance().getFileStatusCache().getStatus(entry.getOriginalFile()).getStatus()
                         & FileInformation.STATUS_VERSIONED_REMOVED) != 0) {
-                    return loc.getString("CTL_FileInfoStatus_AddedLocallyMoved_Short"); //NOI18N
+                    if (entry.getOriginalFile().getParentFile().getAbsolutePath()
+                            .equals(entry.getFile().getParentFile().getAbsolutePath())) {
+                        return loc.getString("CTL_FileInfoStatus_AddedLocallyRenamed_Short"); //NOI18N
+                    } else {
+                        return loc.getString("CTL_FileInfoStatus_AddedLocallyMoved_Short"); //NOI18N
+                    }
                 } else {
                     return loc.getString("CTL_FileInfoStatus_AddedLocallyCopied_Short"); //NOI18N
                 }

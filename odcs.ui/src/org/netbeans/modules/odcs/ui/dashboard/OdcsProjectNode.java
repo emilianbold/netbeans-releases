@@ -111,7 +111,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
     private TreeLabel rightPar;
     private TreeLabel leftPar;
     private TreeLabel delim;
-    private RequestProcessor issuesRP = new RequestProcessor(OdcsProjectNode.class);
+    private RequestProcessor RP = new RequestProcessor(OdcsProjectNode.class.getName(), 2);
     private final DashboardSupport<ODCSProject> dashboard;
     private final boolean canOpen;
     private final Action closeAction;
@@ -144,6 +144,18 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
                 }
             }
         };
+        dashboardListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(DashboardSupport.PROP_OPENED_PROJECTS.equals(evt.getPropertyName()) &&
+                        isInDashboard()) 
+                {
+                    scheduleUpdateTasks();
+                    scheduleUpdateBuilds();
+                }
+            }
+        };
+        dashboard.addPropertyChangeListener(dashboardListener);
         this.project = project;
         this.canOpen = canOpen;
         this.closeAction = closeAction;
@@ -155,6 +167,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
         project.getTeamProject().getServer().addPropertyChangeListener(projectListener);
         project.getTeamProject().addPropertyChangeListener(projectListener);
     }
+    protected final PropertyChangeListener dashboardListener;
 
 
     @Override
@@ -192,28 +205,6 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
                 component.add(rightPar, new GridBagConstraints(6, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 setOnline(false);
                 
-                issuesRP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        dashboard.myProjectsProgressStarted();
-                        allIssuesQuery = qaccessor == null || !project.getTeamProject().hasTasks() 
-                                ? null : qaccessor.getAllIssuesQuery(project);
-                        if (allIssuesQuery != null) {
-                            allIssuesQuery.addPropertyChangeListener(projectListener);
-                            List<QueryResultHandle> queryResults = qaccessor.getQueryResults(allIssuesQuery);
-                            for (QueryResultHandle queryResult:queryResults) {
-                                if (queryResult.getResultType()==QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
-                                    setBugsLater(queryResult);
-                                    return;
-                                }
-                            }
-                        }
-                        dashboard.myProjectsProgressFinished();
-                        
-                    }
-                });
-                scheduleUpdateBuilds();
-
                 component.add( new JLabel(), new GridBagConstraints(7,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
                 
                 int idxX = 8;
@@ -242,6 +233,10 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
                     btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/open_over.png", true)); // NOI18N
                     component.add( btnOpen, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 }
+                
+                scheduleUpdateTasks();
+                scheduleUpdateBuilds();
+                
             }
             
             if(btnBugs != null) {
@@ -320,6 +315,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
         project.removePropertyChangeListener( projectListener );
         project.getTeamProject().getServer().removePropertyChangeListener(projectListener);
         project.getTeamProject().removePropertyChangeListener(projectListener);
+        dashboard.removePropertyChangeListener(dashboardListener);
         
         if (allIssuesQuery != null) {
             allIssuesQuery.removePropertyChangeListener(projectListener);
@@ -335,21 +331,54 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (btnBugs!=null) {
-                    component.remove(btnBugs);
+                synchronized( LOCK ) {
+                    if(component == null) {
+                        return;
+                    }
+                    if (btnBugs!=null) {
+                        component.remove(btnBugs);
+                    }
+                    btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug)); // NOI18N
+                    btnBugs.putClientProperty("MM.Closing", true);
+                    btnBugs.setHorizontalTextPosition(JLabel.LEFT);
+                    btnBugs.setToolTipText(bug.getToolTipText());
+                    component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 }
-                btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug)); // NOI18N
-                btnBugs.putClientProperty("MM.Closing", true);
-                btnBugs.setHorizontalTextPosition(JLabel.LEFT);
-                btnBugs.setToolTipText(bug.getToolTipText());
-                component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 updateDetailsVisible();
             }
         });
     }
 
+    private void scheduleUpdateTasks() {
+        if(!isInDashboard()) {
+            return;
+        }
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                dashboard.myProjectsProgressStarted();
+                allIssuesQuery = qaccessor == null || !project.getTeamProject().hasTasks()
+                        ? null : qaccessor.getAllIssuesQuery(project);
+                if (allIssuesQuery != null) {
+                    allIssuesQuery.addPropertyChangeListener(projectListener);
+                    List<QueryResultHandle> queryResults = qaccessor.getQueryResults(allIssuesQuery);
+                    for (QueryResultHandle queryResult:queryResults) {
+                        if (queryResult.getResultType()==QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
+                            setBugsLater(queryResult);
+                            return;
+                        }
+                    }
+                }
+                dashboard.myProjectsProgressFinished();
+            }
+        });
+    }
+
     private void scheduleUpdateBuilds() {
-        issuesRP.post(new Runnable() {
+        if(!isInDashboard()) {
+            return;
+        }
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 if (buildAccessor != null) {
@@ -383,6 +412,16 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
                 };
             }
         });
+    }
+
+    protected boolean isInDashboard() {
+        ProjectHandle<ODCSProject>[] prjs = dashboard.getProjects(true);
+        for (ProjectHandle<ODCSProject> prj : prjs) {
+            if(prj.getId().equals(project.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
       @NbBundle.Messages({
@@ -444,20 +483,25 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (btnBuilds != null) {
-                    component.remove(btnBuilds);
-                }
-                if (buildHandle != null) {
-                    Action action = buildHandle.getDefaultAction();
-                    Icon actionIcon = (Icon) action.getValue(Action.SMALL_ICON);
-                    String actionName = (String) action.getValue(Action.NAME);
-                    btnBuilds = new LinkButton(actionName, actionIcon, action);
-                    btnBuilds.setHorizontalTextPosition(JLabel.LEFT);
-                    btnBuilds.setVerticalAlignment(JButton.CENTER);
-                    btnBuilds.setToolTipText(tooltipText);
-                    component.add(btnBuilds, new GridBagConstraints(5, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
-                } else {
-                    btnBuilds = null;
+                synchronized( LOCK ) {
+                    if(component == null) {
+                        return;
+                    }
+                    if (btnBuilds != null) {
+                        component.remove(btnBuilds);
+                    }
+                    if (buildHandle != null) {
+                        Action action = buildHandle.getDefaultAction();
+                        Icon actionIcon = (Icon) action.getValue(Action.SMALL_ICON);
+                        String actionName = (String) action.getValue(Action.NAME);
+                        btnBuilds = new LinkButton(actionName, actionIcon, action);
+                        btnBuilds.setHorizontalTextPosition(JLabel.LEFT);
+                        btnBuilds.setVerticalAlignment(JButton.CENTER);
+                        btnBuilds.setToolTipText(tooltipText);
+                        component.add(btnBuilds, new GridBagConstraints(5, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+                    } else {
+                        btnBuilds = null;
+                    }
                 }
                 if (component != null) {
                     updateDetailsVisible();

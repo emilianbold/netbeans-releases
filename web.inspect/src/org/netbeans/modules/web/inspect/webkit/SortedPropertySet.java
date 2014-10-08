@@ -55,7 +55,7 @@ abstract class SortedPropertySet<T extends Node.Property> extends Node.PropertyS
     /** Property name to property map sorted according to property names. */
     private final SortedMap<String,T> properties;
     /** Determines whether this property set has been initialized. */
-    protected boolean initialized;
+    private boolean initialized;
 
     /**
      * Creates a new {@code SortedPropertySet}.

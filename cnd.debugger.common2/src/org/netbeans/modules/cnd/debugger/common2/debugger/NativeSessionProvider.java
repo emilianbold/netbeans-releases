@@ -44,6 +44,12 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import java.util.HashMap;
+import java.util.Vector;
+import java.util.regex.Pattern;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
+import org.netbeans.modules.cnd.debugger.common2.utils.PsProvider;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.SessionProvider;
 
@@ -61,9 +67,32 @@ public abstract class NativeSessionProvider extends SessionProvider {
 	return "placeholder-for-NativeSessionProvider.getLocationName()"; // NOI18N
     }
 
+    private HashMap<Long,String> nameMap = new HashMap<Long, String>();
     // interface SessionProvider
     public String getSessionName() {
-	return "placeholder-for-NativeSessionProvider.getSessionName()"; // NOI18N
+        NativeDebuggerInfo ndi = ctx.lookupFirst(null, NativeDebuggerInfo.class);
+        if (ndi != null) {
+            long pid = ndi.getPid();
+            String name = nameMap.get(pid);
+            if (name != null) {
+                return name;
+            }
+            String strPid = "" + pid; // NOI18N
+            PsProvider.PsData data = PsProvider.getDefault(Host.byName(ndi.getHostName())).getData(false);
+            for (Vector<String> process : data.processes(Pattern.compile(strPid))) {
+                if (process.get(data.pidColumnIdx()).equals(strPid)) {
+                    String command = process.get(data.commandColumnIdx());
+                    int spaceIdx = command.indexOf(" "); // NOI18N
+                    if (spaceIdx != -1) {
+                        command = command.substring(0, spaceIdx);
+                    }
+                    name = CndPathUtilities.getBaseName(command);
+                    nameMap.put(pid, name);
+                    return name;
+                }
+            }
+        }
+	return ""; // NOI18N
     }
 
     // interface SessionProvider

@@ -78,6 +78,9 @@ public class JQueryModel {
     private static JsObject jQuery = null;
     private static JsObject rjQuery = null;
     private static JsFunction globalObject = null;
+    
+    private static final String JQUERY$ = "$";      //NOI18N
+    private static final String JQUERY = "jQuery";  //NOI18N
 
     // XXX this should be synchronized I guess
     public static JsObject getGlobalObject(ModelElementFactory modelElementFactory) {
@@ -91,9 +94,9 @@ public class JQueryModel {
                 globalObject = modelElementFactory.newGlobalObject(
                         FileUtil.toFileObject(apiFile), (int) apiFile.length());
                 JsFunction function = new JQFunction(modelElementFactory.newFunction(
-                        (DeclarationScope) globalObject, globalObject, "jQuery", Collections.<String>emptyList())); // NOI18N
+                        (DeclarationScope) globalObject, globalObject, JQUERY, Collections.<String>emptyList())); // NOI18N
                 jQuery =  modelElementFactory.putGlobalProperty(globalObject, function);
-                rjQuery = modelElementFactory.newReference("$", jQuery, false); // NOI18N
+                rjQuery = modelElementFactory.newReference(JQUERY$, jQuery, false); // NOI18N
 
                 SelectorsLoader.addToModel(apiFile, modelElementFactory, jQuery);
                 globalObject.addProperty(rjQuery.getName(), rjQuery);
@@ -101,7 +104,7 @@ public class JQueryModel {
         }
         return globalObject;
     }
-
+    
     private static class JQFunction implements JsFunction {
         
         private final JsFunction delegate;
@@ -123,6 +126,10 @@ public class JQueryModel {
                 }
             }
             return result;
+        }
+
+        public boolean isVirtual() {
+            return false;
         }
 
         // pure delegation follows
@@ -228,6 +235,11 @@ public class JQueryModel {
         }
 
         @Override
+        public void setDocumentation(Documentation documentation) {
+            delegate.setDocumentation(documentation);
+        }
+
+        @Override
         public int getOffset() {
             return delegate.getOffset();
         }
@@ -239,6 +251,9 @@ public class JQueryModel {
 
         @Override
         public Kind getJSKind() {
+            if (JQUERY$.equals(getName()) || JQUERY.equals(getName())) {
+                return Kind.METHOD;
+            }
             return delegate.getJSKind();
         }
 

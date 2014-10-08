@@ -81,7 +81,7 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.ExtendedAsynchr
     @Override
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
-        SiteTemplateImplementation template = (SiteTemplateImplementation) wizardDescriptor.getProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE);
+        SiteTemplateImplementation template = (SiteTemplateImplementation) wizardDescriptor.getProperty(ClientSideProjectWizardIterator.NewHtml5ProjectWizard.SITE_TEMPLATE);
         if (template != null) {
             getComponent().preSelectSiteTemplate(template);
         }
@@ -90,7 +90,7 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.ExtendedAsynchr
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
-        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE, getComponent().getSiteTemplate());
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewHtml5ProjectWizard.SITE_TEMPLATE, getComponent().getSiteTemplate());
     }
 
     @Override

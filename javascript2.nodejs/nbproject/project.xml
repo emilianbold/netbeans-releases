@@ -6,12 +6,47 @@
             <code-name-base>org.netbeans.modules.javascript2.nodejs</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.25</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.40</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.api.progress.nb</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.40</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.json_simple</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>0.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.csl.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.34</specification-version>
+                        <specification-version>2.48</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -20,7 +55,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.49</specification-version>
+                        <specification-version>2.50</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -29,7 +64,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.7</specification-version>
+                        <specification-version>0.46</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -38,7 +73,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>1.51</specification-version>
+                        <specification-version>1.60</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -47,7 +82,16 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.65</specification-version>
+                        <specification-version>9.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.projectapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.61</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -55,7 +99,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.69</specification-version>
+                        <specification-version>1.71</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -63,7 +107,15 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.7</specification-version>
+                        <specification-version>9.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.loaders</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.58</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -71,7 +123,23 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.38</specification-version>
+                        <specification-version>7.44</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.nodes</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.40</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.text</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.63</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -79,7 +147,15 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.31</specification-version>
+                        <specification-version>9.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.base</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -87,7 +163,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.25</specification-version>
+                        <specification-version>8.26</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -147,7 +223,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.javascript.nodejs</friend>
+                <package>org.netbeans.modules.javascript2.nodejs.spi</package>
+            </friend-packages>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>netbeans</word>

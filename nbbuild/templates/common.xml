@@ -102,6 +102,10 @@ made subject to such option by the copyright holder.
         <tstamp>
             <format property="module.build.started.time" pattern="yyyy-MM-dd'T'HH:mm:ss.SSSZ"/>
         </tstamp>
+        <condition property="asm.jar" value="${nbplatform.active.dir}/platform/modules/org-objectweb-asm.jar">
+            <available file="${nbplatform.active.dir}/platform//modules/org-objectweb-asm.jar"/>
+        </condition>
+        <property name="asm.jar" location="${o.objectweb.asm.dir}/modules/org-objectweb-asm.jar"/>
     </target>
 
     <target name="-release.dir">
@@ -225,6 +229,9 @@ made subject to such option by the copyright holder.
         <copy todir="${build.classes.dir}">
             <fileset dir="${src.dir}" excludes="${jar-excludes}"/>
         </copy>
+        <processjsannotation classes="${build.classes.dir}" asm="${asm.jar}">
+            <classpath refid="cp"/>
+        </processjsannotation>
     </target>
 
     <target name="compile-single" depends="init">
@@ -251,6 +258,9 @@ made subject to such option by the copyright holder.
             <compilerarg line="${javac.compilerargs}"/>
             <processorpath refid="processor.cp"/>
         </nb-javac>
+        <processjsannotation classes="${build.classes.dir}" asm="${asm.jar}">
+            <classpath refid="cp"/>
+        </processjsannotation>
     </target>
 
     <target name="jar-prep" depends="init">
@@ -588,6 +598,9 @@ made subject to such option by the copyright holder.
                 <compilerarg line="${javac.compilerargs}"/>
                 <processorpath refid="test.@{test.type}.cp"/>
             </nb-javac>
+            <processjsannotation classes="${build.test.@{test.type}.classes.dir}" asm="${asm.jar}">
+                <classpath refid="test.@{test.type}.cp"/>
+            </processjsannotation>
             <copy todir="${build.test.@{test.type}.classes.dir}">
                 <fileset dir="${test.@{test.type}.src.dir}">
                     <exclude name="**/*.java"/>
@@ -627,6 +640,9 @@ made subject to such option by the copyright holder.
                     <compilerarg line="${javac.compilerargs}"/>
                     <processorpath refid="test.@{test.type}.cp"/>
                 </nb-javac>
+                <processjsannotation classes="${build.test.@{test.type}.classes.dir}" asm="${asm.jar}">
+                    <classpath refid="test.@{test.type}.cp"/>
+                </processjsannotation>
                 <copy todir="${build.test.@{test.type}.classes.dir}">
                     <fileset dir="${test.@{test.type}.src.dir}">
                         <exclude name="**/*.java"/>
@@ -864,7 +880,7 @@ made subject to such option by the copyright holder.
                     <available classname="org.testng.annotations.Test" classpath="${test.@{test.type}.runtime.cp}"/>
                 </condition>
                 <condition property="is.test.suite" value ="-suite" else="">
-                    <contains string="${test.class}" substring=".xml"/>
+                    <matches pattern="([a-zA-Z_$][a-zA-Z\d_$]*\.)*xml$" string="${test.class}"/>
                 </condition>
                 <antcall target="-do-${test.runner}-debug-single${is.test.suite}">
                     <param name="test.type" value="@{test.type}"/>

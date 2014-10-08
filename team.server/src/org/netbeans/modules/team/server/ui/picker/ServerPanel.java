@@ -60,8 +60,11 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
@@ -262,10 +265,22 @@ class ServerPanel extends JPanel {
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         if( isOnline() ) {
-                            server.logout();
-                            removeAll();
-                            rebuild();
-                            PopupWindow.pack();
+                            RP.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    server.logout();
+                                    if( PopupWindow.isShowing() ) {
+                                        runInAWT( new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                removeAll();
+                                                rebuild();
+                                                PopupWindow.pack();
+                                            }
+                                        });
+                                    }
+                                }
+                            });
                         } else {
                             doLogin();
                         }
@@ -281,6 +296,10 @@ class ServerPanel extends JPanel {
                 }
             } );
         }
+        
+        // sync mode
+        res.add( new SyncMenu() );
+        
         res.addSeparator();
         
         boolean newOrOpen = false;
@@ -558,4 +577,71 @@ class ServerPanel extends JPanel {
             SwingUtilities.invokeLater(r);
         }
     }
+    
+    private class SyncMenuItem extends JCheckBoxMenuItem {
+        public SyncMenuItem(String name, ActionListener al) {
+            super( name );
+            addActionListener( al );
+        }
+    }
+    
+    @NbBundle.Messages({"CTL_SyncAll=All Projects",
+                        "CTL_SyncOnlySelectedProject=Selected Project Only",
+                        "CTL_SyncRecentlySelectedProjects=Recently Selected Projects"})
+    private class SyncMenu extends JMenu {
+        private final JMenuItem syncAll = new SyncMenuItem(Bundle.CTL_SyncAll(), new ActionListener() {
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                OneProjectDashboard.SyncMode mode = OneProjectDashboard.SyncMode.PREF_ALL;
+                OneProjectDashboard.setSyncMode( server, mode );
+                selectItem( mode );
+            }
+        } );
+        private final JMenuItem syncRecentlySelected = new SyncMenuItem(Bundle.CTL_SyncRecentlySelectedProjects(), new ActionListener() {
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                OneProjectDashboard.SyncMode mode = OneProjectDashboard.SyncMode.PREF_ALL_SELECTED;
+                OneProjectDashboard.setSyncMode( server, mode );
+                selectItem( mode );
+            }
+        } );
+        private final JMenuItem syncOnlySelected = new SyncMenuItem(Bundle.CTL_SyncOnlySelectedProject(), new ActionListener() {
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                OneProjectDashboard.SyncMode mode = OneProjectDashboard.SyncMode.PREF_SELECTED;
+                OneProjectDashboard.setSyncMode( server, mode );
+                selectItem( mode );
+            }
+        } );
+
+        @NbBundle.Messages({"CTL_SyncMode=Auto Synchronize Services"})        
+        public SyncMenu() {
+            super(Bundle.CTL_SyncMode());
+            add( syncOnlySelected );
+            add( syncRecentlySelected );
+            add( syncAll );
+            selectItem( OneProjectDashboard.getSyncMode(server) );
+        }
+        
+        private void selectItem(OneProjectDashboard.SyncMode mode) {
+            switch( mode ) {
+                case PREF_ALL:
+                    syncAll.setSelected( true );
+                    syncRecentlySelected.setSelected( false );
+                    syncOnlySelected.setSelected( false );
+                    break;
+                case PREF_ALL_SELECTED:
+                    syncAll.setSelected( false );
+                    syncRecentlySelected.setSelected( true );
+                    syncOnlySelected.setSelected( false );
+                    break;
+                case PREF_SELECTED:
+                    syncAll.setSelected( false );
+                    syncRecentlySelected.setSelected( false );
+                    syncOnlySelected.setSelected( true );
+                    break;
+            }
+        }
+    }
+    
 }

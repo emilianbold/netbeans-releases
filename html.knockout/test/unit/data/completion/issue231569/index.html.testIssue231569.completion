@@ -2,7 +2,7 @@ Code completion result for source line:
 <input data-bind='value: userNameToAdd, valueUpdate: "keyup", css: { invalid: | }' /></input>
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CONSTRUCTO TestModel(lists, selectedList)  [PUBLIC]   index.html
+CONSTRUCTO TestModel                       [PUBLIC]   index.html
 CLASS      $context                        [PRIVATE]  <font color=#999999>index.html</font>
 CLASS      $parentContext                  [PRIVATE]  <font color=#999999>index.html</font>
 CLASS      ko                              [PUBLIC]   <font color=#999999>Knockout</font>

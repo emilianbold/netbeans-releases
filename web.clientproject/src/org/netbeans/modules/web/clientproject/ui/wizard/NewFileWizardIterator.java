@@ -182,14 +182,18 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
             // #231347
             return ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
         }
-        SourceGroup[] groups = ClientSideProjectUtilities.getSourceGroups(project);
+        SourceGroup[] allGroups = ClientSideProjectUtilities.getSourceGroups(project);
         if (!FileUtilities.isHtmlFile(file)
                 && !FileUtilities.isCssFile(file)) {
             // not html or css -> return all source groups
-            return groups;
+            return allGroups;
         }
         // html or css file -> return only site root
-        return ClientSideProjectUtilities.getSourceGroups(project, WebClientProjectConstants.SOURCES_TYPE_HTML5);
+        SourceGroup[] siteRootGroups = ClientSideProjectUtilities.getSourceGroups(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT);
+        if (siteRootGroups.length != 0) {
+            return siteRootGroups;
+        }
+        return allGroups;
     }
 
     private void setTargetFolder() {

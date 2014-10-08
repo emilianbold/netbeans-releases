@@ -94,7 +94,7 @@ public class FlowScopedBeanWithoutCdi {
             return problems;
         }
 
-        CompilationInfo info = ctx.getCompilationInfo();
+        CompilationInfo info = hintContext.getInfo();
         for (TypeElement typeElement : info.getTopLevelElements()) {
             for (AnnotationMirror annotationMirror : typeElement.getAnnotationMirrors()) {
                 if (FLOW_SCOPED.equals(annotationMirror.getAnnotationType().toString())) {

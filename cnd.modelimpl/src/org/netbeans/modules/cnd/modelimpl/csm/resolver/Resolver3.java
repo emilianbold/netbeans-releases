@@ -106,7 +106,7 @@ import org.openide.util.CharSequences;
  */
 public final class Resolver3 implements Resolver {
     static final Logger LOGGER = Logger.getLogger("Resolver3"); // NOI18N
-
+    
     private final ProjectBase project;
     private final CsmFile file;
     private final CsmFile startFile;
@@ -383,10 +383,14 @@ public final class Resolver3 implements Resolver {
     public boolean isRecursionOnResolving(int maxRecursion) {
         Resolver3 parent = (Resolver3)parentResolver;
         int count = 0;
+        int similarCount = 0;
         while(parent != null) {
             if (parent.origOffset == origOffset && parent.file.equals(file)) {
-                if (TRACE_RECURSION) { traceRecursion(); }
-                return true;
+                similarCount++;
+                if (similarCount > LIMITED_RECURSION) {
+                    if (TRACE_RECURSION) { traceRecursion(); }
+                    return true;
+                }
             }
             parent = (Resolver3) parent.parentResolver;
             count++;

@@ -114,12 +114,12 @@ public final class PersistentTimerInEjbLite {
                     for (AnnotationMirror annm : element.getAnnotationMirrors()) {
                         if (EJBAPIAnnotations.SCHEDULE.equals(annm.getAnnotationType().toString())) {
                             if (ee6lite) {
-                                problems.add(HintsUtils.createProblem(element, ctx.getComplilationInfo(),
+                                problems.add(HintsUtils.createProblem(element, hintContext.getInfo(),
                                         Bundle.PersistentTimerInEjbLite_err_timer_in_ee6lite(), Severity.ERROR));
                             }
                             if (ee7lite && isTimerPersistent(annm.getElementValues())) {
                                 Fix fix = new PersistentTimerInEjbLiteFix(ctx.getFileObject(), element);
-                                problems.add(HintsUtils.createProblem(element, ctx.getComplilationInfo(),
+                                problems.add(HintsUtils.createProblem(element, hintContext.getInfo(),
                                         Bundle.PersistentTimerInEjbLite_err_nonpersistent_timer_in_ee7lite(), Severity.ERROR, fix));
                             }
                         }

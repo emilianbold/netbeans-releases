@@ -208,15 +208,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
 
         QuietEditorPane tmp = new QuietEditorPane();
-        tmp.getAccessibleContext().setAccessibleName(
-            NbBundle.getMessage(CloneableEditor.class, "ACS_CloneableEditor_QuietEditorPane", this.getName())
-        );
-        tmp.getAccessibleContext().setAccessibleDescription(
-            NbBundle.getMessage(
-                CloneableEditor.class, "ACSD_CloneableEditor_QuietEditorPane",
-                this.getAccessibleContext().getAccessibleDescription()
-            )
-        );
         tmp.putClientProperty("usedByCloneableEditor", true);
 
         this.pane = tmp;

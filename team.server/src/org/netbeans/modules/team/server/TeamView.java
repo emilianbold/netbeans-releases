@@ -170,7 +170,7 @@ public final class TeamView {
                         }
                     });
                 } else {
-                    setTeamServer(null);
+                    setTeamServer(null);    
                 }
             }
         });
@@ -281,7 +281,7 @@ public final class TeamView {
                 boolean noServers = TeamServerManager.getDefault().getTeamServers().isEmpty();
                 if(noServers) {
                     comp = createNoProjectComponent(new AddInstanceAction());
-                } else if(getProjectPicker().isNoProject()) {
+                } else if(!Utilities.isMoreProjectsDashboard() && getProjectPicker().isNoProject()) {
                     comp = createNoProjectComponent(null);
                 } else {
                     comp = teamServer.getDashboardComponent();

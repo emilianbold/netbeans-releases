@@ -93,6 +93,10 @@ public final class NativeSession {
 	debugger = nd;
     }
 
+    public NativeDebugger getDebugger() {
+        return debugger;
+    }
+    
     /**
      * Get [debugger]core session corresponding to us.
      */

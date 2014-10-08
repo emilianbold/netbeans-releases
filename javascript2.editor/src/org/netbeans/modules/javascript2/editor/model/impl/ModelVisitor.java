@@ -310,6 +310,8 @@ public class ModelVisitor extends PathNodeVisitor {
             if (binaryNode.rhs() instanceof IdentNode) {
                 addOccurence((IdentNode)binaryNode.rhs(), false);
             }
+        } else if(binaryNode.tokenType() == TokenType.ASSIGN && rhs instanceof ReferenceNode) {
+            
         }
         return super.enter(binaryNode);
     }
@@ -353,28 +355,31 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
 
                     String name = sb.substring(0, sb.length() - 1);
-                    FunctionInterceptor interceptorToUse = null;
+                    List<FunctionInterceptor> interceptorsToUse = new ArrayList<FunctionInterceptor>();
                     for (FunctionInterceptor interceptor : ModelExtender.getDefault().getFunctionInterceptors()) {
                         if (interceptor.getNamePattern().matcher(name).matches()) {
-                            interceptorToUse = interceptor;
-                            break;
+                            interceptorsToUse.add(interceptor);
                         }
                     }
 
 
-                    if (interceptorToUse != null) {
+                    for (FunctionInterceptor interceptor : interceptorsToUse) {
                         Collection<FunctionArgument> funcArg = new ArrayList<FunctionArgument>();
                         for (int i = 0; i < callNode.getArgs().size(); i++) {
                             Node argument = callNode.getArgs().get(i);
                             createFunctionArgument(argument, i, functionArguments, funcArg);
                         }
-                        Collection<FunctionCall> calls = functionCalls.get(interceptorToUse);
+                        Collection<FunctionCall> calls = functionCalls.get(interceptor);
                         if (calls == null) {
                             calls = new ArrayList<FunctionCall>();
-                            functionCalls.put(interceptorToUse, calls);
+                            functionCalls.put(interceptor, calls);
                         }
-                        calls.add(new FunctionCall(name, modelBuilder.getCurrentDeclarationScope(), funcArg));
-
+                        int callOffset = callNode.getFunction().getStart();
+                        if (callNode.getFunction() instanceof AccessNode) {
+                            AccessNode anode = (AccessNode)callNode.getFunction();
+                            callOffset = anode.getProperty().getStart();
+                        }
+                        calls.add(new FunctionCall(name, modelBuilder.getCurrentDeclarationScope(), funcArg, callOffset));
                     }
                 }
             }
@@ -597,14 +602,20 @@ public class ModelVisitor extends PathNodeVisitor {
                         originalFunction = ((JsObject)currentScope).getProperty(functionName);
                         currentScope = currentScope.getParentScope();
                     }
-                    if (originalFunction != null) {
+                    if (originalFunction != null && originalFunction instanceof JsFunction) {
                         JsObjectImpl jsObject = ModelUtils.getJsObject(modelBuilder, name, true);
+                        if (ModelUtils.isDescendant(jsObject, originalFunction)) {
+                            //XXX This is not right solution. The right solution would be to create new anonymous function
+                            // and the recreate the object that has the same name as the function.
+                            // See issue #246598
+                            return null;
+                        }
                         JsFunctionReference jsFunctionReference = new JsFunctionReference(jsObject.getParent(), jsObject.getDeclarationName(), (JsFunction)originalFunction, true, jsObject.getModifiers());
                         jsObject.getParent().addProperty(jsObject.getName(), jsFunctionReference);
-                        return null;
-                    }
+                        return null; 
                 }
             }
+        }
         }
 
         JsObject previousUsage = null;
@@ -1186,10 +1197,65 @@ public class ModelVisitor extends PathNodeVisitor {
         FunctionNode reference = referenceNode.getReference();
         if (reference != null) {
             Node lastNode = getPreviousFromPath(1);
-            if (!( lastNode instanceof VarNode && !reference.isAnonymous())) {
-                addToPath(referenceNode);
-                reference.accept(this);
-                removeFromPathTheLast();
+            if (!((lastNode instanceof VarNode) && !reference.isAnonymous())) {
+                if (lastNode instanceof BinaryNode && !reference.isAnonymous()) {
+                    Node lhs = ((BinaryNode)lastNode).lhs();
+                    List<Identifier> nodeName = getNodeName(lhs, parserResult);
+                    if (nodeName != null && !nodeName.isEmpty()) {
+                        JsObject jsObject = null;
+                        if ("this".equals(nodeName.get(0).getName())) { //NOI18N
+                            jsObject = resolveThis(modelBuilder.getCurrentObject());
+                            for (int i = 1; jsObject != null && i < nodeName.size(); i++ ) {
+                                jsObject = jsObject.getProperty(nodeName.get(i).getName());
+                            }
+                        } else {
+                            jsObject = ModelUtils.getJsObject(modelBuilder, nodeName, true);
+                        }
+                        if (jsObject != null) {
+                            Identifier name = nodeName.get(nodeName.size() - 1);
+                            DeclarationScopeImpl ds = modelBuilder.getCurrentDeclarationScope();
+                            String referenceName = reference.getIdent().getName();
+                            JsObject originalFnc = ds.getProperty(referenceName);
+                            while (originalFnc != null && !(originalFnc instanceof JsFunction)) {
+                                if (ds.getParentScope() != null) {
+                                    ds = (DeclarationScopeImpl)ds.getParentScope();
+                                    originalFnc = ds.getProperty(referenceName);
+                                } else {
+                                    originalFnc = null;
+                                }
+                            }
+                            if (originalFnc != null && originalFnc instanceof JsFunction) {
+                                //property contains the definition of the function
+                                JsObject newRef = new JsFunctionReference(jsObject.getParent(), name, (JsFunction)originalFnc, true, jsObject.getModifiers());
+                                jsObject.getParent().addProperty(jsObject.getName(), newRef);
+                                for (Occurrence occurence : jsObject.getOccurrences()) {
+                                    newRef.addOccurrence(occurence.getOffsetRange());
+                                }
+                                if (originalFnc instanceof JsFunctionImpl) {
+//                                    ((JsFunctionImpl)originalFnc).setAnonymous(true);
+                                    JsObject parent = jsObject.getParent();
+                                    if (ModelUtils.PROTOTYPE.equals(parent.getName())) {
+                                        parent = parent.getParent();
+                                    }
+                                    if (parent != null) {
+                                        Collection<JsObject> propertiesCopy = new ArrayList(originalFnc.getProperties().values());
+                                        for (JsObject property : propertiesCopy) {
+                                            if (!property.getModifiers().contains(Modifier.PRIVATE)) {
+                                                ModelUtils.moveProperty(parent, property);
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                            }
+                            
+                        }
+                    }
+                } else {
+                    addToPath(referenceNode);
+                    reference.accept(this);
+                    removeFromPathTheLast();
+                }
             } 
             return null;
         }
@@ -2108,12 +2174,15 @@ public class ModelVisitor extends PathNodeVisitor {
         private final DeclarationScope scope;
 
         private final Collection<FunctionArgument> arguments;
+        
+        private final int callOffset;
 
         public FunctionCall(String name, DeclarationScope scope,
-                Collection<FunctionArgument> arguments) {
+                Collection<FunctionArgument> arguments, int callOffset) {
             this.name = name;
             this.scope = scope;
             this.arguments = arguments;
+            this.callOffset = callOffset;
         }
 
         public String getName() {
@@ -2127,5 +2196,11 @@ public class ModelVisitor extends PathNodeVisitor {
         public Collection<FunctionArgument> getArguments() {
             return arguments;
         }
+
+        public int getCallOffset() {
+            return callOffset;
+        }
+        
+        
     }
 }

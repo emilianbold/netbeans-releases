@@ -102,10 +102,12 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
             return createProblem(null, true, msg);
         }
         URL target = refactoring.getTarget().lookup(URL.class);
-        try {
-            target.toURI();
-        } catch (URISyntaxException ex) {
-            return createProblem(null, true, NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_InvalidPackage",RefactoringUtils.getPackageName(target)));
+        if(target != null) {
+            try {
+                target.toURI();
+            } catch (URISyntaxException ex) {
+                return createProblem(null, true, NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_InvalidPackage", target));
+            }
         }
         FileObject fo = target != null ? URLMapper.findFileObject(target) : null;
         if (fo == null) {

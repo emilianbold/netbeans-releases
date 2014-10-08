@@ -95,10 +95,14 @@ public class FileEncodingQuery {
         for (FileEncodingQueryImplementation impl : Lookup.getDefault().lookupAll(FileEncodingQueryImplementation.class)) {
             Charset encoding = impl.getEncoding(file);
             if (encoding != null) {
-                LOG.log(Level.FINE, "{0}: received encoding {1} from {2}", new Object[] {file, encoding, impl});
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "{0}: received encoding {1} from {2}", new Object[] {file, encoding, impl});
+                }
                 delegates.add(encoding);
             } else {
-                LOG.log(Level.FINER, "{0}: received no encoding from {1}", new Object[] {file, impl});
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.log(Level.FINER, "{0}: received no encoding from {1}", new Object[] {file, impl});
+                }
             }
         }
         try {
@@ -110,7 +114,9 @@ public class FileEncodingQuery {
         } catch (FileStateInvalidException ex) {
             delegates.add(Charset.defaultCharset());
         }
-        LOG.log(Level.FINE, "{0}: using encodings {1}", new Object[] {file, delegates});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "{0}: using encodings {1}", new Object[] {file, delegates});
+        }
         return new ProxyCharset (delegates);
     }
 

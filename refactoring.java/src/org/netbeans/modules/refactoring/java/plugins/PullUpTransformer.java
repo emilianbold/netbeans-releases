@@ -152,7 +152,7 @@ public class PullUpTransformer extends RefactoringVisitor {
                 Element current = workingCopy.getTrees().getElement(getCurrentPath());
                 Element currentMember = members[i].getElementHandle().resolve(workingCopy);
                 if (currentMember != null && currentMember.getEnclosingElement().equals(current)) {
-                    if (classIsAbstract.get() || !members[i].isMakeAbstract()
+                    if ((classIsAbstract.get() && !currentMember.getModifiers().contains(Modifier.DEFAULT)) || !members[i].isMakeAbstract()
                             || (currentMember.getModifiers().contains(Modifier.ABSTRACT) && targetType.getKind().isInterface())) {
                         // in case of interface always remove pulled method
                         njuClass = make.removeClassMember(njuClass, workingCopy.getTrees().getTree(currentMember));
@@ -174,6 +174,8 @@ public class PullUpTransformer extends RefactoringVisitor {
         Set<Modifier> mod = flags.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(flags);
         mod.add(Modifier.ABSTRACT);
         mod.remove(Modifier.FINAL);
+        // abstract method cannot be default
+        mod.remove(Modifier.DEFAULT);
         // abstract method cannot be synchronized
         mod.remove(Modifier.SYNCHRONIZED);
         if (classElement.getKind().isInterface()) {

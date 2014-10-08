@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -369,8 +370,10 @@ public class ModelUtils {
     private static Collection<TypeUsage> tryResolveWindowProperty(Model model, JsIndex jsIndex, String name) {
         // since issue #215863
         String fqn = null;
+        int offset = -1;
         for (IndexedElement indexedElement : jsIndex.getProperties("window")) { //NOI18N
             if (indexedElement.getName().equals(name)) {
+                offset = indexedElement.getOffset();
                 fqn = "window." + name;
                 break;
             }
@@ -378,6 +381,7 @@ public class ModelUtils {
         if (fqn == null) {
             for (IndexedElement indexedElement : jsIndex.getProperties("Window.prototype")) { //NOI18N
                 if (indexedElement.getName().equals(name)) {
+                    offset = indexedElement.getOffset();
                     fqn = "Window.prototype." + name; //NOI18N
                     break;
                 }
@@ -385,7 +389,7 @@ public class ModelUtils {
         }
         if (fqn != null) {
             List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
-            resolveAssignments(model, jsIndex, fqn, fromAssignment);
+            resolveAssignments(model, jsIndex, fqn, offset, fromAssignment);
             if (fromAssignment.isEmpty()) {
                 fromAssignment.add(new TypeUsageImpl(fqn));
             } 
@@ -741,7 +745,7 @@ public class ModelUtils {
         return result;
     }
     
-    public static Collection<TypeUsage> resolveTypeFromExpression (Model model, @NullAllowed JsIndex jsIndex, List<String> exp, int offset) {
+    public static Collection<TypeUsage> resolveTypeFromExpression (Model model, @NullAllowed JsIndex jsIndex, List<String> exp, int offset, boolean includeAllPossible) {
         List<JsObject> localObjects = new ArrayList<JsObject>();
         List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
         List<TypeUsage> lastResolvedTypes = new ArrayList<TypeUsage>();
@@ -811,7 +815,7 @@ public class ModelUtils {
                             }
                         }
 
-                        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+                        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects(model.getGlobalObject().getFileObject())) {
                             assert libGlobal != null;
                             for (JsObject object : libGlobal.getProperties().values()) {
                                 if (object.getName().equals(name)) {
@@ -850,7 +854,7 @@ public class ModelUtils {
 //                            }
 //                        } else {
                         if ("@pro".equals(kind) && jsIndex != null) { //NOI18N
-                            resolveAssignments(model, jsIndex, name, fromAssignments);
+                            resolveAssignments(model, jsIndex, name, -1,  fromAssignments);
                         } 
 //                        }
                         lastResolvedTypes.addAll(fromAssignments);
@@ -863,7 +867,7 @@ public class ModelUtils {
                                     sType = sType.substring(5);
                                     sType = sType.replace("@pro;", ".");
                                 }   
-                                ModelUtils.resolveAssignments(model, jsIndex, sType, fromAssignments);
+                                ModelUtils.resolveAssignments(model, jsIndex, sType, typeUsage.getOffset(), fromAssignments);
                                 for (TypeUsage typeUsage1 : fromAssignments) {
                                     String localFqn = localObject != null ? localObject.getFullyQualifiedName() : null;
                                     if (localFqn != null  && name.startsWith(localFqn) && name.length() > localFqn.length() ) {
@@ -901,6 +905,16 @@ public class ModelUtils {
                                 if (lObject.getJSKind().isFunction()) {
                                     // if it's a method call, add all retuturn types
                                     lastResolvedTypes.addAll(((JsFunction) lObject).getReturnTypes());
+                                }
+                                int lastCallOffset = -1;
+                                for (Occurrence occurrence : lObject.getOccurrences()) {
+                                    if (lastCallOffset < occurrence.getOffsetRange().getStart() && occurrence.getOffsetRange().getStart() <= offset) {
+                                        lastCallOffset = occurrence.getOffsetRange().getStart();
+                                    }
+                                }
+                                Collection<TypeUsage> returnTypesFromFrameworks = model.getReturnTypesFromFrameworks(lObject.getName(), lastCallOffset);
+                                if (returnTypesFromFrameworks != null && !returnTypesFromFrameworks.isEmpty()) {
+                                    lastResolvedTypes.addAll(returnTypesFromFrameworks);
                                 }
                             } else if ("@arr".equals(kind) && lObject instanceof JsArray) {
                                 lastResolvedTypes.addAll(((JsArray) lObject).getTypesInArray());
@@ -1009,7 +1023,7 @@ public class ModelUtils {
                             if (checkProperty) {
                                 String propertyFQN = propertyToCheck != null ? propertyToCheck : typeName + "." + name;
                                 List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
-                                resolveAssignments(model, jsIndex, propertyFQN, fromAssignment);
+                                resolveAssignments(model, jsIndex, propertyFQN, -1, fromAssignment);
                                 if (fromAssignment.isEmpty()) {
                                     ModelUtils.addUniqueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
                                 } else {
@@ -1018,7 +1032,7 @@ public class ModelUtils {
                             }
                         }
                         // from libraries look for top level types
-                        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+                        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects(model.getGlobalObject().getFileObject())) {
                             for (JsObject object : libGlobal.getProperties().values()) {
                                 if (object.getName().equals(typeUsage.getType())) {
                                     JsObject property = object.getProperty(name);
@@ -1051,13 +1065,30 @@ public class ModelUtils {
                 if (jsObject.isDeclared()) {
                     String fqn = jsObject.getFullyQualifiedName();
                     if (!resultTypes.containsKey(fqn)) {
-                        resultTypes.put(fqn, new TypeUsageImpl(fqn, offset));
+                        if (includeAllPossible || hasDeclaredProperty(jsObject)) {
+                            resultTypes.put(fqn, new TypeUsageImpl(fqn, offset));
+                        }
                     }
                 }
             }
             return resultTypes.values();
     }
 
+    public static boolean hasDeclaredProperty(JsObject jsObject) {
+        boolean result =  false;
+        
+        Iterator<? extends JsObject> it = jsObject.getProperties().values().iterator();
+        while (!result && it.hasNext()) {
+            JsObject property = it.next();
+            result = property.isDeclared();
+            if (!result) {
+                result = hasDeclaredProperty(property);
+            } 
+        }
+
+        return result;
+    }
+    
     public static List<String> expressionFromType(TypeUsage type) {
         String sexp = type.getType();
         if ((sexp.startsWith("@exp;") || sexp.startsWith("@new;") || sexp.startsWith("@arr;") || sexp.startsWith("@pro;")
@@ -1085,7 +1116,7 @@ public class ModelUtils {
         }
     }
     
-    public static Collection<TypeUsage> resolveTypes(Collection<? extends TypeUsage> unresolved, JsParserResult parserResult, boolean useIndex) {
+    public static Collection<TypeUsage> resolveTypes(Collection<? extends TypeUsage> unresolved, JsParserResult parserResult, boolean useIndex, boolean includeAllPossible) {
         //assert !SwingUtilities.isEventDispatchThread() : "Type resolution may block AWT due to index search";
         Collection<TypeUsage> types = new ArrayList<TypeUsage>(unresolved);
         if (types.size() == 1 && types.iterator().next().isResolved()) {
@@ -1114,7 +1145,7 @@ public class ModelUtils {
                     if (nExp.size() > 1) {
                         // passing original prevents the unresolved return types
                         // when recursion in place
-                        ModelUtils.addUniqueType(resolved, original, ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, typeUsage.getOffset()));
+                        ModelUtils.addUniqueType(resolved, original, ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, typeUsage.getOffset(), includeAllPossible));
                     } else {
                         ModelUtils.addUniqueType(resolved, new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
                     }
@@ -1167,15 +1198,15 @@ public class ModelUtils {
         }
     }
     
-    private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, List<TypeUsage> resolved) {
+    private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, int offset, List<TypeUsage> resolved) {
         Set<String> alreadyProcessed = new HashSet<String>();
         for(TypeUsage type : resolved) {
             alreadyProcessed.add(type.getType());
         }
-        resolveAssignments(model, jsIndex, fqn, resolved, alreadyProcessed);
+        resolveAssignments(model, jsIndex, fqn, offset, resolved, alreadyProcessed);
     }
     
-    private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, List<TypeUsage> resolved, Set<String> alreadyProcessed) {
+    private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, int offset,  List<TypeUsage> resolved, Set<String> alreadyProcessed) {
         if (!alreadyProcessed.contains(fqn)) {
             alreadyProcessed.add(fqn);
             if (!fqn.startsWith("@")) {
@@ -1193,7 +1224,7 @@ public class ModelUtils {
                                     break;
                                 }
                                 if (!alreadyProcessed.contains(type.getType())) {
-                                    resolveAssignments(model, jsIndex, type.getType(), resolved, alreadyProcessed);
+                                    resolveAssignments(model, jsIndex, type.getType(), type.getOffset(), resolved, alreadyProcessed);
                                 }
                             }
                         }
@@ -1216,7 +1247,7 @@ public class ModelUtils {
                                 }
                                 for (TypeUsage type : toProcess) {
                                     if (!alreadyProcessed.contains(type.getType())) {
-                                        resolveAssignments(model, jsIndex, type.getType(), resolved, alreadyProcessed);
+                                        resolveAssignments(model, jsIndex, type.getType(), type.getOffset(), resolved, alreadyProcessed);
                                     }
                                 }
                             }
@@ -1233,11 +1264,11 @@ public class ModelUtils {
 
 
                     if(!hasAssignments || isType) {
-                        ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, -1, true));
+                        ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, offset, true));
                     }
                 }
             } else {
-                ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, -1, false));
+                ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, offset, false));
             }
         }
     }
@@ -1288,8 +1319,14 @@ public class ModelUtils {
      */
     public static Collection <? extends TypeUsage> getTypeFromWith(Model model, int offset) {
         JsObject jsObject = ModelUtils.findJsObject(model, offset);
+        JsObject previous = jsObject;
         while (jsObject != null && jsObject.isAnonymous() && jsObject.getJSKind() != JsElement.Kind.WITH_OBJECT) {
             jsObject = ModelUtils.findJsObject(model, jsObject.getOffset() - 1);
+            if (jsObject.getFullyQualifiedName().endsWith(previous.getFullyQualifiedName())) {
+                break;
+            } else {
+                previous = jsObject;
+            }
         }
         while(jsObject != null && jsObject.getJSKind() != JsElement.Kind.WITH_OBJECT) {
             jsObject = jsObject.getParent();

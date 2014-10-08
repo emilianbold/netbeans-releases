@@ -143,22 +143,32 @@ public final class ModelElementFactory {
         return wrapped;
     }
     
-    public JsObject newObject(JsObject parent, String name, OffsetRange offsetRange,
-            boolean isDeclared) {
-        return new JsObjectImpl(parent, new IdentifierImpl(name, offsetRange), offsetRange, isDeclared, null, null);
+    public JsObject newObject(JsObject parent, String name, OffsetRange offsetRange, boolean isDeclared) {
+        return newObject(parent, name, offsetRange, isDeclared, null);
     }
 
+    public JsObject newObject(JsObject parent, String name, OffsetRange offsetRange, boolean isDeclared, String sourceLabel) {
+        return new JsObjectImpl(parent, new IdentifierImpl(name, offsetRange), offsetRange, isDeclared, null, sourceLabel);
+    }
+    
     public JsFunction newFunction(DeclarationScope scope, JsObject parent, String name, Collection<String> params) {
+        return newFunction(scope, parent, name, params, null);
+    }
+    
+    public JsFunction newFunction(DeclarationScope scope, JsObject parent, String name, Collection<String> params, String sourceLabel) {
         List<Identifier> realParams = new ArrayList<Identifier>();
         for (String param : params) {
             realParams.add(new IdentifierImpl(param, OffsetRange.NONE));
         }
-        return new JsFunctionImpl(scope, parent, new IdentifierImpl(name, OffsetRange.NONE),
-                realParams, OffsetRange.NONE, null, null);
+        return newFunction(scope, parent, new IdentifierImpl(name, OffsetRange.NONE), realParams, OffsetRange.NONE, sourceLabel);
     }
     
     public JsFunction newFunction(DeclarationScope scope, JsObject parent, Identifier name, List<Identifier> params, OffsetRange range) {
-        return new JsFunctionImpl(scope, parent, name, params, range, null, null);
+        return newFunction(scope, parent, name, params, range, null);
+    }
+    
+    public JsFunction newFunction(DeclarationScope scope, JsObject parent, Identifier name, List<Identifier> params, OffsetRange range, String sourceLabel) {
+        return new JsFunctionImpl(scope, parent, name, params, range, null, sourceLabel);
     }
     
     public JsObject newReference(JsObject parent, String name, OffsetRange offsetRange,
@@ -181,6 +191,12 @@ public final class ModelElementFactory {
             return new OriginalParentArrayReference(new IdentifierImpl(name, OffsetRange.NONE), (JsArray) original, isDeclared);
         }
         return new OriginalParentObjectReference(new IdentifierImpl(name, OffsetRange.NONE), original, isDeclared);
+    }
+    
+    public JsObject newReference(String name, JsObject original, boolean isDeclared, boolean isVirtual) {
+        JsObject object = newReference(name, original, isDeclared);
+        ((JsObjectImpl)object).setVirtual(isVirtual);
+        return object;
     }
     
     public TypeUsage newType(String name, int offset, boolean resolved) {
@@ -318,6 +334,11 @@ public final class ModelElementFactory {
         }
 
         @Override
+        public void setDocumentation(Documentation documentation) {
+            delegate.setDocumentation(documentation);
+        }
+
+        @Override
         public int getOffset() {
             return delegate.getOffset();
         }
@@ -390,7 +411,12 @@ public final class ModelElementFactory {
         @Override
         public boolean containsOffset(int offset) {
             return delegate.containsOffset(offset);
-        }        
+        }
+
+        @Override
+        public boolean isVirtual() {
+            return false;
+        }
     }
 
     private static class GlobalFunction implements JsFunction {
@@ -523,6 +549,11 @@ public final class ModelElementFactory {
         }
 
         @Override
+        public void setDocumentation(Documentation documentation) {
+            delegate.setDocumentation(documentation);
+        }
+
+        @Override
         public int getOffset() {
             return delegate.getOffset();
         }
@@ -596,5 +627,11 @@ public final class ModelElementFactory {
         public boolean containsOffset(int offset) {
             return delegate.containsOffset(offset);
         }
+
+        @Override
+        public boolean isVirtual() {
+            return false;
+        }
+        
     }
 }

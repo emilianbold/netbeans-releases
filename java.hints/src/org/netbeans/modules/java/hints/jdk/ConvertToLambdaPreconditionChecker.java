@@ -280,9 +280,9 @@ public class ConvertToLambdaPreconditionChecker {
 
         @Override
         public Tree visitMethodInvocation(MethodInvocationTree methodInvocationTree, Trees trees) {
-
+            String nameSuggestion = org.netbeans.modules.editor.java.Utilities.varNameSuggestion(methodInvocationTree.getMethodSelect());
             //check for recursion
-            if (lambdaMethodTree.getName().contentEquals(org.netbeans.modules.editor.java.Utilities.varNameSuggestion(methodInvocationTree.getMethodSelect()))) {
+            if (nameSuggestion != null && lambdaMethodTree.getName().contentEquals(nameSuggestion)) {
                 ExpressionTree selector = getSelector(methodInvocationTree);
                 if (selector == null || (org.netbeans.modules.editor.java.Utilities.varNameSuggestion(selector) != null
                         && org.netbeans.modules.editor.java.Utilities.varNameSuggestion(selector).contentEquals("this"))) {

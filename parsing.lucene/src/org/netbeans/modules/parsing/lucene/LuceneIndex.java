@@ -75,6 +75,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.Lock;
@@ -664,7 +665,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         private synchronized void doClear() throws IOException {
             checkPreconditions();
             // already write locked
-            doClose(false);
+            doClose(false, true);
             try {
                 lockFactory.forceClearLocks();
                 final String[] content = fsDir.listAll();
@@ -741,7 +742,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                 try {
                     sync = storeCloseSynchronizer.getSync();
                     if (sync == null) {
-                        doClose(closeFSDir);
+                        doClose(closeFSDir, false);
                         break;
                     }
                 } finally {
@@ -757,11 +758,22 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             }
         }
         
-        synchronized void doClose (final boolean closeFSDir) throws IOException {
+        synchronized void doClose (
+                final boolean closeFSDir,
+                final boolean ensureClosed) throws IOException {
             try {
                 rollbackTxWriter();
                 if (this.reader != null) {
                     this.reader.close();
+                    if (ensureClosed) {
+                        try {
+                            while (this.reader.getRefCount() > 0) {
+                                this.reader.decRef();
+                            }
+                        } catch (IllegalStateException e) {
+                            //pass closed
+                        }
+                    }
                     this.reader = null;
                 }
             } finally {                        

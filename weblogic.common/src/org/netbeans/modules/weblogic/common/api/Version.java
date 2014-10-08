@@ -308,6 +308,13 @@ public final class Version {
         return version;
     }
 
+    /**
+     * Expands the version to full dotted notation.
+     *
+     * @param qualifierDefault the qualifier to use if empty
+     * @return the expanded version
+     * @since 1.109
+     */
     public Version expand(String qualifierDefault) {
         if (majorNumber == null) {
             return this;

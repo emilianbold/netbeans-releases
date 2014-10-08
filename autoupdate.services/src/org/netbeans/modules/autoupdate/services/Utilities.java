@@ -617,7 +617,7 @@ public class Utilities {
         // handle diff
         for (String tok : oldTokens) {
             // don't care about provider of platform dependency here
-            if (tok.startsWith("org.openide.modules.os")) { // NOI18N
+            if (tok.startsWith("org.openide.modules.os") || tok.startsWith("org.openide.modules.jre")) { // NOI18N
                 continue;
             }
             dependencies.addAll(Dependency.create(Dependency.TYPE_REQUIRES, tok));

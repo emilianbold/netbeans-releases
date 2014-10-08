@@ -4313,7 +4313,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 ClassLoaderReference contextClassLoader = evaluationContext.getFrame().location().declaringType().classLoader();
                 // Return the class which was loaded by the context class loader
                 for (ReferenceType type : types) {
-                    if (contextClassLoader.equals(type.classLoader())) {
+                    ClassLoaderReference typeClassLoader = type.classLoader();
+                    if (contextClassLoader == null && typeClassLoader == null ||
+                        contextClassLoader != null && contextClassLoader.equals(typeClassLoader)) {
                         return type;
                     }
                 }

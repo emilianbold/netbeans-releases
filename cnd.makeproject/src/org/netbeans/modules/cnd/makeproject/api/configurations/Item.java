@@ -521,7 +521,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     
     private void attachTo(DataObject dataObject) {
         if (dataObject != null) {
-            LOG.log(Level.FINEST, "attaching {0} to {1}", new Object[]{System.identityHashCode(this), dataObject});
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, "attaching {0} to {1}", new Object[]{System.identityHashCode(this), dataObject});
+            }
             dataObject.removePropertyChangeListener(this);
             dataObject.addPropertyChangeListener(this);
             NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
@@ -541,7 +543,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     
     private void detachFrom(DataObject dao) {
         if (dao != null) {
-            LOG.log(Level.FINEST, "detaching {0} from {1}", new Object[]{System.identityHashCode(this), dao});
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, "detaching {0} from {1}", new Object[]{System.identityHashCode(this), dao});
+            }
             dao.removePropertyChangeListener(this);
             NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
             if (set != null) {
@@ -889,11 +893,26 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         if (compilerSet == null) {
             return "";
         }
-        BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
-        if (compilerConfiguration instanceof CCCCompilerConfiguration) {
-            CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
-            return cccCompilerConfiguration.getImportantFlags().getValue();
+        if (makeConfiguration.isMakefileConfiguration()) {
+            BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+            if (compilerConfiguration instanceof CCCCompilerConfiguration) {
+                CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
+                return cccCompilerConfiguration.getImportantFlags().getValue();
+            }
+        } else {
+            AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
+            BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+            if (compilerConfiguration instanceof CCCCompilerConfiguration) {
+                // Get include paths from compiler
+                if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
+                    final String importantFlags = SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
+                    if (importantFlags != null) {
+                        return importantFlags;
+                    }
+                }
+            }
         }
+        
         return "";
     }
     

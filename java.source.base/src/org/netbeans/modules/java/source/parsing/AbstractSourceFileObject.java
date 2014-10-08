@@ -505,10 +505,12 @@ public abstract class AbstractSourceFileObject implements PrefetchableJavaFileOb
         public LckStream (final FileObject fo) throws IOException {
             assert fo != null;
             this.lock = fo.lock();
+            OutputStream d = null;
             try {
-                this.delegate = fo.getOutputStream (this.lock);
+                d = fo.getOutputStream (this.lock);
+                this.delegate = d;
             } finally {
-                if (this.delegate == null) {
+                if (d == null) {
                     this.lock.releaseLock();
                 }
             }

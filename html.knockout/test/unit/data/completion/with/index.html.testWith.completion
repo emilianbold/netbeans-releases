@@ -2,8 +2,8 @@ Code completion result for source line:
 <div data-bind="text: |"></div>
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CONSTRUCTO Bulici(): Bulici                [PUBLIC]   index.html
-CONSTRUCTO Clobrda(jmeno): Clobrda         [PUBLIC]   index.html
+CONSTRUCTO Bulici                          [PUBLIC]   index.html
+CONSTRUCTO Clobrda                         [PUBLIC]   index.html
 CLASS      $context                        [PRIVATE]  <font color=#999999>index.html</font>
 CLASS      $parentContext                  [PRIVATE]  <font color=#999999>index.html</font>
 CLASS      ko                              [PUBLIC]   <font color=#999999>Knockout</font>

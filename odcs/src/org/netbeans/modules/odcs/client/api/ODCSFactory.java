@@ -68,15 +68,8 @@ public abstract class ODCSFactory {
             }
             if(instance == null) {
                 instance = new ODCSFactory() {
-                    private MockUpODCSClient mock;
                     @Override
                     public synchronized ODCSClient createClient (String url, PasswordAuthentication auth) {
-                        if("http://mockingbird".equals(url)) {
-                            if(mock == null) {
-                                mock = new MockUpODCSClient();
-                            }
-                            return mock;
-                        }
                         return new ODCSClientImpl(url, auth);
                     }
 

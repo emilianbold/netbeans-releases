@@ -44,7 +44,6 @@
 package org.netbeans.performance.j2se.dialogs;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -54,6 +53,7 @@ import org.netbeans.performance.j2se.setup.J2SESetup;
 /**
  *
  * @author mkhramov@netbeans.org
+ * @author Jiri Skrivanek
  */
 public class ProfilerWindowsTest extends PerformanceTestCase {
 
@@ -88,39 +88,15 @@ public class ProfilerWindowsTest extends PerformanceTestCase {
                 .suite();
     }
 
-    public void testProfilerControlPanel() {
-        commandName = "Window|Profiling|Profiler"; //NOI18N
-        windowName = "Profiler"; ////NOI18N
-        doMeasurement();
-    }
-
-    public void testProfilerTelemetryOverview() {
-        commandName = "Window|Profiling|" + Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "HINT_TelemetryOverviewAction");
-        windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "LAB_TelemetryOverviewPanelName");
-        doMeasurement();
-    }
-
-    public void testProfilerLiveResults() {
-        commandName = "Window|Profiling|" + Bundle.getStringTrimmed("org.netbeans.modules.profiler.actions.Bundle", "LBL_ShowLiveResultsWindowAction");
-        windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "LAB_ResultsWindowName");
-        doMeasurement();
-    }
-
-    public void testProfilerVMTelemetry() {
-        commandName = "Window|Profiling|VM Telemetry"; //NOI18N
-        windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "LAB_TelemetryWindowName");
-        doMeasurement();
-    }
-
-    public void testProfilerThreads() {
-        commandName = "Window|Profiling|Threads"; //NOI18N
-        windowName = Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", "ThreadsWindow_ThreadsWindowName");
+    public void testProfilerSnapshots() {
+        commandName = "Window|Profiling|Snapshots";
+        windowName = "Snapshots";
         doMeasurement();
     }
 
     public void testProfilerProfilingPoints() {
-        commandName = "Window|Profiling|Profiling Points"; //NOI18N
-        windowName = "Profiling Points"; ////NOI18N
+        commandName = "Window|Profiling|Profiling Points";
+        windowName = "Profiling Points";
         doMeasurement();
     }
 

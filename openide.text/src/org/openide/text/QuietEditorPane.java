@@ -71,6 +71,7 @@ import java.util.Set;
 import java.util.TooManyListenersException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.accessibility.AccessibleContext;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -82,6 +83,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.ExternalDropHandler;
 import org.openide.windows.TopComponent;
 
@@ -126,6 +128,25 @@ final class QuietEditorPane extends JEditorPane {
      */
     public QuietEditorPane() {
         setFontHeightWidth(getFont());
+    }
+    
+    public AccessibleContext getAccessibleContext() {
+        AccessibleContext ctx = super.getAccessibleContext();
+        if (ctx != null) {
+            // Lazily set the accessible name and desc
+            // since JEditorPane.AccessibleJEditorPane resp. AccessibleJTextComponent
+            // attaches document listener which prevents cloned JEPs from being GCed.
+            ctx.setAccessibleName(
+                    NbBundle.getMessage(CloneableEditor.class, "ACS_CloneableEditor_QuietEditorPane", this.getName())
+            );
+            ctx.setAccessibleDescription(
+                    NbBundle.getMessage(
+                            CloneableEditor.class, "ACSD_CloneableEditor_QuietEditorPane",
+                            this.getAccessibleContext().getAccessibleDescription()
+                    )
+            );
+        }
+        return ctx;
     }
     
     @Override

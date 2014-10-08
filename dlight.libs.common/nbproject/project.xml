@@ -90,6 +90,7 @@
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.remote</friend>
                 <friend>org.netbeans.modules.dlight.remote.impl</friend>
+                <friend>org.netbeans.modules.mixeddev</friend>
                 <package>org.netbeans.modules.dlight.libs.common</package>
             </friend-packages>
         </data>

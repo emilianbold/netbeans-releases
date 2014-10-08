@@ -94,8 +94,8 @@ public class ODCSExecutor {
                 noConnectionUrls.remove(repository.getUrl());
             }
             cmd.setFailed(false);
-            cmd.setErrorMessage(null);
-            
+            cmd.setErrorMessage(null);     
+                 
         } catch (CoreException ex) {
             notifyError(ex);
         } catch (MalformedURLException ex) {
@@ -118,7 +118,7 @@ public class ODCSExecutor {
         if (msg == null && status instanceof RepositoryStatus) {
             RepositoryStatus rs = (RepositoryStatus) status;
             String html = rs.getHtmlMessage();
-            if(html != null) {
+            if(html != null) {      
                 msg = html;
                 assertHtmlMsg(html); // any reason to expect this ???
             }
@@ -204,7 +204,7 @@ public class ODCSExecutor {
     }    
 
     @NbBundle.Messages({"LBL_Error=Error"})  // NOI18N
-    static void notifyErrorMessage(String msg) {
+    public static void notifyErrorMessage(String msg) {
         if("true".equals(System.getProperty("netbeans.t9y.throwOnClientError", "false"))) { // NOI18N
             ODCS.LOG.info(msg);
             throw new AssertionError(msg);
