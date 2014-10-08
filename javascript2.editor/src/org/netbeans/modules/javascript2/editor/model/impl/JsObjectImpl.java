@@ -63,6 +63,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private boolean hasName;
     private Documentation documentation;
     protected JsElement.Kind kind;
+    private boolean isVirtual;
 
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange,
             String mimeType, String sourceLabel) {
@@ -72,6 +73,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.parent = parent;
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
+        this.isVirtual = false;
     }
 
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange,
@@ -82,6 +84,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.parent = parent;
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
+        this.isVirtual = false;
     }
 
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange,
@@ -186,6 +189,15 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 
     public void setParent(JsObject newParent) {
         this.parent = newParent;
+    }
+
+    @Override
+    public boolean isVirtual() {
+        return isVirtual;
+    }
+
+    public void setVirtual(boolean isVirtual) {
+        this.isVirtual = isVirtual;
     }
 
     @Override
@@ -330,8 +342,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.kind = kind;
     }
 
-    protected Collection<TypeUsage> resolveAssignments(JsObject jsObject, int offset) {
-        Collection<String> visited = new HashSet();  // for preventing infinited loops
+    protected Collection<TypeUsage> resolveAssignments(JsObject jsObject, int offset) {        Collection<String> visited = new HashSet();  // for preventing infinited loops
         return resolveAssignments(jsObject, offset, visited);
     }
 
@@ -657,6 +668,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return documentation;
     }
 
+    @Override
     public void setDocumentation(Documentation doc) {
         this.documentation = doc;
     }

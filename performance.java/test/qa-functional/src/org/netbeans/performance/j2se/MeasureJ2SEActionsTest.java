@@ -63,6 +63,7 @@ import org.netbeans.performance.j2se.actions.OpenFilesTest;
 import org.netbeans.performance.j2se.actions.OpenFilesWithOpenedEditorTest;
 import org.netbeans.performance.j2se.actions.PageUpPageDownInEditorTest;
 import org.netbeans.performance.j2se.actions.PasteInEditorTest;
+import org.netbeans.performance.j2se.actions.ProfileProjectTest;
 import org.netbeans.performance.j2se.actions.RefactorFindUsagesTest;
 import org.netbeans.performance.j2se.actions.SaveModifiedFileTest;
 import org.netbeans.performance.j2se.actions.SearchTest;
@@ -107,6 +108,7 @@ public class MeasureJ2SEActionsTest {
                 .addTest(OpenFilesWithOpenedEditorTest.class)
                 .addTest(PageUpPageDownInEditorTest.class)
                 .addTest(PasteInEditorTest.class)
+                .addTest(ProfileProjectTest.class)
                 .addTest(RefactorFindUsagesTest.class)
                 .addTest(SaveModifiedFileTest.class)
                 .addTest(SearchTest.class)

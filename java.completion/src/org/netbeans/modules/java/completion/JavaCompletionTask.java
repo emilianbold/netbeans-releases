@@ -2848,8 +2848,9 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     case RESOURCE_VARIABLE:
                     case EXCEPTION_PARAMETER:
                     case PARAMETER:
-                        return startsWith(env, e.getSimpleName().toString())
-                                && (method == e.getEnclosingElement() || eu.isEffectivelyFinal((VariableElement) e)
+                        return startsWith(env, e.getSimpleName().toString()) && 
+                                    (method == e.getEnclosingElement() ||
+                                    env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0 && eu.isEffectivelyFinal((VariableElement)e)
                                 || (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT
                                 || e.getEnclosingElement().getKind() == STATIC_INIT
                                 || e.getEnclosingElement().getKind() == METHOD && e.getEnclosingElement().getEnclosingElement().getKind() == FIELD)))

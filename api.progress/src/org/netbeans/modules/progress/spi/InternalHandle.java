@@ -45,10 +45,15 @@
 
 package org.netbeans.modules.progress.spi;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.progress.module.*;
+import org.openide.modules.PatchedPublic;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 
 /**
  * Instances provided by the ProgressHandleFactory allow the users of the API to
@@ -81,10 +86,12 @@ public class InternalHandle {
 
     public static final int NO_INCREASE = -2;
     
-
+    /** For compatibility only, not used for new clients, package access */ 
+    InternalHandle del;
     
     /** Creates a new instance of ProgressHandle */
-    public InternalHandle(String displayName, 
+    @PatchedPublic
+    protected InternalHandle(String displayName, 
                    Cancellable cancel,
                    boolean userInitiated) {
         this.displayName = displayName;
@@ -93,9 +100,26 @@ public class InternalHandle {
         totalUnits = 0;
         lastMessage = null;
         cancelable = cancel;
+        
+        compatInit();
     }
-
+    
+    /**
+     * Creates a {@link ProgressHandle} instance, which works with this SPI.
+     * @return a fresh instance of ProgressHandle
+     * @since 1.40
+     */
+    public final ProgressHandle createProgressHandle() {
+        if (del != null) {
+            return ProgressApiAccessor.getInstance().create(del);
+        }
+        return ProgressApiAccessor.getInstance().create(this);
+    }
+    
     public String getDisplayName() {
+        if (del != null) {
+            return del.getDisplayName();
+        }
         return displayName;
     }
 
@@ -103,22 +127,34 @@ public class InternalHandle {
      * XXX - called from UI, threading
      */
     public synchronized int getState() {
+        if (del != null) {
+            return del.getState();
+        }
         return state;
     }
     
     public boolean isAllowCancel() {
+        if (del != null) {
+            return del.isAllowCancel();
+        }
         return cancelable != null;
     }
     
     public boolean isAllowView() {
+        if (del != null) {
+            return del.isAllowView();
+        }
         return false;
     }
     
     public boolean isCustomPlaced() {
+        if (del != null) {
+            return del.isCustomPlaced();
+        }
         return false;
     }
     
-    public boolean isUserInitialized() {
+    public final boolean isUserInitialized() {
         return userInitiated;
     }
     
@@ -127,10 +163,17 @@ public class InternalHandle {
     }
     
     public int getTotalUnits() {
+        if (del != null) {
+            return del.getTotalUnits();
+        }
         return totalUnits;
     }
     
     public void setInitialDelay(int millis) {
+        if (del != null) {
+            del.setInitialDelay(millis);
+            return;
+        }
         if (state != STATE_INITIALIZED) {
             LOG.log(Level.WARNING, "Setting ProgressHandle.setInitialDelay() after the task is started has no effect at {0}", LoggingUtils.findCaller()); //NOI18N
             return;
@@ -139,10 +182,17 @@ public class InternalHandle {
     }
     
     public int getInitialDelay() {
+        if (del != null) {
+            return del.getInitialDelay();
+        }
         return initialDelay;
     }
     
     public synchronized void toSilent(String message) {
+        if (del != null) {
+            del.toSilent(message);
+            return;
+        }
         if (state != STATE_RUNNING && state != STATE_REQUEST_STOP) {
             LOG.log(Level.WARNING, "Cannot switch to silent mode when not running at {0}", LoggingUtils.findCaller()); //NOI18N
             return;
@@ -156,10 +206,17 @@ public class InternalHandle {
     }
     
     public boolean isInSleepMode() {
+        if (del != null) {
+            return isInSleepMode();
+        }
         return timeSleepy == timeLastProgress;
     }
     
     public synchronized void toIndeterminate() {
+        if (del != null) {
+            del.toIndeterminate();
+            return;
+        }
         if (state != STATE_RUNNING && state != STATE_REQUEST_STOP) {
             LOG.log(Level.WARNING, "Cannot switch to indeterminate mode when not running at {0}", LoggingUtils.findCaller());
             return;
@@ -172,6 +229,9 @@ public class InternalHandle {
     }
     
     public synchronized void toDeterminate(int workunits, long estimate) {
+        if (del != null) {
+            del.toDeterminate(workunits, estimate);
+        }
         if (state != STATE_RUNNING && state != STATE_REQUEST_STOP) {
             LOG.log(Level.WARNING, "Cannot switch to determinate mode when not running at {0}", LoggingUtils.findCaller()); //NOI18N
             return;
@@ -200,6 +260,10 @@ public class InternalHandle {
      * @param estimate estimated time to process the task in seconds
      */
     public synchronized void start(String message, int workunits, long estimate) {
+        if (del != null) {
+            del.start(message, workunits, estimate);
+            return;
+        }
         if (state != STATE_INITIALIZED) {
             LOG.log(Level.WARNING, "Cannot call start twice on a handle at {0}", LoggingUtils.findCaller()); //NOI18N
             return;
@@ -228,6 +292,10 @@ public class InternalHandle {
      * finish the task, remove the task's component from the progress bar UI.
      */
     public synchronized void finish() {
+        if (del != null) {
+            del.finish();
+            return;
+        }
         if (state == STATE_INITIALIZED) {
             LOG.log(Level.WARNING, "Cannot finish a task that was never started at {0}", LoggingUtils.findCaller()); //NOI18N
             return;
@@ -249,6 +317,10 @@ public class InternalHandle {
      * @param workunit 
      */
     public synchronized void progress(String message, int workunit) {
+        if (del != null) {
+            del.progress(message, workunit);
+            return;
+        }
         if (state != STATE_RUNNING && state != STATE_REQUEST_STOP) {
             LOG.log(Level.WARNING, "Cannot call progress on a task that was never started at {0}", LoggingUtils.findCaller()); //NOI18N
             return;
@@ -285,6 +357,10 @@ public class InternalHandle {
   // XXX - called from UI, threading
 
     public void requestCancel() {
+        if (del != null) {
+            del.requestCancel();
+            return;
+        }
         if (!isAllowCancel()) {
             return;
         }
@@ -302,10 +378,17 @@ public class InternalHandle {
     
    ///XXX - called from UI, threading
     public void requestView() {
+        if (del != null) {
+            del.requestView();
+        }
     }
     
    // XXX - called from UI, threading
     public synchronized void requestExplicitSelection() {
+        if (del != null) {
+            del.requestExplicitSelection();
+            return;
+        }
         if (!isInSleepMode()) {
             timeLastProgress = System.currentTimeMillis();
         }
@@ -313,6 +396,10 @@ public class InternalHandle {
     }
     
     public synchronized void requestDisplayNameChange(String newDisplayName) {
+        if (del != null) {
+            del.requestDisplayNameChange(newDisplayName);
+            return;
+        }
         displayName = newDisplayName;
         if (state == STATE_INITIALIZED) {
             return;
@@ -325,6 +412,10 @@ public class InternalHandle {
     
 // XXX - called from UI, threading 
     public synchronized ProgressEvent requestStateSnapshot() {
+        if (del != null) {
+            // TODO - event.getSource() exposes the delegate InternalHandle
+            return del.requestStateSnapshot();
+        }
         if (!isInSleepMode()) {
             timeLastProgress = System.currentTimeMillis();
         }
@@ -356,11 +447,46 @@ public class InternalHandle {
      *public because of tests.
      */
     public double getPercentageDone() {
+        if (del != null) {
+            return del.getPercentageDone();
+        }
         return ((double)currentUnit * 100 / (double)totalUnits); 
     }
 
     public long getTimeStampStarted() {
+        if (del != null) {
+            return del.getTimeStampStarted();
+        }
         return timeStarted;
     }
 
+    static final Method compatInit;
+    
+    private void compatInit() {
+        if (compatInit == null) {
+            return;
+        }
+        try {
+            compatInit.invoke(this, displayName, cancelable, userInitiated);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    static {
+        Method m = null;
+        try {
+            m = InternalHandle.class.getSuperclass().getDeclaredMethod("compatInit", 
+                    String.class, Cancellable.class, Boolean.TYPE); // NOI18N
+        } catch (NoSuchMethodException ex) {
+            // OK
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        compatInit = m;
+    }
 }

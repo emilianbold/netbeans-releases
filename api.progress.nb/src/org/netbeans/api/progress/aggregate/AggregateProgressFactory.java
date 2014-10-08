@@ -47,9 +47,7 @@ package org.netbeans.api.progress.aggregate;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressUIHandle;
 import org.openide.util.Cancellable;
 
 /**
@@ -82,10 +80,6 @@ public final class AggregateProgressFactory extends BasicAggregateProgressFactor
                 ProgressHandleFactory.createHandle(displayName, allowToCancel, linkOutput));
     }
     
-    public static ProgressContributor createProgressContributor(String trackingId) {
-        return new ProgressContributor(trackingId);
-    }
-    
     /**
      * Create an aggregating progress ui handle for a long lasting task.
      * @param contributors the initial set of progress indication contributors that are aggregated in the UI.
@@ -111,7 +105,7 @@ public final class AggregateProgressFactory extends BasicAggregateProgressFactor
      * @return the component to use in custom UI.
      */
     public static JComponent createProgressComponent(AggregateProgressHandle handle) {
-        return ProgressHandleFactory.createProgressComponent(uiHandle(handle));
+        return ProgressHandleFactory.createProgressComponent(getProgressHandle(handle));
     }    
     
     /**
@@ -121,7 +115,7 @@ public final class AggregateProgressFactory extends BasicAggregateProgressFactor
      * @since org.netbeans.api.progress 1.8
      */
     public static JLabel createMainLabelComponent(AggregateProgressHandle handle) {
-        return ProgressHandleFactory.createMainLabelComponent(uiHandle(handle));
+        return ProgressHandleFactory.createMainLabelComponent(getProgressHandle(handle));
     }
     
     /**
@@ -131,14 +125,6 @@ public final class AggregateProgressFactory extends BasicAggregateProgressFactor
      * @since org.netbeans.api.progress 1.8
      */
     public static JLabel createDetailLabelComponent(AggregateProgressHandle handle) {
-        return ProgressHandleFactory.createDetailLabelComponent(uiHandle(handle));
-    }
-    
-    private static ProgressUIHandle uiHandle(AggregateProgressHandle h) {
-        ProgressHandle ph = getProgressHandle(h);
-        if (!(ph instanceof ProgressUIHandle)) {
-            throw new IllegalArgumentException("Non-UI progress handle used in UI context");
-        }
-        return ((ProgressUIHandle)ph);
+        return ProgressHandleFactory.createDetailLabelComponent(getProgressHandle(handle));
     }
 }

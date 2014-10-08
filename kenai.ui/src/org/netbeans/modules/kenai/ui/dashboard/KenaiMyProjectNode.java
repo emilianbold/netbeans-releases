@@ -124,6 +124,7 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
     private JLabel myPrjLabel;
     private LinkButton btnClose;
     private JLabel closePlaceholder;
+    private final PropertyChangeListener dashboardListener;
 
     public KenaiMyProjectNode( final ProjectHandle<KenaiProject> project , boolean canOpen, boolean canBookmark, Action closeAction ) {
         super( KenaiServer.forKenai(project.getTeamProject().getKenai()), null );
@@ -146,7 +147,6 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                     if (notification.getType() == KenaiService.Type.ISSUES && !notification.getAuthor().equals(project.getTeamProject().getKenai().getPasswordAuthentication().getUserName())) {
                         showBugNotification(notification);
                     }
-
                 } else if (Kenai.PROP_XMPP_LOGIN.equals(evt.getPropertyName())) {
                     if (evt.getOldValue()==null) {
                         setOnline(mh.getMessageCount()>0);
@@ -182,6 +182,17 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
         this.mh.addPropertyChangeListener(projectListener);
         project.getTeamProject().getKenai().addPropertyChangeListener(projectListener);
         project.getTeamProject().addPropertyChangeListener(projectListener);
+        
+        dashboardListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(DashboardSupport.PROP_OPENED_PROJECTS.equals(evt.getPropertyName())) 
+                {
+                    scheduleUpdateTasks();
+                }
+            }
+        };
+        dashboard.addPropertyChangeListener(dashboardListener);
     }
 
     @Override
@@ -238,29 +249,7 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
                 component.add(rightPar, new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 setOnline(mh.getOnlineCount() >= 0 && count >0);
                 
-                if (qaccessor != null) {
-                    issuesRP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if(isOnline()) {
-                                dashboard.myProjectsProgressStarted();
-                                allIssuesQuery = qaccessor.getAllIssuesQuery(project);
-                                if (allIssuesQuery != null) {
-                                    allIssuesQuery.addPropertyChangeListener(projectListener);
-                                    List<QueryResultHandle> queryResults = qaccessor.getQueryResults(allIssuesQuery);
-                                    for (QueryResultHandle queryResult:queryResults) {
-                                        if (queryResult.getResultType()==QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
-                                            setBugsLater(queryResult);
-                                            return;
-                                        }
-                                    }
-                                }
-                                dashboard.myProjectsProgressFinished();
-                            }
-                        }
-                    });
-                }
-
+                scheduleUpdateTasks();
 
                 component.add( new JLabel(), new GridBagConstraints(5,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
 //                btnBookmark = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true), accessor.getBookmarkAction(project)); //NOI18N
@@ -354,6 +343,34 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
         }
     }
 
+    private void scheduleUpdateTasks() {
+        if( qaccessor == null ||
+            !isOnline() ||
+            !isInDashboard()) 
+        {
+            return;
+        }
+                
+        issuesRP.post(new Runnable() {
+            @Override
+            public void run() {
+                dashboard.myProjectsProgressStarted();
+                allIssuesQuery = qaccessor.getAllIssuesQuery(project);
+                if (allIssuesQuery != null) {
+                    allIssuesQuery.addPropertyChangeListener(projectListener);
+                    List<QueryResultHandle> queryResults = qaccessor.getQueryResults(allIssuesQuery);
+                    for (QueryResultHandle queryResult:queryResults) {
+                        if (queryResult.getResultType()==QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
+                            setBugsLater(queryResult);
+                            return;
+                        }
+                    }
+                }
+                dashboard.myProjectsProgressFinished();
+            }
+        });
+    }
+
     private void setBookmarkIcon() {
         btnBookmark.setIcon(ImageUtilities.loadImageIcon(
                     "org/netbeans/modules/team/server/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
@@ -421,6 +438,7 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
             allIssuesQuery.removePropertyChangeListener(projectListener);
             allIssuesQuery=null;
         }
+        dashboard.removePropertyChangeListener(dashboardListener);
         if (bugNotification != null) {
             bugNotification.clear();
         }
@@ -429,6 +447,9 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
     private void setBugsLater(final QueryResultHandle bug) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                if( component == null ) {
+                    return;
+                }
                 if (btnBugs!=null) {
                     component.remove(btnBugs);
                 }
@@ -473,6 +494,16 @@ public class KenaiMyProjectNode extends MyProjectNode<KenaiProject> {
 
     private boolean isOnline() {
         return dashboard.getServer().getStatus() == TeamServer.Status.ONLINE;
+    }
+    
+    private boolean isInDashboard() {
+        ProjectHandle<KenaiProject>[] prjs = dashboard.getProjects(true);
+        for (ProjectHandle<KenaiProject> prj : prjs) {
+            if(prj.getId().equals(project.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     @Override

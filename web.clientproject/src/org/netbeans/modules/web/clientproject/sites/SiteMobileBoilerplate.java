@@ -105,7 +105,9 @@ public class SiteMobileBoilerplate implements SiteTemplateImplementation {
             LOGGER.info("Template not correctly prepared, nothing to be applied"); //NOI18N
             return;
         }
-        SiteHelper.unzipProjectTemplate(projectDir.getFileObject(projectProperties.getSiteRootFolder()), LIB_FILE, handle);
+        String siteRootFolder = projectProperties.getSiteRootFolder();
+        assert siteRootFolder != null;
+        SiteHelper.unzipProjectTemplate(projectDir.getFileObject(siteRootFolder), LIB_FILE, handle);
     }
 
     @Override

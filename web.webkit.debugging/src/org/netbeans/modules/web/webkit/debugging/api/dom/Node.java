@@ -43,6 +43,7 @@ package org.netbeans.modules.web.webkit.debugging.api.dom;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.json.simple.JSONArray;
@@ -58,6 +59,8 @@ public class Node {
     private final JSONObject properties;
     /** Children of the node ({@code nul} when the children are not known yet). */
     private List<Node> children;
+    /** Shadow roots of the node. */
+    private List<Node> shadowRoots;
     /** Attributes of the node. */
     private List<Attribute> attributes;
     /** Content document (for {@code Frame} nodes). */
@@ -83,6 +86,14 @@ public class Node {
                 newChildren.add(new Node((JSONObject)child));
             }
             addChildren(newChildren);
+        }
+
+        Object shadowRootsValue = node.get("shadowRoots"); // NOI18N
+        if (shadowRootsValue instanceof JSONArray) {
+            JSONArray shadowRootArray = (JSONArray)shadowRootsValue;
+            for (Object shadowRoot : shadowRootArray) {
+                addShadowRoot(new Node((JSONObject)shadowRoot));
+            }
         }
 
         // Attributes
@@ -248,6 +259,37 @@ public class Node {
         }
         children.add(index, child);
         child.parent = this;
+    }
+
+    /**
+     * Returns shadow roots of this node.
+     * 
+     * @return shadow roots of this node.
+     */
+    public final synchronized List<Node> getShadowRoots() {
+        return (shadowRoots == null) ? Collections.EMPTY_LIST : shadowRoots;
+    }
+
+    /**
+     * Adds a new shadow root to this node.
+     * 
+     * @param shadowRoot shadow root to add.
+     */
+    synchronized final void addShadowRoot(Node shadowRoot) {
+        if (shadowRoots == null) {
+            shadowRoots = new LinkedList<Node>();
+        }
+        shadowRoot.parent = this;
+        shadowRoots.add(shadowRoot);
+    }
+
+    /**
+     * Removes a shadow root from this node.
+     * 
+     * @param shadowRoot shadow root to remove.
+     */
+    synchronized final void removeShadowRoot(Node shadowRoot) {
+        shadowRoots.remove(shadowRoot);
     }
 
     /**

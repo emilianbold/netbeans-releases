@@ -48,11 +48,12 @@ import java.beans.BeanInfo;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Set;
 import org.omg.CORBA.Environment;
 import static org.openide.filesystems.FileSystem.LOG;
-import org.openide.filesystems.FileSystem.Status;
 import org.openide.modules.PatchFor;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -248,7 +249,7 @@ public abstract class FileSystemCompat {
         try {
             Field f = FileSystem.class.getDeclaredField("SFS_STATUS"); // NOI18N
             f.setAccessible(true);
-            FileSystem.Status del = (FileSystem.Status)f.get(null);
+            StatusDecorator del = (StatusDecorator)f.get(null);
             f.set(null, new SystemStatus(del));
         } catch (NoSuchFieldException ex) {
             Exceptions.printStackTrace(ex);
@@ -264,10 +265,10 @@ public abstract class FileSystemCompat {
     /**
      * Enhancement of the default SFS_Status, loads image through ImageUtilities.
      */
-    private static class SystemStatus implements FileSystem.Status {
-        private final FileSystem.Status delegate;
+    private static class SystemStatus implements FileSystem$Status, StatusDecorator {
+        private final StatusDecorator delegate;
 
-        public SystemStatus(Status delegate) {
+        public SystemStatus(StatusDecorator delegate) {
             this.delegate = delegate;
         }
 
@@ -327,6 +328,73 @@ public abstract class FileSystemCompat {
                 suffix = path.substring(path.lastIndexOf('.'), path.length());
             }
             return withoutSuffix + toInsert + suffix;
+        }
+
+        @Override
+        public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+            return name;
+        }
+    }
+    
+    private FileSystem$Status status;
+    
+    /**
+     * Compatible implementation of FileSystem.getStatus()
+     * 
+     * @return 
+     */
+    public FileSystem$Status getStatus() {
+        if (status == null) {
+            status = new StatusImpl(fs().getDecorator());
+        }
+        return status;
+    }
+    
+    /**
+     * This is a compatible implementation of FileSystem.Status, which bridges
+     * a new FS implementation (Decorator, IconDecorator) to the old Status interface
+     */
+    private static class StatusImpl implements FileSystem$Status, FileSystem$HtmlStatus {
+        private final StatusDecorator decorator;
+        private final Method annotateIconDel;
+        
+        public StatusImpl(StatusDecorator decorator) {
+            this.decorator = decorator;
+            Method m = null;
+            try {
+                m = decorator.getClass().getMethod("annotateIcon", Image.class, Integer.TYPE, Set.class);
+            } catch (NoSuchMethodException ex) {
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            this.annotateIconDel = m;
+        }
+        
+        @Override
+        public String annotateName(String name, Set<? extends FileObject> files) {
+            return decorator.annotateName(name, files);
+        }
+
+        @Override
+        public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
+            if (annotateIconDel == null) {
+                return icon;
+            }
+            try {
+                return (Image)annotateIconDel.invoke(decorator, icon, iconType, files);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return icon;
+        }
+
+        @Override
+        public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+            return decorator.annotateNameHtml(name, files);
         }
     }
 }

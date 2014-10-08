@@ -957,6 +957,7 @@ public final class NbModuleProject implements Project {
             //"Templates/GUIForms/JPanel.java", // NOI18N
             "Templates/JUnit/SimpleJUnitTest.java", // NOI18N
             "Templates/" + UIUtil.TEMPLATE_FOLDER + "/" + UIUtil.TEMPLATE_ACTION_ID,
+            "Templates/" + UIUtil.TEMPLATE_FOLDER + "/newHTML",
             "Templates/" + UIUtil.TEMPLATE_FOLDER + "/" + UIUtil.TEMPLATE_WINDOW_ID,
             //"Templates/Other/properties.properties", // NOI18N
         };

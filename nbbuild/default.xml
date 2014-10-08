@@ -95,6 +95,9 @@ made subject to such option by the copyright holder.
     <taskdef name="parseprojectxml"
          classname="org.netbeans.nbbuild.ParseProjectXml"
          classpath="${nbantext.jar}"/>
+    <taskdef name="processjsannotation"
+         classname="org.netbeans.nbbuild.ProcessJsAnnotationsTask"
+         classpath="${nbantext.jar}"/>
     <taskdef name="jarwithmoduleattributes"
          classname="org.netbeans.nbbuild.JarWithModuleAttributes"
          classpath="${nbantext.jar}"/>

@@ -74,6 +74,7 @@ import org.netbeans.libs.git.GitTag;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.git.utils.JGitUtils;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -124,6 +125,7 @@ public class RepositoryInfo {
     private static final Set<String> logged = Collections.synchronizedSet(new HashSet<String>());
     private NBGitConfig nbConfig;
     private static final String NETBEANS_CONFIG_FILE = "nbconfig"; //NOI18N
+    private PushMode pushMode = PushMode.ASK;
     
     private RepositoryInfo (File root) {
         this.rootRef = new WeakReference<File>(root);
@@ -480,6 +482,25 @@ public class RepositoryInfo {
         } else {
             propertyChangeSupport.firePropertyChange(event);
         }
+    }
+    
+    public static enum PushMode {
+        UPSTREAM,
+        ASK
+    }
+
+    public PushMode getPushMode () {
+        return getPushMode(rootRef.get());
+    }
+
+    private PushMode getPushMode (File root) {
+        if (root == null) {
+            return pushMode;
+        }
+        if (!EventQueue.isDispatchThread()) {
+            pushMode = JGitUtils.getPushMode(root);
+        }
+        return pushMode;
     }
 
     private static class RepositoryRefreshTask implements Runnable {

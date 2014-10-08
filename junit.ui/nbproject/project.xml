@@ -98,7 +98,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>0.135</specification-version>
+                        <specification-version>0.136</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -222,7 +222,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.38</specification-version>
+                        <specification-version>9.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

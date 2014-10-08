@@ -57,6 +57,7 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
 //    private final List<Comment> trailingComments = new ArrayList<Comment>();
     private boolean commentsMapped;
     private final Map<RelativePosition, List<Comment>> commentsMap = new HashMap<RelativePosition, List<Comment>>();
+    private Map<RelativePosition, List<Comment>> origMap = null;
     
     /**
      * True, if comments have been changed after the initial mapping from source.
@@ -144,7 +145,18 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
     public void addComment(RelativePosition positioning, Comment c) {
         addComment(positioning, c, false);
     }
-        
+    
+    /**
+     * First change should be tracked if all comments were initially mapped and no change
+     * was made after that point yet. When first change occurs, the original comment Map
+     * should be cloned and preserved for code generation phase.
+     * 
+     * @return 
+     */
+    private boolean trackFirstChange() {
+        return commentsMapped && !changed;
+    }
+    
     /**
      * Adds a comment to the appropriate position. Newly created comments are always appended at the end.
      * If `mergeExisting' is true, copied comments are inserted according to their textual position among other already added comments. Duplicate
@@ -156,6 +168,10 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
      * @param mergeExisting if true, the comment is sorted in. False will always append the comment.
      */
     public void addComment(RelativePosition positioning, Comment c, boolean mergeExisting) {
+        Map<RelativePosition, List<Comment>> orig = null;
+        if (trackFirstChange()) {
+            orig = getOrigMap();
+        }
         List<Comment> comments;
         if (commentsMap.containsKey(positioning)) {
             comments = commentsMap.get(positioning);
@@ -172,7 +188,7 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
             for (Comment o : comments) {
                 if (o.isNew()) {
                     comments.add(c);
-                    return;
+                    break;
                 } else {
                     int pos = o.pos();
                     if (pos > npos) {
@@ -192,12 +208,25 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
                 comments.add(c);
             }
         }
+        if (orig != null) {
+            origMap = orig;
+        }
         changed = true;
     }
 
     public void addComments(RelativePosition positioning, Iterable<? extends Comment> comments) {
         for (Comment c : comments) {
             addComment(positioning, c, true);
+        }
+    }
+    
+    public List<Comment> getOrigComments(RelativePosition positioning) {
+        if (origMap == null) {
+            // no changes recorded yet
+            return getComments(positioning);
+        } else {
+            List<Comment> c = origMap.get(positioning);
+            return c != null ? c : Collections.<Comment>emptyList();
         }
     }
     
@@ -210,13 +239,7 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
 
     @SuppressWarnings({"MethodWithMultipleLoops"})
     public boolean hasChanges() {
-        if (commentsMap.isEmpty()) return changed;
-        for (List<Comment> commentList : commentsMap.values()) {
-            for (Comment comment : commentList) {
-                if (comment.isNew()) return true;
-            }
-        }
-        return false;
+        return changed;
     }
     
     public Object clone() {
@@ -259,43 +282,77 @@ public final class CommentSetImpl implements Cloneable, CommentSet {
         commentsMap.remove(forPosition);
     }
     
+    private Map<RelativePosition, List<Comment>> getOrigMap() {
+        if (origMap != null) {
+            return origMap;
+        }
+        if (commentsMap.isEmpty()) {
+            return Collections.emptyMap();
+        } else {
+            return new HashMap<>(commentsMap);
+        }
+    }
+    
     class CL<T> extends ArrayList<T> {
         @Override
         public T remove(int index) {
+            if (trackFirstChange()) {
+                origMap = getOrigMap();
+            }
             changed = true;
             return super.remove(index);
         }
 
         @Override
         public boolean retainAll(Collection c) {
+            Map<RelativePosition, List<Comment>> orig = trackFirstChange() ? getOrigMap() : null;
             boolean r = super.retainAll(c);
+            if (orig != null && r) {
+                origMap = orig;
+            }
             changed |= r;
             return r;
         }
 
         @Override
         public boolean removeAll(Collection c) {
+            Map<RelativePosition, List<Comment>> orig = trackFirstChange() ? getOrigMap() : null;
             boolean r = super.removeAll(c);
+            if (orig != null && r) {
+                origMap = orig;
+            }
             changed |= r;
             return r;
         }
 
         @Override
         protected void removeRange(int fromIndex, int toIndex) {
+            boolean xch = trackFirstChange();
             changed |= (toIndex > fromIndex);
+            if (xch && changed) {
+                origMap = getOrigMap();
+            }
             super.removeRange(fromIndex, toIndex);
         }
 
         @Override
         public boolean remove(Object o) {
+            Map<RelativePosition, List<Comment>> orig = trackFirstChange() ? getOrigMap() : null;
             boolean r = super.remove(o);
+            if (orig != null && r) {
+                origMap = orig;
+            }
             changed |= r;
             return r;
         }
 
         @Override
         public T set(int index, T element) {
+            boolean xch = trackFirstChange();
             changed |= element != get(index);
+            if (xch && changed) {
+                origMap = getOrigMap();
+            }
             return super.set(index, element);
         }
     }

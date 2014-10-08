@@ -83,7 +83,7 @@ public class JsfHintsUtils {
     }
 
     private static JsfHintsContext createJsfHintsContext(HintContext context) {
-        return new JsfHintsContext(context.getInfo().getFileObject(), context.getInfo());
+        return new JsfHintsContext(context.getInfo().getFileObject());
     }
 
     public static ErrorDescription createProblem(Tree tree, CompilationInfo cinfo, String description, Severity severity, List<Fix> fixes) {

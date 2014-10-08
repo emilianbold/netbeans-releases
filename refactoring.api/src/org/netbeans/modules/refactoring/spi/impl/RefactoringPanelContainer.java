@@ -244,6 +244,12 @@ public class RefactoringPanelContainer extends TopComponent {
             ((RefactoringPanel) comp).close();
         }
     }
+
+    @Override
+    protected void componentActivated() {
+        super.componentActivated();
+        requestFocusInWindow();
+    }
     
     @Override
     protected String preferredID() {

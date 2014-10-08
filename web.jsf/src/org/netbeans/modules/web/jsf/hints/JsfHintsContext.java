@@ -55,13 +55,11 @@ import org.openide.filesystems.FileObject;
 public final class JsfHintsContext {
 
     private final FileObject fileObject;
-    private final CompilationInfo compilationInfo;
     private final Project project;
     private final JSFVersion jsfVersion;
 
-    JsfHintsContext(FileObject fileObject, CompilationInfo compilationInfo) {
+    JsfHintsContext(FileObject fileObject) {
         this.fileObject = fileObject;
-        this.compilationInfo = compilationInfo;
         this.project = FileOwnerQuery.getOwner(fileObject);
         WebModule webModule = project != null ? WebModule.getWebModule(project.getProjectDirectory()) : null;
         this.jsfVersion = webModule != null ? JSFVersion.forWebModule(webModule) : null;
@@ -73,10 +71,6 @@ public final class JsfHintsContext {
 
     public Project getProject() {
         return project;
-    }
-
-    public CompilationInfo getCompilationInfo() {
-        return compilationInfo;
     }
 
     public JSFVersion getJsfVersion() {

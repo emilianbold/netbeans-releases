@@ -202,17 +202,19 @@ public class ArchiveURLMapper extends URLMapper {
             final File root = jfs.getJarFile();
             URI nestedRootURI = null;
             FileObject rootFo = null;
-            if (copiedJARs.values().contains(root)) {
-                // nested jar
-                for (Map.Entry<URI, File> entry : copiedJARs.entrySet()) {
-                    if (entry.getValue().equals(root)) {
-                        nestedRootURI = entry.getKey();
-                        rootFo = URLMapper.findFileObject(nestedRootURI.toURL());
+            synchronized (copiedJARs) {
+                if (copiedJARs.values().contains(root)) {
+                    // nested jar
+                    for (Map.Entry<URI, File> entry : copiedJARs.entrySet()) {
+                        if (entry.getValue().equals(root)) {
+                            nestedRootURI = entry.getKey();
+                            rootFo = URLMapper.findFileObject(nestedRootURI.toURL());
+                        }
                     }
+                } else {
+                    // regular jar
+                    rootFo = FileUtil.toFileObject(root);
                 }
-            } else {
-                // regular jar
-                rootFo = FileUtil.toFileObject(root);
             }
             final URI nestedRootURIFinal = nestedRootURI;
             if (rootFo != null) {

@@ -385,7 +385,11 @@ public final class Debugger {
             if (resp.getException() != null) {
                 // transport is broken
                 String message;
-                Object error = resp.getResponse().get("error");
+                JSONObject response = resp.getResponse();
+                Object error = null;
+                if (response != null) {
+                    error = response.get("error");
+                }
                 if (error instanceof String) {
                     message = parseError((String) error);
                 } else {

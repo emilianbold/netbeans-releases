@@ -5,7 +5,7 @@ ko.observableArray("Tom").|
 METHOD     destroy(valueOrPredicate): und  [PUBLIC]   <font color=#999999>Knockout</font>
 METHOD     destroyAll(arrayOfValues): Arr  [PUBLIC]   <font color=#999999>Knockout</font>
 METHOD     extend(param)                   [PUBLIC]   <font color=#999999>Knockout</font>
-METHOD     indexOf(item): Number           [PUBLIC]   <font color=#999999>Knockout</font>
+METHOD     indexOf(item)                   [PUBLIC]   <font color=#999999>Knockout</font>
 METHOD     peek()                          [PUBLIC]   <font color=#999999>Knockout</font>
 METHOD     pop()                           [PUBLIC]   <font color=#999999>Knockout</font>
 METHOD     push()                          [PUBLIC]   <font color=#999999>Knockout</font>

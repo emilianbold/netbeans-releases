@@ -47,18 +47,16 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.beans.PropertyChangeListener;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.team.server.ui.spi.MessagingHandle;
+import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.commons.treelist.AsynchronousNode;
-import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,7 +72,7 @@ public class ProjectLinksPanel extends JPanel {
     private final List<JLabel> labels = new ArrayList<JLabel>(5);
     private final List<LinkButton> buttons = new ArrayList<LinkButton>(3);
 
-    public ProjectLinksPanel( ProjectHandle<ODCSProject> project, DashboardProviderImpl dashboardProvider ) {
+    public ProjectLinksPanel( final ProjectHandle<ODCSProject> project, DashboardProviderImpl dashboardProvider ) {
         setLayout(new GridBagLayout());
         setOpaque(false);
 
@@ -82,7 +80,18 @@ public class ProjectLinksPanel extends JPanel {
         buttons.clear();
         LinkButton btn = new LinkButton(NbBundle.getMessage(ProjectLinksPanel.class, "LBL_ProjectDashboard"), dashboardProvider.getProjectAccessor().getDetailsAction(project)); //NOI18N
         buttons.add( btn );
-        add( btn, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+        add( btn, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 4), 0,0));
+        
+        btn = new LinkButton(NbBundle.getMessage(ProjectLinksPanel.class, "LBL_OpenProjectWeb"), new AbstractAction() { // NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Utils.openBrowser(project.getTeamProject().getWebUrl());
+            }
+        }); 
+        
+        buttons.add( btn );
+        add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 6, 0, 0), 0,0));
+        
         add( new JLabel(), new GridBagConstraints(8,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
     }
 

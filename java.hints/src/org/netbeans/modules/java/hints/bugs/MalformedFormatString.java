@@ -42,23 +42,12 @@
 package org.netbeans.modules.java.hints.bugs;
 
 import com.sun.source.util.TreePath;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.DuplicateFormatFlagsException;
-import java.util.EnumSet;
-import java.util.FormatFlagsConversionMismatchException;
-import java.util.Formatter;
-import java.util.HashMap;
-import java.util.IllegalFormatException;
-import java.util.IllegalFormatPrecisionException;
-import java.util.IllegalFormatWidthException;
-import java.util.List;
-import java.util.Map;
-import java.util.MissingFormatArgumentException;
-import java.util.MissingFormatWidthException;
-import java.util.UnknownFormatConversionException;
-import java.util.UnknownFormatFlagsException;
+import java.text.ChoiceFormat;
+import java.text.DateFormat;
+import java.text.Format;
+import java.text.MessageFormat;
+import java.text.NumberFormat;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
@@ -69,6 +58,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.java.hints.ArithmeticUtilities;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
@@ -145,23 +135,51 @@ public class MalformedFormatString {
     };
 
     @TriggerPatterns({
-        @TriggerPattern(value="$s.format($f, $vars1$)", constraints = {
+        @TriggerPattern(value="$s.printf($f, $vars1$)", constraints = {
+            @ConstraintVariableType(type = "java.lang.String", variable = "$f"),
             @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s")
         }),
         @TriggerPattern(value="$s.format($f, $vars1$)", constraints = {
+            @ConstraintVariableType(type = "java.lang.String", variable = "$f"),
             @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s")
         }),
         @TriggerPattern(value="$s.printf($f, $vars1$)", constraints = {
+            @ConstraintVariableType(type = "java.lang.String", variable = "$f"),
             @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s")
         }),
         @TriggerPattern(value="$s.format($f, $vars1$)", constraints = {
+            @ConstraintVariableType(type = "java.lang.String", variable = "$f"),
             @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
         }),
-        @TriggerPattern(value="java.text.MessageFormat.format($f, $vars1$)"),
-        @TriggerPattern(value="$s.format($f, $vars1$)", constraints = {
-            @ConstraintVariableType(type = "java.text.MessageFormat", variable = "$s")
+        @TriggerPattern(value="java.lang.String.format($f, $vars1$)", constraints = {
+            @ConstraintVariableType(type = "java.lang.String", variable = "$f")
         }),
-        @TriggerPattern(value="java.lang.String.format($f, $vars1$)")
+        
+        // locale variants
+        @TriggerPattern(value="$s.printf($l, $f, $vars1$)", constraints = {
+            @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+            @ConstraintVariableType(type = "java.lang.String", variable = "$f"),
+            @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s")
+        }),
+        @TriggerPattern(value="$s.format($l, $f, $vars1$)", constraints = {
+            @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+            @ConstraintVariableType(type = "java.lang.String", variable = "$f"),
+            @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s")
+        }),
+        @TriggerPattern(value="$s.printf($l, $f, $vars1$)", constraints = {
+            @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+            @ConstraintVariableType(type = "java.lang.String", variable = "$f"),
+            @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s")
+        }),
+        @TriggerPattern(value="$s.format($l, $f, $vars1$)", constraints = {
+            @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+            @ConstraintVariableType(type = "java.lang.String", variable = "$f"),
+            @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
+        }),
+        @TriggerPattern(value="java.lang.String.format($l, $f, $vars1$)", constraints = {
+            @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+            @ConstraintVariableType(type = "java.lang.String", variable = "$f")
+        }),
     })
     public static List<ErrorDescription> run(HintContext ctx) {
         TreePath format = ctx.getVariables().get("$f"); // NOI18N
@@ -315,7 +333,137 @@ public class MalformedFormatString {
         }
         return descs;
     }
+    
+    @NbBundle.Messages({
+        "# {0} - the original error from message format",
+        "ERR_MessageFormatStringMalformed=Invalid message format string: {0}",
+        "# {0} - argument index",
+        "ERR_MessageFormatNumber=Argument {0} is not a number",
+        "# {0} - argumentIndex",
+        "ERR_MessageFormatDateTime=Argument {0} is not a date/time",
+        "# {0} - the desired number of arguments",
+        "ERR_MessageFormatTooFewVals=Too few values passed to format, {0} values are needed"
+    })
+    @TriggerPatterns({
+        @TriggerPattern(value="java.text.MessageFormat.format($f, $vars1$)"),
+        @TriggerPattern(value="new java.text.MessageFormat($f).format($vars1$)", constraints = {
+            @ConstraintVariableType(type = "java.text.String", variable = "$f")
+        }),
         
+        @TriggerPattern(value="new java.text.MessageFormat($f, $l).format($vars1$)", constraints = {
+            @ConstraintVariableType(type = "java.util.Locale", variable = "$l"),
+            @ConstraintVariableType(type = "java.text.String", variable = "$f")
+        })
+    })
+    public static List<ErrorDescription> checkMessageFormat(HintContext ctx) {
+        TreePath formatPath = ctx.getVariables().get("$f");
+        if (formatPath == null) {
+            return null;
+        }
+        Object res = ArithmeticUtilities.compute(ctx.getInfo(), formatPath, true, true);
+        if (!(res instanceof String)) {
+            // not a string literal/compile time constant
+            return null;
+        }
+        List<ErrorDescription> output = new ArrayList<>();
+        Collection<? extends TreePath> paths = ctx.getMultiVariables().get("$vars1$");
+        TypeMirror[] valTypes = new TypeMirror[paths.size()];
+        Iterator<? extends TreePath> it = paths.iterator();
+        for (int index = 0; index < paths.size(); index++) {
+            valTypes[index] = ctx.getInfo().getTrees().getTypeMirror(it.next());
+        }
+        TypeMirror arrType = null;
+        if (valTypes.length == 1) {
+            if (valTypes[0].getKind() == TypeKind.ARRAY) {
+                // PENDING: if the array is constructed using new expression, the
+                // actual item types can be passed.
+                arrType = ((ArrayType)valTypes[0]).getComponentType();
+                valTypes = null;
+            }
+        }
+        int maxIndex = checkFormatString(formatPath, (String)res, ctx, output, -1, valTypes, arrType);
+        if (valTypes != null && valTypes.length < maxIndex - 1) {
+            output.add(createError(ctx, formatPath, -1, 0, Bundle.ERR_MessageFormatTooFewVals(maxIndex)));
+        }
+        return output.isEmpty() ? null : output;
+    }
+    
+    private static ErrorDescription createError(HintContext ctx, TreePath formatPath, int offset, int len, String msg) {
+        if (offset != -1) {
+            return ErrorDescriptionFactory.forSpan(ctx, offset, offset + len, msg);
+        } else {
+            return ErrorDescriptionFactory.forTree(ctx, formatPath, msg);
+        }
+    }
+    
+    private static int checkFormatString(TreePath formatPath, String format, HintContext ctx, List<ErrorDescription> desc, int offset,
+            TypeMirror[] valTypes, TypeMirror arrType) {
+        MessageFormat fmt;
+        int maxIndex = -1;
+        try {
+            // use default locale
+            fmt = new MessageFormat(format);
+        } catch (RuntimeException ex) {
+            desc.add(
+                createError(ctx, formatPath, offset, format.length(), Bundle.ERR_MessageFormatStringMalformed(ex.getLocalizedMessage())
+            ));
+            return maxIndex;
+        }
+        
+        // now we can go through parameter specifiers and check the passed types
+        Format[] argFormats = fmt.getFormatsByArgumentIndex();
+        maxIndex = argFormats.length;
+        for (int index = 0; index < argFormats.length && (valTypes == null || index < valTypes.length); index++) {
+            Format pf = argFormats[index];
+            TypeMirror at = valTypes == null ? arrType : valTypes[index];
+            if (!Utilities.isValidType(at)) {
+                continue;
+            }
+            if (pf == null) {
+                continue;
+            }
+            if (pf instanceof NumberFormat) {
+                TypeKind k = at.getKind();
+                if (k == TypeKind.DECLARED) {
+                    k = unboxBoxed(at);
+                    if (k == null) {
+                        k = TypeKind.DECLARED;
+                    }
+                }
+                switch (at.getKind()) {
+                    case BYTE:
+                    case CHAR:
+                    case DOUBLE:
+                    case FLOAT:
+                    case INT:
+                    case LONG:
+                    case SHORT:
+                        break;
+                    default:
+                        desc.add(
+                            createError(ctx, formatPath, offset, format.length(), Bundle.ERR_MessageFormatNumber(index))
+                        );
+                }
+            } else if (pf instanceof DateFormat) {
+                if (at.getKind() != TypeKind.DECLARED) {
+                    desc.add(
+                        createError(ctx, formatPath, offset, format.length(), Bundle.ERR_MessageFormatDateTime(index))
+                    );
+                }
+            } else if (pf instanceof ChoiceFormat) {
+                ChoiceFormat chf = (ChoiceFormat)pf;
+                String[] subformats = (String[])chf.getFormats();
+                int sOffset = 0;
+                for (String s : subformats) {
+                    sOffset = format.indexOf(s, sOffset);
+                    maxIndex = Math.max(maxIndex, checkFormatString(null, s, ctx, desc, sOffset, valTypes, arrType));
+                    sOffset += s.length();
+                }
+            }
+        }
+        return maxIndex;
+    }
+    
     private static final Map<Character, EnumSet<TypeKind>> ALLOWED_TYPES = new HashMap<>();
     
     /**

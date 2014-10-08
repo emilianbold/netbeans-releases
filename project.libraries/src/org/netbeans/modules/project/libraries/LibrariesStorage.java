@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -139,6 +140,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         try {
             return FileUtil.createFolder(FileUtil.getConfigRoot(), LIBRARIES_REPOSITORY);
         } catch (IOException e) {
+            Exceptions.printStackTrace(e);
             return null;
         }
     }
@@ -213,6 +215,8 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         }
     }
 
+    @NonNull
+    @SuppressWarnings("NestedAssignment")
     private Libs initStorage (final boolean reset) {
         synchronized (this) {
             if (!initialized) {
@@ -232,8 +236,9 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
             }
         }
         boolean success = false;
-        final Map<String,LibraryImplementation> libraries = new HashMap<String, LibraryImplementation>();
-        final Map<String,LibraryImplementation> librariesByFileNames = new HashMap<String, LibraryImplementation>();
+        final Map<String,LibraryImplementation> libraries = new HashMap<>();
+        final Map<String,LibraryImplementation> librariesByFileNames = new HashMap<>();
+        Libs res;
         try {
             this.loadFromStorage(libraries, librariesByFileNames);
             success = true;
@@ -243,11 +248,13 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                     inchange = false;
                 }
                 if (success) {
-                    this.libs = new Libs(libraries,librariesByFileNames);
+                    res = this.libs = new Libs(libraries,librariesByFileNames);
+                } else {
+                    res = new Libs(Collections.<String, LibraryImplementation>emptyMap(),Collections.<String, LibraryImplementation>emptyMap());
                 }
-                return libs;
             }
         }
+        return res;
     }
 
     private static LibraryImplementation readLibrary (FileObject descriptorFile) throws SAXException, ParserConfigurationException, IOException{

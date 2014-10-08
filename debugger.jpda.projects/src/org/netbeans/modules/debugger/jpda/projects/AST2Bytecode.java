@@ -58,6 +58,8 @@ import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
@@ -150,6 +152,10 @@ class AST2Bytecode {
                 if (from < to) { // We have the method call
                     TreePath nodePath = trees.getPath(cu, node);
                     if (nodePath != null && !ci.getTreeUtilities().isSynthetic(nodePath)) {
+                        // Find if 'node' is a native method:
+                        Element methodElement = ci.getTrees().getElement(nodePath);
+                        boolean isNativeMethod = (methodElement != null) && methodElement.getModifiers().contains(Modifier.NATIVE);
+                        //System.err.println("Method "+methodElement+" is native = "+isNativeMethod);
                         String methodNameInBytecode = null;
                         String methodDescriptorInBytecode = null;
                         if (constantPool != null) {
@@ -358,7 +364,8 @@ class AST2Bytecode {
                                         methodEndPosition,
                                         methodName,
                                         methodClassType,
-                                        from
+                                        from,
+                                        isNativeMethod
                                 );
                         try {
                             java.lang.reflect.Field methodDescriptorField = EditorContext.Operation.class.getDeclaredField("methodDescriptor");
@@ -606,7 +613,7 @@ class AST2Bytecode {
                     EditorContext.Position methodStartPosition,
                     EditorContext.Position methodEndPosition,
                     String methodName, String methodClassType,
-                    int bytecodeIndex);
+                    int bytecodeIndex, boolean isNative);
             
             EditorContext.Position createPosition(int offset, int line, int column);
             

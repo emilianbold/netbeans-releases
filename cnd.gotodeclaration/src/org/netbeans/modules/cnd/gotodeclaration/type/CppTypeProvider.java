@@ -120,9 +120,9 @@ public class CppTypeProvider implements TypeProvider {
             try {
                 task.get(200, TimeUnit.MILLISECONDS);
             } catch (TimeoutException ex) {
-                if (task.hasResult()) {
+                //if (task.hasResult()) {
                     break;
-                }
+                //}
             } catch (InterruptedException ex) {
                 task.cancel();
                 // clean flag

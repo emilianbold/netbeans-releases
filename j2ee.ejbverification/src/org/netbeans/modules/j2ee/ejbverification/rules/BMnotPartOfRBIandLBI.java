@@ -105,9 +105,9 @@ public final class BMnotPartOfRBIandLBI {
             final Map<String, ExecutableElement> remoteMethods = new HashMap<>();
 
             // local methods
-            localMethods.addAll(getMethodsFromClasses(ctx.getComplilationInfo(), ctx.getEjbData().getBusinessLocal()));
+            localMethods.addAll(getMethodsFromClasses(hintContext.getInfo(), ctx.getEjbData().getBusinessLocal()));
             // remote methods
-            for (ExecutableElement method : getMethodsFromClasses(ctx.getComplilationInfo(), ctx.getEjbData().getBusinessRemote())) {
+            for (ExecutableElement method : getMethodsFromClasses(hintContext.getInfo(), ctx.getEjbData().getBusinessRemote())) {
                 remoteMethods.put(method.getSimpleName().toString(), method);
             }
 
@@ -116,9 +116,9 @@ public final class BMnotPartOfRBIandLBI {
                         localMethod.getSimpleName().toString());
 
                 if (sameNameRemoteMethod != null) {
-                    if (JavaUtils.isMethodSignatureSame(ctx.getComplilationInfo(),
+                    if (JavaUtils.isMethodSignatureSame(hintContext.getInfo(),
                             localMethod, sameNameRemoteMethod)) {
-                        ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
+                        ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), hintContext.getInfo(),
                                 Bundle.BMnotPartOfRBIandLBI_err(), Severity.WARNING);
 
                         return Collections.singletonList(err);

@@ -78,6 +78,8 @@ public class KOUtils {
     public static final String KO_DATA_BIND_MIMETYPE = "text/ko-data-bind"; //NOI18N
     
     public static final String KO_DATA_BIND_ATTR_NAME = "data-bind"; //NOI18N
+
+    public static final String KO_PARAMS_ATTR_NAME = "params"; //NOI18N
     
     public static final ImageIcon KO_ICON =
                 ImageUtilities.loadImageIcon("org/netbeans/modules/html/knockout/knockout-icon.png", false); // NOI18N

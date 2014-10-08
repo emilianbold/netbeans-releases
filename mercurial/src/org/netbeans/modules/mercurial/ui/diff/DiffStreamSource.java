@@ -264,8 +264,12 @@ public class DiffStreamSource extends StreamSource {
                             } else if (remoteFile != null) {
                                 boolean created = false;
                                 try {
-                                    created = encodingHolder.createNewFile();
-                                    Utils.associateEncoding(encodingHolder, newRemoteFile);
+                                    if (encodingHolder.getParentFile().exists()) {
+                                        created = encodingHolder.createNewFile();
+                                        Utils.associateEncoding(encodingHolder, newRemoteFile);
+                                    }
+                                } catch (IOException ex) {
+                                    // not interested
                                 } finally {
                                     if (created) {
                                         encodingHolder.delete();

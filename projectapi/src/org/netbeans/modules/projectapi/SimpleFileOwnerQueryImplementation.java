@@ -51,8 +51,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -77,6 +79,18 @@ import org.openide.util.WeakSet;
 public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImplementation {
     private static final Logger LOG = Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName());
     private static final URI UNOWNED_URI = URI.create("http:unowned");
+    private static final Set<String> forbiddenFolders;
+    static {
+        Set<String> files = new HashSet<String>();
+        try {
+            String forbidden = System.getProperty("project.forbiddenFolders", System.getProperty("versioning.forbiddenFolders", "")); //NOI18N
+            files.addAll(Arrays.asList(forbidden.split("\\;"))); //NOI18N
+            files.remove(""); //NOI18N
+        } catch (Exception e) {
+            LOG.log(Level.INFO, e.getMessage(), e);
+        }
+        forbiddenFolders = files;
+    }
     
     /** Do nothing */
     public SimpleFileOwnerQueryImplementation() {}
@@ -124,22 +138,24 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
             }
             boolean folder = f.isFolder();
             if (folder) {
-                Project p;
-                try {
-                    p = ProjectManager.getDefault().findProject(f);
-                } catch (IOException e) {
-                    // There is a project here, but we cannot load it...
-                    if (warnedAboutBrokenProjects.add(f)) { // #60416
-                        LOG.log(Level.FINE, "Cannot load project.", e); //NOI18N
+                if (!forbiddenFolders.contains(f.getPath())) {
+                    Project p;
+                    try {
+                        p = ProjectManager.getDefault().findProject(f);
+                    } catch (IOException e) {
+                        // There is a project here, but we cannot load it...
+                        if (warnedAboutBrokenProjects.add(f)) { // #60416
+                            LOG.log(Level.FINE, "Cannot load project.", e); //NOI18N
+                        }
+                        return null;
                     }
-                    return null;
-                }
-                if (p != null) {
-                    synchronized (this) {
-                        lastFoundKey = new WeakReference<FileObject>(f);
-                        lastFoundValue = new WeakReference<Project>(p);
+                    if (p != null) {
+                        synchronized (this) {
+                            lastFoundKey = new WeakReference<FileObject>(f);
+                            lastFoundValue = new WeakReference<Project>(p);
+                        }
+                        return p;
                     }
-                    return p;
                 }
             }
             

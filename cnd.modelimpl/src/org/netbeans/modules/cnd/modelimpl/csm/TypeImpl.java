@@ -397,6 +397,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         return instantiationParams != null;
     }
 
+    @Override
+    public boolean hasInstantiationParams() {
+        return instantiationParams != null;
+    }
+
     /** Though it returns the same for now, it's better if its name differs */
     protected boolean isInstantiationOrSpecialization() {
         return instantiationParams != null;
@@ -691,7 +696,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }
 
     public static CharSequence getInstantiationText(CsmType type) {
-        if (!type.getInstantiationParams().isEmpty()) {
+        if (type.hasInstantiationParams()) {
             StringBuilder sb = new StringBuilder();
             sb.append('<');
             boolean first = true;
@@ -881,6 +886,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                             break;
                         }
                     }
+                }
+                // And not instantiation as well (TODO: maybe that should be outside this if block)
+                while (CsmKindUtilities.isInstantiation(result) && CsmKindUtilities.isClassifier(((CsmInstantiation) result).getTemplateDeclaration())) {
+                    result = (CsmClassifier) ((CsmInstantiation) result).getTemplateDeclaration();
                 }
             }
         } finally {

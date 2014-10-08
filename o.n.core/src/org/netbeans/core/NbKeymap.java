@@ -406,7 +406,9 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
         synchronized( action2Id ) {
             action2Id.put(a, id);
             KeyStroke k = id2Stroke.get(id);
-            LOG.log(Level.FINE, "found keystroke {0} for {1} with ID {2}", new Object[] {k, id(a), id});
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "found keystroke {0} for {1} with ID {2}", new Object[] {k, id(a), id});
+            }
             return k;
         }
     }

@@ -95,7 +95,7 @@ public class TomcatManager implements DeploymentManager {
 
     public enum TomcatVersion {TOMCAT_50, TOMCAT_55, TOMCAT_60, TOMCAT_70, TOMCAT_80};
 
-    public enum TomEEVersion {TOMEE_15, TOMEE_16};
+    public enum TomEEVersion {TOMEE_15, TOMEE_16, TOMEE_17};
 
     public enum TomEEType {TOMEE_WEB, TOMEE_JAXRS, TOMEE_PLUS};
 

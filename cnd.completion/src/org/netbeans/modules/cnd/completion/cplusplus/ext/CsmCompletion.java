@@ -726,6 +726,11 @@ abstract public class CsmCompletion {
         }
 
         @Override
+        public boolean hasInstantiationParams() {
+            return false;
+        }
+
+        @Override
         public boolean isInstantiation() {
             return false;
         }
@@ -867,6 +872,11 @@ abstract public class CsmCompletion {
         @Override
         public List<CsmSpecializationParameter> getInstantiationParams() {
             return delegate.getInstantiationParams();
+        }
+
+        @Override
+        public boolean hasInstantiationParams() {
+            return delegate.hasInstantiationParams();
         }
 
         @Override

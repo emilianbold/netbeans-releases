@@ -133,20 +133,34 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
                                             }
                                         }
                                         treeKindCtx = tree.getKind();
-                                        if (treeKindCtx == Tree.Kind.CASE && startOffset < controller.getTrees().getSourcePositions().getEndPosition(controller.getCompilationUnit(), ((CaseTree)tree).getExpression())) {
-                                            treeKindCtx = null;
-                                        } else if (treeKindCtx == Tree.Kind.CLASS) {
-                                            SourcePositions sp = controller.getTrees().getSourcePositions();
-                                            int startPos = (int)sp.getEndPosition(controller.getCompilationUnit(), ((ClassTree)tree).getModifiers());
-                                            if (startPos <= 0) {
+                                        switch (treeKindCtx) {
+                                            case CASE:
+                                                if (startOffset < controller.getTrees().getSourcePositions().getEndPosition(controller.getCompilationUnit(), ((CaseTree)tree).getExpression())) {
+                                                    treeKindCtx = null;
+                                                }
+                                                break;
+                                            case CLASS:
+                                                SourcePositions sp = controller.getTrees().getSourcePositions();
+                                                int startPos = (int)sp.getEndPosition(controller.getCompilationUnit(), ((ClassTree)tree).getModifiers());
+                                                if (startPos <= 0) {
+                                                    startPos = (int)sp.getStartPosition(controller.getCompilationUnit(), tree);
+                                                }
+                                                String headerText = controller.getText().substring(startPos, startOffset);
+                                                int idx = headerText.indexOf('{'); //NOI18N
+                                                if (idx < 0) {
+                                                    treeKindCtx = null;
+                                                    stringCtx = CLASS_HEADER;
+                                                }
+                                                break;
+                                            case FOR_LOOP:
+                                            case ENHANCED_FOR_LOOP:
+                                            case WHILE_LOOP:
+                                                sp = controller.getTrees().getSourcePositions();
                                                 startPos = (int)sp.getStartPosition(controller.getCompilationUnit(), tree);
-                                            }
-                                            String headerText = controller.getText().substring(startPos, startOffset);
-                                            int idx = headerText.indexOf('{'); //NOI18N
-                                            if (idx < 0) {
-                                                treeKindCtx = null;
-                                                stringCtx = CLASS_HEADER;
-                                            }
+                                                String text = controller.getText().substring(startPos, startOffset);
+                                                if (!text.endsWith(")")) {
+                                                    treeKindCtx = null;
+                                                }
                                         }
                                     }
                                 }

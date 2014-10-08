@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.makeproject.actions.DefaultProjectOperationsImplementation;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
@@ -268,7 +269,7 @@ public final class MakeActionProvider implements ActionProvider {
                 // it's better to set deleted flag right here, otherwise we can start saving the project
                 // #196501 - "Error synchronizing project to <login>@<host> null"
                 project.setDeleting(true);  // can't set setDeleted here since user can answer "No"
-                DefaultProjectOperations.performDefaultDeleteOperation(project);
+                DefaultProjectOperationsImplementation.deleteProject(project);
             } finally {
                 project.setDeleting(false);                 
             }
@@ -277,19 +278,19 @@ public final class MakeActionProvider implements ActionProvider {
 
         if (COMMAND_COPY.equals(command)) {
             saveIfModified();
-            DefaultProjectOperations.performDefaultCopyOperation(project);
+            DefaultProjectOperationsImplementation.copyProject(project);
             return;
         }
 
         if (COMMAND_MOVE.equals(command)) {
             saveIfModified();
-            DefaultProjectOperations.performDefaultMoveOperation(project);
+            DefaultProjectOperationsImplementation.moveProject(project);
             return;
         }
 
         if (COMMAND_RENAME.equals(command)) {
             saveIfModified();
-            DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            DefaultProjectOperationsImplementation.renameProject(project, null);
             return;
         }
 
@@ -1422,10 +1423,13 @@ public final class MakeActionProvider implements ActionProvider {
             }
             return enabled;
         } else if (command.equals(COMMAND_DELETE)
-                || command.equals(COMMAND_COPY)
-                || command.equals(COMMAND_MOVE)
                 || command.equals(COMMAND_RENAME)) {
             return true;
+        } else if (command.equals(COMMAND_COPY)
+                || command.equals(COMMAND_MOVE)) {
+            // disable for full remote projects
+            File file = FileUtil.toFile(project.getProjectDirectory());
+            return file != null;
         } else if (command.equals(COMMAND_RUN_SINGLE)) {
             Node node = context.lookup(Node.class);
             return (node != null) && (node.getLookup().lookup(ShellExecSupport.class) != null);

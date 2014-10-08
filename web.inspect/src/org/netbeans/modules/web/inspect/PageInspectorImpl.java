@@ -73,6 +73,7 @@ import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.ui.DomTCController;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
+import org.netbeans.modules.web.inspect.webkit.knockout.KnockoutTCController;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -127,6 +128,7 @@ public class PageInspectorImpl extends PageInspector {
     @Override
     public void inspectPage(Lookup pageContext) {
         DomTCController.getDefault(); // Making sure that DOMTCController is initialized
+        KnockoutTCController.getDefault(); // Making sure that KnockoutTCController is initialized
         synchronized (LOCK) {
             PageModel oldModel = getPage();
             if (oldModel != null) {

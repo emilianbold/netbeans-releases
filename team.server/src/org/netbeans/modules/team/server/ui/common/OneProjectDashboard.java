@@ -122,11 +122,22 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     private final Map<String, List<TreeListNode>> projectChildren = new HashMap<>(3);
     private final ArrayList<ProjectHandle<P>> memberProjects = new ArrayList<>(50);
     private final ArrayList<ProjectHandle<P>> otherProjects = new ArrayList<>(50);
+    
+    private final ProjectHistoryList projectHistory = ProjectHistoryList.create();
     private WeakReference<SelectionList> selectionListRef;
 
     private ErrorNode errorNode;
     
     private static final Map<TeamServer, OneProjectDashboard> dashboardMap = new WeakHashMap<>(3);
+    
+    private static final String PREF_SYNC_MODE = "team.dashboard.sync.mode"; // NOI18N
+    private static final String PREF_PROJECT_HISTORY = "team.dashboard.project.history"; // NOI18N
+    
+    public enum SyncMode {
+        PREF_ALL,
+        PREF_SELECTED,
+        PREF_ALL_SELECTED
+    }
     
     public static <P> OneProjectDashboard create(TeamServer server, DashboardProvider<P> dashboardProvider) {
         OneProjectDashboard<P> d = new OneProjectDashboard<>(server, dashboardProvider);
@@ -140,6 +151,61 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         synchronized(dashboardMap) {
             return dashboardMap.get(server);
         }
+    }
+    
+    public static void setSyncMode(TeamServer server, SyncMode mode) {
+        String url = server.getUrl().toString();
+        String oldValue = getPrefs().get(PREF_SYNC_MODE, null);
+        StringBuilder sb = new StringBuilder();
+        SyncMode oldMode = SyncMode.PREF_ALL_SELECTED;
+        if( oldValue == null ) {
+            sb.append(url).append("<=>").append(mode.name());
+        } else {
+            String[] modeString = oldValue.split(";");
+            boolean done = false;
+            for (int i = 0; i < modeString.length; i++) {
+                String srv = modeString[i];
+                String[] urlAndMode = srv.split("<=>");
+                if(urlAndMode[0].equals(url)) {
+                    sb.append(url).append("<=>").append(mode.name());
+                    oldMode = SyncMode.valueOf(urlAndMode[1]);
+                    done = true;
+                } else {
+                    sb.append(srv);
+                }
+                if(i < modeString.length -1) {
+                    sb.append(";");
+                }
+            }
+            if(!done) {
+                sb.append(";").append(url).append("<=>").append(mode.name());
+            } 
+        }
+        getPrefs().put(PREF_SYNC_MODE, sb.toString());
+        if(oldMode != mode) {
+            OneProjectDashboard d = dashboardMap.get(server);
+            if( d != null ) {
+                d.fireOpenedProjects();
+            }
+        }
+    }
+    
+    public static SyncMode getSyncMode(TeamServer server) {
+        String url = server.getUrl().toString();
+        String value = getPrefs().get(PREF_SYNC_MODE, null);
+        SyncMode mode = SyncMode.PREF_ALL_SELECTED;
+        if(value != null) {
+            String[] modeStrings = value.split(";");
+            for (int i = 0; i < modeStrings.length; i++) {
+                String srv = modeStrings[i];
+                String[] urlAndMode = srv.split("<=>");
+                if(urlAndMode[0].equals(url)) {
+                    mode = SyncMode.valueOf(urlAndMode[1]);
+                    break;
+                } 
+            }
+        }
+        return mode;
     }
     
     private OneProjectDashboard(TeamServer server, DashboardProvider<P> dashboardProvider) {
@@ -208,13 +274,53 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     @Override
     public ProjectHandle<P>[] getProjects(boolean onlyOpened) {
         TreeSet<ProjectHandle> s = new TreeSet();
+        SyncMode mode = getSyncMode(server);
         synchronized( LOCK ) {
-            s.addAll(otherProjects);
-            s.addAll(memberProjects);
+            switch( mode ) {
+                case PREF_ALL:
+                    s.addAll(otherProjects);
+                    s.addAll(memberProjects);
+                    break;
+                case PREF_ALL_SELECTED:
+                    for (String id : projectHistory) {
+                        ProjectHandle<P> ph = projectById(id);
+                        if(ph != null) {
+                            s.add(ph);
+                        }
+                    }
+                    break;
+                case PREF_SELECTED:
+                    String id = getSelectedProjectId();
+                    if( id != null ) {
+                        ProjectHandle<P> ph = projectById(id);
+                        if(ph != null) {
+                            s.add(ph);
+                        }                 
+                    }
+                    break;
+            }
         }
+        
         return s.toArray(new ProjectHandle[s.size()]);
     }
 
+    private ProjectHandle<P> projectById(String id) {
+        ProjectHandle<P> ph = getProject(id, otherProjects);
+        if (ph != null) {
+            return ph;
+        }
+        return getProject(id, memberProjects);
+    }
+
+    private ProjectHandle<P> getProject(String id, ArrayList<ProjectHandle<P>> projects) {
+        for (ProjectHandle ph : projects) {
+            if(id.equals(ph.getId())) {
+                return ph;
+            }
+        }
+        return null;
+    }
+    
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.addPropertyChangeListener(listener);
@@ -262,13 +368,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         };
 
         server.addPropertyChangeListener(WeakListeners.propertyChange(serverListener, server));
-        final PasswordAuthentication newValue = server!=null?server.getPasswordAuthentication():null;
-        if (newValue != null) {
-            handleLogin(new LoginHandleImpl(newValue.getUserName()));
-        } else {
-            PasswordAuthentication pa = server.getPasswordAuthentication();
-            this.login = pa == null ? null : new LoginHandleImpl(pa.getUserName());
-        }
     }
     
     @Override
@@ -653,7 +752,10 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 if( !memberProjects.contains(p) ) {
                     memberProjects.add(p);
                     toRemove.remove(p);
-                }
+                } 
+                if( otherProjects.contains(p) ) {
+                    otherProjects.remove(p);
+                } 
             }
             Collections.sort(memberProjects);
             memberProjectsLoaded = true;
@@ -698,6 +800,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 storeSelectedProject(null, null);
             }
         }
+        fireOpenedProjects();
     }
 
     private void storeSelectedProject(TeamServer server, ProjectHandle<P> project) {
@@ -708,6 +811,9 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         } else {
             prefs.put(DashboardSupport.PREF_SELECTED_SERVER, server.getUrl().toString());
             prefs.put(DashboardSupport.PREF_SELECTED_PROJECT, project.getId());            
+        }
+        if(project != null) {
+            projectHistory.add(project.getId());
         }
     }
 
@@ -721,7 +827,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         return "".equals(id) ? null : id;
     }
     
-    private Preferences getPrefs() {
+    private static Preferences getPrefs() {
         return NbPreferences.forModule(DefaultDashboard.class).node(DashboardSupport.PREF_ALL_PROJECTS); //NOI18N
     }
     
@@ -933,6 +1039,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 return;
             }
             if(res[0] != null) {
+                otherProjects.add(res[0]);
                 switchProject(res[0], getProjectNode(res[0]), false);
             } 
         }
@@ -1375,4 +1482,68 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         }
     }    
     
+    private static class ProjectHistoryList extends ArrayList<String> {
+
+        private final static int MAX_HISTORY_SIZE = Integer.getInteger("team.dashboard.recentProjectsCount", 10); // NOI18N
+
+        static ProjectHistoryList create() {
+            String histString = getPrefs().get(PREF_PROJECT_HISTORY, null); 
+            LinkedList l = new LinkedList();
+            if(histString != null) {
+                String[] strs = histString.split("<=>");
+                for (String str : strs) {
+                    l.add(str);
+                }       
+            }     
+            return new ProjectHistoryList(l);
+        }
+        
+        private ProjectHistoryList(Collection c) {
+            super(c);
+        }
+        
+        @Override
+        public boolean add(String projectId) {
+            synchronized(this) {
+                while(contains(projectId)) {
+                    remove(projectId);
+                }
+                while(size() >= MAX_HISTORY_SIZE) {
+                    remove(0);
+                }
+                boolean ret = super.add(projectId); 
+                if(ret) {
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < size() - 1; i++) {
+                        sb.append(get(i));
+                        sb.append("<=>");
+                    }
+                    sb.append(projectId);
+                    getPrefs().put(PREF_PROJECT_HISTORY, sb.toString());
+                }
+                return ret;  
+            }
+        }
+        
+        @Override
+        public String set(int index, String element) {
+            throw new UnsupportedOperationException();
+        }
+        
+        @Override
+        public boolean addAll(int index, Collection<? extends String> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends String> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void add(int index, String element) {
+            throw new UnsupportedOperationException();
+        }
+        
+    }
 }

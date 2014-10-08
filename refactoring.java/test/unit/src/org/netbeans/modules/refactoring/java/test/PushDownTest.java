@@ -129,6 +129,36 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pushdown/C.java", "package pushdown; public class C extends B { public int a; }"),
                 new File("pushdown/B.java", "package pushdown; public class B {}"));
     }
+    
+    public void testPushDownSuperField() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B { private void foo() { super.a = 3; } }"),
+                new File("pushdown/B.java", "package pushdown; public class B { public int a; }"));
+        performPushDown(src.getFileObject("pushdown/B.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B { public int a;  private void foo() { a = 3; } }"),
+                new File("pushdown/B.java", "package pushdown; public class B {}"));
+    }
+    
+    public void testPushDownSuperShadowField() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B { private void foo() { int a = 4; super.a = 3; } }"),
+                new File("pushdown/B.java", "package pushdown; public class B { public int a; }"));
+        performPushDown(src.getFileObject("pushdown/B.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B { public int a;  private void foo() { int a = 4; this.a = 3; } }"),
+                new File("pushdown/B.java", "package pushdown; public class B {}"));
+    }
+    
+    public void testPushDownSuperInnerShadowField() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B { private void foo() { new Runnable() { @Override public void run() { int a = 5; System.out.println(A.super.a); } }; } }"),
+                new File("pushdown/B.java", "package pushdown; public class B { public int a; }"));
+        performPushDown(src.getFileObject("pushdown/B.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B { public int a;  private void foo() { new Runnable() { @Override public void run() { int a = 5; System.out.println(A.this.a); } }; } }"),
+                new File("pushdown/B.java", "package pushdown; public class B {}"));
+    }
 
     public void testPushDownMethodMakeAbstract() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -166,6 +196,20 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pushdown/B.java", "package pushdown; public class B {}"));
     }
 
+    public void testPushDownInterfacePackage() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pdown/A.java", "package pdown; import pushdown.B; public class A extends B { }"),
+                new File("pdown/C.java", "package pdown; import pushdown.B; public class C extends B { }"),
+                new File("pushdown/B.java", "package pushdown; public class B implements I { public void i() { } }"),
+                new File("pushdown/I.java", "package pushdown; public interface I { public void i(); }"));
+        performPushDown(src.getFileObject("pushdown/B.java"), -1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pdown/A.java", "package pdown; import pushdown.B;import pushdown.I; public class A extends B implements I { }"),
+                new File("pdown/C.java", "package pdown; import pushdown.B;import pushdown.I; public class C extends B implements I { }"),
+                new File("pushdown/B.java", "package pushdown; public class B { public void i() { } }"),
+                new File("pushdown/I.java", "package pushdown; public interface I { public void i(); }"));
+    }
+    
     public void testPushDownInterface() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { }"),
@@ -174,8 +218,8 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pushdown/I.java", "package pushdown; public interface I { public void i(); }"));
         performPushDown(src.getFileObject("pushdown/B.java"), -1, Boolean.FALSE);
         verifyContent(src,
-                new File("pushdown/A.java", "package pushdown; import pushdown.I; public class A extends B implements I { }"),
-                new File("pushdown/C.java", "package pushdown; import pushdown.I; public class C extends B implements I { }"),
+                new File("pushdown/A.java", "package pushdown; public class A extends B implements I { }"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B implements I { }"),
                 new File("pushdown/B.java", "package pushdown; public class B { public void i() { } }"),
                 new File("pushdown/I.java", "package pushdown; public interface I { public void i(); }"));
     }

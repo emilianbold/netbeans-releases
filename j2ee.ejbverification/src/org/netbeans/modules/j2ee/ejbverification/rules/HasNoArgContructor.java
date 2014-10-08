@@ -101,7 +101,7 @@ public final class HasNoArgContructor {
         }
 
         Fix fix = new CreateDefaultConstructor(ctx.getFileObject(), ElementHandle.create(ctx.getClazz()));
-        ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
+        ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), hintContext.getInfo(),
                 Bundle.HasNoArgContructor_err(), fix);
 
         return Collections.singletonList(err);

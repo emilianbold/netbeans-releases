@@ -699,6 +699,15 @@ public class ComputeImports {
         }
         
         public boolean filter(CompilationInfo info, Map<String, List<Element>> rawCandidates, Map<String, List<Element>> candidates) {
+            // this is a hack, but if the kind does not match, we cannot offer the element even as 'not preferred'.
+            // Better enable just for annotation types, otherwise we might stop offering e.g. interfaces in place where a class could be used (?)
+            if (acceptedKinds.contains(ElementKind.ANNOTATION_TYPE) && acceptedKinds.size() == 1) {
+                doFilter(info, rawCandidates);
+            }
+            return doFilter(info,candidates);
+        }
+        
+        private boolean doFilter(CompilationInfo info, Map<String, List<Element>> candidates) {
             List<Element> cands = candidates.get(simpleName);
             
             if (cands == null || cands.isEmpty())

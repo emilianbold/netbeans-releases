@@ -92,7 +92,7 @@ public final class BeanHasDifferentLBIandRBI {
                 if (localInterfaces.contains(remoteInterface)) {
                     ErrorDescription problem = HintsUtils.createProblem(
                             ctx.getClazz(),
-                            ctx.getComplilationInfo(),
+                            hintContext.getInfo(),
                             Bundle.BeanHasDifferentLBIandRBI_err());
                     problems.add(problem);
                 }

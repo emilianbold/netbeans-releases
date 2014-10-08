@@ -69,7 +69,7 @@ public class DefaultHandleFactory implements ProgressEnvironment {
 
     @Override
     public ProgressHandle createHandle(String displayname, Cancellable c, boolean userInit) {
-        return new ProgressHandle(new InternalHandle(displayname, c, userInit)) {};
+        return ProgressApiAccessor.getInstance().create(new InternalHandle(displayname, c, userInit) {});
     }
 
     @Override

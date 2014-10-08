@@ -89,6 +89,8 @@ public enum Directive {
     keyup   (true,  true, true,  false, expression),
     list    (true,  true, true,  false, string),
     model   (true,  true, true,  false, expression),
+    modelOptions
+            (true,  true, false,  false, object),
     mousedown
             (true,  true, true,  false, expression),
     mouseenter
@@ -112,6 +114,10 @@ public enum Directive {
     //TODO add sub directives
     readonly(false, true, false, false, expression),
     repeat  (true,  true, true,  false, repeatExpression),
+    repeatStart
+            (true,  true, false,  false, repeatExpression),
+    repeatEnd
+            (false,  true, false,  false, noValue),
     selected(false, true, false, false, expression),
     show    (true,  true, true,  false, expression),
     src     (true,  true, false, false, template),

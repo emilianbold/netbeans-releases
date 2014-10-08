@@ -321,10 +321,10 @@ public final class ReplaceBar extends JPanel implements PropertyChangeListener {
 
     public void gainFocus() {
         if (!isVisible()) {
+            String lastReplace = replaceTextField.getText();
             changeSearchBarToBePartOfReplaceBar();
             SearchComboBoxEditor.changeToOneLineEditorPane((JEditorPane) replaceTextField);
             addEnterKeystrokeReplaceTo(replaceTextField);
-            String lastReplace = replaceTextField.getText();
             MutableComboBoxModel<String> comboBoxModelIncSearch = ((MutableComboBoxModel<String>) replaceComboBox.getModel());
             for (int i = comboBoxModelIncSearch.getSize() - 1; i >= 0; i--) {
                 comboBoxModelIncSearch.removeElementAt(i);

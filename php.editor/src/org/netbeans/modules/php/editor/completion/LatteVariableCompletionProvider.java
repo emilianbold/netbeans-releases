@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.editor.completion;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -181,7 +182,11 @@ public class LatteVariableCompletionProvider implements CompletionProvider {
     }
 
     private static final class VariableVisitor extends DefaultVisitor {
-        private static final String TEMPLATE_DISPATCHER_TYPE = "Nette\\Templating\\ITemplate"; //NOI18N
+        private static final List<String> TEMPLATE_DISPATCHER_TYPES = new ArrayList<>();
+        static {
+            TEMPLATE_DISPATCHER_TYPES.add("Nette\\Templating\\ITemplate"); //NOI18N
+            TEMPLATE_DISPATCHER_TYPES.add("Nette\\Application\\UI\\ITemplate"); //NOI18N
+        }
         private static final String VARIABLE_PREFIX = "$"; //NOI18N
         private final Set<FieldAccess> fieldAccesses = new HashSet<>();
         private final Model model;
@@ -202,12 +207,14 @@ public class LatteVariableCompletionProvider implements CompletionProvider {
 
         public Set<String> getVariables() {
             Set<String> result = new HashSet<>();
-            List<? extends TypeScope> templateTypes = model.getIndexScope().findTypes(QualifiedName.create(TEMPLATE_DISPATCHER_TYPE));
-            TypeScope templateType = ModelUtils.getFirst(templateTypes);
+            List<TypeScope> templateTypes = new ArrayList<>();
+            for (String templateDispatcherType : TEMPLATE_DISPATCHER_TYPES) {
+                templateTypes.addAll(model.getIndexScope().findTypes(QualifiedName.create(templateDispatcherType)));
+            }
             for (FieldAccess fieldAccess : fieldAccesses) {
                 Collection<? extends TypeScope> types = ModelUtils.resolveType(model, fieldAccess.getDispatcher(), false);
                 TypeScope dispatcherType = ModelUtils.getFirst(types);
-                if (existsTemplateTypeAndDispatcherTypeMatches(templateType, dispatcherType) || addAllPossibleVariables(templateType)) {
+                if (existsTemplateTypeAndDispatcherTypeMatches(dispatcherType, templateTypes) || addAllPossibleVariables(templateTypes)) {
                     Variable field = fieldAccess.getField();
                     String varName = CodeUtils.extractVariableName(field);
                     if (varName != null) {
@@ -221,12 +228,25 @@ public class LatteVariableCompletionProvider implements CompletionProvider {
             return result;
         }
 
-        private static boolean existsTemplateTypeAndDispatcherTypeMatches(TypeScope templateType, TypeScope dispatcherType) {
-            return templateType != null && dispatcherType != null && (dispatcherType.isSubTypeOf(templateType) || dispatcherType.equals(templateType));
+        private static boolean existsTemplateTypeAndDispatcherTypeMatches(TypeScope dispatcherType, List<TypeScope> templateTypes) {
+            return templateTypes != null && dispatcherType != null && isOfType(dispatcherType, templateTypes);
         }
 
-        private static boolean addAllPossibleVariables(TypeScope templateType) {
-            return templateType == null;
+        private static boolean isOfType(TypeScope dispatcherType, List<TypeScope> templateTypes) {
+            boolean result = false;
+            if (dispatcherType != null) {
+                for (TypeScope templateType : templateTypes) {
+                    if (dispatcherType.isSubTypeOf(templateType) || dispatcherType.equals(templateType)) {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
+
+        private static boolean addAllPossibleVariables(List<TypeScope> templateTypes) {
+            return templateTypes == null || templateTypes.isEmpty();
         }
 
     }

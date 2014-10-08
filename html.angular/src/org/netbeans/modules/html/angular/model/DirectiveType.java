@@ -94,4 +94,9 @@ public enum DirectiveType {
      * For example: (name, age) in {'adam':10, 'amalie':12}.
      */
     repeatExpression,
+     /**
+     * {object} - any JavaScript object.
+     * Used for example by ngModelOptions
+     */
+    object
 }

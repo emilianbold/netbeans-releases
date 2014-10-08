@@ -62,22 +62,24 @@ import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RootObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RootObjWindows;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.netbeans.modules.masterfs.providers.BaseAnnotationProvider;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.BaseUtilities;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * @author Radek Matous
  */
-public final class FileBasedFileSystem extends FileSystem {
+public class FileBasedFileSystem extends FileSystem {
     private static final Logger LOG = Logger.getLogger(FileBasedFileSystem.class.getName());
-    private static FileBasedFileSystem INSTANCE = new FileBasedFileSystem();
+    private static volatile FileBasedFileSystem INSTANCE;
     transient private RootObj<? extends FileObject> root;
     transient private final StatusImpl status = new StatusImpl();
     transient private static  int modificationInProgress;
@@ -147,6 +149,17 @@ public final class FileBasedFileSystem extends FileSystem {
     
     
     public static FileBasedFileSystem getInstance() {
+        if (INSTANCE == null) {
+            FileBasedFileSystem fbfs = Lookup.getDefault().lookup(FileBasedFileSystem.class);
+            if (fbfs == null) {
+                fbfs = new FileBasedFileSystem();
+            }
+            synchronized (FileBasedFileSystem.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = fbfs;    
+                }
+            }
+        }
         return INSTANCE;
     }
 
@@ -242,28 +255,29 @@ public final class FileBasedFileSystem extends FileSystem {
     public Lookup findExtrasFor(Set<FileObject> objects) {
         return status.findExtrasFor(objects);
     }
-    
+
     @Override
-    public Status getStatus() {
+    public StatusDecorator getDecorator() {
         return status;
     }
+    
 
-    public final class StatusImpl implements FileSystem.HtmlStatus,
+    public class StatusImpl implements StatusDecorator,
             org.openide.util.LookupListener, org.openide.filesystems.FileStatusListener {
 
         /** result with providers */
-        private org.openide.util.Lookup.Result<AnnotationProvider> annotationProviders;
-        private Collection<? extends AnnotationProvider> previousProviders;
+        protected org.openide.util.Lookup.Result<BaseAnnotationProvider> annotationProviders;
+        private Collection<? extends BaseAnnotationProvider> previousProviders;
         
 
         {
-            annotationProviders = Lookup.getDefault().lookup(new Lookup.Template<AnnotationProvider>(AnnotationProvider.class));
+            annotationProviders = Lookup.getDefault().lookup(new Lookup.Template<BaseAnnotationProvider>(BaseAnnotationProvider.class));
             annotationProviders.addLookupListener(this);
             resultChanged(null);
         }
 
         public ProvidedExtensions getExtensions() {
-            Collection<? extends AnnotationProvider> c;
+            Collection<? extends BaseAnnotationProvider> c;
             if (previousProviders != null) {
                 c = Collections.unmodifiableCollection(previousProviders);
             } else {
@@ -274,16 +288,16 @@ public final class FileBasedFileSystem extends FileSystem {
 
         @Override
         public void resultChanged(org.openide.util.LookupEvent ev) {
-            Collection<? extends AnnotationProvider> now = annotationProviders.allInstances();
-            Collection<? extends AnnotationProvider> add;
+            Collection<? extends BaseAnnotationProvider> now = annotationProviders.allInstances();
+            Collection<? extends BaseAnnotationProvider> add;
 
             if (previousProviders != null) {
-                add = new HashSet<AnnotationProvider>(now);
+                add = new HashSet<BaseAnnotationProvider>(now);
                 add.removeAll(previousProviders);
 
-                HashSet<AnnotationProvider> toRemove = new HashSet<AnnotationProvider>(previousProviders);
+                HashSet<BaseAnnotationProvider> toRemove = new HashSet<BaseAnnotationProvider>(previousProviders);
                 toRemove.removeAll(now);
-                for (AnnotationProvider ap : toRemove) {
+                for (BaseAnnotationProvider ap : toRemove) {
                     ap.removeFileStatusListener(this);
                 }
 
@@ -293,7 +307,7 @@ public final class FileBasedFileSystem extends FileSystem {
 
 
 
-            for (AnnotationProvider ap : add) {
+            for (BaseAnnotationProvider ap : add) {
                 try {
                     ap.addFileStatusListener(this);
                 } catch (java.util.TooManyListenersException ex) {
@@ -306,7 +320,7 @@ public final class FileBasedFileSystem extends FileSystem {
 
         public Lookup findExtrasFor(Set<FileObject> foSet) {
             List<Lookup> arr = new ArrayList<Lookup>();
-            for (AnnotationProvider ap : annotationProviders.allInstances()) {
+            for (BaseAnnotationProvider ap : annotationProviders.allInstances()) {
                 final Lookup lkp = ap.findExtrasFor(foSet);
                 if (lkp != null) {
                     arr.add(lkp);
@@ -320,28 +334,13 @@ public final class FileBasedFileSystem extends FileSystem {
             fireFileStatusChanged(ev);
         }
 
-        @Override
-        public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-            Image retVal = null;
-
-            Iterator<? extends AnnotationProvider> it = annotationProviders.allInstances().iterator();
-            while (retVal == null && it.hasNext()) {
-                AnnotationProvider ap = it.next();
-                retVal = ap.annotateIcon(icon, iconType, files);
-            }
-            if (retVal != null) {
-                return retVal;
-            }
-
-            return icon;
-        }
 
         @Override
         public String annotateName(String name, Set<? extends FileObject> files) {
             String retVal = null;
-            Iterator<? extends AnnotationProvider> it = annotationProviders.allInstances().iterator();
+            Iterator<? extends BaseAnnotationProvider> it = annotationProviders.allInstances().iterator();
             while (retVal == null && it.hasNext()) {
-                AnnotationProvider ap = it.next();
+                BaseAnnotationProvider ap = it.next();
                 retVal = ap.annotateName(name, files);
             }
             if (retVal != null) {
@@ -353,9 +352,9 @@ public final class FileBasedFileSystem extends FileSystem {
         @Override
         public String annotateNameHtml(String name, Set<? extends FileObject> files) {
             String retVal = null;
-            Iterator<? extends AnnotationProvider> it = annotationProviders.allInstances().iterator();
+            Iterator<? extends BaseAnnotationProvider> it = annotationProviders.allInstances().iterator();
             while (retVal == null && it.hasNext()) {
-                AnnotationProvider ap = it.next();
+                BaseAnnotationProvider ap = it.next();
                 retVal = ap.annotateNameHtml(name, files);
             }
             return retVal;
@@ -376,5 +375,13 @@ public final class FileBasedFileSystem extends FileSystem {
     
     public static interface  FSCallable<V>  {
         public V call() throws IOException;                
+    }
+    
+    @ServiceProvider(service = MasterFileSystemFactory.class)
+    public static class Factory implements MasterFileSystemFactory {
+        @Override
+        public FileBasedFileSystem createFileSystem() {
+            return new FileBasedFileSystem();
+        }
     }
 }

@@ -418,7 +418,7 @@ public class CustomizerKarma extends JPanel {
         }
     }//GEN-LAST:event_configBrowseButtonActionPerformed
 
-    @NbBundle.Messages("CustomizerKarma.karma.none=No Karma executable was found.")
+    @NbBundle.Messages("CustomizerKarma.karma.none=No Karma executable was found. Perhaps add karma-cli NPM package as dependency?")
     private void karmaSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_karmaSearchButtonActionPerformed
         assert EventQueue.isDispatchThread();
         File karmaExecutable = KarmaUtils.findKarma(project);

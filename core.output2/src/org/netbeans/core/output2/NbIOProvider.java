@@ -45,6 +45,7 @@
 package org.netbeans.core.output2;
 
 import java.io.IOException;
+import java.util.WeakHashMap;
 import javax.swing.Action;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -54,23 +55,19 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
- * Supplies Output Window implementation through Lookup. Provider of I/O
- * instances for the org.openide.io (package org.openide.windows) API.
- *
+ * Supplies Output Window implementation through Lookup.
  * @author Jesse Glick, Tim Boudreau
  */
 @org.openide.util.lookup.ServiceProvider(service=org.openide.windows.IOProvider.class, position=100)
 public final class NbIOProvider extends IOProvider {
+    private static final WeakHashMap<IOContainer, PairMap> containerPairMaps =
+            new WeakHashMap<IOContainer, PairMap>();
 
     private static final String STDOUT = NbBundle.getMessage(NbIOProvider.class,
         "LBL_STDOUT"); //NOI18N
 
-    @Override
-    public String getName() {
-        return SharedProvider.getInstance().getName();
-    }
-
-    @Override
+    private static final String NAME = "output2"; // NOI18N
+    
     public OutputWriter getStdOut() {
         if (Controller.LOG) {
             Controller.log("NbIOProvider.getStdOut");
@@ -96,7 +93,6 @@ public final class NbIOProvider extends IOProvider {
     }
     
     
-    @Override
     public InputOutput getIO(String name, boolean newIO) {
         return getIO (name, newIO, new Action[0], null);
     }
@@ -112,15 +108,53 @@ public final class NbIOProvider extends IOProvider {
     }
 
     @Override
-    public InputOutput getIO(String name, boolean newIO, Action[] actions,
-            IOContainer ioContainer) {
-
-        return SharedProvider.getInstance().getIO(name, newIO, actions,
-                ioContainer);
+    public String getName() {
+        return NAME;
     }
 
-    static void dispose(NbIO io) {
-        SharedProvider.dispose(io);
+    @Override
+    public InputOutput getIO(String name, boolean newIO,
+            Action[] toolbarActions, IOContainer ioContainer) {
+        if (Controller.LOG) {
+            Controller.log("GETIO: " + name + " new:" + newIO);
+        }
+        IOContainer realIoContainer = ioContainer == null
+                ? IOContainer.getDefault() : ioContainer;
+        NbIO result;
+        synchronized (containerPairMaps) {
+            PairMap namesToIos = containerPairMaps.get(realIoContainer);
+            result = namesToIos != null ? namesToIos.get(name) : null;
+        }
+        if (result == null || newIO) {
+            result = new NbIO(name, toolbarActions, realIoContainer);
+            synchronized (containerPairMaps) {
+                PairMap namesToIos = containerPairMaps.get(realIoContainer);
+                if (namesToIos == null) {
+                    namesToIos = new PairMap();
+                    containerPairMaps.put(realIoContainer, namesToIos);
+                }
+                namesToIos.add(name, result);
+            }
+            NbIO.post(new IOEvent(result, IOEvent.CMD_CREATE, newIO));
+        }
+        return result;
+    }
+    
+    
+    static void dispose (NbIO io) {
+        IOContainer ioContainer = io.getIOContainer();
+        if (ioContainer == null) {
+            ioContainer = IOContainer.getDefault();
+        }
+        synchronized (containerPairMaps) {
+            PairMap namesToIos = containerPairMaps.get(ioContainer);
+            if (namesToIos != null) {
+                namesToIos.remove(io);
+                if (namesToIos.isEmpty()) {
+                    containerPairMaps.remove(ioContainer);
+                }
+            }
+        }
     }
 }
 

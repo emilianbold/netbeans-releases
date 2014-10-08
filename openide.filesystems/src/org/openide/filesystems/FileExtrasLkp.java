@@ -68,12 +68,4 @@ final class FileExtrasLkp extends AbstractLookup {
         this.set = set;
     }
 
-    @Override @SuppressWarnings("deprecation")
-    protected void beforeLookup(Template<?> template) {
-        if (Action.class.isAssignableFrom(template.getType())) {
-//            ic.set(Arrays.asList(fs.getActions(set)), null);
-        }
-    }
-    
-    
 }

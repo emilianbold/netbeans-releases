@@ -47,15 +47,19 @@ package org.netbeans.modules.java.source.parsing;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.openide.filesystems.FileObject;
@@ -75,6 +79,7 @@ import org.openide.util.BaseUtilities;
 public final class CachingArchiveProvider {
 
     private static final String NAME_RT_JAR = "rt.jar";         //NOI18N
+    private static final String NAME_INNER_RT_JAR = NAME_RT_JAR + "!/"; //NOI18N
     private static final String PATH_CT_SYM = "lib/ct.sym";     //NOI18N
     private static final String PATH_RT_JAR_IN_CT_SYM = "META-INF/sym/rt.jar/"; //NOI18N
     private static final boolean USE_CT_SYM = !Boolean.getBoolean("CachingArchiveProvider.disableCtSym");   //NOI18N
@@ -118,13 +123,23 @@ public final class CachingArchiveProvider {
      * @return new {@link Archive}
      */
     @CheckForNull
-    public synchronized Archive getArchive(@NonNull final URL root, final boolean cacheFile)  {
+    public Archive getArchive(@NonNull final URL root, final boolean cacheFile)  {
         final URI rootURI = toURI(root);
-        Archive archive = archives.get(rootURI);
+        Archive archive;
+        
+        synchronized (this) {
+            archive = archives.get(rootURI);
+        }
         if (archive == null) {
             archive = create(root, cacheFile);
             if (archive != null) {
-                archives.put(rootURI, archive );
+                synchronized (this) {
+                    // optimize for no collision
+                    archive = archives.put(rootURI, archive);
+                    if (archive != null) {
+                        archives.put(rootURI, archive);
+                    }
+                }
             }
         }
         return archive;
@@ -168,7 +183,7 @@ public final class CachingArchiveProvider {
      * or the given boot classpath root.
      */
     @NonNull
-    public URL mapCtSymToJar (@NonNull final URL archiveOrCtSym) {
+    public synchronized URL mapCtSymToJar (@NonNull final URL archiveOrCtSym) {
         final URI result = ctSymToJar.get(toURI(archiveOrCtSym));
         if (result != null) {
             try {
@@ -178,6 +193,28 @@ public final class CachingArchiveProvider {
             }
         }
         return archiveOrCtSym;
+    }
+
+    @NonNull
+    public synchronized URL[] ctSymRootsFor(@NonNull final ClassPath cp) {
+        final List<URL> res = new ArrayList<>();
+        for (ClassPath.Entry entry : cp.entries()) {
+            final URL root = entry.getURL();
+            if (!root.getPath().endsWith(NAME_INNER_RT_JAR)) {
+                continue;
+            }
+            try {
+                for (Map.Entry<URI,URI> e : ctSymToJar.entrySet()) {
+                    if (e.getValue().equals(root.toURI())) {
+                        res.add(e.getKey().toURL());
+                        break;
+                    }
+                }
+            } catch (URISyntaxException | MalformedURLException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return res.toArray(new URL[res.size()]);
     }
 
     /**
@@ -200,10 +237,8 @@ public final class CachingArchiveProvider {
         if (f == null || !f.exists()) {
             return false;
         }
-        synchronized (this) {
-            final Pair<File,String> res = mapJarToCtSym(f, root);
-            return res.second() != null;
-        }
+        final Pair<File, String> res = mapJarToCtSym(f, root);
+        return res.second() != null;
 
     }
 
@@ -266,18 +301,36 @@ public final class CachingArchiveProvider {
     private Pair<File,String> mapJarToCtSym(
         @NonNull final File file,
         @NonNull final URL originalRoot) {
-        assert Thread.holdsLock(this);
         if (USE_CT_SYM && NAME_RT_JAR.equals(file.getName())) {
             final FileObject fo = FileUtil.toFileObject(file);
             if (fo != null) {
                 for (JavaPlatform jp : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
                     for (FileObject jdkFolder : jp.getInstallFolders()) {
-                        if (FileUtil.isParentOf(jdkFolder, fo)) {
+                        boolean found = FileUtil.isParentOf(jdkFolder, fo);
+                        // Workaround for issue #247351, try checking against canonical install folder. It's
+                        // "less correct" than if the platform de-canonicalized its bootcp roots as it may map rt.jars
+                        // from several symlinked JDKs to a single ct.sym FileObject, but contents of the (single, the same for all) 
+                        // ct.sym is the same for all of them.
+                        if (!found) {
+                            File f = FileUtil.toFile(jdkFolder);
+                            if (f == null) {
+                                continue;
+                            }
+                            try {
+                                f = f.getCanonicalFile();
+                                FileObject jf = FileUtil.toFileObject(f);
+                                found = jf != null && FileUtil.isParentOf(jf, fo);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        if (found) {
                             final FileObject ctSym = jdkFolder.getFileObject(PATH_CT_SYM);
                             File ctSymFile;
                             if (ctSym != null && (ctSymFile = FileUtil.toFile(ctSym)) != null) {
                                 try {
                                     final URL root = FileUtil.getArchiveRoot(BaseUtilities.toURI(ctSymFile).toURL());
+                                    synchronized (this) {
                                     ctSymToJar.put(
                                             new URI(
                                                 String.format(
@@ -285,6 +338,7 @@ public final class CachingArchiveProvider {
                                                     root.toExternalForm(),
                                                     PATH_RT_JAR_IN_CT_SYM)),
                                             originalRoot.toURI());
+                                    }
                                 } catch (MalformedURLException e) {
                                     Exceptions.printStackTrace(e);
                                 } catch (URISyntaxException e) {

@@ -268,7 +268,7 @@ public final class CharBuffer {
     public void eatAwayChars(int count) {
         if (used <= 0) return;
         int nCol = 0;
-        while (count > nCol && chars[used-nCol] != '\n') nCol++; // NOI18N
+        while (count > nCol && nCol <= used && chars[used-nCol] != '\n') nCol++; // NOI18N
         col = nCol;
         trimTo(used - nCol);
     }

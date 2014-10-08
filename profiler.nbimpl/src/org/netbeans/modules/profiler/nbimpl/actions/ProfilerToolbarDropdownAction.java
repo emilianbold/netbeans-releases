@@ -66,7 +66,7 @@ import org.netbeans.modules.profiler.actions.AttachAction;
 public class ProfilerToolbarDropdownAction implements Action, Presenter.Toolbar {
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private Action defaultAction;
+    private final Action defaultAction;
     private Component toolbarPresenter;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
@@ -89,12 +89,18 @@ public class ProfilerToolbarDropdownAction implements Action, Presenter.Toolbar 
     public Component getToolbarPresenter() {
         if (toolbarPresenter == null) {
             // gets the real action registered in the menu from layer
-            Action a = Actions.forID("Profile", "org.netbeans.modules.profiler.actions.AttachAction"); // NOI18N
-            final Action attachAction = a != null ? a : /* XXX should be impossible */AttachAction.getInstance();
+            Action a = Actions.forID("Profile", "org.netbeans.modules.profiler.actions.AttachMainProject"); // NOI18N
+            final Action attachProjectAction = a != null ? a : /* XXX should be impossible */AttachAction.getInstance();
+            
+            // gets the real action registered in the menu from layer
+            a = Actions.forID("Profile", "org.netbeans.modules.profiler.actions.AttachAction"); // NOI18N
+            final Action attachProcessAction = a != null ? a : /* XXX should be impossible */AttachAction.getInstance();
 
             JPopupMenu dropdownPopup = new JPopupMenu();
             dropdownPopup.add(createDropdownItem(defaultAction));
-            dropdownPopup.add(createDropdownItem(attachAction));
+            dropdownPopup.add(createDropdownItem(attachProjectAction));
+            dropdownPopup.addSeparator();
+            dropdownPopup.add(createDropdownItem(attachProcessAction));
 
             JButton button = DropDownButtonFactory.createDropDownButton(new ImageIcon(
                     new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB)), dropdownPopup);

@@ -88,7 +88,7 @@ public final class SBSuperClassNotSB {
     }
 
     @TriggerTreeKind(Tree.Kind.CLASS)
-    public static Collection<ErrorDescription> run(HintContext hintContext) {
+    public static Collection<ErrorDescription> run(final HintContext hintContext) {
         final List<ErrorDescription> problems = new ArrayList<>();
         final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
         if (ctx != null && ctx.getEjb() instanceof Session) {
@@ -104,7 +104,7 @@ public final class SBSuperClassNotSB {
                             if (parentEJB instanceof Session) {
                                 ErrorDescription err = HintsUtils.createProblem(
                                         ctx.getClazz(),
-                                        ctx.getComplilationInfo(),
+                                        hintContext.getInfo(),
                                         Bundle.SBSuperClassNotSB_err());
                                 problems.add(err);
                             }

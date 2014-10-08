@@ -1,6 +1,7 @@
 package org.netbeans.modules.odcs.client;
 
 import com.tasktop.c2c.server.cloud.domain.ServiceType;
+import com.tasktop.c2c.server.common.service.WrappedCheckedException;
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
@@ -10,13 +11,13 @@ import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.scm.domain.ScmType;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
@@ -44,6 +45,9 @@ public class MockUpODCSClient implements ODCSClient {
     private int newProject = 100;
     @Override
     public Profile getCurrentProfile() throws ODCSException {
+        waitAMoment(1200);
+        throwExIfGiven("getCurrentProfile");
+            
         if(Boolean.getBoolean("odcs.mock.createNewProjectBetweenSessions")) {
             synchronized(PROJECT_LOCK) {
                 DummyProject p = new DummyProject(newProject, "new_project_"+ newProject, "New Project " + newProject);
@@ -52,6 +56,7 @@ public class MockUpODCSClient implements ODCSClient {
                 memberProjects.put(p);
             }
         }
+        
         synchronized(this) {
             if(profile == null) {
                 profile = new DummyProfile();
@@ -62,14 +67,16 @@ public class MockUpODCSClient implements ODCSClient {
 
     @Override
     public List<Project> getMyProjects() throws ODCSException {
-        waitAMoment(2500);
-        
-        return new LinkedList<>(memberProjects.values());
+            waitAMoment(2500);
+            throwExIfGiven("getMyProjects");
+
+            return new LinkedList<>(memberProjects.values());
     }
 
     @Override
     public Project getProjectById (String projectId) throws ODCSException {
         waitAMoment(800);
+        throwExIfGiven("getProjectById:String");
         
         synchronized(PROJECT_LOCK) {
             return allProjects.get(projectId);
@@ -78,17 +85,25 @@ public class MockUpODCSClient implements ODCSClient {
 
     @Override
     public List<ProjectActivity> getRecentActivities(String projectId) throws ODCSException {
+        waitAMoment(800);
+        throwExIfGiven("getRecentActivities:String");
+        
         return Collections.EMPTY_LIST;
     }
 
     @Override
     public List<ProjectActivity> getRecentShortActivities(String projectId) throws ODCSException {
+        waitAMoment(800);
+        throwExIfGiven("getRecentShortActivities:String");
+        
         return Collections.EMPTY_LIST;
     }
 
     @Override
     public List<ScmRepository> getScmRepositories(String projectId) throws ODCSException {
         waitAMoment(800);
+        throwExIfGiven("getScmRepositories:String");
+        
         synchronized(SCM_LOCK) {
             List<ScmRepository> repos = scmRepositories.get(projectId);
             if(repos == null) {
@@ -111,6 +126,7 @@ public class MockUpODCSClient implements ODCSClient {
     @Override
     public boolean isWatchingProject(String projectId) throws ODCSException {
         waitAMoment(500);
+        throwExIfGiven("isWatchingProject:String");
         
         synchronized(PROJECT_LOCK) {
             return watchedProjects.containsKey(projectId);
@@ -120,6 +136,7 @@ public class MockUpODCSClient implements ODCSClient {
     @Override
     public List<Project> searchProjects(String pattern) throws ODCSException {
         waitAMoment(2000);
+        throwExIfGiven("searchProjects:String");
         
         List<Project> ret = new LinkedList<>();
         synchronized(PROJECT_LOCK) {
@@ -135,6 +152,7 @@ public class MockUpODCSClient implements ODCSClient {
     @Override
     public void unwatchProject(String projectId) throws ODCSException {
         waitAMoment(500);
+        throwExIfGiven("unwatchProject:String");
         
         synchronized(PROJECT_LOCK) {
             watchedProjects.remove(projectId);
@@ -144,6 +162,7 @@ public class MockUpODCSClient implements ODCSClient {
     @Override
     public void watchProject(String projectId) throws ODCSException {
         waitAMoment(500);
+        throwExIfGiven("watchProject:String");
         
         synchronized(PROJECT_LOCK) {
             Project p = allProjects.get(projectId);
@@ -155,6 +174,9 @@ public class MockUpODCSClient implements ODCSClient {
 
     @Override
     public List<Project> getWatchedProjects () throws ODCSException {
+        waitAMoment(500);
+        throwExIfGiven("getWatchedProjects");
+        
         return new LinkedList<>(watchedProjects.values());
     }
 
@@ -188,6 +210,47 @@ public class MockUpODCSClient implements ODCSClient {
             Thread.sleep(l);
         } catch (InterruptedException ex) {
             LOG.log(Level.INFO, null, ex);
+        }
+    }
+
+    private void throwExIfGiven(String method) throws ODCSException {
+        
+        String ex4Method = System.getProperty("odcs.client.mock.exception.4.method", null);
+        if(ex4Method != null && !ex4Method.equals(method)) {
+            return;
+        }
+        
+        String ex = System.getProperty("odcs.client.mock.exception", null);
+        String exCause = System.getProperty("odcs.client.mock.exception.cause", null);
+        String exMsg = System.getProperty("odcs.client.mock.exception.msg", null);
+        if(ex != null) {
+            try {
+                Class<?> clazz = Class.forName(ex);
+                Class<?> clazzCause = exCause != null ? Class.forName(exCause) : null;
+                Object o;
+                if(clazzCause != null && exMsg != null) { 
+                    o = clazz.getConstructor(Exception.class, String.class).newInstance(clazzCause.getConstructor().newInstance(), exMsg);
+                } else if(clazzCause != null) { 
+                    o = clazz.getConstructor(Exception.class).newInstance(clazzCause.getConstructor().newInstance());
+                } else if(exMsg != null) { 
+                    o = clazz.getConstructor(String.class).newInstance(exMsg);
+                } else {
+                    o = clazz.getConstructor().newInstance();
+                }
+
+                if(o instanceof ODCSException) {
+                    throw (ODCSException) o;
+                } else if(o instanceof RuntimeException) {
+                    throw (RuntimeException) o;
+                }
+                throw new IllegalArgumentException("no idea what to do with : " + ex);
+                
+            } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | 
+                     InstantiationException | IllegalAccessException | IllegalArgumentException | 
+                     InvocationTargetException ex1) 
+            {
+                Exceptions.printStackTrace(ex1);
+            }
         }
     }
 

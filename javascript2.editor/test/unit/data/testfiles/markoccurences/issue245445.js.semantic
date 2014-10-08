@@ -4,7 +4,7 @@ function |>METHOD:MyLib<|() {
     /**
      * This is dummy JsDoc
      */
-    |>GLOBAL:this<|.|>METHOD:myMethod<| = function |>METHOD,UNUSED:MyLib_myMethod<|(array) {
+    this.|>METHOD:myMethod<| = function |>METHOD,UNUSED:MyLib_myMethod<|(array) {
         var r = "";
         for( var i = 0; i < array.length; i++ ) {
             r = r + array[i];
@@ -13,5 +13,5 @@ function |>METHOD:MyLib<|() {
     };
 }
 
-|>GLOBAL:myLib<|.|>FIELD:myMethod<|([1, 2, 3, 4]);
+|>GLOBAL:myLib<|.myMethod([1, 2, 3, 4]);
      

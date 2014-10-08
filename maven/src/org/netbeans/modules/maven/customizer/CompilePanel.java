@@ -53,6 +53,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JLabel;
@@ -92,6 +94,8 @@ import org.openide.util.WeakListeners;
  */
 public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
+    private static final Logger LOG = Logger.getLogger(CompilePanel.class.getName());
+    
     private static final String PARAM_DEBUG = "debug";//NOI18N
     private static final String PARAM_DEPRECATION = "showDeprecation";
 
@@ -539,7 +543,7 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
 
         public PlatformsModel() {
             JavaPlatformManager jpm = JavaPlatformManager.getDefault();
-            data = jpm.getInstalledPlatforms();
+            getPlatforms(jpm);
             jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, jpm));
             sel = jpm.getDefaultPlatform();
         }
@@ -568,8 +572,17 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             JavaPlatformManager jpm = JavaPlatformManager.getDefault();
-            data = jpm.getInstalledPlatforms();
+            getPlatforms(jpm);
             fireContentsChanged(this, 0, data.length);
+        }
+
+        protected void getPlatforms(JavaPlatformManager jpm) {
+            data = jpm.getInstalledPlatforms();
+            if(LOG.isLoggable(Level.FINE)) {
+                for (JavaPlatform jp : data) {
+                    LOG.log(Level.FINE, "Adding JavaPlaform: {0}", jp.getDisplayName());
+                }
+            }
         }
 
     }

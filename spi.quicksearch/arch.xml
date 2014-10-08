@@ -393,6 +393,11 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         </pre>
    </usecase>
    
+   <usecase id="customizeLookAndFeel" name="How to customize Look&amp;Feel properties">
+        If you need to adjust border of the Quick Search component for your
+        Look&amp;Feel, you can put a <code>Border</code> instance into
+        <code>UIManager</code> under key <code>nb.quicksearch.border</code>.
+   </usecase>
   </p>
  </answer>
 

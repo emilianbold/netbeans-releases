@@ -202,4 +202,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 246170 - Unexpected token in case of c++11 array initialization
         performTest("bug246170.cpp");
     }
+    
+    public void testBug246534() throws Exception {
+        // 246534 - inaccuracy tests: regression in 5 projects
+        performTest("bug246534.cpp");
+    }
 }

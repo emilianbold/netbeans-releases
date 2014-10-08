@@ -61,28 +61,21 @@ public class EJBProblemContext {
     private final Ejb ejb;
     private final SessionData sessionData;
     private final Project project;
-    private final CompilationInfo complilationInfo;
     private final EjbJar ejbModule;
 
     public EJBProblemContext(
-            CompilationInfo complilationInfo,
             Project project,
             EjbJar ejbModule,
             FileObject fileObject,
             TypeElement clazz,
             Ejb ejb,
             SessionData sessionData) {
-        this.complilationInfo = complilationInfo;
         this.project = project;
         this.ejbModule = ejbModule;
         this.fileObject = fileObject;
         this.clazz = clazz;
         this.ejb = ejb;
         this.sessionData = sessionData;
-    }
-    
-    public CompilationInfo getComplilationInfo() {
-        return complilationInfo;
     }
     
     public FileObject getFileObject() {

@@ -38,14 +38,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.filesystems.compat8</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>9.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -93,6 +85,7 @@
                 <friend>com.oracle.tools.ide.binary.dependencies.cm</friend>
                 <friend>com.oracle.tools.ide.projectless.impl</friend>
                 <friend>com.sun.tools.analytics.codemodel.bridge</friend>
+                <friend>com.sun.tools.tuxedo.completion</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.discovery</friend>

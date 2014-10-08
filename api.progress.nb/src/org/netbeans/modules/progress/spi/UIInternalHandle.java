@@ -101,7 +101,7 @@ public final class UIInternalHandle extends InternalHandle {
                 prov = new TrivialProgressUIWorkerProvider();
             }
             component = prov.getExtractedComponentWorker();
-            setController(new Controller(component));
+            setController(new SwingController(component));
         }
     }
 

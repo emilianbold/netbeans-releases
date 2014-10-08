@@ -46,7 +46,6 @@ package org.netbeans.performance.languages.actions;
 import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.NewProjectWizardOperator;
@@ -60,22 +59,24 @@ import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 public class CreatePHPSampleProjectTest extends PerformanceTestCase {
 
     private NewProjectWizardOperator wizard;
-    public String category, project, project_name, project_type;
 
     public CreatePHPSampleProjectTest(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN = 20000;
+        WAIT_AFTER_OPEN = 5000;
     }
 
     public CreatePHPSampleProjectTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN = 20000;
+        WAIT_AFTER_OPEN = 5000;
     }
 
     public static Test suite() {
-        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(CreatePHPSampleProjectTest.class).suite();
+        return emptyConfiguration()
+                .addTest(ScriptingSetup.class)
+                .addTest(CreatePHPSampleProjectTest.class)
+                .suite();
     }
 
     @Override
@@ -89,11 +90,12 @@ public class CreatePHPSampleProjectTest extends PerformanceTestCase {
         repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_DIFF_SIDEBAR_FILTER);
 
         wizard = NewProjectWizardOperator.invoke();
-        wizard.selectCategory(category);
-        wizard.selectProject(project);
+        wizard.selectCategory("Samples|PHP");
+        wizard.selectProject("TodoList - PHP Sample Application");
         wizard.next();
     }
 
+    @Override
     public ComponentOperator open() {
         wizard.finish();
         return null;
@@ -106,9 +108,6 @@ public class CreatePHPSampleProjectTest extends PerformanceTestCase {
     }
 
     public void testCreatePhpSampleProject() {
-        category = "Samples|PHP";
-        project = Bundle.getStringTrimmed("org.netbeans.modules.php.samples.Bundle", "Templates/Project/Samples/PHP/TodoList");  // "TODOList Sample Application"
-        project_type = "PHPSampleApp";
         doMeasurement();
     }
 }

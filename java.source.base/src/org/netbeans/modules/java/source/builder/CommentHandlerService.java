@@ -107,6 +107,8 @@ public class CommentHandlerService implements CommentHandler {
         synchronized (map) {
             CommentSetImpl cs = map.get(tree);
             if (cs == null) {
+                // note - subsequent change to the CommentSetImpl will clone the old (empty) set of comments into CommentSetImpl
+                // optimization NOT to retain empty CSImpls is not possible; the caller may modify the return value.
                 cs = new CommentSetImpl();
                 map.put(tree, cs);
             }
@@ -119,10 +121,16 @@ public class CommentHandlerService implements CommentHandler {
      * appending the new entries to the existing comment lists.
      */
     public void copyComments(Tree fromTree, Tree toTree) {
-        copyComments(fromTree, toTree, null, null);
+        copyComments(fromTree, toTree, null, null, false);
     }
         
-    public void copyComments(Tree fromTree, Tree toTree, RelativePosition copyToPos, Collection<Comment> copied) {
+    /**
+     * Copies comments from one Tree to another.
+     * If non-empty is true, the contents of 'relative position' is only copied if it contains non-whitespaces. This is used
+     * when moving comments to an unrelated Tree, often changing RelativePosition (copyToPos != null) - whitespaces at the start
+     * or end only mess up the source.
+     */
+    public void copyComments(Tree fromTree, Tree toTree, RelativePosition copyToPos, Collection<Comment> copied, boolean nonEmpty) {
         if (fromTree == toTree) {
             return;
         }
@@ -134,7 +142,30 @@ public class CommentHandlerService implements CommentHandler {
                     map.put(toTree, to = new CommentSetImpl());
                 }
                 for (RelativePosition pos : RelativePosition.values()) {
-                    for (Comment c : from.getComments(pos)) {
+                    int index = 0;
+                    int last = -1;
+                    List<Comment> l = from.getComments(pos);
+                    if (nonEmpty) {
+                        boolean nonWs = false;
+                        for (Comment c : l) {
+                            if (c.style()  != Comment.Style.WHITESPACE) {
+                                last = index;
+                                if (!nonWs) {
+                                    l = new ArrayList<>(l.subList(index, l.size()));
+                                    nonWs = true;
+                                }
+                            }
+                            index++;
+                        }
+                        if (!nonWs) {
+                            continue;
+                        }
+                    } 
+                    if (last == -1) {
+                        last = l.size() - 1;
+                    }
+                    for (index = 0; index <= last; index++) {
+                        Comment c = l.get(index);
                         if (copied != null && !copied.add(c)) {
                             continue;
                         }

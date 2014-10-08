@@ -93,11 +93,7 @@ import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
@@ -112,9 +108,6 @@ public class CompletionTestBase extends NbTestCase {
     
     static {
         JavaCompletionTaskBasicTest.class.getClassLoader().setDefaultAssertionStatus(true);
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
-
         TreeLoader.DISABLE_ARTIFICAL_PARAMETER_NAMES = true;
     }
 
@@ -147,11 +140,6 @@ public class CompletionTestBase extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {
-        XMLFileSystem system = new XMLFileSystem();
-        system.setXmlUrls(prepareLayers("META-INF/generated-layer.xml",
-                                        "org/netbeans/modules/java/editor/resources/layer.xml",
-                                        "org/netbeans/modules/defaults/mf-layer.xml"));
-        Repository repository = new Repository(new MultiFileSystem(new FileSystem[] {FileUtil.createMemoryFileSystem(), system}));
         final ClassPath bootPath = createClassPath(System.getProperty("sun.boot.class.path"));
         ClassPathProvider cpp = new ClassPathProvider() {
             @Override
@@ -176,7 +164,11 @@ public class CompletionTestBase extends NbTestCase {
                 return sourceLevel.get();
             }
         };
-        Lkp.initLookups(new Object[] {repository, loader, cpp, /*mdp,*/ slq});
+        SourceUtilsTestUtil.prepareTest(new String[] {
+            "META-INF/generated-layer.xml",
+            "org/netbeans/modules/java/editor/resources/layer.xml",
+            "org/netbeans/modules/defaults/mf-layer.xml"
+        }, new Object[] {loader, cpp, slq});
         File cacheFolder = new File(getWorkDir(), "var/cache/index");
         cacheFolder.mkdirs();
         IndexUtil.setCacheFolder(cacheFolder);

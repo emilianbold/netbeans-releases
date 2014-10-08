@@ -73,6 +73,7 @@ onvolumechange
 onwaiting
 ping
 rel
+role
 spellcheck
 style
 tabindex

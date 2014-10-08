@@ -316,7 +316,9 @@ public final class ModuleManager extends Modules {
     }
     // Access from ChangeFirer:
     final void fireModulesCreatedDeleted(Set created, Set deleted) {
-        Util.err.fine("lookup created: " + created + " deleted: " + deleted);
+        if (Util.err.isLoggable(Level.FINE)) {
+            Util.err.fine("lookup created: " + created + " deleted: " + deleted);
+        }
         lookup.changed();
     }
 
@@ -473,10 +475,14 @@ public final class ModuleManager extends Modules {
                         //Util.err.fine("Setting ctxt CL on " + ts[i].getName() + " to " + l);
                         ts[i].setContextClassLoader(l);
                     } else {
-                        Util.err.fine("Not touching context class loader " + ts[i].getContextClassLoader() + " on thread " + ts[i].getName());
+                        if (Util.err.isLoggable(Level.FINE)) {
+                            Util.err.fine("Not touching context class loader " + ts[i].getContextClassLoader() + " on thread " + ts[i].getName());
+                        }
                     }
                 }
-                Util.err.fine("Set context class loader on " + x + " threads");
+                if (Util.err.isLoggable(Level.FINE)) {
+                    Util.err.fine("Set context class loader on " + x + " threads");
+                }
                 break;
             } else {
                 Util.err.fine("Race condition getting all threads, restarting...");
@@ -1038,7 +1044,9 @@ public final class ModuleManager extends Modules {
     public void reload(Module m) throws IllegalArgumentException, IOException {
         assertWritable();
         // No Events, not a user- nor performance-interesting action.
-        Util.err.fine("reload: " + m);
+        if (Util.err.isLoggable(Level.FINE)) {
+            Util.err.fine("reload: " + m);
+        }
         if (m.isFixed()) throw new IllegalArgumentException("reload fixed module: " + m); // NOI18N
         if (m.isEnabled()) throw new IllegalArgumentException("reload enabled module: " + m); // NOI18N
         providersOf.possibleProviderRemoved(m);
@@ -1115,7 +1123,9 @@ public final class ModuleManager extends Modules {
         List<Module> toEnable = simulateEnable(modules, honorAutoloadEager);
         ev.log(Events.PERF_TICK, "checked the required ordering and autoloads"); // NOI18N
 
-        Util.err.fine("enable: toEnable=" + toEnable); // NOI18N
+        if (Util.err.isLoggable(Level.FINE)) {
+            Util.err.fine("enable: toEnable=" + toEnable); // NOI18N
+        }
         {
             // Verify that we are cool as far as basic dependencies go.
             Set<Module> testing = new HashSet<Module>(toEnable);
@@ -1160,7 +1170,9 @@ public final class ModuleManager extends Modules {
                         continue;
                     }
                     fallback.addFirst(m);
-                    Util.err.fine("enable: bringing up: " + m);
+                    if (Util.err.isLoggable(Level.FINE)) {
+                        Util.err.fine("enable: bringing up: " + m);
+                    }
                     ev.log(Events.PERF_START, "bringing up classloader on " + m.getCodeNameBase()); // NOI18N
                     try {
                         Set<Module> parents = calculateParents(m);
@@ -1175,7 +1187,9 @@ public final class ModuleManager extends Modules {
                     ev.log(Events.PERF_END, "bringing up classloader on " + m.getCodeNameBase() ); // NOI18N
                     // Check package dependencies.
 //                    ev.log(Events.PERF_START, "package dependency check on " + m.getCodeName() ); // NOI18N
-                    Util.err.fine("enable: checking package dependencies for " + m);
+                    if (Util.err.isLoggable(Level.FINE)) {
+                        Util.err.fine("enable: checking package dependencies for " + m);
+                    }
                     Dependency[] dependencies = m.getDependenciesArray();
                     for (int i = 0; i < dependencies.length; i++) {
                         Dependency dep = dependencies[i];
@@ -1187,7 +1201,9 @@ public final class ModuleManager extends Modules {
                             String polite = (String)m.getLocalizedAttribute("OpenIDE-Module-Package-Dependency-Message"); // NOI18N
                             throw new InvalidException(m, "Dependency failed on " + dep, polite); // NOI18N
                         }
-                        Util.err.fine("Successful check for: " + dep);
+                        if (Util.err.isLoggable(Level.FINE)) {
+                            Util.err.fine("Successful check for: " + dep);
+                        }
                     }
 //                    ev.log(Events.PERF_END, "package dependency check on " + m.getCodeName() ); // NOI18N
                     // Prepare to load it.
@@ -1223,7 +1239,9 @@ public final class ModuleManager extends Modules {
                 // #14560: this one definitely changed its set of problems.
                 firer.change(new ChangeFirer.Change(bad, Module.PROP_PROBLEMS, Collections.EMPTY_SET, Collections.singleton("something"))); // NOI18N
                 // Rollback changes made so far before rethrowing.
-                Util.err.fine("enable: will roll back from: " + ie);
+                if (Util.err.isLoggable(Level.FINE)) {
+                    Util.err.fine("enable: will roll back from: " + ie);
+                }
                 for (Module m : fallback) {
                     if (m.isFixed()) {
                         // cannot disable fixed modules

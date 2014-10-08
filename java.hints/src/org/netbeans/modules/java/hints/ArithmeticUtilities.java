@@ -269,6 +269,15 @@ public class ArithmeticUtilities {
             }
             DeclaredType dt = (DeclaredType)target;
             TypeElement e = (TypeElement)dt.asElement();
+            if (enhanceProcessing) {
+                // accept null constant typecasted to anything as null
+                if (result == NULL) {
+                    return NULL;
+                } else if (result == NOT_NULL) {
+                    // some unspecified reference type...
+                    return result;
+                }
+            }
             String qn = e.getQualifiedName().toString();
             // type casts to String are permitted by JLS 15.28
             if ("java.lang.String".equals(qn)) { // NOI18N
@@ -276,14 +285,6 @@ public class ArithmeticUtilities {
             } else if (!enhanceProcessing) {
                 // other typecasts are not lised in JLS 15.28
                 return null;
-            }
-            
-            // accept null constant typecasted to anything as null
-            if (result == NULL) {
-                return NULL;
-            } else if (result == NOT_NULL) {
-                // some unspecified reference type...
-                return result;
             }
             TypeMirror castee = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getExpression()));
             if (castee != null && info.getTypes().isAssignable(castee, target)) {

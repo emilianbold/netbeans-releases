@@ -397,7 +397,7 @@ public class MEKeyTool {
             return null;
         }
         if (clientList.size() > 0) {
-            clientList.add(ExportPanel.SHARED_CLIENT);
+            clientList.add(0, ExportPanel.SHARED_CLIENT);
         }
         return clientList.size() > 0 ? clientList.toArray(new String[0]) : null;
     }

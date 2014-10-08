@@ -128,6 +128,7 @@ public class InvokeSBActionTest extends PerformanceTestCase {
     public void testDelegateDialogInSB() {
         dialogTitle = "Generate Delegate";
         listItem = 8;
+        expectedTime = 1500;
         doMeasurement();
     }
 

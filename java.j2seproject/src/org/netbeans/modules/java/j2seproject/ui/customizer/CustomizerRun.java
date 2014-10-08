@@ -435,6 +435,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.8;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         add(mainPanel, gridBagConstraints);
 

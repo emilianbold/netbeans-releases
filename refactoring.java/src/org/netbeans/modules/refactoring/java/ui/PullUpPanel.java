@@ -83,14 +83,12 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     private final TableModel tableModel;
     // pre-selected members (comes from the refactoring action - the elements
     // that should be pre-selected in the table of members)
-    private Set<MemberInfo<ElementHandle>> selectedMembers;
+    private final Set<MemberInfo<ElementHandle>> selectedMembers;
+
     // target type to move the members to
-    private MemberInfo<ElementHandle> targetType;
-    // data for the members table (first dimension - rows, second dimension - columns)
-    // the columns are: 0 = Selected (true/false), 1 = Member (Java element), 2 = Make Abstract (true/false)
-    private Object[][] members = new Object[0][0];
-    private ElementKind sourceKind;
-    private ChangeListener parent;
+    private MemberInfo<ElementHandle<TypeElement>> targetType;
+
+    private final ChangeListener parent;
 
     private boolean initialized = false;
     
@@ -106,7 +104,69 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
         this.tableModel = new TableModel();
         this.selectedMembers = selectedMembers;
         initComponents();
+        
         setPreferredSize(new Dimension(420, 380));
+        
+        // *** initialize table
+        // set renderer for the second column ("Member") do display name of the feature
+        membersTable.setDefaultRenderer(COLUMN_CLASSES[1], new UIUtilities.JavaElementTableCellRenderer() {
+            // override the extractText method to add "implements " prefix to the text
+            // in case the value is instance of MultipartId (i.e. it represents an interface
+            // name from implements clause)
+            @Override
+            protected String extractText(Object value) {
+                String displayValue = super.extractText(value);
+                if (value instanceof MemberInfo && (((MemberInfo)value).getGroup()==MemberInfo.Group.IMPLEMENTS)) {
+                    displayValue = "implements " + displayValue; // NOI18N
+                }
+                return displayValue;
+            }
+        });
+        // send renderer for the third column ("Make Abstract") to make the checkbox:
+        // 1. hidden for elements that are not methods
+        // 2. be disabled for static methods
+        // 3. be disabled and checked for methods if the target type is an interface
+        // 4. be disabled and check for abstract methods
+        membersTable.getColumnModel().getColumn(2).setCellRenderer(new UIUtilities.BooleanTableCellRenderer(membersTable) {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                // make the checkbox checked (even if "Make Abstract" is not set)
+                // for non-static methods if the target type is an interface
+                MemberInfo<ElementHandle> object = (MemberInfo<ElementHandle>) table.getModel().getValueAt(row, 1);
+                if (object.getElementHandle().getKind()== ElementKind.METHOD) {
+                    if ((targetType.getElementHandle().getKind().isInterface() &&
+                            (!((MemberInfo) object).getModifiers().contains(Modifier.STATIC) &&
+                            !((MemberInfo) object).getModifiers().contains(Modifier.ABSTRACT)) &&
+                            !((MemberInfo) object).getModifiers().contains(Modifier.DEFAULT))) {
+                        value = Boolean.TRUE;
+                    }
+                }
+                //`the super method automatically makes sure the checkbox is not visible if the
+                // "Make Abstract" value is null (which holds for non-methods)
+                // and that the checkbox is disabled if the cell is not editable (which holds for
+                // static methods all the time and for all methods in case the target type is an interface
+                // - see the table model)
+                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
+        });
+        // set background color of the scroll pane to be the same as the background
+        // of the table
+        scrollPane.setBackground(membersTable.getBackground());
+        scrollPane.getViewport().setBackground(membersTable.getBackground());
+        // set default row height
+        membersTable.setRowHeight(18);
+        // set grid color to be consistent with other netbeans tables
+        if (UIManager.getColor("control") != null) { // NOI18N
+            membersTable.setGridColor(UIManager.getColor("control")); // NOI18N
+        }
+        // compute and set the preferred width for the first and the third column
+        UIUtilities.initColumnWidth(membersTable, 0, Boolean.TRUE, 4);
+        UIUtilities.initColumnWidth(membersTable, 2, Boolean.TRUE, 4);
+
+        // *** initialize combo
+        // set renderer for the combo (to display name of the class)
+        supertypeCombo.setRenderer(new UIUtilities.JavaElementListCellRenderer()); // set combo model
+        
         membersTable.getModel().addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
@@ -119,17 +179,6 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
      */
     @Override
     public void initialize() {
-        // XXX hot fix: this should be rewritten to first initialize model in RP and later update UI in EDT
-        EventQueue.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                initializeInEDT();
-            }
-        });
-    }
-
-    private void initializeInEDT() {
         if (initialized) {
             return;
         }
@@ -146,7 +195,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     controller.toPhase(JavaSource.Phase.RESOLVED);
                     // retrieve supertypes (will be used in the combo)
                     Collection<TypeElement> supertypes = JavaRefactoringUtils.getSuperTypes((TypeElement)handle.resolveElement(controller), controller, true);
-                    List<MemberInfo> minfo = new LinkedList<MemberInfo>();
+                    final List<MemberInfo> minfo = new LinkedList<>();
                     for (TypeElement e: supertypes) {
                         MemberInfo<ElementHandle<TypeElement>> memberInfo = MemberInfo.create(e, controller);
                         if(memberInfo.getElementHandle().resolve(controller) != null) { // #200200 - Error in pulling up to a interface with cyclic inheritance error
@@ -155,67 +204,15 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     }
                     
                     TypeElement sourceTypeElement = (TypeElement) handle.resolveElement(controller);
-                    sourceKind = sourceTypeElement.getKind();
+                    final String name = ElementHeaders.getHeader(sourceTypeElement, controller, ElementHeaders.NAME);
                     
-                    // *** initialize combo
-                    // set renderer for the combo (to display name of the class)
-                    supertypeCombo.setRenderer(new UIUtilities.JavaElementListCellRenderer());        // set combo model
-                    supertypeCombo.setModel(new ComboModel(minfo.toArray(new MemberInfo[0])));
-                    
-                    // *** initialize table
-                    // set renderer for the second column ("Member") do display name of the feature
-                    membersTable.setDefaultRenderer(COLUMN_CLASSES[1], new UIUtilities.JavaElementTableCellRenderer() {
-                        // override the extractText method to add "implements " prefix to the text
-                        // in case the value is instance of MultipartId (i.e. it represents an interface
-                        // name from implements clause)
+                    EventQueue.invokeLater(new Runnable() {
                         @Override
-                        protected String extractText(Object value) {
-                            String displayValue = super.extractText(value);
-                            if (value instanceof MemberInfo && (((MemberInfo)value).getGroup()==MemberInfo.Group.IMPLEMENTS)) {
-                                displayValue = "implements " + displayValue; // NOI18N
-                            }
-                            return displayValue;
+                        public void run() {
+                           supertypeCombo.setModel(new ComboModel(minfo.toArray(new MemberInfo[0])));
+                           setName(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "LBL_PullUpHeader", new Object[] {name})); // NOI18N
                         }
                     });
-                    // send renderer for the third column ("Make Abstract") to make the checkbox:
-                    // 1. hidden for elements that are not methods
-                    // 2. be disabled for static methods
-                    // 3. be disabled and checked for methods if the target type is an interface
-                    // 4. be disabled and check for abstract methods
-                    membersTable.getColumnModel().getColumn(2).setCellRenderer(new UIUtilities.BooleanTableCellRenderer(membersTable) {
-                        @Override
-                        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                            // make the checkbox checked (even if "Make Abstract" is not set)
-                            // for non-static methods if the target type is an interface
-                            MemberInfo<ElementHandle> object = (MemberInfo<ElementHandle>) table.getModel().getValueAt(row, 1);
-                            if (object.getElementHandle().getKind()== ElementKind.METHOD) {
-                                if (targetType.getElementHandle().getKind().isInterface() && !((MemberInfo) object).getModifiers().contains(Modifier.STATIC) && !((MemberInfo) object).getModifiers().contains(Modifier.ABSTRACT)) {
-                                    value = Boolean.TRUE;
-                                }
-                            }
-                            //`the super method automatically makes sure the checkbox is not visible if the
-                            // "Make Abstract" value is null (which holds for non-methods)
-                            // and that the checkbox is disabled if the cell is not editable (which holds for
-                            // static methods all the time and for all methods in case the target type is an interface
-                            // - see the table model)
-                            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                        }
-                    });
-                    // set background color of the scroll pane to be the same as the background
-                    // of the table
-                    scrollPane.setBackground(membersTable.getBackground());
-                    scrollPane.getViewport().setBackground(membersTable.getBackground());
-                    // set default row height
-                    membersTable.setRowHeight(18);
-                    // set grid color to be consistent with other netbeans tables
-                    if (UIManager.getColor("control") != null) { // NOI18N
-                        membersTable.setGridColor(UIManager.getColor("control")); // NOI18N
-                    }
-                    // compute and set the preferred width for the first and the third column
-                    UIUtilities.initColumnWidth(membersTable, 0, Boolean.TRUE, 4);
-                    UIUtilities.initColumnWidth(membersTable, 2, Boolean.TRUE, 4);
-                    String name = ElementHeaders.getHeader(handle.resolve(controller), controller, ElementHeaders.NAME);
-                    setName(org.openide.util.NbBundle.getMessage(PullUpPanel.class, "LBL_PullUpHeader", new Object[] {name}) /* NOI18N */); // NOI18N
                 }
             }, true);
         } catch (IOException ioe) {
@@ -230,7 +227,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
      * of target type.
      * @return Target type.
      */
-    public MemberInfo<ElementHandle> getTargetType() {
+    public MemberInfo<ElementHandle<TypeElement>> getTargetType() {
         return targetType;
     }
     
@@ -239,35 +236,22 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
      */
     public MemberInfo[] getMembers() {
         final List list = new ArrayList();
-        final TreePathHandle handle = refactoring.getSourceType();
-        JavaSource source = JavaSource.forFileObject(handle.getFileObject());
-        try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                @Override
-                public void cancel() {
-                }
-                
-                @Override
-                public void run(CompilationController parameter) throws Exception {
-                    
-                    // remeber if the target type is an interface (will be used in the loop)
-                    boolean targetIsInterface = targetType.getElementHandle().getKind().isInterface();
-                    // go through all rows of a table and collect selected members
-                    for (int i = 0; i < members.length; i++) {
-                        // if the current row is selected, create MemberInfo for it and
-                        // add it to the list of selected members
-                        if (members[i][0].equals(Boolean.TRUE)) {
-                            MemberInfo<ElementHandle> element = (MemberInfo<ElementHandle>) members[i][1];
-                            // for methods the makeAbstract is always set to true if the
-                            // target type is an interface
-                            element.setMakeAbstract(((element.getElementHandle().getKind() == ElementKind.METHOD) && targetIsInterface) || ((Boolean) members[i][2]==null?Boolean.FALSE:(Boolean)members[i][2]));
-                            list.add(element);
-                        }
-                    }
-                }
-            }, true);
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
+        // remeber if the target type is an interface (will be used in the loop)
+        boolean targetIsInterface = targetType.getElementHandle().getKind().isInterface();
+        // go through all rows of a table and collect selected members
+        for (int i = 0; i < tableModel.members.length; i++) {
+            // if the current row is selected, create MemberInfo for it and
+            // add it to the list of selected members
+            if (tableModel.members[i][0].equals(Boolean.TRUE)) {
+                MemberInfo<ElementHandle> element = (MemberInfo<ElementHandle>) tableModel.members[i][1];
+                // for methods the makeAbstract is always set to true if the
+                // target type is an interface
+                element.setMakeAbstract(((element.getElementHandle().getKind() == ElementKind.METHOD) &&
+                    targetIsInterface &&
+                    !((MemberInfo)tableModel.members[i][1]).getModifiers().contains(Modifier.DEFAULT)) ||
+                    ((Boolean) tableModel.members[i][2]==null?Boolean.FALSE:(Boolean)tableModel.members[i][2]));
+                list.add(element);
+            }
         }
         // return the array of selected members
         return (MemberInfo[]) list.toArray(new MemberInfo[list.size()]);
@@ -340,6 +324,10 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
     /** Model for the members table.
      */
     private class TableModel extends AbstractTableModel {
+        // data for the members table (first dimension - rows, second dimension - columns)
+        // the columns are: 0 = Selected (true/false), 1 = Member (Java element), 2 = Make Abstract (true/false)
+        private Object[][] members = new Object[0][0];
+        private ElementKind sourceKind;
         @Override
         public int getColumnCount() {
             return COLUMN_NAMES.length;
@@ -381,7 +369,8 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                     return false;
                 }
                 Object element = members[rowIndex][1];
-                return !sourceKind.isInterface() && !(((MemberInfo) element).getModifiers().contains(Modifier.STATIC)) && !(((MemberInfo) element).getModifiers().contains(Modifier.ABSTRACT));                
+                MemberInfo member = (MemberInfo) element;                
+                return member.getModifiers().contains(Modifier.DEFAULT) || (!sourceKind.isInterface() && !(member.getModifiers().contains(Modifier.STATIC)) && !(member.getModifiers().contains(Modifier.ABSTRACT)));
             } else {
                 // column 0 is always editable, column 1 is never editable
                 return columnIndex == 0;
@@ -397,104 +386,118 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
          *      that are supertypes of source type (including the source type) and at the same time subtypes
          *      of the target type (excluding the target type).
          */
-        void update(final MemberInfo<ElementHandle>[] classes) {
+        void update(final MemberInfo<ElementHandle<TypeElement>> selectedTarget) {
+            final Map map = new HashMap();
             JavaSource source = JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
             try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
+                source.runUserActionTask(new CancellableTask<CompilationController>() {
                     @Override
-                public void cancel() {
-                }
-                
-                    @Override
-                public void run(CompilationController info) {
-                    try {
-                        info.toPhase(JavaSource.Phase.RESOLVED);
-                    } catch (IOException ioe) {
-                        throw new RuntimeException(ioe);
+                    public void cancel() {
                     }
-                    Map map = new HashMap();
-                    // go through the passed classes, collect all members from them and
-                    // create a map mapping a member to an array of java.lang.Object representing
-                    // a future table row corresponding to that member
-                    for (int i = 0; i < classes.length; i++) {
-                        // collect interface names
-                        for (TypeMirror tm: ((TypeElement) (classes[i].getElementHandle().resolve(info))).getInterfaces()) {
-                            MemberInfo ifcName = MemberInfo.create(RefactoringUtils.typeToElement(tm, info), info, MemberInfo.Group.IMPLEMENTS);
-                            map.put(ifcName, new Object[] {Boolean.FALSE, ifcName, null});
+
+                    @Override
+                    public void run(CompilationController info) {
+                        try {
+                            info.toPhase(JavaSource.Phase.RESOLVED);
+                        } catch (IOException ioe) {
+                            throw new RuntimeException(ioe);
                         }
-                        // collect fields, methods and inner classes
-                        List<? extends Element> features = classes[i].getElementHandle().resolve(info).getEnclosedElements();
-                        int j = 0;
-                        for (Element e:features) {
-                            switch (e.getKind()) {
-                                case CONSTRUCTOR:
-                                case STATIC_INIT:
-                                case INSTANCE_INIT: continue;
-                                default: {
-                                    MemberInfo mi = MemberInfo.create(e, info);
-                                    map.put(mi, new Object[] {Boolean.FALSE, mi, (e.getKind() == ElementKind.METHOD) ? Boolean.FALSE : null});
+                        
+                        TypeElement targetElement = selectedTarget.getElementHandle().resolve(info);
+                        TypeElement sourceElement = (TypeElement) refactoring.getSourceType().resolveElement(info);
+                        TypeMirror sourceTM = sourceElement.asType();
+                        TypeMirror targetTM = targetElement.asType();
+                        
+                        // compute the classes (they must be superclasses of source type - including it -
+                        // and subtypes of target type)
+                        List<TypeElement> classes = new ArrayList<>();
+                        
+                        // add source type (it is always included)
+                        classes.add(sourceElement);
+                        classes.addAll(JavaRefactoringUtils.getSuperTypes(sourceElement, info, true));
+                        for (TypeElement superType : classes) {
+                            // add Members from supertypes up to the selected target
+                            if (!info.getTypes().isSubtype(sourceTM, targetTM) ||
+                                    info.getTypes().isSameType(superType.asType(), targetTM)) {
+                                continue;
+                            }
+                            // collect interface names
+                            for (TypeMirror tm: superType.getInterfaces()) {
+                                MemberInfo ifcName = MemberInfo.create(RefactoringUtils.typeToElement(tm, info), info, MemberInfo.Group.IMPLEMENTS);
+                                map.put(ifcName, new Object[] {Boolean.FALSE, ifcName, null});
+                            }
+                            // collect fields, methods and inner classes
+                            List<? extends Element> features = superType.getEnclosedElements();
+                            for (Element e : features) {
+                                switch (e.getKind()) {
+                                    case CONSTRUCTOR:
+                                    case STATIC_INIT:
+                                    case INSTANCE_INIT:
+                                        continue;
+                                    default: {
+                                        MemberInfo mi = MemberInfo.create(e, info);
+                                        map.put(mi, new Object[]{Boolean.FALSE, mi, (e.getKind() == ElementKind.METHOD) ? Boolean.FALSE : null});
+                                    }
                                 }
                             }
                         }
-                    }
-                    // select some members if applicable
-                    if (selectedMembers != null) {
-                        // if the collection of pre-selected members is not null
-                        // this is the first creation of the table data ->
-                        // -> select the members from the selectedMembers collection
-                        for (Iterator it = selectedMembers.iterator(); it.hasNext();) {
-                            Object[] value = (Object[]) map.get(it.next());
-                            if (value != null) {
-                                value[0] = Boolean.TRUE;
+                        // select some members if applicable
+                        if (members.length == 0) {
+                            // if the collection of pre-selected members is not null
+                            // this is the first creation of the table data ->
+                            // -> select the members from the selectedMembers collection
+                            for (Iterator it = selectedMembers.iterator(); it.hasNext();) {
+                                Object[] value = (Object[]) map.get(it.next());
+                                if (value != null) {
+                                    value[0] = Boolean.TRUE;
+                                }
+                            }
+                        } else {
+                            // this is not the first update of the table content ->
+                            // -> select elements that were selected before the update
+                            // (if they will still be present in the table)
+                            for (int i = 0; i < members.length; i++) {
+                                Object[] value = (Object[]) map.get(members[i][1]);
+                                if (value != null) {
+                                    map.put(value[1], members[i]);
+                                }
                             }
                         }
-                        selectedMembers = null;
-                    } else {
-                        // this is not the first update of the table content ->
-                        // -> select elements that were selected before the update
-                        // (if they will still be present in the table)
-                        for (int i = 0; i < members.length; i++) {
-                            Object[] value = (Object[]) map.get(members[i][1]);
-                            if (value != null) {
-                                map.put(value[1], members[i]);
-                            }
-                        }
-                    }
-                    
-                    // TODO: remove overrides, since they cannot be pulled up
-                    // Did not work even in 5.5
-                    
-                    // the members are collected
-                    // now, create a tree map (to sort them) and create the table data
-                    TreeMap treeMap = new TreeMap(new Comparator() {
+
+                        // TODO: remove overrides, since they cannot be pulled up
+                        // Did not work even in 5.5
+
+                        // the members are collected
+                        // now, create a tree map (to sort them) and create the table data
+                        TreeMap treeMap = new TreeMap(new Comparator() {
                             @Override
-                        public int compare(Object o1, Object o2) {
-                            return ((MemberInfo) o1).getHtmlText().compareTo(((MemberInfo) o2).getHtmlText());
-                            
-//TODO: sorting
-//                            NamedElement ne1 = (NamedElement) o1, ne2 = (NamedElement) o2;
-//                            // elements are sorted primarily by their class name
-//                            int result = ne1.getClass().getName().compareTo(ne2.getClass().getName());
-//                            if (result == 0) {
-//                                // then by their display text
-//                                result = UIUtilities.getDisplayText(ne1).compareTo(UIUtilities.getDisplayText(ne2));
-//                            }
-//                            if (result == 0) {
-//                                // then the mofid is compared (to not take two non-identical
-//                                // elements as equals)
-//                                result = ne1.refMofId().compareTo(ne2.refMofId());
-//                            }
-//                            return result;
+                            public int compare(Object o1, Object o2) {
+                                return ((MemberInfo) o1).getHtmlText().compareTo(((MemberInfo) o2).getHtmlText());
+
+                //TODO: sorting
+                //                            NamedElement ne1 = (NamedElement) o1, ne2 = (NamedElement) o2;
+                //                            // elements are sorted primarily by their class name
+                //                            int result = ne1.getClass().getName().compareTo(ne2.getClass().getName());
+                //                            if (result == 0) {
+                //                                // then by their display text
+                //                                result = UIUtilities.getDisplayText(ne1).compareTo(UIUtilities.getDisplayText(ne2));
+                //                            }
+                //                            if (result == 0) {
+                //                                // then the mofid is compared (to not take two non-identical
+                //                                // elements as equals)
+                //                                result = ne1.refMofId().compareTo(ne2.refMofId());
+                //                            }
+                //                            return result;
+                            }
+                        });
+                        treeMap.putAll(map);
+                        members = new Object[treeMap.size()][];
+                        int i = 0;
+                        for (Iterator it = treeMap.values().iterator(); it.hasNext(); i++) {
+                            members[i] = (Object[]) it.next();
                         }
-                    });
-                    treeMap.putAll(map);
-                    members = new Object[treeMap.size()][];
-                    int i = 0;
-                    for (Iterator it = treeMap.values().iterator(); it.hasNext(); i++) {
-                        members[i] = (Object[]) it.next();
                     }
-                }
-            }, true);
+                }, true);
             } catch (IOException ioe) {
                 throw new RuntimeException(ioe);
             }
@@ -526,46 +529,11 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
          */
         @Override
         public void setSelectedItem(final Object anItem) {
-            JavaSource source = JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
-            try {
-                source.runUserActionTask(new CancellableTask<CompilationController>() {
-                    @Override
-                    public void cancel() {
-                    }
-                    
-                    @Override
-                    public void run(CompilationController info) {
-                        try {
-                            info.toPhase(JavaSource.Phase.RESOLVED);
-                        } catch (IOException ioe) {
-                            throw new RuntimeException(ioe);
-                        }
-                        if (targetType != anItem) {
-                            targetType = ((MemberInfo) anItem);
-                            // must fire this (according to the ComboBoxModel interface contract)
-                            fireContentsChanged(this, -1, -1);
-                            // compute the classes (they must be superclasses of source type - including it -
-                            // and subtypes of target type)
-                            List classes = new ArrayList();
-                            // add source type (it is always included)
-                            Element e = refactoring.getSourceType().resolveElement(info);
-                            MemberInfo m = MemberInfo.create(e, info);
-                            classes.add(m);
-                            for (int i = 0; i < supertypes.length; i++) {
-                                TypeMirror targetTM = targetType.getElementHandle().resolve(info).asType();
-                                TypeMirror superTM = supertypes[i].getElementHandle().resolve(info).asType();
-                                // add the other subtypes of the target type
-                                if (info.getTypes().isSubtype(superTM, targetTM) && !info.getTypes().isSameType(superTM, targetTM)) {
-                                    classes.add(supertypes[i]);
-                                }
-                            }
-                            // update the table
-                            tableModel.update((MemberInfo[]) classes.toArray(new MemberInfo[classes.size()]));
-                        }
-                    }
-                }, true);
-            } catch (IOException ioe) {
-                throw new RuntimeException(ioe);
+            if (targetType != anItem) {
+                targetType = ((MemberInfo) anItem);
+                // must fire this (according to the ComboBoxModel interface contract)
+                fireContentsChanged(this, -1, -1);
+                tableModel.update(targetType);
             }
         }
 

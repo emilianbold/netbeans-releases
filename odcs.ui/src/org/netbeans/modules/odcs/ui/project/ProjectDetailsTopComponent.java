@@ -73,7 +73,9 @@ import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.UIManager;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.odcs.api.ODCSProject;
+import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.client.api.ODCSFactory;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
@@ -143,6 +145,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         this.projectHandle = projectHandle;
         this.project = projectHandle.getTeamProject();
         this.refresher = new DashboardRefresher();
+        project.getServer().addPropertyChangeListener(this);
         initComponents();
     }
 
@@ -643,8 +646,18 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(OdcsSettings.AUTO_SYNC_SETTINGS_CHANGED)) {
-            refresher.setupDashboardRefresh();
+        switch (evt.getPropertyName()) {
+            case OdcsSettings.AUTO_SYNC_SETTINGS_CHANGED:
+                refresher.setupDashboardRefresh();
+                break;
+            case ODCSServer.PROP_LOGIN:
+                UIUtils.runInAWT(new Runnable() {
+                    @Override
+                    public void run() {
+                        close();
+                    }
+                }); 
+                break;
         }
     }
 

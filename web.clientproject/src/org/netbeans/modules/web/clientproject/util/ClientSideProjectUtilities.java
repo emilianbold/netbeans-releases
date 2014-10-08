@@ -67,6 +67,8 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -144,17 +146,25 @@ public final class ClientSideProjectUtilities {
         return projectHelper;
     }
 
-    public static void initializeProject(@NonNull ClientSideProject project, @NonNull String siteRoot, @NullAllowed String test) throws IOException {
+    public static void initializeProject(@NonNull ClientSideProject project, @NullAllowed String sources, @NullAllowed String siteRoot,
+            @NullAllowed String test) throws IOException {
+        assert sources != null || siteRoot != null : "Sources and/or Site Root must be set";
         File projectDirectory = FileUtil.toFile(project.getProjectDirectory());
         assert projectDirectory != null;
         assert projectDirectory.isDirectory();
         // ensure directories exists
-        ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, siteRoot));
+        if (sources != null) {
+            ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, sources));
+        }
+        if (siteRoot != null) {
+            ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, siteRoot));
+        }
         if (test != null) {
             ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, test));
         }
         // save project
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
+        projectProperties.setSourceFolder(sources);
         projectProperties.setSiteRootFolder(siteRoot);
         projectProperties.setTestFolder(test);
         projectProperties.setSelectedBrowser(project.getProjectWebBrowser().getId());
@@ -169,6 +179,17 @@ public final class ClientSideProjectUtilities {
             LOGGER.log(Level.WARNING, "JS testing provider {0} was not found", jsTestingProviderIdentifier);
         } else {
             JsTestingProviders.getDefault().setJsTestingProvider(project, testingProvider);
+        }
+    }
+
+    public static void setPlatformProvider(@NonNull Project project, @NonNull String platformProviderIdentifier) {
+        assert project != null;
+        assert platformProviderIdentifier != null;
+        PlatformProvider platformProvider = PlatformProviders.getDefault().findPlatformProvider(platformProviderIdentifier);
+        if (platformProvider == null) {
+            LOGGER.log(Level.WARNING, "platform provider {0} was not found", platformProviderIdentifier);
+        } else {
+            PlatformProviders.getDefault().setPlatformProvider(project, platformProvider);
         }
     }
 

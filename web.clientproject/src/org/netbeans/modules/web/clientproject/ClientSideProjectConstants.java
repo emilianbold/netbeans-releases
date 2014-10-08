@@ -61,6 +61,7 @@ public class ClientSideProjectConstants {
     public static final String PROJECT_SELECTED_BROWSER = "browser"; //NOI18N
 
     // default paths:
+    public static final String DEFAULT_SOURCE_FOLDER = "src"; //NOI18N
     public static final String DEFAULT_SITE_ROOT_FOLDER = "public_html"; //NOI18N
     public static final String DEFAULT_TEST_FOLDER = "test"; //NOI18N
     

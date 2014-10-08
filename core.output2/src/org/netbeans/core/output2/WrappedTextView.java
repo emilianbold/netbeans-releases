@@ -562,8 +562,11 @@ public class WrappedTextView extends View implements TabExpander {
         result.setBounds (0, 0, charWidth, charHeight);
         OutputDocument od = odoc();
         if (od != null) {
-            int line = Math.max(0, od.getLines().getLineAt(pos));
-            int start = od.getLineStart(line);
+            int line, start;
+            synchronized (od.getLines().readLock()) {
+                line = Math.max(0, od.getLines().getLineAt(pos));
+                start = od.getLineStart(line);
+            }
 
             int column = pos - start;
 
@@ -896,9 +899,11 @@ public class WrappedTextView extends View implements TabExpander {
      * Find position of the last char in line.
      */
     private int getLineEnd(int realLineIndex, Lines lines) {
-        return realLineIndex + 1 < lines.getLineCount()
-                ? lines.getLineStart(realLineIndex + 1) - 1
-                : lines.getCharCount();
+        synchronized (lines.readLock()) {
+            return realLineIndex + 1 < lines.getLineCount()
+                    ? lines.getLineStart(realLineIndex + 1) - 1
+                    : lines.getCharCount();
+        }
     }
 
     /**

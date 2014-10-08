@@ -107,8 +107,8 @@ public class BusinessMethodExposed {
             Profile profile = ejbModule.getJ2eeProfile();
             if (profile != null && profile.isAtLeast(Profile.JAVA_EE_6_WEB)) {
                 int intfCount = ctx.getEjbData().getBusinessLocal().length + ctx.getEjbData().getBusinessRemote().length;
-                localInterfaces.addAll(resolveClasses(ctx.getComplilationInfo(), ctx.getEjbData().getBusinessLocal()));
-                remoteInterfaces.addAll(resolveClasses(ctx.getComplilationInfo(), ctx.getEjbData().getBusinessRemote()));
+                localInterfaces.addAll(resolveClasses(hintContext.getInfo(), ctx.getEjbData().getBusinessLocal()));
+                remoteInterfaces.addAll(resolveClasses(hintContext.getInfo(), ctx.getEjbData().getBusinessRemote()));
                 if (intfCount == 0 || JavaUtils.hasAnnotation(ctx.getClazz(), EJBAPIAnnotations.LOCAL_BEAN)) {
                     return null;
                 }
@@ -142,7 +142,7 @@ public class BusinessMethodExposed {
                     ArrayList<ExecutableElement> potentialMatches = definedMethodsByName.get(method.getSimpleName().toString());
 
                     if (potentialMatches != null && !potentialMatches.isEmpty()) {
-                        if (isFoundMatchingMethodSignature(ctx.getComplilationInfo(), method, potentialMatches)) {
+                        if (isFoundMatchingMethodSignature(hintContext.getInfo(), method, potentialMatches)) {
                             continue;
                         }
                     }
@@ -166,7 +166,7 @@ public class BusinessMethodExposed {
                         fixes.add(fix);
                     }
 
-                    ErrorDescription err = HintsUtils.createProblem(method, ctx.getComplilationInfo(),
+                    ErrorDescription err = HintsUtils.createProblem(method, hintContext.getInfo(),
                             Bundle.BusinessMethodExposed_hint(), Severity.HINT, fixes);
 
                     problems.add(err);

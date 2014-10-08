@@ -2,4 +2,4 @@ Code completion result for source line:
 Person.prototype.amputate = function(){ this.l|egs-- }
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-FIELD      legs                            [PUBLIC]   person.js
+FIELD      legs: Number                    [PUBLIC]   person.js

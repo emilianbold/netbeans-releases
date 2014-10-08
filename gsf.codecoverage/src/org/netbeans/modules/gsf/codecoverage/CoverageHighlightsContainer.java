@@ -54,6 +54,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -87,13 +88,16 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer imp
     private List<CoverageType> lastTypes;
     private boolean enabled;
     private boolean listening;
+    private final JTextComponent component;
     private final BaseDocument doc;
     private final String mimeType;
     private long version = 0;
     private FileObject fileObject;
     private Project project;
 
-    CoverageHighlightsContainer(Document document) {
+    CoverageHighlightsContainer(JTextComponent component) {
+        this.component = component;
+        Document document = component.getDocument();
         if (document instanceof BaseDocument) {
             this.doc = (BaseDocument) document;
         } else {
@@ -124,7 +128,7 @@ public class CoverageHighlightsContainer extends AbstractHighlightsContainer imp
             }
         }
 
-        FileCoverageDetails details = manager.getDetails(project, fileObject, doc);
+        FileCoverageDetails details = manager.getDetails(project, fileObject, component);
         if (details == null) {
             return HighlightsSequence.EMPTY;
         }

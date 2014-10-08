@@ -64,6 +64,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.cloud.oracle</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <package>org.netbeans.modules.weblogic.common.api</package>
             </friend-packages>

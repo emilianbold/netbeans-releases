@@ -218,7 +218,9 @@ final class FileChangeImpl extends WeakReference<FileChangeListener> implements 
 
     static void addFileChangeListenerImpl(Logger logger, FileChangeListener listener, File path) {
         assert FileUtil.assertNormalized(path);
-        logger.log(Level.FINE, "addFileChangeListener {0} @ {1}", new Object[]{listener, path});
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "addFileChangeListener {0} @ {1}", new Object[]{listener, path});
+        }
         final FileChangeImpl holder;
         synchronized (holders) {
             Map<File, FileChangeImpl> f2H = holders.get(listener);
@@ -242,7 +244,9 @@ final class FileChangeImpl extends WeakReference<FileChangeListener> implements 
 
     static FileChangeListener removeFileChangeListenerImpl(Logger logger, FileChangeListener listener, File path) {
         assert FileUtil.assertNormalized(path, BaseUtilities.isMac());
-        logger.log(Level.FINE, "removeFileChangeListener {0} @ {1}", new Object[]{listener, path});
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "removeFileChangeListener {0} @ {1}", new Object[]{listener, path});
+        }
         synchronized (holders) {
             Map<File, FileChangeImpl> f2H = holders.get(listener);
             if (f2H == null) {

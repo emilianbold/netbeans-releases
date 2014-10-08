@@ -238,7 +238,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 return testExecute;
             }
         } else if (FileUtil.getArchiveFile(file) != null &&
-                file.equals(FileUtil.getArchiveRoot(FileUtil.getArchiveFile(file))) &&
                 FileUtil.toFile(FileUtil.getArchiveFile(file)).equals(moduleJar = project.getModuleJarLocation())) {
             if (ClassPath.EXECUTE.equals(type)) {
                 List<PathResourceImplementation> roots = new ArrayList<PathResourceImplementation>();

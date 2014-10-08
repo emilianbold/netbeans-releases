@@ -875,6 +875,25 @@ These are mainly class and thread filters and hit counts.
         <class package="org.netbeans.api.debugger.jpda" name="JPDAClassType" />
         <issue number="237233"/>
     </change>
+    
+     <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Add information about native methods into EditorContext.Operation.</summary>
+        <version major="2" minor="51"/>
+        <date day="8" month="9" year="2014"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            A new method <code>createMethodOperation()</code>, which takes
+            <code>boolean isNative</code> is added to <code>EditorContext</code>
+            class. The <code>EditorContext.Operation</code> has <code>isNative()</code>
+            method to retrieve that information. The implementation retrieves the
+            native flag from parser information, therefore there can occur native
+            methods at runtime, which are not marked as native by this flag.
+        </description>
+        <class package="org.netbeans.spi.debugger.jpda" name="EditorContext" />
+        <issue number="246819"/>
+    </change>
 
 </changes>
 

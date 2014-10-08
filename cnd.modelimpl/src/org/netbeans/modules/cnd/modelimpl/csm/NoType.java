@@ -146,6 +146,11 @@ public class NoType implements CsmType {
     }
 
     @Override
+    public boolean hasInstantiationParams() {
+        return false;
+    }
+
+    @Override
     public boolean isInstantiation() {
         return false;
     }

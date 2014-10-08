@@ -44,7 +44,6 @@
 
 package org.netbeans.api.progress.aggregate;
 
-import org.netbeans.api.progress.BaseProgressHandleFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.util.Cancellable;
 
@@ -82,8 +81,8 @@ public class BasicAggregateProgressFactory {
                                                        Cancellable allowToCancel, boolean systemHandle) {
         return new AggregateProgressHandle(displayName, contributors, allowToCancel, systemHandle,
                 systemHandle ? 
-                        BaseProgressHandleFactory.createSystemHandle(displayName, allowToCancel) :
-                        BaseProgressHandleFactory.createHandle(displayName, allowToCancel)
+                        ProgressHandle.createSystemHandle(displayName, allowToCancel) :
+                        ProgressHandle.createHandle(displayName, allowToCancel)
                 );
     }
     

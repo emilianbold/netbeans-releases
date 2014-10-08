@@ -609,10 +609,15 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         if( index < 0 || index >= model.size() )
             index = 0;
         Dimension minSize = null;
-        if( index >= model.size() )
+        if( index >= model.size() ) {
             minSize = new Dimension( 100, 10 );
-        else
-            minSize = new Dimension(layoutModel.getW(index), layoutModel.getH(index));
+        } else {
+            if( isUseStretchingTabs() ) {
+                minSize = new Dimension(model.getTab(index).getComponent().getMinimumSize());
+            } else {
+                minSize = new Dimension(layoutModel.getW(index), layoutModel.getH(index));
+            }
+        }
         minSize.width = Math.max(minSize.width, 100);
         minSize.height = Math.max(minSize.height, 10);
         return minSize;

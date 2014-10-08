@@ -975,6 +975,8 @@ public abstract class PositionEstimator {
                 int localResult = -1;
                 int insertPos = -1;
                 boolean nlBefore = item.getKind() != Tree.Kind.EMPTY_STATEMENT;
+                int wsStart = -1;
+                int wsEnd = -1;
                 while (nonRelevant.contains((token = seq.token()).id())) {
                     switch (token.id()) {
                         case WHITESPACE:
@@ -995,6 +997,9 @@ public abstract class PositionEstimator {
                         case LINE_COMMENT:
                         case BLOCK_COMMENT:
                         case JAVADOC_COMMENT:
+                            if (wsStart == -1) {
+                                wsStart = localResult;
+                            }
                             localResult = seq.offset();
                             break;
                     }
@@ -1011,6 +1016,9 @@ public abstract class PositionEstimator {
                         previousEnd = wsOnlyStart;
                     }
                     localResult = seq.offset();
+                }
+                if (wsStart == -1) {
+                    wsStart = localResult;
                 }
                 first = false;
                 if (minimalLeftPosition != (-1) && minimalLeftPosition > previousEnd) {
@@ -1036,6 +1044,7 @@ public abstract class PositionEstimator {
                                 if (indexOf > -1) {
                                     if (commentEndPos.isEmpty()) {
                                         wideEnd = seq.offset() + indexOf + (nlBefore ? 1 : 0);
+                                        wsEnd = wideEnd;
                                     } else {
                                         commentEndPos.add(Pair.of(commentEndPos.getLast().first(), seq.offset() + indexOf + 1));
                                     }
@@ -1051,6 +1060,9 @@ public abstract class PositionEstimator {
                             break;
                         case LINE_COMMENT:
                         case BLOCK_COMMENT:
+                            if (wsEnd == -1) {
+                                wsEnd = wideEnd;
+                            }
                             if (seq.offset() > minimalLeftPosition)
                                 commentEndPos.add(Pair.of(newlines, seq.offset() + t.text().length()));
                             maxLines = Math.max(maxLines, newlines);
@@ -1084,8 +1096,11 @@ public abstract class PositionEstimator {
                     }
                 }
                 if (wideEnd < treeEnd) wideEnd = treeEnd;
+                if (wsEnd == -1) {
+                    wsEnd = treeEnd;
+                }
                 if (minimalLeftPosition < wideEnd) minimalLeftPosition = wideEnd;
-                data.add(new int[] { previousEnd, wideEnd, previousEnd, appendInsertPos, insertPos });
+                data.add(new int[] { previousEnd, wideEnd, previousEnd, appendInsertPos, insertPos, wsStart, wsEnd });
                 append.add(itemAppend);
             }
             initialized = true;

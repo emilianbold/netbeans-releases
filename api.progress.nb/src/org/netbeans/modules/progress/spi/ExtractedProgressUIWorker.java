@@ -46,7 +46,6 @@ package org.netbeans.modules.progress.spi;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import org.netbeans.modules.progress.spi.ProgressUIWorker;
 
 /**
  *

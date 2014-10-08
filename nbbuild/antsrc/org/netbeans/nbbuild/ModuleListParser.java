@@ -460,23 +460,9 @@ final class ModuleListParser {
                 }
                 String reltext = XMLUtil.findText(runtimeRelativePath);
                 // No need to evaluate property refs in it - it is *not* substitutable-text in the schema.
+                String nball = (String) properties.get("nb_all");
                 resultBin = new File(jar.getParentFile(), reltext.replace('/', File.separatorChar));
-                if (!resultBin.exists() && reltext.contains("${java.home}/lib/ext/jfxrt.jar")) {
-                    String jhm = System.getProperty("java.home");
-                    resultBin = new File(new File(new File(new File(jhm), "lib"), "ext"), "jfxrt.jar");
-                    if (!resultBin.exists()) {
-                        File jdk7 = new File(new File(new File(jhm), "lib"), "jfxrt.jar");
-                        if (jdk7.exists()) {
-                            resultBin = jdk7;
-                        } else {
-                            String nball = (String) properties.get("nb_all");
-                            File external = new File(new File(new File(new File(nball), "libs.javafx"), "external"), "jfxrt.jar");
-                            if (external.exists()) {
-                                resultBin = external;
-                            }
-                        }
-                    }
-                }
+                resultBin = fixFxRtJar(resultBin, nball);
             }
 
             if (origBin != null) {
@@ -539,6 +525,26 @@ final class ModuleListParser {
             entries.put(cnb, entry);
         }
         return true;
+    }
+
+    private static File fixFxRtJar(File resultBin, String nball) {
+        final String path = resultBin.getPath().replace(File.separatorChar, '/');
+        if (!resultBin.exists() && path.contains("${java.home}/lib/ext/jfxrt.jar")) {
+            String jhm = System.getProperty("java.home");
+            resultBin = new File(new File(new File(new File(jhm), "lib"), "ext"), "jfxrt.jar");
+            if (!resultBin.exists()) {
+                File jdk7 = new File(new File(new File(jhm), "lib"), "jfxrt.jar");
+                if (jdk7.exists()) {
+                    resultBin = jdk7;
+                } else if (nball != null) {
+                    File external = new File(new File(new File(new File(nball), "libs.javafx"), "external"), "jfxrt.jar");
+                    if (external.exists()) {
+                        resultBin = external;
+                    }
+                }
+            }
+        }
+        return resultBin;
     }
     static String abbreviate(String cnb) {
         return cnb.replaceFirst("^org\\.netbeans\\.modules\\.", ""). // NOI18N
@@ -904,7 +910,7 @@ final class ModuleListParser {
                 String[] pieces = cp.split(" +");
                 exts = new File[pieces.length];
                 for (int l = 0; l < pieces.length; l++) {
-                    exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
+                    exts[l] = fixFxRtJar(new File(dir, pieces[l].replace('/', File.separatorChar)), null);
                 }
             }
             String moduleDependencies = attr.getValue("OpenIDE-Module-Module-Dependencies");

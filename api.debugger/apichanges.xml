@@ -501,6 +501,23 @@ made subject to such option by the copyright holder.
         <class package="org.netbeans.api.debugger" name="Breakpoint" />
         <issue number="197707"/>
     </change>
+    
+    <change id="SessionBridge">
+        <api name="DebuggerCoreAPI"/>
+        <summary>A session bridge introduced to handle mixed languages debugging.</summary>
+        <version major="1" minor="48"/>
+        <date day="8" month="9" year="2014"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <code>SessionBridge</code> class introduced. This class allows to
+            suggest that some debug action can be handled by a different debugging
+            session. The handlers can be registered via implementations of
+            <code>SessionChanger</code> interface.
+        </description>
+        <class package="org.netbeans.api.debugger" name="SessionBridge" />
+        <issue number="246819"/>
+    </change>
 
 </changes>
 

@@ -57,22 +57,23 @@ import org.openide.util.NbBundle.Messages;
 
 @Messages("CTL_CreateSiteTemplateAction=Save as Template")
     @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.CreateSiteTemplateAction", category = "Project")
-    @ActionRegistration(displayName = "#CTL_CreateSiteTemplateAction", lazy=false)
-    @ActionReference(path = "Projects/org-netbeans-modules-web-clientproject/Actions", position=3080)
+    @ActionRegistration(displayName = "#CTL_CreateSiteTemplateAction", lazy = false)
+    @ActionReference(path = "Projects/org-netbeans-modules-web-clientproject/Actions", position = 3080)
 public final class CreateSiteTemplateAction extends AbstractAction implements ContextAwareAction {
 
-    private ClientSideProject p;
-    
+    private final ClientSideProject project;
+
+
     public CreateSiteTemplateAction() {
         this(null, false);
     }
-    
+
     public CreateSiteTemplateAction(ClientSideProject p) {
         this(p, true);
     }
-    
-    private CreateSiteTemplateAction(ClientSideProject p, boolean enabled) {
-        this.p = p;
+
+    private CreateSiteTemplateAction(ClientSideProject project, boolean enabled) {
+        this.project = project;
         setEnabled(enabled);
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         putValue(Action.NAME, Bundle.CTL_CreateSiteTemplateAction());
@@ -80,16 +81,20 @@ public final class CreateSiteTemplateAction extends AbstractAction implements Co
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        CreateSiteTemplate.showWizard(p);
+        assert project != null;
+        CreateSiteTemplate.showWizard(project);
     }
 
-    public @Override Action createContextAwareInstance(Lookup actionContext) {
-        Project p = actionContext.lookup(Project.class);
-        if (p == null) {
+    @Override
+    public Action createContextAwareInstance(Lookup actionContext) {
+        Project proj = actionContext.lookup(Project.class);
+        if (proj == null) {
             return this;
         }
-        if (p instanceof ClientSideProject) {
-            return new CreateSiteTemplateAction((ClientSideProject)p);
+        ClientSideProject clientSideProject = proj.getLookup().lookup(ClientSideProject.class);
+        if (clientSideProject != null
+                && clientSideProject.isHtml5Project()) {
+            return new CreateSiteTemplateAction(clientSideProject);
         }
         return this;
     }

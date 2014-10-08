@@ -77,10 +77,14 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-java">
                 <folder name="Popup">
-                    <folder name="Profiling">
+                    <folder name="Profile">
+                        <file name="org-netbeans-modules-profiler-ppoints-ui-Separator1.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="200"/>
+                        </file>
                         <file name="org-netbeans-modules-profiler-ppoints-ui-InsertProfilingPointAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-profiler-ppoints-ui-InsertProfilingPointAction.instance"/>
-                            <attr name="position" intvalue="300"/>
+                            <attr name="position" intvalue="201"/>
                         </file>
                     </folder>
                 </folder>

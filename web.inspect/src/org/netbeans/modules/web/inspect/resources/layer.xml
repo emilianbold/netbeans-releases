@@ -51,6 +51,10 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
             <folder name="DomTree">
                 <file name="DomTC.wstcgrp" url="DomTC.wstcgrp"/>
             </folder>
+            <file name="Knockout.wsgrp" url="Knockout.wsgrp"/>
+            <folder name="Knockout">
+                <file name="KnockoutTC.wstcgrp" url="KnockoutTC.wstcgrp"/>
+            </folder>
         </folder>
     </folder>
 </filesystem>

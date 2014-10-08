@@ -47,7 +47,7 @@ import java.beans.*;
 import java.io.File;
 import java.net.MalformedURLException;
 import org.netbeans.modules.xml.catalog.impl.sun.Catalog;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.xml.catalog.impl.sun.res.Bundle.*;
 
 /**
  * Catalog customizer. It allows to customize catalog location and
@@ -68,16 +68,16 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         initComponents ();
         
         // A11Y
-        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CatalogCustomizer.class, "ACSD_CatalogCustomizer"));
+        this.getAccessibleContext().setAccessibleDescription(ACSD_CatalogCustomizer());
         
-        locationLabel.setDisplayedMnemonic((NbBundle.getMessage(CatalogCustomizer.class, "CatalogCustomizer.locationLabel.mne")).charAt(0));
-        locationTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CatalogCustomizer.class, "ACSD_locationTextField"));
+        locationLabel.setDisplayedMnemonic(CatalogCustomizer_locationLabel_mneString().charAt(0));
+        locationTextField.getAccessibleContext().setAccessibleDescription(ACSD_locationTextField());
 
-        preferCheckBox.setMnemonic(NbBundle.getMessage(CatalogCustomizer.class, "MNE_preference").charAt(0));
-        preferCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CatalogCustomizer.class, "ACSD_preference"));
+        preferCheckBox.setMnemonic(MNE_preference().charAt(0));
+        preferCheckBox.getAccessibleContext().setAccessibleDescription(ACSD_preference());
         
-        selectButton.setMnemonic(NbBundle.getMessage(CatalogCustomizer.class, "MNE_file").charAt(0));
-        selectButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CatalogCustomizer.class, "ACSD_file"));
+        selectButton.setMnemonic(MNE_file().charAt(0));
+        selectButton.getAccessibleContext().setAccessibleDescription(ACSD_file());
     }
 
     /** This method is called from within the constructor to
@@ -98,7 +98,7 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         setLayout(new java.awt.GridBagLayout());
 
         locationLabel.setLabelFor(locationTextField);
-        locationLabel.setText(NbBundle.getMessage(CatalogCustomizer.class, "CatalogCustomizer.locationLabel.text")); // NOI18N
+        locationLabel.setText(CatalogCustomizer_locationLabel_text());
         add(locationLabel, new java.awt.GridBagConstraints());
 
         locationTextField.setColumns(40);
@@ -118,7 +118,7 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(locationTextField, gridBagConstraints);
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/catalog/impl/sun/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/catalog/impl/sun/res/Bundle"); // NOI18N
         selectButton.setText(bundle.getString("PROP_choose_file")); // NOI18N
         selectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -131,7 +131,7 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         add(selectButton, gridBagConstraints);
 
         preferCheckBox.setText(bundle.getString("LBL_preference")); // NOI18N
-        preferCheckBox.setToolTipText(NbBundle.getMessage(CatalogCustomizer.class, "HINT_pp")); // NOI18N
+        preferCheckBox.setToolTipText(HINT_pp());
         preferCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 preferCheckBoxStateChanged(evt);
@@ -145,13 +145,13 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(preferCheckBox, gridBagConstraints);
 
-        descTextArea.setColumns(40);
         descTextArea.setEditable(false);
+        descTextArea.setColumns(40);
         descTextArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
         descTextArea.setForeground(new java.awt.Color(102, 102, 153));
         descTextArea.setLineWrap(true);
         descTextArea.setRows(4);
-        descTextArea.setText(NbBundle.getMessage(CatalogCustomizer.class, "DESC_catalog_fmts")); // NOI18N
+        descTextArea.setText(DESC_catalog_fmts());
         descTextArea.setWrapStyleWord(true);
         descTextArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
         descTextArea.setEnabled(false);

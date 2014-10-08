@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.prototypejs.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.api.lexer.Token;
@@ -81,7 +82,7 @@ public class CreateInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         FunctionArgument fArg = null;
         for (FunctionArgument farg : args) {
             if (farg.getKind() == FunctionArgument.Kind.ANONYMOUS_OBJECT) {
@@ -141,6 +142,7 @@ public class CreateInterceptor implements FunctionInterceptor {
                 }
             }
         }
+        return Collections.emptyList();
     }
 
     private String findTheName(JsObject configObject) {

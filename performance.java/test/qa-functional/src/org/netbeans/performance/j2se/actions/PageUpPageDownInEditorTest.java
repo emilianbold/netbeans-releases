@@ -75,8 +75,8 @@ public class PageUpPageDownInEditorTest extends PerformanceTestCase {
      */
     public PageUpPageDownInEditorTest(String testName) {
         super(testName);
-        expectedTime = 200;
-        WAIT_AFTER_OPEN = 400;
+        expectedTime = 100;
+        WAIT_AFTER_OPEN = 200;
         pgup = true;
     }
 
@@ -88,8 +88,8 @@ public class PageUpPageDownInEditorTest extends PerformanceTestCase {
      */
     public PageUpPageDownInEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 200;
-        WAIT_AFTER_OPEN = 400;
+        expectedTime = 100;
+        WAIT_AFTER_OPEN = 200;
     }
 
     public static Test suite() {

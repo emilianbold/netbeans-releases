@@ -186,8 +186,9 @@ public class URLDataObject extends MultiDataObject
      * @return If any found, string on separate line after "url=", otherwise the
      * first line.
      */
-    private String findUrlInFileContent(BufferedReader reader) {
-        String line = null;
+    @SuppressWarnings("NestedAssignment")
+    static String findUrlInFileContent(BufferedReader reader) {
+        String line;
         String firstLine = null;
         int tries = 0;
         try {
@@ -195,7 +196,8 @@ public class URLDataObject extends MultiDataObject
                 if (firstLine == null) {
                     firstLine = line;
                 }
-                if (line.substring(0, 4).equalsIgnoreCase("url=")) {
+                if (line.length() > 3
+                        && line.substring(0, 4).equalsIgnoreCase("url=")) {
                     return line.substring(4);
                 }
                 tries++;

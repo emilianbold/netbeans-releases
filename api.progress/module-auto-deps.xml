@@ -48,14 +48,15 @@ made subject to such option by the copyright holder.
 
 <transformations version="1.0">
     <transformationgroup>
-        <description>FileObject implements Lookup.Provider</description>
+        <description>Swing dependencies split away</description>
         <transformation>
             <trigger-dependency type="older">
                 <module-dependency codenamebase="org.netbeans.api.progress" major="1" spec="1.40"/>
             </trigger-dependency>
             <implies>
                 <result>
-                    <module-dependency codenamebase="org.netbeans.api.progress.nb"/>
+                    <module-dependency codenamebase="org.netbeans.api.progress.nb" spec="1.40"/>
+                    <module-dependency codenamebase="org.netbeans.api.progress.compat8" spec="1.40"/>
                 </result>
             </implies>
         </transformation>

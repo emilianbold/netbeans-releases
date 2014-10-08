@@ -183,6 +183,35 @@ public class FileChangedManager extends SecurityManager {
         return IDLE_IO.get() != null;
     }
 
+    /**
+     * If invoked in {@link #idleIO(int, java.lang.Runnable,
+     * java.lang.Runnable, java.util.concurrent.atomic.AtomicBoolean) idleIO},
+     * wait until all priority IOs are completed and start {@link Runnable}
+     * {@code run}. The {@code run} will not be blocked in FileChangedManager
+     * even if another priority IO is started (this would cause deadlocks, see
+     * bug 246893).
+     */
+    public static void waitNowAndRun(Runnable run) {
+        Integer storedMaxLoad = IDLE_IO.get();
+        if (storedMaxLoad != null) {
+            try {
+                waitIOLoadLowerThan(storedMaxLoad);
+            } catch (InterruptedException ex) {
+                if (isFine) {
+                    LOG.log(Level.FINE, "Interrupted {0}", ex.getMessage());
+                }
+            }
+            IDLE_IO.set(null);
+            try {
+                run.run();
+            } finally {
+                IDLE_IO.set(storedMaxLoad);
+            }
+        } else {
+            run.run();
+        }
+    }
+
     public static void idleIO(int maximumLoad, Runnable r, Runnable goingToSleep, AtomicBoolean goOn) {
         Integer prev = IDLE_IO.get();
         Runnable pGoing = IDLE_CALL.get();

@@ -486,6 +486,9 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
 	commitToAltSettings(null, null);
     }
 
+    public void noteAttached() {
+        NativeDebuggerManager.get().notifyAttached(debugger, debugger.getNDI().getPid());
+    }
 
 
 

@@ -50,8 +50,8 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.border.Border;
 import javax.swing.*;
 import javax.accessibility.Accessible;
-import javax.accessibility.AccessibleContext;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseListener;
@@ -76,8 +76,8 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
     private final EditableDiffView master;
 
     private Point lastMousePosition = POINT_ZERO;
-    private HotSpot lastHotSpot = null;
-    private java.util.List<HotSpot> hotspots = new ArrayList<HotSpot>(0);
+    private DividerAction lastHotSpot = null;
+    private java.util.List<DividerAction> hotspots = new ArrayList<>(0);
     
     private DiffSplitDivider mydivider;
     
@@ -102,9 +102,9 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
 
     public void mouseClicked(MouseEvent e) {
         if (!e.isPopupTrigger()) {
-            HotSpot spot = getHotspotAt(e.getPoint());
+            Action spot = getHotspotAt(e.getPoint());
             if (spot != null) {
-                performAction();    // there is only one hotspot
+                spot.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
             }
         }
     }
@@ -136,7 +136,7 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
     public void mouseMoved(MouseEvent e) {
         Point p = e.getPoint();
         lastMousePosition = p;
-        HotSpot spot = getHotspotAt(p);
+        DividerAction spot = getHotspotAt(p);
         if (lastHotSpot != spot) {
             mydivider.repaint(lastHotSpot == null ? spot.getRect() : lastHotSpot.getRect());
         }
@@ -150,10 +150,6 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
             mydivider.repaint();
         }
     }
-
-    private void performAction() {
-        master.rollback(null);
-    }
     
     public void setBorder(Border border) {
         super.setBorder(BorderFactory.createEmptyBorder());
@@ -163,8 +159,8 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
         return mydivider;
     }
 
-    private HotSpot getHotspotAt(Point p) {
-        for (HotSpot hotspot : hotspots) {
+    private DividerAction getHotspotAt(Point p) {
+        for (DividerAction hotspot : hotspots) {
           if (hotspot.getRect().contains(p)) {
               return hotspot;
           }
@@ -172,9 +168,29 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
         return null;
     }
     
+    @NbBundle.Messages({
+        "TT_DiffPanel_JumpToCurrent=Go to Current Difference"
+    })
     private class DiffSplitDivider extends JPanel {
     
         private Map renderingHints;
+        private final DividerAction rollbackAction = new DividerAction(NbBundle.getMessage(DiffSplitDivider.class, "TT_DiffPanel_MoveAll"), null) { //NOI18N
+
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                master.rollback(null);
+            }
+
+        };
+        private final DividerAction jumpToCurrentAction = new DividerAction(Bundle.TT_DiffPanel_JumpToCurrent(), null) {
+
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                int diff = master.getCurrentDifference();
+                master.setCurrentDifference(diff);
+            }
+
+        };
 
         public DiffSplitDivider() {
             setBackground(UIManager.getColor("SplitPane.background")); // NOI18N
@@ -190,15 +206,15 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
 
         public String getToolTipText(MouseEvent event) {
             Point p = event.getPoint();
-            HotSpot spot = getHotspotAt(p);
-            if (spot == null) return null;
-            return NbBundle.getMessage(DiffSplitDivider.class, "TT_DiffPanel_MoveAll"); // NOI18N
+            DividerAction spot = getHotspotAt(p);
+            return spot == null ? null : spot.getValue(Action.NAME).toString();
         }
         
         protected void paintComponent(Graphics gr) {
             Graphics2D g = (Graphics2D) gr.create();
             Rectangle clip = g.getClipBounds();
             Stroke cs = g.getStroke();
+            List<DividerAction> newActionIcons = new ArrayList<>();
             
             g.setColor(getBackground());
             g.fillRect(clip.x, clip.y, clip.width, clip.height);
@@ -219,10 +235,16 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
             if (renderingHints != null) {
                 g.addRenderingHints(renderingHints);
             }
-            String diffInfo = (master.getCurrentDifference() + 1) + "/" + master.getDifferenceCount(); // NOI18N
+            int currDiff = master.getCurrentDifference();
+            String diffInfo = (currDiff + 1) + "/" + master.getDifferenceCount(); // NOI18N
             int width = g.getFontMetrics().stringWidth(diffInfo);
             g.setColor(fontColor);
-            g.drawString(diffInfo, (getWidth() - width) / 2, g.getFontMetrics().getHeight());
+            Rectangle hotSpot = new Rectangle((getWidth() - width) / 2, 0, width, g.getFontMetrics().getHeight());
+            g.drawString(diffInfo, hotSpot.x, hotSpot.y + hotSpot.height);
+            if (currDiff >= 0) {
+                jumpToCurrentAction.initRect(hotSpot);
+                newActionIcons.add(jumpToCurrentAction);
+            }
             
             if (clip.y < editorsOffset) {
                 g.setClip(clip.x, editorsOffset, clip.width, clip.height);
@@ -260,16 +282,16 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
             }
             
             if (master.isActionsEnabled() && everythingEditable) {
-                List<HotSpot> newActionIcons = new ArrayList<HotSpot>();
-                Rectangle hotSpot = new Rectangle((getWidth() - actionIconsWidth) /2, editorsOffset, actionIconsWidth, actionIconsHeight);
+                hotSpot = new Rectangle((getWidth() - actionIconsWidth) /2, editorsOffset, actionIconsWidth, actionIconsHeight);
                 if (hotSpot.contains(lastMousePosition)) {
                     g.drawImage(insertAllActiveImage, hotSpot.x, hotSpot.y, this);
                 } else {
                     g.drawImage(insertAllImage, hotSpot.x, hotSpot.y, this);
                 }
-                newActionIcons.add(new HotSpot(hotSpot, null));
-                hotspots = newActionIcons;
+                rollbackAction.initRect(hotSpot);
+                newActionIcons.add(rollbackAction);
             }
+            hotspots = newActionIcons;
             g.dispose();
         }
         
@@ -299,4 +321,22 @@ class DiffSplitPaneDivider extends BasicSplitPaneDivider implements MouseMotionL
             g.draw(bottom);
         }
     }    
+    
+    private abstract static class DividerAction extends AbstractAction {
+        private Rectangle rect;
+
+        public DividerAction (String name, Rectangle rect) {
+            super(name);
+            this.rect = rect;
+        }
+
+        private Rectangle getRect () {
+            return rect;
+        }
+
+        private void initRect (Rectangle rect) {
+            this.rect = rect;
+        }
+        
+    }
 }

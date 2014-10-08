@@ -604,9 +604,11 @@ public class ToolTipSupport {
      * @since 3.28
      */
     public final void setToolTipVisible(boolean visible, boolean updateFromView) {
-        LOG.log(Level.FINE, "setToolTipVisible: visible={0}, status={1}, enabled={2}", new Object [] { //NOI18N
-            visible, status, enabled
-        });
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "setToolTipVisible: visible={0}, status={1}, enabled={2}", new Object [] { //NOI18N
+                visible, status, enabled
+            });
+        }
 
         if (!visible) { // ensure the timers are stopped
             enterTimer.stop();
@@ -794,7 +796,9 @@ public class ToolTipSupport {
             if (toolTip != null && toolTip.isVisible()) {
                 toolTip.setVisible(false);
             }
-            LOG.log(Level.FINE, "model-pos={0}, cursorBounds={1}", new Object [] { pos, cursorBounds });
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "model-pos={0}, cursorBounds={1}", new Object [] { pos, cursorBounds });
+            }
             pm.install(toolTip, cursorBounds, placement, horizontalBounds, horizontalAdjustment, verticalAdjustment);
             if (toolTip != null) {
                 toolTip.putClientProperty(LAST_TOOLTIP_POSITION, toolTipPosition);

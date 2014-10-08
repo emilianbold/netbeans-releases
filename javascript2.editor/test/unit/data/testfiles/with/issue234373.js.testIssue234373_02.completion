@@ -2,11 +2,11 @@ Code completion result for source line:
 |play(); //Here
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CONSTRUCTO Player234373(): Player234373    [PUBLIC]   issue234373.js
+CONSTRUCTO Player234373                    [PUBLIC]   issue234373.js
 CLASS      console                         [PUBLIC]   issue234373.js
 CLASS      window                          [PUBLIC]   issue234373.js
 METHOD     play(): undefined               [PROTECTE  issue234373.js
-FIELD      brand                           [PUBLIC]   issue234373.js
+FIELD      brand: String                   [PUBLIC]   issue234373.js
 VARIABLE   arguments: Arguments            [PRIVATE]  issue234373.js
 KEYWORD    break                                      null
 KEYWORD    case                                       null

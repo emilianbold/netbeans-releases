@@ -93,15 +93,15 @@ public class BuildListNode extends SectionNode {
 
     @Override
     protected List<TreeListNode> createChildren() {
+        if(!accessor.hasBuilds(project)) {
+            return Arrays.asList(new TreeListNode[] {new NANode(this)});
+        }
         List<TreeListNode> res = getBuilds();
         res.add( new NewBuildNode(this) );
         return res;
     }
 
     private List<TreeListNode> getBuilds() {
-        if(!accessor.hasBuilds(project)) {
-            return Arrays.asList(new TreeListNode[] {new NANode(this)});
-        }
         ArrayList<TreeListNode> res = new ArrayList<>(20);
         synchronized (BUILDS_LOCK) {
             if(builds == null) {

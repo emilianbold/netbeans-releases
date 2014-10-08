@@ -139,7 +139,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     // -J-Dorg.netbeans.editor.BaseDocument.level=FINE
     private static final Logger LOG = Logger.getLogger(BaseDocument.class.getName());
 
-    // -J-Dorg.netbeans.editor.BaseDocument.listener.level=FINE
+    // -J-Dorg.netbeans.editor.BaseDocument-listener.level=FINE
     private static final Logger LOG_LISTENER = Logger.getLogger(BaseDocument.class.getName() + "-listener");
 
     // -J-Dorg.netbeans.editor.BaseDocument.EDT.level=FINE - check that insert/remove only in EDT
@@ -1268,99 +1268,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return -1; // position outside bounds => not found
     }
 
-    /**
-     * Find something in document using a finder.
-     *
-     * @param startPos position in the document where the search will start
-     * @param limitPos position where the search will be end with reporting that
-     * nothing was found.
-     */
-    public int find(org.netbeans.api.editor.document.Finder finder, int startPos, int limitPos)
-    throws BadLocationException {
-        int docLen = getLength();
-        if (limitPos == -1) {
-            limitPos = docLen;
-        }
-        if (startPos == -1) {
-            startPos = docLen;
-        }
-
-        if (finder instanceof org.netbeans.api.editor.document.AdjustFinder) {
-            if (startPos == limitPos) { // stop immediately
-                finder.reset(); // reset() should be called in all the cases
-                return -1; // must stop here because wouldn't know if fwd/bwd search?
-            }
-
-            boolean forwardAdjustedSearch = (startPos < limitPos);
-            startPos = ((org.netbeans.api.editor.document.AdjustFinder)finder).adjustStartPos(this, startPos);
-            limitPos = ((org.netbeans.api.editor.document.AdjustFinder)finder).adjustLimitPos(this, limitPos);
-            boolean voidSearch = (forwardAdjustedSearch ? (startPos >= limitPos) : (startPos <= limitPos));
-            if (voidSearch) {
-                finder.reset();
-                return -1;
-            }
-        }
-
-        finder.reset();
-        if (startPos == limitPos) {
-            return -1;
-        }
-
-        Segment text = new Segment();
-        int gapStart = ((EditorDocumentContent)getContent()).getCharContentGapStart();
-        if (gapStart == -1) {
-            throw new IllegalStateException("Cannot get gapStart"); // NOI18N
-        }
-
-        int pos = startPos; // pos at which the search starts (continues)
-        boolean fwdSearch = (startPos <= limitPos); // forward search
-        if (fwdSearch) {
-            while (pos >= startPos && pos < limitPos) {
-                int p0; // low bound
-                int p1; // upper bound
-                if (pos < gapStart) { // part below gap
-                    p0 = startPos;
-                    p1 = Math.min(gapStart, limitPos);
-                } else { // part above gap
-                    p0 = Math.max(gapStart, startPos);
-                    p1 = limitPos;
-                }
-
-                getText(p0, p1 - p0, text);
-                pos = finder.find(p0 - text.offset, text.array,
-                        text.offset, text.offset + text.count, pos, limitPos);
-
-                if (finder.isFound()) {
-                    return pos;
-                }
-            }
-
-        } else { // backward search limitPos < startPos
-            pos--; // start one char below the upper bound
-            while (limitPos <= pos && pos <= startPos) {
-                int p0; // low bound
-                int p1; // upper bound
-                if (pos < gapStart) { // part below gap
-                    p0 = limitPos;
-                    p1 = Math.min(gapStart, startPos);
-                } else { // part above gap
-                    p0 = Math.max(gapStart, limitPos);
-                    p1 = startPos;
-                }
-
-                getText(p0, p1 - p0, text);
-                pos = finder.find(p0 - text.offset, text.array,
-                        text.offset, text.offset + text.count, pos, limitPos);
-
-                if (finder.isFound()) {
-                    return pos;
-                }
-            }
-        }
-
-        return -1; // position outside bounds => not found
-    }
-
     /** Fire the change event to repaint the given block of text.
      * @deprecated Please use <code>JTextComponent.getUI().damageRange()</code> instead.
      */
@@ -2010,9 +1917,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     @Override
     public void addDocumentListener(DocumentListener listener) {
         if (LOG_LISTENER.isLoggable(Level.FINE)) {
-            LOG_LISTENER.fine("ADD DocumentListener to " +
+            LOG_LISTENER.fine("ADD DocumentListener of class " + listener.getClass() + " to existing " +
                     org.netbeans.lib.editor.util.swing.DocumentUtilities.getDocumentListenerCount(this) +
-                    " present: " + listener + '\n'
+                    " listeners. Listener: " + listener + '\n'
             );
             if (LOG_LISTENER.isLoggable(Level.FINER)) {
                 LOG_LISTENER.log(Level.FINER, "    StackTrace:\n", new Exception());
@@ -2026,9 +1933,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     @Override
     public void removeDocumentListener(DocumentListener listener) {
         if (LOG_LISTENER.isLoggable(Level.FINE)) {
-            LOG_LISTENER.fine("REMOVE DocumentListener from " +
+            LOG_LISTENER.fine("REMOVE DocumentListener of class " + listener.getClass() + " from existing " +
                     org.netbeans.lib.editor.util.swing.DocumentUtilities.getDocumentListenerCount(this) +
-                    " present: " + listener + '\n'
+                    " listeners. Listener: " + listener + '\n'
             );
             if (LOG_LISTENER.isLoggable(Level.FINER)) {
                 LOG_LISTENER.log(Level.FINER, "    StackTrace:\n", new Exception());

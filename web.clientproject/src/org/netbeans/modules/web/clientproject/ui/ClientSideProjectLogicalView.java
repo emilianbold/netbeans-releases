@@ -46,11 +46,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.File;
-import java.text.Collator;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,8 +69,10 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.api.BadgeIcon;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.remotefiles.RemoteFilesNodeFactory;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
@@ -91,25 +91,20 @@ import org.openide.actions.ToolsAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
-import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.ChildFactory;
-import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -237,6 +232,15 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 /** This is the node you actually see in the project tab for the project */
     private static final class ClientSideProjectNode extends AbstractNode implements ChangeListener, PropertyChangeListener {
 
+        @StaticResource
+        private static final String HTML5_BADGE_ICON = "org/netbeans/modules/web/clientproject/ui/resources/html5-badge.png"; // NOI18N
+        @StaticResource
+        private static final String JS_LIBRARY_BADGE_ICON = "org/netbeans/modules/web/clientproject/ui/resources/js-library-badge.png"; // NOI18N
+        @StaticResource
+        private static final String PLACEHOLDER_BADGE_ICON = "org/netbeans/modules/web/clientproject/ui/resources/placeholder-badge.png"; // NOI18N
+        private static final URL PLACEHOLDER_BADGE_URL = ClientSideProjectNode.class.getResource(PLACEHOLDER_BADGE_ICON);
+        private static final String ICON_TOOLTIP = "<img src=\"%s\">&nbsp;%s"; // NOI18N
+
         private final ClientSideProject project;
         private final ProjectInformation projectInfo;
         private final PropertyEvaluator evaluator;
@@ -331,12 +335,33 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.loadImage(ClientSideProject.PROJECT_ICON);
+            return annotateImage(ImageUtilities.icon2Image(projectInfo.getIcon()));
         }
 
         @Override
         public Image getOpenedIcon(int type) {
             return getIcon(type);
+        }
+
+        private Image annotateImage(Image image) {
+            // project type
+            Image projectBadge = ImageUtilities.loadImage(project.isJsLibrary() ? JS_LIBRARY_BADGE_ICON : HTML5_BADGE_ICON);
+            Image badged = ImageUtilities.mergeImages(image, projectBadge, 0, 0);
+            // platform providers
+            boolean first = true;
+            for (PlatformProvider provider : project.getPlatformProviders()) {
+                BadgeIcon badgeIcon = provider.getBadgeIcon();
+                if (badgeIcon != null) {
+                    badged = ImageUtilities.addToolTipToImage(badged, String.format(ICON_TOOLTIP, badgeIcon.getUrl(), provider.getDisplayName()));
+                    if (first) {
+                        badged = ImageUtilities.mergeImages(badged, badgeIcon.getImage(), 15, 0);
+                        first = false;
+                    }
+                } else {
+                    badged = ImageUtilities.addToolTipToImage(badged, String.format(ICON_TOOLTIP, PLACEHOLDER_BADGE_URL, provider.getDisplayName()));
+                }
+            }
+            return badged;
         }
 
         @Override
@@ -360,11 +385,17 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @NbBundle.Messages({
             "# {0} - project directory",
-            "ClientSideProjectNode.description=HTML5 application in {0}"
+            "ClientSideProjectNode.project.description=HTML5 application in {0}",
+            "# {0} - project directory",
+            "ClientSideProjectNode.library.description=JavaScript library in {0}",
         })
         @Override
         public String getShortDescription() {
-            return Bundle.ClientSideProjectNode_description(FileUtil.getFileDisplayName(project.getProjectDirectory()));
+            String projectDirName = FileUtil.getFileDisplayName(project.getProjectDirectory());
+            if (project.isJsLibrary()) {
+                return Bundle.ClientSideProjectNode_library_description(projectDirName);
+            }
+            return Bundle.ClientSideProjectNode_project_description(projectDirName);
         }
 
         @Override
@@ -404,6 +435,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    fireIconChange();
                     fireNameChange(null, null);
                     fireDisplayNameChange(null, null);
                 }
@@ -480,19 +512,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         public NodeList createNodes(Project p) {
             return new ClientProjectNodeList((ClientSideProject)p);
-        }
-
-    }
-
-    // #246318
-    @NodeFactory.Registration(projectType="org-netbeans-modules-web-clientproject",position=510)
-    public static final class OtherDirsNodeFactory implements NodeFactory {
-
-        @Override
-        public NodeList<?> createNodes(Project project) {
-            ClientSideProject clientSideProject = project.getLookup().lookup(ClientSideProject.class);
-            assert clientSideProject != null;
-            return NodeFactorySupport.fixedNodeList(new AllFilesNode(clientSideProject));
         }
 
     }
@@ -1007,151 +1026,5 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     }
 
-    private static final class AllFilesNode extends AbstractNode {
-
-        private final Node iconDelegate;
-
-
-        public AllFilesNode(ClientSideProject project) {
-            super(Children.create(AllFilesChildFactory.create(project), true));
-            iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
-        }
-
-        @NbBundle.Messages("AllFilesNode.name=All Files")
-        @Override
-        public String getDisplayName() {
-            return Bundle.AllFilesNode_name();
-        }
-
-        @Override
-        public Image getIcon(int type) {
-            return iconDelegate.getIcon(type);
-        }
-
-        @Override
-        public Image getOpenedIcon(int type) {
-            return iconDelegate.getOpenedIcon(type);
-        }
-
-    }
-
-    private static final class AllFilesChildFactory extends ChildFactory<FileObject> implements FileChangeListener {
-
-        private static final Comparator<FileObject> CHILDREN_CAMPARATOR = new FileObjectUiComparator();
-
-
-        private final ClientSideProject project;
-
-
-        private AllFilesChildFactory(ClientSideProject project) {
-            this.project = project;
-        }
-
-        public static AllFilesChildFactory create(ClientSideProject project) {
-            AllFilesChildFactory factory = new AllFilesChildFactory(project);
-            FileObject projectDirectory = project.getProjectDirectory();
-            projectDirectory.addFileChangeListener(FileUtil.weakFileChangeListener(factory, projectDirectory));
-            return factory;
-        }
-
-        @Override
-        protected boolean createKeys(List<FileObject> toPopulate) {
-            FileObject[] children = project.getProjectDirectory().getChildren();
-            for (FileObject fileObject : children) {
-                if (isVisible(fileObject)) {
-                    toPopulate.add(fileObject);
-                }
-            }
-            // sort - really there is no easy/better way?
-            Collections.sort(toPopulate, CHILDREN_CAMPARATOR);
-            return true;
-        }
-
-        @Override
-        protected Node createNodeForKey(FileObject key) {
-            try {
-                return DataObject.find(key).getNodeDelegate();
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return null;
-        }
-
-        private boolean isVisible(FileObject fileObject) {
-            if ("nbproject".equals(fileObject.getNameExt())) { // NOI18N
-                return false;
-            }
-            return VisibilityQuery.getDefault().isVisible(fileObject);
-        }
-
-        @Override
-        public void fileFolderCreated(FileEvent fe) {
-            refresh();
-        }
-
-        @Override
-        public void fileDataCreated(FileEvent fe) {
-            refresh();
-        }
-
-        @Override
-        public void fileChanged(FileEvent fe) {
-            refresh();
-        }
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            refresh();
-        }
-
-        @Override
-        public void fileRenamed(FileRenameEvent fe) {
-            refresh();
-        }
-
-        @Override
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-            // noop
-        }
-
-        private void refresh() {
-            refresh(false);
-        }
-
-    }
-
-    private static final class FileObjectUiComparator implements Comparator<FileObject> {
-
-        private final Collator collator;
-
-
-        public FileObjectUiComparator() {
-            collator = Collator.getInstance();
-        }
-
-        @Override
-        public int compare(FileObject file1, FileObject file2) {
-            if (file1.isFolder()
-                    && file2.isData()) {
-                return -1;
-            }
-            if (file1.isData()
-                    && file2.isFolder()) {
-                return 1;
-            }
-            String name1 = file1.getNameExt();
-            String name2 = file2.getNameExt();
-            if (Character.isUpperCase(name1.charAt(0))
-                    && Character.isLowerCase(name2.charAt(0))) {
-                return -1;
-            }
-            if (Character.isLowerCase(name1.charAt(0))
-                    && Character.isUpperCase(name2.charAt(0))) {
-                return 1;
-            }
-            return collator.compare(name1, name2);
-        }
-
-    }
 
 }

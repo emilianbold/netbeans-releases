@@ -108,7 +108,7 @@ public final class AsynchronousMethodInvocation {
                 for (ExecutableElement method : candidates) {
                     problems.add(HintsUtils.createProblem(
                             method,
-                            ctx.getComplilationInfo(),
+                            hintContext.getInfo(),
                             Bundle.AsynchronousMethodInvocation_err_asynchronous_in_ejb31()));
                 }
             }

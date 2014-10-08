@@ -60,7 +60,10 @@ import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import static org.netbeans.modules.git.ui.push.Bundle.*;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo.PushMode;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -92,7 +95,9 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
     
     @NbBundle.Messages({"LBL_Push.pushToUpstreamFailed=Push to Upstream Failed",
         "LBL_PushToUpstreamAction.preparing=Preparing Push...",
-        "# {0} - local branch", "MSG_Err.unknownRemoteBranchName=Cannot guess remote branch name for {0}"})
+        "MSG_Err.noBranchState=You are not on a branch, push cannot continue.",
+        "# {0} - local branch", "MSG_Err.unknownRemoteBranchName=Cannot guess remote branch name for {0}"
+    })
     Task push (final File repository, final Set<File> repositories) {
         final Task[] t = new Task[1];
         GitProgressSupport supp = new GitProgressSupport.NoOutputLogging() {
@@ -105,22 +110,36 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
                     return;
                 }
                 String errorLabel = LBL_Push_pushToUpstreamFailed();
-                GitBranch trackedBranch = getTrackedBranch(activeBranch, errorLabel);
-                if (trackedBranch == null) {
+                if (GitBranch.NO_BRANCH.equals(activeBranch.getName())) {
+                    GitUtils.notifyError(errorLabel, MSG_Err_noBranchState());
                     return;
                 }
+                RepositoryInfo.PushMode pushMode = info.getPushMode();
+                GitBranch trackedBranch = getTrackedBranch(activeBranch, pushMode, errorLabel);
                 GitRemoteConfig cfg = getRemoteConfigForActiveBranch(trackedBranch, info, errorLabel);                        
                 if (cfg == null) {
                     return;
                 }
                 String uri = cfg.getPushUris().isEmpty() ? cfg.getUris().get(0) : cfg.getPushUris().get(0);
-                List<PushMapping> pushMappings = new LinkedList<PushMapping>();
+                List<PushMapping> pushMappings = new LinkedList<>();
                 List<String> fetchSpecs = cfg.getFetchRefSpecs();
-                String remoteBranchName = guessRemoteBranchName(fetchSpecs, trackedBranch.getName(), cfg.getRemoteName());
-                if (remoteBranchName == null) {
-                    GitUtils.notifyError(errorLabel, MSG_Err_unknownRemoteBranchName(trackedBranch.getName()));
+                String remoteBranchName;
+                String trackedBranchId = null;
+                if (trackedBranch == null) {
+                    if (shallCreateNewBranch(activeBranch)) {
+                        remoteBranchName = activeBranch.getName();
+                    } else {
+                        return;
+                    }
+                } else {
+                    trackedBranchId = trackedBranch.getId();
+                    remoteBranchName = guessRemoteBranchName(fetchSpecs, trackedBranch.getName(), cfg.getRemoteName());
+                    if (remoteBranchName == null) {
+                        GitUtils.notifyError(errorLabel, MSG_Err_unknownRemoteBranchName(trackedBranch.getName()));
+                        return;
+                    }
                 }
-                pushMappings.add(new PushMapping.PushBranchMapping(remoteBranchName, trackedBranch.getId(), activeBranch, false, false));
+                pushMappings.add(new PushMapping.PushBranchMapping(remoteBranchName, trackedBranchId, activeBranch, false, false));
                 Utils.logVCSExternalRepository("GIT", uri); //NOI18N
                 if (!isCanceled()) {
                     t[0] = SystemAction.get(PushAction.class).push(repository, uri, pushMappings,
@@ -141,32 +160,44 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
         return remoteName;
     }
 
-    @Messages({"# {0} - branch name", "MSG_Err.noTrackedBranch=No tracked remote branch specified for local {0}",
-        "# {0} - branch name", "MSG_Err.trackedBranchLocal=Tracked branch {0} is not a remote branch"})
-    protected GitBranch getTrackedBranch (GitBranch activeBranch, String errorLabel) {
+    protected GitBranch getTrackedBranch (GitBranch activeBranch, PushMode pushMode, String errorLabel) {
         GitBranch trackedBranch = activeBranch.getTrackedBranch();
-        if (trackedBranch == null) {
-            GitUtils.notifyError(errorLabel,
-                    MSG_Err_noTrackedBranch(activeBranch.getName())); //NOI18N
-            return null;
+        if (trackedBranch != null && !trackedBranch.isRemote()) {
+            trackedBranch = null;
         }
-        if (!trackedBranch.isRemote()) {
-            GitUtils.notifyError(errorLabel, MSG_Err_trackedBranchLocal(trackedBranch.getName())); //NOI18N
-            return null;
+        if (trackedBranch != null && pushMode == PushMode.ASK) {
+            if (!("" + parseRemote(trackedBranch.getName()) + "/" + activeBranch.getName()).equals(trackedBranch.getName())) {
+                trackedBranch = null;
+            }
         }
         return trackedBranch;
     }
 
-    @Messages({"# {0} - branch name", "MSG_Err.noRemote=No remote found for branch {0}",
+    @Messages({"# {0} - branch name", "MSG_Err.noRemoteBranch=No remote found for branch {0}",
+        "MSG_Err.noRemote=No remote defined in repository configuration",
+        "# {0} - remote count", "MSG_Err.moreRemotes=Cannot choose from {0} remotes",
         "# {0} - branch name", "MSG_Err.noUri=No URI specified for remote {0}",
         "# {0} - branch name", "MSG_Err.noSpecs=No fetch ref specs specified for remote {0}"})
     protected static GitRemoteConfig getRemoteConfigForActiveBranch (GitBranch trackedBranch, RepositoryInfo info, String errorLabel) {
         Map<String, GitRemoteConfig> remotes = info.getRemotes();
-        String remoteName = parseRemote(trackedBranch.getName());
-        GitRemoteConfig cfg = remoteName == null ? null : remotes.get(remoteName);
-        if (cfg == null) {
-            GitUtils.notifyError(errorLabel, MSG_Err_noRemote(trackedBranch.getName()));
-            return null;
+        GitRemoteConfig cfg;
+        if (trackedBranch == null) {
+            if (remotes.size() == 1) {
+                cfg = remotes.values().iterator().next();
+            } else if (remotes.isEmpty()) {
+                GitUtils.notifyError(errorLabel, MSG_Err_noRemote());
+                return null;
+            } else {
+                GitUtils.notifyError(errorLabel, MSG_Err_moreRemotes(remotes.size()));
+                return null;
+            }
+        } else {
+            String remoteName = parseRemote(trackedBranch.getName());
+            cfg = remoteName == null ? null : remotes.get(remoteName);
+            if (cfg == null) {
+                GitUtils.notifyError(errorLabel, MSG_Err_noRemoteBranch(trackedBranch.getName()));
+                return null;
+            }
         }
         if (cfg.getPushUris().isEmpty() && cfg.getUris().isEmpty()) {
             GitUtils.notifyError(errorLabel, MSG_Err_noUri(cfg.getRemoteName()));
@@ -205,6 +236,18 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
             }
         }
         return remoteBranchName;
+    }
+
+    @NbBundle.Messages({
+        "LBL_Push.createNewBranch=Create New Branch?",
+        "# {0} - branch name", "MSG_Push.createNewBranch=Push is about to create a new branch \"{0}\" in the remote repository.\n"
+                + "Do you want to continue and create the branch?"
+    })
+    private static boolean shallCreateNewBranch (GitBranch branch) {
+        return NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                Bundle.MSG_Push_createNewBranch(branch.getName()),
+                Bundle.LBL_Push_createNewBranch(),
+                NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE));
     }
     
 }

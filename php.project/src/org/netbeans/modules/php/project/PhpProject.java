@@ -282,7 +282,7 @@ public final class PhpProject implements Project {
                 .setProperties(PhpProjectProperties.SRC_DIR)
                 .build();
         testRoots = SourceRoots.Builder.create(updateHelper, eval, Bundle.PhpProject_sourceRoots_tests())
-                .setPropertyPrefix(PhpProjectProperties.TEST_SRC_DIR)
+                .setPropertyNumericPrefix(PhpProjectProperties.TEST_SRC_DIR)
                 .setTests(true)
                 .build();
         seleniumRoots = SourceRoots.Builder.create(updateHelper, eval, Bundle.PhpProject_sourceRoots_selenium())

@@ -60,9 +60,10 @@ public class CompatFileExtrasLkp extends AbstractLookup {
     public CompatFileExtrasLkp() {
         this(new InstanceContent());
     }
-    private CompatFileExtrasLkp(InstanceContent content) {
+    
+    public CompatFileExtrasLkp(AbstractLookup.Content content) {
         super(content);
-        this.ic = content;
+        this.ic = (InstanceContent)content;
     }
     
     FileExtrasLkp compat() {

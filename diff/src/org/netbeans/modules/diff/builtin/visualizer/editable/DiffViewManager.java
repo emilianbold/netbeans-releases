@@ -527,12 +527,12 @@ class DiffViewManager implements ChangeListener {
         } else {
             int halfScreen = rightPane.getScrollPane().getVerticalScrollBar().getVisibleAmount() / 2;
             rightOffet += halfScreen;
-            if (checkFileEdge && rightOffet + halfScreen >= rightPane.getScrollPane().getVerticalScrollBar().getMaximum()) {
+            if (checkFileEdge && rightOffet >= rightPane.getScrollPane().getVerticalScrollBar().getMaximum()) {
                 rightOffet = map.length - 1;
             }
             if (rightOffet >= map.length) return;
             leftPane.getScrollPane().getVerticalScrollBar().setValue(map[rightOffet]
-                    - leftPane.getScrollPane().getVerticalScrollBar().getVisibleAmount() / 2);
+                    - halfScreen);
         }
     }
 
@@ -742,8 +742,13 @@ class DiffViewManager implements ChangeListener {
                             : topRight - 150);
                     int newLastOffset = rightPanelHeightCached - 1;
                     if (i < diffs.length - 1) {
-                        newLastOffset = diffs[i + 1].topRight;
-                        scrollMap[newLastOffset] = diffs[i + 1].topLeft;
+                        if (diffs[i + 1].topRight >= scrollMap.length) {
+                            Logger.getLogger(DiffViewManager.class.getName()).log(Level.FINE, "Skipping temporary diff highlights");
+                            break;
+                        } else {
+                            newLastOffset = diffs[i + 1].topRight;
+                            scrollMap[newLastOffset] = diffs[i + 1].topLeft;
+                        }
                     }
                     scrollMap[topRight] = bottomLeft;
                     interpolate(scrollMap, topRight, newLastOffset);
@@ -767,9 +772,9 @@ class DiffViewManager implements ChangeListener {
         private void interpolate (int[] scrollMap, int start, int end) {
             if (end > start) {
                 int rightHeight = end - start;
-                int leftHeight = scrollMap[end] - scrollMap[start];
+                long leftHeight = scrollMap[end] - scrollMap[start];
                 for (int pos = 1; pos < end - start; ++pos) {
-                    scrollMap[pos + start] = (leftHeight * pos) / rightHeight + scrollMap[start];
+                    scrollMap[pos + start] = (int) ((leftHeight * pos) / rightHeight + scrollMap[start]);
                 }
             }
         }

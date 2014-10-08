@@ -45,8 +45,11 @@ import java.awt.Component;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
@@ -55,6 +58,7 @@ import org.netbeans.modules.web.clientproject.sites.SiteZipPanel;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.awt.HtmlBrowser;
@@ -65,6 +69,9 @@ import org.openide.util.test.MockLookup;
 
 public class ClientSideProjectTest extends NbTestCase {
 
+    private static int projectCounter = 1;
+
+
     public ClientSideProjectTest() {
         super("ClientSideProjectTest");
     }
@@ -72,63 +79,105 @@ public class ClientSideProjectTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();
         MockLookup.setLayersAndInstances("smth");
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    public void testProjectWithSiteRootCreation() throws Exception {
+        ClientSideProject project = createProject(null, "public_html_XX", "test");
+        assertNoProjectProblems(project);
+        assertTrue(project.isHtml5Project());
+        assertFalse(project.isJsLibrary());
     }
 
-    public void testProjectCreation() throws Exception {
-        FileObject wd = FileUtil.toFileObject(getWorkDir());
-        wd = wd.createFolder(""+System.currentTimeMillis());
-        AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(wd, "Project1");
-        ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
-        ClientSideProjectUtilities.initializeProject(project,
-                "public_html_XX",
-                "test");
-        ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
-        assertEquals("site root was created", wd.getFileObject("public_html_XX"), FileUtil.toFileObject(projectProperties.getResolvedSiteRootFolder()));
-        ProjectProblemsProvider ppp = project.getLookup().lookup(ProjectProblemsProvider.class);
-        assertNotNull("project does have ProjectProblemsProvider", ppp);
-        assertEquals("project does not have any problems", 0, ppp.getProblems().size());
+    public void testProjectWithSourcesCreation() throws Exception {
+        ClientSideProject project = createProject("src_XX", null, "test");
+        assertNoProjectProblems(project);
+        assertTrue(project.isJsLibrary());
+        assertFalse(project.isHtml5Project());
+    }
+
+    public void testProjectWithSourcesAndSiteRootCreation() throws Exception {
+        ClientSideProject project = createProject("src_XX", "public_html_XX", "test");
+        assertNoProjectProblems(project);
+        assertTrue(project.isHtml5Project());
+        assertFalse(project.isJsLibrary());
     }
 
     public void testProjectCreationWithProblems() throws Exception {
-        FileObject wd = FileUtil.toFileObject(getWorkDir());
-        wd = wd.createFolder(""+System.currentTimeMillis());
-        AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(wd, "Project2");
-        ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
+        ClientSideProject project = createProject(null, null, null);
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
+        projectProperties.setSourceFolder(ClientSideProjectConstants.DEFAULT_SOURCE_FOLDER);
         projectProperties.setSiteRootFolder(ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER);
         projectProperties.setTestFolder(ClientSideProjectConstants.DEFAULT_TEST_FOLDER);
         projectProperties.save();
-        ProjectProblemsProvider ppp = project.getLookup().lookup(ProjectProblemsProvider.class);
-        assertNotNull("project does have ProjectProblemsProvider", ppp);
-        assertEquals("project does not have any problems", 2, ppp.getProblems().size());
+        ProjectProblemsProvider problemsProvider = project.getLookup().lookup(ProjectProblemsProvider.class);
+        assertNotNull("project does have ProjectProblemsProvider", problemsProvider);
+        assertEquals("project does not have any problems", 3, problemsProvider.getProblems().size());
     }
 
     public void testProjectCreationFromZipTemplate() throws Exception {
-        FileObject wd = FileUtil.toFileObject(getWorkDir());
-        wd = wd.createFolder(""+System.currentTimeMillis());
-        AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(wd, "Project3");
-        ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
-        SiteZip sz = new SiteZip();
-        FileObject dd = FileUtil.toFileObject(getDataDir()).getFileObject("TestTemplate.zip");
-        ((SiteZipPanel)(sz.getCustomizer().getComponent())).setTemplate(FileUtil.getFileDisplayName(dd));
-        SiteTemplateImplementation.ProjectProperties pp = new SiteTemplateImplementation.ProjectProperties();
-        sz.configure(pp);
+        ClientSideProject project = createProject(null, null, null);
+        SiteZip siteZip = new SiteZip();
+        FileObject testTemplate = FileUtil.toFileObject(getDataDir()).getFileObject("TestTemplate.zip");
+        ((SiteZipPanel) (siteZip.getCustomizer().getComponent())).setTemplate(FileUtil.getFileDisplayName(testTemplate));
+        SiteTemplateImplementation.ProjectProperties templateProperties = new SiteTemplateImplementation.ProjectProperties();
+        siteZip.configure(templateProperties);
         ClientSideProjectUtilities.initializeProject(project,
-                pp.getSiteRootFolder(),
-                pp.getTestFolder());
-        sz.apply(projectHelper.getProjectDirectory(), pp, ProgressHandleFactory.createHandle("somename"));
+                templateProperties.getSourceFolder(),
+                templateProperties.getSiteRootFolder(),
+                templateProperties.getTestFolder());
+        siteZip.apply(project.getProjectDirectory(), templateProperties, ProgressHandleFactory.createHandle("somename"));
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
-        assertEquals("site root was created from template", wd.getFileObject("custom_siteroot"), FileUtil.toFileObject(projectProperties.getResolvedSiteRootFolder()));
-        ProjectProblemsProvider ppp = project.getLookup().lookup(ProjectProblemsProvider.class);
-        assertNotNull("project does have ProjectProblemsProvider", ppp);
-        assertEquals("project does not have any problems", 0, ppp.getProblems().size());
+        assertEquals("site root should be created from template",
+                project.getProjectDirectory().getFileObject("custom_siteroot"), FileUtil.toFileObject(projectProperties.getResolvedSiteRootFolder()));
+        assertNoProjectProblems(project);
     }
+
+    public void testProjectWithProjectServiceProvider() throws Exception {
+        int instances = MySupport.INSTANCES.get();
+        ClientSideProject project = createProject("src", "www", "test");
+        MySupport mySupport = project.getLookup().lookup(MySupport.class);
+        assertNotNull(mySupport);
+        assertEquals(instances + 1, MySupport.INSTANCES.get());
+        assertSame(project, mySupport.getProject());
+    }
+
+    public void testProjectWithProjectServiceProvider10Times() throws Exception {
+        for (int i = 0; i < 10; ++i) {
+            testProjectWithProjectServiceProvider();
+        }
+    }
+
+    private ClientSideProject createProject(@NullAllowed String sources, @NullAllowed String siteRoot, @NullAllowed String tests) throws Exception {
+        FileObject projectDir = FileUtil.toFileObject(getWorkDir()).createFolder("Project" + projectCounter++);
+        AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(projectDir, projectDir.getName());
+        ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
+        if (sources != null
+                || siteRoot != null
+                || tests != null) {
+            ClientSideProjectUtilities.initializeProject(project, sources, siteRoot, tests);
+            ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
+            if (sources != null) {
+                assertEquals("Source folder should exist", projectDir.getFileObject(sources), FileUtil.toFileObject(projectProperties.getResolvedSourceFolder()));
+            }
+            if (siteRoot != null) {
+                assertEquals("Site Root should exist", projectDir.getFileObject(siteRoot), FileUtil.toFileObject(projectProperties.getResolvedSiteRootFolder()));
+            }
+            if (tests != null) {
+                assertEquals("Test folder should exist", projectDir.getFileObject(tests), FileUtil.toFileObject(projectProperties.getResolvedTestFolder()));
+            }
+        }
+        return project;
+    }
+
+    private void assertNoProjectProblems(ClientSideProject project) {
+        ProjectProblemsProvider problemsProvider = project.getLookup().lookup(ProjectProblemsProvider.class);
+        assertNotNull("Project should have ProjectProblemsProvider", problemsProvider);
+        assertEquals("Project should not have any problems", 0, problemsProvider.getProblems().size());
+    }
+
+    //~ Inner classes
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
     public static class DummyBrowser implements HtmlBrowser.Factory, EnhancedBrowserFactory {
@@ -237,4 +286,24 @@ public class ClientSideProjectTest extends NbTestCase {
         }
 
     }
+
+    @ProjectServiceProvider(service = MySupport.class, projectType = "org-netbeans-modules-web-clientproject")
+    public static final class MySupport {
+
+        public static final AtomicInteger INSTANCES = new AtomicInteger();
+
+        private final Project project;
+
+
+        public MySupport(Project project) {
+            INSTANCES.incrementAndGet();
+            this.project = project;
+        }
+
+        public Project getProject() {
+            return project;
+        }
+
+    }
+
 }

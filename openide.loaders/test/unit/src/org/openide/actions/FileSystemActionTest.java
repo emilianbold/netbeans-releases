@@ -44,9 +44,12 @@ package org.openide.actions;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
@@ -70,6 +73,16 @@ public class FileSystemActionTest extends NbTestCase {
         super(s);
     }
 
+    /**
+     * Injection of actions into Filesystems is now a special behaviour of NB 
+     * platform - implemented in master filesystem.
+     * 
+     * @return 
+     */
+    public static Test suite() {
+        return NbModuleSuite.create(FileSystemActionTest.class, null, null);
+    }
+    
     public void testManualRefreshPreference() throws IOException {
         Preferences pref = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction");
         assertFalse("Not set", pref.getBoolean("manual", false));
@@ -92,18 +105,21 @@ public class FileSystemActionTest extends NbTestCase {
         assertEquals("One action", 1, submenu2.getMenuPresenters().length);
     }
     
-    public void testCreateMenu() throws IOException {
+    public void testCreateMenu() throws Exception {
         TestFS fs = new TestFS();
         FileObject fo = fs.getRoot();
      
         // create menu for a lookup containg a node
         Lookup lkp = Lookups.singleton(DataFolder.findFolder(fo).getNodeDelegate());
-        JMenuItem[] item = FileSystemAction.createMenu(true, lkp);
+        Method m = FileSystemAction.class.getDeclaredMethod("createMenu",
+                Boolean.TYPE, Lookup.class);
+        m.setAccessible(true);
+        JMenuItem[] item = (JMenuItem[])m.invoke(null, true, lkp);
         assertTrue(item.length > 0);
         
         // create menu for a lookup containg a DataObject
         lkp = Lookups.singleton(DataFolder.findFolder(fo));
-        item = FileSystemAction.createMenu(true, lkp);
+        item = (JMenuItem[])m.invoke(null, true, lkp);
         assertTrue(item.length > 0);
 }
     

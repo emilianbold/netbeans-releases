@@ -88,6 +88,7 @@ import javax.swing.text.TextAction;
 import javax.swing.text.Caret;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.View;
 import org.netbeans.api.editor.EditorRegistry;
@@ -180,7 +181,7 @@ public class Utilities {
     */
     public static int getRowStart(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.getRowStart(doc, offset);
+        return LineDocumentUtils.getLineStart(doc, offset);
     }
 
     /** Get the starting position of the row while providing relative count
@@ -193,11 +194,23 @@ public class Utilities {
     * @param lineShift shift the given offset forward/back relatively
     *  by some amount of lines
     * @return position of the start of the row or -1 for invalid position
-    * @deprecated use {@link LineDocumentUtils}
+    * @deprecated Deprecated without replacement
     */
     public static int getRowStart(BaseDocument doc, int offset, int lineShift)
     throws BadLocationException {
-        return LineDocumentUtils.getRowStart(doc, offset, lineShift);
+        checkOffsetValid(doc, offset);
+        if (lineShift != 0) {
+            Element lineRoot = doc.getParagraphElement(0).getParentElement();
+            int line = lineRoot.getElementIndex(offset);
+            line += lineShift;
+            if (line < 0 || line >= lineRoot.getElementCount()) {
+                return -1; // invalid line shift
+            }
+            return lineRoot.getElement(line).getStartOffset();
+
+        } else { // no shift
+            return doc.getParagraphElement(offset).getStartOffset();
+        }
     }
 
     /** Get the first non-white character on the line.
@@ -210,7 +223,7 @@ public class Utilities {
     */
     public static int getRowFirstNonWhite(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.getRowFirstNonWhite(doc, offset);
+        return LineDocumentUtils.getLineFirstNonWhitespace(doc, offset);
     }
 
     /** Get the last non-white character on the line.
@@ -224,7 +237,7 @@ public class Utilities {
     */
     public static int getRowLastNonWhite(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.getRowLastNonWhite(doc, offset);
+        return LineDocumentUtils.getLineLastNonWhitespace(doc, offset);
     }
 
     /** Get indentation on the current line. If this line is white then
@@ -295,7 +308,7 @@ public class Utilities {
      */
     public static int getRowEnd(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.getRowEnd(doc, offset);
+        return LineDocumentUtils.getLineEnd(doc, offset);
     }
     
     private static int findBestSpan(JTextComponent c, int lineBegin, int lineEnd, int x)
@@ -415,7 +428,7 @@ public class Utilities {
     @Deprecated
     public static int getNextWord(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.getNextWord(doc, offset);
+        return LineDocumentUtils.getNextWordStart(doc, offset);
     }
 
     @Deprecated
@@ -433,7 +446,7 @@ public class Utilities {
     @Deprecated
     public static int getPreviousWord(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.getPreviousWord(doc, offset);
+        return LineDocumentUtils.getPreviousWordEnd(doc, offset);
     }
 
     /** Get first white character in document in forward direction
@@ -444,7 +457,7 @@ public class Utilities {
     */
     public static int getFirstWhiteFwd(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.getFirstWhiteFwd(doc, offset);
+        return LineDocumentUtils.getNextWhitespace(doc, offset);
     }
 
     /** Get first white character in document in forward direction
@@ -457,7 +470,7 @@ public class Utilities {
     */
     public static int getFirstWhiteFwd(BaseDocument doc, int offset, int limitPos)
     throws BadLocationException {
-        return LineDocumentUtils.getFirstWhiteFwd(doc, offset, limitPos);
+        return LineDocumentUtils.getNextWhitespace(doc, offset, limitPos);
     }
 
     /** Get first non-white character in document in forward direction
@@ -468,7 +481,7 @@ public class Utilities {
     */
     public static int getFirstNonWhiteFwd(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.getFirstNonWhiteFwd(doc, offset);
+        return LineDocumentUtils.getNextNonWhitespace(doc, offset);
     }
 
     /** Get first non-white character in document in forward direction
@@ -481,7 +494,7 @@ public class Utilities {
     */
     public static int getFirstNonWhiteFwd(BaseDocument doc, int offset, int limitPos)
     throws BadLocationException {
-        return LineDocumentUtils.getFirstNonWhiteFwd(doc, offset, limitPos);
+        return LineDocumentUtils.getNextNonWhitespace(doc, offset, limitPos);
     }
 
     /** Get first white character in document in backward direction.
@@ -494,7 +507,7 @@ public class Utilities {
     */
     public static int getFirstWhiteBwd(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.getFirstWhiteBwd(doc, offset);
+        return LineDocumentUtils.getPreviousWhitespace(doc, offset);
     }
 
     /** Get first white character in document in backward direction.
@@ -509,7 +522,7 @@ public class Utilities {
     */
     public static int getFirstWhiteBwd(BaseDocument doc, int offset, int limitPos)
     throws BadLocationException {
-        return LineDocumentUtils.getFirstWhiteBwd(doc, offset, limitPos);
+        return LineDocumentUtils.getPreviousWhitespace(doc, offset, limitPos);
     }
 
     /** Get first non-white character in document in backward direction.
@@ -522,7 +535,7 @@ public class Utilities {
     */
     public static int getFirstNonWhiteBwd(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.getFirstNonWhiteBwd(doc, offset);
+        return LineDocumentUtils.getPreviousNonWhitespace(doc, offset);
     }
 
     /** Get first non-white character in document in backward direction.
@@ -537,7 +550,7 @@ public class Utilities {
     */
     public static int getFirstNonWhiteBwd(BaseDocument doc, int offset, int limitPos)
     throws BadLocationException {
-        return LineDocumentUtils.getFirstNonWhiteBwd(doc, offset, limitPos);
+        return LineDocumentUtils.getPreviousNonWhitespace(doc, offset, limitPos);
     }
 
     /** Return line offset (line number - 1) for some position in the document
@@ -547,7 +560,7 @@ public class Utilities {
     */
     public static int getLineOffset(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.getLineOffset(doc, offset);
+        return LineDocumentUtils.getLineIndex(doc, offset);
     }
 
     /** Return start offset of the line
@@ -556,7 +569,7 @@ public class Utilities {
     * @deprecated use {@link LineDocumentUtils}
     */
     public static int getRowStartFromLineOffset(BaseDocument doc, int lineIndex) {
-        return LineDocumentUtils.getRowStartFromLineOffset(doc, lineIndex);
+        return LineDocumentUtils.getLineStartFromIndex(doc, lineIndex);
     }
 
     /** Return visual column (with expanded tabs) on the line.
@@ -814,17 +827,21 @@ public class Utilities {
     * @param doc document to operate on
     * @param offset position anywhere on the tested line
     * @return whether the line is empty or not
-    * @deprecated use {@link LineDocumentUtils}
+    * @deprecated use {@link LineDocumentUtils#isLineEmpty(org.netbeans.api.editor.document.LineDocument, int)}.
     */
     public static boolean isRowEmpty(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.isRowEmpty(doc, offset);
+        return LineDocumentUtils.isLineEmpty(doc, offset);
     }
 
     @Deprecated
     public static int getFirstNonEmptyRow(BaseDocument doc, int offset, boolean downDir)
     throws BadLocationException {
-        return LineDocumentUtils.getFirstNonEmptyRow(doc, offset, downDir);
+        if (downDir) {
+            return LineDocumentUtils.getNextNonNewline(doc, offset);
+        } else {
+            return LineDocumentUtils.getPreviousNonNewline(doc, offset);
+        }
     }
 
     /** Tests whether the line contains only whitespace characters.
@@ -835,13 +852,17 @@ public class Utilities {
     */
     public static boolean isRowWhite(BaseDocument doc, int offset)
     throws BadLocationException {
-        return LineDocumentUtils.isRowWhite(doc, offset);
+        return LineDocumentUtils.isLineWhitespace(doc, offset);
     }
 
     @Deprecated
     public static int getFirstNonWhiteRow(BaseDocument doc, int offset, boolean downDir)
     throws BadLocationException {
-        return LineDocumentUtils.getFirstNonWhiteRow(doc, offset, downDir);
+        if (downDir) {
+            return LineDocumentUtils.getNextNonWhitespace(doc, offset);
+        } else {
+            return LineDocumentUtils.getPreviousNonWhitespace(doc, offset);
+        }
     }
 
     /**
@@ -901,13 +922,13 @@ public class Utilities {
     @Deprecated
     public static int getRowCount(BaseDocument doc, int startPos, int endPos)
     throws BadLocationException {
-        return LineDocumentUtils.getRowCount(doc, startPos, endPos);
+        return LineDocumentUtils.getLineCount(doc, startPos, endPos);
     }
 
     /** Get the total count of lines in the document */
     @Deprecated
     public static int getRowCount(BaseDocument doc) {
-        return LineDocumentUtils.getRowCount(doc);
+        return LineDocumentUtils.getLineCount(doc);
     }
 
     /** @deprecated

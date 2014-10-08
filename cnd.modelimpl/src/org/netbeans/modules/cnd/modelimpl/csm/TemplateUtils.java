@@ -77,6 +77,8 @@ import org.openide.util.CharSequences;
  * @author Vladimir Kvashin
  */
 public class TemplateUtils {
+    
+    private static final String UNNAMED_TEMPLATE_PARAMETER = "__nb_unnamed_param_"; //NOI18N
 
 //    public static final byte MASK_TEMPLATE = 0x01;
 //    public static final byte MASK_SPECIALIZATION = 0x02;
@@ -225,41 +227,16 @@ public class TemplateUtils {
                         // or parameter name, but not both.
                         fakeAST = AstUtil.createAST(parameterStart, child);
                     }
-                    if (child.getNextSibling() != null) {
-                        AST assign = child.getNextSibling();
-                        if (assign.getType() == CPPTokenTypes.ASSIGNEQUAL) {
-                            if (assign.getNextSibling() != null) {
-                                AST type = assign.getNextSibling();
-                                if(type != null && type.getType() == CPPTokenTypes.LITERAL_typename && type.getNextSibling() != null) {
-                                    type = type.getNextSibling();
-                                }
-                                if (type.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
-                                        || type.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
-                                    res.add(new TemplateParameterImpl(fakeAST, AstUtil.getText(child), file, scope, global, type));
-                                    parameterStart = null;
-                                    break;
-                                } else if (type.getType() == CPPTokenTypes.LITERAL_struct
-                                        || type.getType() == CPPTokenTypes.LITERAL_class
-                                        || type.getType() == CPPTokenTypes.LITERAL_union) {      
-                                    // This is for types like DDD in the next code:
-                                    //  template<typename TAG = struct DDD>
-                                    //  struct copy {};                                  
-                                    
-                                    MutableObject<CsmNamespace> targetScope = new MutableObject<>();
-                                    MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<>();
-                                    
-                                    // TODO: need fileContent here
-                                    getClosestNamespaceInfo(scope, file, null, OffsetableBase.getStartOffset(ast), targetScope, targetDefinitionContainer); 
-                                    
-                                    FakeAST fakeParent = new FakeAST();
-                                    fakeParent.setType(CPPTokenTypes.CSM_GENERIC_DECLARATION);
-                                    fakeParent.addChild(type);                                    
-                                    ClassForwardDeclarationImpl.create(fakeParent, file, targetScope.value, targetDefinitionContainer.value, global);
-                                }
-                            }
-                        }
-                    }
-                    res.add(new TemplateParameterImpl(fakeAST, AstUtil.getText(child), file, scope, variadic, global)); // NOI18N
+                    res.add(new TemplateParameterImpl(
+                            parameterStart, 
+                            AstUtil.getText(child), 
+                            OffsetableBase.getStartOffset(fakeAST),
+                            OffsetableBase.getEndOffset(fakeAST),                            
+                            file, 
+                            scope, 
+                            variadic, 
+                            global
+                    ));
                     parameterStart = null;
                     break;
                 case CPPTokenTypes.CSM_PARAMETER_DECLARATION:
@@ -316,13 +293,14 @@ public class TemplateUtils {
                                     }
                                 }
                                 if (!added) {
-                                    res.add(new TemplateParameterImpl(parameterStart, "__nb_unnamed_param_" + unnamedCount, file, scope, variadic, global)); // NOI18N
+                                    res.add(new TemplateParameterImpl(parameterStart, UNNAMED_TEMPLATE_PARAMETER + unnamedCount, file, scope, variadic, global)); 
                                     unnamedCount++;
                                 }
                                 break;
                             }
                         }
                     }
+                    parameterStart = null;
                     break;
                 case CPPTokenTypes.CSM_TEMPLATE_TEMPLATE_PARAMETER:
                     parameterStart = child;
@@ -334,9 +312,24 @@ public class TemplateUtils {
                             res.add(new TemplateParameterImpl(parameterStart, AstUtil.getText(paramChild), file, scope, variadic, global));
                         }
                     }
+                    parameterStart = null;
+                    break;
+                case CPPTokenTypes.COMMA:
+                case CPPTokenTypes.ASSIGNEQUAL:
+                    if (parameterStart != null) {
+                        // Unnamed parameters
+                        res.add(new TemplateParameterImpl(parameterStart, UNNAMED_TEMPLATE_PARAMETER + unnamedCount, file, scope, variadic, global)); 
+                        unnamedCount++;
+                    }
+                    parameterStart = null;
                     break;
             }
         }
+        if (parameterStart != null) {
+            // Unnamed parameter
+            res.add(new TemplateParameterImpl(parameterStart, UNNAMED_TEMPLATE_PARAMETER + unnamedCount, file, scope, variadic, global)); 
+            unnamedCount++;
+        }        
         return res;
     }
 
@@ -487,7 +480,6 @@ public class TemplateUtils {
         return name.replaceAll("<.*", ""); // NOI18N
     }
     
-
     private static CsmType checkTemplateType(CsmType type, List<CsmTemplateParameter> params) {
         if (params != null && !params.isEmpty()) {
             CharSequence classifierText = ((TypeImpl)type).getClassifierText();

@@ -265,7 +265,7 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
         prepareEditorAndUseTemplate(6, 9, null, -1, abbrev, false, ".*String x;.*");
     }
 
-    public void testEditDescription() {
+    public void testEditDescription() {        
         final String abbrev = "iff";
         final String description = "condition";
         CodeTemplatesOperator oper = null;
@@ -276,8 +276,8 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
             oper.setDescription(description);        
         } finally {
             oper.ok();
-        }        
-        prepareEditorAndUseTemplate(6, 9, "int x;", 14, description, true, ".*if \\(true\\).*");
+        }                
+        prepareEditorAndUseTemplate(6, 9, "int x;", 14, description, true, ".*if \\(true\\).*");        
     }
 
     public void testRemoveAfterSorting() {
@@ -394,7 +394,7 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
 
     public void testSynchronizedBlock() {
         final String abbrev = "form";
-        String regExp = ".*for \\(Map.Entry<Object, Object> en \\: m\\.entrySet\\(\\)\\) \\{.*";
+        String regExp = ".*for \\(Map.Entry<Object, Object> entrySet \\: m\\.entrySet\\(\\)\\) \\{.*";
         EditorOperator editor = null;
         try {
             openSourceFile("org.netbeans.test.java.editor.codetemplates", "Main");
@@ -402,9 +402,9 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
             useTemplateAt(editor, 6, 9, abbrev);
             checkContentOfEditorRegexp(editor, regExp);
             JEditorPaneOperator jepo = editor.txtEditorPane();
-            assertEquals("Text is not selected", "en", jepo.getSelectedText());
+            assertEquals("Text is not selected", "entrySet", jepo.getSelectedText());
             assertEquals("Wrong start selection position ", 159, jepo.getSelectionStart());
-            assertEquals("Wrong end selection position", 161, jepo.getSelectionEnd());
+            assertEquals("Wrong end selection position", 167, jepo.getSelectionEnd());
 
             jepo.typeText("var");
             checkContentOfEditorRegexp(editor, ".*var \\:.*var\\.getKey.*var\\.getValue.*");
@@ -416,7 +416,7 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
             assertEquals("Wrong end selection position", 199, jepo.getSelectionEnd());
             jepo.pressKey(KeyEvent.VK_TAB);
             assertEquals("Wrong start selection position ", 200, jepo.getSelectionStart());
-            assertEquals("Wrong end selection position", 206, jepo.getSelectionEnd());
+            assertEquals("Wrong end selection position", 203, jepo.getSelectionEnd());
         } finally {
             if (editor != null) {
                 editor.closeDiscard();
@@ -526,11 +526,11 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
             editor = new EditorOperator("Main");
             JEditorPaneOperator jepo = editor.txtEditorPane();
             editor.setCaretPosition(4, 1);
-            jepo.typeText("java.util.List<String> a;java.util.List<Integer> b;");
+            jepo.typeText("static java.util.List<String> a;static java.util.List<Integer> b;");
             useTemplateAt(editor, 6, 9, abbrev);
             jepo.pressKey(KeyEvent.VK_TAB);
             jepo.typeText("b");
-            checkContentOfEditorRegexp(editor, ".*for \\(Integer integer \\: b\\) \\{.*");
+            checkContentOfEditorRegexp(editor, ".*for \\(Integer b1 \\: b\\) \\{.*");
         } finally {
             editor.closeDiscard();
         }
@@ -654,6 +654,7 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
                 hint = ((SurroundWithFix) item).getText();
             }
             if (hint.startsWith(blockTemplatePrefix + description)) {
+                System.out.println("Found at "+i+" position: "+hint);
                 break;
             }
         }
@@ -685,15 +686,15 @@ public class CodeTemplatesTest extends JavaEditorTestCase {
             if (text != null) {
                 editor.setCaretPosition(row, column);
                 editor.insert(text);
-            }
-            if (selectionEnd > -1) {
+            }            
+            if (selectionEnd > -1) {                
                 editor.select(row, column, selectionEnd);
             }
-            if (asHint) {
+            if (asHint) {                
                 invokeTemplateAsHint(editor, abbrev);
             } else {
                 useTemplateAt(editor, row, column, abbrev);
-            }
+            }            
             checkContentOfEditorRegexp(editor, expandedTextRegexp);
         } catch (Exception ex) {
             fail(ex);

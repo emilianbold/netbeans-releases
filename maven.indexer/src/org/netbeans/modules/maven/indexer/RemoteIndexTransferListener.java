@@ -81,7 +81,7 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     public RemoteIndexTransferListener(RepositoryInfo info) {
         this.info = info;
         Cancellation.register(this);
-        handle = ProgressHandleFactory.createHandle(LBL_Transfer(info.getName()), this);
+        handle = ProgressHandle.createHandle(LBL_Transfer(info.getName()), this);
         handle.start();
     }
 

@@ -47,6 +47,10 @@ package org.netbeans.api.progress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.progress.spi.InternalHandle;
+import org.netbeans.progress.module.DefaultHandleFactory;
+import org.netbeans.progress.module.ProgressApiAccessor;
+import org.openide.modules.PatchedPublic;
+import org.openide.util.Cancellable;
 
 /**
  * Instances provided by the ProgressHandleFactory allow the users of the API to
@@ -59,14 +63,48 @@ import org.netbeans.modules.progress.spi.InternalHandle;
  * 
  * @author Milos Kleint (mkleint@netbeans.org)
  */
-public class ProgressHandle {
+public final class ProgressHandle {
 
     private static final Logger LOG = Logger.getLogger(ProgressHandle.class.getName());
 
     private InternalHandle internal;
     
+    /**
+     * Create a progress ui handle for a long lasting task.
+     * @param displayName to be shown in the progress UI
+     * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
+     */
+    public static ProgressHandle createHandle(String displayName) {
+        return createHandle(displayName, null);
+    }
+    
+    /**
+     * Create a progress ui handle for a long lasting task.
+     * @param allowToCancel either null, if the task cannot be cancelled or 
+     *          an instance of {@link org.openide.util.Cancellable} that will be called when user 
+     *          triggers cancel of the task.
+     * @param displayName to be shown in the progress UI
+     * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
+     */
+    public static ProgressHandle createHandle(String displayName, Cancellable allowToCancel) {
+        return DefaultHandleFactory.get().createHandle(displayName, allowToCancel, true);
+    }
+
+    /**
+     * Create a cancelable handle for a task that is not triggered by explicit user action.
+     * Such tasks have lower priority in the UI.
+     * @param displayName to be shown in the progress UI
+     * @param allowToCancel either null, if the task cannot be cancelled or 
+     *          an instance of {@link org.openide.util.Cancellable} that will be called when user 
+     *          triggers cancel of the task.
+     * @return an instance of {@link org.netbeans.api.progress.ProgressHandle}, initialized but not started.
+     */
+    public static ProgressHandle createSystemHandle(String displayName, Cancellable allowToCancel) {
+        return DefaultHandleFactory.get().createHandle(displayName, allowToCancel, false);
+    }
+
     /** Creates a new instance of ProgressHandle */
-    protected ProgressHandle(InternalHandle internal) {
+    ProgressHandle(InternalHandle internal) {
         LOG.fine(internal.getDisplayName());
         this.internal = internal;
     }
@@ -123,7 +161,9 @@ public class ProgressHandle {
      * @since org.netbeans.api.progress/1 1.9
      */
     public final void suspend(String message) {
-        LOG.log(Level.FINE, "{0}: {1}", new Object[] {internal.getDisplayName(), message});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "{0}: {1}", new Object[] {internal.getDisplayName(), message});
+        }
         internal.toSilent(message);
     }
     
@@ -184,7 +224,9 @@ public class ProgressHandle {
      * @param workunit a cumulative number of workunits completed so far
      */
     public final void progress(String message, int workunit) {
-        LOG.log(Level.FINE, "{0}: {1}", new Object[] {internal.getDisplayName(), message});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "{0}: {1}", new Object[] {internal.getDisplayName(), message});
+        }
         internal.progress(message, workunit);
     }
     
@@ -218,7 +260,8 @@ public class ProgressHandle {
     /**
      * for unit testing only..
      */
-    protected final InternalHandle getInternalHandle() {
+    @PatchedPublic
+    final InternalHandle getInternalHandle() {
         return internal;
     }
 
@@ -227,5 +270,22 @@ public class ProgressHandle {
         synchronized (internal) {
             return internal.getDisplayName();
         }
+    }
+    
+    static class Accessor extends ProgressApiAccessor {
+
+        @Override
+        public ProgressHandle create(InternalHandle h) {
+            return new ProgressHandle(h);
+        }
+
+        @Override
+        public InternalHandle getInternalHandle(ProgressHandle h) {
+            return h.getInternalHandle();
+        }
+    }
+    
+    static {
+        ProgressApiAccessor.setInstance(new Accessor());
     }
 }

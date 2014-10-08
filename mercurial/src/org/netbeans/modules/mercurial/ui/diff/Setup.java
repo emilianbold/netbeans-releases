@@ -179,7 +179,12 @@ public final class Setup extends AbstractDiffSetup {
                     secondRevision = HgRevision.CURRENT;
                     if (fileStatus != null && fileStatus.isCopied()) {
                         if (fileStatus.getOriginalFile() != null && !fileStatus.getOriginalFile().exists()) {
-                            secondTitle = loc.getString("MSG_DiffPanel_LocalRenamed"); // NOI18N
+                            if (fileStatus.getOriginalFile().getParentFile().getAbsolutePath()
+                                    .equals(baseFile.getParentFile().getAbsolutePath())) {
+                                secondTitle = loc.getString("MSG_DiffPanel_LocalRenamed"); // NOI18N
+                            } else {
+                                secondTitle = loc.getString("MSG_DiffPanel_LocalMoved"); // NOI18N
+                            }
                         } else {
                             secondTitle = loc.getString("MSG_DiffPanel_LocalCopied"); // NOI18N
                         }
@@ -189,8 +194,10 @@ public final class Setup extends AbstractDiffSetup {
                 } else if (match (status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
                     secondRevision = null;
                     secondTitle = NbBundle.getMessage(Setup.class, "LBL_Diff_NoLocalFile"); // NOI18N
-                } else if (match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY
-                | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
+                } else if (match(status, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
+                    secondRevision = null;
+                    secondTitle = loc.getString("MSG_DiffPanel_LocalRemoved"); // NOI18N
+                } else if (match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
                     secondRevision = null;
                     secondTitle = loc.getString("MSG_DiffPanel_LocalDeleted"); // NOI18N
                 } else {

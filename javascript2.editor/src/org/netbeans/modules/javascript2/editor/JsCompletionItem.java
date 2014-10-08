@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,6 +53,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -65,6 +68,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
@@ -76,7 +80,7 @@ import org.openide.util.NbBundle.Messages;
 public class JsCompletionItem implements CompletionProposal {
     
     protected final CompletionRequest request;
-    private final ElementHandle element;
+    protected final ElementHandle element;
     
     JsCompletionItem(ElementHandle element, CompletionRequest request) {
         this.element = element;
@@ -254,10 +258,12 @@ public class JsCompletionItem implements CompletionProposal {
             formatter.emphasis(true);
             formatName(formatter);
             formatter.emphasis(false);
-            formatter.appendText("(");
-            appendParamsStr(formatter);
-            formatter.appendText(")");
-            appendReturnTypes(formatter);
+            if (!asObject()) {
+                formatter.appendText("(");  //NOI18N
+                appendParamsStr(formatter);
+                formatter.appendText(")");  //NOI18N
+                appendReturnTypes(formatter);
+            }
             return formatter.getText();
         }
 
@@ -303,7 +309,15 @@ public class JsCompletionItem implements CompletionProposal {
         public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
             template.append(getName());
-            template.append("(${cursor})");
+            if (!asObject()) {
+                if (parametersTypes.isEmpty()) {
+                    template.append("()${cursor}");     //NOI18N
+                } else {
+                    template.append("(${cursor})");     //NOI18N
+                }
+            } else {
+                template.append("${cursor}");       //NOI18N
+            }
             return template.toString();
         }
 
@@ -318,7 +332,42 @@ public class JsCompletionItem implements CompletionProposal {
             return super.getIcon(); //To change body of generated methods, choose Tools | Templates.
         }
         
+        private boolean isAfterNewKeyword() {
+            boolean isAfterNew = false;
+            Snapshot snapshot = request.result.getSnapshot();
+            int offset = request.anchor;
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot, snapshot.getOriginalOffset(offset));
+            if (ts != null) {
+                ts.move(offset);
+                if (ts.moveNext()) {
+                    Token<? extends JsTokenId> token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.BLOCK_COMMENT, JsTokenId.WHITESPACE, JsTokenId.LINE_COMMENT, JsTokenId.EOL));
+                    if (token.id() == JsTokenId.KEYWORD_NEW) {
+                        isAfterNew = true;
+                    }
+                }
+            }
+            return isAfterNew;
+        }
         
+        /**
+         * 
+         * @return true if the element should be treated as an object or function in the context
+         */
+        private boolean asObject() {
+            boolean result = false;
+            char firstChar = getName().charAt(0);
+            JsElement.Kind jsKind = null;
+            if (element instanceof JsElement) {
+                jsKind = ((JsElement)element).getJSKind();
+            }
+            if ((jsKind != null && jsKind == JsElement.Kind.CONSTRUCTOR) || Character.isUpperCase(firstChar)) {
+                boolean isAfterNew = isAfterNewKeyword();
+                if (!isAfterNew) {
+                    result = true;
+                }
+            }
+            return result;
+        }
     }
 
     static class KeywordItem extends JsCompletionItem {
@@ -416,7 +465,7 @@ public class JsCompletionItem implements CompletionProposal {
 
         @Override
         public int getSortPrioOverride() {
-            return 110;
+            return 130;
         }
     }
 
@@ -468,7 +517,7 @@ public class JsCompletionItem implements CompletionProposal {
                             if (element instanceof JsFunction) {
                                 // count return types
                                 Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(((JsFunction) element).getReturnTypes(), (JsParserResult)request.info,
-                                        OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution());
+                                        OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution(), false);
                                 returnTypes.addAll(Utils.getDisplayNames(resolveTypes));
                                 // count parameters type
                                 for (JsObject jsObject : ((JsFunction) element).getParameters()) {
@@ -494,7 +543,7 @@ public class JsCompletionItem implements CompletionProposal {
                                     returnTypeUsages.add(new TypeUsageImpl(type, -1, false));
                                 }
                                 Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(returnTypeUsages, (JsParserResult)request.info,
-                                        OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution());
+                                        OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution(), false);
                                 returnTypes.addAll(Utils.getDisplayNames(resolveTypes));
                                 // count parameters type
                                 LinkedHashMap<String, Collection<String>> parameters = ((IndexedElement.FunctionIndexedElement) element).getParameters();
@@ -532,7 +581,7 @@ public class JsCompletionItem implements CompletionProposal {
                             Collection<? extends TypeUsage> assignment = null;
                             if (element instanceof JsObject) {
                                 JsObject jsObject = (JsObject) element;
-                                assignment = jsObject.getAssignmentForOffset(request.anchor);
+                                assignment = jsObject.getAssignments();
                             } else if (element instanceof IndexedElement) {
                                 IndexedElement iElement = (IndexedElement) element;
                                 assignment = iElement.getAssignments();
@@ -549,7 +598,7 @@ public class JsCompletionItem implements CompletionProposal {
                                             toResolve.add(type);
                                             resolvedType = new HashSet(1);
                                             Collection<TypeUsage> resolved = ModelUtils.resolveTypes(toResolve, request.result,
-                                                    OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution());
+                                                    OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution(), false);
                                             for (TypeUsage rType : resolved) {
                                                 String displayName = rType.getDisplayName();
                                                 if (!displayName.isEmpty()) {

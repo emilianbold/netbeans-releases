@@ -75,7 +75,7 @@ public enum OJETContext {
     COMP_CONF_COMP_NAME,
     UNKNOWN;
 
-    private static String COMPONENT = "component";
+    private static String COMPONENT = "component"; //NOI18N
 
     public static OJETContext findContext(Document document, int offset) {
         TokenHierarchy th = TokenHierarchy.get(document);
@@ -89,6 +89,8 @@ public enum OJETContext {
                         if (dataBindTs.isEmpty()) {
                             return DATA_BINDING;
                         }
+                    } else {
+                        return UNKNOWN;
                     }
                     int ediff = dataBindTs.move(offset);
                     if (ediff == 0 && dataBindTs.movePrevious() || dataBindTs.moveNext()) {
@@ -174,7 +176,7 @@ public enum OJETContext {
             ts.moveStart();
             if (ts.movePrevious() || ts.moveNext()) {
                 Token<JsTokenId> jsToken = LexerUtils.followsToken(ts, JsTokenId.IDENTIFIER, false, false, 
-                        JsTokenId.WHITESPACE, JsTokenId.BRACKET_LEFT_CURLY);
+                        JsTokenId.WHITESPACE, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.EOL);
                 if (jsToken != null && jsToken.id() == JsTokenId.IDENTIFIER) {
                     if (COMPONENT.equals(jsToken.text().toString())) {
                         // we found the component property, now to find the value

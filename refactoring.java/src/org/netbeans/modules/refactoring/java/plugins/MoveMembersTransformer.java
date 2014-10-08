@@ -462,11 +462,6 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 }
             }
         }
-        List<ExpressionTree> newArguments = new ArrayList<ExpressionTree>(arguments.size());
-        for (ExpressionTree expressionTree : arguments) {
-            ExpressionTree expression = fixReferences(expressionTree, target, currentPath);
-            newArguments.add(expression);
-        }
         
         List<ExpressionTree> typeArguments = new LinkedList<ExpressionTree>((List<? extends ExpressionTree>)node.getTypeArguments());
         Element returnType = workingCopy.getTypes().asElement(el.getReturnType());
@@ -497,7 +492,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 newMethodSelect.getKind() == Tree.Kind.IDENTIFIER) {
             newMethodSelect = make.MemberSelect(make.Identifier("this"), ((IdentifierTree)newMethodSelect).getName());
         }
-        return make.MethodInvocation(typeArguments, newMethodSelect, newArguments);
+        return make.MethodInvocation(typeArguments, newMethodSelect, arguments);
     }
 
     private void checkForUsagesOutsideOfPackage(final FileObject folder, final CompilationUnitTree compilationUnit, TreePathHandle elementBeingMoved) {

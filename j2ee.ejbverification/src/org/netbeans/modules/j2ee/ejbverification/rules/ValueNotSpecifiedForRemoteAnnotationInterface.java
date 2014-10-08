@@ -94,7 +94,7 @@ public final class ValueNotSpecifiedForRemoteAnnotationInterface {
         if (annRemote != null && JavaUtils.getAnnotationAttrValue(annRemote, EJBAPIAnnotations.VALUE) != null) {
             ErrorDescription err = HintsUtils.createProblem(
                     ctx.getClazz(),
-                    ctx.getComplilationInfo(),
+                    hintContext.getInfo(),
                     Bundle.ValueNotSpecifiedForRemoteAnnotationInterface_err());
 
             return Collections.singletonList(err);

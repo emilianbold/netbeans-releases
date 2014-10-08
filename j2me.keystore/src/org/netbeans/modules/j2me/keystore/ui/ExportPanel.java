@@ -86,7 +86,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
     private static final String HELP_ID = "org.netbeans.modules.j2me.keystore.ui.ExportPanel"; //NOI18N
     private static final Dimension PREFERRED_SIZE = new Dimension(500, 500);
     private static final RequestProcessor RP = new RequestProcessor(ExportPanel.class);
-    public static final String SHARED_CLIENT = "Shared"; //NOI18N
+    public static final String SHARED_CLIENT = "<Shared>"; //NOI18N
 
     private DialogDescriptor dd;
     final private KeyStoreRepository.KeyStoreBean bean;

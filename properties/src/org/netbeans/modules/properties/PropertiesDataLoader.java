@@ -174,11 +174,12 @@ public final class PropertiesDataLoader extends MultiFileLoader {
                 }
             }
             return fo;
-        } else if(fo.getMIMEType().equalsIgnoreCase(PROPERTIES_MIME_TYPE)) {
-//            getExtensions().addExtension(fo.getExt());
+        } else if (getExtensions().isRegistered(fo)) {
+            return fo;
+        } else if (PROPERTIES_MIME_TYPE.equalsIgnoreCase(fo.getMIMEType(PROPERTIES_MIME_TYPE))) {
             return fo;
         } else {
-            return getExtensions().isRegistered(fo) ? fo : null;
+            return null;
         }
     }
 

@@ -48,7 +48,9 @@ public interface CodeAudit {
     String getName();
     String getDescription();
     boolean isEnabled();
+    boolean getDefaultEnabled();
     String minimalSeverity();
+    String getDefaultSeverity();
     String getKind();
     AuditPreferences getPreferences();
 }

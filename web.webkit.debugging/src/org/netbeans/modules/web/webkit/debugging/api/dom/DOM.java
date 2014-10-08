@@ -157,6 +157,9 @@ public class DOM {
             if (document != null) {
                 updateNodesMap(document);
             }
+            for (Node shadowRoot : node.getShadowRoots()) {
+                updateNodesMap(shadowRoot);
+            }
         }
     }
 
@@ -604,6 +607,30 @@ public class DOM {
         }
     }
 
+    /**
+     * Notify listeners about {@code shadowRootPushed} event.
+     * 
+     * @param host host element.
+     * @param shadowRoot new shadow root.
+     */
+    private void notifyShadowRootPushed(Node host, Node shadowRoot) {
+        for (Listener listener : listeners) {
+            listener.shadowRootPushed(host, shadowRoot);
+        }
+    }
+
+    /**
+     * Notify listeners about {@code shadowPoppedPushed} event.
+     * 
+     * @param host host element.
+     * @param shadowRoot new shadow root.
+     */
+    private void notifyShadowRootPopped(Node host, Node shadowRoot) {
+        for (Listener listener : listeners) {
+            listener.shadowRootPopped(host, shadowRoot);
+        }
+    }
+
     void handleSetChildNodes(JSONObject params) {
         Node parent;
         synchronized (this) {
@@ -737,6 +764,40 @@ public class DOM {
         notifyCharacterDataModified(node);
     }
 
+    void handleShadowRootPushed(JSONObject params) {
+        Node host;
+        Node shadowRoot;
+        synchronized (this) {
+            int hostId = ((Number)params.get("hostId")).intValue(); // NOI18N
+            host = nodes.get(hostId);
+            if (host == null) {
+                return;
+            }
+            JSONObject root = (JSONObject)params.get("root"); // NOI18N
+            shadowRoot = new Node(root);
+            host.addShadowRoot(shadowRoot);
+            updateNodesMap(shadowRoot);
+        }
+        notifyShadowRootPushed(host, shadowRoot);
+    }
+
+    void handleShadowRootPopped(JSONObject params) {
+        Node host;
+        Node shadowRoot;
+        synchronized (this) {
+            int hostId = ((Number)params.get("hostId")).intValue(); // NOI18N
+            host = nodes.get(hostId);
+            int rootId = ((Number)params.get("rootId")).intValue(); // NOI18N
+            shadowRoot = nodes.get(rootId);
+            if (host == null || shadowRoot == null) {
+                return;
+            }
+            host.removeShadowRoot(shadowRoot);
+            nodes.remove(rootId);
+        }
+        notifyShadowRootPopped(host, shadowRoot);
+    }
+
     /**
      * DOM domain listener.
      */
@@ -797,6 +858,23 @@ public class DOM {
          * @param node node whose character data have been modified.
          */
         void characterDataModified(Node node);
+
+        /**
+         * Shadow root has been pushed into the host element.
+         * 
+         * @param host host element.
+         * @param shadowRoot new shadow root.
+         */
+        void shadowRootPushed(Node host, Node shadowRoot);
+
+        /**
+         * Shadow root has been popped from the host element.
+         * 
+         * @param host host element
+         * @param shadowRoot shadow root that has been removed.
+         */
+        void shadowRootPopped(Node host, Node shadowRoot);
+
     }
 
     /**
@@ -827,6 +905,10 @@ public class DOM {
                 handleAttributeRemoved(params);
             } else if ("DOM.characterDataModified".equals(method)) { // NOI18N
                 handleCharacterDataModified(params);
+            } else if ("DOM.shadowRootPushed".equals(method)) { // NOI18N
+                handleShadowRootPushed(params);
+            } else if ("DOM.shadowRootPopped".equals(method)) { // NOI18N
+                handleShadowRootPopped(params);
             }
         }
 

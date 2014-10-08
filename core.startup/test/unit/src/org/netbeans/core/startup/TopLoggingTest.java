@@ -188,6 +188,7 @@ public class TopLoggingTest extends NbTestCase {
     }
 
     public void testFileRotationByDefault() throws Exception {
+        System.clearProperty("org.netbeans.log.numberOfFiles");
         for (int i = 0; i < 5; i++) {
             // simulate shutdown
             TopLogging.flush(false);
@@ -211,6 +212,7 @@ public class TopLoggingTest extends NbTestCase {
     }
 
     public void testFileRotationWithSystemProperty() throws Exception {
+        try {
         for (int i = 0; i < 6; i++) {
             // simulate shutdown
             TopLogging.flush(false);
@@ -220,6 +222,9 @@ public class TopLoggingTest extends NbTestCase {
             // simulate restart
             TopLogging.flush(true);
             TopLogging.initialize();
+        }
+        } finally {
+            System.clearProperty("org.netbeans.log.numberOfFiles");
         }
 
         File log = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log");
@@ -239,6 +244,7 @@ public class TopLoggingTest extends NbTestCase {
     }
 
     public void testFileRotationAtLeastThreeFiles() throws Exception {
+        try {
         for (int i = 0; i < 5; i++) {
             // simulate shutdown
             TopLogging.flush(false);
@@ -248,6 +254,9 @@ public class TopLoggingTest extends NbTestCase {
             // simulate restart
             TopLogging.flush(true);
             TopLogging.initialize();
+        }
+        } finally {
+            System.clearProperty("org.netbeans.log.numberOfFiles");
         }
 
         File log = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log");

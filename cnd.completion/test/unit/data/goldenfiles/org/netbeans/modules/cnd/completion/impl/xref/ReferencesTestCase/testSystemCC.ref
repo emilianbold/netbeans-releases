@@ -24,7 +24,7 @@
 ==============================================================
 'supportMetric', tokenID=identifier, offset=2250 [49:5/2250-49:18/2263]
 --OWNER:
-    EXPR null text='supportMetric(0'
+    EXPR null text='supportMetric(0)'
 --RESOLVED TO:
     VARIABLE supportMetric [65:5/2540-65:23/2558] ReferencesTestCase/system.h  TYPE: int TEXT=int  [65:5/2540-65:8/2543]  INIT: null  SCOPE: System 
 ==============================================================

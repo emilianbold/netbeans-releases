@@ -221,10 +221,18 @@ final class ThemeValue implements UIDefaults.ActiveValue {
             TEXT_BACKGROUND = valueOfField (colorType, "TEXT_BACKGROUND"); //NOI18N
             FOCUS = valueOfField (colorType, "FOCUS"); //NOI18N
 
-            synthContext_getContext = synthContext.getDeclaredMethod ("getContext",
-                    new Class[] {
-                        Class.class, JComponent.class, region, synthStyle, Integer.TYPE
-                    });
+            try {
+                synthContext_getContext = synthContext.getDeclaredMethod ("getContext",
+                        new Class[] {
+                            Class.class, JComponent.class, region, synthStyle, Integer.TYPE
+                        });
+            } catch( Exception e ) {
+                //#247120 - JDK8 update 20
+                synthContext_getContext = synthContext.getDeclaredMethod ("getContext",
+                        new Class[] {
+                            JComponent.class, region, synthStyle, Integer.TYPE
+                        });
+            }
             synthContext_getContext.setAccessible(true);
 
             synthLookAndFeel_getStyle = synthLookAndFeel.getDeclaredMethod ("getStyle",
@@ -237,7 +245,7 @@ final class ThemeValue implements UIDefaults.ActiveValue {
             REGION_SCROLLBAR_THUMB = valueOfField (region, "SCROLL_BAR_THUMB"); //NOI18N
             REGION_TAB = valueOfField (region, "TABBED_PANE_TAB"); //NOI18N
             REGION_INTFRAME = valueOfField (region, "INTERNAL_FRAME_TITLE_PANE"); //NOI18N
-            
+
             synthUI_getContext = synthUI.getDeclaredMethod ("getContext", JComponent.class ); //NOI18N
 
             functioning = Boolean.TRUE;

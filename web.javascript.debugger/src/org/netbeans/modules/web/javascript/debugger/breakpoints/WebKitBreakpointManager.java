@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
+import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -67,10 +68,12 @@ import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
+import org.netbeans.modules.web.webkit.debugging.api.dom.NodeAnnotator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.text.Line;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -84,6 +87,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
     protected final Debugger d;
     private final Breakpoint b;
     private static final RequestProcessor rp = new RequestProcessor(WebKitBreakpointManager.class);
+    private static final Image DOM_BREAKPOINT_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/javascript/debugger/resources/DOMBreakpoint.png", false); // NOI18N
 
     protected WebKitBreakpointManager(Debugger d, Breakpoint b) {
         this.d = d;
@@ -500,6 +504,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             } else {
                 db.setInvalid(Bundle.MSG_DOM_BRKP_Unresolved());
             }
+            NodeAnnotator.getDefault().annotate(node, DOM_BREAKPOINT_BADGE);
         }
 
         @Override
@@ -533,6 +538,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 db.resetValidity();
             }
             bps = null;
+            NodeAnnotator.getDefault().annotate(theNode, null);
         }
 
         @Override

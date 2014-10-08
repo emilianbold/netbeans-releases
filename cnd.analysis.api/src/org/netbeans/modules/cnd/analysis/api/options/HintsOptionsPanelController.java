@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -92,7 +93,7 @@ public class HintsOptionsPanelController extends OptionsPanelController {
     }
     
     protected HintsPanel createPanel(Lookup masterLookup, CodeAuditProvider selection) {
-        return new HintsPanel(masterLookup, selection);
+        return new HintsPanel(masterLookup, selection, selection == null ? MIMENames.SOURCES_MIME_TYPE : selection.getMimeType());
     }
     
     @Override

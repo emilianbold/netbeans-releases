@@ -2,7 +2,7 @@ Code completion result for source line:
 <h3 data-bind="text: |"></h3>
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CONSTRUCTO MyViewModel(): MyViewModel      [PUBLIC]   index.html
+CONSTRUCTO MyViewModel                     [PUBLIC]   index.html
 CLASS      $context                        [PRIVATE]  <font color=#999999>index.html</font>
 CLASS      $parentContext                  [PRIVATE]  <font color=#999999>index.html</font>
 CLASS      ko                              [PUBLIC]   <font color=#999999>Knockout</font>

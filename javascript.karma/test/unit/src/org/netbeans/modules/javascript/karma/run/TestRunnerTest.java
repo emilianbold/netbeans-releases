@@ -79,4 +79,17 @@ public class TestRunnerTest {
         Assert.assertArrayEquals(expected, TestRunner.processDetails(details));
     }
 
+    @Test
+    public void testIssue246885() {
+        String details = "[\"Expected function not to throw 'Just a static class - can not be instantiated.'.\\n"
+                + "Error: Expected function not to throw 'Just a static class - can not be instantiated.'.\\n"
+                + "    at Object.<anonymous> (http://localhost:9876/base/test/modules/core/js/SettingsSpec.js?f0402995b7411305dea968049ed8d378d0665241:9:20)\"]";
+        String[] expected = new String[] {
+            "Expected function not to throw 'Just a static class - can not be instantiated.'.",
+            "Error: Expected function not to throw 'Just a static class - can not be instantiated.'.",
+            "at Object.<anonymous> (/test/modules/core/js/SettingsSpec.js:9:20)",
+        };
+        Assert.assertArrayEquals(expected, TestRunner.processDetails(details));
+    }
+
 }

@@ -46,12 +46,15 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.openide.util.ImageUtilities;
@@ -125,7 +128,7 @@ public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(getComboBorderColor()));
+        jPanel1.setBorder(getQuickSearchBorder());
         jPanel1.setName("jPanel1"); // NOI18N
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -169,6 +172,19 @@ public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
+    }
+
+    /**
+     * Get customizable border for QuickSearch. See bug 246907.
+     *
+     * @return Custom border if defined in {@link UIManager} or default line
+     * border.
+     */
+    private Border getQuickSearchBorder() {
+        Border border = UIManager.getBorder("nb.quicksearch.border"); //NOI18N
+        return border != null
+                ? border
+                : BorderFactory.createLineBorder(getComboBorderColor());
     }
 
     private void jLabel2MousePressed(java.awt.event.MouseEvent evt) {

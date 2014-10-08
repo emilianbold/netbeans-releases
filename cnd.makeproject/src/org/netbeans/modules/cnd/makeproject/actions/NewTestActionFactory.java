@@ -420,15 +420,19 @@ public final class NewTestActionFactory {
         @Override
         public synchronized JPopupMenu getPopupMenu() {
             super.removeAll();
-            for (Action action : items) {
-                if (action instanceof Presenter.Popup) {
-                    JMenuItem item = ((Presenter.Popup) action).getPopupPresenter();
-                    add(item);
-                } else if (action instanceof Presenter.Menu) {
-                    JMenuItem item = ((Presenter.Menu) action).getMenuPresenter();
-                    add(item);
-                } else {
-                    add(action);
+            // Some L&F call this method in constructor.
+            // Work around bug #247145
+            if (items != null) {
+                for (Action action : items) {
+                    if (action instanceof Presenter.Popup) {
+                        JMenuItem item = ((Presenter.Popup) action).getPopupPresenter();
+                        add(item);
+                    } else if (action instanceof Presenter.Menu) {
+                        JMenuItem item = ((Presenter.Menu) action).getMenuPresenter();
+                        add(item);
+                    } else {
+                        add(action);
+                    }
                 }
             }
             return super.getPopupMenu();

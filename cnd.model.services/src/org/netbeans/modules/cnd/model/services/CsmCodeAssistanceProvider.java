@@ -103,6 +103,53 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
     }
 
     @Override
+    public Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> getHeaderLanguageFlavour(FileObject item) {
+        CsmFile csmFile = CsmUtilities.getCsmFile(item, false, false);
+        if (csmFile != null) {
+            Collection<CsmCompilationUnit> compilationUnits = CsmFileInfoQuery.getDefault().getCompilationUnits(csmFile, 0);
+            if (!compilationUnits.isEmpty()) {
+                final Iterator<CsmCompilationUnit> iterator = compilationUnits.iterator();
+                Set<NativeFileItem.Language> langs = new HashSet<NativeFileItem.Language>();
+                Set<NativeFileItem.LanguageFlavor> flavors = new HashSet<NativeFileItem.LanguageFlavor>();
+                while(iterator.hasNext()) {
+                    CsmCompilationUnit cu = iterator.next();
+                    CsmFile startFile = cu.getStartFile();
+                    if (startFile != null) {
+                        Object platformProject = startFile.getProject().getPlatformProject();
+                        if (platformProject instanceof NativeProject) {
+                            NativeProject np = (NativeProject) platformProject;
+                            NativeFileItem ni = np.findFileItem(startFile.getFileObject());
+                            if (ni != null && startFile != csmFile && startFile.isSourceFile()) {
+                                langs.add(ni.getLanguage());
+                                flavors.add(ni.getLanguageFlavor());
+                            }
+                        }
+                    }
+                }
+                if (!flavors.isEmpty()) {
+                    NativeFileItem.Language prefLang = NativeFileItem.Language.C_HEADER;
+                    if (!csmFile.isHeaderFile())  {
+                        if (langs.contains(NativeFileItem.Language.C)) {
+                            prefLang = NativeFileItem.Language.C;
+                        }
+                        if (langs.contains(NativeFileItem.Language.CPP)) {
+                            prefLang = NativeFileItem.Language.CPP;
+                        }
+                    }
+                    NativeFileItem.LanguageFlavor prefFlavor = maxFlavor(flavors);
+                    return Pair.of(prefLang, prefFlavor);
+                }
+            }
+            if (csmFile.isHeaderFile()) {
+                return Pair.of(NativeFileItem.Language.C_HEADER, NativeFileItem.LanguageFlavor.UNKNOWN);
+            } else if (csmFile.isSourceFile()) {
+                return Pair.of(NativeFileItem.Language.CPP, NativeFileItem.LanguageFlavor.UNKNOWN);
+            } 
+        }
+        return Pair.of(NativeFileItem.Language.OTHER, NativeFileItem.LanguageFlavor.UNKNOWN);
+    }
+
+    @Override
     public Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> getStartFileLanguageFlavour(NativeFileItem item) {
         CsmFile csmFile = CsmUtilities.getCsmFile(item, false, false);
         if (csmFile != null) {
@@ -134,28 +181,7 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
                     if (langs.contains(NativeFileItem.Language.CPP)) {
                         prefLang = NativeFileItem.Language.CPP;
                     }
-                    NativeFileItem.LanguageFlavor prefFlavor = NativeFileItem.LanguageFlavor.UNKNOWN;
-                    if (flavors.contains(NativeFileItem.LanguageFlavor.C)) {
-                        prefFlavor = NativeFileItem.LanguageFlavor.C;
-                    }
-                    if (flavors.contains(NativeFileItem.LanguageFlavor.C89)) {
-                        prefFlavor = NativeFileItem.LanguageFlavor.C89;
-                    }
-                    if (flavors.contains(NativeFileItem.LanguageFlavor.C99)) {
-                        prefFlavor = NativeFileItem.LanguageFlavor.C99;
-                    }
-                    if (flavors.contains(NativeFileItem.LanguageFlavor.C11)) {
-                        prefFlavor = NativeFileItem.LanguageFlavor.C11;
-                    }
-                    if (flavors.contains(NativeFileItem.LanguageFlavor.CPP)) {
-                        prefFlavor = NativeFileItem.LanguageFlavor.CPP;
-                    }
-                    if (flavors.contains(NativeFileItem.LanguageFlavor.CPP11)) {
-                        prefFlavor = NativeFileItem.LanguageFlavor.CPP11;
-                    }
-                    if (flavors.contains(NativeFileItem.LanguageFlavor.CPP14)) {
-                        prefFlavor = NativeFileItem.LanguageFlavor.CPP14;
-                    }
+                    NativeFileItem.LanguageFlavor prefFlavor = maxFlavor(flavors);
                     return Pair.of(prefLang, prefFlavor);
                 }
             }
@@ -166,6 +192,32 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
             } 
         }
         return Pair.of(NativeFileItem.Language.OTHER, NativeFileItem.LanguageFlavor.UNKNOWN);
+    }
+
+    private NativeFileItem.LanguageFlavor maxFlavor(Set<NativeFileItem.LanguageFlavor> flavors) {
+        NativeFileItem.LanguageFlavor prefFlavor = NativeFileItem.LanguageFlavor.UNKNOWN;
+        if (flavors.contains(NativeFileItem.LanguageFlavor.C)) {
+            prefFlavor = NativeFileItem.LanguageFlavor.C;
+        }
+        if (flavors.contains(NativeFileItem.LanguageFlavor.C89)) {
+            prefFlavor = NativeFileItem.LanguageFlavor.C89;
+        }
+        if (flavors.contains(NativeFileItem.LanguageFlavor.C99)) {
+            prefFlavor = NativeFileItem.LanguageFlavor.C99;
+        }
+        if (flavors.contains(NativeFileItem.LanguageFlavor.C11)) {
+            prefFlavor = NativeFileItem.LanguageFlavor.C11;
+        }
+        if (flavors.contains(NativeFileItem.LanguageFlavor.CPP)) {
+            prefFlavor = NativeFileItem.LanguageFlavor.CPP;
+        }
+        if (flavors.contains(NativeFileItem.LanguageFlavor.CPP11)) {
+            prefFlavor = NativeFileItem.LanguageFlavor.CPP11;
+        }
+        if (flavors.contains(NativeFileItem.LanguageFlavor.CPP14)) {
+            prefFlavor = NativeFileItem.LanguageFlavor.CPP14;
+        }
+        return prefFlavor;
     }
     
     @Override

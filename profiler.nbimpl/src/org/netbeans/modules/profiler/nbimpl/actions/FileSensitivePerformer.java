@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.profiler.nbimpl.actions;
 
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
+import org.netbeans.modules.profiler.v2.ProfilerSession;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileActionPerformer;
 import org.openide.filesystems.FileObject;
@@ -56,6 +56,7 @@ import org.openide.util.lookup.Lookups;
 /**
  *
  * @author Jaroslav Bachorik
+ * @author Jiri Sedlacek
  */
 public class FileSensitivePerformer implements FileActionPerformer {
 
@@ -85,7 +86,7 @@ public class FileSensitivePerformer implements FileActionPerformer {
                     return false;
                 }
                 
-                return ppp.isProfilingSupported() && ap.isActionEnabled(command, getContext(file));
+                return ppp.isProfilingSupported() && ap.isActionEnabled(command, getContext(file, p));
             }
         } catch (IllegalArgumentException e) {
             // command not supported
@@ -94,30 +95,22 @@ public class FileSensitivePerformer implements FileActionPerformer {
     }
 
     @Override
-    public void perform(final FileObject file) {
+    public void perform(FileObject file) {
         Project p = FileOwnerQuery.getOwner(file);
         ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
         if (ap != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    ProfilerLauncher.Session s = ProfilerLauncher.newSession(command, getContext(file));
-                    if (s != null) {
-                        s.run();
-                    }
-                }
-            });
+            Lookup context = getContext(file, p);
+            ProfilerSession session = ProfilerSession.forContext(context);
+            if (session != null) session.requestActive();
         }
     }
 
-    private Lookup getContext(FileObject file) {
-        Project p = FileOwnerQuery.getOwner(file);
+    private Lookup getContext(FileObject file, Project p) {
+        ProfilerLauncher.Command _command = new ProfilerLauncher.Command(command);
         try {
-            return Lookups.fixed(file, p, DataObject.find(file));
-        } catch (DataObjectNotFoundException e) {
-        }
-        return Lookups.fixed(file, p);
+            return Lookups.fixed(file, p, DataObject.find(file), _command);
+        } catch (DataObjectNotFoundException e) {}
+        return Lookups.fixed(file, p, _command);
     }
     
     private static boolean contains(String[] actions, String action) {

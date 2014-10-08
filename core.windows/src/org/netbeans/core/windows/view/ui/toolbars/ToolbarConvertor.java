@@ -90,7 +90,7 @@ public final class ToolbarConvertor extends Convertor {
     public Object read(Reader r) throws IOException, ClassNotFoundException {
         Lookup lkp = findContext(r);
         FileObject fo = lkp.lookup(FileObject.class);
-        String displayName = fo.getFileSystem().getStatus().annotateName(fo.getName(), Collections.singleton(fo));
+        String displayName = fo.getFileSystem().getDecorator().annotateName(fo.getName(), Collections.singleton(fo));
         try {
             XMLReader reader = XMLUtil.createXMLReader(true);
             ToolbarParser parser = new ToolbarParser();

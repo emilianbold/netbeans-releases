@@ -71,6 +71,7 @@ maven.junit,\
 maven.model,\
 maven.osgi,\
 nbjunit,\
+nbbrwsr,\
 netbinox,\
 o.apache.tools.ant.module,\
 o.n.bootstrap,\

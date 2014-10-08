@@ -47,6 +47,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
@@ -72,7 +73,7 @@ public final class UiUtils {
                 @NonNull final FilterBypass fb,
                 final int offset,
                 @NonNull final String string,
-                @NonNull final AttributeSet attr) throws BadLocationException {
+                @NullAllowed final AttributeSet attr) throws BadLocationException {
             if (Utils.isValidInput(string)) {
                 super.insertString(fb, offset, string, attr);
             } else {
@@ -85,9 +86,9 @@ public final class UiUtils {
                 @NonNull final FilterBypass fb,
                 final int offset,
                 final int length,
-                @NonNull final String text,
-                @NonNull final AttributeSet attrs) throws BadLocationException {
-            if (Utils.isValidInput(text)) {
+                @NullAllowed final String text,
+                @NullAllowed final AttributeSet attrs) throws BadLocationException {
+            if (text == null || Utils.isValidInput(text)) {
                 super.replace(fb, offset, length, text, attrs);
             } else {
                 handleWrongInput();

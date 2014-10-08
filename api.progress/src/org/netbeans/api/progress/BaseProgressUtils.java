@@ -214,7 +214,7 @@ public final class BaseProgressUtils {
             PROVIDER.runOffEventDispatchThread(new Runnable() {
                 @Override
                 public void run() {
-                    ProgressHandle handle = BaseProgressHandleFactory.createHandle(displayName);
+                    ProgressHandle handle = ProgressHandle.createHandle(displayName);
                     handle.start();
                     handle.switchToIndeterminate();
                     try {

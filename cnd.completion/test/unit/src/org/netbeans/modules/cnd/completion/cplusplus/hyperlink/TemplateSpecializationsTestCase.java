@@ -241,6 +241,17 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug246463.cpp", 6, 16, "bug246463.cpp", 5, 5);
     }
     
+    public void testBug246803() throws Exception {
+        // Bug 246803 - Bad support of unnamed template parameters
+        performTest("bug246803.cpp", 8, 25, "bug246803.cpp", 2, 26);
+        performTest("bug246803.cpp", 14, 14, "bug246803.cpp", 9, 9);
+        performTest("bug246803.cpp", 39, 15, "bug246803.cpp", 29, 9);
+        performTest("bug246803.cpp", 41, 15, "bug246803.cpp", 34, 9);
+        performTest("bug246803.cpp", 43, 15, "bug246803.cpp", 24, 9);
+        performTest("bug246803.cpp", 58, 15, "bug246803.cpp", 48, 9);
+        performTest("bug246803.cpp", 60, 15, "bug246803.cpp", 53, 9);
+    }    
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

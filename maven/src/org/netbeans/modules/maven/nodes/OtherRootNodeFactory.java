@@ -47,6 +47,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
@@ -67,6 +69,8 @@ import org.openide.nodes.Node;
  */
 @NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=200)
 public class OtherRootNodeFactory implements NodeFactory {
+    
+    private static final Logger LOG = Logger.getLogger(OtherRootNodeFactory.class.getName());
     
     private static final String KEY_OTHER = "otherRoots"; //NOI18N
     private static final String KEY_OTHER_TEST = "otherTestRoots"; //NOI18N
@@ -122,9 +126,7 @@ public class OtherRootNodeFactory implements NodeFactory {
                 // the content of OtherRoots can change from keys() to node(String)
                 if (fls.length > 0 && fls[0].getParentFile() != null) {
                     FileObject fo = FileUtil.toFileObject(fls[0].getParentFile());
-                    if(VisibilityQuery.getDefault().isVisible(fo)) {
-                        return new OthersRootNode(project, false, fo);
-                    }
+                    return new OthersRootNode(project, false, fo);
                 }
                 return null;
             } else if (KEY_OTHER_TEST.equals(key)) {
@@ -132,9 +134,7 @@ public class OtherRootNodeFactory implements NodeFactory {
                 // the content of OtherRoots can change from keys() to node(String)
                 if (fls.length > 0 && fls[0].getParentFile() != null) {
                     FileObject fo = FileUtil.toFileObject(fls[0].getParentFile());
-                    if(VisibilityQuery.getDefault().isVisible(fo)) {
-                        return new OthersRootNode(project, true, fo);
-                    }
+                    return new OthersRootNode(project, true, fo);
                 }
                 return null;
             }

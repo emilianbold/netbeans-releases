@@ -265,7 +265,13 @@ public abstract class Module extends ModuleInfo {
     }
     
     String getFragmentHostCodeName() {
-        return data().getFragmentHostCodeName();
+        String fragmentHostCodeName;
+        try {
+            fragmentHostCodeName = data().getFragmentHostCodeName();
+        } catch (IllegalStateException ex) {
+            fragmentHostCodeName = null;
+        }
+        return fragmentHostCodeName;
     }
     
     @Override

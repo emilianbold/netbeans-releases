@@ -77,6 +77,7 @@ public class AngularHtmlLexerPlugin extends HtmlLexerPlugin {
             switch(directive.getType()) {
                 case expression:
                 case repeatExpression:
+                case object:
                     return Constants.JAVASCRIPT_MIMETYPE;
             }
         }

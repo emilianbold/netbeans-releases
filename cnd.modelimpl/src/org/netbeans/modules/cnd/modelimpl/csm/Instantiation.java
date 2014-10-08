@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -779,20 +780,23 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
         
         private String toString(StringBuilder out, int indent) {
-            indent(out, indent).append("INSTANTIATION OF "); // NOI18N
             String instName = this.getClass().getSimpleName()+"@"+System.identityHashCode(this);//NOI18N
-            out.append(instName).append(":\n");// NOI18N
-            if (inheritance instanceof Inheritance) {
-                ((Inheritance) inheritance).toString(out, indent + 2);
-            } else {
-                indent(out, indent + 2);
-                out.append(inheritance);
-            }
-            out.append("\n");// NOI18N
-            indent(out, indent).append("WITH TYPE:\n"); // NOI18N
+            indent(out, indent)
+                    .append("INSTANTIATION OF INHERITANCE ") // NOI18N  
+                    .append(instName)
+                    .append("WITH TYPE:\n"); // NOI18N
+            ////////////////////////////////////////////////////////////////////
+            // Commented out because the only valuable thing here is type
+//            out.append(instName).append(":\n");// NOI18N
+//            if (inheritance instanceof Inheritance) {
+//                ((Inheritance) inheritance).toString(out, indent + 2);
+//            } else {
+//                indent(out, indent + 2);
+//                out.append(inheritance);
+//            }
+            ////////////////////////////////////////////////////////////////////
             ((Type)type).toString(out, indent + 2);
             out.append("\n");// NOI18N
-            indent(out, indent).append("END OF ").append(instName);// NOI18N
             return out.toString();
         }
     }
@@ -1430,6 +1434,14 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         return createType(type, instantiation, new TemplateParameterResolver());
     }    
     
+    public static CsmType createType(CsmType type, List<CsmInstantiation> instantiations) {
+        CsmType result = type;
+        for (CsmInstantiation instantiation : instantiations) {
+            result = createType(result, instantiation);
+        }
+        return result;
+    }             
+    
     private static CsmType createType(CsmType type, CsmInstantiation instantiation, TemplateParameterResolver templateParamResolver) {
         if (type == null) {
             throw new NullPointerException("no type for " + instantiation); // NOI18N
@@ -1473,15 +1485,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             return new TypeFunPtr((CsmFunctionPointerType) type, instantiation, templateParamResolver);
         }
         return new Type(type, instantiation, templateParamResolver);       
-    }   
-    
-    public static CsmType createType(CsmType type, List<CsmInstantiation> instantiations) {
-        CsmType result = type;
-        for (CsmInstantiation instantiation : instantiations) {
-            result = createType(result, instantiation);
-        }
-        return result;
-    }         
+    }       
     
     public static CsmType unfoldInstantiatedType(CsmType type) {
         CsmType result = type;
@@ -1578,8 +1582,8 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         protected final CsmInstantiation instantiation;
         protected final boolean inst;
         protected CsmType instantiatedType;
-        protected CsmClassifier resolved;
         protected CsmTemplateParameter parameter;
+        protected CsmClassifier cachedResolved;
 
         private Type(CsmType type, CsmInstantiation instantiation, TemplateParameterResolver templateParamResolver) {
             this.instantiation = instantiation;
@@ -1722,6 +1726,11 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             return instantiatedType.isInstantiation();
         }
 
+        @Override
+        public boolean hasInstantiationParams() {
+            return instantiatedType.hasInstantiationParams();
+        }
+
         private boolean isRecursion(CsmType type, int i){
             if (i == 0) {
                 return true;
@@ -1851,6 +1860,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         
         public CsmClassifier getClassifier(List<CsmInstantiation> instantiations, boolean specialize) {
             instantiations.add(instantiation);
+            CsmClassifier resolved = getCachedResolved(instantiations);
             if (resolved == null) {
                 if (!instantiationHappened()) {
                     CsmClassifier classifier;
@@ -1886,7 +1896,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                         }
                         if (CsmKindUtilities.isClassifier(obj)) {
                             resolved = (CsmClassifier) obj;
-                            return resolved;
+                            return cacheResolved(instantiations, resolved);
                         }
                     }
                     resolved = classifier;
@@ -1900,29 +1910,31 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                     }
                 } 
                 
-                if (CsmKindUtilities.isTypedef(resolved) && CsmKindUtilities.isClassMember(resolved)) {
-                    CsmMember tdMember = (CsmMember)resolved;
-                    if (isTemplateScope(tdMember.getContainingClass())) {
-                        resolved = new Typedef((CsmTypedef)resolved, instantiation);
-                        return resolved;
+                if (instantiation != null && !canSkipInstantiation(resolved, instantiation.getMapping())) {
+                    if (CsmKindUtilities.isTypedef(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                        CsmMember tdMember = (CsmMember)resolved;
+                        if (isTemplateScope(tdMember.getContainingClass())) {
+                            resolved = new Typedef((CsmTypedef)resolved, instantiation);
+                            return cacheResolved(instantiations, resolved);
+                        }
                     }
-                }
-                if (CsmKindUtilities.isTypeAlias(resolved) && CsmKindUtilities.isClassMember(resolved)) {
-                    CsmMember taMember = (CsmMember)resolved;
-                    if (isTemplateScope(taMember.getContainingClass())) {
-                        resolved = new MemberTypeAlias((CsmTypeAlias)resolved, instantiation);
-                        return resolved;
+                    if (CsmKindUtilities.isTypeAlias(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                        CsmMember taMember = (CsmMember)resolved;
+                        if (isTemplateScope(taMember.getContainingClass())) {
+                            resolved = new MemberTypeAlias((CsmTypeAlias)resolved, instantiation);
+                            return cacheResolved(instantiations, resolved);
+                        }
                     }
-                }
-                if (CsmKindUtilities.isClass(resolved) && CsmKindUtilities.isClassMember(resolved)) {
-                    CsmMember tdMember = (CsmMember)resolved;
-                    if (isTemplateScope(tdMember.getContainingClass())) {
-                        resolved = new Class((CsmClass)resolved, instantiation.getMapping());
-                        return resolved;
+                    if (CsmKindUtilities.isClass(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                        CsmMember tdMember = (CsmMember)resolved;
+                        if (isTemplateScope(tdMember.getContainingClass())) {
+                            resolved = new Class((CsmClass)resolved, instantiation.getMapping());
+                            return cacheResolved(instantiations, resolved);
+                        }
                     }
                 }
             }
-            return resolved;
+            return cacheResolved(instantiations, resolved);
         }        
 
         @Override
@@ -1963,7 +1975,73 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 baseType = ((Type)baseType).originalType;
             }
             return null;
-        }         
+        }
+        
+        protected CsmClassifier getCachedResolved(List<CsmInstantiation> instantiations) {
+            return cachedResolved;
+        }
+        
+        protected CsmClassifier cacheResolved(List<CsmInstantiation> instantiations, CsmClassifier resolved) {
+            // FIXME: disabling cache in http://hg.netbeans.org/cnd-main/rev/bc1384664e04 was too agressive
+            // new timing bacome:
+            // FileMaps Cache: HITS=414,034, Used 174,633ms, SavedTime=828,068ms, Cached 1 Values (NULLs=0) ([88]Code Model Client Request :Go to declaration)
+            // OrigClassifier Cache: HITS=120,470, Used 174,656ms, SavedTime=120,470ms, Cached 85 Values (NULLs=0) ([88]Code Model Client Request :Go to declaration)
+            // SELECT Cache: HITS=363,349, Used 174,656ms, SavedTime=363,349ms, Cached 194 Values (NULLs=0) ([88]Code Model Client Request :Go to declaration)
+            // Resolver3 Cache: HITS=414,289, Used 174,638ms, SavedTime=510ms, Cached 7 Values (NULLs=4) ([88]Code Model Client Request :Go to declaration)
+            //FROM previous:
+            //FileMaps Cache: HITS=106, Used 655ms, SavedTime=388ms, Cached 6 Values (NULLs=0) ([58]Code Model Client Request :Go to declaration)
+            //OrigClassifier Cache: HITS=11, Used 665ms, SavedTime=11ms, Cached 4 Values (NULLs=0) ([58]Code Model Client Request :Go to declaration)
+            //SELECT Cache: HITS=74, Used 671ms, SavedTime=74ms, Cached 11 Values (NULLs=0) ([58]Code Model Client Request :Go to declaration)
+            //Resolver3 Cache: HITS=107, Used 671ms, SavedTime=1,605ms, Cached 32 Values (NULLs=22) ([58]Code Model Client Request :Go to declaration)
+            //
+            if (true) cachedResolved = resolved;
+            if (cachedResolved != resolved) {
+                if (!instantiations.isEmpty() && instantiations.get(0) == instantiation) {
+                    // We should cache resolved classifier only if this type is on top (knows full context).
+                    // If type which do not know full context would cache resolved classifier,
+                    // it might be reused later (because of cache) with other instantiations 
+                    // above the context it knows, but would return already cached value.
+                    if (!isTemplateBasedInstantiation(instantiation)) {
+                        cachedResolved = resolved;
+                    }
+                }
+            }
+            return resolved;
+        }
+        
+        private boolean isTemplateBasedInstantiation(CsmInstantiation inst) {
+            return isTemplateBasedInstantiation(inst, new IdentityHashMap<CsmInstantiation, Boolean>(2));
+        }
+        
+        private boolean isTemplateBasedInstantiation(CsmInstantiation inst, Map<CsmInstantiation, Boolean> visited) {
+            if (!visited.containsKey(inst)) {
+                visited.put(inst, Boolean.TRUE);
+                for (CsmSpecializationParameter param : inst.getMapping().values()) {
+                    if (isTemplateBasedParameter(param, visited)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        private boolean isTemplateBasedParameter(CsmSpecializationParameter param, Map<CsmInstantiation, Boolean> visited) {
+            if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
+                CsmType type = ((CsmTypeBasedSpecializationParameter) param).getType();
+                if (CsmKindUtilities.isTemplateParameterType(type)) {
+                    return true;
+                } else if (type instanceof Type) {
+                    return isTemplateBasedInstantiation(((Type) type).getInstantiation(), visited);
+                }
+            } else if (CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
+                for (CsmSpecializationParameter inner : ((CsmVariadicSpecializationParameter) param).getArgs()) {
+                    if (isTemplateBasedParameter(inner, visited)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
         
         @Override
         public String toString() {
@@ -2003,7 +2081,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 cls = ((CsmMember) cls).getContainingClass();
             }
             return true;
-        }        
+        }
     }
     
     private static class TypeFunPtr extends Type implements CsmFunctionPointerType {
@@ -2156,6 +2234,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         @Override
         public CsmClassifier getClassifier(List<CsmInstantiation> instantiations, boolean specialize) {
             instantiations.add(instantiation);
+            CsmClassifier resolved = getCachedResolved(instantiations);
             if (resolved == null) {
                 if(!instantiationHappened()) {
                     if (parentType != null) {
@@ -2228,29 +2307,31 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                         }
                     }
                 }
-                if (CsmKindUtilities.isTypedef(resolved) && CsmKindUtilities.isClassMember(resolved)) {
-                    CsmMember tdMember = (CsmMember) resolved;
-                    if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
-                        resolved = new Typedef((CsmTypedef) resolved, instantiation);
-                        return resolved;
+                if (instantiation != null && !canSkipInstantiation(resolved, instantiation.getMapping())) {
+                    if (CsmKindUtilities.isTypedef(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                        CsmMember tdMember = (CsmMember) resolved;
+                        if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
+                            resolved = new Typedef((CsmTypedef) resolved, instantiation);
+                            return cacheResolved(instantiations, resolved);
+                        }
                     }
+                    if (CsmKindUtilities.isTypeAlias(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                        CsmMember taMember = (CsmMember)resolved;
+                        if (CsmKindUtilities.isTemplate(taMember.getContainingClass())) {
+                            resolved = new MemberTypeAlias((CsmTypeAlias)resolved, instantiation);
+                            return cacheResolved(instantiations, resolved);
+                        }
+                    }          
+                    if (CsmKindUtilities.isClass(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                        CsmMember tdMember = (CsmMember)resolved;
+                        if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
+                            resolved = new Class((CsmClass)resolved, instantiation.getMapping());
+                            return cacheResolved(instantiations, resolved);
+                        }
+                    }                
                 }
-                if (CsmKindUtilities.isTypeAlias(resolved) && CsmKindUtilities.isClassMember(resolved)) {
-                    CsmMember taMember = (CsmMember)resolved;
-                    if (CsmKindUtilities.isTemplate(taMember.getContainingClass())) {
-                        resolved = new MemberTypeAlias((CsmTypeAlias)resolved, instantiation);
-                        return resolved;
-                    }
-                }          
-                if (CsmKindUtilities.isClass(resolved) && CsmKindUtilities.isClassMember(resolved)) {
-                    CsmMember tdMember = (CsmMember)resolved;
-                    if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
-                        resolved = new Class((CsmClass)resolved, instantiation.getMapping());
-                        return resolved;
-                    }
-                }                
             }
-            return resolved;
+            return cacheResolved(instantiations, resolved);
         }
 
         @Override

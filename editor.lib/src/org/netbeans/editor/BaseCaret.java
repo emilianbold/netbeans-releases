@@ -434,8 +434,10 @@ AtomicLockListener, FoldHierarchyListener {
                         Utilities.annotateLoggable(e);
                     }
                     if (newCaretBounds != null) {
-                        LOG.log(Level.FINE, "updateCaretBounds: old={0}, new={1}, offset={2}",
-                                new Object[]{caretBounds, newCaretBounds, offset}); //NOI18N
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "updateCaretBounds: old={0}, new={1}, offset={2}",
+                                    new Object[]{caretBounds, newCaretBounds, offset}); //NOI18N
+                        }
                         caretBounds = newCaretBounds;
                         ret[0] = true;
                     }

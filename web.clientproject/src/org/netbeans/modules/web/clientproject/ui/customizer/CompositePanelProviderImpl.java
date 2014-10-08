@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
@@ -52,7 +53,9 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -91,6 +94,23 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     Bundle.CompositePanelProviderImpl_sources_title(),
                     null);
         } else if (RUN.equals(name)) {
+            if (project.isJsLibrary()) {
+                boolean runSupported = false;
+                for (PlatformProvider platformProvider : project.getPlatformProviders()) {
+                    ActionProvider actionProvider = platformProvider.getActionProvider(project);
+                    if (actionProvider != null) {
+                        List<String> actions = Arrays.asList(actionProvider.getSupportedActions());
+                        if (actions.contains(ActionProvider.COMMAND_RUN)
+                                || actions.contains(ActionProvider.COMMAND_RUN)) {
+                            runSupported = true;
+                            break;
+                        }
+                    }
+                }
+                if (!runSupported) {
+                    return null;
+                }
+            }
             category = ProjectCustomizer.Category.create(
                     RUN,
                     Bundle.CompositePanelProviderImpl_run_title(),

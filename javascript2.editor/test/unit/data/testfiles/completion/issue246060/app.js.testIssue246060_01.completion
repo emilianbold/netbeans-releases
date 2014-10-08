@@ -2,7 +2,7 @@ Code completion result for source line:
 e.|  //here
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CLASS      prototype                       [PUBLIC]   JS Platform
+CLASS      prototype                       [PUBLIC]   req.js
 METHOD     configure()                     [PUBLIC]   <font color=#999999>req.js</font>
 METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
 METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform

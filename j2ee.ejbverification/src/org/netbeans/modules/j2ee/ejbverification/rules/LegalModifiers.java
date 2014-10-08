@@ -50,6 +50,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
@@ -92,7 +94,7 @@ public final class LegalModifiers {
             Set<Modifier> modifiers = ctx.getClazz().getModifiers();
             if (!modifiers.contains(Modifier.PUBLIC)) {
                 Fix fix = new MakeClassPublic(ctx.getFileObject(), ElementHandle.create(ctx.getClazz()));
-                ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
+                ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), hintContext.getInfo(),
                         Bundle.LegalModifiers_BeanClassMustBePublic(), fix);
                 problemsFounds.add(err);
             }
@@ -101,20 +103,20 @@ public final class LegalModifiers {
                 Fix fix = new RemoveModifier(ctx.getFileObject(),
                         ElementHandle.create(ctx.getClazz()),
                         Modifier.FINAL);
-                ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
+                ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), hintContext.getInfo(),
                         Bundle.LegalModifiers_BeanClassNotBeFinal(), fix);
                 problemsFounds.add(err);
             }
 
             if (modifiers.contains(Modifier.ABSTRACT)) {
-                if (isInterface(ctx)) {
+                if (isInterface(hintContext.getInfo(), ctx.getClazz())) {
                     // no fix for interfaces, just a warning
-                    ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
+                    ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), hintContext.getInfo(),
                             Bundle.LegalModifiers_BeanClassNotBeAbstract());
                     problemsFounds.add(err);
                 } else {
                     Fix fix = new RemoveModifier(ctx.getFileObject(), ElementHandle.create(ctx.getClazz()), Modifier.ABSTRACT);
-                    ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
+                    ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), hintContext.getInfo(),
                             Bundle.LegalModifiers_BeanClassNotBeAbstract(), fix);
                     problemsFounds.add(err);
                 }
@@ -124,8 +126,8 @@ public final class LegalModifiers {
         return Collections.emptyList();
     }
 
-    private static boolean isInterface(EJBProblemContext ctx) {
-        ClassTree classTree = ctx.getComplilationInfo().getTrees().getTree(ctx.getClazz());
-        return ctx.getComplilationInfo().getTreeUtilities().isInterface(classTree);
+    private static boolean isInterface(CompilationInfo info, TypeElement clazz) {
+        ClassTree classTree = info.getTrees().getTree(clazz);
+        return classTree.getKind() == Tree.Kind.INTERFACE;
     }
 }

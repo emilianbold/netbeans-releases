@@ -560,8 +560,8 @@ public class Utilities {
                 sourceParent = findElementByID(root, id);
                 if (sourceParent != null) {
                     nearestNode = findNode(node, domParent, sourceParent);
+                    break;
                 }
-                break;
             }
             if ("html".equalsIgnoreCase(tagName)) { // NOI18N
                 sourceParent = findElementByTagName(root, "html"); // NOI18N
@@ -670,6 +670,9 @@ public class Utilities {
         parentChain.remove(0);
         org.netbeans.modules.web.webkit.debugging.api.dom.Node domChild = parentChain.get(0);
         int domIndex = elementIndexInParent(domChild);
+        if (domIndex == -1) {
+            return sourceParent;
+        }
         List<org.netbeans.modules.html.editor.lib.api.elements.Element> children = new ArrayList<org.netbeans.modules.html.editor.lib.api.elements.Element>(sourceParent.children(ElementType.OPEN_TAG));
         // Try the candidates according to their distance from the original
         // position of the corresponding DOM node.

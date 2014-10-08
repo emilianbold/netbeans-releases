@@ -52,7 +52,7 @@ import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizerPanel;
 import org.netbeans.modules.javascript.karma.ui.logicalview.KarmaChildrenList;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
-import org.netbeans.modules.web.clientproject.spi.jstesting.CustomizerPanelImplementation;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;

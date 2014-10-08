@@ -1,0 +1,7 @@
+Code completion result for source line:
+element.ch|        //here
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     charAt(param)                   [PUBLIC]   issue217029.js
+FIELD      childElementCount: Number       [PUBLIC]   JS Platform
+FIELD      childNodes: NodeList            [PUBLIC]   JS Platform

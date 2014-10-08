@@ -44,13 +44,10 @@
 package org.netbeans.modules.weblogic.common.api;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -63,7 +60,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
@@ -72,17 +68,10 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 public final class WebLogicLayout {
 
@@ -99,10 +88,6 @@ public final class WebLogicLayout {
     }
 
     private static final Logger LOGGER = Logger.getLogger(WebLogicLayout.class.getName());
-
-    private static final String DOMAIN_LIST = "common/nodemanager/nodemanager.domains"; // NOI18N
-
-    private static final String DOMAIN_REGISTRY = "domain-registry.xml"; // NOI18N
 
     private final WebLogicConfiguration config;
 

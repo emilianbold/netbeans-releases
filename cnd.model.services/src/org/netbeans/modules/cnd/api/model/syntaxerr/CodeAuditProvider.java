@@ -51,4 +51,5 @@ public interface CodeAuditProvider {
     String getDisplayName();
     String getDescription();
     AuditPreferences getPreferences();
+    String getMimeType();
 }

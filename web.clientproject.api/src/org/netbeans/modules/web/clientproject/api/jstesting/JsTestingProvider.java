@@ -47,7 +47,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.jstesting.JsTestingProviderAccessor;
-import org.netbeans.modules.web.clientproject.spi.jstesting.CustomizerPanelImplementation;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;

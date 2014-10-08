@@ -143,8 +143,8 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
     @Override
     protected Node[] createNodes(SourceGroup grp) {
         Node[] toReturn = new Node[1];
-        DataFolder dobj = DataFolder.findFolder(grp.getRootFolder());
         if (grp instanceof MavenSourcesImpl.OtherGroup) {
+            DataFolder dobj = DataFolder.findFolder(grp.getRootFolder());
             MavenSourcesImpl.OtherGroup resgrp = (MavenSourcesImpl.OtherGroup)grp;
             if (resgrp.getResource() != null && OthersRootNode.showAsPackages()) {
                 //#159560 PackageView.cPV operates with owners of files. If file not

@@ -86,7 +86,7 @@ import org.openide.util.Lookup;
  * @author  Pavel Flaska
  */
 public class RenamePanel extends JPanel implements CustomRefactoringPanel {
-
+    private static final Logger LOG = Logger.getLogger(RenamePanel.class.getName());
     private final transient String oldName;
     private final transient ChangeListener parent;
     private final transient TreePathHandle handle;
@@ -146,8 +146,12 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                 public void run(CompilationController info) throws Exception {
                     if(handle.getElementHandle().getKind() == ElementKind.FIELD) {
                         VariableElement element = (VariableElement) handle.resolveElement(info);
+                        if(element == null) {
+                            LOG.log(Level.WARNING, "Cannot resolve ElementHandle {0} {1}", new Object[] {handle, info.getClasspathInfo()});
+                            return;
+                        }
                         TypeElement parent = (TypeElement) element.getEnclosingElement();
-                    boolean hasGetters = false;
+                        boolean hasGetters = false;
                         for (ExecutableElement method : ElementFilter.methodsIn(parent.getEnclosedElements())) {
                             if (RefactoringUtils.isGetter(info, method, element) || RefactoringUtils.isSetter(info, method, element)) {
                                 hasGetters = true;
@@ -168,6 +172,10 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                     
                     if(handle.getElementHandle().getKind() == ElementKind.CLASS || handle.getElementHandle().getKind() == ElementKind.METHOD) {
 			final Element methodElement = handle.resolveElement(info);
+                        if(methodElement == null) {
+                            LOG.log(Level.WARNING, "Cannot resolve ElementHandle {0} {1}", new Object[] {handle, info.getClasspathInfo()});
+                            return;
+                        }
                         final FileObject fileObject = handle.getFileObject();
                         Collection<? extends TestLocator> testLocators = Lookup.getDefault().lookupAll(TestLocator.class);
                         for (final TestLocator testLocator : testLocators) {

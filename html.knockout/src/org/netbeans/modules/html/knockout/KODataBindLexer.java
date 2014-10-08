@@ -186,7 +186,7 @@ public class KODataBindLexer implements Lexer<KODataBindTokenId> {
                     break;
 
                 case IN_KEY:
-                    if (!Character.isLetter(c)) {
+                    if (!Character.isLetter(c) && c != '_') {
                         if (c == ':') {
                             state = State.AFTER_KEY;
                             input.backup(1); //backup the colon

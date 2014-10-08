@@ -63,6 +63,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -1269,10 +1270,10 @@ public class DataEditorSupport extends CloneableEditorSupport {
      */
     private final class DataNodeListener extends NodeAdapter {
         /** Associated editor */
-        CloneableEditor editor;
+        Reference<CloneableEditor> editorRef;
         
         DataNodeListener (CloneableEditor editor) {
-            this.editor = editor;
+            this.editorRef = new WeakReference<CloneableEditor>(editor);
         }
         
         @Override
@@ -1283,7 +1284,8 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 callUpdateTitles();
             }
             if (Node.PROP_ICON.equals(ev.getPropertyName())) {
-                if (obj.isValid()) {
+                CloneableEditor editor;
+                if (obj.isValid() && (editor = editorRef.get()) != null) {
                     editor.setIcon(obj.getNodeDelegate().getIcon (java.beans.BeanInfo.ICON_COLOR_16x16));
                 }
             }

@@ -56,6 +56,7 @@ import java.lang.annotation.Target;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -123,6 +124,15 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
 
     private static final Logger OBJ_LOG = Logger.getLogger(DataObject.class.getName());
 
+    /**
+     * CAS for {@link DataObject#changeSupport}.
+     */
+    private static final AtomicReferenceFieldUpdater<DataObject, PropertyChangeSupport> changeSupportUpdater =
+        AtomicReferenceFieldUpdater.newUpdater(
+            DataObject.class,
+            PropertyChangeSupport.class,
+            "changeSupport");   //NOI18N
+
     /** all modified data objects contains DataObjects.
     * ! Use syncModified for modifications instead !*/
     private static final ModifiedRegistry modified = new ModifiedRegistry();
@@ -138,6 +148,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      * @GuardedBy(LOCK)
        */
     private transient Node nodeDelegate;
+    private static final Node BEING_CREATED = Node.EMPTY.cloneNode();
 
     /** item with info about this data object 
      * @GuardedBy(DataObjectPool.getPOOL())
@@ -147,10 +158,11 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     /** the loader for this data object */
     private final DataLoader loader;
 
-    /** property change listener support 
-        *  @GuardedBy(LOCK)
-        */
-    private PropertyChangeSupport changeSupport;
+    /** property change listener support.
+     * Threading: lock free, changes HAS to go through {@link DataObject#changeSupportUpdater}.
+     */
+    private volatile PropertyChangeSupport changeSupport;
+
     /** vetoable property change listener support 
         *  @GuardedBy(LOCK)
         */
@@ -333,7 +345,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     private final Node getNodeDelegateImpl() {
         for (;;) {
             synchronized (LOCK) {
-                if (nodeDelegate != null) {
+                if (nodeDelegate != null && nodeDelegate != BEING_CREATED) {
                     return nodeDelegate;
                 }
             }
@@ -345,15 +357,32 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
                 public void run() {
                     synchronized(LOCK) {
                         if (nodeDelegate == null) {
-                            nodeDelegate = createNodeDelegate();
+                            nodeDelegate = BEING_CREATED;
+                        } else {
+                            if (nodeDelegate == BEING_CREATED) {
+                                try {
+                                    LOCK.wait();
+                                } catch (InterruptedException ex) {
+                                    LOG.log(Level.FINE, null, ex);
+                                }
+                            }
+                            return;
                         }
+                    }
+                    Node newNode = createNodeDelegate();
+                    synchronized (LOCK) {
+                        if (nodeDelegate == BEING_CREATED) {
+                            nodeDelegate = newNode;
+                        }
+                        LOCK.notifyAll();
                     }
                 }
             });
 
-            // JST: debuging code
-            if (nodeDelegate == null) {
-                throw new IllegalStateException("DataObject " + this + " has null node delegate"); // NOI18N
+            synchronized (LOCK) {
+                if (nodeDelegate == null) {
+                    throw new IllegalStateException("DataObject " + this + " has null node delegate"); // NOI18N
+                }
             }
         }
     }
@@ -372,11 +401,15 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      * @return node delegate or null
      */
     final Node getNodeDelegateOrNull () {
-        return nodeDelegate;
+        synchronized (LOCK) {
+            return nodeDelegate;
+        }
     }
 
     final void setNodeDelegate(Node n) {
-        nodeDelegate = n;
+        synchronized (LOCK) {
+            nodeDelegate = n;
+        }
     }
 
     /** Provides node that should represent this data object.
@@ -1028,22 +1061,24 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      * @param l the listener to add
     */
     public void addPropertyChangeListener (PropertyChangeListener l) {
-        synchronized (LOCK) {
-            if (changeSupport == null) {
-                changeSupport = new PropertyChangeSupport(this);
+        PropertyChangeSupport sup = changeSupport;
+        if (sup == null) {
+            sup = new PropertyChangeSupport(this);
+            if (!changeSupportUpdater.compareAndSet(this, null, sup)) {
+                sup = changeSupport;
             }
-            changeSupport.addPropertyChangeListener(l);
         }
+        assert sup != null;
+        sup.addPropertyChangeListener(l);
     }
 
     /** Remove a property change listener.
      * @param l the listener to remove
     */
     public void removePropertyChangeListener (PropertyChangeListener l) {
-        synchronized (LOCK) {
-            if (changeSupport != null) {
-                changeSupport.removePropertyChangeListener(l);
-            }
+        final PropertyChangeSupport sup = changeSupport;
+        if (sup != null) {
+            sup.removePropertyChangeListener(l);
         }
     }
 
@@ -1055,14 +1090,10 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * @param newValue new value
     */
     protected final void firePropertyChange (String name, Object oldValue, Object newValue) {
-        PropertyChangeSupport ch;
-        synchronized (LOCK) {
-            ch = changeSupport;
-            if (ch == null) {
-                return;
-            }
+        PropertyChangeSupport ch = changeSupport;
+        if (ch != null) {
+            ch.firePropertyChange(name, oldValue, newValue);
         }
-        ch.firePropertyChange(name, oldValue, newValue);
     }
 
     //

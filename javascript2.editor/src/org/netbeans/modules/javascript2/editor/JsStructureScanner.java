@@ -55,6 +55,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -100,7 +101,35 @@ public class JsStructureScanner implements StructureScanner {
         return items;
     }
     
-    private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems, List<String> displayedAnonymousObjects) {
+    private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems, List<String> processedObjects) {
+        if (processedObjects.contains(jsObject.getFullyQualifiedName())) {
+            return collectedItems;
+        } else if (jsObject instanceof JsReference) {
+            JsObject original = ((JsReference) jsObject).getOriginal();
+            boolean isOrginalReachable = !original.isAnonymous();
+            JsObject parent = original.getParent();
+            while (parent != null && isOrginalReachable) {
+                if (parent.isAnonymous() && !(parent.getParent() != null && parent.getParent().getParent() == null)) {
+                    isOrginalReachable = false;
+                }
+                parent = parent.getParent();
+            }
+            if (isOrginalReachable) {
+                processedObjects.add(jsObject.getFullyQualifiedName());
+                return collectedItems;
+            }
+            if (processedObjects.contains(original.getFullyQualifiedName())) {
+                return collectedItems;
+            } else {
+                processedObjects.add(jsObject.getFullyQualifiedName());
+                processedObjects.add(original.getFullyQualifiedName());
+            }
+        } else {
+            processedObjects.add(jsObject.getFullyQualifiedName());
+        }
+        if (jsObject.isVirtual()) {
+            return collectedItems;
+        }
         Collection<? extends JsObject> properties = new ArrayList(jsObject.getProperties().values());
         boolean countFunctionChild = (jsObject.getJSKind().isFunction() && !jsObject.isAnonymous() && jsObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
                 && !containsFunction(jsObject)) 
@@ -113,6 +142,10 @@ public class JsStructureScanner implements StructureScanner {
                 continue;
             }
 
+            if (child.isVirtual()) {
+                continue;
+            }
+            
             List<StructureItem> children = new ArrayList<StructureItem>();
             if ((((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
                     && !child.getName().equals(ModelUtils.PROTOTYPE)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) &&  child.getJSKind() != JsElement.Kind.OBJECT_LITERAL)
@@ -121,7 +154,7 @@ public class JsStructureScanner implements StructureScanner {
                 continue;
             }
             if (!(child instanceof JsObjectReference && ModelUtils.isDescendant(child, ((JsObjectReference)child).getOriginal()))) {
-                children = getEmbededItems(result, child, children, displayedAnonymousObjects);
+                children = getEmbededItems(result, child, children, processedObjects);
             }
             if ((child.hasExactName() || child.isAnonymous() || child.getJSKind() == JsElement.Kind.CONSTRUCTOR) && child.getJSKind().isFunction()) {
                 JsFunction function = (JsFunction)child;
@@ -154,19 +187,17 @@ public class JsStructureScanner implements StructureScanner {
             for (JsObject param: jsFunction.getParameters()) {
                 if (hasDeclaredProperty(param) && !(jsObject instanceof JsObjectReference && !((JsObjectReference)jsObject).getOriginal().isAnonymous())) { 
                     final List<StructureItem> items = new ArrayList<StructureItem>();
-                    getEmbededItems(result, param, items, displayedAnonymousObjects);
+                    getEmbededItems(result, param, items, processedObjects);
                     collectedItems.add(new JsObjectStructureItem(param, items, result));
                 }
             }
             if (jsFunction.getReturnTypes().size() == 1 && !jsFunction.isAnonymous()) {
                 TypeUsage returnType = jsFunction.getReturnTypes().iterator().next();
                 JsObject returnObject = ModelUtils.findJsObjectByName(result.getModel().getGlobalObject(), returnType.getType());
-                if(returnObject != null && returnObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT 
-                        && !displayedAnonymousObjects.contains(returnObject.getFullyQualifiedName())) {
-                    displayedAnonymousObjects.add(returnObject.getFullyQualifiedName());
+                if(returnObject != null && returnObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
                      for (JsObject property: returnObject.getProperties().values()) {
                         final List<StructureItem> items = new ArrayList<StructureItem>();
-                        getEmbededItems(result, property, items, displayedAnonymousObjects);
+                        getEmbededItems(result, property, items, processedObjects);
                         collectedItems.add(new JsObjectStructureItem(property, items, result));
                     }
                 } 
@@ -177,12 +208,10 @@ public class JsStructureScanner implements StructureScanner {
             Collection<? extends TypeUsage> assignmentForOffset = jsObject.getAssignmentForOffset(jsObject.getDeclarationName().getOffsetRange().getEnd());
             if (assignmentForOffset.size() == 1) {
                 JsObject assignedObject = ModelUtils.findJsObjectByName(result.getModel().getGlobalObject(), assignmentForOffset.iterator().next().getType());
-                if (assignedObject != null && assignedObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT
-                        && !displayedAnonymousObjects.contains(assignedObject.getFullyQualifiedName())) {
-                    displayedAnonymousObjects.add(assignedObject.getFullyQualifiedName());
+                if (assignedObject != null && assignedObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
                     for (JsObject property : assignedObject.getProperties().values()) {
                         final List<StructureItem> items = new ArrayList<StructureItem>();
-                        getEmbededItems(result, property, items, displayedAnonymousObjects);
+                        getEmbededItems(result, property, items, processedObjects);
                         collectedItems.add(new JsObjectStructureItem(property, items, result));
                     }
                 }
@@ -329,7 +358,7 @@ public class JsStructureScanner implements StructureScanner {
             result = property.isDeclared();
             if (!result) {
                 result = hasDeclaredProperty(property);
-            }
+            } 
         }
 
         return result;
@@ -474,7 +503,7 @@ public class JsStructureScanner implements StructureScanner {
         public JsFunctionStructureItem(JsFunction elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
             super(elementHandle, children, "fn", parserResult); //NOI18N
             Collection<? extends TypeUsage> returnTypes = getFunctionScope().getReturnTypes();
-            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(returnTypes, parserResult, true));
+            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(returnTypes, parserResult, true, false));
         }
 
         public final JsFunction getFunctionScope() {
@@ -592,7 +621,7 @@ public class JsStructureScanner implements StructureScanner {
             this.object = elementHandle;
 
             Collection<? extends TypeUsage> assignmentForOffset = object.getAssignmentForOffset(object.getDeclarationName().getOffsetRange().getEnd());
-            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(assignmentForOffset, parserResult, true));
+            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(assignmentForOffset, parserResult, true, false));
         }
 
         

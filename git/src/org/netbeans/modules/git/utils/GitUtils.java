@@ -75,7 +75,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.eclipse.jgit.lib.Repository;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
@@ -1106,7 +1105,7 @@ public final class GitUtils {
     }
 
     public static boolean isValidRefName (String refName) {
-        return Repository.isValidRefName(refName);
+        return JGitUtils.isValidRefName(refName);
     }
 
     public static boolean isValidTagName (String tagName) {
@@ -1115,6 +1114,25 @@ public final class GitUtils {
 
     public static boolean isValidBranchName (String branchName) {
         return isValidRefName(PREFIX_R_HEADS + branchName);
+    }
+
+    public static VCSContext getContextForFile (final File root) {
+        return getContextForFiles(new File[] { root });
+    }
+
+    public static VCSContext getContextForFiles (final File[] roots) {
+        Node[] nodes = new Node[roots.length];
+        for (int i = 0; i < roots.length; ++i) {
+            final File root = roots[i];
+            nodes[i] = new AbstractNode(Children.LEAF, Lookups.fixed(root)) {
+
+                @Override
+                public String getName () {
+                    return root.getName();
+                }
+            };
+        }
+        return VCSContext.forNodes(nodes);
     }
 
     public static interface SearchCallback<T> {

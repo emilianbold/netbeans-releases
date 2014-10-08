@@ -145,9 +145,9 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     
     private static final int MAX_DEPTH = 20;
     
-    private static final String LT = "<"; // NOI18N
+    private static final char LT = '<'; // NOI18N
     
-    private static final String GT = ">"; // NOI18N    
+    private static final char GT = '>'; // NOI18N    
 
     @Override
     public CsmType[] calcTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, CalcTemplateTypeStrategy strategy) {
@@ -272,7 +272,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 Iterator<CsmSpecializationParameter> paramsIter = params.iterator();
                 int i = 0;
                 for (CsmTemplateParameter templateParam : templateParams) {
-                    if(templateParam.isVarArgs() && i == templateParams.size() - 1 && paramsIter.hasNext()) {
+                    if(templateParam.isVarArgs() && i == templateParams.size() - 1) {
                         List<CsmSpecializationParameter> args = new ArrayList<>();
                         while(paramsIter.hasNext()) {
                             args.add(paramsIter.next());
@@ -612,8 +612,10 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         CsmClassifier specialization = null;
         if (CsmKindUtilities.isTemplate(classifier) && !CsmKindUtilities.isSpecialization(classifier)) {
             List<CsmTemplateParameter> templateParams = ((CsmTemplate) classifier).getTemplateParameters();
+            List<ProjectBase> projects = null;
+            List<CsmOffsetableDeclaration> visibleSpecs = null;
             if (params.size() == templateParams.size() && CsmKindUtilities.isClass(classifier)) {
-                List<ProjectBase> projects = collectProjects(contextFile);
+                projects = collectProjects(contextFile);
                 if (!projects.isEmpty()) {
                     // try to find full specialization of class
                     CsmClass cls = (CsmClass) classifier;
@@ -634,30 +636,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     
                     // try to find partial specialization of class
                     if (specialization == null) {
-                        Collection<CsmOffsetableDeclaration> specs = new ArrayList<>();
-                        
-                        for (ProjectBase proj : projects) {
-                            StringBuilder fqn = new StringBuilder();
-                            fqn.append(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS));
-                            fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
-                            fqn.append(cls.getQualifiedName());
-                            fqn.append('<'); // NOI18N
-                            specs.addAll(proj.findDeclarationsByPrefix(fqn.toString()));
-                            fqn.setLength(0);
-                            fqn.append(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT));
-                            fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
-                            fqn.append(cls.getQualifiedName());
-                            fqn.append('<'); // NOI18N
-                            specs.addAll(proj.findDeclarationsByPrefix(fqn.toString()));
-                        }
-                        
-                        Collection<CsmOffsetableDeclaration> visibleSpecs = new ArrayList<>();
-                        for (CsmOffsetableDeclaration spec : specs) {
-                            if(CsmIncludeResolver.getDefault().isObjectVisible(contextFile, spec)) {
-                                visibleSpecs.add(spec);
-                            }
-                        }
-                        
+                        visibleSpecs = collectVisibleSpecializations(cls, projects, contextFile);
                         specialization = findBestSpecialization(visibleSpecs, paramsInfo, cls);
                     }
                 }
@@ -665,17 +644,17 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             if (specialization == null && isClassForward(classifier)) {
                 // try to find specialization of class forward
                 CsmClass cls = (CsmClass) classifier;
-                CsmProject proj = contextFile.getProject();
-                StringBuilder fqn = new StringBuilder(cls.getUniqueName());
-                fqn.append('<'); // NOI18N
-                Collection<CsmOffsetableDeclaration> specs = ((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString());
-                for (CsmOffsetableDeclaration decl : specs) {
+                if (projects == null) {
+                    projects = collectProjects(contextFile);
+                }
+                if (visibleSpecs == null) {
+                    visibleSpecs = collectVisibleSpecializations(cls, projects, contextFile);
+                }
+                for (CsmOffsetableDeclaration decl : visibleSpecs) {
                     if (decl instanceof ClassImplSpecialization) {
                         ClassImplSpecialization spec = (ClassImplSpecialization) decl;
-//                        if(spec.getSpecializationParameters().size() >= params.size()) {
-                            specialization = spec;
-                            break;
-//                        }
+                        specialization = spec;
+                        break;
                     }
                 }
             }
@@ -832,6 +811,34 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         
         return projects;
     }
+    
+    private List<CsmOffsetableDeclaration> collectVisibleSpecializations(CsmClass cls, List<ProjectBase> projects, CsmFile contextFile) {
+        List<CsmOffsetableDeclaration> specs = new ArrayList<>();
+
+        for (ProjectBase proj : projects) {
+            StringBuilder fqn = new StringBuilder();
+            fqn.append(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS));
+            fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
+            fqn.append(cls.getQualifiedName());
+            fqn.append('<'); // NOI18N
+            specs.addAll(proj.findDeclarationsByPrefix(fqn.toString()));
+            fqn.setLength(0);
+            fqn.append(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT));
+            fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
+            fqn.append(cls.getQualifiedName());
+            fqn.append('<'); // NOI18N
+            specs.addAll(proj.findDeclarationsByPrefix(fqn.toString()));
+        }
+
+        List<CsmOffsetableDeclaration> visibleSpecs = new ArrayList<>();
+        for (CsmOffsetableDeclaration spec : specs) {
+            if(CsmIncludeResolver.getDefault().isObjectVisible(contextFile, spec)) {
+                visibleSpecs.add(spec);
+            }
+        }
+
+        return visibleSpecs;
+    }
 
     private CsmClassifier findBestSpecialization(Collection<CsmOffsetableDeclaration> specializations, InstantiationParametersInfo paramsInfo, final CsmClassifier cls) {
         // TODO : update
@@ -861,10 +868,16 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     ClassImplSpecialization specialization = (ClassImplSpecialization) decl;
                     List<CsmSpecializationParameter> specParams = specialization.getSpecializationParameters();
                     int match = 0;
-                    if (specParams.size() - 1  <= paramsSize) {
-                        if(variadic) {
-                            match += specParams.size();
-                        }
+                    if (variadic) {
+                        if (hasVariadicParams(specialization)) {
+                            if (specParams.size() - 1  <= paramsSize) {
+                                match += specParams.size() - 1;
+                            }
+                        } else {
+                            if (specParams.size() == paramsSize) {
+                                match += specParams.size() + 1; 
+                            }
+                        }        
                     }
                     if (specParams.size() == paramsSize) {
                         for (int i = 0; i < paramsSize - 1; i++) {
@@ -899,55 +912,57 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                     CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
                                 CsmTypeBasedSpecializationParameter instSpecParam = (CsmTypeBasedSpecializationParameter)param;                                
                                 CsmTypeBasedSpecializationParameter declSpecParam = (CsmTypeBasedSpecializationParameter) specParam;
-                                CsmClassifier declCls = declSpecParam.getClassifier();                                                                
-                                if (declCls != null) {
-                                    if (!CsmKindUtilities.isTemplateParameter(declCls)) {
-                                        String declClsQualifiedName = declCls.getQualifiedName().toString();
-                                        if (declClsQualifiedName.equals(paramsText.get(i).toString())) {
-                                            match += 2;
-                                        } else if (declCls.isValid()) {
-                                            final Set<String> nestedQualifiedNames = new HashSet<>();                                            
+                                CsmClassifier declCls = declSpecParam.getClassifier();
+                                if (declCls != null && !CsmKindUtilities.isTemplateParameter(declCls)) {
+                                    String declClsQualifiedName = declCls.getQualifiedName().toString();
+                                    if (declClsQualifiedName.equals(paramsText.get(i))) {
+                                        match += 2;
+                                    } else if (declCls.isValid()) {
+                                        final Set<String> nestedQualifiedNames = new HashSet<>();                                            
 
-                                            CsmUtilities.iterateTypeChain(instSpecParam, new CsmUtilities.Predicate<CsmType>() {                                            
-                                                @Override
-                                                public boolean check(CsmType value) {
-                                                    CsmClassifier classifier = value.getClassifier();
-                                                    if (classifier != null) {
-                                                        nestedQualifiedNames.add(classifier.getQualifiedName().toString());
-                                                    }
-                                                    return false;
+                                        CsmUtilities.iterateTypeChain(instSpecParam, new CsmUtilities.Predicate<CsmType>() {                                            
+                                            @Override
+                                            public boolean check(CsmType value) {
+                                                CsmClassifier classifier = value.getClassifier();
+                                                if (classifier != null) {
+                                                    nestedQualifiedNames.add(classifier.getQualifiedName().toString());
                                                 }
-                                            });  
-
-                                            if (nestedQualifiedNames.contains(declClsQualifiedName)) {
-                                                match += 2;
+                                                return false;
+                                            }
+                                        });  
+                                        
+                                        for (String nestedQualifiedName : nestedQualifiedNames) {
+                                            int matchValue = getQualifiedNamesMatchValue(nestedQualifiedName, declClsQualifiedName);
+                                            if (matchValue > 0) {
+                                                match += matchValue;
+                                                break;
                                             }
                                         }
                                     }
-                                    CsmFunctionPointerType declSpecFunType = tryGetFunctionPointerType(declSpecParam.getType());
-                                    if (CsmKindUtilities.isFunctionPointerType(declSpecFunType)) {
-                                        CsmFunctionPointerType paramFunType = tryGetFunctionPointerType(paramsType.get(i));
-                                        if (CsmKindUtilities.isFunctionPointerType(paramFunType)) {
-                                            match += 1;
-                                            // TODO: check below should be eliminated after implementing 
-                                            // checking of viability of specialization above.
-                                            if (declSpecFunType.getParameters().size() == paramFunType.getParameters().size()) {
-                                                match += 1;
-                                            }
-                                            if (((CsmType)declSpecFunType).getPointerDepth() == ((CsmType)paramFunType).getPointerDepth()) {
-                                                match += 1;
-                                            }
-                                        }
-                                    } else if (isPointer(declSpecParam.getType()) && isPointer(paramsType.get(i))) {
+                                }
+                                CsmFunctionPointerType declSpecFunType = tryGetFunctionPointerType(declSpecParam.getType());
+                                if (CsmKindUtilities.isFunctionPointerType(declSpecFunType)) {
+                                    CsmFunctionPointerType paramFunType = tryGetFunctionPointerType(paramsType.get(i));
+                                    if (CsmKindUtilities.isFunctionPointerType(paramFunType)) {
                                         match += 1;
-                                    }
-                                    if (declSpecParam.isReference()) {
-                                        int checkReference = checkReference(paramsType.get(i));
-                                        if (checkReference > 0) {
+                                        // TODO: check below should be eliminated after implementing 
+                                        // checking of viability of specialization above.
+                                        if (declSpecFunType.getParameters().size() == paramFunType.getParameters().size()) {
                                             match += 1;
-                                            if ((checkReference == 2) == declSpecParam.isRValueReference()) {
-                                                match +=1;
-                                            }
+                                        }
+                                        if (((CsmType)declSpecFunType).getPointerDepth() == ((CsmType)paramFunType).getPointerDepth()) {
+                                            match += 1;
+                                        }
+                                    }
+                                } else if (isPointer(declSpecParam.getType()) && isPointer(paramsType.get(i))) {
+                                    match += 1;
+                                }
+                                if (declSpecParam.isReference()) {
+                                    int checkReference = checkReference(paramsType.get(i));
+                                    if (checkReference > 0) {
+                                        match += 1;
+                                        if ((checkReference == 2) == declSpecParam.isRValueReference()) {
+                                            match +=1;
                                         }
                                     }
                                 }
@@ -969,6 +984,23 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return bestSpecialization;
     }        
     
+    private static int getQualifiedNamesMatchValue(String qn1, String qn2) {
+        if (qn1 != null && qn2 != null) {
+            if (qn1.equals(qn2)) {
+                return 2;
+            } else if (qn1.length() > qn2.length() && qn1.startsWith(qn2)) {
+                final boolean isLastQualifiedPart = qn1.indexOf(APTUtils.SCOPE, qn2.length()) == -1;
+                final boolean isSpecialization = (LT == qn1.charAt(qn2.length()));
+                return isLastQualifiedPart && isSpecialization ? 1 : 0;
+            } else if (qn2.length() > qn1.length() && qn2.startsWith(qn1)) {
+                final boolean isLastQualifiedPart = qn2.indexOf(APTUtils.SCOPE, qn1.length()) == -1;
+                final boolean isSpecialization = (LT == qn2.charAt(qn1.length()));
+                return isLastQualifiedPart && isSpecialization ? 1 : 0;
+            }
+        }
+        return 0;
+    }
+    
     private static boolean isExpressionParameter(CsmClassifier cls, CsmSpecializationParameter specParam, int specParamIndex) {
         if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(specParam)) {
             return true;
@@ -989,9 +1021,8 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         List<String> instParamsText = paramsInfo.getParamsTexts(); 
         List<CsmSpecializationParameter> instParams = paramsInfo.getInstParams();
         
+        // Get specialization parameter text and the same time check if it is specialized
         String specParamText = null; 
-        // try to find specialization template parameter with the same name
-        // ant at the same time initialize specParamText
         CsmTemplateParameter relatedSpecTemplateParam = null;
         if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(specParam)) {
             specParamText = specParam.getText().toString();
@@ -1013,24 +1044,10 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 relatedSpecTemplateParam = ((CsmTemplateParameterType) specParamType).getParameter();
             }
         }
-        // If there is relatedSpecTemplateParameter, then find appropriate mapping for it
         if (relatedSpecTemplateParam != null && !relatedSpecTemplateParam.isTypeBased()) {
-            CsmSpecializationParameter deducedSpecParameter = deduceSpecializationParam(
-                    relatedSpecTemplateParam,
-                    spec,
-                    paramsInfo
-            );
-            if (deducedSpecParameter != null) {
-                if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(deducedSpecParameter)) {
-                    specParamText = deducedSpecParameter.getText().toString();
-                } else if (CsmKindUtilities.isTypeBasedSpecalizationParameter(deducedSpecParameter)) {
-                    CsmType deducedParamType = ((CsmTypeBasedSpecializationParameter)deducedSpecParameter).getType();
-                    CharSequence canonicalText = deducedParamType.getCanonicalText();
-                    if (canonicalText != null) {
-                        specParamText = canonicalText.toString();
-                    }
-                }
-            }
+            // parameter is not specialized actually, 
+            // but it is correct at least
+            return 1;
         }
         if (specParamText != null) {
             if (instParamsText.get(instParamIndex).equals(specParamText)) {
@@ -1496,11 +1513,19 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         public InstantiationParametersInfo(CsmClassifier classifier, List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> originalParams) {
             this.classifier = classifier;
             this.originalParams = originalParams;
-            if (hasVariadicParameters(originalParams)) {
-                this.variadic = true;
-                this.expandedParams = expandVariadicParameters(originalParams);
+            if (CsmKindUtilities.isTemplate(classifier)) {
+                List<CsmTemplateParameter> templateParams = ((CsmTemplate) classifier).getTemplateParameters();
+                if (!templateParams.isEmpty() && templateParams.get(templateParams.size() - 1).isVarArgs()) {
+                    this.variadic = true;
+                } else {
+                    this.variadic = false;
+                }
             } else {
                 this.variadic = false;
+            }
+            if (hasVariadicParameters(originalParams)) {
+                this.expandedParams = expandVariadicParameters(originalParams);
+            } else {
                 this.expandedParams = this.originalParams;
             }
         }
@@ -1797,6 +1822,9 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     List<CsmSpecializationParameter> params = new ArrayList<>();
                     for (CsmTemplateParameter templateParam : templateParams) {
                         CsmSpecializationParameter mappedParam = mapping.get(templateParam);
+                        if (mappedParam != null) {
+                            params.add(mappedParam);
+                        }
                     }
                     if (hasVariadicParams(params)) {
                         params = expandVariadicParams(params);

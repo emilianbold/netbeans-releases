@@ -136,6 +136,7 @@ public interface SiteTemplateImplementation {
     /**
      * Project properties. It contains usually relative paths of:
      * <ul>
+     * <li>Source folder</li>
      * <li>Site Root folder</li>
      * <li>Unit Tests folder</li>
      * </ul>
@@ -144,27 +145,48 @@ public interface SiteTemplateImplementation {
      */
     public final class ProjectProperties {
 
+        private String sourceFolder;
         private String siteRootFolder;
         private String testFolder;
         private String jsTestingProvider;
 
 
         /**
-         * Get Site Root folder, usually relative path.
-         * @return Site Root folder, usually relative path; never returns {@code null} or empty string
+         * Get Source folder, usually relative path.
+         * @return Source folder, usually relative path; can return {@code null} if not used
+         * @since 1.66
          */
-        @NonNull
+        @CheckForNull
+        public String getSourceFolder() {
+            return sourceFolder;
+        }
+
+        /**
+         * Set Source folder, can be empty string.
+         * @param sourceFolder Source folder, can be {@code null} if not used
+         * @return itself
+         * @since 1.66
+         */
+        public ProjectProperties setSourceFolder(@NullAllowed String sourceFolder) {
+            this.sourceFolder = sourceFolder;
+            return this;
+        }
+
+        /**
+         * Get Site Root folder, usually relative path.
+         * @return Site Root folder, usually relative path; can be {@code null} if not used
+         */
+        @CheckForNull
         public String getSiteRootFolder() {
             return siteRootFolder;
         }
 
         /**
-         * Set Site Root folder, never {@code null} or empty string.
-         * @param siteRootFolder Site Root folder, never {@code null} or empty string
+         * Set Site Root folder, can be empty string.
+         * @param siteRootFolder Site Root folder, can be {@code null} if not used
          * @return itself
          */
-        public ProjectProperties setSiteRootFolder(@NonNull String siteRootFolder) {
-            Parameters.notEmpty("siteRootFolder", siteRootFolder);
+        public ProjectProperties setSiteRootFolder(@NullAllowed String siteRootFolder) {
             this.siteRootFolder = siteRootFolder;
             return this;
         }
@@ -183,7 +205,7 @@ public interface SiteTemplateImplementation {
          * @param testFolder Test folder, can be {@code null} if there are no tests available
          * @return itself
          */
-        public ProjectProperties setTestFolder(String testFolder) {
+        public ProjectProperties setTestFolder(@NullAllowed String testFolder) {
             this.testFolder = testFolder;
             return this;
         }

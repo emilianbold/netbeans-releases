@@ -57,8 +57,6 @@ public class Style {
     private StyleId id;
     /** Properties in the style. */
     private final List<Property> properties;
-    /** Computed values for all shorthands found in the style. */
-    private final JSONArray shorthandEntries;
     /** Style declaration text (if available). */
     private final String text;
     /** Style declaration range in the enclosing stylesheet (if available). */
@@ -82,7 +80,6 @@ public class Style {
             Property property = new Property(cssProperty);
             properties.add(property);
         }
-        shorthandEntries = (JSONArray)style.get("shorthandEntries"); // NOI18N
         text = (String)style.get("cssText"); // NOI18N
         if (style.containsKey("range")) { // NOI18N
             range = new SourceRange((JSONObject)style.get("range")); // NOI18N
@@ -105,11 +102,6 @@ public class Style {
      */
     public List<Property> getProperties() {
         return Collections.unmodifiableList(properties);
-    }
-
-    // PENDING
-    public JSONArray getShorthandEntries() {
-        return shorthandEntries;
     }
 
     /**

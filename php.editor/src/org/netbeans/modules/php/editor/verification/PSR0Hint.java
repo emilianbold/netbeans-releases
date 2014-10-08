@@ -101,11 +101,13 @@ public abstract class PSR0Hint extends HintRule {
             @NbBundle.Messages("PSR0WrongNamespaceNameHintText=Namespace declaration name doesn't correspond to current directory structure.")
             public void visit(NamespaceDeclaration node) {
                 NamespaceName namespaceName = node.getName();
-                String currentNamespaceName = CodeUtils.extractQualifiedName(namespaceName);
-                String namespaceNameToPath = currentNamespaceName.replace('\\', File.separatorChar);
-                String fileDirPath = getFile().getParent();
-                if (!fileDirPath.contains(namespaceNameToPath)) {
-                    createHint(namespaceName, Bundle.PSR0WrongNamespaceNameHintText());
+                if (namespaceName != null) {
+                    String currentNamespaceName = CodeUtils.extractQualifiedName(namespaceName);
+                    String namespaceNameToPath = currentNamespaceName.replace('\\', File.separatorChar);
+                    String fileDirPath = getFile().getParent();
+                    if (!fileDirPath.contains(namespaceNameToPath)) {
+                        createHint(namespaceName, Bundle.PSR0WrongNamespaceNameHintText());
+                    }
                 }
                 super.visit(node);
             }

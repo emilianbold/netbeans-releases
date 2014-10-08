@@ -89,7 +89,7 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 new File("encap/A.java", "package encap;\n"
                 + "import java.beans.PropertyChangeSupport;\n"
                 + "public class A {\n"
-                + "    public static final String PROP_I = \"PROP_I\";\n"
+                + "    public static final String PROP_I = \"i\";\n"
                 + "    private int i;\n"
                 + "    private final transient PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);\n"
                 + "\n"

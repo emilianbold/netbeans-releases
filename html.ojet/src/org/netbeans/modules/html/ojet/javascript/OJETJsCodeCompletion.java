@@ -73,7 +73,7 @@ public class OJETJsCodeCompletion implements CompletionProvider {
         OJETContext ojContext = OJETContext.UNKNOWN;
         try {
             ojContext = OJETContext.findContext(document, dOffset);
-            System.out.println("ojContext: " + ojContext);
+//            System.out.println("ojContext: " + ojContext);
             List<CompletionProposal> result = new ArrayList<>();
             switch (ojContext) {
                 case COMP_CONF_COMP_NAME:

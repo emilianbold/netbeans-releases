@@ -85,12 +85,18 @@ public final class ClientSideProjectGenerator {
         }
 
         ClientSideProjectUtilities.initializeProject(clientSideProject,
+                    properties.getSourceFolder(),
                     properties.getSiteRootFolder(),
                     properties.getTestFolder());
         // js testing provider
         String jsTestingProvider = properties.getJsTestingProvider();
         if (jsTestingProvider != null) {
             ClientSideProjectUtilities.setJsTestingProvider(project, jsTestingProvider);
+        }
+        // platform provider
+        String platformProvider = properties.getPlatformProvider();
+        if (platformProvider != null) {
+            ClientSideProjectUtilities.setPlatformProvider(project, platformProvider);
         }
         return project;
     }

@@ -1,0 +1,74 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "${project.licensePath}">
+
+package ${PACKAGENAME};
+
+import net.java.html.json.Model;
+import net.java.html.json.Function;
+import net.java.html.json.Property;
+import net.java.html.json.ComputedProperty;
+import org.netbeans.api.html4j.OpenHTMLRegistration;
+import org.netbeans.api.html4j.HTMLDialog;
+import org.openide.util.NbBundle;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+
+/**
+ * HTML page which displays a window and also a dialog.
+ */
+@Model(className="${TEMPLATENAME}", properties={
+  @Property(name = "text", type = String.class)
+})
+public final class ${TEMPLATENAME}Cntrl {
+  @ComputedProperty static String templateName() {
+      return "window";
+  }
+
+  @Function static void showDialog(${TEMPLATENAME} model) {
+    String reply = Pages.show${TEMPLATENAME}Dialog(model.getText());
+    if ("OK".equals(reply)) {
+      model.setText("Happy World!");
+    } else {
+      model.setText("Sad World!");
+    }
+  }
+
+  @ActionID(
+     category = "Tools",
+     id = "${PACKAGENAME}.${TEMPLATENAME}"
+  )
+  @ActionReferences({
+    @ActionReference(path = "Menu/Tools"),
+    @ActionReference(path = "Toolbars/File"),
+  })
+  @NbBundle.Messages("CTL_${TEMPLATENAME}=Open HTML Hello World!")
+  @OpenHTMLRegistration(
+    url = "${TEMPLATENAME}.html",
+    displayName = "#CTL_${TEMPLATENAME}"
+    ${COMMENTICON}, iconBase="${ICONPATH}"
+  )
+  public static ${TEMPLATENAME} onPageLoad() {
+    return new ${TEMPLATENAME}("Hello World!").applyBindings();
+  }
+
+  //
+  // dialog UI
+  // 
+
+  @HTMLDialog(url="${TEMPLATENAME}.html") static void show${TEMPLATENAME}Dialog(String t) {
+    new ${TEMPLATENAME}Dialog(t, false).applyBindings();
+  }
+
+  @Model(className="${TEMPLATENAME}Dialog", properties={
+    @Property(name = "text", type = String.class),
+    @Property(name = "ok", type = boolean.class),
+  })
+  static final class DialogCntrl {
+    @ComputedProperty static String templateName() {
+      return "dialog";
+    }
+  }
+}

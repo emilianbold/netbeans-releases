@@ -91,7 +91,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.8</specification-version>
+                        <specification-version>1.40</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -256,7 +256,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.71</specification-version>
+                        <specification-version>1.78</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -412,6 +412,10 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.parsing.nb</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -523,6 +527,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.java.j2seembedded</friend>
                 <friend>org.netbeans.modules.javafx2.project</friend>
                 <friend>org.netbeans.modules.javawebstart</friend>
+                <friend>org.netbeans.modules.mixeddev</friend>
                 <friend>org.netbeans.modules.swingapp</friend>
                 <package>org.netbeans.modules.java.j2seproject.api</package>
             </friend-packages>

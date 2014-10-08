@@ -102,6 +102,10 @@ made subject to such option by the copyright holder.
         <tstamp>
             <format property="module.build.started.time" pattern="yyyy-MM-dd'T'HH:mm:ss.SSSZ"/>
         </tstamp>
+        <condition property="asm.jar" value="${nbplatform.active.dir}/platform/modules/org-objectweb-asm.jar">
+            <available file="${nbplatform.active.dir}/platform//modules/org-objectweb-asm.jar"/>
+        </condition>
+        <property name="asm.jar" location="${o.objectweb.asm.dir}/modules/org-objectweb-asm.jar"/>
     </target>
 
     <target name="-release.dir">
@@ -225,6 +229,9 @@ made subject to such option by the copyright holder.
         <copy todir="${build.classes.dir}">
             <fileset dir="${src.dir}" excludes="${jar-excludes}"/>
         </copy>
+        <processjsannotation classes="${build.classes.dir}" asm="${asm.jar}">
+            <classpath refid="cp"/>
+        </processjsannotation>
     </target>
 
     <target name="compile-single" depends="init">
@@ -251,6 +258,9 @@ made subject to such option by the copyright holder.
             <compilerarg line="${javac.compilerargs}"/>
             <processorpath refid="processor.cp"/>
         </nb-javac>
+        <processjsannotation classes="${build.classes.dir}" asm="${asm.jar}">
+            <classpath refid="cp"/>
+        </processjsannotation>
     </target>
 
     <target name="jar-prep" depends="init">
@@ -588,6 +598,9 @@ made subject to such option by the copyright holder.
                 <compilerarg line="${javac.compilerargs}"/>
                 <processorpath refid="test.@{test.type}.cp"/>
             </nb-javac>
+            <processjsannotation classes="${build.test.@{test.type}.classes.dir}" asm="${asm.jar}">
+                <classpath refid="test.@{test.type}.cp"/>
+            </processjsannotation>
             <copy todir="${build.test.@{test.type}.classes.dir}">
                 <fileset dir="${test.@{test.type}.src.dir}">
                     <exclude name="**/*.java"/>
@@ -627,6 +640,9 @@ made subject to such option by the copyright holder.
                     <compilerarg line="${javac.compilerargs}"/>
                     <processorpath refid="test.@{test.type}.cp"/>
                 </nb-javac>
+                <processjsannotation classes="${build.test.@{test.type}.classes.dir}" asm="${asm.jar}">
+                    <classpath refid="test.@{test.type}.cp"/>
+                </processjsannotation>
                 <copy todir="${build.test.@{test.type}.classes.dir}">
                     <fileset dir="${test.@{test.type}.src.dir}">
                         <exclude name="**/*.java"/>
@@ -864,7 +880,7 @@ made subject to such option by the copyright holder.
                     <available classname="org.testng.annotations.Test" classpath="${test.@{test.type}.runtime.cp}"/>
                 </condition>
                 <condition property="is.test.suite" value ="-suite" else="">
-                    <contains string="${test.class}" substring=".xml"/>
+                    <matches pattern="([a-zA-Z_$][a-zA-Z\d_$]*\.)*xml$" string="${test.class}"/>
                 </condition>
                 <antcall target="-do-${test.runner}-debug-single${is.test.suite}">
                     <param name="test.type" value="@{test.type}"/>
@@ -1334,8 +1350,8 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.netbeans.modules.parsing.indexing" spec="9.0"/>
             </replace>
             <replace codenamebase="org.netbeans.modules.projectuiapi" addcompiletime="true">
-                <module codenamebase="org.netbeans.modules.projectuiapi" release="1" spec="1.78.0"/>
-                <module codenamebase="org.netbeans.modules.projectuiapi.base" spec="1.78.0"/>
+                <module codenamebase="org.netbeans.modules.projectuiapi" release="1" spec="1.78"/>
+                <module codenamebase="org.netbeans.modules.projectuiapi.base" release="1" spec="1.78"/>
             </replace>
             <replace codenamebase="org.netbeans.modules.project.ant" addcompiletime="true">
                 <module codenamebase="org.netbeans.modules.project.ant" release="1" spec="1.61"/>
@@ -1343,7 +1359,36 @@ made subject to such option by the copyright holder.
             </replace>
             <replace codenamebase="org.netbeans.modules.java.project" addcompiletime="true">
                 <module codenamebase="org.netbeans.modules.java.project" release="1" spec="1.60"/>
-                <module codenamebase="org.netbeans.modules.java.project.ui" spec="1.60"/>
+                <module codenamebase="org.netbeans.modules.java.project.ui" release="1" spec="1.61"/>
+            </replace>
+            <replace codenamebase="org.netbeans.api.xml" addcompiletime="true">
+                <module codenamebase="org.netbeans.api.xml" release="1" spec="1.41"/>
+                <module codenamebase="org.netbeans.api.xml.ui" release="1" spec="1.41"/>
+            </replace>
+            <replace codenamebase="org.netbeans.modules.editor.lib" addcompiletime="true">
+                <module codenamebase="org.netbeans.modules.editor.lib" release="3" spec="4.0"/>
+                <module codenamebase="org.netbeans.modules.editor.document" spec="1.0"/>
+            </replace>
+            <replace codenamebase="org.netbeans.modules.editor.lib2" addcompiletime="true">
+                <module codenamebase="org.netbeans.modules.editor.lib2" release="1" spec="2.0"/>
+                <module codenamebase="org.netbeans.modules.editor.document" spec="1.0"/>
+            </replace>
+            <replace codenamebase="org.netbeans.api.progress" addcompiletime="true">
+                <module codenamebase="org.netbeans.api.progress" release="1" spec="1.40"/>
+                <module codenamebase="org.netbeans.api.progress.nb" spec="1.40"/>
+            </replace>
+            <replace codenamebase="org.netbeans.modules.java.source" addcompiletime="true">
+                <module codenamebase="org.netbeans.modules.java.source.base" spec="1.1"/>
+                <module codenamebase="org.netbeans.modules.java.source" spec="0.136"/>
+                <module codenamebase="org.netbeans.modules.java.source.compat8" spec="9.0"/>
+            </replace>
+            <replace codenamebase="org.netbeans.modules.project.libraries" addcompiletime="true">
+                <module codenamebase="org.netbeans.modules.project.libraries" release="1" spec="1.48"/>
+                <module codenamebase="org.netbeans.modules.project.libraries.ui" release="1" spec="1.48"/>
+            </replace>
+            <replace codenamebase="org.netbeans.modules.xml.catalog" addcompiletime="true">
+                <module codenamebase="org.netbeans.modules.xml.catalog" release="2" spec="2.0"/>
+                <module codenamebase="org.netbeans.modules.xml.catalog.ui" spec="1.0"/>
             </replace>
             <fileset dir="nbproject" >
                 <include name="project.xml" />

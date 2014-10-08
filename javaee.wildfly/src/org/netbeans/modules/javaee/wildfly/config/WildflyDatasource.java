@@ -80,7 +80,7 @@ public final class WildflyDatasource implements Datasource {
         this.url = url;
         this.username = username;
         this.password = password;
-        if (driverClassName.isEmpty()) {
+        if (driverClassName == null || driverClassName.isEmpty()) {
             this.driverClassName = guessDriverClassname();
         } else {
             this.driverClassName = driverClassName;

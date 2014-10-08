@@ -217,7 +217,9 @@ public class RemoteProjectSupport {
                         sourceFilesAndDirs.add(FSPath.toFSPath(fo));
                     }
                 }
-                addExtraFiles(subMcs, sourceFilesAndDirs);
+                if (subMcs != null) {
+                    addExtraFiles(subMcs, sourceFilesAndDirs);
+                }
             }
         }
         return new ArrayList<>(sourceFilesAndDirs);

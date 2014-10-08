@@ -103,23 +103,31 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
     private final Map<URLEquality, Set<JSLineBreakpoint>> breakpointsByURL = new HashMap<>();
     private ClassLoadUnloadBreakpoint scriptBP;
     private MethodBreakpoint sourceBindBP;
+    private final Object sourceBreakpointsInitLock = new Object();
     
     public JSJavaBreakpointsManager() {
     }
 
     @Override
     public Breakpoint[] initBreakpoints() {
-        scriptBP = ClassLoadUnloadBreakpoint.create(JSUtils.NASHORN_SCRIPT+"*",
-                                                    false,
-                                                    ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
-        scriptBP.setHidden(true);
-        scriptBP.setSuspend(EventRequest.SUSPEND_NONE);
-        
-        sourceBindBP = MethodBreakpoint.create(NASHORN_CONTEXT_CLASS, NASHORN_CONTEXT_SOURCE_BIND_METHOD);
-        sourceBindBP.setHidden(true);
-        sourceBindBP.setSuspend(EventRequest.SUSPEND_EVENT_THREAD);
-        
+        initSourceBreakpoints();
         return new Breakpoint[] { scriptBP, sourceBindBP };
+    }
+    
+    private void initSourceBreakpoints() {
+        synchronized (sourceBreakpointsInitLock) {
+            if (scriptBP == null) {
+                scriptBP = ClassLoadUnloadBreakpoint.create(JSUtils.NASHORN_SCRIPT+"*",
+                                                            false,
+                                                            ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
+                scriptBP.setHidden(true);
+                scriptBP.setSuspend(EventRequest.SUSPEND_NONE);
+
+                sourceBindBP = MethodBreakpoint.create(NASHORN_CONTEXT_CLASS, NASHORN_CONTEXT_SOURCE_BIND_METHOD);
+                sourceBindBP.setHidden(true);
+                sourceBindBP.setSuspend(EventRequest.SUSPEND_EVENT_THREAD);
+            }
+        }
     }
     
     @Override
@@ -187,6 +195,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                 return ;
             }
         }
+        initSourceBreakpoints();
         ScriptsHandler sh = new ScriptsHandler(debugger);
         scriptBP.addJPDABreakpointListener(sh);
         sourceBindBP.addJPDABreakpointListener(sh);

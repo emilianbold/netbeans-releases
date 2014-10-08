@@ -137,7 +137,6 @@ fi
 
 mv $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans.after_commit-validation_and_test-dist
 mv $NB_ALL/nbbuild/netbeans-vanilla $NB_ALL/nbbuild/netbeans
-
 cd $NB_ALL
 
 #Build all NBMs for stable UC - IDE + UC-only

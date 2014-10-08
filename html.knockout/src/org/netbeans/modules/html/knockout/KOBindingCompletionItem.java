@@ -74,7 +74,12 @@ public class KOBindingCompletionItem extends HtmlCompletionItem.Attribute {
     protected String getSubstituteText() {
         return new StringBuilder().append(binding.getName()).append(": ").toString(); //NOI18N
     }
-   
+
+    @Override
+    protected int getMoveBackLength() {
+        return 0;
+    }
+
     @Override
     public boolean hasHelp() {
         return true;

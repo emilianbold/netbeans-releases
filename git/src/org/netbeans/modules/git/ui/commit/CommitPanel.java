@@ -84,7 +84,7 @@ public class CommitPanel extends javax.swing.JPanel {
     private boolean commitMessageEdited;
     private static final int MESSAGE_WIDTH;
     static {
-        int width = Integer.getInteger("versioning.git.commitMessageWidth", 0); //NOI18N
+        int width = Integer.getInteger("versioning.git.commitMessageWidth", 72); //NOI18N
         if (width < 0) {
             // 72 is a good practise according to
             // http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html

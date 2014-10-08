@@ -85,7 +85,7 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
         }
         expectedDirs.clear();
         encounteredDirs.clear();
-        handle = ProgressHandleFactory.createHandle(LBL_indexing_repo(ri != null ? ri.getName() : indexingContext.getId()), this);
+        handle = ProgressHandle.createHandle(LBL_indexing_repo(ri != null ? ri.getName() : indexingContext.getId()), this);
         handle.start();
         handle.progress(LBL_findIndexableDirs());
         findIndexableDirs(ctx.getRepository());

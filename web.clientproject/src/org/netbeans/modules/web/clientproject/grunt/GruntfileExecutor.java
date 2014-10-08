@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
-/** 
+/**
  * Executes an Gruntfile asynchronously in the IDE.
  */
 public final class GruntfileExecutor implements Runnable {
@@ -77,22 +77,22 @@ public final class GruntfileExecutor implements Runnable {
     private final FileObject gruntFile;
 
     /** targets may be null to indicate default target */
-    
+
     @NbBundle.Messages({
-        "# {0} - Project Name", 
-        "# {1} - Task Name",    
+        "# {0} - Project Name",
+        "# {1} - Task Name",
         "TXT_GruntTabTitle={0} ({1})"
     })
     public GruntfileExecutor (FileObject gruntFile, String[] targets) {
         targetNames = ((targets == null) ? null : Arrays.asList(targets));
-        
+
         allTargets = "";
         for (String t:targets) {
             allTargets+=t;
             allTargets+=" ";
         }
         allTargets = allTargets.trim();
-        
+
         this.gruntFile = gruntFile;
 
         Project owner = FileOwnerQuery.getOwner(gruntFile);
@@ -102,7 +102,7 @@ public final class GruntfileExecutor implements Runnable {
             displayName = gruntFile.getName();
         }
     }
-    
+
     /**
      * Actually start the process.
      */
@@ -113,12 +113,12 @@ public final class GruntfileExecutor implements Runnable {
         }
         return task;
     }
-    
-  
+
+
     /** Call execute(), not this method directly!
      */
     synchronized public @Override void run () {
-        
+
         Callable<Process> creator = new Callable<Process>() {
 
             @Override
@@ -143,7 +143,7 @@ public final class GruntfileExecutor implements Runnable {
                     return pb.call();
                 } catch (IOException ioe) {
                     if (!Utilities.isWindows() && !Utilities.isMac()) {
-                        //grunt not found on path on Linux. Run bash and try run 
+                        //grunt not found on path on Linux. Run bash and try run
                         //grunt inside bash. It will at least do output to user
                         pb = new ExternalProcessBuilder("/bin/bash");
                         pb = pb.addArgument("-lc");
@@ -156,15 +156,17 @@ public final class GruntfileExecutor implements Runnable {
             }
 
         };
-        
+
         ExecutionDescriptor desc = new ExecutionDescriptor();
         desc = desc.showProgress(true);
         desc = desc.frontWindow(true);
         desc = desc.controllable(true);
-        desc = desc.charset(StandardCharsets.UTF_8);        
+        desc = desc.charset(StandardCharsets.UTF_8);
         ExecutionService execution = ExecutionService.newService(creator, desc, displayName);
         try {
             execution.run().get();
+            // #246886
+            FileUtil.refreshFor(FileUtil.toFile(gruntFile.getParent()));
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ExecutionException ex) {

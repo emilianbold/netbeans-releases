@@ -175,7 +175,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 case GLOBAL:
                     HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
                     addedProperties.putAll(getDomCompletionResults(request));
-                    for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+                    for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects(fileObject)) {
                         for (JsObject object : libGlobal.getProperties().values()) {
                             addPropertyToMap(request, addedProperties, object);
                         }
@@ -373,7 +373,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             if (id == JsTokenId.IDENTIFIER || id.isKeyword()) {
                 prefix = token.text().toString();
                 if (upToOffset) {
-                    prefix = prefix.substring(0, offset - ts.offset());
+                    if (offset - ts.offset() >= 0) {
+                        prefix = prefix.substring(0, offset - ts.offset());
+                    }
                 }
             }
             if (id == JsTokenId.DOC_COMMENT) {
@@ -484,7 +486,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
         
         // from libraries
-        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects(fo)) {
             for (JsObject object : libGlobal.getProperties().values()) {
                 addPropertyToMap(request, addedItems, object);
             }
@@ -528,9 +530,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
         JsIndex jsIndex = JsIndex.get(fo);
         Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
-        resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, expChain, request.anchor));
+        resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, expChain, request.anchor, true));
 
-        resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, request.result, true);
+        resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, request.result, true, true);
         
         // try to map window property
         Collection<String> windowProp = new ArrayList<String>();
@@ -847,7 +849,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         if (!typesFromWith.isEmpty()) {
             FileObject fo = request.info.getSnapshot().getSource().getFileObject();
             JsIndex jsIndex = JsIndex.get(fo);
-            Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(typesFromWith, request.result, true);
+            Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(typesFromWith, request.result, true, true);
             for (TypeUsage type : resolveTypes) {
                 JsObject localObject = ModelUtils.findJsObjectByName(request.result.getModel(), type.getType());
                 if (localObject != null) {
@@ -887,7 +889,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             lastResolvedObjects.add(jsObject);
         }
 
-        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects(request.result.getSnapshot().getSource().getFileObject())) {
             JsObject found = ModelUtils.findJsObjectByName(libGlobal, type.getType());
             if (found != null && found != libGlobal) {
                 jsObject = found;

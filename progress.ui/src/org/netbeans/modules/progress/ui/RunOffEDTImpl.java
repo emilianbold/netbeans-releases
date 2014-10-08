@@ -61,7 +61,6 @@ import javax.swing.*;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressRunnable;
-import org.netbeans.api.progress.ProgressUIHandle;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress;
@@ -81,7 +80,6 @@ import org.openide.windows.WindowManager;
 @ServiceProvider(service=RunOffEDTProvider.class, position = 100)
 public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
 
-    private static final RequestProcessor WORKER = new RequestProcessor(ProgressUtils.class.getName());
     private static final RequestProcessor TI_WORKER = new RequestProcessor("TI_" + ProgressUtils.class.getName(), 1, true);
     
     private static final Map<String, Long> CUMULATIVE_SPENT_TIME = new HashMap<String, Long>();
@@ -91,6 +89,8 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
     private static final int WARNING_TIME = Integer.getInteger("org.netbeans.modules.progress.ui.WARNING_TIME", 10000);
     private static final Logger LOG = Logger.getLogger(RunOffEDTImpl.class.getName());
 
+    //@GuardedBy("rqByClz")
+    private final Map<Class<?>,Pair<Integer,RequestProcessor>> rqByClz = new HashMap<Class<?>, Pair<Integer, RequestProcessor>>();
     private final boolean assertionsOn;
 
     @Override
@@ -140,9 +140,27 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
             final AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorTime, int dlgTime) {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicReference<Dialog> d = new AtomicReference<Dialog>();
-
-        WORKER.post(new Runnable() {
-
+        RequestProcessor rp;
+        synchronized (rqByClz) {
+            final Class<?> clz = operation.getClass();
+            int index;
+            Pair<Integer,RequestProcessor> p = rqByClz.get(clz);
+            if (p == null) {
+                index = 0;
+                rp = new RequestProcessor(String.format(
+                        "%s for: %s",    //NOI18N
+                        ProgressUtils.class.getName(),
+                        clz.getName()),
+                    1,
+                    false);
+            } else {
+                index = p.first();
+                rp = p.second();
+            }
+            p = Pair.<Integer,RequestProcessor>of(index+1, rp);
+            rqByClz.put(clz, p);
+        }
+        rp.post(new Runnable() {
             public @Override void run() {
                 if (cancelOperation.get()) {
                     return;
@@ -150,6 +168,15 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
 		try {
 		    operation.run();
 		} finally {
+                    synchronized (rqByClz) {
+                        final Class<?> clz = operation.getClass();
+                        Pair<Integer,RequestProcessor> p = rqByClz.remove(clz);
+                        if (p.first() > 1) {
+                            rqByClz.put(clz, Pair.<Integer,RequestProcessor>of(
+                                p.first()-1,
+                                p.second()));
+                        }
+                    }
 		    latch.countDown();
 
 		    SwingUtilities.invokeLater(new Runnable() {
@@ -226,7 +253,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
     @Override
     public void runOffEventThreadWithProgressDialog(final Runnable operation, final String operationDescr,
             ProgressHandle handle, boolean includeDetailLabel, int waitCursorAfter, int dialogAfter) {
-        JPanel content = contentPanel((ProgressUIHandle)handle, includeDetailLabel);
+        JPanel content = contentPanel(handle, includeDetailLabel);
         runOffEventThreadCustomDialogImpl(operation, operationDescr, content, waitCursorAfter, dialogAfter);
     }
     
@@ -334,7 +361,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
     @Override
     public <T> Future<T> showProgressDialogAndRunLater (ProgressRunnable<T> operation, ProgressHandle handle, boolean includeDetailLabel) {
        AbstractWindowRunner<T> wr = new ProgressBackgroundRunner<T>(operation, 
-               (ProgressUIHandle)handle, includeDetailLabel, operation instanceof Cancellable);
+               handle, includeDetailLabel, operation instanceof Cancellable);
        Future<T> result = wr.start();
        assert EventQueue.isDispatchThread() == (result != null);
        if (result == null) {
@@ -369,7 +396,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
     public void showProgressDialogAndRun(Runnable toRun, ProgressHandle handle, boolean includeDetailLabel) {
        boolean showCancelButton = toRun instanceof Cancellable;
        AbstractWindowRunner<Void> wr = new ProgressBackgroundRunner<Void>(toRun, 
-               (ProgressUIHandle)handle, includeDetailLabel, showCancelButton);
+               handle, includeDetailLabel, showCancelButton);
        wr.start();
         try {
             try {
@@ -437,17 +464,17 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
         private final ProgressRunnable<T> toRun;
         ProgressBackgroundRunner(ProgressRunnable<T> toRun, String displayName, boolean includeDetail, boolean showCancel) {
             super (showCancel ?
-                ProgressHandleFactory.createUIHandle(displayName, (Cancellable) toRun, null) :
-                ProgressHandleFactory.createUIHandle(displayName, (Action)null), includeDetail, showCancel);
+                ProgressHandleFactory.createHandle(displayName, (Cancellable) toRun, null) :
+                ProgressHandleFactory.createHandle(displayName, (Action)null), includeDetail, showCancel);
             this.toRun = toRun;
         }
 
-        ProgressBackgroundRunner(ProgressRunnable<T> toRun, ProgressUIHandle handle, boolean includeDetail, boolean showCancel) {
+        ProgressBackgroundRunner(ProgressRunnable<T> toRun, ProgressHandle handle, boolean includeDetail, boolean showCancel) {
             super (handle, includeDetail, showCancel);
             this.toRun = toRun;
         }
 
-        ProgressBackgroundRunner(Runnable toRun, ProgressUIHandle handle, boolean includeDetail, boolean showCancel) {
+        ProgressBackgroundRunner(Runnable toRun, ProgressHandle handle, boolean includeDetail, boolean showCancel) {
             this (showCancel ? new CancellableRunnablePR<T>(toRun) : 
                 new RunnablePR<T>(toRun), handle, includeDetail, showCancel);
         }
@@ -499,7 +526,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
 
     }
 
-    private static JPanel contentPanel(final ProgressUIHandle handle, boolean includeDetail) {
+    private static JPanel contentPanel(final ProgressHandle handle, boolean includeDetail) {
         // top panel
         JPanel contentPanel = new JPanel(new GridBagLayout());
         

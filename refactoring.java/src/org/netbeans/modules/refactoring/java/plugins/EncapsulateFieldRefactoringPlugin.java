@@ -672,7 +672,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                     make.Modifiers(EnumSet.of(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)),
                     propertyName, 
                     make.Identifier("String"),//NOI18N
-                    make.Literal(propertyName));
+                    make.Literal(get.field.getSimpleName().toString()));
         }
 
         private boolean fieldExists(TypeElement clazz, String propertyName) {

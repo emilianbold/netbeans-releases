@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -126,11 +127,14 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         }
         ODCSPasswordAuthorizer.ProjectHandleRegistry.registerProjectHandle(
                 projectHandle);
+        String buildURL = projectHandle.getTeamProject().getBuildUrl();
+        if (buildURL == null) {
+            return Collections.emptyList();
+        }
         Persistence pers = Persistence.tranzient(Bundle.MSG_from_odcs_project(),
                 getNewBuildAction(projectHandle));
         HudsonInstance hi = HudsonManager.addInstance(
-                projectHandle.getDisplayName(),
-                projectHandle.getTeamProject().getBuildUrl(), 1, pers);
+                projectHandle.getDisplayName(), buildURL, 1, pers);
         if (hi == null) {
             return Collections.emptyList();
         }
@@ -147,7 +151,9 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
             buildHandles.add(new HudsonJobHandle(hi, job.getName(), job));
         }
         bl.setBuildHandles(buildHandles);
-        CACHE.put(bl, new Object());
+        synchronized (CACHE) {
+            CACHE.put(bl, new Object());
+        }
         return new LinkedList<JobHandle>(
                 onlyWatched ? bl.getWatchedJobHandles() : buildHandles);
     }
@@ -192,16 +198,18 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
     private List<JobHandle> findBuildHandlesInCache(
             ProjectHandle<ODCSProject> projectHandle, boolean onlyWatched) {
 
-        for (final BuildsListener listener : CACHE.keySet()) {
-            if (listener.projectHandle.get() == projectHandle
-                    && projectHandle.getTeamProject().getBuildUrl().equals(
-                    listener.instance.getUrl())) {
-                synchronized (listener) {
-                    listener.checkJobList(); //update job list
-                    return new LinkedList<JobHandle>(
-                            onlyWatched
-                            ? listener.getWatchedJobHandles()
-                            : listener.buildHandles);
+        synchronized (CACHE) {
+            for (final BuildsListener listener : CACHE.keySet()) {
+                if (listener.projectHandle.get() == projectHandle
+                        && projectHandle.getTeamProject().getBuildUrl().equals(
+                        listener.instance.getUrl())) {
+                    synchronized (listener) {
+                        listener.checkJobList(); //update job list
+                        return new LinkedList<JobHandle>(
+                                onlyWatched
+                                ? listener.getWatchedJobHandles()
+                                : listener.buildHandles);
+                    }
                 }
             }
         }
@@ -276,13 +284,15 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         if (projectHandle == null) {
             return;
         }
+        Collection<BuildsListener> bls;
         synchronized (CACHE) {
-            for (BuildsListener bl : CACHE.keySet()) {
+            bls = new ArrayList(CACHE.keySet());
+        }
+        for (BuildsListener bl : bls) {
                 Reference<ProjectHandle<ODCSProject>> ref = bl.projectHandle;
                 if (ref != null && projectHandle.equals(ref.get())) {
                     bl.removeHudsonAndClean();
                 }
-            }
         }
     }
 
@@ -307,6 +317,28 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         }
     }
 
+    private static DashboardSupport<ODCSProject> getDashboard(ODCSServer odcsServer) {
+        return odcsServer != null ?
+                ODCSUiServer.forServer(odcsServer).getDashboard() :
+                null;
+                
+    }            
+    
+    private static boolean isAlive(ProjectHandle<ODCSProject> projectHandle) {
+        if(projectHandle != null) {
+            DashboardSupport<ODCSProject> dashboard = getDashboard(projectHandle.getTeamProject().getServer());
+            if(dashboard != null) {
+                ProjectHandle<ODCSProject>[] prjs = dashboard.getProjects(true);
+                for (ProjectHandle<ODCSProject> prj : prjs) {
+                    if(prj.getId().equals(projectHandle.getId())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
     private static class HudsonJobHandle extends JobHandle {
 
         private final HudsonInstance hudsonInstance;
@@ -521,6 +553,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         private final Reference<ODCSServer> server;
         private final List<HudsonJobHandle> buildHandles;
         private List<HudsonJobHandle> watchedBuildHandles;
+        private final AtomicBoolean hudsonRemoved = new AtomicBoolean();
 
         public BuildsListener(HudsonInstance instance,
                 ProjectHandle<ODCSProject> projectHandle) {
@@ -568,10 +601,17 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
             if (isUserLoggedOutEvent(evt)
                     || "close".equals(evt.getPropertyName())) { //NOI18N
                 removeHudsonAndClean();
-                CACHE.clear();
+                synchronized (CACHE) {
+                    CACHE.clear();
+                }
             } else if (evt.getPropertyName().equals(
                     DashboardSupport.PROP_REFRESH_REQUEST)) {
                 HudsonManager.synchronizeInstance(instance);
+            } else if (DashboardSupport.PROP_OPENED_PROJECTS.equals(evt.getPropertyName())) {
+                ProjectHandle<ODCSProject> ph = projectHandle.get();
+                if(!isAlive(projectHandle.get())) {
+                    removeHudsonAndClean();
+                }
             } else if (projectHandle.get() == null) {
                 cleanup();
             }
@@ -579,7 +619,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
 
         private void removeHudsonAndClean() {
             cleanup();
-            if (!instance.isPersisted()) {
+            if (!instance.isPersisted() && hudsonRemoved.compareAndSet(false, true)) {
                 HudsonManager.removeInstance(instance);
             }
         }
@@ -612,7 +652,9 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
                 buildHandles.clear();
             }
             projectHandle.clear();
-            CACHE.remove(this);
+            synchronized (CACHE) {
+                CACHE.remove(this);
+            }
         }
 
         /**
@@ -776,14 +818,10 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         }
 
         private void initRefreshListener() {
-            ODCSServer odcsServer = server.get();
-            if (odcsServer != null) {
-                DashboardSupport<ODCSProject> dashboard =
-                        ODCSUiServer.forServer(odcsServer).getDashboard();
-                if (dashboard != null) {
-                    dashboard.addPropertyChangeListener(
-                            WeakListeners.propertyChange(this, dashboard));
-                }
+            DashboardSupport<ODCSProject> dashboard = getDashboard(server.get());
+            if (dashboard != null) {
+                dashboard.addPropertyChangeListener(
+                        WeakListeners.propertyChange(this, dashboard));
             }
         }
 

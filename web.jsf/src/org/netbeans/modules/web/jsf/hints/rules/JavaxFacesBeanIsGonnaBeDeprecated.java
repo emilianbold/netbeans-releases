@@ -118,7 +118,7 @@ public class JavaxFacesBeanIsGonnaBeDeprecated {
             return problems;
         }
 
-        CompilationInfo info = ctx.getCompilationInfo();
+        CompilationInfo info = hintContext.getInfo();
         for (TypeElement typeElement : info.getTopLevelElements()) {
             for (AnnotationMirror annotationMirror : typeElement.getAnnotationMirrors()) {
                 if (annotationMirror.getAnnotationType().toString().startsWith(JAVAX_FACES_BEAN)) {

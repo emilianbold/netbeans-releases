@@ -51,7 +51,9 @@ import org.openide.util.NbBundle;
  */
 public final class ProjectFoldersValidator {
 
+    public static final String SOURCE_FOLDER = "source.folder"; // NOI18N
     public static final String SITE_ROOT_FOLDER = "site.root.folder"; // NOI18N
+    public static final String SOURCE_OR_SITE_ROOT_FOLDER = "source.or.site.root.folder"; // NOI18N
     public static final String TEST_FOLDER = "test.folder"; // NOI18N
 
     private final ValidationResult result = new ValidationResult();
@@ -61,15 +63,49 @@ public final class ProjectFoldersValidator {
         return result;
     }
 
-    public ProjectFoldersValidator validate(File siteRootFolder, File testFolder) {
+    public ProjectFoldersValidator validate(File sourceFolder, File siteRootFolder, File testFolder) {
+        validateSourceFolder(sourceFolder);
         validateSiteRootFolder(siteRootFolder);
+        validateSourceAndSiteRootFolders(sourceFolder, siteRootFolder);
         validateTestFolder(testFolder);
         return this;
+    }
+
+    @NbBundle.Messages("ProjectFoldersValidator.sources=Sources")
+    public ProjectFoldersValidator validateSourceFolder(File sourceFolder) {
+        return validateProjectFolder(sourceFolder, SOURCE_FOLDER, Bundle.ProjectFoldersValidator_sources());
     }
 
     @NbBundle.Messages("ProjectFoldersValidator.siteRoot=Site Root")
     public ProjectFoldersValidator validateSiteRootFolder(File siteRootFolder) {
         return validateProjectFolder(siteRootFolder, SITE_ROOT_FOLDER, Bundle.ProjectFoldersValidator_siteRoot());
+    }
+
+    @NbBundle.Messages({
+        "ProjectFoldersValidator.error.noSourcesOrSiteRoot=Source or Site Root directory must be specified.",
+        "ProjectFoldersValidator.error.sourcesEqualsSiteRoot=Source directory and Site Root directory are the same.",
+        "ProjectFoldersValidator.error.sourcesUnderneathSiteRoot=Source directory is underneath Site Root directory.",
+    })
+    public ProjectFoldersValidator validateSourceAndSiteRootFolders(File sourceFolder, File siteRootFolder) {
+        if (sourceFolder == null
+                && siteRootFolder == null) {
+            result.addError(new ValidationResult.Message(SOURCE_OR_SITE_ROOT_FOLDER, Bundle.ProjectFoldersValidator_error_noSourcesOrSiteRoot()));
+        } else if (sourceFolder != null
+                && siteRootFolder != null) {
+            if (siteRootFolder.equals(sourceFolder)) {
+                result.addWarning(new ValidationResult.Message(SOURCE_FOLDER, Bundle.ProjectFoldersValidator_error_sourcesEqualsSiteRoot()));
+            } else {
+                File parent = sourceFolder.getParentFile();
+                while (parent != null) {
+                    if (parent.equals(siteRootFolder)) {
+                        result.addWarning(new ValidationResult.Message(SOURCE_FOLDER, Bundle.ProjectFoldersValidator_error_sourcesUnderneathSiteRoot()));
+                        break;
+                    }
+                    parent = parent.getParentFile();
+                }
+            }
+        }
+        return this;
     }
 
     @NbBundle.Messages("ProjectFoldersValidator.tests=Unit Tests")

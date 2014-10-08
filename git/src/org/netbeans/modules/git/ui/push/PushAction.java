@@ -77,6 +77,7 @@ import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.ActionProgress;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
+import org.netbeans.modules.git.ui.branch.SetTrackingAction;
 import org.netbeans.modules.git.ui.fetch.PullFromUpstreamAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
@@ -223,13 +224,11 @@ public class PushAction extends SingleRepositoryAction {
             protected void perform () {
                 List<String> pushRefSpecs = new LinkedList<>();
                 Set<String> newBranches = new HashSet<>();
-                boolean pushingCurrent = false;
                 for (PushMapping b : pushMappins) {
                     pushRefSpecs.add(b.getRefSpec());
                     if (b.isCreateBranchMapping()) {
                         newBranches.add(b.getRemoteName());
                     }
-                    pushingCurrent |= isPushingCurrentBranch(b, repository);
                 }
                 final Set<String> toDelete = new HashSet<String>();
                 for(ListIterator<String> it = fetchRefSpecs.listIterator(); it.hasNext(); ) {
@@ -326,6 +325,7 @@ public class PushAction extends SingleRepositoryAction {
                 if (updates.isEmpty()) {
                     logger.outputLine(NbBundle.getMessage(PushAction.class, "MSG_PushAction.updates.noChange")); //NOI18N
                 } else {
+                    GitBranch currBranch = RepositoryInfo.getInstance(repository).getActiveBranch();
                     for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
                         GitTransportUpdate update = e.getValue();
                         if (update.getType() == Type.BRANCH) {
@@ -337,8 +337,16 @@ public class PushAction extends SingleRepositoryAction {
                                 // add
                                 logger.outputLine(Bundle.MSG_PushAction_updates_addBranch(update.getLocalName(),
                                         update.getNewObjectId(), update.getResult()));
+                                if (!remote && update.getNewObjectId() != null) {
+                                    int pos = update.getLocalName().indexOf('/');
+                                    if (pos >= 0 && update.getLocalName().substring(pos + 1).equals(currBranch.getName())) {
+                                        if (shallSetupTracking(currBranch, update.getLocalName())) {
+                                            SystemAction.get(SetTrackingAction.class).setupTrackedBranchImmediately(repository, currBranch.getName(), update.getLocalName());
+                                        }
+                                    }
+                                }
                             } else {
-                                logger.outputLine(Bundle.MSG_PushAction_updates_updateBranch(update.getLocalName(),
+                                logger.outputLine(Bundle.MSG_PushAction_updates_updateBranch(update.getRemoteName(),
                                         update.getOldObjectId(), update.getNewObjectId(), update.getResult()));
                                 if (UPDATED_STATUSES.contains(update.getResult())) {
                                     if (remote) {
@@ -570,11 +578,6 @@ public class PushAction extends SingleRepositoryAction {
                 return retry;
             }
             
-            private boolean isPushingCurrentBranch (PushMapping b, File repository) {
-                GitBranch currentBranch = RepositoryInfo.getInstance(repository).getActiveBranch();
-                return currentBranch.getName().equals(b.getLocalName());
-            }
-            
             private void pushSubmodules (Set<File> toPushRepositories) throws GitException {
                 Map<File, GitSubmoduleStatus> submoduleStatuses = getClient().getSubmoduleStatus(new File[0], getProgressMonitor());
                 List<File> submodulesToPush = new ArrayList<>(submoduleStatuses.size());
@@ -647,5 +650,17 @@ public class PushAction extends SingleRepositoryAction {
             }
         };
         return supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_PushAction_progressName(repository.getName()));
+    }
+
+    @NbBundle.Messages({
+        "LBL_Push.setupTracking=Set Up Remote Tracking?",
+        "# {0} - remote branch name", "# {1} - branch name", "MSG_Push.setupTracking=Branch \"{0}\" created locally.\n"
+                + "Do you want to set up branch \"{1}\" to track the remote branch?"
+    })
+    private static boolean shallSetupTracking (GitBranch branch, String remoteBranchName) {
+        return NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                Bundle.MSG_Push_setupTracking(remoteBranchName, branch.getName()),
+                Bundle.LBL_Push_setupTracking(),
+                NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE));
     }
 }
