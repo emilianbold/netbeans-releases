@@ -561,12 +561,12 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
 
     private void customCommandRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customCommandRadioButtonActionPerformed
         enableControls();
-        update("type");
+        update("type"); //NOI18N
     }//GEN-LAST:event_customCommandRadioButtonActionPerformed
 
     private void predefinedCommandRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_predefinedCommandRadioButtonActionPerformed
         enableControls();
-        update("type");
+        update("type"); //NOI18N
     }//GEN-LAST:event_predefinedCommandRadioButtonActionPerformed
 
     private void runInFolderBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runInFolderBrowseButtonActionPerformed
