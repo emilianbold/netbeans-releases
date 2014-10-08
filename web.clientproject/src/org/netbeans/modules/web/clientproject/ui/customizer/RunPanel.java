@@ -214,6 +214,8 @@ public class RunPanel extends JPanel implements HelpCtx.Provider, ChangeListener
         platformProviderPanelHolder.revalidate();
         platformProviderPanelHolder.repaint();
         browserPanel.setVisible(isRunBrowser());
+        // force validation
+        validateAndStoreData();
     }
 
     void validateAndStoreData() {
