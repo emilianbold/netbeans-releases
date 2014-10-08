@@ -453,7 +453,6 @@ meth public org.openide.filesystems.FileObject createTempFile(org.openide.filesy
 meth public org.openide.filesystems.FileObject find(java.lang.String,java.lang.String,java.lang.String)
  anno 0 java.lang.Deprecated()
 meth public org.openide.filesystems.FileObject getTempFolder() throws java.io.IOException
-meth public org.openide.filesystems.FileSystem$Status getStatus()
 meth public void addNotify()
 meth public void refresh(boolean)
 meth public void removeNotify()
