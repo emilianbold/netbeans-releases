@@ -681,7 +681,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     void read(final WizardDescriptor settings) {
         initialized.set(false);
         env = WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(settings);
-        final boolean enabledHost;
+        boolean enabledHost;
         if (env != null) {
             WizardConstants.PROPERTY_HOST_UID.put(settings, ExecutionEnvironmentFactory.toUniqueID(env));
             enabledHost = false;
@@ -726,11 +726,15 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         CompilerSet cs = WizardConstants.PROPERTY_TOOLCHAIN.get(settings);
         boolean isDefaultCompilerSet = Boolean.TRUE.equals(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.get(settings));
         Boolean readOnlyToolchain = WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN.get(settings);
+        if (Boolean.TRUE.equals(readOnlyToolchain)) {
+            enabledHost = false;
+        }
+        final boolean enabledHostFinal = enabledHost;
         RP.post(new DevHostsInitializer(hostUID, cs, isDefaultCompilerSet,
                 readOnlyToolchain, WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER.get(settings)) {
             @Override
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean isDefaultCompilerSet, boolean enabled) {
-                updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, isDefaultCompilerSet, enabledHost, enabled);
+                updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, isDefaultCompilerSet, enabledHostFinal, enabled);
                 initialized.set(true);
                 controller.fireChangeEvent(); // Notify that the panel changed
             }
