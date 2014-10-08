@@ -64,6 +64,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
+import org.netbeans.api.project.Project;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.antlr.Parser;
 import org.netbeans.modules.cnd.antlr.Token;
@@ -101,6 +102,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.support.spi.APTIndexFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
@@ -150,6 +152,7 @@ import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * CsmFile implementations
@@ -610,6 +613,7 @@ public final class FileImpl implements CsmFile,
             }
             long time;
             synchronized (stateLock) {
+                boolean hasParseIssue = true;
                 try {
                     State curState;
                     synchronized (changeStateLock) {
@@ -632,9 +636,16 @@ public final class FileImpl implements CsmFile,
                     }
                     
                     if (CndTraceFlags.TEXT_INDEX) {
-                         int unitID = getProjectImpl(true).getUnitId();
-                         APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT, getTextIndexKey());
-                         aptIndexingWalker.index();
+                        Collection<? extends APTIndexFilter> indexFilters = Collections.emptyList();
+                        Object pp = getProject().getPlatformProject();
+                        if (pp instanceof NativeProject) {
+                            final Lookup.Provider project = ((NativeProject) pp).getProject();
+                            if (project != null) {
+                                indexFilters = project.getLookup().lookupAll(APTIndexFilter.class);
+                            }
+                        }
+                        APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT, getTextIndexKey(), indexFilters);
+                        aptIndexingWalker.index();
                     }
                     
                     switch (curState) {
@@ -740,9 +751,18 @@ public final class FileImpl implements CsmFile,
                         default:
                             System.err.println("unexpected state in ensureParsed " + curState); // NOI18N
                     }
+                    // clear flag if reached the end of parsing without exceptions
+                    hasParseIssue = false;
                 } finally {
                     synchronized (changeStateLock) {
-                        parsingState = ParsingState.NOT_BEING_PARSED;
+                        parsingState = ParsingState.NOT_BEING_PARSED;       
+                        if (hasParseIssue) {
+                            // TODO: introduce error on parse state
+                            // 
+                            // For now we have to mark file as parsed, otherwise 
+                            // scheduleParsing(true) never finishes while(!isParsed()) loop
+                            state = State.PARSED;
+                        }
                     }
                 }
             }
@@ -1127,7 +1147,12 @@ public final class FileImpl implements CsmFile,
             } catch (IOException ex) {
             }
             if (platformProject instanceof NativeProject) {
-                performanceEvent.log(lines, ((NativeProject)platformProject).getProject());
+                Lookup.Provider project = ((NativeProject)platformProject).getProject();
+                if (project instanceof Project) {
+                    performanceEvent.log(lines, project);
+                } else {
+                    performanceEvent.log(lines);
+                }
             } else {
                 performanceEvent.log(lines);
             }
@@ -1832,6 +1857,16 @@ public final class FileImpl implements CsmFile,
     public void scheduleParsing(boolean wait) throws InterruptedException {
         synchronized (stateLock) {
             while (!isParsed()) {
+                // when IDE exists during ensureParsed, then file is left in 
+                // INITIAL state which is not PARSED
+                // check such a case to prevent infinite loop of code model clients
+                CsmModelState modelState = ModelImpl.instance().getState();
+                if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+                    if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
+                        System.err.printf("scheduleParsing: %s file is interrupted on closing model\n", this.getAbsolutePath());
+                    }
+                    return;
+                }
                 String oldName = wait ? Thread.currentThread().getName() : "";
                 try {
                     if (wait) {

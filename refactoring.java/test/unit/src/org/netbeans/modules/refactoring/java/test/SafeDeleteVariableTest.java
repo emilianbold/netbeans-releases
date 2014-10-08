@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
@@ -66,6 +67,23 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
 
     public SafeDeleteVariableTest(String name) {
         super(name, "1.8");
+    }
+    
+    static {
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
+    }
+    
+    public void testEmptyStatement() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;; public class A {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        for(int i = 0; i< 10; i++) {\n"
+                + "            A a = new A();\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n"));
+        performSafeDelete(src.getFileObject("t/A.java"), -1, false);
+        verifyContent(src);
     }
     
     public void testPackage() throws Exception {
@@ -159,7 +177,7 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
     private void performSafeDelete(FileObject source, final int position, final boolean checkInComments, Problem... expectedProblems) throws Exception {
         final SafeDeleteRefactoring[] r = new SafeDeleteRefactoring[1];
         
-        if(source.isFolder()) {
+        if(source.isFolder() || position < 0) {
             r[0] = new SafeDeleteRefactoring(Lookups.fixed(source));
             r[0].setCheckInComments(checkInComments);
         } else {
@@ -179,7 +197,7 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
             }, true);
         }
 
-        RefactoringSession rs = RefactoringSession.create("Introduce Parameter");
+        RefactoringSession rs = RefactoringSession.create("Safe Delete Test");
         List<Problem> problems = new LinkedList<>();
 
         addAllProblems(problems, r[0].preCheck());

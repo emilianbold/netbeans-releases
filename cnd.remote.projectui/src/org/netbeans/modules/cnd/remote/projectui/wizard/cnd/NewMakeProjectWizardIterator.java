@@ -368,7 +368,9 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public Set<FileObject> instantiate() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         FSPath dirF = (FSPath) wiz.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
-        String hostUID = ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal());
+        //do not see any reasons why to use local env here
+        final ExecutionEnvironment env = (ExecutionEnvironment) wiz.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+        String hostUID = ExecutionEnvironmentFactory.toUniqueID(env);
         CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         boolean defaultToolchain = Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         if (dirF != null) {
@@ -436,14 +438,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             debug.getAssemblerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.DEBUG_MODE);
             //debug.setRemoteMode(Mode.REMOTE_SOURCES);
-            if (wizardtype == TYPE_DB_APPLICATION) {
-                DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
-                if(provider != null) {
-                    provider.setupReleaseConfiguration(debug);
-                }                
-            }
-            // This is dirty hack to set true development host
-            final ExecutionEnvironment env = (ExecutionEnvironment) wiz.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+
             int platform = CompilerSetManager.get((env)).getPlatform();
             debug.getDevelopmentHost().setBuildPlatform(platform);
             DevelopmentHostConfiguration toolCollecctionDevelopmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(hostUID));
@@ -455,7 +450,12 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 compilerSet2Configuration = new CompilerSet2Configuration(toolCollecctionDevelopmentHost, defCS);
             }
             debug.setCompilerSet(compilerSet2Configuration);
-            
+            if (wizardtype == TYPE_DB_APPLICATION) {
+                DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
+                if(provider != null) {
+                    provider.setupDebugConfiguration(debug);
+                }
+            }
             MakeConfiguration release = MakeConfiguration.createConfiguration(dirF, "Release", conftype, customizerId, hostUID, toolchain, defaultToolchain); // NOI18N
             release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
@@ -463,21 +463,19 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             release.getAssemblerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.RELEASE_MODE);
             //release.setRemoteMode(Mode.REMOTE_SOURCES);
+            release.getDevelopmentHost().setBuildPlatform(platform);
+            release.setCompilerSet(compilerSet2Configuration);
             if (wizardtype == TYPE_DB_APPLICATION) {
                 DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
                 if(provider != null) {
                     provider.setupReleaseConfiguration(release);
                 }
             }
-            release.getDevelopmentHost().setBuildPlatform(platform);
-            release.setCompilerSet(compilerSet2Configuration);
-            
             MakeConfiguration[] confs = new MakeConfiguration[]{debug, release};
             ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, dirF);
             prjParams.setMakefileName(makefileName);
             prjParams.setConfigurations(confs);
             prjParams.setMainFile(mainFile);
-            prjParams.setHostUID(hostUID);
             prjParams.setHostUID(hostUID);
 
             if (wizardtype == TYPE_DB_APPLICATION) {

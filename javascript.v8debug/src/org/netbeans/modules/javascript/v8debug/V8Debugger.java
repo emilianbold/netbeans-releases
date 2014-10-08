@@ -1,0 +1,555 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.javascript.v8debug;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.CheckReturnValue;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerInfo;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.lib.v8debug.PropertyBoolean;
+import org.netbeans.lib.v8debug.V8Arguments;
+import org.netbeans.lib.v8debug.V8Breakpoint;
+import org.netbeans.lib.v8debug.V8Command;
+import org.netbeans.lib.v8debug.V8Event;
+import org.netbeans.lib.v8debug.V8Frame;
+import org.netbeans.lib.v8debug.V8Request;
+import org.netbeans.lib.v8debug.V8Response;
+import org.netbeans.lib.v8debug.V8Script;
+import org.netbeans.lib.v8debug.client.ClientConnection;
+import org.netbeans.lib.v8debug.commands.Backtrace;
+import org.netbeans.lib.v8debug.commands.Frame;
+import org.netbeans.lib.v8debug.commands.Scripts;
+import org.netbeans.lib.v8debug.commands.SetBreakpoint;
+import org.netbeans.lib.v8debug.events.AfterCompileEventBody;
+import org.netbeans.lib.v8debug.events.BreakEventBody;
+import org.netbeans.lib.v8debug.events.ExceptionEventBody;
+import org.netbeans.lib.v8debug.vars.V8Value;
+import org.netbeans.modules.javascript.v8debug.api.Connector;
+import org.netbeans.modules.javascript.v8debug.breakpoints.BreakpointsHandler;
+import org.netbeans.modules.javascript.v8debug.frames.CallStack;
+import org.netbeans.spi.debugger.DebuggerEngineProvider;
+import org.openide.DialogDisplayer;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
+import org.openide.util.Pair;
+import org.openide.util.RequestProcessor;
+
+/**
+ *
+ * @author Martin Entlicher
+ */
+public final class V8Debugger {
+    
+    private static final Logger LOG = Logger.getLogger(V8Debugger.class.getName());
+    
+    private final String host;
+    private final int port;
+    private final ClientConnection connection;
+    private final ScriptsHandler scriptsHandler;
+    private final BreakpointsHandler breakpointsHandler;
+    @NullAllowed
+    private final Runnable finishCallback;
+    private DebuggerEngine engine;
+    private DebuggerEngine.Destructor engineDestructor;
+    private final RequestProcessor rp = new RequestProcessor(V8Debugger.class);
+    private final Set<Listener> listeners = new CopyOnWriteArraySet<>();
+    
+    private final AtomicLong requestSequence = new AtomicLong(1l);
+    private final Map<Long, Pair<V8Request, CommandResponseCallback>> commandCallbacks = new HashMap<>();
+    private volatile boolean suspended = false;
+    private volatile boolean finished = false;
+    private final ReadWriteLock accessLock = new ReentrantReadWriteLock(true);
+    
+    private V8Frame currentFrame;
+    private CallStack currentCallStack;
+    private final Object currentFrameRetrieveLock = new Object();
+    
+    public static DebuggerEngine startSession(Connector.Properties properties,
+                                              @NullAllowed Runnable finishCallback) throws IOException {
+        V8Debugger dbg = new V8Debugger(properties, finishCallback);
+        DebuggerInfo dInfo = DebuggerInfo.create(V8DebuggerSessionProvider.DEBUG_INFO, new Object[]{ dbg });
+        DebuggerEngine[] engines = DebuggerManager.getDebuggerManager().startDebugging(dInfo);
+        if (engines.length > 0) {
+            dbg.setEngine(engines[0]);
+            return engines[0];
+        } else {
+            if (finishCallback != null) {
+                finishCallback.run();
+            }
+            return null;
+        }
+    }
+
+    private V8Debugger(Connector.Properties properties, Runnable finishCallback) throws IOException {
+        this.host = properties.getHostName();
+        this.port = properties.getPort();
+        this.connection = new ClientConnection(properties.getHostName(), properties.getPort());
+        this.scriptsHandler = new ScriptsHandler(properties.getLocalPath(), properties.getServerPath(), this);
+        this.breakpointsHandler = new BreakpointsHandler(this);
+        this.finishCallback = finishCallback;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+    
+    public void start() {
+        spawnResponseLoop();
+        initScripts();
+    }
+    
+    public void finish() {
+        if (finished) {
+            return ;
+        }
+        finished = true;
+        try {
+            connection.close();
+        } catch (IOException ioex) {}
+        notifyFinished();
+        finishCallbacks();
+        engineDestructor.killEngine();
+        if (finishCallback != null) {
+            finishCallback.run();
+        }
+    }
+    
+    public ScriptsHandler getScriptsHandler() {
+        return scriptsHandler;
+    }
+    
+    public BreakpointsHandler getBreakpointsHandler() {
+        return breakpointsHandler;
+    }
+    
+    @CheckForNull
+    public V8Request sendCommandRequest(V8Command cmd, V8Arguments args) {
+        return sendCommandRequest(cmd, args, null);
+    }
+    
+    @CheckForNull
+    @CheckReturnValue
+    public V8Request sendCommandRequest(V8Command cmd, V8Arguments args, CommandResponseCallback callback) {
+        V8Request request = new V8Request(requestSequence.getAndIncrement(), cmd, args);
+        if (callback != null) {
+            synchronized (commandCallbacks) {
+                commandCallbacks.put(request.getSequence(), Pair.of(request, callback));
+            }
+        }
+        if (cmd.equals(V8Command.Continue) || cmd.equals(V8Command.Restartframe)) {
+            // Going to resume...
+            notifySuspended(false);
+        }
+        try {
+            connection.send(request);
+            return request;
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+    
+    public boolean isSuspended() {
+        return suspended;
+    }
+    
+    public V8Frame getCurrentFrame() {
+        V8Frame f;
+        Lock rl = accessLock.readLock();
+        rl.lock();
+        try {
+            f = currentFrame;
+            if (f == null && suspended) {
+                final V8Frame[] fRef = new V8Frame[] { null };
+                rl.unlock();
+                rl = null;
+                // Synchronize not to start retrieving the current frame multiple times at once
+                synchronized (currentFrameRetrieveLock) {
+                    rl = accessLock.readLock();
+                    rl.lock();
+                    try {
+                        // Things might have changed:
+                        if (currentFrame != null || !suspended) {
+                            return currentFrame;
+                        }
+                    } finally {
+                        rl.unlock();
+                        rl = null;
+                    }
+                    //if (currentFrame != null) 
+                    V8Request request = sendCommandRequest(V8Command.Frame, null, new CommandResponseCallback() {
+                        @Override
+                        public void notifyResponse(V8Request request, V8Response response) {
+                            if (response != null) {
+                                Frame.ResponseBody frb = (Frame.ResponseBody) response.getBody();
+                                fRef[0] = frb.getFrame();
+                            }
+                            synchronized (currentFrameRetrieveLock) {
+                                currentFrameRetrieveLock.notifyAll();
+                            }
+                        }
+                    });
+                    if (request != null) {
+                        try {
+                            currentFrameRetrieveLock.wait();
+                        } catch (InterruptedException iex) {}
+                    }
+                    f = fRef[0];
+                    Lock wl = accessLock.writeLock();
+                    wl.lock();
+                    try {
+                        currentFrame = f;
+                    } finally {
+                        wl.unlock();
+                    }
+                }
+            }
+        } finally {
+            if (rl != null) {
+                rl.unlock();
+            }
+        }
+        return f;
+    }
+
+    public CallStack getCurrentCallStack() {
+        CallStack cs;
+        Lock rl = accessLock.readLock();
+        rl.lock();
+        try {
+            cs = currentCallStack;
+            if (cs == null && suspended) {
+                final CallStack[] csRef = new CallStack[] { null };
+                rl.unlock();
+                rl = null;
+                // Synchronize not to start retrieving the current frame multiple times at once
+                synchronized (currentFrameRetrieveLock) {
+                    rl = accessLock.readLock();
+                    rl.lock();
+                    try {
+                        // Things might have changed:
+                        if (currentCallStack != null || !suspended) {
+                            return currentCallStack;
+                        }
+                    } finally {
+                        rl.unlock();
+                        rl = null;
+                    }
+                    // Find the number of frames first:
+                    Backtrace.Arguments bta = new Backtrace.Arguments(0l, 1l, false, true);
+                    V8Request request = sendCommandRequest(V8Command.Backtrace, bta, new CommandResponseCallback() {
+                        @Override
+                        public void notifyResponse(V8Request request, V8Response response) {
+                            if (response == null) {
+                                synchronized (currentFrameRetrieveLock) {
+                                    currentFrameRetrieveLock.notifyAll();
+                                }
+                                return ;
+                            }
+                            Backtrace.ResponseBody btrb = (Backtrace.ResponseBody) response.getBody();
+                            long numFrames = btrb.getTotalFrames();
+                            if (numFrames == 0) {
+                                synchronized (currentFrameRetrieveLock) {
+                                    csRef[0] = CallStack.EMPTY;
+                                    currentFrameRetrieveLock.notifyAll();
+                                }
+                            }
+                            if (numFrames == 1l) {
+                                synchronized (currentFrameRetrieveLock) {
+                                    csRef[0] = new CallStack(btrb.getFrames(), response.getReferencedValues());
+                                    currentFrameRetrieveLock.notifyAll();
+                                }
+                            } else {
+                                // Find numFrames frames now:
+                                Backtrace.Arguments bta = new Backtrace.Arguments(0l, numFrames, false, true);
+                                V8Request request2 = sendCommandRequest(V8Command.Backtrace, bta, new CommandResponseCallback() {
+                                    @Override
+                                    public void notifyResponse(V8Request request, V8Response response) {
+                                        if (response != null) {
+                                            Backtrace.ResponseBody btrb = (Backtrace.ResponseBody) response.getBody();
+                                            csRef[0] = new CallStack(btrb.getFrames(), response.getReferencedValues());
+                                        }
+                                        synchronized (currentFrameRetrieveLock) {
+                                            currentFrameRetrieveLock.notifyAll();
+                                        }
+                                    }
+                                });
+                                if (request2 == null) {
+                                    // Failed, notify
+                                    synchronized (currentFrameRetrieveLock) {
+                                        currentFrameRetrieveLock.notifyAll();
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    if (request != null) {
+                        try {
+                            currentFrameRetrieveLock.wait();
+                        } catch (InterruptedException iex) {}
+                    }
+                    cs = csRef[0];
+                    Lock wl = accessLock.writeLock();
+                    wl.lock();
+                    try {
+                        currentCallStack = cs;
+                    } finally {
+                        wl.unlock();
+                    }
+                }
+            }
+        } finally {
+            if (rl != null) {
+                rl.unlock();
+            }
+        }
+        return cs;
+    }
+
+    public void addListener(Listener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(Listener listener) {
+        listeners.remove(listener);
+    }
+
+    private void spawnResponseLoop() {
+        new RequestProcessor("V8Debugger Response Loop").post(new Runnable() {
+            @Override
+            public void run() {
+                responseLoop();
+            }
+        });
+    }
+    
+    private void responseLoop() {
+        try {
+        connection.runEventLoop(new ClientConnection.Listener() {
+
+            @Override
+            public void header(Map<String, String> properties) {
+                for (Map.Entry pe : properties.entrySet()) {
+                    LOG.fine("  "+pe.getKey() + " = " + pe.getValue());
+                }
+            }
+            
+            @Override
+            public void response(V8Response response) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("response: "+response+", success = "+response.isSuccess()+", running = "+response.isRunning()+", body = "+response.getBody());
+                }
+                handleResponse(response);
+            }
+
+            @Override
+            public void event(V8Event event) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("event: "+event+", name = "+event.getKind());
+                }
+                handleEvent(event);
+            }
+
+        });
+        } catch (IOException ioex) {
+            LOG.log(Level.FINE, null, ioex);
+        } finally {
+            try {
+                connection.close();
+            } catch (IOException ioex) {
+            } finally {
+                finish();
+            }
+        }
+    }
+    
+    private void handleResponse(V8Response response) {
+        long requestSequenceNum = response.getRequestSequence();
+        synchronized (commandCallbacks) {
+            Pair<V8Request, CommandResponseCallback> callback;
+            synchronized (commandCallbacks) {
+                callback = commandCallbacks.remove(requestSequenceNum);
+            }
+            if (callback != null) {
+                callback.second().notifyResponse(callback.first(), response);
+            }
+        }
+        String errorMessage = response.getErrorMessage();
+        if (errorMessage != null) {
+            //DialogDisplayer.getDefault().notify(null);
+            StatusDisplayer.getDefault().setStatusText(errorMessage);
+            return ;
+        }
+        if (!response.isSuccess()) {
+            return ;
+        }
+        notifySuspended(!response.isRunning());
+        switch (response.getCommand()) {
+            
+        }
+    }
+
+    private void handleEvent(V8Event event) {
+        notifySuspended(event.isRunning().getValueOr(true));
+        switch (event.getKind()) {
+            case AfterCompile:
+                AfterCompileEventBody aceb = (AfterCompileEventBody) event.getBody();
+                V8Script script = aceb.getScript();
+                scriptsHandler.add(script);
+                break;
+            case Break:
+                BreakEventBody beb = (BreakEventBody) event.getBody();
+                long[] breakpoints = beb.getBreakpoints();
+                if (breakpoints != null && breakpoints.length > 0) {
+                    breakpointsHandler.event(beb);
+                }
+                //System.out.println("stopped at "+beb.getScript().getName()+", line = "+(beb.getSourceLine()+1)+" : "+beb.getSourceColumn()+"\ntext = "+beb.getSourceLineText());
+                break;
+            case Exception:
+                ExceptionEventBody eeb = (ExceptionEventBody) event.getBody();
+                //System.out.println("exception '"+eeb.getException()+"' stopped in "+eeb.getScript().getName()+", line = "+(eeb.getSourceLine()+1)+" : "+eeb.getSourceColumn()+"\ntext = "+eeb.getSourceLineText());
+                break;
+            default:
+                LOG.info("Unknown event: "+event.getKind());
+        }
+    }
+    
+    private void notifySuspended(boolean suspended) {
+        if (this.suspended == suspended) {
+            return ;
+        }
+        Lock wl = accessLock.writeLock();
+        wl.lock();
+        try {
+            if (!suspended) {
+                // Resumed
+                currentFrame = null;
+                currentCallStack = null;
+            }
+            this.suspended = suspended;
+        } finally {
+            wl.unlock();
+        }
+        for (Listener l : listeners) {
+            l.notifySuspended(suspended);
+        }
+    }
+    
+    private void notifyFinished() {
+        for (Listener l : listeners) {
+            l.notifyFinished();
+        }
+    }
+    
+    private void finishCallbacks() {
+        List<Pair<V8Request, CommandResponseCallback>> callBacks = new ArrayList<>();
+        synchronized (commandCallbacks) {
+            callBacks.addAll(commandCallbacks.values());
+        }
+        for (Pair<V8Request, CommandResponseCallback> cb : callBacks) {
+            cb.second().notifyResponse(cb.first(), null);
+        }
+    }
+    
+    private void setEngine(DebuggerEngine debuggerEngine) {
+        this.engine = debuggerEngine;
+    }
+
+    void setEngineDestructor(DebuggerEngine.Destructor destructor) {
+        this.engineDestructor = destructor;
+    }
+
+    private void initScripts() {
+        Scripts.Arguments sa = new Scripts.Arguments(null, null, false, null);
+        sendCommandRequest(V8Command.Scripts, sa, new CommandResponseCallback() {
+            @Override
+            public void notifyResponse(V8Request request, V8Response response) {
+                if (response != null) {
+                    Scripts.ResponseBody srb = (Scripts.ResponseBody) response.getBody();
+                    V8Script[] scripts = srb.getScripts();
+                    scriptsHandler.add(scripts);
+                }
+            }
+        });
+    }
+
+    public interface Listener {
+        
+        void notifySuspended(boolean suspended);
+        
+        void notifyFinished();
+        
+    }
+    
+    public interface CommandResponseCallback {
+        
+        /**
+         * Command response result.
+         * @param request The original request
+         * @param response The response, or <code>null</code> when the command was canceled (e.g. debugger killed)
+         */
+        void notifyResponse(V8Request request, @NullAllowed V8Response response);
+    }
+
+    
+}

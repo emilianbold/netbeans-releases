@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.inspect.webkit;
 
+import java.awt.Image;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -141,6 +142,8 @@ public class DOMNode extends AbstractNode {
             displayName = MessageFormat.format(pattern, tagName, selector);
         } else if (nodeType == org.w3c.dom.Node.DOCUMENT_NODE) {
             displayName = bundle.getString("DOMNode.documentDisplayName"); //NOI18N
+        } else if (nodeType == org.w3c.dom.Node.DOCUMENT_FRAGMENT_NODE) {
+            displayName = bundle.getString("DOMNode.shadowRootDisplayName"); // NOI18N
         } else {
             // Not used by now
             displayName = node.getNodeType() + " " + node.getNodeName() + " " + node.getNodeValue(); // NOI18N
@@ -149,6 +152,26 @@ public class DOMNode extends AbstractNode {
             displayName += " (" + getNode().getNodeId() + ")"; // NOI18N
         }
         return displayName;
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        Image image = super.getIcon(type);
+        return DOMNodeAnnotator.getDefault().annotateIcon(node, image);
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        Image image = super.getIcon(type);
+        return DOMNodeAnnotator.getDefault().annotateIcon(node, image);
+    }
+
+    /**
+     * Forces update of the icon.
+     */
+    void updateIcon() {
+        fireIconChange();
+        fireOpenedIconChange();
     }
 
     /**
@@ -260,7 +283,7 @@ public class DOMNode extends AbstractNode {
      * @return {@code true} if it should be a leaf node, {@code false} otherwise.
      */
     private static boolean shouldBeLeaf(Node node) {
-        if (node.getContentDocument() != null) {
+        if (node.getContentDocument() != null || !node.getShadowRoots().isEmpty()) {
             return false;
         }
         List<Node> subNodes = node.getChildren();
@@ -287,12 +310,14 @@ public class DOMNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
         actions.add(SystemAction.get(GoToNodeSourceAction.class));
-        for (Action action : org.openide.util.Utilities.actionsForPath(ACTIONS_PATH)) {
-            if (action instanceof ContextAwareAction) {
-                Lookup lookup = new ProxyLookup(Lookups.fixed(this), getLookup());
-                action = ((ContextAwareAction)action).createContextAwareInstance(lookup);
+        if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+            for (Action action : org.openide.util.Utilities.actionsForPath(ACTIONS_PATH)) {
+                if (action instanceof ContextAwareAction) {
+                    Lookup lookup = new ProxyLookup(Lookups.fixed(this), getLookup());
+                    action = ((ContextAwareAction)action).createContextAwareInstance(lookup);
+                }
+                actions.add(action);
             }
-            actions.add(action);
         }
         return actions.toArray(new Action[actions.size()]);
     }
@@ -338,6 +363,9 @@ public class DOMNode extends AbstractNode {
             Node contentDocument = node.getContentDocument();
             if (contentDocument != null) {
                 keys.add(contentDocument.getNodeId());
+            }
+            for (Node shadowRoot : node.getShadowRoots()) {
+                keys.add(shadowRoot.getNodeId());
             }
             setKeys(keys);
             // Issue 230038: make sure the node for the key is up to date

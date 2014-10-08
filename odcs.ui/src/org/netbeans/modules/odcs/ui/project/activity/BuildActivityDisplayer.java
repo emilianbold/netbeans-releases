@@ -218,15 +218,19 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
 
     private Action getOpenBuildIDEAction(boolean force) {
         if (openBuildIDEAction == null || force) {
+            Action a = null;
             BuilderAccessor<ODCSProject> buildAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODCSProject.class);
-            final Action action;
             if (buildAccessor != null) {
-                String buildId = Integer.toString(activity.getBuildDetails().getNumber());
-                BuildHandle build = buildAccessor.getJob(projectHandle, activity.getJobSummary().getName()).getBuild(buildId);
-                action = build != null ? build.getDefaultAction() : null;
-            } else {
-                action = null;
+                JobHandle job = buildAccessor.getJob(projectHandle, activity.getJobSummary().getName());
+                if (job != null) {
+                    String buildId = Integer.toString(activity.getBuildDetails().getNumber());
+                    BuildHandle build = job.getBuild(buildId);
+                    if (build != null) {
+                        a = build.getDefaultAction();
+                    }
+                }
             }
+            final Action action = a;
             openBuildIDEAction = new AbstractAction(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_OpenIDE")) {
                 @Override
                 public void actionPerformed(ActionEvent e) {

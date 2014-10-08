@@ -139,7 +139,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     // -J-Dorg.netbeans.editor.BaseDocument.level=FINE
     private static final Logger LOG = Logger.getLogger(BaseDocument.class.getName());
 
-    // -J-Dorg.netbeans.editor.BaseDocument.listener.level=FINE
+    // -J-Dorg.netbeans.editor.BaseDocument-listener.level=FINE
     private static final Logger LOG_LISTENER = Logger.getLogger(BaseDocument.class.getName() + "-listener");
 
     // -J-Dorg.netbeans.editor.BaseDocument.EDT.level=FINE - check that insert/remove only in EDT
@@ -1917,9 +1917,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     @Override
     public void addDocumentListener(DocumentListener listener) {
         if (LOG_LISTENER.isLoggable(Level.FINE)) {
-            LOG_LISTENER.fine("ADD DocumentListener to " +
+            LOG_LISTENER.fine("ADD DocumentListener of class " + listener.getClass() + " to existing " +
                     org.netbeans.lib.editor.util.swing.DocumentUtilities.getDocumentListenerCount(this) +
-                    " present: " + listener + '\n'
+                    " listeners. Listener: " + listener + '\n'
             );
             if (LOG_LISTENER.isLoggable(Level.FINER)) {
                 LOG_LISTENER.log(Level.FINER, "    StackTrace:\n", new Exception());
@@ -1933,9 +1933,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     @Override
     public void removeDocumentListener(DocumentListener listener) {
         if (LOG_LISTENER.isLoggable(Level.FINE)) {
-            LOG_LISTENER.fine("REMOVE DocumentListener from " +
+            LOG_LISTENER.fine("REMOVE DocumentListener of class " + listener.getClass() + " from existing " +
                     org.netbeans.lib.editor.util.swing.DocumentUtilities.getDocumentListenerCount(this) +
-                    " present: " + listener + '\n'
+                    " listeners. Listener: " + listener + '\n'
             );
             if (LOG_LISTENER.isLoggable(Level.FINER)) {
                 LOG_LISTENER.log(Level.FINER, "    StackTrace:\n", new Exception());

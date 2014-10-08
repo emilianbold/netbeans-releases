@@ -662,11 +662,15 @@ public final class ClassPath {
         for (ClassPathProvider impl  : impls.allInstances()) {
             ClassPath cp = impl.findClassPath(f, id);
             if (cp != null) {
-                LOG.log(Level.FINE, "getClassPath({0}, {1}) -> {2} from {3}", new Object[] {f, id, cp, impl});
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "getClassPath({0}, {1}) -> {2} from {3}", new Object[] {f, id, cp, impl});
+                }
                 return cp;
             }
         }
-        LOG.log(Level.FINE, "getClassPath({0}, {1}) -> nil", new Object[] {f, id});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "getClassPath({0}, {1}) -> nil", new Object[] {f, id});
+        }
         return null;
     }
 

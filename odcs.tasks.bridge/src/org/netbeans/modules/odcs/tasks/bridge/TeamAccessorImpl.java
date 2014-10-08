@@ -289,7 +289,7 @@ public class TeamAccessorImpl extends TeamAccessor {
                 return server;
             }
             String patchedUrl = patchUrl(url);
-            if (patchedUrl.startsWith(serverUrl)) {
+            if (patchedUrl != null && patchedUrl.startsWith(serverUrl)) {
                 Support.LOG.log(Level.FINE, "getServer: url {0} matches server url {1}", new String[] {url, serverUrl}); //NOI18N
                 return server;
             }
@@ -351,31 +351,33 @@ public class TeamAccessorImpl extends TeamAccessor {
     }
 
     private String patchUrl(String url) {
-        try {
-            URL u = new URL(url);
-            StringBuilder sb = new StringBuilder();
-            sb.append(u.getProtocol());
-            sb.append("://");
-            String host = u.getHost();
-            sb.append(host);
-            int port = u.getPort();
-            if(port != -1) {
-                sb.append(":");
-                sb.append(port);
+        if (url != null && url.contains("/profile")) { // NOI18N
+            try {
+                URL u = new URL(url);
+                StringBuilder sb = new StringBuilder();
+                sb.append(u.getProtocol());
+                sb.append("://");
+                String host = u.getHost();
+                sb.append(host);
+                int port = u.getPort();
+                if(port != -1) {
+                    sb.append(":");
+                    sb.append(port);
+                }
+                String path = u.getPath();
+                if(path.startsWith("/profile")) { // NOI18N
+                    sb.append(path.substring(8, path.length()));
+                } else {
+                    sb.append(path);
+                }
+                return sb.toString();
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            String path = u.getPath();
-            if(path.startsWith("/profile")) {
-                sb.append(path.substring(8, path.length()));
-            } else {
-                sb.append(path);
-            }
-            return sb.toString();
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
         }
-        return url;
+        return null; // nothing patched
     }
-    
+
     private class OwnerInfoImpl extends org.netbeans.modules.team.spi.OwnerInfo {
         private final OwnerInfo delegate;
 

@@ -44,6 +44,7 @@ package org.netbeans.modules.web.common.cssprep;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -53,6 +54,13 @@ public final class CssPreprocessorsCustomizer implements ProjectCustomizer.Compo
     @NbBundle.Messages("CssPreprocessorsCustomizer.displayName=CSS Preprocessors")
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
+        Project project = context.lookup(Project.class);
+        if (project == null) {
+            throw new IllegalStateException("Project must be found in context/lookup");
+        }
+        if (ProjectWebRootQuery.getWebRoots(project).isEmpty()) {
+            return null;
+        }
         return ProjectCustomizer.Category.create(
                 CssPreprocessors.CUSTOMIZER_IDENT,
                 Bundle.CssPreprocessorsCustomizer_displayName(),

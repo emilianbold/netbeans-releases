@@ -53,6 +53,7 @@ import org.openide.util.NbBundle;
  */
 public final class RunProjectValidator {
 
+    public static final String SITE_ROOT = "site.root"; // NOI18N
     public static final String START_FILE = "start.file"; // NOI18N
     public static final String PROJECT_URL = "project.url"; // NOI18N
 
@@ -64,10 +65,15 @@ public final class RunProjectValidator {
     }
 
     @NbBundle.Messages({
+        "RunProjectValidator.error.siteRoot.none=No Site Root set in Sources category",
         "RunProjectValidator.error.startFile.invalid=Start File must be a valid file.",
         "RunProjectValidator.error.startFile.notUnderSiteRoot=Start File must be underneath Site Root directory."
     })
     public RunProjectValidator validateStartFile(File siteRootFolder, File startFile) {
+        if (siteRootFolder == null) {
+            result.addWarning(new ValidationResult.Message(SITE_ROOT, Bundle.RunProjectValidator_error_siteRoot_none()));
+            return this;
+        }
         ValidationResult foldersResult = new ProjectFoldersValidator()
                 .validateSiteRootFolder(siteRootFolder)
                 .getResult();

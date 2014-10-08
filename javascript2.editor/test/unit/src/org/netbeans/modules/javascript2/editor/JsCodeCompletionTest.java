@@ -299,4 +299,16 @@ public class JsCodeCompletionTest extends JsCodeCompletionBase {
     public void testIssue238356_01() throws Exception {
         checkCompletion("testfiles/completion/issue238356.js", "x.^one;", false);
     }
+    
+    public void testConstructors_01() throws Exception {
+        checkCompletion("testfiles/completion/constructors.js", "var hisObject = new ^MyObject();", false);
+    }
+    
+    public void testConstructors_02() throws Exception {
+        checkCompletion("testfiles/completion/constructors.js", "test(My^Object());", false);
+    }
+    
+    public void testConstructors_03() throws Exception {
+        checkCompletion("testfiles/completion/constructors.js", "Context.Men.A^ddress = function (street, town){};", false);
+    }
 }

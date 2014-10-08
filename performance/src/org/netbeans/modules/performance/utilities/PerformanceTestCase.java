@@ -64,6 +64,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import junit.framework.AssertionFailedError;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -643,6 +644,8 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
         if (testedComponentOperator != null && testedComponentOperator.isShowing()) {
             if (testedComponentOperator instanceof WindowOperator) {
                 ((WindowOperator) testedComponentOperator).requestClose();
+            } else if (testedComponentOperator instanceof TopComponentOperator) {
+                ((TopComponentOperator)testedComponentOperator).close();
             } else if (testedComponentOperator instanceof ComponentOperator) {
                 testedComponentOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
                 //testedComponentOperator.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);

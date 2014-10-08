@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.knockout.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +69,7 @@ public class KnockoutExtendInterceptor implements FunctionInterceptor {
 
     private static final Logger LOGGER = Logger.getLogger(KnockoutExtendInterceptor.class.getName());
 
-    private static final Pattern NAME_PATTERN = Pattern.compile("ko\\.utils\\.extend"); // NOI18N
+    private static final Pattern NAME_PATTERN = Pattern.compile("ko\\.utils\\.(extend|setPrototypeOfOrExtend)"); // NOI18N
 
     @Override
     public Pattern getNamePattern() {
@@ -76,11 +77,11 @@ public class KnockoutExtendInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public void intercept(String functionName, JsObject globalObject, DeclarationScope scope,
+    public Collection<TypeUsage> intercept(String functionName, JsObject globalObject, DeclarationScope scope,
             ModelElementFactory factory, Collection<FunctionArgument> args) {
 
         if (args.size() != 2) {
-            return;
+            return Collections.emptyList();
         }
 
         Iterator<FunctionArgument> iterator = args.iterator();
@@ -120,10 +121,14 @@ public class KnockoutExtendInterceptor implements FunctionInterceptor {
                 LOGGER.log(Level.FINE, "Extending {0} with {1}", new Object[]{object.getFullyQualifiedName(), value.getFullyQualifiedName()});
             }
             for (Map.Entry<String, ? extends JsObject> entry : value.getProperties().entrySet()) {
-                object.addProperty(entry.getKey(),
-                        factory.newReference(object, entry.getKey(), offsetRange, entry.getValue(), true, null));
+                if (functionName.equals("ko.utils.extend") || object.getProperty(entry.getKey()) == null) { //NOI18N
+                    // if ko.utils.extend has been called, set the property always, in other cases only if object doesn't contain it
+                    object.addProperty(entry.getKey(),
+                            factory.newReference(object, entry.getKey(), offsetRange, entry.getValue(), true, null));
+                }
             }
         }
+        return Collections.emptyList();
     }
 
     private static JsObject getReference(DeclarationScope scope,

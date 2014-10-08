@@ -1,0 +1,8 @@
+Code completion result for source line:
+as.|print();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      prototype                       [PUBLIC]   address.js
+METHOD     print(): undefined              [PUBLIC]   address.js
+FIELD      street                          [PUBLIC]   address.js
+FIELD      town                            [PUBLIC]   address.js

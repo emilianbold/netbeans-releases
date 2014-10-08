@@ -257,12 +257,16 @@ public final class NbProjectManager implements ProjectManagerImplementation {
                                     if (ldng != null && ldng.contains(projectDirectory)) {
                                         throw new IllegalStateException("Attempt to call ProjectManager.findProject within the body of ProjectFactory.loadProject (hint: try using ProjectManager.mutex().postWriteRequest(...) within the body of your Project's constructor to prevent this)"); // NOI18N
                                     }
-                                    LOG.log(Level.FINE, "findProject({0}) in {1}: waiting for LOADING_PROJECT...", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                                    if (LOG.isLoggable(Level.FINE)) {
+                                        LOG.log(Level.FINE, "findProject({0}) in {1}: waiting for LOADING_PROJECT...", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                                    }
                                     if (LOG.isLoggable(Level.FINE) && EventQueue.isDispatchThread()) {
                                         LOG.log(Level.WARNING, "loading " + projectDirectory, new IllegalStateException("trying to load a prpject from EQ"));
                                     }
                                     dir2Proj.wait();
-                                    LOG.log(Level.FINE, "findProject({0}) in {1}: ...done waiting for LOADING_PROJECT", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                                    if (LOG.isLoggable(Level.FINE)) {
+                                        LOG.log(Level.FINE, "findProject({0}) in {1}: ...done waiting for LOADING_PROJECT", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                                    }
                                 } catch (InterruptedException e) {
                                     LOG.log(Level.INFO, null, e);
                                     return null;
@@ -272,18 +276,26 @@ public final class NbProjectManager implements ProjectManagerImplementation {
                         assert !LoadStatus.LOADING_PROJECT.is(o);
                         wasSomeSuchProject = LoadStatus.SOME_SUCH_PROJECT.is(o);
                         if (LoadStatus.NO_SUCH_PROJECT.is(o)) {
-                            LOG.log(Level.FINE, "findProject({0}) in {1}: NO_SUCH_PROJECT", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.log(Level.FINE, "findProject({0}) in {1}: NO_SUCH_PROJECT", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                            }
                             return null;
                         } else if (o != null && !LoadStatus.SOME_SUCH_PROJECT.is(o)) {
                             Project p = o.first().get();
                             if (p != null) {
-                                LOG.log(Level.FINE, "findProject({0}) in {1}: cached project @{2}", new Object[] {projectDirectory, Thread.currentThread().getName(), p.hashCode()});
+                                if (LOG.isLoggable(Level.FINE)) {
+                                    LOG.log(Level.FINE, "findProject({0}) in {1}: cached project @{2}", new Object[] {projectDirectory, Thread.currentThread().getName(), p.hashCode()});
+                                }
                                 return p;
                             } else {
-                                LOG.log(Level.FINE, "findProject({0}) in {1}: null project reference", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                                if (LOG.isLoggable(Level.FINE)) {
+                                    LOG.log(Level.FINE, "findProject({0}) in {1}: null project reference", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                                }
                             }
                         } else {
-                            LOG.log(Level.FINE, "findProject({0} in {1}: no entries among {2}", new Object[] {projectDirectory, Thread.currentThread().getName(), dir2Proj});
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.log(Level.FINE, "findProject({0} in {1}: no entries among {2}", new Object[] {projectDirectory, Thread.currentThread().getName(), dir2Proj});
+                            }
                         }
                         // not in cache
                         dir2Proj.put(projectDirectory, LoadStatus.LOADING_PROJECT.wrap());
@@ -293,7 +305,9 @@ public final class NbProjectManager implements ProjectManagerImplementation {
                             loadingThread.set(ldng);
                         }
                         ldng.add(projectDirectory);
-                        LOG.log(Level.FINE, "findProject({0}) in {1}: may load new project...", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "findProject({0}) in {1}: may load new project...", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                        }
                     }
                     boolean resetLP = false;
                     try {
@@ -302,7 +316,9 @@ public final class NbProjectManager implements ProjectManagerImplementation {
                         synchronized (dir2Proj) {
                             dir2Proj.notifyAll();
                             if (p != null) {
-                                LOG.log(Level.FINE, "findProject({0}) in {1}: created new project @{2}", new Object[] {projectDirectory, Thread.currentThread().getName(), p.hashCode()});
+                                if (LOG.isLoggable(Level.FINE)) {
+                                    LOG.log(Level.FINE, "findProject({0}) in {1}: created new project @{2}", new Object[] {projectDirectory, Thread.currentThread().getName(), p.hashCode()});
+                                }
                                 projectDirectory.addFileChangeListener(projectDeletionListener);
                                 dir2Proj.put(projectDirectory, Union2.<Reference<Project>,LoadStatus>createFirst(new TimedWeakReference<Project>(p)));
                                 resetLP = true;
@@ -311,13 +327,17 @@ public final class NbProjectManager implements ProjectManagerImplementation {
                                 dir2Proj.put(projectDirectory, LoadStatus.NO_SUCH_PROJECT.wrap());
                                 resetLP = true;
                                 if (wasSomeSuchProject) {
-                                    LOG.log(Level.FINE, "Directory {0} was initially claimed to be a project folder but really was not", FileUtil.getFileDisplayName(projectDirectory));
+                                    if (LOG.isLoggable(Level.FINE)) {
+                                        LOG.log(Level.FINE, "Directory {0} was initially claimed to be a project folder but really was not", FileUtil.getFileDisplayName(projectDirectory));
+                                    }
                                 }
                                 return null;
                             }
                         }
                     } catch (IOException e) {
-                        LOG.log(Level.FINE, "findProject({0}) in {1}: error loading project: {2}", new Object[] {projectDirectory, Thread.currentThread().getName(), e});
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "findProject({0}) in {1}: error loading project: {2}", new Object[] {projectDirectory, Thread.currentThread().getName(), e});
+                        }
                         // Do not cache the exception. Might be useful in some cases
                         // but would also cause problems if there were a project that was
                         // temporarily corrupted, fP is called, then it is fixed, then fP is
@@ -327,7 +347,9 @@ public final class NbProjectManager implements ProjectManagerImplementation {
                         loadingThread.get().remove(projectDirectory);
                         if (!resetLP) {
                             // IOException or a runtime exception interrupted.
-                            LOG.log(Level.FINE, "findProject({0}) in {1}: cleaning up after error", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.log(Level.FINE, "findProject({0}) in {1}: cleaning up after error", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                            }
                             synchronized (dir2Proj) {
                                 assert LoadStatus.LOADING_PROJECT.is(dir2Proj.get(projectDirectory)) : dir2Proj.get(projectDirectory);
                                 dir2Proj.remove(projectDirectory);

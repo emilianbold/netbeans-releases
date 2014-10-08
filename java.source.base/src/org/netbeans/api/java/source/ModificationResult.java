@@ -518,6 +518,8 @@ public final class ModificationResult {
             this.description = description;
             this.excluded = false;
             this.theSource = theSource;
+            // conservatively assume that pos could be null. They shouldn't be, but no doc states so.
+            assert startPos == null || endPos == null || (startPos.getOffset() <= endPos.getOffset());
         }
         
         Difference(Kind kind, Position startPos, Position endPos, String oldText, String newText, Source theSource) {

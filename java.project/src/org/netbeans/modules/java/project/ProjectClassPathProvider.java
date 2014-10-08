@@ -66,15 +66,21 @@ public class ProjectClassPathProvider implements ClassPathProvider {
     
     public ClassPath findClassPath(FileObject file, String type) {
         Project p = FileOwnerQuery.getOwner(file);
-        LOG.log(Level.FINE, "findClassPath({0}, {1}) on project {2}", new Object[] {file, type, p});
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "findClassPath({0}, {1}) on project {2}", new Object[] {file, type, p});
+        }
         if (p != null) {
             ClassPathProvider cpp = p.getLookup().lookup(ClassPathProvider.class);
             if (cpp != null) {
                 final ClassPath result = cpp.findClassPath(file, type);
-                LOG.log(Level.FINE, "findClassPath({0}, {1}) -> {2} from {3}", new Object[] {file, type, result, cpp});
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "findClassPath({0}, {1}) -> {2} from {3}", new Object[] {file, type, result, cpp});
+                }
                 return result;
             } else {
-                LOG.log(Level.FINE, "cpp.findClassPath({0}, {1}) -> null", new Object[] {file, type});
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "cpp.findClassPath({0}, {1}) -> null", new Object[] {file, type});
+                }
                 return null;
             }
         } else {

@@ -42,8 +42,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
@@ -69,8 +71,17 @@ public final class QueryImpl<Q, I>  {
         this.issueProvider = issueProvider;
         this.data = data;
         this.repository = repository;
-        this.issueContainer = new IssueContainerIntern();
+        this.issueContainer = new IssueContainerIntern<I>(repository);
         
+        issueContainer.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(EVENT_QUERY_REFRESH_STARTED.equals(evt.getPropertyName())) {
+                    wasRefreshed = true;
+                    issueContainer.removePropertyChangeListener(this);
+                }
+            }
+        });
         queryProvider.setIssueContainer(data, SPIAccessor.IMPL.createIssueContainer(issueContainer));
     }
     
@@ -158,13 +169,22 @@ public final class QueryImpl<Q, I>  {
     public static final String EVENT_QUERY_REFRESH_FINISHED = "bugtracking.query.refresh.finished";
     public static final String EVENT_QUERY_RESTORE_STARTED = "bugtracking.query.restore.started";
     public static final String EVENT_QUERY_RESTORE_FINISHED = "bugtracking.query.restore.finished";
-    private class IssueContainerIntern implements IssueContainerImpl<I> {
-        private final Set<IssueImpl> issueImpls = new HashSet<IssueImpl>();
+
+    private static class IssueContainerIntern<I> implements IssueContainerImpl<I> {
+        
+        private final PropertyChangeSupport support;
+        
+        private final Set<IssueImpl> issueImpls = new ConcurrentSkipListSet<IssueImpl>(new IssueImplComparator());
         private  boolean isRunning = false;
+        private final RepositoryImpl repository;
+
+        public IssueContainerIntern(RepositoryImpl repository) {
+            this.repository = repository;
+            support = new PropertyChangeSupport(repository.getData());
+        }
         
         @Override
         public void refreshingStarted() {
-            wasRefreshed = true;
             isRunning = true;
             support.firePropertyChange(EVENT_QUERY_REFRESH_STARTED, null, null);
         }
@@ -218,12 +238,10 @@ public final class QueryImpl<Q, I>  {
             return Collections.unmodifiableCollection(issueImpls);
         }
         
-        private final PropertyChangeSupport support = new PropertyChangeSupport(data);
-        
         void addPropertyChangeListener(PropertyChangeListener listener) {
             support.addPropertyChangeListener(listener);
             if(isRunning) {
-                listener.propertyChange(new PropertyChangeEvent(data, EVENT_QUERY_REFRESH_STARTED, null, null));
+                listener.propertyChange(new PropertyChangeEvent(repository.getData(), EVENT_QUERY_REFRESH_STARTED, null, null));
             }
         }
 
@@ -231,5 +249,19 @@ public final class QueryImpl<Q, I>  {
             support.removePropertyChangeListener(listener);                   
         }
     
+    }
+    
+    private static class IssueImplComparator implements Comparator<IssueImpl> {
+        @Override
+        public int compare(IssueImpl o1, IssueImpl o2) {
+            if(o1 == null || o2 == null) {
+                return o1 != null ? 1 : (o2 == null ? 0 : -1); 
+            }   
+            String id1 = o1.getID();
+            String id2 = o2.getID();
+            return id1 == null ? 
+                    (id2 == null ? 0 : -1) : 
+                    (id2 == null ? 1 : id1.compareTo(id2));
+        };
     }
 }

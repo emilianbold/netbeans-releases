@@ -362,6 +362,7 @@
                 <friend>org.netbeans.modules.cnd.script</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
+                <friend>org.netbeans.modules.mixeddev</friend>
                 <package>org.netbeans.modules.cnd.api.toolchain</package>
                 <package>org.netbeans.modules.cnd.api.toolchain.ui</package>
                 <package>org.netbeans.modules.cnd.spi.toolchain</package>

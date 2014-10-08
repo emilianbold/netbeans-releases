@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.hints.perf;
 
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -130,7 +131,9 @@ public class BoxingOfBoxingValue {
     })
     public static ErrorDescription typecastBoxed(HintContext ctx) {
         TreePath p = ctx.getVariables().get("$v"); // NOI18N
-        
+        if (p.getLeaf().getKind() == Tree.Kind.NULL_LITERAL) {
+            return null;
+        }
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.TEXT_BoxingOfBoxedValue(),
                 new RemoveBoxingFix(TreePathHandle.create(ctx.getPath(), ctx.getInfo()), 
                 TreePathHandle.create(p, ctx.getInfo())).toEditorFix());

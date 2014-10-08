@@ -70,7 +70,7 @@ public class CreateBranch implements DocumentListener {
     private final RevisionDialogController revisionPicker;
     private JButton okButton;
     private DialogDescriptor dd;
-    private boolean revisionValid = true;
+    private boolean revisionValid = false;
     private String msgInvalidName;
     private String branchName;
     private final Icon ICON_ERROR = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png")); //NOI18N

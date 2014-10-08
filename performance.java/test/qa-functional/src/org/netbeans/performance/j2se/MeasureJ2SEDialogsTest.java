@@ -50,7 +50,6 @@ import org.netbeans.performance.j2se.dialogs.AboutDialogTest;
 import org.netbeans.performance.j2se.dialogs.AddJDBCDriverDialogTest;
 import org.netbeans.performance.j2se.dialogs.AddProfilingPointWizardTest;
 import org.netbeans.performance.j2se.dialogs.AttachDialogTest;
-import org.netbeans.performance.j2se.dialogs.CompareMemorySnapshotsDialogTest;
 import org.netbeans.performance.j2se.dialogs.DeleteFileDialogTest;
 import org.netbeans.performance.j2se.dialogs.DocumentsDialogTest;
 import org.netbeans.performance.j2se.dialogs.FavoritesWindowTest;
@@ -81,7 +80,6 @@ import org.netbeans.performance.j2se.dialogs.RefactorFindUsagesDialogTest;
 import org.netbeans.performance.j2se.dialogs.RefactorMoveClassDialogTest;
 import org.netbeans.performance.j2se.dialogs.RefactorRenameDialogTest;
 import org.netbeans.performance.j2se.dialogs.RuntimeWindowTest;
-import org.netbeans.performance.j2se.dialogs.SelectProfilingTaskDialogTest;
 import org.netbeans.performance.j2se.dialogs.ServerManagerTest;
 import org.netbeans.performance.j2se.dialogs.TemplateManagerTest;
 import org.netbeans.performance.j2se.dialogs.ToDoWindowTest;
@@ -105,7 +103,6 @@ public class MeasureJ2SEDialogsTest {
                 .addTest(J2SESetup.class)
                 .addTest(AboutDialogTest.class)
                 .addTest(AddJDBCDriverDialogTest.class)
-                .addTest(CompareMemorySnapshotsDialogTest.class)
                 .addTest(AttachDialogTest.class)
                 .addTest(FavoritesWindowTest.class)
                 .addTest(FilesWindowTest.class)
@@ -138,7 +135,6 @@ public class MeasureJ2SEDialogsTest {
                 .addTest(RefactorMoveClassDialogTest.class)
                 .addTest(RefactorRenameDialogTest.class)
                 .addTest(RuntimeWindowTest.class)
-                .addTest(SelectProfilingTaskDialogTest.class)
                 .addTest(ServerManagerTest.class)
                 .addTest(TemplateManagerTest.class)
                 .addTest(ToDoWindowTest.class)

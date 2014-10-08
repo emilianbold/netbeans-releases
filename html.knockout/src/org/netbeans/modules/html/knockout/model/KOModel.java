@@ -129,6 +129,10 @@ public class KOModel {
     public static boolean isKODataBindingAttribute(Attribute attribute) {
         return LexerUtils.equals(KOUtils.KO_DATA_BIND_ATTR_NAME, attribute.unqualifiedName(), true, true);
     }
+
+    public static boolean isKOParamsAttribute(Attribute attribute) {
+        return LexerUtils.equals(KOUtils.KO_PARAMS_ATTR_NAME, attribute.unqualifiedName(), true, true);
+    }
     
     private static boolean containsKODirective(Snapshot snapshot, Attribute attribute) {
         TokenHierarchy<?> tokenHierarchy = snapshot.getTokenHierarchy();

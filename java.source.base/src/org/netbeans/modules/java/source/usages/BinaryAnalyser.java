@@ -1063,9 +1063,15 @@ public class BinaryAnalyser {
                             InputStream in = new BufferedInputStream(new FileInputStream(file));
                             try {
                                 analyse(in);
-                            } catch (InvalidClassFormatException icf) {
-                                LOGGER.log(Level.WARNING, "Invalid class file format: {0}", file.getAbsolutePath());      //NOI18N
-
+                            } catch (InvalidClassFormatException | RuntimeException icf) {
+                                LOGGER.log(
+                                    Level.WARNING,
+                                    "Invalid class file format: {0}",      //NOI18N
+                                    file.getAbsolutePath());
+                                    LOGGER.log(
+                                        Level.INFO,
+                                        "Class File Exception Details",             //NOI18N
+                                        icf);
                             } finally {
                                 in.close();
                             }

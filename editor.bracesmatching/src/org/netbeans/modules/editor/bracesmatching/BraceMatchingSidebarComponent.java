@@ -218,7 +218,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         if (parent instanceof JViewport) {
             this.viewport = (JViewport)parent;
             // see #219015; need to listen on viewport change to show/hide the tooltip
-            viewport.addChangeListener(this);
+            viewport.addChangeListener(WeakListeners.change(this, viewport));
         }
         TextUI ui = editor.getUI();
         if (ui instanceof BaseTextUI) {

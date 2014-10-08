@@ -536,8 +536,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     if (textToReplace.contentEquals(sb)) {
                         c.setCaretPosition(offset + length);
                     } else {
+                        Position pos = doc.createPosition(offset);
                         doc.remove(offset, length);
-                        doc.insertString(offset, sb.toString(), null);
+                        doc.insertString(pos.getOffset(), sb.toString(), null);
                     }
                 } catch (BadLocationException e) {
                 }

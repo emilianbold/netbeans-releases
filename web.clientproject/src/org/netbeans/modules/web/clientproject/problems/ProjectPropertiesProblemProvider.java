@@ -70,7 +70,8 @@ import org.openide.util.WeakListeners;
 public final class ProjectPropertiesProblemProvider implements ProjectProblemsProvider {
 
     // set would be better but it is fine to use a list for small number of items
-    static final List<String> WATCHED_PROPERTIES = new CopyOnWriteArrayList<String>(Arrays.asList(
+    static final List<String> WATCHED_PROPERTIES = new CopyOnWriteArrayList<>(Arrays.asList(
+            ClientSideProjectConstants.PROJECT_SOURCE_FOLDER,
             ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
             ClientSideProjectConstants.PROJECT_TEST_FOLDER));
 
@@ -82,6 +83,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
 
 
     private ProjectPropertiesProblemProvider(ClientSideProject project) {
+        assert project != null;
         this.project = project;
     }
 
@@ -107,12 +109,29 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
             @Override
             public Collection<ProjectProblemsProvider.ProjectProblem> collectProblems() {
-                Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<ProjectProblem>(3);
+                Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<>();
+                checkSourceDir(currentProblems);
                 checkSiteRootDir(currentProblems);
                 checkTestDir(currentProblems);
                 return currentProblems;
             }
         });
+    }
+
+    @NbBundle.Messages({
+        "ProjectPropertiesProblemProvider.invalidSourceDir.title=Invalid Sources",
+        "# {0} - src dir path",
+        "ProjectPropertiesProblemProvider.invalidSourceDir.description=The directory \"{0}\" does not exist and cannot be used for Sources."
+    })
+    private void checkSourceDir(Collection<ProjectProblem> currentProblems) {
+        File invalidDirectory = getInvalidDirectory(project.getSourcesFolder(), ClientSideProjectConstants.PROJECT_SOURCE_FOLDER);
+        if (invalidDirectory != null) {
+            ProjectProblem problem = ProjectProblem.createError(
+                    Bundle.ProjectPropertiesProblemProvider_invalidSourceDir_title(),
+                    Bundle.ProjectPropertiesProblemProvider_invalidSourceDir_description(invalidDirectory.getAbsolutePath()),
+                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES, ClientSideProjectConstants.PROJECT_SOURCE_FOLDER));
+            currentProblems.add(problem);
+        }
     }
 
     @NbBundle.Messages({
@@ -179,6 +198,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     }
 
     private void addFileChangesListeners() {
+        addFileChangeListener(resolveFile(ClientSideProjectConstants.PROJECT_SOURCE_FOLDER));
         addFileChangeListener(resolveFile(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER));
         addFileChangeListener(resolveFile(ClientSideProjectConstants.PROJECT_TEST_FOLDER));
     }

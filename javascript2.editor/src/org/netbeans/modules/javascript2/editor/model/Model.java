@@ -54,12 +54,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -78,8 +80,10 @@ import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.model.impl.AnonymousObject;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsWithObjectImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelExtender;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.javascript2.editor.model.impl.OccurrenceBuilder;
@@ -87,6 +91,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.ParameterObject;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.editor.spi.model.ObjectInterceptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -96,6 +101,8 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages("LBL_DefaultDocContentForURL=To view documentation for this function, press the browser button in the toolbar above this text.")
 public final class Model {
 
+    private static final AtomicBoolean assertFired = new AtomicBoolean(false);
+    
     private static final Logger LOGGER = Logger.getLogger(OccurrencesSupport.class.getName());
 
     private static final Comparator<Map.Entry<String, ? extends JsObject>> PROPERTIES_COMPARATOR = new Comparator<Map.Entry<String, ? extends JsObject>>() {
@@ -134,6 +141,8 @@ public final class Model {
     
     private ModelVisitor visitor;
     
+    private Map<String, Map<Integer, List<TypeUsage>>> returnTypesFromFrameworks;
+    
     /**
      * contains with expression?
      */
@@ -144,6 +153,7 @@ public final class Model {
         this.occurrencesSupport = new OccurrencesSupport(this);
         this.occurrenceBuilder = new OccurrenceBuilder(parserResult);
         this.resolveWithObjects = false;
+        this.returnTypesFromFrameworks = new HashMap<String, Map<Integer, List<TypeUsage>>>();
     }
 
     private synchronized ModelVisitor getModelVisitor() {
@@ -169,12 +179,34 @@ public final class Model {
                     Collection<ModelVisitor.FunctionCall> fncCalls = entry.getValue();
                     if (fncCalls != null && !fncCalls.isEmpty()) {
                         for (ModelVisitor.FunctionCall call : fncCalls) {
-                            entry.getKey().intercept(call.getName(),
+                            Collection<TypeUsage> returnTypes = entry.getKey().intercept(call.getName(),
                                     visitor.getGlobalObject(), call.getScope(), elementFactory, call.getArguments());
+                            if (returnTypes != null) {
+                                Map<Integer, List<TypeUsage>> functionCalls = returnTypesFromFrameworks.get(call.getName());
+                                if (functionCalls == null) {
+                                    functionCalls = new HashMap<Integer, List<TypeUsage>>();
+                                    returnTypesFromFrameworks.put(call.getName(), functionCalls);
+                                }
+                                List<TypeUsage> types = functionCalls.get(call.getCallOffset());
+                                if (types == null) {
+                                    types = new ArrayList();
+                                    functionCalls.put(new Integer(call.getCallOffset()), types);
+                                }
+                                for (TypeUsage type: returnTypes) {
+                                    if (!types.contains(type)) {
+                                        types.add(type);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
+            
+            for (ObjectInterceptor objectInterceptor : ModelExtender.getDefault().getObjectInterceptors()) {
+                objectInterceptor.interceptGlobal(visitor.getGlobalObject(), elementFactory);
+            }
+            
             resolveWindowProperties = !resolveWithObjects;
             long end = System.currentTimeMillis();
             if(LOGGER.isLoggable(Level.FINE)) {
@@ -219,14 +251,14 @@ public final class Model {
         JsObject fromType = null;
         if (outerExpression == null) {
             outerExpression = ech;
-            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, ech, offset));
-            resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult, true);
+            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, ech, offset, true));
+            resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult, true, true);
             withTypes.addAll(resolveTypeFromExpression);
         } else {
             ech.addAll(outerExpression);
             boolean resolved = false;
-            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, ech, offset));
-            resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult, true);
+            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, ech, offset, true));
+            resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult, true, true);
             for(TypeUsage type : resolveTypeFromExpression) {
                 fromType = ModelUtils.findJsObjectByName(visitor.getGlobalObject(), type.getType());
                 if (fromType != null) {
@@ -238,8 +270,8 @@ public final class Model {
             }
             if (!resolved) {
                 resolveTypeFromExpression.clear();
-                resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, originalExp, offset));
-                resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult, true);
+                resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, originalExp, offset, true));
+                resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult, true, true);
                 for (TypeUsage type : resolveTypeFromExpression) {
                     fromType = ModelUtils.findJsObjectByName(visitor.getGlobalObject(), type.getType());
                     if (fromType != null) {
@@ -261,7 +293,7 @@ public final class Model {
             fromType = ModelUtils.findJsObjectByName(visitor.getGlobalObject(), type.getType());
             if (fromType != null) {
                 processWithExpressionOccurrences(fromType, ((JsWithObjectImpl)with).getExpressionRange(), originalExp);
-                Collection<TypeUsage> assignments = ModelUtils.resolveTypes(fromType.getAssignments(), parserResult, true);
+                Collection<TypeUsage> assignments = ModelUtils.resolveTypes(fromType.getAssignments(), parserResult, true, true);
                 for (TypeUsage assignment : assignments) {
                     Collection<IndexedElement> properties = jsIndex.getProperties(assignment.getType());
                     for (IndexedElement indexedElement : properties) {
@@ -458,6 +490,19 @@ public final class Model {
         return getModelVisitor().getGlobalObject();
     }
     
+    /**
+     * This returns types of a function call that starts on the offsetCall. 
+     * These return types can be influenced by the call arguments and are obtained
+     * from the function interceptors defined in the frameworks. 
+     * @param name the name of the function
+     * @param offsetCall offset where the call starts (the first letter of the method name)
+     * @return 
+     */
+    public Collection<TypeUsage> getReturnTypesFromFrameworks(String name, int offsetCall) {
+        Map<Integer, List<TypeUsage>> returnTypes = returnTypesFromFrameworks.get(name);
+        return  (returnTypes != null) ? returnTypes.get(offsetCall) : null;
+    }
+    
     public synchronized void resolve() {
         if (visitor == null) {
             getModelVisitor();
@@ -487,8 +532,30 @@ public final class Model {
         }
         return result;
     }
+    
+    
 
     private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder) {
+        Set<String> alreadyResolved = new HashSet<String>();
+        resolveLocalTypes(object, docHolder, alreadyResolved);
+    }
+    
+    private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder, Set<String> alreadyResolvedObjects) {
+        if (object instanceof JsFunctionReference && !object.isAnonymous()) {
+            return;
+        }
+        String fqn = object.getFullyQualifiedName();
+        boolean isTopObject = object.getJSKind() == JsElement.Kind.FILE;
+        if (alreadyResolvedObjects.contains(fqn)) {
+            if (!assertFired.get()) {
+                assertFired.set(true);
+                assert false: "Probably cycle in the javascript model of file: " + object.getFileObject().getPath(); //NOI18N
+            }
+            return;
+        }
+        if (!isTopObject) {
+            alreadyResolvedObjects.add(fqn);
+        }
         if(object instanceof JsFunctionImpl) {
             ((JsFunctionImpl)object).resolveTypes(docHolder);
         } else {
@@ -501,14 +568,17 @@ public final class Model {
         ArrayList<String> namesBefore = new ArrayList(object.getProperties().keySet());
         Collections.reverse(copy);  // resolve the properties in revers order (how was added)
         for(JsObject property: copy) {
-            resolveLocalTypes(property, docHolder);
+            resolveLocalTypes(property, docHolder, alreadyResolvedObjects);
         }
         ArrayList<String> namesAfter = new ArrayList(object.getProperties().keySet());
         // it's possible that some properties was moved to the object, then resolve them.
         for (String propertyName : namesAfter) {
             if (!namesBefore.contains(propertyName)) {
-                resolveLocalTypes(object.getProperty(propertyName), docHolder);
+                resolveLocalTypes(object.getProperty(propertyName), docHolder, alreadyResolvedObjects);
             }
+        }
+        if (!isTopObject) {
+            alreadyResolvedObjects.remove(fqn);
         }
     }
 
@@ -738,7 +808,7 @@ public final class Model {
 
                 Collection<? extends TypeUsage> ret = function.getReturnTypes();
                 if (parseResult != null) {
-                    ret = ModelUtils.resolveTypes(ret, parseResult, true);
+                    ret = ModelUtils.resolveTypes(ret, parseResult, true, true);
                 }
                 List<TypeUsage> returnTypes = new ArrayList<TypeUsage>(ret);
                 Collections.sort(returnTypes, RETURN_TYPES_COMPARATOR);

@@ -173,25 +173,26 @@ public final class GoToImplementation extends BaseAction {
     
     static Element resolveTarget(CompilationInfo info, Document doc, int caretPos, AtomicBoolean onDeclaration) {
         Context context = GoToSupport.resolveContext(info, doc, caretPos, false);
-        onDeclaration.set(context == null);
 
+        TreePath tp = info.getTreeUtilities().pathFor(caretPos);
+
+        if (tp.getLeaf().getKind() == Kind.MODIFIERS) tp = tp.getParentPath();
+
+        int[] elementNameSpan = null;
+        switch (tp.getLeaf().getKind()) {
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+                elementNameSpan = info.getTreeUtilities().findNameSpan((ClassTree) tp.getLeaf());
+                onDeclaration.set(true);
+                break;
+            case METHOD:
+                elementNameSpan = info.getTreeUtilities().findNameSpan((MethodTree) tp.getLeaf());
+                onDeclaration.set(true);
+                break;
+        }
         if (context == null) {
-            TreePath tp = info.getTreeUtilities().pathFor(caretPos);
-            
-            if (tp.getLeaf().getKind() == Kind.MODIFIERS) tp = tp.getParentPath();
-            
-            int[] elementNameSpan = null;
-            switch (tp.getLeaf().getKind()) {
-                case ANNOTATION_TYPE:
-                case CLASS:
-                case ENUM:
-                case INTERFACE:
-                    elementNameSpan = info.getTreeUtilities().findNameSpan((ClassTree) tp.getLeaf());
-                    break;
-                case METHOD:
-                    elementNameSpan = info.getTreeUtilities().findNameSpan((MethodTree) tp.getLeaf());
-                    break;
-            }
             
             if (elementNameSpan != null && caretPos <= elementNameSpan[1]) {
                 return info.getTrees().getElement(tp);

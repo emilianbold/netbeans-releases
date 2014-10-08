@@ -146,7 +146,8 @@ public class DiscoverFlagsTest {
     public void testStudioOrdinaryFlag1() {
         String s = "-fopenmp                      Equivalent to -xopenmp=parallel";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, false);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
         Assert.assertEquals(1, res.size());
         Assert.assertEquals("-fopenmp", res.get(0));
     }
@@ -155,7 +156,8 @@ public class DiscoverFlagsTest {
     public void testStudioOrdinaryFlag2() {
         String s = "-fsimple[=<n>]                Select floating-point optimization preferences <n>";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, false);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
         Assert.assertEquals(1, res.size());
         Assert.assertEquals("-fsimple", res.get(0));
     }
@@ -164,7 +166,8 @@ public class DiscoverFlagsTest {
     public void testStudioAlternativeFlag1() {
         String s = "-fns[={yes|no}]               Select non-standard floating point mode";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, false);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
         Assert.assertEquals(3, res.size());
         Assert.assertEquals("-fns", res.get(0));
         Assert.assertEquals("-fns=yes", res.get(1));
@@ -175,7 +178,8 @@ public class DiscoverFlagsTest {
     public void testStudioAlternativeFlag2() {
         String s = "-d{n|y}                       Dynamic [-dy] or static [-dn] option to linker";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, false);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
         Assert.assertEquals(2, res.size());
         Assert.assertEquals("-dn", res.get(0));
         Assert.assertEquals("-dy", res.get(1));
@@ -185,7 +189,8 @@ public class DiscoverFlagsTest {
     public void testStudioAlternativeFlag3() {
         String s = "-B[static|dynamic]            Specify dynamic or static binding";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, false);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
         Assert.assertEquals(3, res.size());
         Assert.assertEquals("-B", res.get(0));
         Assert.assertEquals("-Bstatic", res.get(1));
@@ -196,7 +201,8 @@ public class DiscoverFlagsTest {
     public void testStudioAlternativeFlag4() {
         String s = "-xmaxopt=[off,1,2,3,4,5]      Maximum optimization level allowed on #pragma opt";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, false);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
         Assert.assertEquals(7, res.size());
         Assert.assertEquals("-xmaxopt=", res.get(0));
         Assert.assertEquals("-xmaxopt=off", res.get(1));
@@ -211,7 +217,8 @@ public class DiscoverFlagsTest {
     public void testStudioAlternativeFlag5() {
         String s = "-filt[=<a>[,<a>]]             Control the filtering of both linker and compiler error messages;";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, false);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
         Assert.assertEquals(1, res.size());
         Assert.assertEquals("-filt", res.get(0));
     }
@@ -220,7 +227,8 @@ public class DiscoverFlagsTest {
     public void testStudioAlternativeFlag6() {
         String s = "-std=<a>                      Specify the c++ standard ; <a>={c++03|c++0x|c++11}";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, false);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
         Assert.assertEquals(3, res.size());
         Assert.assertEquals("-std=c++03", res.get(0));
         Assert.assertEquals("-std=c++0x", res.get(1));
@@ -231,7 +239,8 @@ public class DiscoverFlagsTest {
     public void testStudioAlternativeFlag7() {
         String s = "-xipo[=<n>]                   Enable optimization and inlining across source files; <n>={0|1|2}";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, false);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
         Assert.assertEquals(4, res.size());
         Assert.assertEquals("-xipo", res.get(0));
         Assert.assertEquals("-xipo=0", res.get(1));
@@ -244,7 +253,8 @@ public class DiscoverFlagsTest {
         String s = "-xport64[=<a>]                Enable extra checking for code ported from 32-bit to 64-bit platforms;\n" +
             "                              <a>={no|implicit|full}";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, false);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
         Assert.assertEquals(4, res.size());
         Assert.assertEquals("-xport64", res.get(0));
         Assert.assertEquals("-xport64=no", res.get(1));
@@ -256,7 +266,8 @@ public class DiscoverFlagsTest {
     public void testStudioAlternativeFlag9() {
         String s = "-O<n>                         Same as -xO<n>";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, false);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
         Assert.assertEquals(6, res.size());
         Assert.assertEquals("-O0", res.get(0));
         Assert.assertEquals("-O1", res.get(1));
@@ -270,7 +281,8 @@ public class DiscoverFlagsTest {
     public void testStudioIgnoredFlag1() {
         String s = "-Xlinker <arg>                Pass <arg> to linker";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, false);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
         Assert.assertEquals(0, res.size());
     }
 
@@ -278,8 +290,87 @@ public class DiscoverFlagsTest {
     public void testStudioIgnoredFlag2() {
         String s = "-ftrap=<t>                    Select floating-point trapping mode in effect at startup";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, false);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
         Assert.assertEquals(0, res.size());
+    }
+
+    @Test
+    public void testStudioIgnoredFlag3() {
+        String s = "-xlang=<a>[,<a>]              The set of languages used in the program; <a>={f90,f95,c99}";
+        List<String> res = new ArrayList<String>();
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
+        Assert.assertEquals(3, res.size());
+        Assert.assertEquals("-xlang=f90", res.get(0));
+        Assert.assertEquals("-xlang=f95", res.get(1));
+        Assert.assertEquals("-xlang=c99", res.get(2));
+    }
+    
+    @Test
+    public void testStudioIgnoredFlag4() {
+        String s = "-xprefetch_level[=<n>]        Controls the aggressiveness of the -xprefetch=auto option; <n>={1|2|3}";
+        List<String> res = new ArrayList<String>();
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
+        Assert.assertEquals(4, res.size());
+        Assert.assertEquals("-xprefetch_level", res.get(0));
+        Assert.assertEquals("-xprefetch_level=1", res.get(1));
+        Assert.assertEquals("-xprefetch_level=2", res.get(2));
+        Assert.assertEquals("-xprefetch_level=3", res.get(3));
+    }
+
+    @Test
+    public void testStudioIgnoredFlag5() {
+        String s = "-xO<n>                        Generate optimized code; <n>={1|2|3|4|5}";
+        List<String> res = new ArrayList<String>();
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
+        Assert.assertEquals(5, res.size());
+        Assert.assertEquals("-xO1", res.get(0));
+        Assert.assertEquals("-xO2", res.get(1));
+        Assert.assertEquals("-xO3", res.get(2));
+        Assert.assertEquals("-xO4", res.get(3));
+        Assert.assertEquals("-xO5", res.get(4));
+    }
+    
+    @Test
+    public void testStudioIgnoredFlag6() {
+        String s = "-xcheck[=<a>[,<a>]]           Generate runtime checks for error condition;\n" +
+                   "                              <a>={stkovf,stkovf:diagnose,stkovf:detect,init_local}";
+        List<String> res = new ArrayList<String>();
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
+        Assert.assertEquals(5, res.size());
+        Assert.assertEquals("-xcheck", res.get(0));
+        Assert.assertEquals("-xcheck=stkovf", res.get(1));
+        Assert.assertEquals("-xcheck=stkovf:diagnose", res.get(2));
+        Assert.assertEquals("-xcheck=stkovf:detect", res.get(3));
+        Assert.assertEquals("-xcheck=init_local", res.get(4));
+    }
+
+    @Test
+    public void testStudioIgnoredFlag7() {
+        String s = "-xrestrict[=<f>]              Treat pointer valued function parameters as restricted; <f>={%none,%all,<function-name list>}";
+        List<String> res = new ArrayList<String>();
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
+        Assert.assertEquals(3, res.size());
+        Assert.assertEquals("-xrestrict", res.get(0));
+        Assert.assertEquals("-xrestrict=%none", res.get(1));
+        Assert.assertEquals("-xrestrict=%all", res.get(2));
+    }
+
+    @Test
+    public void testStudioIgnoredFlag8() {
+        String s = "-xpatchpadding[=<a>]          Put space before start of code for hot patching. <a>={fix|patch|<integer>}";
+        List<String> res = new ArrayList<String>();
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, false);
+        Assert.assertEquals(3, res.size());
+        Assert.assertEquals("-xpatchpadding", res.get(0));
+        Assert.assertEquals("-xpatchpadding=fix", res.get(1));
+        Assert.assertEquals("-xpatchpadding=patch", res.get(2));
     }
 
     @Test
@@ -287,7 +378,8 @@ public class DiscoverFlagsTest {
         String s = "  -fsched2-use-traces         Does nothing.  Preserved for backward\n" +
             "                              compatibility.";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, true);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, true);
         Assert.assertEquals(1, res.size());
         Assert.assertEquals("-fsched2-use-traces", res.get(0));
     }
@@ -297,7 +389,8 @@ public class DiscoverFlagsTest {
         String s = "  -fexcess-precision=[fast|standard] Specify handling of excess floating-point\n" +
             "                              precision";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, true);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, true);
         Assert.assertEquals(2, res.size());
         Assert.assertEquals("-fexcess-precision=fast", res.get(0));
         Assert.assertEquals("-fexcess-precision=standard", res.get(1));
@@ -307,7 +400,8 @@ public class DiscoverFlagsTest {
     public void testGccAlternativeFlag2() {
         String s = "  -finit-logical=<true|false> Initialize local logical variables";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, true);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, true);
         Assert.assertEquals(2, res.size());
         Assert.assertEquals("-finit-logical=true", res.get(0));
         Assert.assertEquals("-finit-logical=false", res.get(1));
@@ -317,7 +411,8 @@ public class DiscoverFlagsTest {
     public void testGccAlternativeFlag3() {
         String s = "  -O<number>                  Set optimization level to <number>";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, true);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, true);
         Assert.assertEquals(6, res.size());
         Assert.assertEquals("-O0", res.get(0));
         Assert.assertEquals("-O1", res.get(1));
@@ -336,7 +431,8 @@ public class DiscoverFlagsTest {
             "                           corei7, l1om, k6, k6_2, athlon, opteron, k8,\n" +
             "                           amdfam10, bdver1";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, true);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, true);
         Assert.assertEquals(27, res.size());
         Assert.assertEquals("-mtune=generic32", res.get(0));
         Assert.assertEquals("-mtune=bdver1", res.get(26));
@@ -358,7 +454,8 @@ public class DiscoverFlagsTest {
             "                           syscall, rdtscp, 3dnow, 3dnowa, padlock, svme, sse4a,\n" +
             "                           abm";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, true);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, true);
         Assert.assertEquals(24, res.size());
         Assert.assertEquals("-march=generic32", res.get(0));
         Assert.assertEquals("-march=bdver1", res.get(23));
@@ -369,7 +466,8 @@ public class DiscoverFlagsTest {
         String s = "  -fsched-stalled-insns-dep=<number> Set dependence distance checking in\n" +
             "                              premature scheduling of queued insns";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, true);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, true);
         Assert.assertEquals(0, res.size());
     }
 
@@ -377,7 +475,8 @@ public class DiscoverFlagsTest {
     public void testGccIgnoredFlag2() {
         String s = "  -idirafter <dir>            Add <dir> to the end of the system include path";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, true);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, true);
         Assert.assertEquals(0, res.size());
     }
 
@@ -385,7 +484,8 @@ public class DiscoverFlagsTest {
     public void testGccIgnoredFlag3() {
         String s = "  --divide                do not treat `/' as a comment character";
         List<String> res = new ArrayList<String>();
-        CCCCompiler.discoverFlags(s, res, true);
+        List<String> undef = new ArrayList<String>();
+        CCCCompiler.discoverFlags(s, res, undef, true);
         Assert.assertEquals(0, res.size());
     }
 }

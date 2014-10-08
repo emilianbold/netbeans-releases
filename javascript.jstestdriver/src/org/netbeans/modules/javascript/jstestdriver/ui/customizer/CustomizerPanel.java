@@ -46,7 +46,7 @@ import java.awt.EventQueue;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.jstestdriver.preferences.JsTestDriverPreferences;
-import org.netbeans.modules.web.clientproject.spi.jstesting.CustomizerPanelImplementation;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 
 public final class CustomizerPanel implements CustomizerPanelImplementation {
 

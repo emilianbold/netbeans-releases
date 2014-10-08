@@ -81,6 +81,9 @@ import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.CoverageProviderImpl;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvidersListener;
 import org.netbeans.modules.web.clientproject.bower.BowerProblemProvider;
 import org.netbeans.modules.web.clientproject.node.NpmProblemProvider;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
@@ -88,6 +91,7 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhanced
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
+import org.netbeans.modules.web.clientproject.ui.action.ClientSideProjectActionProvider;
 import org.netbeans.modules.web.clientproject.ui.action.ProjectOperations;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
@@ -138,7 +142,7 @@ import org.w3c.dom.Text;
 
 @AntBasedProjectRegistration(
     type=ClientSideProjectType.TYPE,
-    iconResource=ClientSideProject.PROJECT_ICON,
+    iconResource=ClientSideProject.HTML5_PROJECT_ICON,
     sharedNamespace=ClientSideProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=ClientSideProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
@@ -147,7 +151,7 @@ public class ClientSideProject implements Project {
     static final Logger LOGGER = Logger.getLogger(ClientSideProject.class.getName());
 
     @StaticResource
-    public static final String PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/projecticon.png"; // NOI18N
+    public static final String HTML5_PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/html5-project.png"; // NOI18N
 
     final UsageLogger projectBrowserUsageLogger = UsageLogger.projectBrowserUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
 
@@ -157,8 +161,8 @@ public class ClientSideProject implements Project {
     private final Lookup lookup;
     private final AntProjectListener antProjectListenerImpl = new AntProjectListenerImpl();
     volatile String name;
-    private RefreshOnSaveListener refreshOnSaveListener;
     private ClassPath sourcePath;
+    volatile ClassPathProviderImpl.PathImpl pathImpl;
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
     private WebBrowser projectWebBrowser;
     private ClientSideProjectBrowserProvider projectBrowserProvider;
@@ -182,6 +186,35 @@ public class ClientSideProject implements Project {
         @Override
         public void processingErrorOccured(Project project, CssPreprocessor cssPreprocessor, String error) {
             // noop
+        }
+    };
+
+    final PlatformProvidersListener platformProvidersListener = new PlatformProvidersListener() {
+
+        @Override
+        public void platformProvidersChanged() {
+            // noop
+        }
+
+        @Override
+        public void propertyChanged(Project project, PlatformProvider platformProvider, PropertyChangeEvent event) {
+            if (ClientSideProject.this.equals(project)) {
+                LOGGER.log(Level.FINE, "Processing platform provider event {0}", event);
+                String propertyName = event.getPropertyName();
+                if (propertyName == null
+                        || PlatformProvider.PROP_ENABLED.equals(propertyName)) {
+                    Info info = getLookup().lookup(Info.class);
+                    assert info != null;
+                    info.firePropertyChange(ProjectInformation.PROP_ICON);
+                    if (pathImpl != null) {
+                        pathImpl.fireRootsChanged();
+                    }
+                } else if (PlatformProvider.PROP_SOURCE_ROOTS.equals(propertyName)) {
+                    if (pathImpl != null) {
+                        pathImpl.fireRootsChanged();
+                    }
+                }
+            }
         }
     };
 
@@ -224,7 +257,6 @@ public class ClientSideProject implements Project {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ClientSideProjectConstants.PROJECT_SELECTED_BROWSER.equals(evt.getPropertyName())) {
                     projectBrowserUsageLogger.reset();
-                    refreshOnSaveListener = null;
                     ClientProjectEnhancedBrowserImplementation ebi = projectEnhancedBrowserImpl;
                     if (ebi != null) {
                         ebi.deactivate();
@@ -304,6 +336,14 @@ public class ClientSideProject implements Project {
             ProjectProblems.showCustomizer(this);
         }
         return broken;
+    }
+
+    public boolean isJsLibrary() {
+        return getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER) == null;
+    }
+
+    public boolean isHtml5Project() {
+        return !isJsLibrary();
     }
 
     @CheckForNull
@@ -416,6 +456,17 @@ public class ClientSideProject implements Project {
         return JsTestingProviders.getDefault().getJsTestingProvider(this, showSelectionPanel);
     }
 
+    public List<PlatformProvider> getPlatformProviders() {
+        List<PlatformProvider> allProviders = PlatformProviders.getDefault().getPlatformProviders();
+        List<PlatformProvider> enabledProviders = new ArrayList<>(allProviders.size());
+        for (PlatformProvider provider : allProviders) {
+            if (provider.isEnabled(this)) {
+                enabledProviders.add(provider);
+            }
+        }
+        return enabledProviders;
+    }
+
     public String getName() {
         if (name == null) {
             ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
@@ -511,7 +562,8 @@ public class ClientSideProject implements Project {
 
     ClassPath getSourceClassPath() {
         if (sourcePath == null) {
-            sourcePath = ClassPathProviderImpl.createProjectClasspath(this);
+            pathImpl = new ClassPathProviderImpl.PathImpl(this);
+            sourcePath = ClassPathProviderImpl.createProjectClasspath(pathImpl);
         }
         return sourcePath;
     }
@@ -533,7 +585,7 @@ public class ClientSideProject implements Project {
 
         @Override
         public Icon getIcon() {
-            return new ImageIcon(ImageUtilities.loadImage(ClientSideProject.PROJECT_ICON));
+            return new ImageIcon(ImageUtilities.loadImage(ClientSideProject.HTML5_PROJECT_ICON));
         }
 
         @Override
@@ -623,6 +675,8 @@ public class ClientSideProject implements Project {
             if (jsTestingProvider != null) {
                 jsTestingProvider.projectOpened(project);
             }
+            PlatformProviders.getDefault().addPlatformProvidersListener(project.platformProvidersListener);
+            PlatformProviders.getDefault().projectOpened(project);
             FileObject projectDirectory = project.getProjectDirectory();
             // usage logging
             FileObject cordova = projectDirectory.getFileObject(".cordova"); // NOI18N
@@ -655,6 +709,8 @@ public class ClientSideProject implements Project {
             if (jsTestingProvider != null) {
                 jsTestingProvider.projectClosed(project);
             }
+            PlatformProviders.getDefault().projectClosed(project);
+            PlatformProviders.getDefault().removePlatformProvidersListener(project.platformProvidersListener);
             // browser
             ClientProjectEnhancedBrowserImplementation enhancedBrowserImpl = project.getEnhancedBrowserImpl();
             if (enhancedBrowserImpl != null) {

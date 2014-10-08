@@ -156,8 +156,10 @@ public final class DebuggerSupport {
             return infosVar.getFields(0, Integer.MAX_VALUE);
         } catch (InvalidObjectException ioex) {
             return null;
-        } catch (NoSuchMethodException | InvalidExpressionException nsmex) {
+        } catch (NoSuchMethodException nsmex) {
             Exceptions.printStackTrace(nsmex);
+            return null;
+        } catch (InvalidExpressionException iex) {
             return null;
         }
     }
@@ -300,8 +302,10 @@ public final class DebuggerSupport {
             } else {
                 return strVar;
             }
-        } catch (NoSuchMethodException | InvalidExpressionException ex) {
+        } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
+            return ov;
+        } catch (InvalidExpressionException iex) {
             return ov;
         }
     }

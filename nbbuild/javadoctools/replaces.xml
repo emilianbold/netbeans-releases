@@ -222,7 +222,7 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-core-multitabs@" value="${javadoc.docs.org-netbeans-core-multitabs}"/>
 <replacefilter token="@org-openide-util-base@" value="${javadoc.docs.org-openide-util-base}"/>
 <replacefilter token="@org-netbeans-api-maven@" value="${javadoc.docs.org-netbeans-api-maven}"/>
-<replacefilter token="@org-openide-filesystems-compat8@" value="${javadoc.docs.org-openide-filesystems-compat8}"/>
+<replacefilter token="@org-netbeans-api-html4j@" value="${javadoc.docs.org-netbeans-api-html4j}"/>
 <replacefilter token="@org-openide-filesystems-compat8@" value="${javadoc.docs.org-openide-filesystems-compat8}"/>
 <replacefilter token="@org-netbeans-modules-parsing-indexing@" value="${javadoc.docs.org-netbeans-modules-parsing-indexing}"/>
 <replacefilter token="@org-netbeans-modules-extexecution-base@" value="${javadoc.docs.org-netbeans-modules-extexecution-base}"/>

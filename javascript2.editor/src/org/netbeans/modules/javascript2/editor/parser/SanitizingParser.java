@@ -66,7 +66,7 @@ public abstract class SanitizingParser extends Parser {
     
     private static final boolean PARSE_BIG_FILES = Boolean.getBoolean("nb.js.parse.big.files"); //NOI18N
     private static final long MAX_FILE_SIZE_TO_PARSE = Integer.getInteger("nb.js.big.file.size", 1024 * 1024); //NOI18N
-    private static final long MAX_MINIMIZE_FILE_SIZE_TO_PARSE = Integer.getInteger("nb.js.big.minimize.file.size", (1024 * 1024) / 3); //NOI18N
+    private static final long MAX_MINIMIZE_FILE_SIZE_TO_PARSE = Integer.getInteger("nb.js.big.minimize.file.size", 0); //NOI18N
 
     private final Language<JsTokenId> language;
 
@@ -155,7 +155,7 @@ public abstract class SanitizingParser extends Parser {
                     int countedLines = 0;
                     int countChars = 0;
                     while (!isMinified && ts.moveNext() && countedLines < 5) {
-                        LexUtilities.findNext(ts, Arrays.asList(JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT, JsTokenId.EOL));
+                        LexUtilities.findNext(ts, Arrays.asList(JsTokenId.DOC_COMMENT, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT, JsTokenId.EOL));
                         offset = ts.offset();
                         LexUtilities.findNextToken(ts, Arrays.asList(JsTokenId.EOL));
                         countChars += (ts.offset() - offset);

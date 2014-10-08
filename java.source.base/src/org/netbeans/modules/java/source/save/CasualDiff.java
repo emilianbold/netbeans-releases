@@ -166,6 +166,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
+import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
@@ -1377,7 +1378,7 @@ public class CasualDiff {
         }
         return localPointer;
     }
-
+    
     private boolean isComment(JavaTokenId tid) {
         switch (tid) {
             case LINE_COMMENT:
@@ -3732,17 +3733,35 @@ public class CasualDiff {
                     if (pos[0] > localPointer) {
                         // print fill-in
                         copyTo(localPointer, pos[0], printer);
+                        localPointer = pos[0];
                     }
                     if (insetBlankLine)
                         printer.blankline();
+                    // handle possible comment change
+                    JCTree oldItem = oldList.get(i);
+                    CommentSet cs = comments.getComments(oldItem);
+                    boolean reprintComments = cs.hasChanges();
+                    int itemStart = pos[0];
+                    int itemEnd = pos[1];
+                    if (reprintComments) {
+                        // comments are going to be printed anew, copy just the part
+                        // covered by the item itself
+                        itemStart = pos.length > 6 ? pos[5] : getOldPos(oldItem);
+                        itemEnd = pos.length > 6 ? pos[6] : endPos(oldItem);
+                        localPointer = diffPrecedingComments(oldItem, oldItem, itemStart, localPointer, false);
+                    }
                     if (pos[0] >= localPointer) {
-                        localPointer = pos[0];
+                        localPointer = itemStart;
                         if (pos.length > 3 && pos[3] != (-1) && j + 1 < result.length) {
                             copyTo(localPointer, localPointer = pos[3], printer);
                             printer.print(estimator.append(i));
                         }
                     }
-                    copyTo(localPointer, localPointer = pos[1], printer);
+                    copyTo(localPointer, localPointer = itemEnd, printer);
+                    if (reprintComments) {
+                        localPointer = diffInnerComments(oldItem, oldItem, localPointer);
+                        localPointer = diffTrailingComments(oldItem, oldItem, localPointer, pos[1]);
+                    }
                     lastdel = null;
                     ++i;
                     break;
@@ -3779,7 +3798,7 @@ public class CasualDiff {
         innerCommentsProcessed = true;
         CommentSet cs = getCommentsForTree(newT, true);
         CommentSet old = getCommentsForTree(oldT, true);
-        List<Comment> oldPrecedingComments = old.getComments(CommentSet.RelativePosition.INNER);
+        List<Comment> oldPrecedingComments = cs == old ? ((CommentSetImpl)cs).getOrigComments(CommentSet.RelativePosition.INNER) : old.getComments(CommentSet.RelativePosition.INNER);
         List<Comment> newPrecedingComments = cs.getComments(CommentSet.RelativePosition.INNER);
         if (sameComments(oldPrecedingComments, newPrecedingComments)) {
             if (oldPrecedingComments.isEmpty()) {
@@ -3803,7 +3822,7 @@ public class CasualDiff {
     protected int diffPrecedingComments(JCTree oldT, JCTree newT, int oldTreeStartPos, int localPointer, boolean doNotDelete) {
         CommentSet cs = getCommentsForTree(newT, true);
         CommentSet old = getCommentsForTree(oldT, true);
-        List<Comment> oldPrecedingComments = old.getComments(CommentSet.RelativePosition.PRECEDING);
+        List<Comment> oldPrecedingComments = cs == old ? ((CommentSetImpl)cs).getOrigComments(CommentSet.RelativePosition.PRECEDING) : old.getComments(CommentSet.RelativePosition.PRECEDING);
         List<Comment> newPrecedingComments = cs.getComments(CommentSet.RelativePosition.PRECEDING);
         DocCommentTree newD = tree2Doc.get(newT);
         if (sameComments(oldPrecedingComments, newPrecedingComments) && newD == null) {
@@ -3828,9 +3847,10 @@ public class CasualDiff {
     protected int diffTrailingComments(JCTree oldT, JCTree newT, int localPointer, int elementEndWithComments) {
         CommentSet cs = getCommentsForTree(newT, false);
         CommentSet old = getCommentsForTree(oldT, false);
-        List<Comment> oldInlineComments = old.getComments(CommentSet.RelativePosition.INLINE);
+        List<Comment> oldInlineComments = cs == old ? ((CommentSetImpl)cs).getOrigComments(CommentSet.RelativePosition.INLINE) : old.getComments(CommentSet.RelativePosition.INLINE);
         List<Comment> newInlineComments = cs.getComments(CommentSet.RelativePosition.INLINE);
-        List<Comment> oldTrailingComments = old.getComments(CommentSet.RelativePosition.TRAILING);
+        
+        List<Comment> oldTrailingComments = cs == old ? ((CommentSetImpl)cs).getOrigComments(CommentSet.RelativePosition.TRAILING) : old.getComments(CommentSet.RelativePosition.TRAILING);
         List<Comment> newTrailingComments = cs.getComments(CommentSet.RelativePosition.TRAILING);
         if (sameComments(oldInlineComments, newInlineComments) && sameComments(oldTrailingComments, newTrailingComments)) {
             // copy the comments
@@ -3863,8 +3883,22 @@ public class CasualDiff {
         if (containedEmbeddedNewLine  && !containsEmbeddedNewLine) {
             printer.print("\n");
         }
-
-        return diffCommentLists(getOldPos(oldT), oldTrailingComments, newTrailingComments, null, null, true, false, false, false, localPointer);
+        int lp = diffCommentLists(getOldPos(oldT), oldTrailingComments, newTrailingComments, null, null, true, false, false, false, localPointer);
+        boolean commentsCreated = oldInlineComments.isEmpty() && oldTrailingComments.isEmpty();
+        // if comments were added, it may be possible that the immediately following newline
+        // was printed as a part of traling new comment. In that, suppress the immediate
+        // newline:
+        if (commentsCreated) {
+            Comment c = newTrailingComments.isEmpty() ?
+                    newInlineComments.get(newInlineComments.size() - 1) :
+                    newTrailingComments.get(newTrailingComments.size() - 1);
+            if (c.style() != Comment.Style.LINE) {
+                while (printer.out.isWhitespaceLine()) {
+                    printer.eatChars(1);
+                }
+            }
+        }
+        return lp;
     }
 
     private boolean sameComments(List<Comment> oldList, List<Comment> newList) {

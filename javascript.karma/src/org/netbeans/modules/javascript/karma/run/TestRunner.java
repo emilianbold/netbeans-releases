@@ -87,7 +87,7 @@ public final class TestRunner {
     private static final Pattern NAME_DURATION_PATTERN = Pattern.compile(NAME_REGEX + " " + DURATION_REGEX); // NOI18N
     private static final Pattern NAME_DETAILS_DURATION_PATTERN = Pattern.compile(NAME_REGEX + " " + DETAILS_REGEX + " " + DURATION_REGEX); // NOI18N
 
-    private static final Pattern STACK_TRACE_FILE_LINE_PATTERN = Pattern.compile("http://[^/]+/(?:base|absolute)(?<FILE>[^?\\s]*)(?:\\?[0-9]*)?"); // NOI18N
+    private static final Pattern STACK_TRACE_FILE_LINE_PATTERN = Pattern.compile("http://[^/]+/(?:base|absolute)(?<FILE>[^?\\s]*)(?:\\?[^:]*)?"); // NOI18N
 
     private final KarmaRunInfo karmaRunInfo;
     private final AtomicLong browserCount = new AtomicLong();

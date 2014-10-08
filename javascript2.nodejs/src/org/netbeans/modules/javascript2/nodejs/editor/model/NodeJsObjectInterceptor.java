@@ -1,0 +1,95 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.javascript2.nodejs.editor.model;
+
+import java.util.Collection;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.javascript2.editor.spi.model.ObjectInterceptor;
+import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
+
+/**
+ *
+ * @author Petr Pisl
+ */
+@ObjectInterceptor.Registration(priority=101)
+public class NodeJsObjectInterceptor implements ObjectInterceptor {
+    private final static String EXPORTS = "exports"; //NOI18N
+    private final static String MODULE = "module"; //NOI18N
+    
+    @Override
+    public void interceptGlobal(final JsObject global, final ModelElementFactory factory) {
+        JsObject exports = global.getProperty(EXPORTS);
+        if (exports == null) {
+            JsObject module = global.getProperty(MODULE);
+            if (module != null) {
+                exports = module.getProperty(EXPORTS);
+            }
+        }
+        if (exports != null && exports.getProperties().size() == 0) {
+            // probably there is something like var name = exports;
+            // used in for example in fs.js
+           
+            // find the variable, where the exports global object is assigned
+            for (JsObject variable : global.getProperties().values()) {
+                Collection<? extends TypeUsage> assignments = variable.getAssignments();
+                boolean isThis = false;
+                for (TypeUsage type : assignments) {
+                    if (EXPORTS.equals(type.getType())) {
+                        isThis = true;
+                        break;
+                    }
+                }
+                if (isThis) {
+                    exports = variable;
+                    break;
+                }
+            }
+        }
+        if (exports != null) {
+            JsObject newReference = factory.newReference(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX + global.getName(), exports, true, true);
+            global.addProperty(newReference.getName(), newReference);
+        }
+    }
+}

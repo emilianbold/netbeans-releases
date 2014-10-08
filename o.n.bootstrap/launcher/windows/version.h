@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,15 +37,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
 #define COMPANY "Oracle Corporation"
 #define COMPONENT "NetBeans Platform Launcher"
-#define VER "8.0.0.0"
-#define FVER 8,0,0,0
-#define BUILD_ID "09062013"
+#define VER "8.1.0.0"
+#define FVER 8,1,0,0
+#define BUILD_ID "10032014"
 #define INTERNAL_NAME "nbexec"
-#define COPYRIGHT "\xA9 2007, 2013 Oracle and/or its affiliates. All rights reserved."
-#define NAME "NetBeans Platform Launcher 8.0"
+#define COPYRIGHT "\xA9 2007, 2014 Oracle and/or its affiliates. All rights reserved."
+#define NAME "NetBeans Platform Launcher 8.1"
 

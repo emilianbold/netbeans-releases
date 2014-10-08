@@ -119,6 +119,15 @@ public class ProjectAccessorImpl extends ProjectAccessor<ODCSProject> {
         return DetailsAction.forProject(project);    
 //      XXX what is this ?  return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getProject().getWebLocation());
     }
+    
+    private Action getWebAction(final ProjectHandle<ODCSProject> project) {
+        return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_GotoProjectWeb")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Utils.openBrowser(project.getTeamProject().getWebUrl());
+            }
+        };
+    }
 
     private Action getOpenAction(final ProjectHandle<ODCSProject> project) {
         // this action is supposed to be used for openenig a project from My Projects
@@ -138,17 +147,9 @@ public class ProjectAccessorImpl extends ProjectAccessor<ODCSProject> {
     @Override
     public Action[] getPopupActions(final ProjectHandle<ODCSProject> project, boolean opened) {
         if (!opened) {
-            if (project.getTeamProject().getServer().isLoggedIn()) {
-                return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project)};
-            } else {
-                return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project)};
-            }
+            return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project), getWebAction(project)};
         } else {
-            if (project.getTeamProject().getServer().isLoggedIn()) {
-                return new Action[]{new RefreshAction(project), getDetailsAction(project)};
-            } else {
-                return new Action[]{new RefreshAction(project), getDetailsAction(project)};
-            }
+            return new Action[]{new RefreshAction(project), getDetailsAction(project), getWebAction(project)};
         }
     }
 
