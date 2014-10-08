@@ -132,8 +132,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletionQuery.NbCsmItemFactory;
-import static org.netbeans.modules.cnd.completion.csm.CompletionUtilities.AUTO_KEYWORD;
-import static org.netbeans.modules.cnd.completion.csm.CompletionUtilities.isAutoVariableType;
+import static org.netbeans.modules.cnd.modelutil.CsmUtilities.AUTO_KEYWORD;
+import static org.netbeans.modules.cnd.modelutil.CsmUtilities.isAutoType;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.VariableResultItem;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
@@ -1327,7 +1327,7 @@ abstract public class CsmCompletionQuery {
                 resolveObj = bestCandidate;
                 resolveType = CsmCompletion.getObjectType(resolveObj, _const);
             }
-            if (CsmKindUtilities.isVariable(resolveObj) && isAutoVariableType(resolveType)) {
+            if (CsmKindUtilities.isVariable(resolveObj) && isAutoType(resolveType)) {
                 resolveType = findAutoVariableType((CsmVariable) resolveObj, resolveType);
             }
             
@@ -1335,7 +1335,7 @@ abstract public class CsmCompletionQuery {
         }
         
         private CsmType findAutoVariableType(CsmVariable var, CsmType varType) {
-            assert isAutoVariableType(varType) : "var must have auto type!"; // NOI18N
+            assert isAutoType(varType) : "var must have auto type!"; // NOI18N
             CsmType oldType = varType;
             final CsmExpression initialValue = var.getInitialValue();
             if (initialValue != null) {
@@ -1346,7 +1346,7 @@ abstract public class CsmCompletionQuery {
                         oldType.getPointerDepth() + varType.getPointerDepth(), 
                         Math.max(getReferenceValue(oldType), getReferenceValue(varType)), 
                         oldType.getArrayDepth() + varType.getArrayDepth(), 
-                        oldType.isConst() & varType.isConst()
+                        oldType.isConst() | varType.isConst()
                     );
                 }
             } else {
@@ -1408,9 +1408,25 @@ abstract public class CsmCompletionQuery {
                                         CsmFunction dereferenceOperator = getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.POINTER);
                                         if (dereferenceOperator != null) {
                                             varType = dereferenceOperator.getReturnType();
-                                        }                                            
+                                        }     
+                                        
+                                        varType = CsmCompletion.createType(
+                                                varType.getClassifier(), 
+                                                oldType.getPointerDepth() + varType.getPointerDepth(), 
+                                                Math.max(getReferenceValue(oldType), getReferenceValue(varType)),
+                                                oldType.getArrayDepth() + varType.getArrayDepth(),
+                                                oldType.isConst() | varType.isConst()
+                                        );
+                                    } else {
+                                        // Iterations on array
+                                        varType = CsmCompletion.createType(
+                                                varType.getClassifier(), 
+                                                oldType.getPointerDepth() + varType.getPointerDepth(), 
+                                                Math.max(getReferenceValue(oldType), getReferenceValue(varType)),
+                                                oldType.getArrayDepth() + (varType.getArrayDepth() - 1),
+                                                oldType.isConst() | varType.isConst()
+                                        );
                                     }
-                                    varType = CsmCompletion.createType(varType.getClassifier(), oldType.getPointerDepth(), getReferenceValue(oldType), oldType.getArrayDepth(), oldType.isConst());
                                 }
                             }     
                         }
@@ -1949,7 +1965,7 @@ abstract public class CsmCompletionQuery {
                                         if (first && !findType) {
                                             lastType = findExactVarType(var, varPos);
                                         }
-                                        if (lastType == null || lastType.getClassifierText().toString().equals(AUTO_KEYWORD)) { // NOI18N
+                                        if (lastType == null || isAutoType(lastType)) {
                                             // try to find with resolver
                                             compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                                             if (resolve(varPos, var, true)) {
@@ -2545,7 +2561,7 @@ abstract public class CsmCompletionQuery {
                                     CsmObject contextObject = CsmOffsetResolver.findObject(contextFile, item.getTokenOffset(0), getFileReferencesContext());
                                     if (CsmKindUtilities.isVariable(contextObject)) {
                                         CsmVariable contextVar = (CsmVariable) contextObject;
-                                        if (isAutoVariableType(contextVar.getType())) {
+                                        if (isAutoType(contextVar.getType())) {
                                             CsmType autoVarType = findAutoVariableType(contextVar, contextVar.getType());
                                             if (findType) {
                                                 lastType = autoVarType;

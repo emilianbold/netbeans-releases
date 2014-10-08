@@ -81,19 +81,11 @@ import org.netbeans.modules.editor.NbEditorUtilities;
  * @author Vladimir Voskresensky
  */
 public class CompletionUtilities {
-    
-    public static final String AUTO_KEYWORD = "auto"; // NOI18N
 
     /**
      * Constructor is private to prevent instantiation.
      */
     private CompletionUtilities() {}
-    
-    public static boolean isAutoVariableType(CsmType varType) {
-        return varType != null &&
-               varType.getClassifierText() != null &&
-               varType.getClassifierText().toString().equals(AUTO_KEYWORD); // NOI18N
-    }    
 
     public static List<CsmDeclaration> findFunctionLocalVariables(Document doc, int offset, FileReferencesContext fileReferncesContext) {
         CsmFile file = CsmUtilities.getCsmFile(doc, true, false);

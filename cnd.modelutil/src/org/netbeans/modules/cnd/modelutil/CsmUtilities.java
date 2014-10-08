@@ -114,6 +114,9 @@ import org.openide.windows.WindowManager;
  * @author Vladimir Voskresensky
  */
 public class CsmUtilities {
+    
+    // Default classifier text for auto type
+    public static final String AUTO_KEYWORD = "auto"; // NOI18N
 
     /* ------------------ MODIFIERS ---------------------- */
     /**
@@ -240,6 +243,12 @@ public class CsmUtilities {
             return PRIVATE_LEVEL;
         }
     }
+    
+    public static boolean isAutoType(CsmType varType) {
+        return varType != null &&
+               varType.getClassifierText() != null &&
+               varType.getClassifierText().toString().equals(AUTO_KEYWORD); // NOI18N
+    }        
 
     public static boolean isPrimitiveClass(CsmClassifier c) {
         return c.getKind() == CsmDeclaration.Kind.BUILT_IN;

@@ -78,13 +78,7 @@
                     <run-dependency>
                         <specification-version>0.1</specification-version>
                     </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.odcs.subversion</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
+                </dependency>                
                 <dependency>
                     <code-name-base>org.netbeans.modules.odcs.tasks</code-name-base>
                     <run-dependency>
