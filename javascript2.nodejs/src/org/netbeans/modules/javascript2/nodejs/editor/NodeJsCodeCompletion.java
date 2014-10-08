@@ -69,8 +69,7 @@ import org.openide.filesystems.FileObject;
 @CompletionProvider.Registration(priority = 41)
 public class NodeJsCodeCompletion implements CompletionProvider {
 
-    private static final String REQUIRE = "require";
-    private static final String TEMPLATE_REQUIRE = "('${cursor}')";
+    private static final String TEMPLATE_REQUIRE = "('${cursor}')"; //NOI18N
     
 
     @Override
@@ -99,16 +98,12 @@ public class NodeJsCodeCompletion implements CompletionProvider {
             }
 
             Token<? extends JsTokenId> token = null;
-            JsTokenId tokenId;
             if (jsCompletionContext == CompletionContext.STRING || jsCompletionContext == CompletionContext.EXPRESSION) {
                 String wholePrefix = ts.token().id() == JsTokenId.STRING ? ts.token().text().toString().trim() : "";
-                token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.STRING_BEGIN, JsTokenId.STRING));
-                tokenId = token.id();
-                if (tokenId == JsTokenId.BRACKET_LEFT_PAREN && ts.movePrevious()) {
-                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
-                    tokenId = token.id();
-                    if (tokenId == JsTokenId.IDENTIFIER && REQUIRE.equals(token.text().toString())) {
-                        // name of modules
+                NodeJsContext nodeContext = NodeJsContext.findContext(ts, eOffset);
+                System.out.println("nodeContext: " + nodeContext);
+                switch (nodeContext) {
+                    case MODULE_PATH:
                         if (wholePrefix.isEmpty() || (wholePrefix.charAt(0) != '.' && wholePrefix.charAt(0) != '/')) {
                             Collection<String> modules = NodeJsDataProvider.getDefault(fo).getRuntimeModules();
                             for(String module: modules) {
@@ -120,19 +115,13 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                         }
                         int prefixLength = (".".equals(wholePrefix) || "..".equals(wholePrefix) || "../".equals(wholePrefix)) ? wholePrefix.length() : prefix.length();
                         result.addAll((new NodeJsCompletionItem.FilenameSupport()).getItems(ccContext.getParserResult().getSnapshot().getSource().getFileObject(), eOffset - prefixLength, ".." + prefix));
-                    }
-                } else {
-                    if (tokenId == JsTokenId.IDENTIFIER && ts.movePrevious()) {
-                        token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
-                        tokenId = token.id();
-                    }
-                    if (tokenId == JsTokenId.OPERATOR_ASSIGNMENT) {
-                        // offer require()
-                        if (prefix.isEmpty() || REQUIRE.startsWith(prefix)) {
-                            NodeJsElement handle = new NodeJsElement(fo, REQUIRE, NodeJsDataProvider.getDefault(fo).getDocumentationForGlobalObject(REQUIRE), TEMPLATE_REQUIRE, ElementKind.METHOD);
+                        break;
+                    case AFTER_ASSIGNMENT:
+                        if (prefix.isEmpty() || NodeJsUtils.REQUIRE_METHOD_NAME.startsWith(prefix)) {
+                            NodeJsElement handle = new NodeJsElement(fo, NodeJsUtils.REQUIRE_METHOD_NAME, NodeJsDataProvider.getDefault(fo).getDocumentationForGlobalObject(NodeJsUtils.REQUIRE_METHOD_NAME), TEMPLATE_REQUIRE, ElementKind.METHOD);
                             result.add(new NodeJsCompletionItem(handle, eOffset - prefix.length()));
                         }
-                    }
+                    break;
                 }
             }
         }
