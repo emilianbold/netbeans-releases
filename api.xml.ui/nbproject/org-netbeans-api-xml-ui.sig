@@ -36,6 +36,47 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
+CLSS public abstract interface org.netbeans.api.xml.cookies.CheckXMLCookie
+intf org.openide.nodes.Node$Cookie
+meth public abstract boolean checkXML(org.netbeans.api.xml.cookies.CookieObserver)
+
+CLSS public final org.netbeans.api.xml.cookies.CookieMessage
+cons public init(java.lang.String)
+cons public init(java.lang.String,int)
+cons public init(java.lang.String,int,java.lang.Object)
+cons public init(java.lang.String,int,org.openide.util.Lookup)
+cons public init(java.lang.String,java.lang.Object)
+fld public final static int ERROR_LEVEL = 2
+fld public final static int FATAL_ERROR_LEVEL = 3
+fld public final static int INFORMATIONAL_LEVEL = 0
+fld public final static int WARNING_LEVEL = 1
+meth public final int getLevel()
+meth public java.lang.Object getDetail(java.lang.Class)
+meth public java.lang.String getMessage()
+meth public org.openide.util.Lookup getDetails()
+supr java.lang.Object
+hfds details,level,message
+
+CLSS public abstract interface org.netbeans.api.xml.cookies.CookieObserver
+meth public abstract void receive(org.netbeans.api.xml.cookies.CookieMessage)
+
+CLSS public abstract interface org.netbeans.api.xml.cookies.TransformableCookie
+intf org.openide.nodes.Node$Cookie
+meth public abstract void transform(javax.xml.transform.Source,javax.xml.transform.Result,org.netbeans.api.xml.cookies.CookieObserver) throws javax.xml.transform.TransformerException
+
+CLSS public abstract interface org.netbeans.api.xml.cookies.ValidateXMLCookie
+intf org.openide.nodes.Node$Cookie
+meth public abstract boolean validateXML(org.netbeans.api.xml.cookies.CookieObserver)
+
+CLSS public abstract org.netbeans.api.xml.cookies.XMLProcessorDetail
+cons public init()
+meth public abstract int getColumnNumber()
+meth public abstract int getLineNumber()
+meth public abstract java.lang.Exception getException()
+meth public abstract java.lang.String getPublicId()
+meth public abstract java.lang.String getSystemId()
+supr java.lang.Object
+
 CLSS public final org.netbeans.api.xml.parsers.DocumentInputSource
 cons public init(javax.swing.text.Document)
 meth public final void setCharacterStream(java.io.Reader)
@@ -77,6 +118,54 @@ meth public org.xml.sax.EntityResolver getEntityResolver()
 meth public static org.netbeans.api.xml.services.UserCatalog getDefault()
 supr java.lang.Object
 hfds class$org$netbeans$api$xml$services$UserCatalog
+
+CLSS public org.netbeans.spi.xml.cookies.CheckXMLSupport
+cons public init(org.xml.sax.InputSource)
+cons public init(org.xml.sax.InputSource,int)
+fld public final static int CHECK_ENTITY_MODE = 1
+fld public final static int CHECK_PARAMETER_ENTITY_MODE = 2
+fld public final static int DOCUMENT_MODE = 3
+intf org.netbeans.api.xml.cookies.CheckXMLCookie
+meth protected org.xml.sax.EntityResolver createEntityResolver()
+meth protected org.xml.sax.InputSource createInputSource() throws java.io.IOException
+meth protected org.xml.sax.XMLReader createParser(boolean)
+meth public boolean checkXML(org.netbeans.api.xml.cookies.CookieObserver)
+supr java.lang.Object
+
+CLSS public final org.netbeans.spi.xml.cookies.DataObjectAdapters
+meth public static javax.xml.transform.Source source(org.openide.loaders.DataObject)
+meth public static org.xml.sax.InputSource inputSource(org.openide.loaders.DataObject)
+supr java.lang.Object
+hfds SAX_FEATURES_NAMESPACES,class$org$openide$cookies$EditorCookie,saxParserFactory
+hcls DataObjectInputSource,DataObjectSAXSource
+
+CLSS public org.netbeans.spi.xml.cookies.DefaultXMLProcessorDetail
+cons public init(javax.xml.transform.TransformerException)
+cons public init(org.xml.sax.SAXParseException)
+meth public int getColumnNumber()
+meth public int getLineNumber()
+meth public java.lang.Exception getException()
+meth public java.lang.String getPublicId()
+meth public java.lang.String getSystemId()
+supr org.netbeans.api.xml.cookies.XMLProcessorDetail
+hfds columnNumber,exception,lineNumber,publicId,systemId
+
+CLSS public final org.netbeans.spi.xml.cookies.TransformableSupport
+cons public init(javax.xml.transform.Source)
+intf org.netbeans.api.xml.cookies.TransformableCookie
+meth public void transform(javax.xml.transform.Source,javax.xml.transform.Result,org.netbeans.api.xml.cookies.CookieObserver) throws javax.xml.transform.TransformerException
+supr java.lang.Object
+hfds source,transformerFactory
+hcls ExceptionWriter,Proxy
+
+CLSS public org.netbeans.spi.xml.cookies.ValidateXMLSupport
+cons public init(org.xml.sax.InputSource)
+intf org.netbeans.api.xml.cookies.ValidateXMLCookie
+meth protected org.xml.sax.EntityResolver createEntityResolver()
+meth protected org.xml.sax.InputSource createInputSource() throws java.io.IOException
+meth protected org.xml.sax.XMLReader createParser(boolean)
+meth public boolean validateXML(org.netbeans.api.xml.cookies.CookieObserver)
+supr java.lang.Object
 
 CLSS public abstract org.openide.nodes.Node
 cons protected init(org.openide.nodes.Children)
