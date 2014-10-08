@@ -110,6 +110,7 @@ public class NodeExecutable {
 
     // versions of node executables
     private static final ConcurrentMap<String, Version> VERSIONS = new ConcurrentHashMap<>();
+    private static final Version UNKNOWN_VERSION = Version.fromDottedNotationWithFallback("0.0"); // NOI18N
 
     protected final Project project;
     protected final String nodePath;
@@ -201,13 +202,16 @@ public class NodeExecutable {
         VERSIONS.remove(nodePath);
     }
 
-    public boolean hasVersion() {
+    public boolean versionDetected() {
         return VERSIONS.containsKey(nodePath);
     }
 
     @CheckForNull
     public Version getVersion() {
         Version version = VERSIONS.get(nodePath);
+        if (version == UNKNOWN_VERSION) {
+            return null;
+        }
         if (version != null) {
             return version;
         }
@@ -230,6 +234,9 @@ public class NodeExecutable {
                 VERSIONS.put(nodePath, version);
                 return version;
             }
+            // no version detected, store UNKNOWN_VERSION
+            VERSIONS.put(nodePath, UNKNOWN_VERSION);
+            return null;
         } catch (CancellationException ex) {
             // cancelled, cannot happen
             assert false;
