@@ -185,11 +185,17 @@ public class JSLineBreakpointCustomizerPanel extends javax.swing.JPanel
         conditionCheckBox = new javax.swing.JCheckBox();
         conditionComboBox = new javax.swing.JComboBox();
 
-        fileLabel.setText(org.openide.util.NbBundle.getMessage(JSLineBreakpointCustomizerPanel.class, "JSLineBreakpointCustomizerPanel.fileLabel.text")); // NOI18N
+        fileLabel.setLabelFor(fileTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(JSLineBreakpointCustomizerPanel.class, "JSLineBreakpointCustomizerPanel.fileLabel.text")); // NOI18N
 
-        lineLabel.setText(org.openide.util.NbBundle.getMessage(JSLineBreakpointCustomizerPanel.class, "JSLineBreakpointCustomizerPanel.lineLabel.text")); // NOI18N
+        fileTextField.setToolTipText(org.openide.util.NbBundle.getMessage(JSLineBreakpointCustomizerPanel.class, "JSLineBreakpointCustomizerPanel.fileTextField.toolTipText")); // NOI18N
 
-        conditionCheckBox.setText(org.openide.util.NbBundle.getMessage(JSLineBreakpointCustomizerPanel.class, "JSLineBreakpointCustomizerPanel.conditionCheckBox.text")); // NOI18N
+        lineLabel.setLabelFor(lineTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(lineLabel, org.openide.util.NbBundle.getMessage(JSLineBreakpointCustomizerPanel.class, "JSLineBreakpointCustomizerPanel.lineLabel.text")); // NOI18N
+
+        lineTextField.setToolTipText(org.openide.util.NbBundle.getMessage(JSLineBreakpointCustomizerPanel.class, "JSLineBreakpointCustomizerPanel.lineTextField.toolTipText")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(conditionCheckBox, org.openide.util.NbBundle.getMessage(JSLineBreakpointCustomizerPanel.class, "JSLineBreakpointCustomizerPanel.conditionCheckBox.text")); // NOI18N
         conditionCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 conditionCheckBoxActionPerformed(evt);
@@ -197,6 +203,7 @@ public class JSLineBreakpointCustomizerPanel extends javax.swing.JPanel
         });
 
         conditionComboBox.setEditable(true);
+        conditionComboBox.setToolTipText(org.openide.util.NbBundle.getMessage(JSLineBreakpointCustomizerPanel.class, "JSLineBreakpointCustomizerPanel.conditionComboBox.toolTipText")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -208,7 +215,7 @@ public class JSLineBreakpointCustomizerPanel extends javax.swing.JPanel
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(conditionCheckBox)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(conditionComboBox, 0, 320, Short.MAX_VALUE))
+                        .addComponent(conditionComboBox, 0, 330, Short.MAX_VALUE))
                     .addComponent(jSeparator1)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -309,6 +316,8 @@ public class JSLineBreakpointCustomizerPanel extends javax.swing.JPanel
             if (condition != null && !condition.isEmpty()) {
                 lb.setCondition(condition);
                 saveCondition(condition);
+            } else {
+                lb.setCondition(null);
             }
             if (createBreakpoint) {
                 DebuggerManager.getDebuggerManager().addBreakpoint(lb);
