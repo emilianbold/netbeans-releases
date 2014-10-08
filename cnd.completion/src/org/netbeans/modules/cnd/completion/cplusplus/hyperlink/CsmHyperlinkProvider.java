@@ -119,7 +119,19 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
 
     @Override
     protected boolean isValidToken(TokenItem<TokenId> token, HyperlinkType type) {
-        return isSupportedToken(token, type);
+        if (!isSupportedToken(token, type)) {
+            // Here we can support tokens for which only hyperlink should be available
+            // (No occurences, refactorings, etc)
+            if (token != null && token.id() instanceof CppTokenId) {
+                switch ((CppTokenId)token.id()) {
+                    case AUTO: // TODO: should be allowed only in cpp11
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
+        return true;
     }
 
     public static boolean isSupportedToken(TokenItem<TokenId> token, HyperlinkType type) {
@@ -132,7 +144,6 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             }
             if(token.id() instanceof CppTokenId) {
                 switch ((CppTokenId)token.id()) {
-                    case AUTO: // TODO: should be allowed only in cpp11
                     case LTLT:
                     case IDENTIFIER:
                     case OPERATOR:
