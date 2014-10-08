@@ -50,11 +50,8 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -71,6 +68,8 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementation {
+
+    public static final String IDENTIFIER = "node.js"; // NOI18N
 
     private final Project project;
     private final NodeJsPreferences preferences;
@@ -103,7 +102,7 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
 
     @Override
     public String getIdentifier() {
-        return "node.js"; // NOI18N
+        return IDENTIFIER;
     }
 
     @NbBundle.Messages("NodeJsRunPanel.name=Node.js Application")
