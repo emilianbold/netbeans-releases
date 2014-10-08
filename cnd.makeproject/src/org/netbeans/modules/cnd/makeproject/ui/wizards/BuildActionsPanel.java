@@ -205,6 +205,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_RESULT, outputTextField.getText());
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_LOG, buildLogTextField.getText());
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_RUN_REBUILD, makeCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE);
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH, makefileName);
     }
     
     boolean valid(WizardDescriptor settings) {
