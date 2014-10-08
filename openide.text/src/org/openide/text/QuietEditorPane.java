@@ -142,7 +142,7 @@ final class QuietEditorPane extends JEditorPane {
             ctx.setAccessibleDescription(
                     NbBundle.getMessage(
                             CloneableEditor.class, "ACSD_CloneableEditor_QuietEditorPane",
-                            this.getAccessibleContext().getAccessibleDescription()
+                            ctx.getAccessibleDescription()
                     )
             );
         }
