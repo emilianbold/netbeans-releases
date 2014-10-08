@@ -44,16 +44,19 @@ package org.openide.execution;
 
 import java.util.Enumeration;
 import java.util.LinkedList;
+import org.openide.*;
 import org.openide.filesystems.EnvironmentNotSupportedException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem$Environment;
 import org.openide.filesystems.FileSystemCapability;
 import org.openide.filesystems.FileSystemCompat;
+import org.openide.modules.PatchFor;
 
 /**
  * Backward binary compatibility support for deprecated/obsolete features
  * @author sdedic
  */
+@PatchFor(NbClassPath.class)
 public class NbClassPathCompat {
     
     /** Method to obtain class path for the current state of the repository.
