@@ -458,6 +458,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
             if (!jslb.isEnabled()) {
                 lb.disable();
             }
+            lb.setCondition(jslb.getCondition());
             return lb;
         }
         
@@ -497,6 +498,9 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                         if (Boolean.FALSE.equals(evt.getNewValue())) {
                             lb.disable();
                         }
+                        break;
+                    case JSLineBreakpoint.PROP_CONDITION:
+                        lb.setCondition((String) evt.getNewValue());
                         break;
                 }
             }

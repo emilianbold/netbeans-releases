@@ -371,7 +371,7 @@ public final class Debugger {
     }*/
     
     @SuppressWarnings("unchecked")    
-    public Breakpoint addLineBreakpoint(String url, int lineNumber, int columnNumber) throws BreakpointException {
+    public Breakpoint addLineBreakpoint(String url, int lineNumber, Integer columnNumber, String condition) throws BreakpointException {
         if (inLiveHTMLMode) {
             // ignore line breakpoints when in Live HTML mode
             return null;
@@ -379,7 +379,12 @@ public final class Debugger {
         JSONObject params = new JSONObject();
         params.put("lineNumber", lineNumber);
         params.put("url", url.replaceAll("/", "\\/")); //  XXX: not sure why but using backslash is necesssary here
-        params.put("columnNumber", columnNumber);
+        if (columnNumber != null) {
+            params.put("columnNumber", columnNumber);
+        }
+        if (condition != null) {
+            params.put("condition", condition);
+        }
         Response resp = transport.sendBlockingCommand(new Command(COMMAND_SET_BRKP_BY_URL, params));
         if (resp != null) {
             if (resp.getException() != null) {

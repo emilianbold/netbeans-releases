@@ -181,7 +181,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 url = reformatFileURL(url);
                 org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint br = null;
                 try {
-                    br = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                    br = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), null, lb.getCondition());
                 } catch (BreakpointException bex) {
                     JSBreakpointStatus.setInvalid(lb, bex.getLocalizedMessage());
                 }
@@ -240,6 +240,15 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         }
         
         private void resubmit() {
+            if (SwingUtilities.isEventDispatchThread()) {
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        resubmit();
+                    }
+                });
+                return ;
+            }
             org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint brkpt;
             synchronized (brkptLock) {
                 brkpt = b;
@@ -252,7 +261,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     url = reformatFileURL(url);
                     resubmitting.set(false);
                     try {
-                        brkpt = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                        brkpt = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), null, lb.getCondition());
                     } catch (BreakpointException bex) {
                         brkpt = null;
                         JSBreakpointStatus.setInvalid(lb, bex.getLocalizedMessage());
@@ -304,6 +313,8 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 if (ignore != null && ignore.booleanValue()) {
                     return ;
                 }
+                resubmit();
+            } else if (JSLineBreakpoint.PROP_CONDITION.equals(propertyName)) {
                 resubmit();
             } else if (JSLineBreakpoint.PROP_LINE_NUMBER.equals(propertyName) ||
                        JSLineBreakpoint.PROP_FILE.equals(propertyName)) {
