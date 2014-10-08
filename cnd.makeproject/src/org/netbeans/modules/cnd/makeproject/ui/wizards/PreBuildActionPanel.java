@@ -561,12 +561,12 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
 
     private void customCommandRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customCommandRadioButtonActionPerformed
         enableControls();
-        update((String)null);
+        update("type");
     }//GEN-LAST:event_customCommandRadioButtonActionPerformed
 
     private void predefinedCommandRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_predefinedCommandRadioButtonActionPerformed
         enableControls();
-        update((String)null);
+        update("type");
     }//GEN-LAST:event_predefinedCommandRadioButtonActionPerformed
 
     private void runInFolderBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runInFolderBrowseButtonActionPerformed
@@ -771,6 +771,7 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
                     if ("script".equals(changedField) || //NOI18N
                         "folder".equals(changedField) || //NOI18N
                         "arguments".equals(changedField) || //NOI18N
+                        "type".equals(changedField) || //NOI18N
                         "provider".equals(changedField)) { //NOI18N
                         String commandLine = configureScript.getCommandLine(
                                 newConfigureArgumentsTextField == null ? configureArgumentsTextField.getText() : newConfigureArgumentsTextField,
@@ -779,6 +780,13 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
                     }
                 } else if (customCommandRadioButton.isSelected()) {
                     if (customCommandTextField.getText().trim().isEmpty()) {
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                commandTextArea.setText("");
+                            }
+                        });
                         String msg = NbBundle.getMessage(BuildActionsPanel.class, "CUSTOM_COMMAND_EMPTY"); // NOI18N
                         controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                         return;//false;
