@@ -69,7 +69,7 @@ public final class Notifications {
         final NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
         NodeJsPreferences preferences = nodeJsSupport.getPreferences();
         if (preferences.isEnabled()
-                && !FileUtils.getSiteRoots(project).isEmpty()
+                && !NodeJsUtils.isJsLibrary(project)
                 && preferences.isAskRunEnabled()) {
             final String projectName = ProjectUtils.getInformation(project).getDisplayName();
             NotificationDisplayer.getDefault().notify(
