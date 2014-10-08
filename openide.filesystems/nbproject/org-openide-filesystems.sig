@@ -414,8 +414,6 @@ fld public final static java.lang.String PROP_SYSTEM_NAME = "systemName"
  anno 0 java.lang.Deprecated()
 fld public final static java.lang.String PROP_VALID = "valid"
 innr public abstract interface static AtomicAction
-innr public abstract interface static HtmlStatus
-innr public abstract interface static Status
 intf java.io.Serializable
 meth protected final void fireFileStatusChanged(org.openide.filesystems.FileStatusEvent)
 meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
@@ -444,7 +442,6 @@ meth public org.openide.filesystems.FileObject createTempFile(org.openide.filesy
 meth public org.openide.filesystems.FileObject find(java.lang.String,java.lang.String,java.lang.String)
  anno 0 java.lang.Deprecated()
 meth public org.openide.filesystems.FileObject getTempFolder() throws java.io.IOException
-meth public org.openide.filesystems.FileSystem$Status getStatus()
 meth public void addNotify()
 meth public void refresh(boolean)
 meth public void removeNotify()
@@ -456,15 +453,6 @@ CLSS public abstract interface static org.openide.filesystems.FileSystem$AtomicA
  outer org.openide.filesystems.FileSystem
 meth public abstract void run() throws java.io.IOException
 
-CLSS public abstract interface static org.openide.filesystems.FileSystem$HtmlStatus
- outer org.openide.filesystems.FileSystem
-intf org.openide.filesystems.FileSystem$Status
-meth public abstract java.lang.String annotateNameHtml(java.lang.String,java.util.Set<? extends org.openide.filesystems.FileObject>)
-
-CLSS public abstract interface static org.openide.filesystems.FileSystem$Status
- outer org.openide.filesystems.FileSystem
-meth public abstract java.awt.Image annotateIcon(java.awt.Image,int,java.util.Set<? extends org.openide.filesystems.FileObject>)
-meth public abstract java.lang.String annotateName(java.lang.String,java.util.Set<? extends org.openide.filesystems.FileObject>)
 
 CLSS public final org.openide.filesystems.FileUtil
 meth public !varargs static java.lang.String getMIMEType(org.openide.filesystems.FileObject,java.lang.String[])
