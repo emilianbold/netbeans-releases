@@ -165,21 +165,21 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
     
     void read(WizardDescriptor wizardDescriptor) {
         settings = wizardDescriptor;
-        String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
+        String hostUID = WizardConstants.PROPERTY_HOST_UID.get(wizardDescriptor);
         ExecutionEnvironment ee = null;
         if (hostUID != null) {
             ee = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
         }
         CompilerSet cs = null;
         if (ee != null) {
-            cs = (CompilerSet) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
+            cs = WizardConstants.PROPERTY_TOOLCHAIN.get(wizardDescriptor);
         }
         try {
             removeDocumentLiseners();
-            String path = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER); // NOI18N
+            String path = WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER.get(wizardDescriptor); // NOI18N
             if (path != null) {
                 PreBuildArtifact configureScript;
-                ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+                ExecutionEnvironment env = WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizardDescriptor);
                 if (env == null) {
                     env = ExecutionEnvironmentFactory.getLocal();
                 }
@@ -214,34 +214,34 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
     }
     
     void store(WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_RUN_CONFIGURE, runConfigureCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE);
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER, configureRunFolderTextField.getText());
+        WizardConstants.PROPERTY_RUN_CONFIGURE.put(wizardDescriptor, runConfigureCheckBox.isSelected());
+        WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER.put(wizardDescriptor, configureRunFolderTextField.getText());
         if (customCommandRadioButton.isSelected()) {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_COMMAND, customCommandTextField.getText());
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH, null);
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS, null);
+            WizardConstants.PROPERTY_CONFIGURE_COMMAND.put(wizardDescriptor, customCommandTextField.getText());
+            WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.put(wizardDescriptor, null);
+            WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS.put(wizardDescriptor, null);
         } else if (predefinedCommandRadioButton.isSelected()) {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_COMMAND, null);
+            WizardConstants.PROPERTY_CONFIGURE_COMMAND.put(wizardDescriptor, null);
             FileObject file = NewProjectWizardUtils.getFileObject( configureNameTextField.getText(), controller.getWizardDescriptor());
             if (file != null && file.isValid()) {
                 PreBuildArtifact configureScript = PreBuildSupport.scriptToArtifact(file);
                 if (configureScript != null) {
-                    String hostUID = (String) settings.getProperty(WizardConstants.PROPERTY_HOST_UID);
+                    String hostUID = WizardConstants.PROPERTY_HOST_UID.get(wizardDescriptor);
                     ExecutionEnvironment ee = null;
                     if (hostUID != null) {
                         ee = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
                     }
                     CompilerSet cs = null;
                     if (ee != null) {
-                        cs = (CompilerSet) settings.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
+                        cs = WizardConstants.PROPERTY_TOOLCHAIN.get(wizardDescriptor);
                     }
                     String arguments = configureScript.getArguments(ee, cs, "");
-                    wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_COMMAND,
+                    WizardConstants.PROPERTY_CONFIGURE_COMMAND.put(wizardDescriptor,
                             configureScript.getCommandLine(arguments, configureRunFolderTextField.getText()));
                 }
             }
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH, configureNameTextField.getText());
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS, configureArgumentsTextField.getText());
+            WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.put(wizardDescriptor, configureNameTextField.getText());
+            WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS.put(wizardDescriptor, configureArgumentsTextField.getText());
         }
     }
     
@@ -501,7 +501,7 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
     private void configureBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureBrowseButtonActionPerformed
         String seed = configureNameTextField.getText();
         if (seed.isEmpty()) {
-            String root = (String) controller.getWizardDescriptor().getProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER);
+            String root = WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER.get(controller.getWizardDescriptor());
             if (root != null && !root.isEmpty()) {
                 seed = root;
             } else if (FileChooser.getCurrentChooserFile() != null) {
@@ -572,7 +572,7 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
     private void runInFolderBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runInFolderBrowseButtonActionPerformed
         String seed = configureRunFolderTextField.getText();
         if (seed.isEmpty()) {
-            String root = (String) controller.getWizardDescriptor().getProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER);
+            String root = WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER.get(controller.getWizardDescriptor());
             if (root != null && !root.isEmpty()) {
                 seed = root;
             } else if (FileChooser.getCurrentChooserFile() != null) {
@@ -707,14 +707,14 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
             String newConfigureRunFolderTextField = null;
             String newCommandText = null;
             if (runConfigureCheckBox.isSelected()) {
-                String hostUID = (String) settings.getProperty(WizardConstants.PROPERTY_HOST_UID);
+                String hostUID = WizardConstants.PROPERTY_HOST_UID.get(settings);
                 ExecutionEnvironment ee = null;
                 if (hostUID != null) {
                     ee = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
                 }
                 CompilerSet cs = null;
                 if (ee != null) {
-                    cs = (CompilerSet) settings.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
+                    cs = WizardConstants.PROPERTY_TOOLCHAIN.get(settings);
                 }
                 if (predefinedCommandRadioButton.isSelected()) {
                     if ("provider".equals(changedField)) { // NOI18N

@@ -54,6 +54,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
@@ -99,10 +100,10 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         if (first) {
             first = false;
             @SuppressWarnings("unchecked")
-            ArrayList<FolderEntry> roots = (ArrayList) settings.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_LIST);
+            List<? extends SourceFolderInfo> roots = WizardConstants.PROPERTY_SOURCE_FOLDERS_LIST.get(settings);
             if (roots != null) {
                 StringBuilder buf = new StringBuilder();
-                for(FolderEntry folder : roots){
+                for(SourceFolderInfo folder : roots){
                     if (buf.length()>0) {
                         buf.append(';');
                     }
@@ -131,14 +132,14 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
     void store(WizardDescriptor wizardDescriptor) {
         if (manualButton.isSelected()) {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_INCLUDES, includeTextField.getText()); 
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MACROS, macroTextField.getText());
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE, Boolean.TRUE);
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_LOG, ""); // NOI18N
+            WizardConstants.PROPERTY_INCLUDES.put(wizardDescriptor, includeTextField.getText()); 
+            WizardConstants.PROPERTY_MACROS.put(wizardDescriptor, macroTextField.getText());
+            WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE.put(wizardDescriptor, Boolean.TRUE);
+            WizardConstants.PROPERTY_BUILD_LOG.put(wizardDescriptor, ""); // NOI18N
         } else {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_INCLUDES, ""); // NOI18N
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MACROS, ""); // NOI18N
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE, Boolean.FALSE);
+            WizardConstants.PROPERTY_INCLUDES.put(wizardDescriptor, ""); // NOI18N
+            WizardConstants.PROPERTY_MACROS.put(wizardDescriptor, ""); // NOI18N
+            WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE.put(wizardDescriptor, Boolean.FALSE);
         }
     }
 

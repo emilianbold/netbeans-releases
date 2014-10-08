@@ -344,7 +344,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             String root = (String) wizard.getProperty(ROOT_FOLDER);
             if (root == null) {
                 // field in project wizard
-                root = (String)wizard.getProperty(WizardConstants.PROPERTY_WORKING_DIR); // NOI18N
+                root = WizardConstants.PROPERTY_WORKING_DIR.get(wizard); // NOI18N
                 if (root != null && Utilities.isWindows()) {
                     root = root.replace('\\','/');
                 }
@@ -590,7 +590,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             String root = (String) map.get(ROOT_FOLDER);
             if (root == null) {
                 // field in project wizard
-                root = (String)map.get(WizardConstants.PROPERTY_WORKING_DIR); // NOI18N
+                root = WizardConstants.PROPERTY_WORKING_DIR.fromMap(map); // NOI18N
                 if (root != null && Utilities.isWindows()) {
                     root = root.replace('\\','/');
                 }

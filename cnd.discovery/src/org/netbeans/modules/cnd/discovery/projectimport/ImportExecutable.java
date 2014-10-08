@@ -156,11 +156,11 @@ public class ImportExecutable implements PropertyChangeListener {
 
     @SuppressWarnings("unchecked")
     private void createProject() {
-        String binaryPath = (String) map.get(WizardConstants.PROPERTY_BUILD_RESULT);
-        sourcesPath = (String) map.get(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH);
-        FSPath projectFolder = (FSPath) map.get(WizardConstants.PROPERTY_PROJECT_FOLDER);
-        String projectName = (String) map.get(WizardConstants.PROPERTY_NAME);
-        dependencies = (List<String>) map.get(WizardConstants.PROPERTY_DEPENDENCIES);
+        String binaryPath = WizardConstants.PROPERTY_BUILD_RESULT.fromMap(map);
+        sourcesPath = WizardConstants.PROPERTY_SOURCE_FOLDER_PATH.fromMap(map);
+        FSPath projectFolder = WizardConstants.PROPERTY_PROJECT_FOLDER.fromMap(map);
+        String projectName = WizardConstants.PROPERTY_NAME.fromMap(map);
+        dependencies = WizardConstants.PROPERTY_DEPENDENCIES.fromMap(map);
         String baseDir;
         FileSystem fileSystem;
         if (projectFolder != null) {
@@ -180,9 +180,9 @@ public class ImportExecutable implements PropertyChangeListener {
             fileSystem = FileSystemProvider.getFileSystem(ee);
             projectFolder = new FSPath(fileSystem, RemoteFileUtil.normalizeAbsolutePath(baseDir, ee));
         }
-        String hostUID = (String) map.get(WizardConstants.PROPERTY_HOST_UID);
-        CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN);
-        boolean defaultToolchain = Boolean.TRUE.equals(map.get(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
+        String hostUID = WizardConstants.PROPERTY_HOST_UID.fromMap(map);
+        CompilerSet toolchain = WizardConstants.PROPERTY_TOOLCHAIN.fromMap(map);
+        boolean defaultToolchain = Boolean.TRUE.equals(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.fromMap(map));
         MakeConfiguration conf = MakeConfiguration.createMakefileConfiguration(projectFolder, "Default",  hostUID, toolchain, defaultToolchain); // NOI18N
         String workingDirRel = ProjectSupport.toProperPath(new FSPath(fileSystem, baseDir),  sourcesPath, MakeProjectOptions.getPathMode()); // it's better to pass project source mode here (once full remote is supprted here)
         workingDirRel = CndPathUtilities.naturalizeSlashes(fileSystem, workingDirRel);
@@ -203,7 +203,7 @@ public class ImportExecutable implements PropertyChangeListener {
                  .setConfiguration(conf)
                  .setImportantFiles(Collections.<String>singletonList(binaryPath).iterator())
                  .setMakefileName(""); //NOI18N
-        Boolean trueSourceRoot = (Boolean) map.get(WizardConstants.PROPERTY_TRUE_SOURCE_ROOT);
+        Boolean trueSourceRoot = WizardConstants.PROPERTY_TRUE_SOURCE_ROOT.fromMap(map);
         if (trueSourceRoot != null && trueSourceRoot.booleanValue()) {
             List<SourceFolderInfo> list = new ArrayList<>();
             list.add(new SourceFolderInfo() {

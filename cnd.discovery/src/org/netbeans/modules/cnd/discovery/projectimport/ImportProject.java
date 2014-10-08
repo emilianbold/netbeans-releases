@@ -191,8 +191,8 @@ public class ImportProject implements PropertyChangeListener {
     private boolean runMake;
     private String includeDirectories = ""; // NOI18N
     private String macros = ""; // NOI18N
-    private Iterator<SourceFolderInfo> sources;
-    private Iterator<SourceFolderInfo> tests;
+    private Iterator<? extends SourceFolderInfo> sources;
+    private Iterator<? extends SourceFolderInfo> tests;
     private String sourceFoldersFilter = null;
     private FileObject configureFileObject;
     private final Map<Step, State> importResult = new EnumMap<>(Step.class);
@@ -211,8 +211,8 @@ public class ImportProject implements PropertyChangeListener {
 
 
     public ImportProject(WizardDescriptor wizard) {
-        isFullRemoteProject = wizard.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV) != null;
-        hostUID = (String) wizard.getProperty(WizardConstants.PROPERTY_HOST_UID); // NOI18N
+        isFullRemoteProject = WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizard) != null;
+        hostUID = WizardConstants.PROPERTY_HOST_UID.get(wizard);
         if (hostUID == null) {
             executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
         } else {
@@ -224,11 +224,11 @@ public class ImportProject implements PropertyChangeListener {
             fileSystemExecutionEnvironment = ExecutionEnvironmentFactory.getLocal();
         }
         pathMode = MakeProjectOptions.getPathMode();
-        projectFolder = (FSPath) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
-        nativeProjectPath = (String) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);
+        projectFolder = WizardConstants.PROPERTY_PROJECT_FOLDER.get(wizard);
+        nativeProjectPath = WizardConstants.PROPERTY_NATIVE_PROJ_DIR.get(wizard);
         assert nativeProjectPath != null;
         if (isFullRemoteProject) {
-            FileObject npfo = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO);
+            FileObject npfo = WizardConstants.PROPERTY_NATIVE_PROJ_FO.get(wizard);
             // #230539 NPE while creation a full remote project
             // IMHO we duplicate information here: nativeProjectFO and pair (nativeProjectPath, executionEnvironment);
             // but I'm not sure I understand all project creation nuances in minute details, so I left this as is, just added a check
@@ -248,9 +248,9 @@ public class ImportProject implements PropertyChangeListener {
             }
             nativeProjectFO = npfo;
         } else {
-            nativeProjectFO = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO);
+            nativeProjectFO = WizardConstants.PROPERTY_NATIVE_PROJ_FO.get(wizard);
         }
-        if (Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE))) { // NOI18N
+        if (Boolean.TRUE.equals(WizardConstants.PROPERTY_SIMPLE_MODE.get(wizard))) { // NOI18N
             simpleSetup(wizard);
         } else {
             customSetup(wizard);
@@ -260,24 +260,24 @@ public class ImportProject implements PropertyChangeListener {
     private void simpleSetup(WizardDescriptor wizard) {
         projectName = CndPathUtilities.getBaseName(projectFolder.getPath());
         workingDir = nativeProjectPath;
-        runConfigure = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_RUN_CONFIGURE));
+        runConfigure = Boolean.TRUE.equals(WizardConstants.PROPERTY_RUN_CONFIGURE.get(wizard));
         if (runConfigure) {
-            configurePath = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH);
-            configureArguments = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS);
-            configureRunFolder = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER);
-            configureCommand = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_COMMAND);
+            configurePath = WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.get(wizard);
+            configureArguments = WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS.get(wizard);
+            configureRunFolder = WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER.get(wizard);
+            configureCommand = WizardConstants.PROPERTY_CONFIGURE_COMMAND.get(wizard);
         }
-        runMake = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_RUN_REBUILD));
+        runMake = Boolean.TRUE.equals(WizardConstants.PROPERTY_RUN_REBUILD.get(wizard));
         if (runMake) {
-            makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH); 
+            makefilePath = WizardConstants.PROPERTY_USER_MAKEFILE_PATH.get(wizard); 
             if (makefilePath == null) {
                 makefilePath = nativeProjectPath + "/Makefile"; // NOI18N;
             }
-            buildCommand = (String) wizard.getProperty(WizardConstants.PROPERTY_BUILD_COMMAND);
-            cleanCommand = (String) wizard.getProperty(WizardConstants.PROPERTY_CLEAN_COMMAND);
+            buildCommand = WizardConstants.PROPERTY_BUILD_COMMAND.get(wizard);
+            cleanCommand = WizardConstants.PROPERTY_CLEAN_COMMAND.get(wizard);
         }
-        toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
-        defaultToolchain = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
+        toolchain = WizardConstants.PROPERTY_TOOLCHAIN.get(wizard);
+        defaultToolchain = Boolean.TRUE.equals(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.get(wizard));
         
         List<SourceFolderInfo> list = new ArrayList<>();
         list.add(new SourceFolderInfo() {
@@ -302,37 +302,33 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void customSetup(WizardDescriptor wizard) {
-        projectName = (String) wizard.getProperty(WizardConstants.PROPERTY_NAME);
-        workingDir = (String) wizard.getProperty(WizardConstants.PROPERTY_WORKING_DIR);
-        buildCommand = (String) wizard.getProperty(WizardConstants.PROPERTY_BUILD_COMMAND);
-        cleanCommand = (String) wizard.getProperty(WizardConstants.PROPERTY_CLEAN_COMMAND);
-        buildResult = (String) wizard.getProperty(WizardConstants.PROPERTY_BUILD_RESULT); 
-        includeDirectories = (String) wizard.getProperty(WizardConstants.PROPERTY_INCLUDES); 
-        macros = (String) wizard.getProperty(WizardConstants.PROPERTY_MACROS); 
-        makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH); 
-        configurePath = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH);
-        configureRunFolder = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER);
-        configureArguments = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS);
-        configureCommand = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_COMMAND);
-        runConfigure = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_RUN_CONFIGURE));
-        @SuppressWarnings("unchecked")
-        Iterator<SourceFolderInfo> it = (Iterator<SourceFolderInfo>) wizard.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS); 
-        sources = it;
-        @SuppressWarnings("unchecked")
-        Iterator<SourceFolderInfo> it2 = (Iterator<SourceFolderInfo>) wizard.getProperty(WizardConstants.PROPERTY_TEST_FOLDERS); 
-        tests = it2;
-        sourceFoldersFilter = (String) wizard.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER);
-        runMake = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_RUN_REBUILD));
-        String path = (String)wizard.getProperty(WizardConstants.PROPERTY_BUILD_LOG);
+        projectName = WizardConstants.PROPERTY_NAME.get(wizard);
+        workingDir = WizardConstants.PROPERTY_WORKING_DIR.get(wizard);
+        buildCommand = WizardConstants.PROPERTY_BUILD_COMMAND.get(wizard);
+        cleanCommand = WizardConstants.PROPERTY_CLEAN_COMMAND.get(wizard);
+        buildResult = WizardConstants.PROPERTY_BUILD_RESULT.get(wizard); 
+        includeDirectories = WizardConstants.PROPERTY_INCLUDES.get(wizard); 
+        macros = WizardConstants.PROPERTY_MACROS.get(wizard); 
+        makefilePath = WizardConstants.PROPERTY_USER_MAKEFILE_PATH.get(wizard); 
+        configurePath = WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.get(wizard);
+        configureRunFolder = WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER.get(wizard);
+        configureArguments = WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS.get(wizard);
+        configureCommand = WizardConstants.PROPERTY_CONFIGURE_COMMAND.get(wizard);
+        runConfigure = Boolean.TRUE.equals(WizardConstants.PROPERTY_RUN_CONFIGURE.get(wizard));
+        sources = WizardConstants.PROPERTY_SOURCE_FOLDERS.get(wizard); 
+        tests = WizardConstants.PROPERTY_TEST_FOLDERS.get(wizard); 
+        sourceFoldersFilter = WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER.get(wizard);
+        runMake = Boolean.TRUE.equals(WizardConstants.PROPERTY_RUN_REBUILD.get(wizard));
+        String path = WizardConstants.PROPERTY_BUILD_LOG.get(wizard);
         if (path != null && !path.isEmpty()) {
             FileObject fo = RemoteFileUtil.getFileObject(path, fileSystemExecutionEnvironment);
             if (fo != null && fo.isValid()) {
                 existingBuildLog = DoubleFile.createFile("make", new FSPath(FileSystemProvider.getFileSystem(fileSystemExecutionEnvironment), path)); // NOI18N
             }
         }
-        manualCA = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE));
-        toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
-        defaultToolchain = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
+        manualCA = Boolean.TRUE.equals(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE.get(wizard));
+        toolchain = WizardConstants.PROPERTY_TOOLCHAIN.get(wizard);
+        defaultToolchain = Boolean.TRUE.equals(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.get(wizard));
     }
 
     public Set<FileObject> create() throws IOException {

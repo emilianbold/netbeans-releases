@@ -349,8 +349,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         initTask = null;
     }
 
-    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders,
-            Iterator<SourceFolderInfo> testFileFolders, Iterator<LogicalFoldersInfo> logicalFolders, Iterator<LogicalFolderItemsInfo> logicalFolderItems, Iterator<String> importantItems, 
+    public void initLogicalFolders(Iterator<? extends SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders,
+            Iterator<? extends SourceFolderInfo> testFileFolders, Iterator<LogicalFoldersInfo> logicalFolders, Iterator<LogicalFolderItemsInfo> logicalFolderItems, Iterator<String> importantItems, 
             String mainFilePath, DataObject mainFileTemplate, boolean addGeneratedMakefileToLogicalView) {
         if (createLogicalFolders) {
             sourceFileItems = rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);

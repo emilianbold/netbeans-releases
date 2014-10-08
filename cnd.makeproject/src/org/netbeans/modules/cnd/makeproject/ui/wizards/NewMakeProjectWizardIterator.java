@@ -364,19 +364,19 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     @Override
     public Set<FileObject> instantiate() throws IOException {
         Set<FileObject> resultSet = new HashSet<>();
-        FSPath dirF = (FSPath) wiz.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
-        String hostUID = (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
-        CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
-        boolean defaultToolchain = Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
+        FSPath dirF = WizardConstants.PROPERTY_PROJECT_FOLDER.get(wiz);
+        String hostUID = WizardConstants.PROPERTY_HOST_UID.get(wiz);
+        CompilerSet toolchain = WizardConstants.PROPERTY_TOOLCHAIN.get(wiz);
+        boolean defaultToolchain = Boolean.TRUE.equals(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.get(wiz));
         if (dirF != null) {
-            ExecutionEnvironment ee = (ExecutionEnvironment) wiz.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+            ExecutionEnvironment ee = WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wiz);
             if (ee == null) {
                 ee = ExecutionEnvironmentFactory.getLocal();
             }
             dirF = new FSPath(dirF.getFileSystem(), RemoteFileUtil.normalizeAbsolutePath(dirF.getPath(), ee));
         }
-        String projectName = (String) wiz.getProperty(WizardConstants.PROPERTY_NAME);
-        String makefileName = (String) wiz.getProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME);
+        String projectName = WizardConstants.PROPERTY_NAME.get(wiz);
+        String makefileName = WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME.get(wiz);
         if (isSimple()) {
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
@@ -404,7 +404,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         } else if (wizardtype == TYPE_BINARY) {
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
-                IteratorExtension.ProjectKind kind = (ProjectKind) wiz.getProperty(WizardConstants.PROPERTY_DEPENDENCY_KIND);
+                IteratorExtension.ProjectKind kind = WizardConstants.PROPERTY_DEPENDENCY_KIND.get(wiz);
                 if (kind == null) {
                     kind = IteratorExtension.ProjectKind.IncludeDependencies;
                 }
@@ -495,16 +495,16 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
-        wiz.putProperty(WizardConstants.PROPERTY_SOURCE_HOST_ENV, NewProjectWizardUtils.getDefaultSourceEnvironment());
+        WizardConstants.PROPERTY_SOURCE_HOST_ENV.put(wiz, NewProjectWizardUtils.getDefaultSourceEnvironment());
         index = 0;
         setupPanelsAndStepsIfNeed();
     }
 
     @Override
     public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, null);
-        this.wiz.putProperty(WizardConstants.PROPERTY_NAME, null);
-        this.wiz.putProperty(WizardConstants.MAIN_CLASS, null); // NOI18N
+        WizardConstants.PROPERTY_PROJECT_FOLDER.put(this.wiz, null);
+        WizardConstants.PROPERTY_NAME.put(this.wiz, null);
+        WizardConstants.MAIN_CLASS.put(this.wiz, null); // NOI18N
         if (wizardtype == TYPE_MAKEFILE) {
             this.wiz.putProperty("sourceRoot", null); // NOI18N
         }
@@ -518,7 +518,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     }
 
     private boolean isSimple() {
-        return wizardtype == TYPE_MAKEFILE && wiz != null && Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE));
+        return wizardtype == TYPE_MAKEFILE && wiz != null && Boolean.TRUE.equals(WizardConstants.PROPERTY_SIMPLE_MODE.get(wiz));
     }
 
     @Override

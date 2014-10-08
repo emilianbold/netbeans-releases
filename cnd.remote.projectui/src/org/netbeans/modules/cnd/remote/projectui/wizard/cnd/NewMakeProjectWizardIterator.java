@@ -260,7 +260,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 String[] steps = createSteps(panels);
             }
         } else if (wizardtype == TYPE_MAKEFILE) {
-            String hostUID = (wiz == null) ? null : (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
+            String hostUID = (wiz == null) ? null : WizardConstants.PROPERTY_HOST_UID.get(wiz);
             Boolean setupHost = null;
 
             if (panels != null) {
@@ -366,17 +366,17 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     @Override
     public Set<FileObject> instantiate() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
-        FSPath dirF = (FSPath) wiz.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
+        FSPath dirF = WizardConstants.PROPERTY_PROJECT_FOLDER.get(wiz);
         //do not see any reasons why to use local env here
-        final ExecutionEnvironment env = (ExecutionEnvironment) wiz.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+        final ExecutionEnvironment env = WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wiz);
         String hostUID = ExecutionEnvironmentFactory.toUniqueID(env);
-        CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
-        boolean defaultToolchain = Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
+        CompilerSet toolchain = WizardConstants.PROPERTY_TOOLCHAIN.get(wiz);
+        boolean defaultToolchain = Boolean.TRUE.equals(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.get(wiz));
         if (dirF != null) {
-            dirF = new FSPath(dirF.getFileSystem(), RemoteFileUtil.normalizeAbsolutePath(dirF.getPath(), (ExecutionEnvironment) wiz.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV)));
+            dirF = new FSPath(dirF.getFileSystem(), RemoteFileUtil.normalizeAbsolutePath(dirF.getPath(), WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wiz)));
         }
-        String projectName = (String) wiz.getProperty(WizardConstants.PROPERTY_NAME);
-        String makefileName = (String) wiz.getProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME);
+        String projectName = WizardConstants.PROPERTY_NAME.get(wiz);
+        String makefileName = WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME.get(wiz);
         if (isSimple()) {
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
@@ -388,9 +388,9 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 resultSet.addAll(extension.createProject(wiz));
             }
         } else if (wizardtype == TYPE_BINARY) {
-            String binary = (String) wiz.getProperty(WizardConstants.PROPERTY_BUILD_RESULT);
-            boolean trueSourceRoot = (Boolean)wiz.getProperty(WizardConstants.PROPERTY_TRUE_SOURCE_ROOT);
-            List<String> dlls = (List<String>) wiz.getProperty(WizardConstants.PROPERTY_DEPENDENCIES);
+            String binary = WizardConstants.PROPERTY_BUILD_RESULT.get(wiz);
+            boolean trueSourceRoot = WizardConstants.PROPERTY_TRUE_SOURCE_ROOT.get(wiz);
+            List<String> dlls = WizardConstants.PROPERTY_DEPENDENCIES.get(wiz);
             String libraries = null;
             if (dlls != null && !dlls.isEmpty()) {
                 StringBuilder buf = new StringBuilder();
@@ -502,7 +502,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
-        wiz.putProperty(WizardConstants.PROPERTY_SOURCE_HOST_ENV, getDefaultSourceEnvironment());
+        WizardConstants.PROPERTY_SOURCE_HOST_ENV.put(wiz, getDefaultSourceEnvironment());
         index = 0;
         setupPanelsAndStepsIfNeed();
     }
@@ -520,9 +520,9 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     @Override
     public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, null);
-        this.wiz.putProperty(WizardConstants.PROPERTY_NAME, null);
-        this.wiz.putProperty(WizardConstants.MAIN_CLASS, null); // NOI18N
+        WizardConstants.PROPERTY_PROJECT_FOLDER.put(this.wiz, null);
+        WizardConstants.PROPERTY_NAME.put(this.wiz, null);
+        WizardConstants.MAIN_CLASS.put(this.wiz, null); // NOI18N
         if (wizardtype == TYPE_MAKEFILE) {
             this.wiz.putProperty("sourceRoot", null); // NOI18N
         }
@@ -536,7 +536,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     }
 
     private boolean isSimple() {
-        return wizardtype == TYPE_MAKEFILE && wiz != null && Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE));
+        return wizardtype == TYPE_MAKEFILE && wiz != null && Boolean.TRUE.equals(WizardConstants.PROPERTY_SIMPLE_MODE.get(wiz));
     }
 
     @Override

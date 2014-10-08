@@ -91,7 +91,7 @@ import org.openide.util.HelpCtx;
     public void storeSettings(WizardDescriptor settings) {
         // "hostUID" is needed in the case this page works within another wizard
         // it isn't surprizing that WizardConstants.PROPERTY_HOST_UID from makeproject is used - the panel is common for setting up a host and creating a project
-        settings.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(data.getExecutionEnvironment())); // NOI18N
+        WizardConstants.PROPERTY_HOST_UID.put(settings, ExecutionEnvironmentFactory.toUniqueID(data.getExecutionEnvironment()));
         data.setDisplayName(getComponent().getHostDisplayName());
         data.setSyncFactory(getComponent().getRemoteSyncFactory());
     }

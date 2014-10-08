@@ -138,11 +138,7 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
     }
 
     private void setMode(boolean isSimple) {
-        if (isSimple) {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
-        } else {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
-        }
+        WizardConstants.PROPERTY_SIMPLE_MODE.put(wizardDescriptor, isSimple);
         validate();
     }
 
@@ -188,7 +184,7 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
         String[] res;
         Object o = component.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
         String[] names = (String[]) o;
-        if (Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE))){
+        if (Boolean.TRUE.equals(WizardConstants.PROPERTY_SIMPLE_MODE.get(wizardDescriptor))){
             res = new String[]{names[0]};
         } else {
             res = new String[]{names[0], "..."}; // NOI18N
@@ -199,7 +195,7 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
 
     @Override
     public boolean isFinishPanel() {
-        return  Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE));
+        return  Boolean.TRUE.equals(WizardConstants.PROPERTY_SIMPLE_MODE.get(wizardDescriptor));
     }
 
     // You can use a settings object to keep track of state. Normally the
@@ -209,8 +205,8 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
     @Override
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
-        if (wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE) == null) {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
+        if (WizardConstants.PROPERTY_SIMPLE_MODE.get(wizardDescriptor) == null) {
+            WizardConstants.PROPERTY_SIMPLE_MODE.put(wizardDescriptor, Boolean.TRUE);
         }
         getComponent().read(wizardDescriptor);
     }
@@ -218,7 +214,7 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
     @Override
     public void storeSettings(WizardDescriptor settings) {
         getComponent().store(settings);
-         if (Boolean.TRUE.equals(settings.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE))) {
+         if (Boolean.TRUE.equals(WizardConstants.PROPERTY_SIMPLE_MODE.get(settings))) {
              wizardStorage.finishWizard(wizardDescriptor);
          }
     }
@@ -232,7 +228,7 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
     }
 
     boolean isFullRemote() {
-        return wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV) != null;
+        return WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizardDescriptor) != null;
     }
 
     private class MyWizardStorage implements WizardStorage {
@@ -254,31 +250,31 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
         }
 
         void finishWizard(WizardDescriptor settings) {
-            settings.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(getExecutionEnvironment()));
-            settings.putProperty(WizardConstants.PROPERTY_SOURCE_HOST_ENV, getSourceExecutionEnvironment());
-            settings.putProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT, isDefaultCompilerSet()?Boolean.TRUE:Boolean.FALSE);
-            settings.putProperty(WizardConstants.PROPERTY_TOOLCHAIN, getCompilerSet());
-            settings.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR, getSourcesFileObject().getPath());
-            settings.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO, getSourcesFileObject());
-            settings.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
+            WizardConstants.PROPERTY_HOST_UID.put(settings, ExecutionEnvironmentFactory.toUniqueID(getExecutionEnvironment()));
+            WizardConstants.PROPERTY_SOURCE_HOST_ENV.put(settings, getSourceExecutionEnvironment());
+            WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.put(settings, isDefaultCompilerSet());
+            WizardConstants.PROPERTY_TOOLCHAIN.put(settings, getCompilerSet());
+            WizardConstants.PROPERTY_NATIVE_PROJ_DIR.put(settings, getSourcesFileObject().getPath());
+            WizardConstants.PROPERTY_NATIVE_PROJ_FO.put(settings, getSourcesFileObject());
+            WizardConstants.PROPERTY_SIMPLE_MODE.put(settings, Boolean.TRUE);
             try {
-                settings.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER,  new FSPath(getSourcesFileObject().getFileSystem(), getSourcesFileObject().getPath()));
+                WizardConstants.PROPERTY_PROJECT_FOLDER.put(settings, new FSPath(getSourcesFileObject().getFileSystem(), getSourcesFileObject().getPath()));
             } catch (FileStateInvalidException ex) {
             }
             PreBuildArtifact scriptArtifact = getScriptArtifact();
             BuildFile makeArtifact = null;
             if (scriptArtifact != null) {
-                settings.putProperty(WizardConstants.PROPERTY_RUN_CONFIGURE, Boolean.TRUE);
+                WizardConstants.PROPERTY_RUN_CONFIGURE.put(settings, Boolean.TRUE);
                 FileObject script = scriptArtifact.getScript();
-                settings.putProperty(WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER, script.getParent().getPath());
-                settings.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH, script.getPath());
+                WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER.put(settings, script.getParent().getPath());
+                WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.put(settings, script.getPath());
                 String args = scriptArtifact.getArguments(buildEnv, cs, flags);
-                settings.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS, args);
+                WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS.put(settings, args);
                 String command = scriptArtifact.getCommandLine(args, script.getParent().getPath());
-                settings.putProperty(WizardConstants.PROPERTY_CONFIGURE_COMMAND, command);
+                WizardConstants.PROPERTY_CONFIGURE_COMMAND.put(settings, command);
                 
                 String makefile = script.getParent().getPath()+"/Makefile"; //NOI18N
-                ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+                ExecutionEnvironment env = WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizardDescriptor);
                 if (env != null) {
                     makefile = RemoteFileUtil.normalizeAbsolutePath(makefile, env);
                 }
@@ -288,11 +284,11 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
                 makeArtifact = getMakeArtifact();
             }
             if (makeArtifact != null) {
-                settings.putProperty(WizardConstants.PROPERTY_RUN_REBUILD, Boolean.TRUE);
-                settings.putProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH, makeArtifact.getFile());
-                settings.putProperty(WizardConstants.PROPERTY_WORKING_DIR, CndPathUtilities.getDirName(makeArtifact.getFile()));
-                settings.putProperty(WizardConstants.PROPERTY_BUILD_COMMAND, makeArtifact.getBuildCommandLine(null, CndPathUtilities.getDirName(makeArtifact.getFile())));
-                settings.putProperty(WizardConstants.PROPERTY_CLEAN_COMMAND, makeArtifact.getCleanCommandLine(null, CndPathUtilities.getDirName(makeArtifact.getFile())));
+                WizardConstants.PROPERTY_RUN_REBUILD.put(settings, Boolean.TRUE);
+                WizardConstants.PROPERTY_USER_MAKEFILE_PATH.put(settings, makeArtifact.getFile());
+                WizardConstants.PROPERTY_WORKING_DIR.put(settings, CndPathUtilities.getDirName(makeArtifact.getFile()));
+                WizardConstants.PROPERTY_BUILD_COMMAND.put(settings, makeArtifact.getBuildCommandLine(null, CndPathUtilities.getDirName(makeArtifact.getFile())));
+                WizardConstants.PROPERTY_CLEAN_COMMAND.put(settings, makeArtifact.getCleanCommandLine(null, CndPathUtilities.getDirName(makeArtifact.getFile())));
             }
         }
         
@@ -346,7 +342,7 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
                 return PreBuildSupport.findArtifactInFolder(sourceFileObject, sourceEnv, cs);
             } else {
                 if (wizardDescriptor != null) {
-                    ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+                    ExecutionEnvironment env = WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizardDescriptor);
                     if (env == null) {
                         env = ExecutionEnvironmentFactory.getLocal();
                     }

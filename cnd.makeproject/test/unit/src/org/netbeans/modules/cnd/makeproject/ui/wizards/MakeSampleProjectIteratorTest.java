@@ -245,9 +245,9 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
                 TemplateWizard wiz = new TemplateWizard();
                 wiz.setTemplate(templateDO);
                 projectCreator.initialize(wiz);
-                wiz.putProperty(WizardConstants.PROPERTY_NAME, destdir.getName());
+                WizardConstants.PROPERTY_NAME.put(wiz, destdir.getName());
                 ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
-                wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, 
+                WizardConstants.PROPERTY_PROJECT_FOLDER.put(wiz, 
                     new FSPath(FileSystemProvider.getFileSystem(ee), RemoteFileUtil.normalizeAbsolutePath(destdir.getAbsolutePath(), ee)));
                 try {
                     setRef.set(projectCreator.instantiate());
