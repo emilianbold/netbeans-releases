@@ -69,8 +69,7 @@ public class FilesystemsAPICompatTest extends NbTestCase {
     
     public static Test suite() {
         return NbModuleSuite.createConfiguration(FilesystemsAPICompatTest.class).
-            gui(false).
-                addTest("testGetStatus").suite();
+            gui(false).suite();
     }
     
     private ExtraFS fs;
