@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript.nodejs.problems;
 
+import java.util.Objects;
 import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
@@ -83,8 +84,10 @@ public class CustomizerProblemResolver implements ProjectProblemResolver {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 71 * hash + (this.project != null ? this.project.hashCode() : 0);
+        int hash = 5;
+        hash = 83 * hash + Objects.hashCode(this.project);
+        hash = 83 * hash + Objects.hashCode(this.result);
+        hash = 83 * hash + Objects.hashCode(this.category);
         return hash;
     }
 
@@ -97,10 +100,17 @@ public class CustomizerProblemResolver implements ProjectProblemResolver {
             return false;
         }
         final CustomizerProblemResolver other = (CustomizerProblemResolver) obj;
-        if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
+        if (!Objects.equals(this.project, other.project)) {
+            return false;
+        }
+        if (!Objects.equals(this.result, other.result)) {
+            return false;
+        }
+        if (!Objects.equals(this.category, other.category)) {
             return false;
         }
         return true;
     }
+
 
 }
