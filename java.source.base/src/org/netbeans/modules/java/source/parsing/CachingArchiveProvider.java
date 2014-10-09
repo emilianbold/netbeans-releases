@@ -135,8 +135,9 @@ public final class CachingArchiveProvider {
             if (archive != null) {
                 synchronized (this) {
                     // optimize for no collision
-                    archive = archives.put(rootURI, archive);
-                    if (archive != null) {
+                    Archive oldArchive = archives.put(rootURI, archive);
+                    if (oldArchive != null) {
+                        archive = oldArchive;
                         archives.put(rootURI, archive);
                     }
                 }
