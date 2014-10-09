@@ -786,6 +786,7 @@ public class ModelUtils {
                     Collection<? extends TypeUsage> typeFromWith = getTypeFromWith(model, offset);
                     if (!typeFromWith.isEmpty()) {
                         String firstNamePart = index == -1 ? name : name.substring(0, index);
+                        String changedName = name;
                         for (TypeUsage type : typeFromWith) {
                             //Collection<TypeUsage> resolveTypeFromSemiType = ModelUtils.resolveTypeFromSemiType(model.getGlobalObject(), type);
                             String sType = type.getType();
@@ -795,10 +796,12 @@ public class ModelUtils {
 //                            }
                             localObject = ModelUtils.findJsObjectByName(model, sType);
                             if (localObject != null && localObject.getProperty(firstNamePart) != null) {
-                                name = localObject.getFullyQualifiedName() + "." + name;
-                                break;
+                                changedName = localObject.getFullyQualifiedName() + "." + name;
+                            } else {
+                                lastResolvedTypes.add(new TypeUsageImpl(sType + "." + name, -1, true));
                             }
                         }
+                        name = changedName;
                     }
                     
                     if (index > -1) { // the first part is a fqn
@@ -1091,11 +1094,13 @@ public class ModelUtils {
     
     public static List<String> expressionFromType(TypeUsage type) {
         String sexp = type.getType();
-        if ((sexp.startsWith("@exp;") || sexp.startsWith("@new;") || sexp.startsWith("@arr;") || sexp.startsWith("@pro;")
+        if ((sexp.startsWith("@exp;") || sexp.startsWith("@new;") || sexp.startsWith("@arr;") || sexp.contains("@pro;")
                 || sexp.startsWith("@call;") || sexp.startsWith(SemiTypeResolverVisitor.ST_WITH)) && (sexp.length() > 5)) {
             
-            int start = sexp.startsWith("@call;") || sexp.startsWith("@arr;") || sexp.startsWith(SemiTypeResolverVisitor.ST_WITH) ? 1 : sexp.charAt(5) == '@' ? 6 : 5;
-            sexp = sexp.substring(start);
+            if (sexp.charAt(0) == '@') {
+                int start = sexp.startsWith("@call;") || sexp.startsWith("@arr;") || sexp.startsWith(SemiTypeResolverVisitor.ST_WITH) ? 1 : sexp.charAt(5) == '@' ? 6 : 5;
+                sexp = sexp.substring(start);
+            }
             List<String> nExp = new ArrayList<String>();
             String[] split = sexp.split("@");
             for (int i = split.length - 1; i > -1; i--) {

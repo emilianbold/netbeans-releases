@@ -5,6 +5,6 @@ pp:CLASS:[PUBLIC]:ESCAPED{pp}:
       floors:FIELD:[PUBLIC]:ESCAPED{floors}<font color="#999999">ESCAPED{ : }Array.<xx.m.Floor></font>:
       locationCode:FIELD:[PUBLIC]:ESCAPED{locationCode}<font color="#999999">ESCAPED{ : }String</font>:
       prototype:CLASS:[PUBLIC]:ESCAPED{prototype}:
-        getOrganizationUnitTitle:METHOD:[PUBLIC]:ESCAPED{getOrganizationUnitTitle}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }StringESCAPED{|}pp.m.Building.prototype@pro;title@call;@arr;split</font>:
+        getOrganizationUnitTitle:METHOD:[PUBLIC]:ESCAPED{getOrganizationUnitTitle}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }String</font>:
         getTitleWithoutOrganizationUnit:METHOD:[PUBLIC]:ESCAPED{getTitleWithoutOrganizationUnit}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }String</font>:
       title:FIELD:[PUBLIC]:ESCAPED{title}<font color="#999999">ESCAPED{ : }String</font>:
