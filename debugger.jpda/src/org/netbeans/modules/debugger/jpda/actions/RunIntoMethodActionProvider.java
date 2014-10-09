@@ -424,6 +424,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     @Override
                     public boolean exec(Event event) {
                         ThreadReference tr = ((BreakpointEvent) event).thread();
+                        JPDAThreadImpl jtr = null;
                         try {
                             if (!preferredThread.equals(tr)) {
                                 logger.log(Level.FINE, "doAction: tracingExecutor.exec({0}) called with non-preferred thread.", event);
@@ -449,6 +450,8 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                                         }
                                     }
                                 }
+                            } else {
+                                jtr = t;
                             }
                         } catch (InternalExceptionWrapper iex) {
                         } catch (InternalException iex) {
@@ -460,6 +463,9 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                         } catch (IllegalThreadStateException itex) {
                         } catch (IncompatibleThreadStateException itex) {
                         } catch (InvalidStackFrameExceptionWrapper isex) {
+                        }
+                        if (jtr == null) {
+                            jtr = debugger.getThread(tr);
                         }
                         if (logger.isLoggable(Level.FINE)) {
                             logger.fine("doAction: tracingExecutor.exec("+event+") called with thread "+tr+" which is "+((preferredThread.equals(tr)) ? "" : "not ")+"preferred.");
@@ -479,7 +485,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                         } catch (VMDisconnectedExceptionWrapper e) {
                             return false;
                         }
-                        traceLineForMethod(debugger, t, methodName, methodClassType,
+                        traceLineForMethod(debugger, jtr, methodName, methodClassType,
                                            isNative, line, doFinishWhenMethodNotFound,
                                            methodEntry);
                         return true;
