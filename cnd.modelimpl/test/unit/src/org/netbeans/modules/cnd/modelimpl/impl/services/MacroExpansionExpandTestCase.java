@@ -59,7 +59,9 @@ import java.io.PrintStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 
@@ -161,7 +163,8 @@ public class MacroExpansionExpandTestCase extends MacroExpansionDocProviderImplB
                 assertNotNull(doc);
                 streamOut.println(res);
             } else {
-                String res = mp.expand(doc, startOffset, endOffset);
+                CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
+                String res = mp.expand(doc, csmFile, startOffset, endOffset, true);
                 assertNotNull(res);
 
                 streamOut.println(res);
@@ -196,7 +199,8 @@ public class MacroExpansionExpandTestCase extends MacroExpansionDocProviderImplB
                 assertNotNull(doc);
                 streamOut.println(res);
             } else {
-                String res = mp.expand(doc, startOffset, endOffset);
+                CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
+                String res = mp.expand(doc, csmFile, startOffset, endOffset, true);
                 assertNotNull(res);
                 streamOut.println(res);
             }
