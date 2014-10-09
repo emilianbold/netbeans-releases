@@ -97,7 +97,7 @@ public class ProfilerLauncher {
     
     @ServiceProvider(service=ProfilerSession.Provider.class)
     public static final class SessionProvider extends ProfilerSession.Provider {
-        public ProfilerSession getSession(Lookup context) {
+        public ProfilerSession createSession(Lookup context) {
             return new ProfilerSessionImpl(context);
         }
     }
@@ -136,8 +136,9 @@ public class ProfilerLauncher {
             } else {
                 String command = normalizedCommand(getContext());
                 
-                if (!ProjectSensitivePerformer.supportsProfileProject(command, project)) {
-                    ProfilerDialogs.displayError("Profile project not supported for " +
+                if (!ProjectSensitivePerformer.supportsProfileProject(command, project) &&
+                    !FileSensitivePerformer.supportsProfileFile(command, getFile())) {
+                    ProfilerDialogs.displayError("Profiling not supported for " +
                                                  ProjectUtilities.getDisplayName(project));
                     return false;
                 }
@@ -174,15 +175,16 @@ public class ProfilerLauncher {
         
         protected synchronized boolean isCompatibleContext(Lookup _context) {
             // Compare projects
-            if (!super.isCompatibleContext(_context)) return false;
+            Project _project = _context.lookup(Project.class);
+            if (!Objects.equals(getProject(), _project)) return false;
             
             // Command and/or file can be changed if not profiling
             if (!inProgress()) return true;
             
             // Compare commands
-            String command = normalizedCommand(getContext());
-            String _command = normalizedCommand(_context);
-            if (!Objects.equals(command, _command)) return false;
+            String c = normalizedCommand(getContext());
+            String _c = normalizedCommand(_context);
+            if (!Objects.equals(c, _c)) return false;
             
             // Compare files
             FileObject f = getContext().lookup(FileObject.class);
