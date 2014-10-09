@@ -62,6 +62,7 @@ import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
@@ -151,8 +152,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.NodeJsProblemProvider_sources_none_title(),
                     Bundle.NodeJsProblemProvider_sources_none_description(ProjectUtils.getInformation(project).getDisplayName()),
-                    // XXX
-                    new CustomizerProblemResolver(project, "SOURCES")); // NOI18N
+                    new CustomizerProblemResolver(project, WebClientProjectConstants.CUSTOMIZER_SOURCES_IDENT));
             currentProblems.add(problem);
         }
     }

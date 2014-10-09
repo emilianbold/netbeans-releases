@@ -50,6 +50,7 @@ import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProv
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.openide.util.NbBundle;
 
 public final class NodeJsPreferencesValidator {
@@ -71,8 +72,7 @@ public final class NodeJsPreferencesValidator {
                 case DEBUG_PORT:
                     return NodeJsCustomizerProvider.CUSTOMIZER_IDENT;
                 case START_FILE:
-                    // XXX
-                    return "RUN"; // NOI18N
+                    return WebClientProjectConstants.CUSTOMIZER_RUN_IDENT;
                 default:
                     assert false : "Unknown validation source: " + message.getSource().toString();
             }

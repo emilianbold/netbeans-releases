@@ -50,6 +50,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
@@ -68,8 +69,8 @@ import org.openide.util.NbBundle;
  */
 public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCategoryProvider {
 
-    public static final String SOURCES = "SOURCES"; // NOI18N
-    public static final String RUN = "RUN"; // NOI18N
+    public static final String SOURCES = WebClientProjectConstants.CUSTOMIZER_SOURCES_IDENT;
+    public static final String RUN = WebClientProjectConstants.CUSTOMIZER_RUN_IDENT;
     private static final String LICENSE = "License"; // NOI18N
 
     private final String name;
