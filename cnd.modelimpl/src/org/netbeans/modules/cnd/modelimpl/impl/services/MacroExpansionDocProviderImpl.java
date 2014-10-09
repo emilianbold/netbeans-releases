@@ -631,7 +631,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             Pair<? extends CharSequence, ? extends CharSequence> format = null;
             if (formatter != null) {
                 formatter.init(fileToken);
-                format = formatter.process(fileToken);
+                format = formatter.process(fileToken, fileTS);
             }
             // empty comment - expansion of empty macro
             if (!APTUtils.isCommentToken(fileToken)) {
@@ -647,7 +647,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             fileToken = fileTS.token();
             while (fileToken != null && !APTUtils.isEOF(fileToken) && fileToken.getOffset() < docTokenEndOffset) {
                 if (formatter != null) {
-                    format = formatter.process(fileToken);
+                    format = formatter.process(fileToken, fileTS);
                 }
                 if (!APTUtils.isCommentToken(fileToken)) {
                     if (format != null) {
@@ -968,11 +968,19 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         private final TokenStream ts;
         private final FileImpl file;
         private APTToken currentToken = null;
+        private APTToken LAToken;
 
         public MyTokenSequence(TokenStream ts, FileImpl file) {
             this.ts = ts;
             this.file = file;
-            moveNext();
+            try {
+                currentToken = (APTToken) ts.nextToken();
+                if (currentToken != null) {
+                    LAToken = (APTToken) ts.nextToken();
+                }
+            } catch (TokenStreamException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
         public APTToken token() {
@@ -981,10 +989,17 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
         public void moveNext() {
             try {
-                currentToken = (APTToken) ts.nextToken();
+                currentToken = LAToken;
+                if (currentToken != null) {
+                    LAToken = (APTToken) ts.nextToken();
+                }
             } catch (TokenStreamException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+        
+        public APTToken LA() {
+            return LAToken;
         }
     }
 
@@ -1601,17 +1616,17 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             indent = 0;
         }
 
-        private Pair<? extends CharSequence, ? extends CharSequence> process(APTToken fileToken) {
-            return engine.process(fileToken);
+        private Pair<? extends CharSequence, ? extends CharSequence> process(APTToken fileToken, MyTokenSequence fileTS) {
+            return engine.process(fileToken, fileTS);
         }
 
         private interface Engine {
-            Pair<? extends CharSequence, ? extends CharSequence> process(APTToken fileToken);
+            Pair<? extends CharSequence, ? extends CharSequence> process(APTToken fileToken, MyTokenSequence fileTS);
         }
 
         private final class MacroBasedFormatter implements Engine {
 
-            public Pair<? extends CharSequence, ? extends CharSequence> process(APTToken fileToken) {
+            public Pair<? extends CharSequence, ? extends CharSequence> process(APTToken fileToken, MyTokenSequence fileTS) {
                 // Keep formatting in macros if it is possible
                 int aLine = 0;
                 int column = 0;
@@ -1641,8 +1656,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
 
         private final class TokenBasedFormatter implements Engine {
-
-            public Pair<? extends CharSequence, ? extends CharSequence> process(APTToken fileToken) {
+            public Pair<? extends CharSequence, ? extends CharSequence> process(APTToken fileToken, MyTokenSequence fileTS) {
                 // Do simplified reformatting
                 switch (fileToken.getType()) {
                     case APTTokenTypes.LCURLY: // {
@@ -1657,11 +1671,19 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                     }
                     case APTTokenTypes.RCURLY: // }
                     {
+                        APTToken next = fileTS.LA();
                         UndoIndent undo = null;
                         if (indent > 0) {
                             //need to remove prev spaces if indent have been added before
                             undo = new UndoIndent(tab);
                             indent--;
+                        }
+                        if (next != null && next.getType() == APTTokenTypes.SEMICOLON) {
+                            if (undo == null) {
+                                return null;
+                            }
+                            // deferred new line;
+                            return Pair.of(undo, null);
                         }
                         StringBuilder suffix = new StringBuilder();
                         suffix.append('\n'); // NOI18N
@@ -1679,7 +1701,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                         }
                         return Pair.of(null, suffix);
                     }
-                    case APTTokenTypes.LITERAL_for: // ;
+                    case APTTokenTypes.LITERAL_for: // for
                         // TODO: Nice to detect "for" scope and do not insert new line on semicolumn
                         break;
                     default:
