@@ -1583,7 +1583,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         protected final boolean inst;
         protected CsmType instantiatedType;
         protected CsmTemplateParameter parameter;
-        protected CsmClassifier cachedResolved;
+        protected CachedResolved cachedResolved;
 
         private Type(CsmType type, CsmInstantiation instantiation, TemplateParameterResolver templateParamResolver) {
             this.instantiation = instantiation;
@@ -1978,10 +1978,26 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
         
         protected CsmClassifier getCachedResolved(List<CsmInstantiation> instantiations) {
-            return cachedResolved;
+            if (cachedResolved != null) {
+                if (!cachedResolved.fromTemplateContext) {
+                    return cachedResolved.classifier;
+                }
+                // cache was done within template context
+                if (!instantiations.isEmpty()) {
+                    if (isTemplateBasedInstantiation(instantiations.get(0))) {
+                        return cachedResolved.classifier;
+                    }
+                }
+            }
+            return null;
         }
         
         protected CsmClassifier cacheResolved(List<CsmInstantiation> instantiations, CsmClassifier resolved) {
+            ////////////////////////////////////////////////////////////////////
+            // If there would be problems with performance, enable
+            // caching without conditions
+            ///////////////////////////////////////////////////////////////////
+            
             // FIXME: disabling cache in http://hg.netbeans.org/cnd-main/rev/bc1384664e04 was too agressive
             // new timing bacome:
             // FileMaps Cache: HITS=414,034, Used 174,633ms, SavedTime=828,068ms, Cached 1 Values (NULLs=0) ([88]Code Model Client Request :Go to declaration)
@@ -1994,15 +2010,18 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             //SELECT Cache: HITS=74, Used 671ms, SavedTime=74ms, Cached 11 Values (NULLs=0) ([58]Code Model Client Request :Go to declaration)
             //Resolver3 Cache: HITS=107, Used 671ms, SavedTime=1,605ms, Cached 32 Values (NULLs=22) ([58]Code Model Client Request :Go to declaration)
             //
-            if (true) cachedResolved = resolved;
-            if (cachedResolved != resolved) {
-                if (!instantiations.isEmpty() && instantiations.get(0) == instantiation) {
+            //if (true) cachedResolved = resolved;
+            if (resolved != null && getCachedResolved(instantiations) == null) {
+                if (!instantiations.isEmpty()) {
                     // We should cache resolved classifier only if this type is on top (knows full context).
                     // If type which do not know full context would cache resolved classifier,
                     // it might be reused later (because of cache) with other instantiations 
                     // above the context it knows, but would return already cached value.
-                    if (!isTemplateBasedInstantiation(instantiation)) {
-                        cachedResolved = resolved;
+                    boolean fromTemplateContext = isTemplateBasedInstantiation(instantiations.get(0));
+                    if (instantiations.get(0) == instantiation && !fromTemplateContext) {
+                        cachedResolved = new CachedResolved(resolved, false);
+                    } else if (fromTemplateContext) {
+                        cachedResolved = new CachedResolved(resolved, true);
                     }
                 }
             }
@@ -2081,6 +2100,18 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 cls = ((CsmMember) cls).getContainingClass();
             }
             return true;
+        }
+        
+        protected static class CachedResolved {
+            
+            public final CsmClassifier classifier;
+            
+            public final boolean fromTemplateContext;
+
+            public CachedResolved(CsmClassifier classifier, boolean fromTemplateContext) {
+                this.classifier = classifier;
+                this.fromTemplateContext = fromTemplateContext;
+            }
         }
     }
     
