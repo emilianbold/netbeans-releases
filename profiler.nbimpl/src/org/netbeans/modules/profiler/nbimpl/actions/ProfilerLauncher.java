@@ -109,8 +109,10 @@ public class ProfilerLauncher {
         }
 
         public boolean start() {
+            final NetBeansProfiler profiler = (NetBeansProfiler)getProfiler();
+            
             Project project = (Project)getProject();
-            ((NetBeansProfiler)getProfiler()).setProfiledProject(project, getFile());
+            profiler.setProfiledProject(project, getFile());
             
             final ProfilingSettings pSettings = getProfilingSettings();
             
@@ -129,9 +131,7 @@ public class ProfilerLauncher {
                 }
                 final AttachSettings _aSettings = aSettings;
                 ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
-                    public void run() {
-                        getProfiler().attachToApp(pSettings, _aSettings);
-                    }
+                    public void run() { profiler.attachToApp(pSettings, _aSettings); }
                 });
             } else {
                 String command = normalizedCommand(getContext());
@@ -147,6 +147,15 @@ public class ProfilerLauncher {
                 if (s != null) {
                     s.setProfilingSettings(pSettings);
                     s.run();
+                    
+                    // Not sure at this point if the profiling session will be started
+                    // or not (main class may be missing etc.). Let's say starting the
+                    // session has been cancelled if it's not running after 1200 ms.
+                    //
+                    // If it actually becomes alive after that time, the Profile button
+                    // will be correctly pressed again so it won't hurt user experience.
+                    int aliveCheck = Integer.getInteger("profiler.nbimpl.aliveCheck", 1200); // NOI18N
+                    profiler.checkAliveAfter(aliveCheck); // #247826 ?
                 } else {
                     return false;
                 }
@@ -425,15 +434,6 @@ public class ProfilerLauncher {
                 command, 
                 context
             );
-            
-            // Not sure at this point if the profiling session will be started
-            // or not (main class may be missing etc.). Let's say starting the
-            // session has been cancelled if it's not running after 1200 ms.
-            //
-            // If it actually becomes alive after that time, the Profile button
-            // will be correctly pressed again so it won't hurt user experience.
-            int aliveCheck = Integer.getInteger("profiler.nbimpl.aliveCheck", 1200); // NOI18N
-            Lookup.getDefault().lookup(NetBeansProfiler.class).checkAliveAfter(aliveCheck);
         }
     }
     
