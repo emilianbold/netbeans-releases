@@ -78,7 +78,7 @@ import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /** Object representing one module, possibly installed.
  * Responsible for opening of module JAR file; reading
@@ -544,15 +544,22 @@ class StandardModule extends Module {
         }
         
         ((StandardModuleData)data()).addCp(classp);
+
+        // possibly inject some patches
+        getManager().refineModulePath(this, classp);
         
-        // #27853:
-        getManager().refineClassLoader(this, loaders);
-        
-        try {
-            classloader = createNewClassLoader(classp, loaders);
-        } catch (IllegalArgumentException iae) {
-            // Should not happen, but just in case.
-            throw (IOException) new IOException(iae.toString()).initCause(iae);
+        // #27853
+        ClassLoader cld = getManager().refineClassLoader(this, loaders);
+        // the classloader may be shared, if this module is a fragment
+        if (cld != null) {
+            classloader = cld;
+        } else {
+            try {
+                classloader = createNewClassLoader(classp, loaders);
+            } catch (IllegalArgumentException iae) {
+                // Should not happen, but just in case.
+                throw (IOException) new IOException(iae.toString()).initCause(iae);
+            }
         }
     }
     
@@ -669,7 +676,7 @@ class StandardModule extends Module {
                 return lib.getAbsolutePath();
             }
             
-            if( Utilities.isMac() ) {
+            if( BaseUtilities.isMac() ) {
                 String jniMapped = mapped.replaceFirst("\\.dylib$",".jnilib");
                 lib = ifl.locate("modules/lib/" + jniMapped, getCodeNameBase(), false); // NOI18N
                 if (lib != null) {

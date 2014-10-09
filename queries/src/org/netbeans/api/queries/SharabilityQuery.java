@@ -52,7 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 // XXX perhaps should be in the Filesystems API instead of here?
 
@@ -163,7 +163,7 @@ public final class SharabilityQuery {
         Parameters.notNull("file", file);
         boolean asserts = false;
         assert asserts = true;
-        if (asserts && !Utilities.isMac()) {
+        if (asserts && !BaseUtilities.isMac()) {
             File normFile = FileUtil.normalizeFile(file);
             if (!file.equals(normFile)) {
                 throw new IllegalArgumentException("Must pass a normalized file: " + file + " vs. " + normFile);
@@ -172,7 +172,7 @@ public final class SharabilityQuery {
         URI uri = null;
         for (SharabilityQueryImplementation2 sqi : implementations2.allInstances()) {
             if (uri == null) {
-                uri = Utilities.toURI(file);
+                uri = BaseUtilities.toURI(file);
             }
             Sharability x = sqi.getSharability(uri);
             if (x != Sharability.UNKNOWN) {
@@ -211,7 +211,7 @@ public final class SharabilityQuery {
             }
         }
         if ("file".equals(uri.getScheme())) { // NOI18N
-            File file = FileUtil.normalizeFile(Utilities.toFile(uri));
+            File file = FileUtil.normalizeFile(BaseUtilities.toFile(uri));
             for (org.netbeans.spi.queries.SharabilityQueryImplementation sqi : implementations.allInstances()) {
                 int x = sqi.getSharability(file);
                 if (x != UNKNOWN) {

@@ -60,6 +60,7 @@ import java.util.logging.Level;
 import junit.framework.Assert;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.cookies.*;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -325,6 +326,7 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
         private Lkp (org.openide.util.lookup.InstanceContent ic) {
             super (ic);
             ic.add (this); // Environment.Provider
+            ic.add (new NbMutexEventProvider());
         }
         
         public org.openide.util.Lookup getEnvironment (org.openide.loaders.DataObject obj) {

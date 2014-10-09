@@ -52,7 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /** A dependency a module can have. Since version 7.10 this class is
  * {@link Serializable}.
@@ -416,7 +416,7 @@ public final class Dependency implements Serializable {
         Dependency d = (Dependency) o;
 
         return (type == d.type) && (comparison == d.comparison) && name.equals(d.name) &&
-        Utilities.compareObjects(version, d.version);
+        BaseUtilities.compareObjects(version, d.version);
     }
 
     /** Overridden to hash by contents. */

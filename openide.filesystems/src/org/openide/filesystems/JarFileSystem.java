@@ -80,7 +80,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /** A virtual filesystem based on a JAR archive.
 * <p>For historical reasons many AbstractFileSystem.* methods are implemented
@@ -167,18 +167,7 @@ public class JarFileSystem extends AbstractFileSystem {
         this.attr = impl;
     }
 
-    /**
-    * Constructor that can provide own capability for the filesystem.
-    * @param cap the capability
-     * @deprecated Useless.
-    */
-    @Deprecated
-    public JarFileSystem(FileSystemCapability cap) {
-        this();
-        setCapability(cap);
-    }
-
-    /** Creates new JAR for a given JAR file. This constructor
+   /** Creates new JAR for a given JAR file. This constructor
      * behaves basically like:
      * <pre>
      * JarFileSystem fs = new JarFileSystem();
@@ -427,18 +416,6 @@ public class JarFileSystem extends AbstractFileSystem {
     //        super.addNotify ();
     //    }
 
-    /** Prepare environment for external compilation or execution.
-    * <P>
-    * Adds name of the ZIP/JAR file, if it has been set, to the class path.
-     * @deprecated Useless.
-    */
-    @Deprecated
-    @Override
-    public void prepareEnvironment(Environment env) {
-        if (root != null) {
-            env.addClassPath(root.getAbsolutePath());
-        }
-    }
 
     //
     // List
@@ -985,7 +962,7 @@ public class JarFileSystem extends AbstractFileSystem {
     }
     
     private static void dumpFDs() {
-        if (Utilities.isUnix()) {
+        if (BaseUtilities.isUnix()) {
             String selfName = ManagementFactory.getRuntimeMXBean().getName().replaceAll("@.*", ""); // NOI18N
             LOGGER.log(Level.INFO, "Dumping file descriptors for pid {0}", selfName); // NOI18N
             int pid;
@@ -1017,7 +994,7 @@ public class JarFileSystem extends AbstractFileSystem {
      */
     private class Ref<T extends FileObject> extends WeakReference<T> implements Runnable {
         public Ref(T fo) {
-            super(fo, Utilities.activeReferenceQueue());
+            super(fo, BaseUtilities.activeReferenceQueue());
         }
 
         // do the cleanup

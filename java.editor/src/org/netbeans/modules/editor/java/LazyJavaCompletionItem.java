@@ -71,6 +71,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.whitelist.WhiteListQuery;
+import org.netbeans.modules.java.completion.Utilities;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;

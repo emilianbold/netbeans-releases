@@ -47,10 +47,24 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -66,12 +80,12 @@ import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
+import org.netbeans.api.extexecution.base.BaseExecutionService;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
+import org.netbeans.api.extexecution.base.input.LineProcessors;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
@@ -87,15 +101,17 @@ import org.netbeans.modules.j2ee.weblogic9.config.WLApplicationModule;
 import org.netbeans.modules.j2ee.weblogic9.config.WLDatasource;
 import org.netbeans.modules.j2ee.weblogic9.config.WLMessageDestination;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
+import org.netbeans.modules.j2ee.weblogic9.optional.NonProxyHostsHelper;
 import org.netbeans.modules.j2ee.weblogic9.ui.FailedAuthenticationSupport;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.modules.weblogic.common.api.BatchDeployListener;
+import org.netbeans.modules.weblogic.common.api.DeployListener;
+import org.netbeans.modules.weblogic.common.api.WebLogicDeployer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.windows.InputOutput;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -110,7 +126,13 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
     private static final RequestProcessor URL_WAIT_RP = new RequestProcessor("Weblogic URL Wait", 10); // NOI18N
 
-    private static final boolean SHOW_CONSOLE = Boolean.getBoolean(CommandBasedDeployer.class.getName() + ".showConsole");;
+    private static final Callable<String> NON_PROXY = new Callable<String>() {
+
+        @Override
+        public String call() throws Exception {
+            return NonProxyHostsHelper.getNonProxyHosts();
+        }
+    };
 
     public CommandBasedDeployer(WLDeploymentManager deploymentManager) {
         super(deploymentManager);
@@ -118,88 +140,100 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
     public ProgressObject directoryDeploy(final Target target, String name,
             File file, String host, String port, J2eeModule.Type type) {
-        return deploy(createModuleId(target, file, host, port, name, type),
-                file, "-nostage", "-name", name, "-source"); // NOI18N
+        return deploy(createModuleId(target, file, host, port, name, type), file, name);
     }
 
     public ProgressObject directoryRedeploy(final TargetModuleID moduleId) {
-        return redeploy(new TargetModuleID[] {moduleId});
+        return redeploy(new TargetModuleID[] {moduleId}, null);
     }
 
     public ProgressObject deploy(Target[] target, final File file, final File plan, String host, String port) {
         // TODO is this correct only first server mentioned
-        final TargetModuleID moduleId = createModuleId(target[0], file, host, port, file.getName(), null);
-        return deploy(moduleId, file);
+        String name = file.getName();
+        if (name.endsWith(".war") || name.endsWith(".ear")) {
+            name = name.substring(0, name.length() - 4);
+        }
+        final TargetModuleID moduleId = createModuleId(target[0], file, host, port, name, null);
+        return deploy(moduleId, file, null);
     }
 
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) {
-        return redeploy(targetModuleID, "-source", file.getAbsolutePath()); // NOI18N
+        return redeploy(targetModuleID, file);
     }
 
     public ProgressObject undeploy(final TargetModuleID[] targetModuleID) {
         final WLProgressObject progress = new WLProgressObject(targetModuleID);
 
-        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING,
-                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Started")));
+        final Map<String, TargetModuleID> names = new LinkedHashMap<String, TargetModuleID>();
+        for (TargetModuleID id : targetModuleID) {
+            names.put(id.getModuleID(), id);
+        }
 
-        DEPLOYMENT_RP.submit(new Runnable() {
+        BatchDeployListener listener = new BatchDeployListener() {
+
+            private TargetModuleID module;
 
             @Override
-            public void run() {
-                boolean failed = false;
-                LastLineProcessor lineProcessor = new LastLineProcessor();
-                for (TargetModuleID module : targetModuleID) {
-                    String name = module.getModuleID();
-                    ExecutionService service = createService("-undeploy", lineProcessor, "-name", name);
-                    progress.fireProgressEvent(null, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeploying", name)));
-
-                    Future<Integer> result = service.run();
-                    try {
-                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-                        if (value.intValue() != 0) {
-                            failed = true;
-                            progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                    ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
-                                    NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed",
-                                        lineProcessor.getLastLine())));
-                            FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), lineProcessor.getLastLine());
-                            break;
-                        } else {
-                            continue;
-                        }
-                    } catch (InterruptedException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed_Interrupted")));
-                        result.cancel(true);
-                        Thread.currentThread().interrupt();
-                        break;
-                    } catch (TimeoutException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed_Timeout")));
-                        result.cancel(true);
-                        break;
-                    } catch (ExecutionException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed_With_Message")));
-                        break;
-                    }
-                }
-                if (!failed) {
-                    progress.fireProgressEvent(null, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Completed")));
-                }
+            public void onStepStart(String name) {
+                module = names.get(name);
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeploying", name)));
             }
-        });
+
+            @Override
+            public void onStepFinish(String name) {
+                // noop
+            }
+
+            @Override
+            public void onStart() {
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Started")));
+            }
+
+            @Override
+            public void onFinish() {
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Completed")));
+            }
+
+            @Override
+            public void onFail(String line) {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed",
+                                line)));
+                FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), line);
+            }
+
+            @Override
+            public void onTimeout() {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed_Timeout")));
+            }
+
+            @Override
+            public void onInterrupted() {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed_Interrupted")));
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Undeployment_Failed_With_Message", ex.getMessage())));
+            }
+        };
+
+        WebLogicDeployer deployer = WebLogicDeployer.getInstance(
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
+        deployer.undeploy(names.keySet(), listener);
 
         return progress;
     }
@@ -207,68 +241,81 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     public ProgressObject start(final TargetModuleID[] targetModuleID) {
         final WLProgressObject progress = new WLProgressObject(targetModuleID);
 
-        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
-                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Started")));
+        final Map<String, TargetModuleID> names = new LinkedHashMap<String, TargetModuleID>();
+        for (TargetModuleID id : targetModuleID) {
+            names.put(id.getModuleID(), id);
+        }
 
-        DEPLOYMENT_RP.submit(new Runnable() {
+        BatchDeployListener listener = new BatchDeployListener() {
+
+            private TargetModuleID module;
 
             @Override
-            public void run() {
-                boolean failed = false;
-                LastLineProcessor lineProcessor = new LastLineProcessor();
-                for (TargetModuleID module : targetModuleID) {
-                    String name = module.getModuleID();
-                    ExecutionService service = createService("-start", lineProcessor, "-name", name);
-                    progress.fireProgressEvent(null, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Starting", name)));
+            public void onStepStart(String name) {
+                module = names.get(name);
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Starting", name)));
+            }
 
-                    Future<Integer> result = service.run();
-                    try {
-                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-                        if (value.intValue() != 0) {
-                            failed = true;
-                            progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                    ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                    NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed",
-                                        lineProcessor.getLastLine())));
-                            FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), lineProcessor.getLastLine());
-                            break;
-                        } else {
-                            waitForUrlReady(getDeploymentManager(), module, progress);
-                            continue;
-                        }
-                    } catch (InterruptedException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed_Interrupted")));
-                        result.cancel(true);
-                        Thread.currentThread().interrupt();
-                        break;
-                    } catch (TimeoutException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed_Timeout")));
-                        result.cancel(true);
-                        break;
-                    } catch (ExecutionException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.START, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed_With_Message")));
-                        break;
-                    }
-                }
-                if (!failed) {
-                    progress.fireProgressEvent(null, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Completed")));
+            @Override
+            public void onStepFinish(String name) {
+                try {
+                    waitForUrlReady(getDeploymentManager(), module, progress);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                } catch (TimeoutException ex) {
+                    // FIXME
                 }
             }
-        });
+
+            @Override
+            public void onStart() {
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Started")));
+            }
+
+            @Override
+            public void onFinish() {
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Completed")));
+            }
+
+            @Override
+            public void onFail(String line) {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.START, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed", line)));
+                FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), line);
+            }
+
+            @Override
+            public void onTimeout() {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.START, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed_Timeout")));
+            }
+
+            @Override
+            public void onInterrupted() {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.START, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed_Interrupted")));
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.START, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Start_Failed_With_Message", ex.getMessage())));
+            }
+        };
+
+        WebLogicDeployer deployer = WebLogicDeployer.getInstance(
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
+        deployer.start(names.keySet(), listener);
 
         return progress;
     }
@@ -276,67 +323,75 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     public ProgressObject stop(final TargetModuleID[] targetModuleID) {
         final WLProgressObject progress = new WLProgressObject(targetModuleID);
 
-        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
-                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Started")));
+        final Map<String, TargetModuleID> names = new LinkedHashMap<String, TargetModuleID>();
+        for (TargetModuleID id : targetModuleID) {
+            names.put(id.getModuleID(), id);
+        }
 
-        DEPLOYMENT_RP.submit(new Runnable() {
+        BatchDeployListener listener = new BatchDeployListener() {
+
+            private TargetModuleID module;
 
             @Override
-            public void run() {
-                boolean failed = false;
-                LastLineProcessor lineProcessor = new LastLineProcessor();
-                for (TargetModuleID module : targetModuleID) {
-                    String name = module.getModuleID();
-                    ExecutionService service = createService("-stop", lineProcessor, "-name", name);
-                    progress.fireProgressEvent(null, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stopping", name)));
-
-                    Future<Integer> result = service.run();
-                    try {
-                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-                        if (value.intValue() != 0) {
-                            failed = true;
-                            progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                    ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                                    NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed",
-                                        lineProcessor.getLastLine())));
-                            FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), lineProcessor.getLastLine());
-                            break;
-                        } else {
-                            continue;
-                        }
-                    } catch (InterruptedException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_Interrupted")));
-                        result.cancel(true);
-                        Thread.currentThread().interrupt();
-                        break;
-                    } catch (TimeoutException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_Timeout")));
-                        result.cancel(true);
-                        break;
-                    } catch (ExecutionException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_With_Message")));
-                        break;
-                    }
-                }
-                if (!failed) {
-                    progress.fireProgressEvent(null, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Completed")));
-                }
+            public void onStepStart(String name) {
+                module = names.get(name);
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stopping", name)));
             }
-        });
+
+            @Override
+            public void onStepFinish(String name) {
+                // noop
+            }
+
+            @Override
+            public void onStart() {
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Started")));
+            }
+
+            @Override
+            public void onFinish() {
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Completed")));
+            }
+
+            @Override
+            public void onFail(String line) {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed", line)));
+                FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), line);
+            }
+
+            @Override
+            public void onTimeout() {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_Timeout")));
+            }
+
+            @Override
+            public void onInterrupted() {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_Interrupted")));
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Stop_Failed_With_Message", ex.getMessage())));
+            }
+        };
+
+        WebLogicDeployer deployer = WebLogicDeployer.getInstance(
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
+        deployer.stop(names.keySet(), listener);
 
         return progress;
     }
@@ -347,7 +402,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
     public ProgressObject deployMessageDestinations(final Collection<WLMessageDestination> destinations) {
         return deployApplicationModule(destinations, NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_JMS"));
-    }   
+    }
 
     private ProgressObject deployApplicationModule(
             final Collection<? extends WLApplicationModule> modules, final String moduleDisplayName) {
@@ -372,7 +427,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                         LOGGER.log(Level.INFO, "Could not deploy {0}", appModule.getName());
                         continue;
                     }
-                    ExecutionService service = createService("-deploy", lineProcessor, "-name",
+                    BaseExecutionService service = createService("-deploy", lineProcessor, "-name",
                             appModule.getName(), "-upload", appModule.getOrigin().getAbsolutePath());
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
@@ -445,7 +500,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                 boolean failed = false;
                 LastLineProcessor lineProcessor = new LastLineProcessor();
                 for (File library : libraries) {
-                    ExecutionService service = createService("-deploy", lineProcessor,
+                    BaseExecutionService service = createService("-deploy", lineProcessor,
                             "-library" , library.getAbsolutePath()); // NOI18N
                     Future<Integer> result = service.run();
                     try {
@@ -495,149 +550,151 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         return progress;
     }
 
-    private ProgressObject deploy(final TargetModuleID moduleId, final File file,
-            final String... parameters) {
+    private ProgressObject deploy(final TargetModuleID moduleId, final File file, String name) {
         final WLProgressObject progress = new WLProgressObject(moduleId);
 
-        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
-                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deploying", file.getAbsolutePath())));
-
-        DEPLOYMENT_RP.submit(new Runnable() {
+        DeployListener listener = new DeployListener() {
 
             @Override
-            public void run() {
-                int length = getDeploymentManager().isRemote() ? parameters.length + 2 : parameters.length + 1;
-                String[] execParams = new String[length];
-                execParams[execParams.length - 1] = file.getAbsolutePath();
-                if (getDeploymentManager().isRemote()) {
-                    execParams[execParams.length - 2] = "-upload"; // NOI18N
-                }
-                if (parameters.length > 0) {
-                    System.arraycopy(parameters, 0, execParams, 0, parameters.length);
-                }
-
-                LastLineProcessor lineProcessor = new LastLineProcessor();
-                ExecutionService service = createService("-deploy", lineProcessor, execParams); // NOI18N
-                Future<Integer> result = service.run();
-                try {
-                    Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-                    if (value.intValue() != 0) {
-                        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed",
-                                    lineProcessor.getLastLine())));
-                        FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), lineProcessor.getLastLine());
-                    } else {
-                        //waitForUrlReady(factory, moduleId, progress);
-                        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Completed")));
-                    }
-                } catch (InterruptedException ex) {
-                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_Interrupted")));
-                    result.cancel(true);
-                    Thread.currentThread().interrupt();
-                } catch (TimeoutException ex) {
-                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_Timeout")));
-                    result.cancel(true);
-                } catch (ExecutionException ex) {
-                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_With_Message")));
-                }
+            public void onStart() {
+                progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deploying", file.getAbsolutePath())));
             }
-        });
+
+            @Override
+            public void onFinish() {
+                progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Completed")));
+            }
+
+            @Override
+            public void onFail(String line) {
+                progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed", line)));
+                FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), line);
+            }
+
+            @Override
+            public void onTimeout() {
+                progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_Timeout")));
+            }
+
+            @Override
+            public void onInterrupted() {
+                progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_Interrupted")));
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_With_Message", ex.getMessage())));
+            }
+        };
+
+        WebLogicDeployer deployer = WebLogicDeployer.getInstance(
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
+        deployer.deploy(file, listener, name);
 
         return progress;
     }
 
     // FIXME we should check the source of module if it differs this should do undeploy/deploy
-    private ProgressObject redeploy(final TargetModuleID[] targetModuleID, final String... parameters) {
+    private ProgressObject redeploy(final TargetModuleID[] targetModuleID, final File file) {
+        assert file == null || targetModuleID.length == 1;
         final WLProgressObject progress = new WLProgressObject(targetModuleID);
 
-        progress.fireProgressEvent(null, new WLDeploymentStatus(
-                ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
-                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Started")));
+        final Map<String, TargetModuleID> names = new LinkedHashMap<String, TargetModuleID>();
+        for (TargetModuleID id : targetModuleID) {
+            names.put(id.getModuleID(), id);
+        }
 
-        DEPLOYMENT_RP.submit(new Runnable() {
+        BatchDeployListener listener = new BatchDeployListener() {
+
+            private TargetModuleID module;
 
             @Override
-            public void run() {
-                boolean failed = false;
-                LastLineProcessor lineProcessor = new LastLineProcessor();
-                for (TargetModuleID module : targetModuleID) {
-                    String name = module.getModuleID();
-                    String[] execParams = new String[parameters.length + 2];
-                    execParams[0] = "-name"; // NOI18N
-                    execParams[1] = name;
-                    if (parameters.length > 0) {
-                        System.arraycopy(parameters, 0, execParams, 2, parameters.length);
-                    }
-                    ExecutionService service = createService("-redeploy", lineProcessor, execParams); // NOI18N
-                    progress.fireProgressEvent(null, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeploying", name)));
-
-                    Future<Integer> result = service.run();
-                    try {
-                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-                        if (value.intValue() != 0) {
-                            failed = true;
-                            progress.fireProgressEvent(module, new WLDeploymentStatus(
-                                    ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                    NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed",
-                                        lineProcessor.getLastLine())));
-                            FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), lineProcessor.getLastLine());
-                            break;
-                        } else {
-                            //waitForUrlReady(factory, moduleId, progress);
-                            continue;
-                        }
-                    } catch (InterruptedException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(module, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed_Interrupted")));
-                        result.cancel(true);
-                        Thread.currentThread().interrupt();
-                        break;
-                    } catch (TimeoutException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(module, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed_Timeout")));
-                        result.cancel(true);
-                        break;
-                    } catch (ExecutionException ex) {
-                        failed = true;
-                        progress.fireProgressEvent(module, new WLDeploymentStatus(
-                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed_With_Message")));
-                        break;
-                    }
-                }
-                if (!failed) {
-                    progress.fireProgressEvent(null, new WLDeploymentStatus(
-                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
-                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Completed")));
-                }
+            public void onStepStart(String name) {
+                module = names.get(name);
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeploying", name)));
             }
-        });
+
+            @Override
+            public void onStepFinish(String name) {
+                // noop
+            }
+
+            @Override
+            public void onStart() {
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Started")));
+            }
+
+            @Override
+            public void onFinish() {
+                progress.fireProgressEvent(null, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Completed")));
+            }
+
+            @Override
+            public void onFail(String line) {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed", line)));
+                FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), line);
+            }
+
+            @Override
+            public void onTimeout() {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed_Timeout")));
+            }
+
+            @Override
+            public void onInterrupted() {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed_Interrupted")));
+            }
+
+            @Override
+            public void onException(Exception ex) {
+                progress.fireProgressEvent(module, new WLDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed_With_Message", ex.getMessage())));
+            }
+        };
+
+        WebLogicDeployer deployer = WebLogicDeployer.getInstance(
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
+        if (file != null) {
+            deployer.redeploy(targetModuleID[0].getModuleID(), file, listener);
+        } else {
+            deployer.redeploy(names.keySet(), listener);
+        }
 
         return progress;
     }
 
-    private ExecutionService createService(final String command,
+    private BaseExecutionService createService(final String command,
             final LineProcessor processor, String... parameters) {
 
-        InstanceProperties ip = getDeploymentManager().getInstanceProperties();
-        String username = ip.getProperty(InstanceProperties.USERNAME_ATTR);
-        String password = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
+        WLDeploymentManager manager = getDeploymentManager();
+        InstanceProperties ip = manager.getInstanceProperties();
+        final String username = ip.getProperty(InstanceProperties.USERNAME_ATTR);
+        final String password = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
 
         String uri = ip.getProperty(InstanceProperties.URL_ATTR);
         // it is guaranteed it is WL
@@ -646,41 +703,86 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         String host = parts[0];
         String port = parts.length > 1 ? parts[1] : "";
 
-        ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary())
-                .redirectErrorStream(true);
+        org.netbeans.api.extexecution.base.ProcessBuilder builder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
+        builder.setExecutable(getJavaBinary());
+        builder.setRedirectErrorStream(true);
+
+        List<String> arguments = new ArrayList<String>();
         // NB supports only JDK6+ while WL 9, only JDK 5
-        if (getDeploymentManager().getDomainVersion() == null
-                || !getDeploymentManager().getDomainVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
-            builder= builder.addArgument("-Dsun.lang.ClassLoader.allowArraySyntax=true"); // NOI18N
-        }
-        builder = builder.addArgument("-cp") // NOI18N
-                .addArgument(getClassPath())
-                .addArgument("weblogic.Deployer") // NOI18N
-                .addArgument("-adminurl") // NOI18N
-                .addArgument("t3://" + host + ":" + port) // NOI18N
-                .addArgument("-username") // NOI18N
-                .addArgument(username)
-                .addArgument("-password") // NOI18N
-                .addArgument(password)
-                .addArgument(command);
-
-        for (String param : parameters) {
-            builder = builder.addArgument(param);
+        if (manager.getDomainVersion() == null
+                || !manager.getDomainVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_10)) {
+            arguments.add("-Dsun.lang.ClassLoader.allowArraySyntax=true"); // NOI18N
         }
 
-        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputVisible(true).outLineBased(true);
-        if (processor != null) {
-            descriptor = descriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
-
-                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                    return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(processor));
+        if (manager.isRemote()) {
+            try {
+                // XXX authentication
+                // t3 and t3s is afaik sits on top of http and https (source ?)
+                List<Proxy> proxies = ProxySelector.getDefault().select(new URI("http://" + host + ":" + port)); // NOI18N
+                if (!proxies.isEmpty()) {
+                    Proxy first = proxies.get(0);
+                    if (first.type() != Proxy.Type.DIRECT) {
+                        SocketAddress addr = first.address();
+                        if (addr instanceof InetSocketAddress) {
+                            InetSocketAddress inet = (InetSocketAddress) addr;
+                            if (first.type() == Proxy.Type.HTTP) {
+                                arguments.add("-Dhttp.proxyHost=" + inet.getHostString()); // NOI18N
+                                arguments.add("-Dhttp.proxyPort=" + inet.getPort()); // NOI18N
+                                arguments.add("-Dhttps.proxyHost=" + inet.getHostString()); // NOI18N
+                                arguments.add("-Dhttps.proxyPort=" + inet.getPort()); // NOI18N
+                            } else if (first.type() == Proxy.Type.SOCKS) {
+                                arguments.add("-DsocksProxyHost=" + inet.getHostString()); // NOI18N
+                                arguments.add("-DsocksProxyPort=" + inet.getPort()); // NOI18N
+                            }
+                        }
+                    }
                 }
-            });
+                arguments.add("-Dhttp.nonProxyHosts=\"" + NonProxyHostsHelper.getNonProxyHosts() + "\""); // NOI18N
+            } catch (URISyntaxException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
         }
-        if (!SHOW_CONSOLE) {
-            descriptor = descriptor.inputOutput(InputOutput.NULL);
+
+        arguments.add("-cp"); // NOI18N
+        arguments.add(getClassPath());
+        arguments.add("weblogic.Deployer"); // NOI18N
+        arguments.add("-adminurl"); // NOI18N
+        arguments.add(manager.getCommonConfiguration().getAdminURL()); // NOI18N
+        arguments.add("-username"); // NOI18N
+        arguments.add(username);
+//        arguments.add("-password"); // NOI18N
+//        arguments.add(password);
+        arguments.add(command);
+
+        arguments.addAll(Arrays.asList(parameters));
+        builder.setArguments(arguments);
+
+        final LineProcessor realProcessor;
+        if (processor != null || LOGGER.isLoggable(Level.FINEST)) {
+            if (processor == null) {
+                realProcessor = new LoggingLineProcessor(Level.FINEST);
+            } else if (!LOGGER.isLoggable(Level.FINEST)) {
+                realProcessor = processor;
+            } else {
+                realProcessor = LineProcessors.proxy(processor, new LoggingLineProcessor(Level.FINEST));
+            }
+        } else {
+            realProcessor = null;
         }
-        return ExecutionService.newService(builder, descriptor, "weblogic.Deployer " + command);
+        BaseExecutionDescriptor descriptor = new BaseExecutionDescriptor().outProcessorFactory(new BaseExecutionDescriptor.InputProcessorFactory() {
+
+            @Override
+            public InputProcessor newInputProcessor() {
+                return InputProcessors.bridge(realProcessor);
+            }
+        }).inReaderFactory(new BaseExecutionDescriptor.ReaderFactory() {
+
+            @Override
+            public Reader newReader() {
+                return new StringReader(password + "\n"); // NOI18N
+            }
+        });
+        return BaseExecutionService.newService(builder, descriptor);
     }
 
     private String getClassPath() {
@@ -795,7 +897,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             if (root == null) {
                 return;
             }
-            
+
             FileObject appXml = root.getFileObject("META-INF/application.xml"); // NOI18N
             if (appXml != null) {
                 InputStream is = new BufferedInputStream(appXml.getInputStream());
@@ -900,12 +1002,12 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                 }
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
-            }            
+            }
             return "/" + file.getName(); // NOI18N
         }
     }
 
-    private static class LastLineProcessor implements LineProcessor {
+    private static class LastLineProcessor implements org.netbeans.api.extexecution.base.input.LineProcessor {
 
         private static final Pattern STACK_TRACE_PATTERN = Pattern.compile("^\\s+((at)|(\\.\\.\\.)).*$"); // NOI18N
 
@@ -920,6 +1022,28 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
         public synchronized String getLastLine() {
             return last;
+        }
+
+        @Override
+        public void reset() {
+        }
+
+        @Override
+        public void close() {
+        }
+    }
+
+    private static class LoggingLineProcessor implements org.netbeans.api.extexecution.base.input.LineProcessor {
+
+        private final Level level;
+
+        public LoggingLineProcessor(Level level) {
+            this.level = level;
+        }
+
+        @Override
+        public void processLine(String line) {
+            LOGGER.log(level, line);
         }
 
         @Override

@@ -48,6 +48,7 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
+import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
@@ -56,6 +57,13 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties.JvmVendor;
@@ -69,7 +77,7 @@ class CustomizerJVM extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 3411155308004602121L;
 
-    private WLDeploymentManager manager;
+    private final WLDeploymentManager manager;
     
     CustomizerJVM(WLDeploymentManager manager) {
         this.manager = manager;
@@ -160,6 +168,80 @@ class CustomizerJVM extends javax.swing.JPanel {
         memoryOptions.getDocument().addDocumentListener( 
                 new PropertyDocumentListener(manager, WLPluginProperties.MEM_OPTS, 
                         memoryOptions));
+
+        proxyCheckBox.setEnabled(!manager.isRemote());
+        proxyCheckBox.setSelected(!manager.isRemote()
+                && Boolean.valueOf(manager.getInstanceProperties().getProperty(WLPluginProperties.PROXY_ENABLED)));
+        proxyCheckBox.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    manager.getInstanceProperties().setProperty(WLPluginProperties.PROXY_ENABLED, Boolean.TRUE.toString());
+                } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+                    manager.getInstanceProperties().setProperty(WLPluginProperties.PROXY_ENABLED, Boolean.FALSE.toString());
+                }
+            }
+        });
+
+        debugModeCheckBox.setEnabled(manager.isRemote());
+        debugModeCheckBox.setSelected(!manager.isRemote()
+                || Boolean.valueOf(manager.getInstanceProperties().getProperty(WLPluginProperties.REMOTE_DEBUG_ENABLED)));
+        debugModeCheckBox.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    portSpinner.setEnabled(true);
+                    manager.getInstanceProperties().setProperty(WLPluginProperties.REMOTE_DEBUG_ENABLED, Boolean.TRUE.toString());
+                } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+                    portSpinner.setEnabled(false);
+                    manager.getInstanceProperties().setProperty(WLPluginProperties.REMOTE_DEBUG_ENABLED, Boolean.FALSE.toString());
+                }
+            }
+        });
+
+        portSpinner.setEnabled(!manager.isRemote() || debugModeCheckBox.isSelected());
+        final SpinnerNumberModel debugPortModel = new SpinnerNumberModel(
+                Integer.parseInt(manager.getInstanceProperties().getProperty(WLPluginProperties.DEBUGGER_PORT_ATTR)), 0, 65535, 1);
+        debugPortModel.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                manager.getInstanceProperties().setProperty(WLPluginProperties.DEBUGGER_PORT_ATTR,
+                        ((Integer) debugPortModel.getValue()).toString());
+            }
+        });
+        portSpinner.setModel(debugPortModel);
+        portSpinner.setEditor(new javax.swing.JSpinner.NumberEditor(portSpinner, "#"));
+
+        JTextField portSpinnerTextField = ((JSpinner.NumberEditor) portSpinner.getEditor()).getTextField();
+        // work-around for jspinner incorrect fonts
+        Font font = portSpinnerTextField.getFont();
+        portSpinner.setFont(font);
+
+        vendorName.setEnabled(!manager.isRemote());
+        vmOptions.setEnabled(!manager.isRemote());
+        memoryOptions.setEnabled(!manager.isRemote());
+        noteChangesLabel.setVisible(!manager.isRemote());
+
+        if (manager.isRemote()) {
+            addAncestorListener(new AncestorListener() {
+
+                @Override
+                public void ancestorRemoved(AncestorEvent event) {
+                    manager.getInstanceProperties().refreshServerInstance();
+                }
+
+                @Override
+                public void ancestorAdded(AncestorEvent event) {
+                }
+
+                @Override
+                public void ancestorMoved(AncestorEvent event) {
+                }
+            });
+        }
     }
 
     /** This method is called from within the constructor to
@@ -182,6 +264,10 @@ class CustomizerJVM extends javax.swing.JPanel {
         memoryOptions = new javax.swing.JTextField();
         memoryOptionsLabel = new javax.swing.JLabel();
         memoryOptionsCommentLabel = new javax.swing.JLabel();
+        portLabel = new javax.swing.JLabel();
+        portSpinner = new javax.swing.JSpinner();
+        debugModeCheckBox = new javax.swing.JCheckBox();
+        proxyCheckBox = new javax.swing.JCheckBox();
 
         javaHomeLabel.setLabelFor(javaHome);
         org.openide.awt.Mnemonics.setLocalizedText(javaHomeLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_JavaHome")); // NOI18N
@@ -203,6 +289,12 @@ class CustomizerJVM extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(memoryOptionsCommentLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_VmMemoryOptionsComment")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "CustomizerJVM.portLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(debugModeCheckBox, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "CustomizerJVM.debugModeCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(proxyCheckBox, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "CustomizerJVM.proxyCheckBox.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -210,22 +302,37 @@ class CustomizerJVM extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(noteChangesLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(noteChangesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(vendorLabel)
-                            .addComponent(vmOptionsLabel)
                             .addComponent(javaHomeLabel)
+                            .addComponent(vmOptionsLabel)
                             .addComponent(memoryOptionsLabel))
-                        .addGap(8, 8, 8)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(javaHome, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
-                            .addComponent(vmOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
-                            .addComponent(memoryOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
-                            .addComponent(vmOptionsSampleLabel)
-                            .addComponent(memoryOptionsCommentLabel)
-                            .addComponent(vendorName, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap())
+                            .addComponent(javaHome)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(memoryOptionsCommentLabel)
+                                    .addComponent(vmOptionsSampleLabel)
+                                    .addComponent(vendorName, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(vmOptions)
+                            .addComponent(memoryOptions))
+                        .addGap(12, 12, 12))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(21, 21, 21)
+                                .addComponent(portLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(portSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(debugModeCheckBox)
+                            .addComponent(proxyCheckBox))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -246,11 +353,19 @@ class CustomizerJVM extends javax.swing.JPanel {
                 .addComponent(vmOptionsSampleLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(memoryOptions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(memoryOptionsLabel))
+                    .addComponent(memoryOptionsLabel)
+                    .addComponent(memoryOptions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(memoryOptionsCommentLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 164, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(proxyCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(debugModeCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(portLabel)
+                    .addComponent(portSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(noteChangesLabel)
                 .addContainerGap())
         );
@@ -277,12 +392,16 @@ class CustomizerJVM extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox debugModeCheckBox;
     private javax.swing.JTextField javaHome;
     private javax.swing.JLabel javaHomeLabel;
     private javax.swing.JTextField memoryOptions;
     private javax.swing.JLabel memoryOptionsCommentLabel;
     private javax.swing.JLabel memoryOptionsLabel;
     private javax.swing.JLabel noteChangesLabel;
+    private javax.swing.JLabel portLabel;
+    private javax.swing.JSpinner portSpinner;
+    private javax.swing.JCheckBox proxyCheckBox;
     private javax.swing.JLabel vendorLabel;
     private javax.swing.JComboBox vendorName;
     private javax.swing.JTextField vmOptions;

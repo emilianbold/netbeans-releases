@@ -30,13 +30,48 @@
  * Software is Sun Microsystems, Inc.
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ *//*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.openide.filesystems;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
@@ -53,10 +88,10 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.spi.CustomInstanceFactory;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -200,6 +235,33 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
         }
     } // end of OverFiles
     
+    private static volatile Lookup.Result<CustomInstanceFactory> factories;
+    
+    private static Collection<? extends CustomInstanceFactory> getInstanceFactories() {
+        Lookup.Result<CustomInstanceFactory> fr;
+        
+        if ((fr = factories) == null) {
+            factories = fr = Lookup.getDefault().lookupResult(CustomInstanceFactory.class);
+        }
+        return fr.allInstances();
+    }
+            
+    public static final <T> T createInstance(Class<T> type) throws InstantiationException, 
+            IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        T r = null;
+        for (CustomInstanceFactory fif : getInstanceFactories()) {
+            r = (T)fif.createInstance(type);
+            if (r != null) {
+                break;
+            }
+        }
+        if (r == null) {
+            Constructor<T> init = type.getDeclaredConstructor();
+            init.setAccessible(true);
+            r = init.newInstance();
+        }
+        return r;
+    }
     
     private static final class FOItem extends AbstractLookup.Pair<Object> {
         private static Reference<Object> EMPTY = new WeakReference<Object>(null);
@@ -257,14 +319,14 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
                     if (type == null) {
                         return null;
                     }
-                    if (SharedClassObject.class.isAssignableFrom(type)) {
-                        r = SharedClassObject.findObject(type.asSubclass(SharedClassObject.class), true);
-                    } else {
-                        r = type.newInstance();
-                    }
+                    r = createInstance(type);
                 } catch (InstantiationException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (IllegalAccessException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (NoSuchMethodException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
@@ -300,7 +362,7 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
         public String getDisplayName() {
             String n = fo.getName();
             try {
-                n = fo.getFileSystem().getStatus().annotateName(n, Collections.singleton(fo));
+                n = fo.getFileSystem().getDecorator().annotateName(n, Collections.singleton(fo));
             } catch (FileStateInvalidException ex) {
                 LOG.log(Level.WARNING, ex.getMessage(), ex);
             }
@@ -312,7 +374,7 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             // first of all try "instanceClass" property of the primary file
             Object attr = fo.getAttribute ("instanceClass");
             if (attr instanceof String) {
-                return Utilities.translate((String) attr);
+                return BaseUtilities.translate((String) attr);
             } else if (attr != null) {
                 LOG.warning(
                     "instanceClass was a " + attr.getClass().getName()); // NOI18N
@@ -350,7 +412,7 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             }
 
             name = name.replace ('-', '.');
-            name = Utilities.translate(name);
+            name = BaseUtilities.translate(name);
 
             //System.out.println ("Original: " + getPrimaryFile ().getName () + " new one: " + name); // NOI18N
             return name;

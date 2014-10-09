@@ -108,6 +108,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="newUtilityMethods">
+             <api name="general"/>
+             <summary>Added couple of new utility methods to TreeUtilities, ElementUtilities, and SourceUtils.</summary>
+             <version major="0" minor="136"/>
+             <date day="14" month="4" year="2014"/>
+             <author login="dbalek"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Added new utility methods getPathElementOfKind and getUninitializedFields to TreeUtilities.
+                Added new utility methods getElementName, findOverridableMethods, hasGetter and hasSetter to ElementUtilities.
+                Added new utility methods resolveCapturedType and getForwardReferences to SourceUtils.
+            </description>
+             <class package="org.netbeans.api.java.source" name="TreeUtilities"/>
+             <class package="org.netbeans.api.java.source" name="ElementUtilities"/>
+             <class package="org.netbeans.api.java.source" name="SourceUtils"/>           
+        </change>  
         <change id="RemoteJavadocPolicy">
             <api name="general"/>
             <summary>Added a possibility to specify remote javadoc handling policy</summary>

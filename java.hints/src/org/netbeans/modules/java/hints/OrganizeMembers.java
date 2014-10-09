@@ -65,13 +65,9 @@ import javax.swing.text.JTextComponent;
 import javax.tools.Diagnostic;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.GeneratorUtilities;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
@@ -79,7 +75,6 @@ import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
 import org.netbeans.editor.MarkBlockChain;
 import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.source.parsing.Hacks;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -104,7 +99,9 @@ public class OrganizeMembers {
     @TriggerTreeKind(Kind.CLASS)
     public static ErrorDescription checkMembers(final HintContext context) {
         for (Diagnostic<?> d : context.getInfo().getDiagnostics()) {
-            if (Hacks.isSyntaxError(d)) return null;
+            if (Hacks.isSyntaxError(d)) {
+                return null;
+            }
         }
         Source source = context.getInfo().getSnapshot().getSource();
         try {
@@ -149,10 +146,12 @@ public class OrganizeMembers {
         clazz = gu.importComments(clazz, copy.getCompilationUnit());
         TreeMaker maker = copy.getTreeMaker();
         ClassTree nue = maker.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), clazz.getImplementsClause(), Collections.<Tree>emptyList());
-        List<Tree> members = new ArrayList<Tree>(clazz.getMembers().size());
+        List<Tree> members = new ArrayList<>(clazz.getMembers().size());
         Map<Tree, Tree> memberMap = new HashMap<>(clazz.getMembers().size());
         for (Tree tree : clazz.getMembers()) {
-            if (copy.getTreeUtilities().isSynthetic(new TreePath(path, tree))) continue;
+            if (copy.getTreeUtilities().isSynthetic(new TreePath(path, tree))) {
+                continue;
+            }
             Tree member;
             switch (tree.getKind()) {
                 case CLASS:
@@ -244,8 +243,9 @@ public class OrganizeMembers {
                                 public void run(ResultIterator resultIterator) throws Exception {
                                     WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
                                     copy.toPhase(Phase.RESOLVED);
-                                    TreePath path = copy.getTreeUtilities().pathFor(component.getCaretPosition());
-                                    path = Utilities.getPathElementOfKind(EnumSet.of(Kind.CLASS, Kind.ENUM, Kind.INTERFACE, Kind.ANNOTATION_TYPE), path);
+                                    TreeUtilities tu = copy.getTreeUtilities();
+                                    TreePath path = tu.pathFor(component.getCaretPosition());
+                                    path = tu.getPathElementOfKind(EnumSet.of(Kind.CLASS, Kind.ENUM, Kind.INTERFACE, Kind.ANNOTATION_TYPE), path);
                                     if (path != null) {
                                         doOrganizeMembers(copy, path);
                                     } else {

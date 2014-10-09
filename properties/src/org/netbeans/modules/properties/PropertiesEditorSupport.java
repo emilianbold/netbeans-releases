@@ -140,6 +140,7 @@ import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import static java.util.logging.Level.FINER;
 import javax.swing.*;
+import org.openide.filesystems.StatusDecorator;
 
 /** 
  * Support for viewing .properties files (EditCookie) by opening them in a text editor.
@@ -492,20 +493,16 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         String annotatedName = null;
         final FileObject entry = myEntry.getFile();
         try {
-            FileSystem.Status status = entry.getFileSystem().getStatus();
+            StatusDecorator status = entry.getFileSystem().getDecorator();
             if (status != null) {
                 Set<FileObject> files = Collections.singleton(entry);
-                if (status instanceof FileSystem.HtmlStatus) {
-                    FileSystem.HtmlStatus hStatus = (FileSystem.HtmlStatus)
-                                                    status;
-                    annotatedName = hStatus.annotateNameHtml(rawName, files);
-                    if (rawName.equals(annotatedName)) {
-                        annotatedName = null;
-                    }
-                    if ((annotatedName != null)
-                            && (!annotatedName.startsWith("<html>"))) { //NOI18N
-                        annotatedName = "<html>" + annotatedName;       //NOI18N
-                    }
+                annotatedName = status.annotateNameHtml(rawName, files);
+                if (rawName.equals(annotatedName)) {
+                    annotatedName = null;
+                }
+                if ((annotatedName != null)
+                        && (!annotatedName.startsWith("<html>"))) { //NOI18N
+                    annotatedName = "<html>" + annotatedName;       //NOI18N
                 }
                 if (annotatedName == null) {
                     annotatedName = status.annotateName(rawName, files);

@@ -267,7 +267,7 @@ class JaxWsPoliciesSupportImpl implements JaxWsPoliciesSupportImplementation {
             try {
                 InputStream stream = fileObject.getInputStream();
                 reader = new BufferedReader(  
-                        new InputStreamReader(stream) );
+                        new InputStreamReader(stream, "UTF-8")); // NOI18N
                 String line;
                 while( (line = reader.readLine()) != null ){
                     builder.append( line );

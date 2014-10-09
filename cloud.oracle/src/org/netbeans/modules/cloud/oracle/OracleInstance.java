@@ -56,9 +56,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.keyring.Keyring;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManager;
 import org.netbeans.libs.oracle.cloud.api.CloudSDKHelper;
@@ -70,9 +67,7 @@ import org.netbeans.modules.cloud.oracle.serverplugin.OracleDeploymentFactory;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.deploy.CommandBasedDeployer;
+import org.netbeans.modules.weblogic.common.api.WebLogicLayout;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -559,7 +554,7 @@ public class OracleInstance {
         }
         try {
             File home = Deployment.getDefault().getServerInstance(onPremiseServerInstanceId).getJ2eePlatform().getServerHome();
-            return WLPluginProperties.getWeblogicJar(home);
+            return WebLogicLayout.getWeblogicJar(home);
         } catch (InstanceRemovedException ex) {
             // ignore
         }

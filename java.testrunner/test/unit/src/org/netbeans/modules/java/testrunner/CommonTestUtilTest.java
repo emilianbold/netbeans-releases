@@ -51,7 +51,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public class CommonTestUtilTest {
     

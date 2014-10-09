@@ -52,6 +52,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.netbeans.junit.*;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 
 import org.openide.util.Mutex;
 import org.openide.util.Lookup;
@@ -254,6 +255,7 @@ implements CloneableEditorSupport.Env {
         private Lkp (org.openide.util.lookup.InstanceContent ic) {
             super (ic);
             ic.add (new DD ());
+            ic.add (new NbMutexEventProvider());
         }
     }
 

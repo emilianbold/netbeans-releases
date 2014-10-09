@@ -60,18 +60,26 @@ import org.openide.util.WeakListeners;
 public class Schedulers {
 
     //@GuardedBy("Schedulers.class")
-    private static Collection<? extends Scheduler> taskSchedulers;
+    private Collection<? extends Scheduler> taskSchedulers;
     //@GuardedBy("Scheduler.class")
-    private static Lookup.Result<Scheduler> result;
+    private Lookup.Result<Scheduler> result;
     //@GuardedBy("Scheduler.class")
-    private static LookupListener listener;
+    private LookupListener listener;
     
-    static synchronized void init () {
+    private Lookup lookup;
+    
+    private static final Schedulers INSTANCE = new Schedulers(null);
+    
+    private Schedulers(Lookup lookup) {
+        this.lookup = lookup;
+    }
+    
+    synchronized void init () {
         if (taskSchedulers == null) {
             if (result == null) {
                 assert listener == null;
                 listener = new LkpListener();
-                result = Lookup.getDefault().lookupResult(Scheduler.class);
+                result = (lookup == null ?Lookup.getDefault() : lookup).lookupResult(Scheduler.class);
                 result.addLookupListener(WeakListeners.create(
                     LookupListener.class,
                     listener,
@@ -81,16 +89,25 @@ public class Schedulers {
                     new ArrayList<Scheduler>(result.allInstances()));
         }
     }
+    
+    public static Schedulers getInstance(Lookup lkp) {
+        return new Schedulers(lkp);
+    }
+    
+    public static Collection<? extends Scheduler> getSchedulers () {
+        Schedulers inst = INSTANCE;
+        return inst.getSchedulerList();
+    }
 
     /**
      * For tests only.
      */
-    static synchronized Collection<? extends Scheduler> getSchedulers () {
+    public Collection<? extends Scheduler> getSchedulerList() {
         init();
         return taskSchedulers;
     }
 
-    private static class LkpListener implements LookupListener {
+    private class LkpListener implements LookupListener {
         @Override
         public void resultChanged(LookupEvent ev) {
             synchronized (Schedulers.class) {

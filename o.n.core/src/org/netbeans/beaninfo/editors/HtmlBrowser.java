@@ -140,7 +140,7 @@ public class HtmlBrowser extends Object {
                         FileObject fo2 = dobjs[i].getPrimaryFile();
                         String n = fo2.getName();
                         try {
-                            n = fo2.getFileSystem().getStatus().annotateName(n, dobjs[i].files());
+                            n = fo2.getFileSystem().getDecorator().annotateName(n, dobjs[i].files());
                         } catch (FileStateInvalidException e) {
                             // Never mind.
                         }

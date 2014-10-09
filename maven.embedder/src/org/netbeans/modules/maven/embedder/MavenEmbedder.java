@@ -47,6 +47,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -111,7 +113,7 @@ import org.netbeans.modules.maven.embedder.impl.NbRepositoryCache;
 import org.netbeans.modules.maven.embedder.impl.NbWorkspaceReader;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
 import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
@@ -220,7 +222,7 @@ public final class MavenEmbedder {
             if (localRep == null) {
                 localRep = RepositorySystem.defaultUserLocalRepository.getAbsolutePath();
             }
-            URI localRepU = Utilities.toURI(FileUtil.normalizeFile(new File(localRep)));
+            URI localRepU = BaseUtilities.toURI(FileUtil.normalizeFile(new File(localRep)));
             synchronized (lastLocalRepositoryLock) {
                 if (lastLocalRepository == null || !lastLocalRepository.equals(localRepU)) {
                     FileOwnerQuery.markExternalOwner(localRepU, FileOwnerQuery.UNOWNED, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -265,6 +267,83 @@ public final class MavenEmbedder {
         }
         normalizePaths(result.getProject());
         return result;
+    }
+
+    public List<MavenExecutionResult> readProjectsWithDependencies(MavenExecutionRequest req, List<File> poms, boolean useWorkspaceResolution) {
+        if (useWorkspaceResolution) {
+            req.setWorkspaceReader(new NbWorkspaceReader());
+        }
+//        File pomFile = req.getPom();
+        
+        Map<File, MavenExecutionResult> results = new HashMap<>(poms.size());
+        List<ProjectBuildingResult> projectBuildingResults = new LinkedList<>();
+        
+        ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
+        configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+        configuration.setResolveDependencies(true);
+        configuration.setRepositorySession(maven.newRepositorySession(req));
+
+        try {
+            projectBuildingResults = projectBuilder.build(poms, true, configuration);
+        } catch (ProjectBuildingException ex) {
+            //don't add the exception here. this should come out as a build marker, not fill
+            //the error logs with msgs
+            List<ProjectBuildingResult> pbrs = ex.getResults();
+            if(pbrs != null) {
+                for (ProjectBuildingResult pbr : pbrs) {
+                    if(!pbr.getProblems().isEmpty()) {
+                        // exception holds info about all problematic projects
+                        DefaultMavenExecutionResult r = new DefaultMavenExecutionResult();
+                        results.put(pbr.getPomFile(), r.addException(ex));
+                    } else {
+                        setResult(pbr, results);
+                    }
+                }
+            } else {
+                for (File f : poms) {
+                    DefaultMavenExecutionResult r = new DefaultMavenExecutionResult();
+                    results.put(f, r.addException(ex));                
+                } 
+            }
+        }
+
+//        for (File pom : poms) {
+//            try {
+//                ProjectBuildingResult rs = projectBuilder.build(pom, configuration);
+//                if(rs != null) {
+//                    projectBuildingResults.add(rs);
+//                }
+//            } catch (ProjectBuildingException ex) {
+//                //don't add the exception here. this should come out as a build marker, not fill
+//                //the error logs with msgs
+//                List<ProjectBuildingResult> pbrs = ex.getResults();
+//                if(pbrs != null) {
+//                    assert pbrs.size() == 1;
+//                    for (ProjectBuildingResult pbr : pbrs) {
+//                        if(!pbr.getProblems().isEmpty()) {
+//                            // exception holds info about all problematic projects
+//                            DefaultMavenExecutionResult r = new DefaultMavenExecutionResult();
+//                            results.put(pbr.getPomFile(), r.addException(ex));
+//                        } else {
+//                            setResult(pbr, results, null);
+//                        }
+//                    }
+//                } else {
+////                        for (File f : poms) {
+//                        DefaultMavenExecutionResult r = new DefaultMavenExecutionResult();
+//                        results.put(pom, r.addException(ex));                
+////                        } 
+//                }
+//            }
+//        }
+
+        for (ProjectBuildingResult pbr : projectBuildingResults) {
+            MavenExecutionResult r = results.get(pbr.getPomFile());
+            if( r == null ) {
+                setResult(pbr, results);
+            } 
+        }
+        return new ArrayList<>(results.values());
     }
 
     public Artifact createArtifactWithClassifier(@NonNull String groupId, @NonNull String artifactId, @NonNull String version, String type, String classifier) {
@@ -568,6 +647,14 @@ public final class MavenEmbedder {
         }
     }
 
+    private void setResult(ProjectBuildingResult pbr, Map<File, MavenExecutionResult> results) {
+        DefaultMavenExecutionResult r = new DefaultMavenExecutionResult();
+        normalizePaths(pbr.getProject());
+        r.setProject(pbr.getProject());
+            r.setDependencyResolutionResult(pbr.getDependencyResolutionResult());
+        results.put(pbr.getPomFile(), r);
+    }
+    
     /**
      * descriptor containing some base information about the models collected while building
      * effective model. 

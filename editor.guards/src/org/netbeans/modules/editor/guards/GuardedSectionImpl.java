@@ -46,16 +46,15 @@ package org.netbeans.modules.editor.guards;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.spi.editor.guards.GuardedRegionMarker;
 import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider.Result;
-import org.openide.text.NbDocument;
 
 /** Represents one guarded section.
  */
@@ -212,10 +211,15 @@ public abstract class GuardedSectionImpl {
     void markGuarded(StyledDocument doc, PositionBounds bounds, boolean mark) {
         int begin = bounds.getBegin().getOffset();
         int end = bounds.getEnd().getOffset();
-        if (mark) {
-            NbDocument.markGuarded(doc, begin, end - begin + 1);
-        } else
-            NbDocument.unmarkGuarded(doc, begin, end - begin + 1);
+        
+        GuardedRegionMarker marker = LineDocumentUtils.as(doc, GuardedRegionMarker.class);
+        if (marker != null) {
+            if (mark) {
+                marker.protectRegion(begin, end - begin + 1);
+            } else {
+                marker.unprotectRegion(begin, end - begin + 1);
+            }
+        }
     }
     
     /** Marks the section as guarded.
@@ -235,7 +239,7 @@ public abstract class GuardedSectionImpl {
         if (valid) {
             final StyledDocument doc = guards.getDocument();
             final BadLocationException[] blex = new BadLocationException[1];
-            NbDocument.runAtomic(doc, new Runnable() {
+            Runnable r = new Runnable() {
                 public void run() {
                     try {
                         int start = getStartPosition().getOffset();
@@ -247,7 +251,9 @@ public abstract class GuardedSectionImpl {
                         blex[0] = ex;
                     }
                 }
-            });
+            };
+            
+            GuardedSectionsImpl.doRunAtomic(doc, r);
             
             if (blex[0] != null) {
                 throw blex[0];

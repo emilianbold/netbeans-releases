@@ -75,7 +75,11 @@ made subject to such option by the copyright holder.
    The Java Platform API permits access to installed Java platforms (for example,
    the J2SE JDK, or various mobile-device emulators for J2ME). Particular platform
    types are registered by modules and can store customized information about the
-   platform to disk.
+   platform to disk. <br/>
+   <b>Note</b> that this module concentrates the part of th API which is independent of
+   the client desktop (and Swing UI library) environment. Its desktop-dependent counterpart
+   is in the <a href="@org-netbeans-modules-java-platform-ui@/index.html">
+   org.netbeans.modules.java.platform.ui</a> module.
   </api>
  </answer>
 

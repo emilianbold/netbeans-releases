@@ -49,7 +49,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
@@ -79,6 +81,9 @@ public abstract class LibraryAccessor {
     }
     
     public abstract Library createLibrary (LibraryImplementation libraryImplementation);
+
+    @NonNull
+    public abstract LibraryStorageArea getArea(@NonNull LibraryManager manager);
 
     // RADIKAL GENERIC HAX!
 

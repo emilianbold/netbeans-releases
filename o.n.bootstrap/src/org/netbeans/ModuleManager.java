@@ -116,6 +116,11 @@ public final class ModuleManager extends Modules {
     // the same, indexed by code name base
     private final Map<String,Module> modulesByName = new HashMap<String,Module>(100);
 
+    /**
+     * Modules whose contents is injected into 
+     */
+    private final Map<String, Collection<Module>> fragmentModules = new HashMap<String, Collection<Module>>(5);
+
     // for any module, set of known failed dependencies or problems,
     // or null if this has not been computed yet
     private final Object MODULE_PROBLEMS_LOCK = new Object();
@@ -831,10 +836,46 @@ public final class ModuleManager extends Modules {
         return installer.refineProvides (m);
     }
     /** Used by Module to communicate with the ModuleInstaller re. classloader. */
-    public void refineClassLoader(Module m, List parents) {
+    public ClassLoader refineClassLoader(Module m, List parents) {
         // #27853:
         installer.refineClassLoader(m, parents);
+        // if fragment, integrate into the host's classloader. Should be called under mutex()
+        String fragmentHost = m.getFragmentHostCodeName();
+        if (fragmentHost == null) {
+            return null;
+        }
+        Module theHost = modulesByName.get(fragmentHost);
+        if (theHost == null) {
+            throw new IllegalStateException("Missing hosting module " + fragmentHost + " for fragment " + m.getCodeName());
+        }
+        return theHost.getClassLoader();
     }
+    
+    private Collection<Module> getAttachedFragments(Module m) {
+        String cdn = m.getCodeNameBase();
+        Collection<Module> frags = fragmentModules.get(cdn);
+        return frags == null ? Collections.<Module>emptySet() : frags;
+    }
+    
+    /**
+     * Refines the module's own path with patches from other modules
+     * @param m the module
+     * @param path the ordered list of classpath fragments
+     */
+    void refineModulePath(Module m, List<File> path) {
+        String cnb = m.getCodeNameBase();
+        Collection<Module> injectList = fragmentModules.get(cnb);
+        if (injectList == null) {
+            return;
+        }
+        for (Module inject : injectList) {
+            Util.err.log(Level.FINER, "Compat: injecting contents of fragment " + inject.getCodeNameBase() + " into " + m.getCodeNameBase());
+            List<File> allJars = inject.getAllJars();
+            // PENDING: shouldn't we add those jars first, so they take precedence ?
+            path.addAll(allJars);
+        }
+    }
+    
     /** Use by OneModuleClassLoader to communicate with the ModuleInstaller re. masking. */
     public boolean shouldDelegateResource(Module m, Module parent, String pkg) {
         // Cf. #19621:
@@ -909,6 +950,7 @@ public final class ModuleManager extends Modules {
         modules.add(m);
         modulesByName.put(m.getCodeNameBase(), m);
         providersOf.possibleProviderAdded(m);
+        
         lookup.add(m);
         firer.created(m);
         firer.change(new ChangeFirer.Change(this, PROP_MODULES, null, null));
@@ -918,6 +960,54 @@ public final class ModuleManager extends Modules {
         // problems arising from inter-module dependencies.
         clearProblemCache();
         firer.fire();
+    }
+    
+    /**
+     * Attaches a fragment to an existing module. The hosting module must NOT
+     * be already enabled, otherwise an exception will be thrown. Enabled module
+     * may have some classes already loaded, and they cannot be patched.
+     * 
+     * @param m module to attach if it is a fragment
+     */
+    private void attachModuleFragment(Module m) {
+        String codeNameBase = m.getFragmentHostCodeName();
+        if (codeNameBase == null) {
+            return;
+        }
+        Module host = modulesByName.get(codeNameBase);
+        if (host != null && host.isEnabled()) {
+            throw new IllegalStateException("Module " + host.getCodeName() + " is already enabled");
+        }
+        Collection<Module> frags = fragmentModules.get(codeNameBase);
+        if (frags == null) {
+            frags = new ArrayList<Module>(1);
+            fragmentModules.put(codeNameBase, frags);
+        }
+        frags.add(m);
+    }
+    
+    /**
+     * Removes a fragment module. Throws an exception if the fragment's
+     * host is already enabled and its classloader may have loaded fragment's
+     * contents.
+     * <p/>
+     * The method does nothing for non-fragment modules
+     * 
+     * @param m the module to remove
+     */
+    private void removeFragmentFromHost(Module m) {
+        String fragHost = m.getFragmentHostCodeName();
+        if (fragHost == null) {
+            return;
+        }
+        Module hostMod = modulesByName.get(fragHost);
+        if (hostMod != null && hostMod.isEnabled()) {
+            throw new IllegalStateException("Host module " + m.getCodeName() + " was loaded, cannot remove fragment");
+        }
+        Collection<Module> frags = fragmentModules.get(fragHost);
+        if (frags != null) {
+            frags.remove(m);
+        }
     }
 
     /** Remove a module from the managed set.
@@ -929,6 +1019,7 @@ public final class ModuleManager extends Modules {
         if (m.isFixed()) throw new IllegalArgumentException("fixed module: " + m); // NOI18N
         if (m.isEnabled()) throw new IllegalArgumentException("enabled module: " + m); // NOI18N
         ev.log(Events.DELETE_MODULE, m);
+        removeFragmentFromHost(m);
         modules.remove(m);
         modulesByName.remove(m.getCodeNameBase());
         providersOf.possibleProviderRemoved(m);
@@ -1060,6 +1151,14 @@ public final class ModuleManager extends Modules {
         ev.log(Events.START_ENABLE_MODULES, toEnable);
         netigso.willEnable(toEnable);
         for (;;) {
+            // first connect fragments to their hosts, so classloaders are populated
+            for (Module m: toEnable) {
+                if (m.isEnabled()) {
+                    continue;
+                }
+                // store information from fragment modules for early initialization of hosting classlaoder:
+                attachModuleFragment(m);
+            }
             // Actually turn on the listed modules.
             // List of modules that need to be "rolled back".
             LinkedList<Module> fallback = new LinkedList<Module>();
@@ -1322,6 +1421,15 @@ public final class ModuleManager extends Modules {
                 throw new IOException("Parent " + name + " not found!"); // NOI18N
             }
             res.add(parent);
+        }
+        // dependencies of fragment modules should be injected into the main module.
+        Collection<Module> fragments = getAttachedFragments(m);
+        if (!fragments.isEmpty()) {
+            for (Module frag : fragments) {
+                Set<Module> mods = calculateParents(frag);
+                mods.remove(m);
+                res.addAll(mods);
+            }
         }
         return res;
     }

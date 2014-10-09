@@ -51,6 +51,57 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="server.is.free">
+        <api name="util"/>
+        <summary>Desktop independent utilities extracted</summary>
+        <version major="9" minor="0"/>
+        <date day="20" month="3" year="2014"/>
+        <author login="sdedic"/>
+        <compatibility modification="yes" addition="yes">
+            <p>
+                Runtime compatibility remains, compile time compatibility is
+                mostly preserved too. It is however recommended to upgrade
+                dependencies of client modules. Try running
+                <code>ant fix-dependencies</code> in your Ant module.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                The following classes were spinned of into 
+                <a href="@org-openide-util-base@/overview-summary.html">org.openide.util.base module</a>:
+            </p>
+            <ul>
+                <li><a href="@org-openide-util-base@/org/openide/util/Cancellable.html">Cancellable</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/ChangeSupport.html">ChangeSupport</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/CharSequences.html">CharSequences</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/Enumerations.html">Enumerations</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/Exceptions.html">Exceptions</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/MapFormat.html">MapFormat</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/ReadWriteAccess.html">ReadWriteAccess</a> created from former Mutex</li>
+                <li><a href="@org-openide-util-base@/org/openide/util/MutexException.html">MutexException</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/NbBundle.html">NbBundle</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/NbCollections.html">NbCollections</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/NotImplementedException.html">NotImplementedExcepion</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/Pair.html">Pair</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/Parameters.html">Parameters</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/RequestProcessor.html">RequestProcessor</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/Task.html">Task</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/TaskListener.html">TaskListener</a></li>
+                <!--<li><a href="@org-openide-util-base@/org/openide/util/TimedSoftReference.html">TimedSoftReference</a></li>-->
+                <li><a href="@org-openide-util-base@/org/openide/util/TopologicalSortException.html">TopologicalSortException</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/Union2.html">Union2</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/WeakListeners.html">WeakListeners</a></li>
+                <li><a href="@org-openide-util-base@/org/openide/util/WeakSet.html">WeakSet</a></li>
+            </ul>
+            <p>
+                The class <a href="@TOP@/org/openide/util/Utilities.html">Utilities</a> was also split and the
+                client desktop indepenent parts landed in <a href="@org-openide-util-base@/org/openide/util/BaseUtilities.html">BaseUtilities</a>.
+                Although all the constants and methods are still available through Utilities class, it is advised to change the dependencies
+                and reference them through BaseUtilities.
+            </p>
+        </description>
+        <issue number="243100"/>
+    </change>
     <change id="disabled-action-beep">
         <api name="util"/>
         <summary>Platform dependent sound when invoking a disabled action.</summary>
@@ -79,7 +130,7 @@ made subject to such option by the copyright holder.
         <description>
             <p>
                 Two new methods, <code>tryReadAccess</code> and <code>tryWriteAccess</code>,
-                added to <a href="@TOP@org/openide/util/Mutex.Privileged.html">Mutex.Privileged</a>
+                added to <a href="@TOP@/org/openide/util/Mutex.Privileged.html">Mutex.Privileged</a>
                 to allow better control when waiting for a lock.
             </p>
         </description>
@@ -696,7 +747,7 @@ made subject to such option by the copyright holder.
         <description>
             <p>
                 Added new constructor
-                <a href="@TOP@/org/openide/util/Mutex.html">Mutex(Privileged, Executor)</a>
+                <a href="@TOP@//org/openide/util/Mutex.html">Mutex(Privileged, Executor)</a>
                 that allows creators of the mutex to intercept and wrap all actions running
                 inside the mutex with custom code.
             </p>
@@ -891,7 +942,7 @@ made subject to such option by the copyright holder.
           application. Instead NetBeans now fully support logging two JDK's
           standard <a href="@JDK@/java/util/logging/Logger.html">Logger</a>.
           See the
-          <a href="@TOP@/org/openide/util/doc-files/logging.html">NetBeans logging guide</a>
+          <a href="@org-openide-util-base@//org/openide/util/doc-files/logging.html">NetBeans logging guide</a>
           to learn the best practises for logging in NetBeans.
           <br/>
           <a href="@TOP@/org/openide/ErrorManager.html">ErrorManager</a>
@@ -935,9 +986,9 @@ made subject to such option by the copyright holder.
       <author login="jtulach"/>
       <compatibility addition="yes" modification="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
       <description>
-        <a href="@TOP@/org/openide/util/RequestProcessor.html">RequestProcessor.create(Runnable, boolean)</a>
+        <a href="@org-openide-util-base@/org/openide/util/RequestProcessor.html">RequestProcessor.create(Runnable, boolean)</a>
         has been added to allow creation of 
-        <a href="@TOP@/org/openide/util/RequestProcessor.Task.html">Task</a>
+        <a href="@org-openide-util-base@/org/openide/util/RequestProcessor.Task.html">Task</a>
         that has not executed its runnable yet, but looks like it is finished.
       </description>
       <class package="org.openide.util" name="RequestProcessor"/>
@@ -974,9 +1025,9 @@ made subject to such option by the copyright holder.
       <author login="jtulach"/>
       <compatibility addition="yes" modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
       <description>
-          When one calls <a href="@TOP@/org/openide/util/RequestProcessor.Task.html">RequestProcessor.Task</a>.cancel(), 
+          When one calls <a href="@org-openide-util-base@/org/openide/util/RequestProcessor.Task.html">RequestProcessor.Task</a>.cancel(), 
           the running thread gets interrupted if the 
-          <a href="@TOP@/org/openide/util/RequestProcessor.html#RequestProcessor(java.lang.String,%20int,%20boolean)">
+          <a href="@org-openide-util-base@/org/openide/util/RequestProcessor.html#RequestProcessor(java.lang.String,%20int,%20boolean)">
           RequestProcessor(string, int, boolean) 
           </a> 
           constructor is used.

@@ -62,6 +62,8 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 
+import javax.swing.text.Position;
+
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
@@ -375,10 +377,9 @@ public class WebSocketMethodsTask implements CancellableTask<CompilationInfo> {
                     .getDifferences(myFileObject);
             ChangeInfo changeInfo = new ChangeInfo();
             for (Difference difference : differences) {
-                PositionRef start = difference.getStartPosition();
-                PositionRef end = difference.getEndPosition();
-                changeInfo.add(myFileObject, start.getPosition(),
-                        end.getPosition());
+                Position start = difference.getStartPosition();
+                Position end = difference.getEndPosition();
+                changeInfo.add(myFileObject, start, end);
             }
             modificationTask.commit();
             return changeInfo;

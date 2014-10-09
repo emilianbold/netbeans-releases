@@ -69,7 +69,7 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 
 /** Catalog for WSIT related schemas that enables completion support in editor.
@@ -77,7 +77,7 @@ import org.netbeans.modules.xml.catalog.spi.CatalogListener;
  * @author Martin Grebac
  *
  */
-public class WSITSchemaCatalog implements CatalogReader, CatalogDescriptor, EntityResolver {
+public class WSITSchemaCatalog implements CatalogReader, CatalogDescriptor2, EntityResolver {
 
     private Map<String, String> localSchemaDefs = null;
 
@@ -162,7 +162,7 @@ public class WSITSchemaCatalog implements CatalogReader, CatalogDescriptor, Enti
      * @param type of icon defined by JavaBeans specs
      * @return icon representing current state or null
      */
-    public java.awt.Image getIcon(int type) {
+    public String getIconResource(int type) {
         return null;
     }
 

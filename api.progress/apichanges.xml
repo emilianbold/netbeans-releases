@@ -107,6 +107,21 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
   <changes>
+      <change id="swingSplit">
+          <api name="progress_api"/>
+          <summary>
+              Swing dependencies separated into a new module.
+          </summary>
+          <version major="1" minor="40"/>
+          <date day="18" month="9" year="2014"/>
+          <author login="sdedic"/>
+          <compatibility binary="compatible" source="incompatible" deprecation="yes" deletion="yes" addition="yes"/>
+          <description>
+              Progress API was split so that parts that are directly connected to Swing types were migrated
+              to a separate module. 
+          </description>
+          <issue number="247111"/>
+      </change>
     <change id="customDialogs">
         <api name="progress_api"/>
         <summary><code>ProgressUtils</code> class with <code>runOffEventThreadWithCustomDialogContent</code> and <code>runOffEventThreadWithProgressDialog</code> methods were added.</summary>

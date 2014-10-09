@@ -78,10 +78,12 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
         this.project = proj;
     }
 
+    @Override
     public Element getConfigurationFragment(final String elementName, final String namespace, final boolean shared) {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
-            public Element run() {
-                assert project != null;
+        assert project != null;
+        return ProjectManager.mutex(false, project).readAccess(new Mutex.Action<Element>() {
+            @Override
+            public Element run() {                
                 Lookup lookup = project.getLookup();
                 assert lookup != null : project.getClass().getName() + " violates #185464";
                 AuxiliaryConfiguration delegate = lookup.lookup(AuxiliaryConfiguration.class);
@@ -137,8 +139,10 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
         });
     }
 
+    @Override
     public void putConfigurationFragment(final Element fragment, final boolean shared) throws IllegalArgumentException {
-        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+        ProjectManager.mutex(false, project).writeAccess(new Mutex.Action<Void>() {
+            @Override
             public Void run() {
                 String elementName = fragment.getLocalName();
                 String namespace = fragment.getNamespaceURI();
@@ -269,8 +273,10 @@ public class AuxiliaryConfigImpl implements AuxiliaryConfiguration {
         return false;
     }
 
+    @Override
     public boolean removeConfigurationFragment(final String elementName, final String namespace, final boolean shared) throws IllegalArgumentException {
-        return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
+        return ProjectManager.mutex(false, project).writeAccess(new Mutex.Action<Boolean>() {
+            @Override
             public Boolean run() {
                 AuxiliaryConfiguration delegate = project.getLookup().lookup(AuxiliaryConfiguration.class);
                 boolean result = false;

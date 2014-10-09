@@ -71,13 +71,11 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.codegen.ui.ElementNode;
 import org.netbeans.modules.java.editor.codegen.ui.ToStringPanel;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
@@ -97,13 +95,17 @@ public class ToStringGenerator implements CodeGenerator {
 
         private static final String ERROR = "<error>"; //NOI18N
 
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
-            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            ArrayList<CodeGenerator> ret = new ArrayList<>();
             JTextComponent component = context.lookup(JTextComponent.class);
             CompilationController controller = context.lookup(CompilationController.class);
+            if (component == null || controller == null) {
+                return ret;
+            }
             TreePath path = context.lookup(TreePath.class);
-            path = path != null ? Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path) : null;
-            if (component == null || controller == null || path == null) {
+            path = path != null ? controller.getTreeUtilities().getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path) : null;
+            if (path == null) {
                 return ret;
             }
             try {
@@ -115,24 +117,26 @@ public class ToStringGenerator implements CodeGenerator {
             if (typeElement == null || !typeElement.getKind().isClass()) {
                 return ret;
             }
-            List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+            List<ElementNode.Description> descriptions = new ArrayList<>();
             for (Element element : typeElement.getEnclosedElements()) {
                 switch (element.getKind()) {
                     case METHOD:
-                        if (element.getSimpleName().contentEquals("toString") && ((ExecutableElement) element).getParameters().isEmpty()) //NOI18N
+                        if (element.getSimpleName().contentEquals("toString") && ((ExecutableElement) element).getParameters().isEmpty()) { //NOI18N
                             return ret;
+                        }
                         break;
                     case FIELD:
-                        if (!ERROR.contentEquals(element.getSimpleName()) && !element.getModifiers().contains(Modifier.STATIC))
+                        if (!ERROR.contentEquals(element.getSimpleName()) && !element.getModifiers().contains(Modifier.STATIC)) {
                             descriptions.add(ElementNode.Description.create(controller, element, null, true, true));
+                        }
                 }
             }
             ret.add(new ToStringGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false)));
             return ret;
         }
     }
-    private JTextComponent component;
-    private ElementNode.Description description;
+    private final JTextComponent component;
+    private final ElementNode.Description description;
 
     /** Creates a new instance of ToStringGenerator */
     private ToStringGenerator(JTextComponent component, ElementNode.Description description) {
@@ -140,38 +144,43 @@ public class ToStringGenerator implements CodeGenerator {
         this.description = description;
     }
 
+    @Override
     public String getDisplayName() {
         return org.openide.util.NbBundle.getMessage(ToStringGenerator.class, "LBL_tostring"); //NOI18N
     }
 
+    @Override
     public void invoke() {
         final int caretOffset = component.getCaretPosition();
         final ToStringPanel panel = new ToStringPanel(description);
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ToStringGenerator.class, "LBL_generate_tostring")); //NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
-        if (dialogDescriptor.getValue() != dialogDescriptor.getDefaultValue())
+        if (dialogDescriptor.getValue() != dialogDescriptor.getDefaultValue()) {
             return;
+        }
         JavaSource js = JavaSource.forDocument(component.getDocument());
         if (js != null) {
             try {
                 ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
 
+                    @Override
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         Element e = description.getElementHandle().resolve(copy);
                         TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
-                        path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
+                        path = copy.getTreeUtilities().getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
                         if (path == null) {
                             String message = NbBundle.getMessage(ToStringGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
                             org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                         } else {
                             ClassTree cls = (ClassTree) path.getLeaf();
-                            ArrayList<VariableElement> fields = new ArrayList<VariableElement>();
+                            ArrayList<VariableElement> fields = new ArrayList<>();
                             for (ElementHandle<? extends Element> elementHandle : panel.getVariables()) {
                                 VariableElement field = (VariableElement) elementHandle.resolve(copy);
-                                if (field == null)
+                                if (field == null) {
                                     return;
+                                }
                                 fields.add(field);
                             }
                             MethodTree mth = createToStringMethod(copy, fields, cls.getSimpleName().toString());
@@ -189,11 +198,12 @@ public class ToStringGenerator implements CodeGenerator {
     private static MethodTree createToStringMethod(WorkingCopy wc, Iterable<? extends VariableElement> fields, String typeName) {
         TreeMaker make = wc.getTreeMaker();
         Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);
-        List<AnnotationTree> annotations = new LinkedList<AnnotationTree>();
+        List<AnnotationTree> annotations = new LinkedList<>();
         if (GeneratorUtils.supportsOverride(wc)) {
             TypeElement override = wc.getElements().getTypeElement("java.lang.Override"); //NOI18N
-            if (override != null)
+            if (override != null) {
                 annotations.add(wc.getTreeMaker().Annotation(wc.getTreeMaker().QualIdent(override), Collections.<ExpressionTree>emptyList()));
+            }
         }
         ModifiersTree modifiers = make.Modifiers(mods, annotations);
 
@@ -201,8 +211,9 @@ public class ToStringGenerator implements CodeGenerator {
         boolean first = true;
         for (VariableElement variableElement : fields) {
             StringBuilder sb = new StringBuilder();
-            if (!first)
+            if (!first) {
                 sb.append(", ");
+            }
             sb.append(variableElement.getSimpleName().toString()).append('=');
             exp = make.Binary(Tree.Kind.PLUS, exp, make.Literal(sb.toString()));
             exp = make.Binary(Tree.Kind.PLUS, exp, make.Identifier(variableElement.getSimpleName()));

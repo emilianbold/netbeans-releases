@@ -97,13 +97,13 @@ public class JavadocAndSourceRootDetectionTest extends NbTestCase {
         assertNotNull(sourcesRoot);
         assertEquals(root.getFileObject("javadoc-and-sources-detection/src"), sourcesRoot);
 
-        URL url = JavadocAndSourceRootDetectionTest.class.getResource("ui/PackageViewTest.class");
+        URL url = JavadocAndSourceRootDetectionTest.class.getResource("../classpath/support/ProjectClassPathImplementationTest.class");
         assertNotNull(url);
         FileObject fo2 = URLMapper.findFileObject(url);
         assertNotNull(fo2);
         FileObject packageRoot = JavadocAndSourceRootDetection.findPackageRoot(fo2);
         assertNotNull(packageRoot);
-        assertEquals("org/netbeans/spi/java/project/support/ui/PackageViewTest.class".
+        assertEquals("org/netbeans/spi/java/project/classpath/support/ProjectClassPathImplementationTest.class".
                 replace('/', File.separatorChar), FileUtil.getRelativePath(packageRoot, fo2));
 
         FileObject libZip = FileUtil.createData(root, "a-lib.zip");

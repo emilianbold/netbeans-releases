@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.project.ant;
 
-import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,13 +58,12 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.xml.XMLUtil;
@@ -79,10 +77,13 @@ import org.xml.sax.SAXException;
  * @author Jesse Glick
  * @see "issue #49976"
  */
-public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor {
+public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor2 {
     
+    /** duplicated in project.ant/o.n.m.project.ant.ProjectXMLUtil **/
     private static final String PREFIX = "http://www.netbeans.org/ns/"; // NOI18N
+    /** duplicated in project.ant/o.n.m.project.ant.ProjectXMLUtil **/
     private static final String EXTENSION = "xsd"; // NOI18N
+    /** duplicated in project.ant/o.n.m.project.ant.ProjectXMLUtil **/
     private static final String CATALOG = "ProjectXMLCatalog"; // NOI18N
     
     /** Default constructor for use from layer. */
@@ -117,8 +118,8 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
 
     public void addCatalogListener(CatalogListener l) {}
 
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/project/ui/resources/projectTab.png", true);
+    public String getIconResource(int type) {
+        return "org/netbeans/modules/project/ui/resources/projectTab.png";
     }
 
     public void refresh() {}

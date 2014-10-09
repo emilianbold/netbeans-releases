@@ -67,10 +67,9 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
-import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
+import static org.netbeans.modules.java.ui.CategorySupport.OPTION_ID;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
 import org.openide.util.NbBundle;
 
 /**
@@ -316,7 +315,7 @@ public class FmtNaming extends javax.swing.JPanel implements Runnable {
         
     }
 
-    private static final class NamingCategorySupport extends DocumentCategorySupport {
+    private static final class NamingCategorySupport extends CategorySupport.DocumentCategorySupport {
 
         private NamingCategorySupport(Preferences preferences, JPanel panel) {
             super(preferences, "naming", panel, NbBundle.getMessage(FmtNaming.class, "SAMPLE_Naming"), //NOI18N

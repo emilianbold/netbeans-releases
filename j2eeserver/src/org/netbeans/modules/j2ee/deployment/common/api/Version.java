@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.j2ee.deployment.common.api;
 
+import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -62,7 +63,7 @@ import org.openide.util.Parameters;
 //       so that it can be reused in other places. Perhaps it should be deprecated
 //       here in favor of web.common one???
 
-public final class Version {
+public final class Version implements Serializable {
 
     private static final Pattern JSR277_PATTERN = Pattern.compile(
             "(\\d+)(\\.(\\d+)(\\.(\\d+)(\\.(\\d+))?)?)?(-((\\w|-)+))?");

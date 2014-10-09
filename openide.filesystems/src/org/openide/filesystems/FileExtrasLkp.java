@@ -42,20 +42,21 @@
 
 package org.openide.filesystems;
 
-import java.util.Arrays;
 import java.util.Set;
 import javax.swing.Action;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- *
+ * Stub for backwards compatibility. The real implementation which bridges
+ * in system actions moved to openide.filesystems.compat8
+ * 
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class FileExtrasLkp extends AbstractLookup {
-    private final FileSystem fs;
+    final FileSystem fs;
     private final InstanceContent ic;
-    private final Set<FileObject> set;
+    final Set<FileObject> set;
 
     public FileExtrasLkp(FileSystem fs, Set<FileObject> set) {
         this(fs, new InstanceContent(), set);
@@ -67,12 +68,4 @@ final class FileExtrasLkp extends AbstractLookup {
         this.set = set;
     }
 
-    @Override @SuppressWarnings("deprecation")
-    protected void beforeLookup(Template<?> template) {
-        if (Action.class.isAssignableFrom(template.getType())) {
-            ic.set(Arrays.asList(fs.getActions(set)), null);
-        }
-    }
-    
-    
 }

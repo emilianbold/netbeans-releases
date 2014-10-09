@@ -73,25 +73,24 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.parsing.impl.Installer;
+import org.netbeans.modules.parsing.impl.ParserEventForward;
 import org.netbeans.modules.parsing.impl.SchedulerAccessor;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
-import org.netbeans.modules.parsing.impl.event.EventSupport;
-import org.netbeans.modules.parsing.impl.indexing.Util;
+import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.implspi.SchedulerControl;
+import org.netbeans.modules.parsing.implspi.SourceControl;
+import org.netbeans.modules.parsing.implspi.SourceEnvironment;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
-import org.openide.util.UserQuestionException;
 
 
 /**
@@ -109,12 +108,18 @@ import org.openide.util.UserQuestionException;
  * calls for the same file or document will return two different <code>Source</code>
  * instances if the first instance is garbage collected prior the second call.
  *
+ * <p>
+ * The Source can be created with a {@link Lookup} instance. This Lookup should be used
+ * by parsing system, or callback tasks to locate services, that depend on the execution
+ * context (ie which user is executing the task). Check the specific service's documentation 
+ * on details of the service's context dependencies.
  * 
  * @author Jan Jancura
  * @author Tomas Zezula
+ * @since 9.2 implements Lookup.Provider
  */
-public final class Source {
-    
+public final class Source implements Lookup.Provider {
+
     /**
      * Gets a <code>Source</code> instance for a file. The <code>FileObject</code>
      * passed to this method has to be a valid data file. There is no <code>Source</code>
@@ -134,9 +139,35 @@ public final class Source {
             return null;
         }
         
-        return _get(fileObject.getMIMEType(), fileObject);
+        return _get(fileObject.getMIMEType(), fileObject, Lookup.getDefault());
     }
     
+    /**
+     * Gets a <code>Source</code> instance for a file. The <code>FileObject</code>
+     * passed to this method has to be a valid data file. There is no <code>Source</code>
+     * representation for a folder.
+     * <p/>
+     * This form allows to specify Lookup that provides access to context-dependent
+     * services for the parsing system and the user tasks called from parsing API.
+     * 
+     * @param fileObject The file to get <code>Source</code> for.
+     * @param lkp The Lookup that provides the context
+     * @return The <code>Source</code> for the given file or <code>null</code>
+     *   if the file doesn't exist.
+     * @since 9.2
+     */
+    public static Source create (
+        FileObject          fileObject, Lookup lkp
+    ) {
+        Parameters.notNull("fileObject", fileObject); //NOI18N
+        Parameters.notNull("lkp", lkp); //NOI18N
+        if (!fileObject.isValid() || !fileObject.isData()) {
+            return null;
+        }
+        
+        return _get(fileObject.getMIMEType(), fileObject, lkp);
+    }
+
     /**
      * Gets a <code>Source</code> instance for a <code>Document</code>. This method
      * is consistent with {@link #create(org.openide.filesystems.FileObject)} in the way
@@ -171,6 +202,23 @@ public final class Source {
     public static Source create (
         Document            document
     ) {
+        return create(document, Lookup.getDefault());
+    }
+    
+    /**
+     * Gets a <code>Source</cide> instance for a <code>Document</code>. For details, please 
+     * see {@link #create(javax.swing.text.Document)}; this form allows to specify
+     * a Lookup that provides access to user or context-dependent services.
+     * 
+     * @param document the document to get <code>Source</code> for
+     * @param lkp the context for the source
+     * @return the Source instance
+     * @see #create(javax.swing.text.Document) 
+     * @since 9.2
+     */
+    public static Source create (
+        Document            document, Lookup lkp
+    ) {
         Parameters.notNull("document", document); //NOI18N
 
         String mimeType = DocumentUtilities.getMimeType(document);
@@ -190,21 +238,21 @@ public final class Source {
             }
             
             if (source == null) {
-                FileObject fileObject = Util.getFileObject(document);
+                FileObject fileObject = Utilities.getFileObject(document);
                 if (fileObject != null) {
-                    source = Source._get(mimeType, fileObject);
+                    source = Source._get(mimeType, fileObject, lkp);
                 } else {
                     if ("text/x-dialog-binding".equals(mimeType)) { //NOI18N
                         InputAttributes attributes = (InputAttributes) document.getProperty(InputAttributes.class);
                         LanguagePath path = LanguagePath.get(MimeLookup.getLookup(mimeType).lookup(Language.class));
                         Document doc = (Document) attributes.getValue(path, "dialogBinding.document"); //NOI18N
                         if (doc != null) {
-                            fileObject = Util.getFileObject(doc);
+                            fileObject = Utilities.getFileObject(doc);
                         } else {
                             fileObject = (FileObject) attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
                         }
                     }
-                    source = new Source(mimeType, document, fileObject);
+                    source = new Source(mimeType, document, fileObject, lkp);
                 }
                 document.putProperty(Source.class, new WeakReference<Source>(source));
             }
@@ -254,31 +302,13 @@ public final class Source {
             }
         }
         if (document != null) return document;
-        EditorCookie ec = null;
-
+        assert fileObject != null;
         try {
-            DataObject dataObject = DataObject.find (fileObject);
-            ec = dataObject.getLookup ().lookup (EditorCookie.class);
-        } catch (DataObjectNotFoundException ex) {
-            //DataobjectNotFoundException may happen in case of deleting opened file
-            //handled by returning null
+            return sourceEnv.readDocument(fileObject, forceOpen);
+        } catch (IOException ioe) {
+            LOG.log (Level.WARNING, null, ioe);
+            return null;
         }
-
-        if (ec == null) return null;
-        Document doc = ec.getDocument ();
-        if (doc == null && forceOpen) {
-            try {
-                try {
-                    doc = ec.openDocument ();
-                } catch (UserQuestionException uqe) {
-                    uqe.confirmed ();
-                    doc = ec.openDocument ();
-                }
-            } catch (IOException ioe) {
-                LOG.log (Level.WARNING, null, ioe);
-            }
-        }
-        return doc;
     }
     
     /**
@@ -329,7 +359,7 @@ public final class Source {
                 // but they usually don't and this should be good enough for Snapshots.
                 try {
                     if (fileObject.isValid ()) {
-                        if (fileObject.getSize() <= Installer.MAX_FILE_SIZE) {
+                        if (fileObject.getSize() <= Utilities.getMaxFileSize()) {
                             final InputStream is = fileObject.getInputStream ();
                             assert is != null : "FileObject.getInputStream() returned null for FileObject: " + FileUtil.getFileDisplayName(fileObject); //NOI18N
                             try {
@@ -396,7 +426,7 @@ public final class Source {
                                 new Object[]{
                                     FileUtil.getFileDisplayName(fileObject),
                                     fileObject.getSize(),
-                                    Installer.MAX_FILE_SIZE
+                                    Utilities.getMaxFileSize()
                                 });
                         }
                     }
@@ -480,6 +510,7 @@ public final class Source {
         SourceAccessor.setINSTANCE(new MySourceAccessor());
     }
         
+    private final Lookup context;
     private final String mimeType;
     private final FileObject fileObject;
     private final Document document;
@@ -493,25 +524,43 @@ public final class Source {
     private Map<Class<? extends Scheduler>, SchedulerEvent> schedulerEvents;
     //GuardedBy(this)
     private SourceCache     cache;
-    //GuardedBy(this)
+    //GuardedBy(flags)
     private volatile long eventId;
-    //Changes handling
-    private final EventSupport support = new EventSupport (this);
+    private volatile boolean listeningOnChanges;
 
+    /**
+     * SourceEnvironment callback
+     */
+    private final SourceControl ctrl = new SourceControl(this);
+    /**
+     * Binding of source to its environment
+     */
+    private final SourceEnvironment sourceEnv;
+    /**
+     * Demultiplexes events from all parsers to SourceEnvironment.
+     */
+    private final ParserEventForward peFwd;
+
+    @SuppressWarnings("LeakingThisInConstructor")
     private Source (
         String              mimeType,
         Document            document,
-        FileObject          fileObject
+        FileObject          fileObject,
+        Lookup              context
     ) {
         this.mimeType =     mimeType;
         this.document =     document;
         this.fileObject =   fileObject;
+        this.context =      context;
+        this.peFwd = new ParserEventForward();
+        this.sourceEnv = Utilities.createEnvironment(this, ctrl);
     }
-
+    
     @NonNull
     private static Source _get(
             @NonNull final String mimeType,
-            @NonNull final FileObject fileObject) {
+            @NonNull final FileObject fileObject, 
+            @NonNull final Lookup context) {
         assert mimeType != null;
         assert fileObject != null;
 
@@ -519,30 +568,76 @@ public final class Source {
             final Reference<Source> sourceRef = instances.get(fileObject);
             Source source = sourceRef == null ? null : sourceRef.get();
             if (source == null || !mimeType.equals(source.getMimeType())) {
-                source = new Source(mimeType, null, fileObject);
+                source = new Source(mimeType, null, fileObject, context);
                 instances.put(fileObject, new WeakReference<>(source));
             }
+            assert source.context == context;
             return source;
         }
     }
 
     private void assignListeners () {
-        boolean listen = !suppressListening.get();
+        final boolean listen = !suppressListening.get();
         if (listen) {
-            support.init();
+            if (listeningOnChanges) {
+                return;
+            }
+            synchronized (TaskProcessor.INTERNAL_LOCK) {
+                if (listeningOnChanges) {
+                    return;
+                }
+                try {
+                    sourceEnv.activate();
+                } finally {
+                    listeningOnChanges = true;
+                }
+            }
         }
     }
 
+    private void setFlags(final Set<SourceFlags> flags) {
+        // synchronized because of eventId
+        synchronized (flags) {
+            this.flags.addAll(flags);
+            eventId++;
+        }
+    }
+
+    private void setSourceModification (boolean sourceChanged, int startOffset, int endOffset) {
+        ASourceModificationEvent oldSourceModificationEvent;
+        ASourceModificationEvent newSourceModificationEvent;
+        do {
+            oldSourceModificationEvent = sourceModificationEvent.get();
+            boolean mergedChange = sourceChanged | (oldSourceModificationEvent == null ? false : oldSourceModificationEvent.sourceChanged());
+            newSourceModificationEvent = new ASourceModificationEvent (this, mergedChange, startOffset, endOffset);                
+        } while (!sourceModificationEvent.compareAndSet(oldSourceModificationEvent, newSourceModificationEvent));
+    }
+
+    private void mimeTypeMayChanged() {
+        final FileObject file = getFileObject();
+        if (file != null && !Objects.equals(getMimeType(), file.getMIMEType())) {
+            synchronized (Source.class) {
+                instances.remove(file);
+            }
+        }
+    }
+    
+    private SourceCache getCache() {
+        synchronized (TaskProcessor.INTERNAL_LOCK) {
+            if (cache == null)
+                cache = new SourceCache (this, null);
+            return cache;
+        }
+    }
+
+    @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject") // accessing internals is accessor's job
     private static class MySourceAccessor extends SourceAccessor {
         
         @Override
         public void setFlags (final Source source, final Set<SourceFlags> flags)  {
             assert source != null;
             assert flags != null;
-            synchronized (source.flags) {
-                source.flags.addAll(flags);
-                source.eventId++;
-            }
+            source.setFlags(flags);
         }
 
         @Override
@@ -555,7 +650,7 @@ public final class Source {
         @Override
         public boolean cleanFlag (final Source source, final SourceFlags flag) {
             assert source != null;
-            assert flag != null;            
+            assert flag != null;  
             return source.flags.remove(flag);            
         }
 
@@ -585,6 +680,11 @@ public final class Source {
         }
 
         @Override
+        public void revalidate(Source source, int delay) {
+            source.ctrl.revalidate(delay);
+        }
+
+        @Override
         public boolean invalidate(Source source, long id, Snapshot snapshot) {
             assert source != null;
             synchronized (TaskProcessor.INTERNAL_LOCK) {
@@ -594,9 +694,7 @@ public final class Source {
                 else {
                     //The eventId and flags are bound
                     long eventId;
-                    synchronized (source.flags) {
-                        eventId = source.eventId;
-                    }
+                    eventId = source.eventId;
                     if (id != eventId) {
                         return false;
                     }
@@ -609,6 +707,11 @@ public final class Source {
                     }
                 }
             }
+        }
+
+        @Override
+        public void attachScheduler(Source src, SchedulerControl sched, boolean attach) {
+            src.sourceEnv.attachScheduler(sched, attach);
         }
         
         @Override
@@ -636,9 +739,15 @@ public final class Source {
         }
         
         @Override
-        public EventSupport getEventSupport (final Source source) {
+        public SourceControl getEnvControl(final Source source) {
             assert source != null;
-            return source.support;
+            return source.ctrl;
+        }
+
+        @Override
+        public SourceEnvironment getEnv(final Source source) {
+            assert source != null;
+            return source.sourceEnv;
         }
 
         @Override
@@ -650,24 +759,13 @@ public final class Source {
         @Override
         public void setSourceModification (Source source, boolean sourceChanged, int startOffset, int endOffset) {
             assert source != null;
-            ASourceModificationEvent oldSourceModificationEvent;
-            ASourceModificationEvent newSourceModificationEvent;
-            do {
-                oldSourceModificationEvent = source.sourceModificationEvent.get();
-                boolean mergedChange = sourceChanged | (oldSourceModificationEvent == null ? false : oldSourceModificationEvent.sourceChanged());
-                newSourceModificationEvent = new ASourceModificationEvent (source, mergedChange, startOffset, endOffset);                
-            } while (!source.sourceModificationEvent.compareAndSet(oldSourceModificationEvent, newSourceModificationEvent));
+            source.setSourceModification(sourceChanged, startOffset, endOffset);
         }
 
         @Override
         public void mimeTypeMayChanged(@NonNull final Source source) {
             assert source != null;
-            final FileObject file = source.getFileObject();
-            if (file != null && !Objects.equals(source.getMimeType(), file.getMIMEType())) {
-                synchronized (Source.class) {
-                    instances.remove(file);
-                }
-            }
+            source.mimeTypeMayChanged();
         }
 
         @Override
@@ -735,11 +833,7 @@ public final class Source {
         @Override
         public SourceCache getCache (final Source source) {
             assert source != null;
-            synchronized (TaskProcessor.INTERNAL_LOCK) {
-                if (source.cache == null)
-                    source.cache = new SourceCache (source, null);
-                return source.cache;
-            }
+            return source.getCache();
         }
 
         @Override
@@ -806,9 +900,14 @@ public final class Source {
             return origCache;
         }
 
+        @Override
+        @NonNull
+        public ParserEventForward getParserEventForward(@NonNull final Source source) {
+            return source.peFwd;
+        }
     } // End of MySourceAccessor class
         
-    static class ASourceModificationEvent extends SourceModificationEvent {
+    private static class ASourceModificationEvent extends SourceModificationEvent {
 
         private int         startOffset;
         private int         endOffset;
@@ -829,7 +928,17 @@ public final class Source {
             int             _endOffset
         ) {
             startOffset = Math.min (startOffset, _startOffset);
-            endOffset = Math.min (endOffset, _endOffset);
+            endOffset = Math.max (endOffset, _endOffset);
+        }
+
+        @Override
+        public int getAffectedStartOffset() {
+            return startOffset;
+        }
+
+        @Override
+        public int getAffectedEndOffset() {
+            return endOffset;
         }
 
         @Override
@@ -837,5 +946,18 @@ public final class Source {
             //XXX: Never change the toString value, some tests depends on it!
             return "SourceModificationEvent " + startOffset + ":" + endOffset;
         }
+    }
+
+    /**
+     * Returns a Lookup providing a context for the source.
+     * In the presence of multiple scopes or users in the system, this Lookup may
+     * provide access to necessary context-dependent services or scope-dependent data.
+     * <p/>
+     * A Source may be created with a Lookup, or it will use the default Lookup as a context
+     * @return Lookup.
+     * @since 9.2
+     */
+    public Lookup getLookup() {
+        return context;
     }
 }

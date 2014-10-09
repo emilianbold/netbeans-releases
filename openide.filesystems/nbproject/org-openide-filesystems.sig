@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.10.1
+#Version 8.11
 
 CLSS public java.io.IOException
 cons public init()
@@ -151,7 +151,6 @@ meth public org.openide.filesystems.FileObject find(java.lang.String,java.lang.S
  anno 0 java.lang.Deprecated()
 meth public org.openide.filesystems.FileObject findResource(java.lang.String)
 meth public org.openide.filesystems.FileObject getRoot()
-meth public org.openide.util.actions.SystemAction[] getActions()
 meth public void refresh(boolean)
 supr org.openide.filesystems.FileSystem
 hfds NO_SYSTEM_ACTIONS,SYSTEM_ACTIONS,lastEnum,refresher,root,serialVersionUID
@@ -229,14 +228,6 @@ supr java.lang.Object
 hfds ATTR_NAME_EXT_XML,DTD_PATH,PUBLIC_ID,READONLY_ATTRIBUTES,cache,change,fileName,info,list,serialVersionUID
 hcls ElementHandler,InnerParser,Table
 
-CLSS public org.openide.filesystems.EnvironmentNotSupportedException
- anno 0 java.lang.Deprecated()
-cons public init(org.openide.filesystems.FileSystem)
-cons public init(org.openide.filesystems.FileSystem,java.lang.String)
-meth public org.openide.filesystems.FileSystem getFileSystem()
-supr java.io.IOException
-hfds fs,serialVersionUID
-
 CLSS public org.openide.filesystems.FileAlreadyLockedException
 cons public init()
 cons public init(java.lang.String)
@@ -272,44 +263,6 @@ meth public abstract void fileDataCreated(org.openide.filesystems.FileEvent)
 meth public abstract void fileDeleted(org.openide.filesystems.FileEvent)
 meth public abstract void fileFolderCreated(org.openide.filesystems.FileEvent)
 meth public abstract void fileRenamed(org.openide.filesystems.FileRenameEvent)
-
-CLSS public org.openide.filesystems.FileChooserBuilder
-cons public init(java.lang.Class)
-cons public init(java.lang.String)
-innr public abstract interface static BadgeProvider
-innr public abstract interface static SelectionApprover
-meth public java.io.File showOpenDialog()
-meth public java.io.File showSaveDialog()
-meth public java.io.File[] showMultiOpenDialog()
-meth public javax.swing.JFileChooser createFileChooser()
-meth public org.openide.filesystems.FileChooserBuilder addDefaultFileFilters()
-meth public org.openide.filesystems.FileChooserBuilder addFileFilter(javax.swing.filechooser.FileFilter)
-meth public org.openide.filesystems.FileChooserBuilder forceUseOfDefaultWorkingDirectory(boolean)
-meth public org.openide.filesystems.FileChooserBuilder setAcceptAllFileFilterUsed(boolean)
-meth public org.openide.filesystems.FileChooserBuilder setAccessibleDescription(java.lang.String)
-meth public org.openide.filesystems.FileChooserBuilder setApproveText(java.lang.String)
-meth public org.openide.filesystems.FileChooserBuilder setBadgeProvider(org.openide.filesystems.FileChooserBuilder$BadgeProvider)
-meth public org.openide.filesystems.FileChooserBuilder setControlButtonsAreShown(boolean)
-meth public org.openide.filesystems.FileChooserBuilder setDefaultWorkingDirectory(java.io.File)
-meth public org.openide.filesystems.FileChooserBuilder setDirectoriesOnly(boolean)
-meth public org.openide.filesystems.FileChooserBuilder setFileFilter(javax.swing.filechooser.FileFilter)
-meth public org.openide.filesystems.FileChooserBuilder setFileHiding(boolean)
-meth public org.openide.filesystems.FileChooserBuilder setFilesOnly(boolean)
-meth public org.openide.filesystems.FileChooserBuilder setSelectionApprover(org.openide.filesystems.FileChooserBuilder$SelectionApprover)
-meth public org.openide.filesystems.FileChooserBuilder setTitle(java.lang.String)
-supr java.lang.Object
-hfds DONT_STORE_DIRECTORIES,PREVENT_SYMLINK_TRAVERSAL,aDescription,approveText,approver,badger,controlButtonsShown,dirKey,dirsOnly,failoverDir,fileHiding,filesOnly,filter,filters,force,title,useAcceptAllFileFilter
-hcls BadgeIconProvider,CustomFileView,IconProvider,MergedIcon,SavedDirFileChooser
-
-CLSS public abstract interface static org.openide.filesystems.FileChooserBuilder$BadgeProvider
- outer org.openide.filesystems.FileChooserBuilder
-meth public abstract int getXOffset()
-meth public abstract int getYOffset()
-meth public abstract javax.swing.Icon getBadge(java.io.File)
-
-CLSS public abstract interface static org.openide.filesystems.FileChooserBuilder$SelectionApprover
- outer org.openide.filesystems.FileChooserBuilder
-meth public abstract boolean approve(java.io.File[])
 
 CLSS public org.openide.filesystems.FileEvent
 cons public init(org.openide.filesystems.FileObject)
@@ -461,31 +414,19 @@ fld public final static java.lang.String PROP_SYSTEM_NAME = "systemName"
  anno 0 java.lang.Deprecated()
 fld public final static java.lang.String PROP_VALID = "valid"
 innr public abstract interface static AtomicAction
-innr public abstract interface static HtmlStatus
-innr public abstract interface static Status
-innr public abstract static Environment
 intf java.io.Serializable
-meth protected boolean isPersistent()
- anno 0 java.lang.Deprecated()
 meth protected final void fireFileStatusChanged(org.openide.filesystems.FileStatusEvent)
 meth protected final void firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
 meth protected final void fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
-meth protected final void setCapability(org.openide.filesystems.FileSystemCapability)
- anno 0 java.lang.Deprecated()
 meth protected final void setSystemName(java.lang.String) throws java.beans.PropertyVetoException
  anno 0 java.lang.Deprecated()
 meth public abstract boolean isReadOnly()
 meth public abstract java.lang.String getDisplayName()
 meth public abstract org.openide.filesystems.FileObject findResource(java.lang.String)
 meth public abstract org.openide.filesystems.FileObject getRoot()
-meth public abstract org.openide.util.actions.SystemAction[] getActions()
 meth public final boolean isDefault()
-meth public final boolean isHidden()
- anno 0 java.lang.Deprecated()
 meth public final boolean isValid()
 meth public final java.lang.String getSystemName()
- anno 0 java.lang.Deprecated()
-meth public final org.openide.filesystems.FileSystemCapability getCapability()
  anno 0 java.lang.Deprecated()
 meth public final void addFileChangeListener(org.openide.filesystems.FileChangeListener)
 meth public final void addFileStatusListener(org.openide.filesystems.FileStatusListener)
@@ -496,18 +437,12 @@ meth public final void removeFileStatusListener(org.openide.filesystems.FileStat
 meth public final void removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public final void removeVetoableChangeListener(java.beans.VetoableChangeListener)
 meth public final void runAtomicAction(org.openide.filesystems.FileSystem$AtomicAction) throws java.io.IOException
-meth public final void setHidden(boolean)
- anno 0 java.lang.Deprecated()
 meth public java.lang.String toString()
 meth public org.openide.filesystems.FileObject createTempFile(org.openide.filesystems.FileObject,java.lang.String,java.lang.String,boolean) throws java.io.IOException
 meth public org.openide.filesystems.FileObject find(java.lang.String,java.lang.String,java.lang.String)
  anno 0 java.lang.Deprecated()
 meth public org.openide.filesystems.FileObject getTempFolder() throws java.io.IOException
-meth public org.openide.filesystems.FileSystem$Status getStatus()
-meth public org.openide.util.actions.SystemAction[] getActions(java.util.Set<org.openide.filesystems.FileObject>)
 meth public void addNotify()
-meth public void prepareEnvironment(org.openide.filesystems.FileSystem$Environment) throws org.openide.filesystems.EnvironmentNotSupportedException
- anno 0 java.lang.Deprecated()
 meth public void refresh(boolean)
 meth public void removeNotify()
 supr java.lang.Object
@@ -518,78 +453,6 @@ CLSS public abstract interface static org.openide.filesystems.FileSystem$AtomicA
  outer org.openide.filesystems.FileSystem
 meth public abstract void run() throws java.io.IOException
 
-CLSS public abstract static org.openide.filesystems.FileSystem$Environment
- outer org.openide.filesystems.FileSystem
- anno 0 java.lang.Deprecated()
-cons public init()
-meth public void addClassPath(java.lang.String)
- anno 0 java.lang.Deprecated()
-supr java.lang.Object
-
-CLSS public abstract interface static org.openide.filesystems.FileSystem$HtmlStatus
- outer org.openide.filesystems.FileSystem
-intf org.openide.filesystems.FileSystem$Status
-meth public abstract java.lang.String annotateNameHtml(java.lang.String,java.util.Set<? extends org.openide.filesystems.FileObject>)
-
-CLSS public abstract interface static org.openide.filesystems.FileSystem$Status
- outer org.openide.filesystems.FileSystem
-meth public abstract java.awt.Image annotateIcon(java.awt.Image,int,java.util.Set<? extends org.openide.filesystems.FileObject>)
-meth public abstract java.lang.String annotateName(java.lang.String,java.util.Set<? extends org.openide.filesystems.FileObject>)
-
-CLSS public org.openide.filesystems.FileSystemCapability
- anno 0 java.lang.Deprecated()
-cons public init()
-fld public final static org.openide.filesystems.FileSystemCapability ALL
-fld public final static org.openide.filesystems.FileSystemCapability COMPILE
- anno 0 java.lang.Deprecated()
-fld public final static org.openide.filesystems.FileSystemCapability DEBUG
- anno 0 java.lang.Deprecated()
-fld public final static org.openide.filesystems.FileSystemCapability DOC
- anno 0 java.lang.Deprecated()
-fld public final static org.openide.filesystems.FileSystemCapability EXECUTE
- anno 0 java.lang.Deprecated()
-innr public static Bean
-meth public boolean capableOf(org.openide.filesystems.FileSystemCapability)
-meth public final java.util.Enumeration<? extends org.openide.filesystems.FileObject> findAll(java.lang.String,java.lang.String,java.lang.String)
- anno 0 java.lang.Deprecated()
-meth public final org.openide.filesystems.FileObject find(java.lang.String,java.lang.String,java.lang.String)
- anno 0 java.lang.Deprecated()
-meth public java.util.Enumeration<? extends org.openide.filesystems.FileObject> findAllResources(java.lang.String)
- anno 0 java.lang.Deprecated()
-meth public java.util.Enumeration<? extends org.openide.filesystems.FileSystem> fileSystems()
- anno 0 java.lang.Deprecated()
-meth public org.openide.filesystems.FileObject findResource(java.lang.String)
- anno 0 java.lang.Deprecated()
-meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
-supr java.lang.Object
-
-CLSS public static org.openide.filesystems.FileSystemCapability$Bean
- outer org.openide.filesystems.FileSystemCapability
- anno 0 java.lang.Deprecated()
-cons public init()
-intf java.io.Serializable
-meth public boolean capableOf(org.openide.filesystems.FileSystemCapability)
-meth public boolean getCompile()
- anno 0 java.lang.Deprecated()
-meth public boolean getDebug()
- anno 0 java.lang.Deprecated()
-meth public boolean getDoc()
- anno 0 java.lang.Deprecated()
-meth public boolean getExecute()
- anno 0 java.lang.Deprecated()
-meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void setCompile(boolean)
- anno 0 java.lang.Deprecated()
-meth public void setDebug(boolean)
- anno 0 java.lang.Deprecated()
-meth public void setDoc(boolean)
- anno 0 java.lang.Deprecated()
-meth public void setExecute(boolean)
- anno 0 java.lang.Deprecated()
-supr org.openide.filesystems.FileSystemCapability
-hfds compilation,debug,doc,execution,serialVersionUID,supp
 
 CLSS public final org.openide.filesystems.FileUtil
 meth public !varargs static java.lang.String getMIMEType(org.openide.filesystems.FileObject,java.lang.String[])
@@ -662,8 +525,6 @@ hcls NonCanonicalizingFile,NonCanonicalizingFileSystemView
 CLSS public org.openide.filesystems.JarFileSystem
 cons public init()
 cons public init(java.io.File) throws java.io.IOException
-cons public init(org.openide.filesystems.FileSystemCapability)
- anno 0 java.lang.Deprecated()
 innr public static Impl
 meth protected <%0 extends org.openide.filesystems.FileObject> java.lang.ref.Reference<{%%0}> createReference({%%0})
 meth protected boolean folder(java.lang.String)
@@ -691,8 +552,6 @@ meth public boolean isReadOnly()
 meth public java.io.File getJarFile()
 meth public java.lang.String getDisplayName()
 meth public java.util.jar.Manifest getManifest()
-meth public void prepareEnvironment(org.openide.filesystems.FileSystem$Environment)
- anno 0 java.lang.Deprecated()
 meth public void removeNotify()
 meth public void setJarFile(java.io.File) throws java.beans.PropertyVetoException,java.io.IOException
 supr org.openide.filesystems.AbstractFileSystem
@@ -731,8 +590,6 @@ hfds fs,serialVersionUID
 
 CLSS public org.openide.filesystems.LocalFileSystem
 cons public init()
-cons public init(org.openide.filesystems.FileSystemCapability)
- anno 0 java.lang.Deprecated()
 innr public static Impl
 meth protected boolean folder(java.lang.String)
 meth protected boolean readOnly(java.lang.String)
@@ -753,8 +610,6 @@ meth protected void unlock(java.lang.String)
 meth public boolean isReadOnly()
 meth public java.io.File getRootDirectory()
 meth public java.lang.String getDisplayName()
-meth public void prepareEnvironment(org.openide.filesystems.FileSystem$Environment)
- anno 0 java.lang.Deprecated()
 meth public void setReadOnly(boolean)
 meth public void setRootDirectory(java.io.File) throws java.beans.PropertyVetoException,java.io.IOException
 supr org.openide.filesystems.AbstractFileSystem
@@ -860,11 +715,7 @@ meth public org.openide.filesystems.FileObject find(java.lang.String,java.lang.S
  anno 0 java.lang.Deprecated()
 meth public org.openide.filesystems.FileObject findResource(java.lang.String)
 meth public org.openide.filesystems.FileObject getRoot()
-meth public org.openide.util.actions.SystemAction[] getActions()
-meth public org.openide.util.actions.SystemAction[] getActions(java.util.Set<org.openide.filesystems.FileObject>)
 meth public void addNotify()
-meth public void prepareEnvironment(org.openide.filesystems.FileSystem$Environment) throws org.openide.filesystems.EnvironmentNotSupportedException
- anno 0 java.lang.Deprecated()
 meth public void refresh(boolean)
 meth public void removeNotify()
 supr org.openide.filesystems.FileSystem
@@ -972,8 +823,6 @@ CLSS public final org.openide.filesystems.XMLFileSystem
 cons public init()
 cons public init(java.lang.String) throws org.xml.sax.SAXException
 cons public init(java.net.URL) throws org.xml.sax.SAXException
-cons public init(org.openide.filesystems.FileSystemCapability)
- anno 0 java.lang.Deprecated()
 innr public static Impl
 meth protected <%0 extends org.openide.filesystems.FileObject> java.lang.ref.Reference<{%%0}> createReference({%%0})
 meth public boolean isReadOnly()

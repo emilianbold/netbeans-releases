@@ -47,8 +47,13 @@ package org.netbeans.lib.editor.util.swing;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
@@ -56,8 +61,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
-import javax.swing.text.PlainDocument;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.PlainDocument;
 import javax.swing.text.Segment;
 import javax.swing.text.StyledDocument;
 import javax.swing.undo.CannotRedoException;
@@ -374,6 +379,27 @@ public final class DocumentUtilities {
     }
     
     /**
+     * Sets a property for the document event, if the event supports the feature.
+     * Returns true, if the property was actually set.
+     * 
+     * @param evt the event to modify
+     * @param key property key
+     * @param value property value
+     * @return true, if the property was set
+     * @since 1.59
+     */
+    public static boolean putEventPropertyIfSupported(DocumentEvent evt, Object key, Object value) {
+        EventPropertiesElementChange change = (EventPropertiesElementChange)
+                evt.getChange(EventPropertiesElement.INSTANCE);
+        if (change != null) {
+            putEventProperty(evt, key, value);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /**
      * Set a property of a given document event.
      *
      * @param evt non-null document event to which the property should be stored.
@@ -492,7 +518,13 @@ public final class DocumentUtilities {
                 throw new IllegalStateException(ex);
             }
         }
-        return false;
+        Method m = lockMethods(doc)[0];
+        try {
+            return m == null ? false : (Boolean)m.invoke(doc);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Logger.getLogger(DocumentUtilities.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
     }
     
     /**
@@ -528,7 +560,42 @@ public final class DocumentUtilities {
                 throw new IllegalStateException(ex);
             }
         }
-        return false; // not AbstractDocument
+        Method m = lockMethods(doc)[1];
+        try {
+            return m == null ? false : (Boolean)m.invoke(doc);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Logger.getLogger(DocumentUtilities.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+    }
+    
+    private static final Map<Class, Method[]> documentClassAccessors = new HashMap<>();
+    
+    private static Method[] lockMethods(Document d) {
+        Method[] res;
+        synchronized(documentClassAccessors) {
+            Class c = d.getClass();
+            res = documentClassAccessors.get(c);
+            if (res == null) {
+                res = new Method[2];
+                try {
+                    res[0] = c.getMethod("isReadLocked");
+                    if (res[0].getReturnType() != Boolean.TYPE) {
+                        res[0] = null;
+                    }
+                    res[1] = c.getMethod("isWriteLocked");
+                    if (res[1].getReturnType() != Boolean.TYPE) {
+                        res[1] = null;
+                    }
+                } catch (NoSuchMethodException ex) {
+                    // expected
+                } catch (SecurityException ex) {
+                    // expected
+                }
+                documentClassAccessors.put(c, res);
+            }
+        }
+        return res;
     }
     
     private static boolean checkAbstractDoc(Document doc) {

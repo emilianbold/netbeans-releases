@@ -95,7 +95,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.editor.java.Utilities;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.editor.codegen.ui.DelegatePanel;
 import org.netbeans.modules.java.editor.codegen.ui.ElementNode;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
@@ -117,21 +117,26 @@ public class DelegateMethodGenerator implements CodeGenerator {
     public static class Factory implements CodeGenerator.Factory {        
         @Override
         public List<? extends CodeGenerator> create(Lookup context) {
-            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            ArrayList<CodeGenerator> ret = new ArrayList<>();
             JTextComponent component = context.lookup(JTextComponent.class);
             CompilationController controller = context.lookup(CompilationController.class);
-            TreePath path = context.lookup(TreePath.class);
-            path = path != null ? Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path) : null;
-            if (component == null || controller == null || path == null)
+            if (component == null || controller == null) {
                 return ret;
+            }
+            TreePath path = context.lookup(TreePath.class);
+            path = controller.getTreeUtilities().getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
+            if (path == null) {
+                return ret;
+            }
             try {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             } catch (IOException ioe) {
                 return ret;
             }
             TypeElement typeElement = (TypeElement) controller.getTrees().getElement(path);
-            if (typeElement == null || !typeElement.getKind().isClass())
+            if (typeElement == null || !typeElement.getKind().isClass()) {
                 return ret;
+            }
             List<ElementNode.Description> descriptions = computeUsableFieldsDescriptions(controller, path);
             if (!descriptions.isEmpty()) {
                 Collections.reverse(descriptions);
@@ -141,9 +146,9 @@ public class DelegateMethodGenerator implements CodeGenerator {
         }
     }
 
-    private JTextComponent component;
-    private ElementHandle<TypeElement> handle;
-    private ElementNode.Description description;
+    private final JTextComponent component;
+    private final ElementHandle<TypeElement> handle;
+    private final ElementNode.Description description;
     
     /** Creates a new instance of DelegateMethodGenerator */
     private DelegateMethodGenerator(JTextComponent component, ElementHandle<TypeElement> handle, ElementNode.Description description) {
@@ -178,16 +183,17 @@ public class DelegateMethodGenerator implements CodeGenerator {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                             Element e = handle.resolve(copy);
                             TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
-                            path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
+                            path = copy.getTreeUtilities().getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
                             if (path == null) {
                                 String message = NbBundle.getMessage(DelegateMethodGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
-                                org.netbeans.editor.Utilities.setStatusBoldText(component, message);
+                                Utilities.setStatusBoldText(component, message);
                             } else {
                                 ElementHandle<? extends Element> handle = panel.getDelegateField();
                                 VariableElement delegate = handle != null ? (VariableElement)handle.resolve(copy) : null;
-                                ArrayList<ExecutableElement> methods = new ArrayList<ExecutableElement>();
-                                for (ElementHandle<? extends Element> elementHandle : panel.getDelegateMethods())
+                                ArrayList<ExecutableElement> methods = new ArrayList<>();
+                                for (ElementHandle<? extends Element> elementHandle : panel.getDelegateMethods()) {
                                     methods.add((ExecutableElement)elementHandle.resolve(copy));
+                                }
                                 generateDelegatingMethods(copy, path, delegate, methods, caretOffset);
                             }
                         }
@@ -245,7 +251,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
         Elements elements = info.getElements();
         Trees trees = info.getTrees();
         Scope scope = trees.getScope(path);
-        Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<Element, List<ElementNode.Description>>();
+        Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<>();
         TypeElement cls;
         while (scope != null && (cls = scope.getEnclosingClass()) != null) {
             DeclaredType type = (DeclaredType) cls.asType();
@@ -256,7 +262,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
                         field, type)) {
                     List<ElementNode.Description> descriptions = map.get(field.getEnclosingElement());
                     if (descriptions == null) {
-                        descriptions = new ArrayList<ElementNode.Description>();
+                        descriptions = new ArrayList<>();
                         map.put(field.getEnclosingElement(), descriptions);
                     }
                     descriptions.add(ElementNode.Description.create(info, field, null, false, false));
@@ -264,7 +270,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
             }
             scope = scope.getEnclosingScope();
         }
-        List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+        List<ElementNode.Description> descriptions = new ArrayList<>();
         for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet()) {
             descriptions.add(ElementNode.Description.create(info, entry.getKey(), entry.getValue(), false, false));
         }
@@ -289,16 +295,16 @@ public class DelegateMethodGenerator implements CodeGenerator {
                 return false;
             }
         };
-        Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<Element, List<ElementNode.Description>>();
+        Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<>();
         for (ExecutableElement method : ElementFilter.methodsIn(eu.getMembers(field.asType(), acceptor))) {
             List<ElementNode.Description> descriptions = map.get(method.getEnclosingElement());
             if (descriptions == null) {
-                descriptions = new ArrayList<ElementNode.Description>();
+                descriptions = new ArrayList<>();
                 map.put(method.getEnclosingElement(), descriptions);
             }
             descriptions.add(ElementNode.Description.create(controller, method, null, true, false));
         }
-        List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+        List<ElementNode.Description> descriptions = new ArrayList<>();
         for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet()) {
             descriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(),
                     false, false));
@@ -314,9 +320,10 @@ public class DelegateMethodGenerator implements CodeGenerator {
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             ClassTree clazz = (ClassTree)path.getLeaf();
-            List<Tree> members = new ArrayList<Tree>();
-            for (ExecutableElement executableElement : methods)
+            List<Tree> members = new ArrayList<>();
+            for (ExecutableElement executableElement : methods) {
                 members.add(createDelegatingMethod(wc, delegate, executableElement, (DeclaredType)te.asType()));
+            }
             wc.rewrite(clazz, GeneratorUtils.insertClassMembers(wc, clazz, members, offset));
         }        
     }
@@ -334,7 +341,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
             }
         }
         
-        List<ExpressionTree> args = new ArrayList<ExpressionTree>();
+        List<ExpressionTree> args = new ArrayList<>();
         
         Iterator<? extends VariableElement> it = method.getParameters().iterator();
         while(it.hasNext()) {

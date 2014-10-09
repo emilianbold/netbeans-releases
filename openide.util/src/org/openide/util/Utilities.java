@@ -64,10 +64,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
@@ -84,9 +81,7 @@ import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -98,25 +93,21 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 import java.util.Vector;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.SourceVersion;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import org.openide.util.actions.ActionPresenterProvider;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.implspi.ActiveQueue;
-import org.openide.util.actions.ActionPresenterProvider;
 
 /** Otherwise uncategorized useful static methods.
 *
@@ -127,93 +118,92 @@ public final class Utilities {
     private static final Logger LOG = Logger.getLogger(Utilities.class.getName());
 
     /** Operating system is Windows NT. */
-    public static final int OS_WINNT = 1/* << 0*/;
+    public static final int OS_WINNT = BaseUtilities.OS_WINNT;
 
     /** Operating system is Windows 95. */
-    public static final int OS_WIN95 = OS_WINNT << 1;
+    public static final int OS_WIN95 = BaseUtilities.OS_WIN95;
 
     /** Operating system is Windows 98. */
-    public static final int OS_WIN98 = OS_WIN95 << 1;
+    public static final int OS_WIN98 = BaseUtilities.OS_WIN98;
 
     /** Operating system is Solaris. */
-    public static final int OS_SOLARIS = OS_WIN98 << 1;
+    public static final int OS_SOLARIS = BaseUtilities.OS_SOLARIS;
 
     /** Operating system is Linux. */
-    public static final int OS_LINUX = OS_SOLARIS << 1;
+    public static final int OS_LINUX = BaseUtilities.OS_LINUX;
 
     /** Operating system is HP-UX. */
-    public static final int OS_HP = OS_LINUX << 1;
+    public static final int OS_HP = BaseUtilities.OS_HP;
 
     /** Operating system is IBM AIX. */
-    public static final int OS_AIX = OS_HP << 1;
+    public static final int OS_AIX = BaseUtilities.OS_AIX;
 
     /** Operating system is SGI IRIX. */
-    public static final int OS_IRIX = OS_AIX << 1;
+    public static final int OS_IRIX = BaseUtilities.OS_IRIX;
 
     /** Operating system is Sun OS. */
-    public static final int OS_SUNOS = OS_IRIX << 1;
+    public static final int OS_SUNOS = BaseUtilities.OS_SUNOS;
 
     /** Operating system is Compaq TRU64 Unix */
-    public static final int OS_TRU64 = OS_SUNOS << 1;
+    public static final int OS_TRU64 = BaseUtilities.OS_TRU64;
 
     /** @deprecated please use OS_TRU64 instead */
     @Deprecated
-    public static final int OS_DEC = OS_TRU64 << 1;
+    public static final int OS_DEC = BaseUtilities.OS_DEC;
 
     /** Operating system is OS/2. */
-    public static final int OS_OS2 = OS_DEC << 1;
+    public static final int OS_OS2 = BaseUtilities.OS_OS2;
 
     /** Operating system is Mac. */
-    public static final int OS_MAC = OS_OS2 << 1;
+    public static final int OS_MAC = BaseUtilities.OS_MAC;
 
     /** Operating system is Windows 2000. */
-    public static final int OS_WIN2000 = OS_MAC << 1;
+    public static final int OS_WIN2000 = BaseUtilities.OS_WIN2000;
 
     /** Operating system is Compaq OpenVMS */
-    public static final int OS_VMS = OS_WIN2000 << 1;
+    public static final int OS_VMS = BaseUtilities.OS_VMS;
 
     /**
      *Operating system is one of the Windows variants but we don't know which
      *one it is
      */
-    public static final int OS_WIN_OTHER = OS_VMS << 1;
+    public static final int OS_WIN_OTHER =  BaseUtilities.OS_WIN_OTHER;
 
     /** Operating system is unknown. */
-    public static final int OS_OTHER = OS_WIN_OTHER << 1;
+    public static final int OS_OTHER =  BaseUtilities.OS_OTHER;
 
     /** Operating system is FreeBSD
      * @since 4.50
      */
-    public static final int OS_FREEBSD = OS_OTHER << 1;
+    public static final int OS_FREEBSD =  BaseUtilities.OS_FREEBSD;
     
     /** Operating system is Windows Vista.
      * @since 7.17
      */
-    public static final int OS_WINVISTA = OS_FREEBSD << 1;
+    public static final int OS_WINVISTA =  BaseUtilities.OS_WINVISTA;
 
     /** Operating system is one of the Unix variants but we don't know which
      * one it is.
      * @since 7.18
      */
-    public static final int OS_UNIX_OTHER = OS_WINVISTA << 1;
+    public static final int OS_UNIX_OTHER =  BaseUtilities.OS_UNIX_OTHER;
 
     /** Operating system is OpenBSD.
      * @since 7.18
      */
-    public static final int OS_OPENBSD = OS_UNIX_OTHER << 1;
+    public static final int OS_OPENBSD =  BaseUtilities.OS_OPENBSD;
 
     /** A mask for Windows platforms.
      * @deprecated Use {@link #isWindows()} instead.
      */
     @Deprecated
-    public static final int OS_WINDOWS_MASK = OS_WINNT | OS_WIN95 | OS_WIN98 | OS_WIN2000 | OS_WINVISTA | OS_WIN_OTHER;
+    public static final int OS_WINDOWS_MASK =  BaseUtilities.OS_WINDOWS_MASK;
 
     /** A mask for Unix platforms.
      * @deprecated Use {@link #isUnix()} instead.
      */
     @Deprecated
-    public static final int OS_UNIX_MASK = OS_SOLARIS | OS_LINUX | OS_HP | OS_AIX | OS_IRIX | OS_SUNOS | OS_TRU64 |
-        OS_MAC | OS_FREEBSD | OS_OPENBSD | OS_UNIX_OTHER;
+    public static final int OS_UNIX_MASK =  BaseUtilities.OS_UNIX_MASK;
 
     /** A height of the windows's taskbar */
     public static final int TYPICAL_WINDOWS_TASKBAR_HEIGHT = 27;
@@ -221,22 +211,11 @@ public final class Utilities {
     /** A height of the Mac OS X's menu */
     private static final int TYPICAL_MACOSX_MENU_HEIGHT = 24;
 
-    /** The operating system on which NetBeans runs*/
-    private static int operatingSystem = -1;
     private static Timer clearIntrospector;
     private static ActionListener doClear;
     private static final int CTRL_WILDCARD_MASK = 32768;
     private static final int ALT_WILDCARD_MASK = CTRL_WILDCARD_MASK * 2;
 
-    // Package retranslation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    private static final Object TRANS_LOCK = /* FB complains about both "TRANS_LOCK" and new String("TRANS_LOCK") */new Object();
-
-    /** last used classloader or if run in test mode the TRANS_LOCK */
-    private static Object transLoader;
-
-    /** regular expression to with all changes */
-    private static RE transExp;
-    
     private static final Map<GraphicsConfiguration, Map<Rectangle, Long>> screenBoundsCache;
 
     static {
@@ -260,7 +239,7 @@ public final class Utilities {
     private Utilities() {
     }
 
-    /**
+        /**
      * Useful queue for all parts of system that use <code>java.lang.ref.Reference</code>s
      * together with some <code>ReferenceQueue</code> and need to do some clean up
      * when the reference is enqueued. Usually, in order to be notified about that, one
@@ -301,73 +280,21 @@ public final class Utilities {
      * @since 3.11
      */
     public static ReferenceQueue<Object> activeReferenceQueue() {
-        return ActiveQueue.queue();
+        return BaseUtilities.activeReferenceQueue();
     }
-
-    /** Get the operating system on which NetBeans is running.
+ 
+        /** Get the operating system on which NetBeans is running.
     * @return one of the <code>OS_*</code> constants (such as {@link #OS_WINNT})
     */
     public static int getOperatingSystem() {
-        if (operatingSystem == -1) {
-            String osName = System.getProperty("os.name");
-
-            if ("Windows NT".equals(osName)) { // NOI18N
-                operatingSystem = OS_WINNT;
-            } else if ("Windows 95".equals(osName)) { // NOI18N
-                operatingSystem = OS_WIN95;
-            } else if ("Windows 98".equals(osName)) { // NOI18N
-                operatingSystem = OS_WIN98;
-            } else if ("Windows 2000".equals(osName)) { // NOI18N
-                operatingSystem = OS_WIN2000;
-            } else if ("Windows Vista".equals(osName)) { // NOI18N
-                operatingSystem = OS_WINVISTA;
-            } else if (osName.startsWith("Windows ")) { // NOI18N
-                operatingSystem = OS_WIN_OTHER;
-            } else if ("Solaris".equals(osName)) { // NOI18N
-                operatingSystem = OS_SOLARIS;
-            } else if (osName.startsWith("SunOS")) { // NOI18N
-                operatingSystem = OS_SOLARIS;
-            }
-            // JDK 1.4 b2 defines os.name for me as "Redhat Linux" -jglick
-            else if (osName.endsWith("Linux")) { // NOI18N
-                operatingSystem = OS_LINUX;
-            } else if ("HP-UX".equals(osName)) { // NOI18N
-                operatingSystem = OS_HP;
-            } else if ("AIX".equals(osName)) { // NOI18N
-                operatingSystem = OS_AIX;
-            } else if ("Irix".equals(osName)) { // NOI18N
-                operatingSystem = OS_IRIX;
-            } else if ("SunOS".equals(osName)) { // NOI18N
-                operatingSystem = OS_SUNOS;
-            } else if ("Digital UNIX".equals(osName)) { // NOI18N
-                operatingSystem = OS_TRU64;
-            } else if ("OS/2".equals(osName)) { // NOI18N
-                operatingSystem = OS_OS2;
-            } else if ("OpenVMS".equals(osName)) { // NOI18N
-                operatingSystem = OS_VMS;
-            } else if (osName.equals("Mac OS X")) { // NOI18N
-                operatingSystem = OS_MAC;
-            } else if (osName.startsWith("Darwin")) { // NOI18N
-                operatingSystem = OS_MAC;
-            } else if (osName.toLowerCase(Locale.US).startsWith("freebsd")) { // NOI18N 
-                operatingSystem = OS_FREEBSD;
-            } else if ("OpenBSD".equals(osName)) { // NOI18N
-                operatingSystem = OS_OPENBSD;
-            } else if (File.pathSeparatorChar == ':') { // NOI18N
-                operatingSystem = OS_UNIX_OTHER;
-            } else {
-                operatingSystem = OS_OTHER;
-            }
-        }
-
-        return operatingSystem;
+        return BaseUtilities.getOperatingSystem();
     }
 
     /** Test whether NetBeans is running on some variant of Windows.
     * @return <code>true</code> if Windows, <code>false</code> if some other manner of operating system
     */
     public static boolean isWindows() {
-        return (getOperatingSystem() & OS_WINDOWS_MASK) != 0;
+        return BaseUtilities.isWindows();
     }
 
     /** Test whether NetBeans is running on Mac OS X.
@@ -375,7 +302,7 @@ public final class Utilities {
     * @return <code>true</code> if Mac, <code>false</code> if some other manner of operating system
     */
     public static boolean isMac() {
-        return (getOperatingSystem() & OS_MAC) != 0;
+        return BaseUtilities.isMac();
     }
 
     /** Test whether NetBeans is running on some variant of Unix.
@@ -383,14 +310,9 @@ public final class Utilities {
     * @return <code>true</code> some sort of Unix, <code>false</code> if some other manner of operating system
     */
     public static boolean isUnix() {
-        return (getOperatingSystem() & OS_UNIX_MASK) != 0;
+        return BaseUtilities.isUnix();
     }
-
-    // only for UtilitiesTest purposes
-    static void resetOperatingSystem() {
-        operatingSystem = -1;
-    }
-
+    
     /** Test whether a given string is a valid Java identifier.
     * @param id string which should be checked
     * @return <code>true</code> if a valid identifier
@@ -398,10 +320,7 @@ public final class Utilities {
     * @see SourceVersion#isKeyword
     */
     public static boolean isJavaIdentifier(String id) {
-        if (id == null) {
-            return false;
-        }
-        return SourceVersion.isIdentifier(id) && !SourceVersion.isKeyword(id);
+        return BaseUtilities.isJavaIdentifier(id);
     }
 
     /** Central method for obtaining <code>BeanInfo</code> for potential JavaBean classes.
@@ -504,121 +423,7 @@ public final class Utilities {
     public static String[] wrapStringToArray(
         String original, int width, BreakIterator breakIterator, boolean removeNewLines
     ) {
-        if (original.length() == 0) {
-            return new String[] { original };
-        }
-
-        String[] workingSet;
-
-        // substitute original newlines with spaces,
-        // remove newlines from head and tail
-        if (removeNewLines) {
-            original = trimString(original);
-            original = original.replace('\n', ' ');
-            workingSet = new String[] { original };
-        } else {
-            StringTokenizer tokens = new StringTokenizer(original, "\n"); // NOI18N
-            int len = tokens.countTokens();
-            workingSet = new String[len];
-
-            for (int i = 0; i < len; i++) {
-                workingSet[i] = tokens.nextToken();
-            }
-        }
-
-        if (width < 1) {
-            width = 1;
-        }
-
-        if (original.length() <= width) {
-            return workingSet;
-        }
-
-widthcheck:  {
-            boolean ok = true;
-
-            for (int i = 0; i < workingSet.length; i++) {
-                ok = ok && (workingSet[i].length() < width);
-
-                if (!ok) {
-                    break widthcheck;
-                }
-            }
-
-            return workingSet;
-        }
-
-        java.util.ArrayList<String> lines = new java.util.ArrayList<String>();
-
-        int lineStart = 0; // the position of start of currently processed line in the original string
-
-        for (int i = 0; i < workingSet.length; i++) {
-            if (workingSet[i].length() < width) {
-                lines.add(workingSet[i]);
-            } else {
-                breakIterator.setText(workingSet[i]);
-
-                int nextStart = breakIterator.next();
-                int prevStart = 0;
-
-                do {
-                    while (((nextStart - lineStart) < width) && (nextStart != BreakIterator.DONE)) {
-                        prevStart = nextStart;
-                        nextStart = breakIterator.next();
-                    }
-
-                    if (nextStart == BreakIterator.DONE) {
-                        nextStart = prevStart = workingSet[i].length();
-                    }
-
-                    if (prevStart == 0) {
-                        prevStart = nextStart;
-                    }
-
-                    lines.add(workingSet[i].substring(lineStart, prevStart));
-
-                    lineStart = prevStart;
-                    prevStart = 0;
-                } while (lineStart < workingSet[i].length());
-
-                lineStart = 0;
-            }
-        }
-
-        String[] s = new String[lines.size()];
-
-        return lines.toArray(s);
-    }
-
-    /** trims String
-    * @param s a String to trim
-    * @return trimmed String
-    */
-    private static String trimString(String s) {
-        int idx = 0;
-        char c;
-        final int slen = s.length();
-
-        if (slen == 0) {
-            return s;
-        }
-
-        do {
-            c = s.charAt(idx++);
-        } while (((c == '\n') || (c == '\r')) && (idx < slen));
-
-        s = s.substring(--idx);
-        idx = s.length() - 1;
-
-        if (idx < 0) {
-            return s;
-        }
-
-        do {
-            c = s.charAt(idx--);
-        } while (((c == '\n') || (c == '\r')) && (idx >= 0));
-
-        return s.substring(0, idx + 2);
+        return BaseUtilities.wrapStringToArray(original, width, breakIterator, removeNewLines);
     }
 
     /** Wrap multi-line strings.
@@ -629,15 +434,7 @@ widthcheck:  {
     * @return the whole string with embedded newlines
     */
     public static String wrapString(String original, int width, BreakIterator breakIterator, boolean removeNewLines) {
-        String[] sarray = wrapStringToArray(original, width, breakIterator, removeNewLines);
-        StringBuilder retBuf = new StringBuilder();
-
-        for (int i = 0; i < sarray.length; i++) {
-            retBuf.append(sarray[i]);
-            retBuf.append('\n');
-        }
-
-        return retBuf.toString();
+        return BaseUtilities.wrapString(original, width, breakIterator, removeNewLines);
     }
 
     /** Wrap multi-line strings.
@@ -768,13 +565,7 @@ widthcheck:  {
     * @return e.g. <code>Inner</code>
     */
     public static String pureClassName(final String fullName) {
-        final int index = fullName.indexOf('$');
-
-        if ((index >= 0) && (index < fullName.length())) {
-            return fullName.substring(index + 1, fullName.length());
-        }
-
-        return fullName;
+        return BaseUtilities.pureClassName(fullName);
     }
 
     /** Test whether the operating system supports icons on frames (windows).
@@ -822,7 +613,7 @@ widthcheck:  {
     * @return <code>true</code> if the objects are equal
     */
     public static boolean compareObjects(Object o1, Object o2) {
-        return compareObjectsImpl(o1, o2, 1);
+        return BaseUtilities.compareObjects(o1, o2);
     }
 
     /** Safe equality check with array recursion.
@@ -834,177 +625,7 @@ widthcheck:  {
     * @see #compareObjects(Object, Object)
     */
     public static boolean compareObjectsImpl(Object o1, Object o2, int checkArraysDepth) {
-        // handle null values
-        if (o1 == null) {
-            return (o2 == null);
-        } else if (o2 == null) {
-            return false;
-        }
-
-        // handle arrays
-        if (checkArraysDepth > 0) {
-            if ((o1 instanceof Object[]) && (o2 instanceof Object[])) {
-                // Note: also handles multidimensional arrays of primitive types correctly.
-                // I.e. new int[0][] instanceof Object[]
-                Object[] o1a = (Object[]) o1;
-                Object[] o2a = (Object[]) o2;
-                int l1 = o1a.length;
-                int l2 = o2a.length;
-
-                if (l1 != l2) {
-                    return false;
-                }
-
-                for (int i = 0; i < l1; i++) {
-                    if (!compareObjectsImpl(o1a[i], o2a[i], checkArraysDepth - 1)) {
-                        return false;
-                    }
-                }
-
-                return true;
-            } else if ((o1 instanceof byte[]) && (o2 instanceof byte[])) {
-                byte[] o1a = (byte[]) o1;
-                byte[] o2a = (byte[]) o2;
-                int l1 = o1a.length;
-                int l2 = o2a.length;
-
-                if (l1 != l2) {
-                    return false;
-                }
-
-                for (int i = 0; i < l1; i++) {
-                    if (o1a[i] != o2a[i]) {
-                        return false;
-                    }
-                }
-
-                return true;
-            } else if ((o1 instanceof short[]) && (o2 instanceof short[])) {
-                short[] o1a = (short[]) o1;
-                short[] o2a = (short[]) o2;
-                int l1 = o1a.length;
-                int l2 = o2a.length;
-
-                if (l1 != l2) {
-                    return false;
-                }
-
-                for (int i = 0; i < l1; i++) {
-                    if (o1a[i] != o2a[i]) {
-                        return false;
-                    }
-                }
-
-                return true;
-            } else if ((o1 instanceof int[]) && (o2 instanceof int[])) {
-                int[] o1a = (int[]) o1;
-                int[] o2a = (int[]) o2;
-                int l1 = o1a.length;
-                int l2 = o2a.length;
-
-                if (l1 != l2) {
-                    return false;
-                }
-
-                for (int i = 0; i < l1; i++) {
-                    if (o1a[i] != o2a[i]) {
-                        return false;
-                    }
-                }
-
-                return true;
-            } else if ((o1 instanceof long[]) && (o2 instanceof long[])) {
-                long[] o1a = (long[]) o1;
-                long[] o2a = (long[]) o2;
-                int l1 = o1a.length;
-                int l2 = o2a.length;
-
-                if (l1 != l2) {
-                    return false;
-                }
-
-                for (int i = 0; i < l1; i++) {
-                    if (o1a[i] != o2a[i]) {
-                        return false;
-                    }
-                }
-
-                return true;
-            } else if ((o1 instanceof float[]) && (o2 instanceof float[])) {
-                float[] o1a = (float[]) o1;
-                float[] o2a = (float[]) o2;
-                int l1 = o1a.length;
-                int l2 = o2a.length;
-
-                if (l1 != l2) {
-                    return false;
-                }
-
-                for (int i = 0; i < l1; i++) {
-                    if (o1a[i] != o2a[i]) {
-                        return false;
-                    }
-                }
-
-                return true;
-            } else if ((o1 instanceof double[]) && (o2 instanceof double[])) {
-                double[] o1a = (double[]) o1;
-                double[] o2a = (double[]) o2;
-                int l1 = o1a.length;
-                int l2 = o2a.length;
-
-                if (l1 != l2) {
-                    return false;
-                }
-
-                for (int i = 0; i < l1; i++) {
-                    if (o1a[i] != o2a[i]) {
-                        return false;
-                    }
-                }
-
-                return true;
-            } else if ((o1 instanceof char[]) && (o2 instanceof char[])) {
-                char[] o1a = (char[]) o1;
-                char[] o2a = (char[]) o2;
-                int l1 = o1a.length;
-                int l2 = o2a.length;
-
-                if (l1 != l2) {
-                    return false;
-                }
-
-                for (int i = 0; i < l1; i++) {
-                    if (o1a[i] != o2a[i]) {
-                        return false;
-                    }
-                }
-
-                return true;
-            } else if ((o1 instanceof boolean[]) && (o2 instanceof boolean[])) {
-                boolean[] o1a = (boolean[]) o1;
-                boolean[] o2a = (boolean[]) o2;
-                int l1 = o1a.length;
-                int l2 = o2a.length;
-
-                if (l1 != l2) {
-                    return false;
-                }
-
-                for (int i = 0; i < l1; i++) {
-                    if (o1a[i] != o2a[i]) {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
-            // else not array type
-        }
-
-        // handle common objects--non-arrays, or arrays when depth == 0
-        return o1.equals(o2);
+        return BaseUtilities.compareObjectsImpl(o1, o2, checkArraysDepth);
     }
 
     /** Assemble a human-presentable class name for a specified class.
@@ -1013,12 +634,7 @@ widthcheck:  {
     * @return the human-presentable name
     */
     public static String getClassName(Class<?> clazz) {
-        // if it is an array, get short name of element type and append []
-        if (clazz.isArray()) {
-            return getClassName(clazz.getComponentType()) + "[]"; // NOI18N
-        } else {
-            return clazz.getName();
-        }
+        return BaseUtilities.getClassName(clazz);
     }
 
     /** Assemble a human-presentable class name for a specified class (omitting the package).
@@ -1027,14 +643,7 @@ widthcheck:  {
     * @return the human-presentable name
     */
     public static String getShortClassName(Class<?> clazz) {
-        // if it is an array, get short name of element type and append []
-        if (clazz.isArray()) {
-            return getShortClassName(clazz.getComponentType()) + "[]"; // NOI18N
-        }
-
-        String name = clazz.getName().replace('$', '.');
-
-        return name.substring(name.lastIndexOf('.') + 1, name.length()); // NOI18N
+        return BaseUtilities.getShortClassName(clazz);
     }
 
     /**
@@ -1045,103 +654,7 @@ widthcheck:  {
     * @throws IllegalArgumentException if the array element type is not a primitive wrapper
     */
     public static Object toPrimitiveArray(Object[] array) {
-        if (array instanceof Integer[]) {
-            int[] r = new int[array.length];
-            int i;
-            int k = array.length;
-
-            for (i = 0; i < k; i++) {
-                r[i] = (((Integer) array[i]) == null) ? 0 : (Integer) array[i];
-            }
-
-            return r;
-        }
-
-        if (array instanceof Boolean[]) {
-            boolean[] r = new boolean[array.length];
-            int i;
-            int k = array.length;
-
-            for (i = 0; i < k; i++) {
-                r[i] = (((Boolean) array[i]) == null) ? false : (Boolean) array[i];
-            }
-
-            return r;
-        }
-
-        if (array instanceof Byte[]) {
-            byte[] r = new byte[array.length];
-            int i;
-            int k = array.length;
-
-            for (i = 0; i < k; i++) {
-                r[i] = (((Byte) array[i]) == null) ? 0 : (Byte) array[i];
-            }
-
-            return r;
-        }
-
-        if (array instanceof Character[]) {
-            char[] r = new char[array.length];
-            int i;
-            int k = array.length;
-
-            for (i = 0; i < k; i++) {
-                r[i] = (((Character) array[i]) == null) ? 0 : (Character) array[i];
-            }
-
-            return r;
-        }
-
-        if (array instanceof Double[]) {
-            double[] r = new double[array.length];
-            int i;
-            int k = array.length;
-
-            for (i = 0; i < k; i++) {
-                r[i] = (((Double) array[i]) == null) ? 0 : (Double) array[i];
-            }
-
-            return r;
-        }
-
-        if (array instanceof Float[]) {
-            float[] r = new float[array.length];
-            int i;
-            int k = array.length;
-
-            for (i = 0; i < k; i++) {
-                r[i] = (((Float) array[i]) == null) ? 0 : (Float) array[i];
-            }
-
-            return r;
-        }
-
-        if (array instanceof Long[]) {
-            long[] r = new long[array.length];
-            int i;
-            int k = array.length;
-
-            for (i = 0; i < k; i++) {
-                r[i] = (((Long) array[i]) == null) ? 0 : (Long) array[i];
-            }
-
-            return r;
-        }
-
-        if (array instanceof Short[]) {
-            short[] r = new short[array.length];
-            int i;
-            int k = array.length;
-
-            for (i = 0; i < k; i++) {
-                r[i] = (((Short) array[i]) == null) ? 0 : (Short) array[i];
-            }
-
-            return r;
-        }
-
-        throw new IllegalArgumentException();
+        return BaseUtilities.toPrimitiveArray(array);
     }
 
     /**
@@ -1152,107 +665,7 @@ widthcheck:  {
     * @throws IllegalArgumentException if the array element type is not primitive
     */
     public static Object[] toObjectArray(Object array) {
-        if (array instanceof Object[]) {
-            return (Object[]) array;
-        }
-
-        if (array instanceof int[]) {
-            int i;
-            int k = ((int[]) array).length;
-            Integer[] r = new Integer[k];
-
-            for (i = 0; i < k; i++) {
-                r[i] = ((int[]) array)[i];
-            }
-
-            return r;
-        }
-
-        if (array instanceof boolean[]) {
-            int i;
-            int k = ((boolean[]) array).length;
-            Boolean[] r = new Boolean[k];
-
-            for (i = 0; i < k; i++) {
-                r[i] = ((boolean[]) array)[i];
-            }
-
-            return r;
-        }
-
-        if (array instanceof byte[]) {
-            int i;
-            int k = ((byte[]) array).length;
-            Byte[] r = new Byte[k];
-
-            for (i = 0; i < k; i++) {
-                r[i] = ((byte[]) array)[i];
-            }
-
-            return r;
-        }
-
-        if (array instanceof char[]) {
-            int i;
-            int k = ((char[]) array).length;
-            Character[] r = new Character[k];
-
-            for (i = 0; i < k; i++) {
-                r[i] = ((char[]) array)[i];
-            }
-
-            return r;
-        }
-
-        if (array instanceof double[]) {
-            int i;
-            int k = ((double[]) array).length;
-            Double[] r = new Double[k];
-
-            for (i = 0; i < k; i++) {
-                r[i] = ((double[]) array)[i];
-            }
-
-            return r;
-        }
-
-        if (array instanceof float[]) {
-            int i;
-            int k = ((float[]) array).length;
-            Float[] r = new Float[k];
-
-            for (i = 0; i < k; i++) {
-                r[i] = ((float[]) array)[i];
-            }
-
-            return r;
-        }
-
-        if (array instanceof long[]) {
-            int i;
-            int k = ((long[]) array).length;
-            Long[] r = new Long[k];
-
-            for (i = 0; i < k; i++) {
-                r[i] = ((long[]) array)[i];
-            }
-
-            return r;
-        }
-
-        if (array instanceof short[]) {
-            int i;
-            int k = ((short[]) array).length;
-            Short[] r = new Short[k];
-
-            for (i = 0; i < k; i++) {
-                r[i] = ((short[]) array)[i];
-            }
-
-            return r;
-        }
-
-        throw new IllegalArgumentException();
+        return BaseUtilities.toObjectArray(array);
     }
 
     /**
@@ -1262,43 +675,7 @@ widthcheck:  {
     * @return object type (e.g. <code>Integer</code>)
     */
     public static Class<?> getObjectType(Class<?> c) {
-        if (!c.isPrimitive()) {
-            return c;
-        }
-
-        if (c == Integer.TYPE) {
-            return Integer.class;
-        }
-
-        if (c == Boolean.TYPE) {
-            return Boolean.class;
-        }
-
-        if (c == Byte.TYPE) {
-            return Byte.class;
-        }
-
-        if (c == Character.TYPE) {
-            return Character.class;
-        }
-
-        if (c == Double.TYPE) {
-            return Double.class;
-        }
-
-        if (c == Float.TYPE) {
-            return Float.class;
-        }
-
-        if (c == Long.TYPE) {
-            return Long.class;
-        }
-
-        if (c == Short.TYPE) {
-            return Short.class;
-        }
-
-        throw new IllegalArgumentException();
+        return BaseUtilities.getObjectType(c);
     }
 
     /**
@@ -1308,43 +685,7 @@ widthcheck:  {
     * @return primitive type (e.g. <code>int</code>)
     */
     public static Class<?> getPrimitiveType(Class<?> c) {
-        if (!c.isPrimitive()) {
-            return c;
-        }
-
-        if (c == Integer.class) {
-            return Integer.TYPE;
-        }
-
-        if (c == Boolean.class) {
-            return Boolean.TYPE;
-        }
-
-        if (c == Byte.class) {
-            return Byte.TYPE;
-        }
-
-        if (c == Character.class) {
-            return Character.TYPE;
-        }
-
-        if (c == Double.class) {
-            return Double.TYPE;
-        }
-
-        if (c == Float.class) {
-            return Float.TYPE;
-        }
-
-        if (c == Long.class) {
-            return Long.TYPE;
-        }
-
-        if (c == Short.class) {
-            return Short.TYPE;
-        }
-
-        throw new IllegalArgumentException();
+        return BaseUtilities.getPrimitiveType(c);
     }
 
     /** Find a focus-traverable component.
@@ -1374,7 +715,7 @@ widthcheck:  {
 
         return null;
     }
-
+    
     /** Parses parameters from a given string in shell-like manner.
     * Users of the Bourne shell (e.g. on Unix) will already be familiar with the behavior.
     * For example, when using <code>org.openide.execution.NbProcessDescriptor</code> (Execution API)
@@ -1405,197 +746,14 @@ widthcheck:  {
     * @return an array of parameters
     */
     public static String[] parseParameters(String s) {
-        int NULL = 0x0; // STICK + whitespace or NULL + non_"
-        int INPARAM = 0x1; // NULL + " or STICK + " or INPARAMPENDING + "\ // NOI18N
-        int INPARAMPENDING = 0x2; // INPARAM + \
-        int STICK = 0x4; // INPARAM + " or STICK + non_" // NOI18N
-        int STICKPENDING = 0x8; // STICK + \
-        Vector<String> params = new Vector<String>(5, 5);
-        char c;
-
-        int state = NULL;
-        StringBuilder buff = new StringBuilder(20);
-        int slength = s.length();
-
-        for (int i = 0; i < slength; i++) {
-            c = s.charAt(i);
-
-            if (Character.isWhitespace(c)) {
-                if (state == NULL) {
-                    if (buff.length() > 0) {
-                        params.addElement(buff.toString());
-                        buff.setLength(0);
-                    }
-                } else if (state == STICK) {
-                    params.addElement(buff.toString());
-                    buff.setLength(0);
-                    state = NULL;
-                } else if (state == STICKPENDING) {
-                    buff.append('\\');
-                    params.addElement(buff.toString());
-                    buff.setLength(0);
-                    state = NULL;
-                } else if (state == INPARAMPENDING) {
-                    state = INPARAM;
-                    buff.append('\\');
-                    buff.append(c);
-                } else { // INPARAM
-                    buff.append(c);
-                }
-
-                continue;
-            }
-
-            if (c == '\\') {
-                if (state == NULL) {
-                    ++i;
-
-                    if (i < slength) {
-                        char cc = s.charAt(i);
-
-                        if ((cc == '"') || (cc == '\\')) {
-                            buff.append(cc);
-                        } else if (Character.isWhitespace(cc)) {
-                            buff.append(c);
-                            --i;
-                        } else {
-                            buff.append(c);
-                            buff.append(cc);
-                        }
-                    } else {
-                        buff.append('\\');
-
-                        break;
-                    }
-
-                    continue;
-                } else if (state == INPARAM) {
-                    state = INPARAMPENDING;
-                } else if (state == INPARAMPENDING) {
-                    buff.append('\\');
-                    state = INPARAM;
-                } else if (state == STICK) {
-                    state = STICKPENDING;
-                } else if (state == STICKPENDING) {
-                    buff.append('\\');
-                    state = STICK;
-                }
-
-                continue;
-            }
-
-            if (c == '"') {
-                if (state == NULL) {
-                    state = INPARAM;
-                } else if (state == INPARAM) {
-                    state = STICK;
-                } else if (state == STICK) {
-                    state = INPARAM;
-                } else if (state == STICKPENDING) {
-                    buff.append('"');
-                    state = STICK;
-                } else { // INPARAMPENDING
-                    buff.append('"');
-                    state = INPARAM;
-                }
-
-                continue;
-            }
-
-            if (state == INPARAMPENDING) {
-                buff.append('\\');
-                state = INPARAM;
-            } else if (state == STICKPENDING) {
-                buff.append('\\');
-                state = STICK;
-            }
-
-            buff.append(c);
-        }
-
-        // collect
-        if (state == INPARAM) {
-            params.addElement(buff.toString());
-        } else if ((state & (INPARAMPENDING | STICKPENDING)) != 0) {
-            buff.append('\\');
-            params.addElement(buff.toString());
-        } else { // NULL or STICK
-
-            if (buff.length() != 0) {
-                params.addElement(buff.toString());
-            }
-        }
-
-        String[] ret = new String[params.size()];
-        params.copyInto(ret);
-
-        return ret;
+        return BaseUtilities.parseParameters(s);
     }
 
     /** Complementary method to parseParameters
      * @see #parseParameters
      */
     public static String escapeParameters(String[] params) {
-        StringBuffer sb = new StringBuffer();
-
-        for (int i = 0; i < params.length; i++) {
-            escapeString(params[i], sb);
-            sb.append(' ');
-        }
-
-        final int len = sb.length();
-
-        if (len > 0) {
-            sb.setLength(len - 1);
-        }
-
-        return sb.toString().trim();
-    }
-
-    /** Escapes one string
-     * @see #escapeParameters
-     */
-    private static void escapeString(String s, StringBuffer sb) {
-        if (s.length() == 0) {
-            sb.append("\"\"");
-
-            return;
-        }
-
-        boolean hasSpace = false;
-        final int sz = sb.length();
-        final int slen = s.length();
-        char c;
-
-        for (int i = 0; i < slen; i++) {
-            c = s.charAt(i);
-
-            if (Character.isWhitespace(c)) {
-                hasSpace = true;
-                sb.append(c);
-
-                continue;
-            }
-
-            if (c == '\\') {
-                sb.append('\\').append('\\');
-
-                continue;
-            }
-
-            if (c == '"') {
-                sb.append('\\').append('"');
-
-                continue;
-            }
-
-            sb.append(c);
-        }
-
-        if (hasSpace) {
-            sb.insert(sz, '"');
-            sb.append('"');
-        }
+        return BaseUtilities.escapeParameters(params);
     }
 
     //
@@ -1807,7 +965,7 @@ widthcheck:  {
                         }
 
                         if (macAlt) {
-                            if (getOperatingSystem() == OS_MAC) {
+                            if (getOperatingSystem() == BaseUtilities.OS_MAC) {
                                 needed |= KeyEvent.CTRL_MASK;
                             } else {
                                 needed |= KeyEvent.ALT_MASK;
@@ -2423,102 +1581,9 @@ widthcheck:  {
      */
     public static <T> List<T> topologicalSort(Collection<? extends T> c, Map<? super T, ? extends Collection<? extends T>> edges)
     throws TopologicalSortException {
-        Map<T,Boolean> finished = new HashMap<T,Boolean>();
-        List<T> r = new ArrayList<T>(Math.max(c.size(), 1));
-        List<T> cRev = new ArrayList<T>(c);
-        Collections.reverse(cRev);
-
-        Iterator<T> it = cRev.iterator();
-
-        while (it.hasNext()) {
-            List<T> cycle = visit(it.next(), edges, finished, r);
-
-            if (cycle != null) {
-                throw new TopologicalSortException(cRev, edges);
-            }
-        }
-
-        Collections.reverse(r);
-        if (r.size() != c.size()) {
-            r.retainAll(c);
-        }
-
-        return r;
+        return BaseUtilities.topologicalSort(c, edges);
     }
-
-    /**
-     * Visit one node in the DAG.
-     * @param node node to visit
-     * @param edges edges in the DAG
-     * @param finished which nodes are finished; a node has no entry if it has not yet
-     *                 been visited, else it is set to false while recurring and true
-     *                 when it has finished
-     * @param r the order in progress
-     * @return list with detected cycle
-     */
-    static <T> List<T> visit(
-        T node,
-        Map<? super T, ? extends Collection<? extends T>> edges,
-        Map<T,Boolean> finished,
-        List<T> r
-    ) {
-        Boolean b = finished.get(node);
-
-        //System.err.println("node=" + node + " color=" + b);
-        if (b != null) {
-            if (b.booleanValue()) {
-                return null;
-            }
-
-            ArrayList<T> cycle = new ArrayList<T>();
-            cycle.add(node);
-            finished.put(node, null);
-
-            return cycle;
-        }
-
-        Collection<? extends T> e = edges.get(node);
-
-        if (e != null) {
-            finished.put(node, Boolean.FALSE);
-
-            Iterator<? extends T> it = e.iterator();
-
-            while (it.hasNext()) {
-                List<T> cycle = visit(it.next(), edges, finished, r);
-
-                if (cycle != null) {
-                    if (cycle instanceof ArrayList) {
-                        // if cycle instanceof ArrayList we are still in the
-                        // cycle and we want to collect new members
-                        if (Boolean.FALSE == finished.get(node)) {
-                            // another member in the cycle
-                            cycle.add(node);
-                        } else {
-                            // we have reached the head of the cycle
-                            // do not add additional cycles anymore
-                            Collections.reverse(cycle);
-
-                            // changing cycle to not be ArrayList
-                            cycle = Collections.unmodifiableList(cycle);
-                        }
-                    }
-
-                    // mark this node as tested
-                    finished.put(node, Boolean.TRUE);
-
-                    // and report an error
-                    return cycle;
-                }
-            }
-        }
-
-        finished.put(node, Boolean.TRUE);
-        r.add(node);
-
-        return null;
-    }
-
+    
     /** Provides support for parts of the system that deal with classnames
      * (use <code>Class.forName</code>, <code>NbObjectInputStream</code>, etc.) or filenames
      * in layers.
@@ -2584,188 +1649,10 @@ widthcheck:  {
      * @return new name of the class according to renaming rules.
      */
     public static String translate(final String className) {
-        checkMapping();
-
-        RE exp;
-
-        synchronized (TRANS_LOCK) {
-            exp = transExp;
-        }
-
-        if (exp == null) {
-            // no transition table found
-            return className;
-        }
-
-        synchronized (exp) {
-            // refusing convertions as fast as possible
-            return exp.convert(className);
-        }
+        return BaseUtilities.translate(className);
     }
-
-    /** Loads all resources that contain renaming information.
-     * @param l classloader to load packages from
-     */
-    private static void checkMapping() {
-        // test if we run in test mode
-        if (transLoader == TRANS_LOCK) {
-            // no check
-            return;
-        }
-
-        ClassLoader current = Lookup.getDefault().lookup(ClassLoader.class);
-
-        if (current == null) {
-            current = ClassLoader.getSystemClassLoader();
-        }
-
-        if (transLoader == current) {
-            // no change, no rescan
-            return;
-        }
-
-        initForLoader(current, current);
-    }
-
-    /* Initializes the content of transition table from a classloader.
-     * @param loader loader to read data from
-     * @param set loader to set as the transLoader or null if we run in test mode
-     */
-    static void initForLoader(ClassLoader current, Object set) {
-        if (set == null) {
-            set = TRANS_LOCK;
-        }
-
-        Enumeration<URL> en;
-
-        try {
-            en = current.getResources("META-INF/netbeans/translate.names");
-        } catch (IOException ex) {
-            LOG.log(Level.WARNING, null, ex);
-            en = null;
-        }
-
-        if ((en == null) || !en.hasMoreElements()) {
-            synchronized (TRANS_LOCK) {
-                transLoader = set;
-                transExp = null;
-            }
-
-            return;
-        }
-
-        // format of line in the meta files
-        //
-        // # comments are allowed
-        // a.name.in.a.Package=another.Name # with comment is allowed
-        // for.compatibility.one.can.use.Space instead.of.Equal
-        //
-        RE re = null;
-
-        // [pnejedly:perf] commented out. The RegExp based translation was way slower
-        // than the hand-written RE13
-        //        if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.4")) >= 0) { // NOI18N
-        //            try {
-        //                re = (RE)Class.forName ("org.openide.util.RE14").newInstance ();
-        //            } catch (ThreadDeath t) {
-        //                throw t;
-        //            } catch (Throwable t) {
-        //            }
-        //        }
-        //        if (re == null) {
-        re = new RE13();
-
-        //        }
-        TreeSet<String[]> list = new TreeSet<String[]>(
-                new Comparator<String[]>() {
-                    @Override public int compare(String[] o1, String[] o2) {
-                        String s1 = o1[0];
-                        String s2 = o2[0];
-
-                        int i1 = s1.length();
-                        int i2 = s2.length();
-
-                        if (i1 != i2) {
-                            return i2 - i1;
-                        }
-
-                        return s2.compareTo(s1);
-                    }
-                }
-            );
-
-        while (en.hasMoreElements()) {
-            URL u = en.nextElement();
-
-            try {
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(u.openStream(), "UTF8") // use explicit encoding  //NOI18N
-                    );
-                loadTranslationFile(re, reader, list);
-                reader.close();
-            } catch (IOException ex) {
-                LOG.log(Level.WARNING, "Problematic file: {0}", u);
-                LOG.log(Level.WARNING, null, ex);
-            }
-        }
-
-        // construct a regular expression of following form. Let "1", "2", "3", "4"
-        // be the keys:
-        // "^
-        // thus if 4 is matched five groups will be created
-        String[] arr = new String[list.size()];
-        String[] pattern = new String[arr.length];
-
-        int i = 0;
-        for (String[] pair : list) {
-            arr[i] = pair[1].intern(); // name of the track
-            pattern[i] = pair[0]; // original object
-            i++;
-        }
-
-        synchronized (TRANS_LOCK) {
-            // last check
-            if (arr.length == 0) {
-                transExp = null;
-            } else {
-                transExp = re;
-                transExp.init(pattern, arr);
-            }
-
-            transLoader = set;
-        }
-    }
-
-    /**
-     * Load single translation file.
-     * @param resource URL identifiing transaction table
-     * @param results will be filled with String[2]
-     */
-    private static void loadTranslationFile(RE re, BufferedReader reader, Set<String[]> results)
-    throws IOException {
-        for (;;) {
-            String line = reader.readLine();
-
-            if (line == null) {
-                break;
-            }
-
-            if ((line.length() == 0) || line.startsWith("#")) { // NOI18N
-
-                continue;
-            }
-
-            String[] pair = re.readPair(line);
-
-            if (pair == null) {
-                throw new java.io.InvalidObjectException("Line is invalid: " + line);
-            }
-
-            results.add(pair);
-        }
-    }
-
-    /** This method merges two images into the new one. The second image is drawn
+        
+     /** This method merges two images into the new one. The second image is drawn
      * over the first one with its top-left corner at x, y. Images need not be of the same size.
      * New image will have a size of max(second image size + top-left corner, first image size).
      * Method is used mostly when second image contains transparent pixels (e.g. for badging).
@@ -3111,27 +1998,7 @@ widthcheck:  {
      * @since 8.25
      */
     public static URI toURI(File f) {
-        URI u;
-        try {
-            u = f.toPath().toUri();
-        } catch (java.nio.file.InvalidPathException ex) {
-            u = f.toURI();
-            LOG.log(Level.FINE, "can't convert " + f + " falling back to " + u, ex);
-        }
-        if (u.toString().startsWith("file:///")) { 
-            try {
-                // #214131 workaround
-                return new URI(
-                    /* "file" */u.getScheme(), /* null */u.getUserInfo(), 
-                    /* null (!) */u.getHost(), /* -1 */u.getPort(), 
-                    /* "/..." */u.getPath(), /* null */u.getQuery(), 
-                    /* null */u.getFragment()
-                );
-            } catch (URISyntaxException ex) {
-                LOG.log(Level.FINE, "could not convert " + f + " to URI", ex);
-            }
-        }
-        return u;
+        return BaseUtilities.toURI(f);
     }
 
     /**
@@ -3144,16 +2011,7 @@ widthcheck:  {
      * @since 8.25
      */
     public static File toFile(URI u) throws IllegalArgumentException {
-        try {
-            return Paths.get(u).toFile();
-        } catch (Exception x) {
-            LOG.log(Level.FINE, "could not convert " + u + " to File", x);
-        }
-        String host = u.getHost();
-        if (host != null && !host.isEmpty() && "file".equals(u.getScheme())) {
-            return new File("\\\\" + host + u.getPath().replace('/', '\\'));
-        }
-        return new File(u);    
+        return BaseUtilities.toFile(u);
     }
 
     /**
@@ -3229,25 +2087,7 @@ widthcheck:  {
         Toolkit.getDefaultToolkit().beep();
     }
 
-    /** Interfaces for communication between Utilities.translate and regular
-     * expression impl.
-     *
-     * Order of methods is:
-     * readPair few times
-     * init once
-     * convert many times
-     */
-    static interface RE {
-        public void init(String[] original, String[] newversion);
-
-        public String convert(String pattern);
-
-        /** Parses line of text to two parts: the key and the rest
-         */
-        public String[] readPair(String line);
-    }
-
-    /** Exception indicating that a given list could not be partially-ordered.
+   /** Exception indicating that a given list could not be partially-ordered.
     * @see #partialSort
     * @deprecated Used only by the deprecated partialSort
     */

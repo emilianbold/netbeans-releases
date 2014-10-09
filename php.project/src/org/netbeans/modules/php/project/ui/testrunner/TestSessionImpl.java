@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.project.ui.testrunner;
 
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.netbeans.modules.php.spi.testing.run.OutputLineHandler;
@@ -93,7 +93,7 @@ public class TestSessionImpl implements TestSession {
     @Override
     public void setOutputLineHandler(OutputLineHandler outputLineHandler) {
         Parameters.notNull("outputLineHandler", outputLineHandler); // NOI18N
-        testSession.setOutputLineHandler(map(outputLineHandler));
+        Manager.getInstance().setOutputLineHandler(map(outputLineHandler));
     }
 
     @Override
@@ -149,8 +149,8 @@ public class TestSessionImpl implements TestSession {
 
     //~ Mappers
 
-    private org.netbeans.modules.gsf.testrunner.api.OutputLineHandler map(final OutputLineHandler outputLineHandler) {
-        return new org.netbeans.modules.gsf.testrunner.api.OutputLineHandler() {
+    private org.netbeans.modules.gsf.testrunner.ui.api.OutputLineHandler map(final OutputLineHandler outputLineHandler) {
+        return new org.netbeans.modules.gsf.testrunner.ui.api.OutputLineHandler() {
             @Override
             public void handleLine(OutputWriter out, String text) {
                 outputLineHandler.handleLine(out, text);

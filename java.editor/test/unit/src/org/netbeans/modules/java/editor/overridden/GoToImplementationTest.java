@@ -49,7 +49,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.java.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -91,6 +90,7 @@ public class GoToImplementationTest extends NbTestCase {
                null);
     }
 
+    @Override
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
 
@@ -112,12 +112,8 @@ public class GoToImplementationTest extends NbTestCase {
         
         assertNotNull(testSource);
         
-        OutputStream out = testSource.getOutputStream();
-        
-        try {
+        try (OutputStream out = testSource.getOutputStream()) {
             out.write(code.getBytes());
-        } finally {
-            out.close();
         }
         
         js = JavaSource.forFileObject(testSource);
@@ -137,7 +133,7 @@ public class GoToImplementationTest extends NbTestCase {
         prepareTest("test/Test.java", code.replace("|", ""));
         
         Element element = GoToImplementation.resolveTarget(info, info.getSnapshot().getSource().getDocument(true), caret, new AtomicBoolean());
-        String elementText = element != null ? Utilities.getElementName(element, true).toString() : null;
+        String elementText = element != null ? info.getElementUtilities().getElementName(element, true).toString() : null;
         
         assertEquals(golden, elementText);
     }

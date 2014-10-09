@@ -847,7 +847,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.simpleName = elem.getSimpleName().toString();
             this.typeName = Utilities.getTypeName(info, type, false).toString();
             if (referencesCount != null) {
-                this.enclName = Utilities.getElementName(elem.getEnclosingElement(), true).toString();
+                this.enclName = info.getElementUtilities().getElementName(elem.getEnclosingElement(), true).toString();
                 this.sortText = new LazySortText(this.simpleName, this.enclName, getElementHandle(), referencesCount);
             } else {
                 this.enclName = null;

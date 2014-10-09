@@ -1882,12 +1882,28 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             <equals arg1="${code.name.base.dashes}" arg2="org-openide-util" />
         </condition>
 
+        <condition property="module" value="tmp/netbeans/lib/org-openide-util-base.jar">
+            <equals arg1="${code.name.base.dashes}" arg2="org-openide-util-base" />
+        </condition>
+
         <condition property="module" value="tmp/netbeans/core/org-openide-filesystems.jar">
             <equals arg1="${code.name.base.dashes}" arg2="org-openide-filesystems" />
         </condition>
 
+        <condition property="module" value="tmp/netbeans/core/org-openide-filesystems-compat8.jar">
+            <equals arg1="${code.name.base.dashes}" arg2="org-openide-filesystems-compat8" />
+        </condition>
+
         <condition property="module" value="tmp/netbeans/lib/org-openide-modules.jar">
             <equals arg1="${code.name.base.dashes}" arg2="org-openide-modules" />
+        </condition>
+
+        <condition property="module" value="tmp/netbeans/lib/org-netbeans-libs-asm.jar">
+            <equals arg1="${code.name.base.dashes}" arg2="org-netbeans-libs-asm" />
+        </condition>
+
+        <condition property="module" value="tmp/netbeans/lib/org-netbeans-libs-asm.jar">
+            <equals arg1="${code.name.base.dashes}" arg2="org-netbeans-libs-asm" />
         </condition>
 
         <condition property="module" value="tmp/netbeans/core/org-netbeans-upgrader.jar">

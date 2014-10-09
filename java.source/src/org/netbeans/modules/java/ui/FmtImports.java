@@ -72,7 +72,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
-import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
+import static org.netbeans.modules.java.ui.CategorySupport.OPTION_ID;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.openide.util.RequestProcessor;
 
@@ -612,7 +612,7 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
         return model;
     }
 
-    private static final class ImportsCategorySupport extends DocumentCategorySupport {
+    private static final class ImportsCategorySupport extends CategorySupport.DocumentCategorySupport {
         private ImportsCategorySupport(Preferences preferences, JPanel panel) {
             super(preferences, "imports", panel, NbBundle.getMessage(FmtImports.class, "SAMPLE_Imports")); //NOI18N
         }
