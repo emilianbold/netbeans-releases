@@ -59,7 +59,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
-import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 import org.openide.awt.Mnemonics;
@@ -211,7 +211,7 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
     @NbBundle.Messages("NodeJsRunPanel.browse.title=Select start file")
     private void startFileBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startFileBrowseButtonActionPerformed
         assert EventQueue.isDispatchThread();
-        File sourceRoot = FileUtils.getSourceRoot(project);
+        File sourceRoot = NodeJsUtils.getSourceRoot(project);
         assert sourceRoot != null : project.getProjectDirectory();
         File file = new FileChooserBuilder(NodeJsRunPanel.class)
                 .setFilesOnly(true)
