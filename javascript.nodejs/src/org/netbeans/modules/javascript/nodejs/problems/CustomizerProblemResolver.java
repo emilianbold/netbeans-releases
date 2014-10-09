@@ -52,18 +52,32 @@ public class CustomizerProblemResolver implements ProjectProblemResolver {
 
     private final Project project;
     private final ValidationResult result;
+    private final String category;
 
 
     CustomizerProblemResolver(Project project, ValidationResult result) {
+        this(project, result, null);
+    }
+
+    CustomizerProblemResolver(Project project, String category) {
+        this(project, null, category);
+    }
+
+    private CustomizerProblemResolver(Project project, ValidationResult result, String category) {
         assert project != null;
-        assert result != null;
         this.project = project;
         this.result = result;
+        this.category = category;
     }
 
     @Override
     public Future<ProjectProblemsProvider.Result> resolve() {
-        NodeJsCustomizerProvider.openCustomizer(project, result);
+        if (result != null) {
+            NodeJsCustomizerProvider.openCustomizer(project, result);
+        } else {
+            assert category != null;
+            NodeJsCustomizerProvider.openCustomizer(project, category);
+        }
         return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
     }
 

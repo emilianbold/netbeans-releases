@@ -49,12 +49,14 @@ import java.util.Collections;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
 import org.netbeans.modules.web.common.api.Version;
@@ -106,6 +108,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
                     return Collections.emptyList();
                 }
                 Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<>();
+                checkSources(currentProblems);
                 checkOptions(currentProblems);
                 checkPreferences(currentProblems);
                 checkNode(currentProblems);
@@ -122,6 +125,22 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
             options.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, optionsListener, options));
         }
         return nodeJsSupport;
+    }
+
+    @NbBundle.Messages({
+        "NodeJsProblemProvider.sources.none.title=No Source folder defined",
+        "# {0} - project name",
+        "NodeJsProblemProvider.sources.none.description=Node.js runs JavaScript files underneath Source folder. But no Source folder is defined in project {0}.",
+    })
+    void checkSources(Collection<ProjectProblem> currentProblems) {
+        if (NodeJsUtils.getSourceRoots(project).isEmpty()) {
+            ProjectProblem problem = ProjectProblem.createError(
+                    Bundle.NodeJsProblemProvider_sources_none_title(),
+                    Bundle.NodeJsProblemProvider_sources_none_description(ProjectUtils.getInformation(project).getDisplayName()),
+                    // XXX
+                    new CustomizerProblemResolver(project, "SOURCES")); // NOI18N
+            currentProblems.add(problem);
+        }
     }
 
     void checkOptions(Collection<ProjectProblem> currentProblems) {
