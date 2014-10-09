@@ -980,7 +980,7 @@ public final class ModuleManager extends Modules {
         }
         Collection<Module> frags = fragmentModules.get(codeNameBase);
         if (frags == null) {
-            frags = new ArrayList<Module>(1);
+            frags = new HashSet<Module>(1);
             fragmentModules.put(codeNameBase, frags);
         }
         frags.add(m);
@@ -1503,7 +1503,8 @@ public final class ModuleManager extends Modules {
             }
         }
         while (searchForPossibleEager(willEnable, stillDisabled, modules)) {/* search again */}
-        Map<Module,List<Module>> deps = Util.moduleDependencies(willEnable, modulesByName, getProvidersOf());
+        Map<Module,List<Module>> deps = Util.moduleDependencies(
+                willEnable, modulesByName, getProvidersOf(), fragmentModules);
         try {
             List<Module> l = Utilities.topologicalSort(willEnable, deps);
             Collections.reverse(l);
@@ -1528,6 +1529,7 @@ public final class ModuleManager extends Modules {
             return Collections.<Module>emptyList();
         }
     }
+    
     private void maybeAddToEnableList(Set<Module> willEnable, Set<Module> mightEnable, Module m, boolean okToFail) {
         if (! missingDependencies(m).isEmpty()) {
             assert okToFail : "Module " + m + " had unexpected problems: " + missingDependencies(m) + " (willEnable: " + willEnable + " mightEnable: " + mightEnable + ")";
@@ -1538,6 +1540,9 @@ public final class ModuleManager extends Modules {
             // Already there, done.
             return;
         }
+        // need to register fragments eagerly, so they are available during
+        // dependency sort
+        attachModuleFragment(m);
         // Also add anything it depends on, if not already there,
         // or already enabled.
         for (Dependency dep : m.getDependenciesArray()) {
@@ -1586,6 +1591,12 @@ public final class ModuleManager extends Modules {
                 assert foundOne || dep.getType() == Dependency.TYPE_RECOMMENDS : "Should have found a nonproblematic provider of " + dep + " among " + providers + " with willEnable=" + willEnable + " mightEnable=" + mightEnable;
             }
             // else some other kind of dependency that does not concern us
+        }
+        Collection<Module> frags = getAttachedFragments(m);
+        for (Module fragMod : frags) {
+            if (! fragMod.isEnabled()) {
+                maybeAddToEnableList(willEnable, mightEnable, fragMod, false);
+            }
         }
     }
     private boolean searchForPossibleEager(Set<Module> willEnable, Set<Module> stillDisabled, Set<Module> mightEnable) {
