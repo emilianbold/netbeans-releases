@@ -85,7 +85,7 @@ public final class NodeJsOptions {
         String path = preferences.get(NODE_PATH, null);
         if (path == null && !nodeSearched) {
             nodeSearched = true;
-            List<String> files = FileUtils.findFileOnUsersPath(NodeExecutable.NODE_NAME);
+            List<String> files = FileUtils.findFileOnUsersPath(NodeExecutable.NODE_NAMES);
             if (!files.isEmpty()) {
                 path = files.get(0);
                 setNode(path);
