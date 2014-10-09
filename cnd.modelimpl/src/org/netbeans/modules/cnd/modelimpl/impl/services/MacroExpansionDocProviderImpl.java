@@ -317,10 +317,19 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
     @Override
     public String expand(Document doc, int startOffset, int endOffset) {
+        // this is only for tool tips
         if(doc == null) {
             return null;
         }
-        return expand(doc, CsmUtilities.getCsmFile(doc, false, false), startOffset, endOffset, true);
+        final CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
+        Formatter formatter = null;
+        if (doc instanceof BaseDocument) {
+            formatter = new Formatter((BaseDocument) doc);
+        }
+        TransformationTable tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(csmFile));
+        expand(doc, csmFile, tt, formatter);
+        tt.cleanUp();
+        return expandInterval(doc, tt, startOffset, endOffset);
     }
 
     @Override
