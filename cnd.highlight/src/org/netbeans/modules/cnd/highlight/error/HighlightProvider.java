@@ -348,7 +348,14 @@ public final class HighlightProvider  {
                 this.response = null;
                 this.wait = null;
             }
-            assert aWait != null : provider.getName();
+            if (aWait == null) {
+                // if sequence is setWork-setWork-run-run,
+                // the second run has already cleaned wait.
+                // In this case first wait is count downed in second setWork method,
+                // second wait count downed in first run method,
+                // there is no needs to do second run.
+                return;
+            }
             try {
                 if (!aRequest.isCancelled()){
                     try {
