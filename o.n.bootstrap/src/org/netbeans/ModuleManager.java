@@ -851,6 +851,12 @@ public final class ModuleManager extends Modules {
         return theHost.getClassLoader();
     }
     
+    private Collection<Module> getAttachedFragments(Module m) {
+        String cdn = m.getCodeNameBase();
+        Collection<Module> frags = fragmentModules.get(cdn);
+        return frags == null ? Collections.<Module>emptySet() : frags;
+    }
+    
     /**
      * Refines the module's own path with patches from other modules
      * @param m the module
@@ -978,7 +984,6 @@ public final class ModuleManager extends Modules {
             fragmentModules.put(codeNameBase, frags);
         }
         frags.add(m);
-        
     }
     
     /**
@@ -1416,6 +1421,15 @@ public final class ModuleManager extends Modules {
                 throw new IOException("Parent " + name + " not found!"); // NOI18N
             }
             res.add(parent);
+        }
+        // dependencies of fragment modules should be injected into the main module.
+        Collection<Module> fragments = getAttachedFragments(m);
+        if (!fragments.isEmpty()) {
+            for (Module frag : fragments) {
+                Set<Module> mods = calculateParents(frag);
+                mods.remove(m);
+                res.addAll(mods);
+            }
         }
         return res;
     }

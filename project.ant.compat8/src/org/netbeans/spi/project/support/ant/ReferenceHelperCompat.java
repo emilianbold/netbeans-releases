@@ -41,13 +41,14 @@
  */
 package org.netbeans.spi.project.support.ant;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.api.project.libraries.*;
-import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.openide.modules.PatchFor;
-import org.openide.util.BaseUtilities;
-import org.openide.util.Exceptions;
+import org.openide.util.*;
 
 /**
  *
@@ -55,6 +56,41 @@ import org.openide.util.Exceptions;
  */
 @PatchFor(ReferenceHelper.class)
 public abstract class ReferenceHelperCompat {
+    // must use reflection to avoid dependency cycle between compat8 > project.ant.ui > project.ant (= compat8)
+    private static Method referenceHelperHandler;
+    private static Method uriHandler;
+    
+    private static Method getRefHelperHandler() {
+        if (referenceHelperHandler == null) {
+            try {
+                referenceHelperHandler = Lookup.getDefault().lookup(ClassLoader.class).loadClass("org.netbeans.spi.project.support.ant.ui.CustomizerUtilities").
+                        getMethod("getLibraryChooserImportHandler", ReferenceHelper.class);
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return referenceHelperHandler;
+    }
+
+    private static Method getURIHandler() {
+        if (uriHandler == null) {
+            try {
+                uriHandler = Lookup.getDefault().lookup(ClassLoader.class).loadClass("org.netbeans.spi.project.support.ant.ui.CustomizerUtilities").
+                        getMethod("getLibraryChooserImportHandler", URI.class);
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return uriHandler;
+    }
 
     /**
      * Returns library import handler which imports global library to sharable
@@ -66,7 +102,16 @@ public abstract class ReferenceHelperCompat {
         if (!ReferenceHelper.class.isInstance(this)) {
             throw new IllegalStateException("ReferenceHelperCompat can be extended only by ReferenceHelper");
         }
-        return CustomizerUtilities.getLibraryChooserImportHandler(ReferenceHelper.class.cast(this));
+        try {
+            return (LibraryChooser.LibraryImportHandler) getRefHelperHandler().invoke(null, ReferenceHelper.class.cast(this));
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
     /**
@@ -78,10 +123,16 @@ public abstract class ReferenceHelperCompat {
      */
     public LibraryChooser.LibraryImportHandler getLibraryChooserImportHandler(final URL librariesLocation) {
         try {
-            return CustomizerUtilities.getLibraryChooserImportHandler(BaseUtilities.toFile(librariesLocation.toURI()));
+            return (LibraryChooser.LibraryImportHandler) getURIHandler().invoke(null, BaseUtilities.toFile(librariesLocation.toURI()));
         } catch (URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
-            return null;
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
         }
+        return null;
     }
 }
