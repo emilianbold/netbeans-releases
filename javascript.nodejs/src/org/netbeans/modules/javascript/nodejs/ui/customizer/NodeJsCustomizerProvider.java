@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript.nodejs.ui.customizer;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
-import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -59,11 +58,6 @@ public final class NodeJsCustomizerProvider implements ProjectCustomizer.Composi
     @NbBundle.Messages("NodeJsCustomizerProvider.name=Node.js")
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
-        Project project = context.lookup(Project.class);
-        assert project != null;
-        if (NodeJsUtils.getSourceRoots(project).isEmpty()) {
-            return null;
-        }
         return ProjectCustomizer.Category.create(CUSTOMIZER_IDENT,
                 Bundle.NodeJsCustomizerProvider_name(), null);
     }
@@ -83,9 +77,15 @@ public final class NodeJsCustomizerProvider implements ProjectCustomizer.Composi
     }
 
     public static void openCustomizer(Project project, ValidationResult result) {
+        openCustomizer(project, NodeJsPreferencesValidator.getCustomizerCategory(result));
+    }
+
+    public static void openCustomizer(Project project, String category) {
+        assert project != null;
+        assert category != null;
         CustomizerProvider2 customizerProvider = project.getLookup().lookup(CustomizerProvider2.class);
         assert customizerProvider != null : "CustomizerProvider2 must be found in lookup of " + project.getClass().getName();
-        customizerProvider.showCustomizer(NodeJsPreferencesValidator.getCustomizerCategory(result), null);
+        customizerProvider.showCustomizer(category, null);
     }
 
 }
