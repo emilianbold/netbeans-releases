@@ -74,7 +74,7 @@ import org.netbeans.modules.cnd.testrunner.ui.CndTestRunnerNodeFactory;
 import org.netbeans.modules.cnd.testrunner.ui.CndUnitHandlerFactory;
 import org.netbeans.modules.cnd.testrunner.ui.TestRunnerLineConvertor;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
@@ -240,9 +240,10 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
     }
 
     private TestRunnerLineConvertor createTestRunnerConvertor(Project project) {
+        Manager.getInstance().setNodeFactory(new CndTestRunnerNodeFactory());
         session = new TestSession("Test", // NOI18N
                 project,
-                SessionType.TEST, new CndTestRunnerNodeFactory());
+                SessionType.TEST);
 
         session.setRerunHandler(this);
 

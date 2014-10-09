@@ -55,15 +55,17 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.IndexingState;
+import org.netbeans.modules.parsing.api.TestEnvironmentFactory;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Pair;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -92,16 +94,9 @@ public class RunWhenScanFinishedSupportTest extends NbTestCase {
         final FileObject wd = FileUtil.toFileObject(getWorkDir());
         final FileObject file = FileUtil.createData(wd, "test.foo");    //NOI18N
         assertNotNull(file);
+        MockLookup.setInstances(new MockMimeLookup(), new TestEnvironmentFactory(), new IndexerEmulator());
         src = Source.create(file);
         assertNotNull(src);
-        if (!Utilities.getIndexingState().isEmpty()) {
-            Utilities.setIndexingStatus(new Utilities.IndexingStatus() {
-                @Override
-                public Set<? extends IndexingState> getIndexingState() {
-                    return Collections.<IndexingState>emptySet();
-                }
-            });
-        }
         handler = new TestHandler();
         log = Logger.getLogger(RunWhenScanFinishedSupport.class.getName());
         log.setLevel(Level.FINE);
@@ -112,34 +107,6 @@ public class RunWhenScanFinishedSupportTest extends NbTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         log.removeHandler(handler);
-    }
-    
-    
-    
-
-    public void testMultipleConcurrentRunWhenScanFinished() throws Exception {
-
-        final TestTask task2 = new TestTask("task2",null,-1,null);  //NOI18N
-        final CountDownLatch task2ExitingRWSF = handler.condition("runWhenScanFinished:entry", task2);  //NOI18N
-        final TestTask task1 = new TestTask("task1",task2ExitingRWSF,-1,null);  //NOI18N
-        final CountDownLatch task1EnteredRWSF = handler.condition("runWhenScanFinished:entry", task1);  //NOI18N
-        
-        
-        
-        final Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {                    
-                    RunWhenScanFinishedSupport.runWhenScanFinished(task1, Collections.singleton(src));
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
-                }
-            }
-        });
-        t.start();
-        task1EnteredRWSF.await();
-        RunWhenScanFinishedSupport.runWhenScanFinished(task2, Collections.singleton(src));
-        t.join();
     }
     
     public void testPerformScanExclusiveToRunWhenScanFinished1() throws Exception {
@@ -161,32 +128,6 @@ public class RunWhenScanFinishedSupportTest extends NbTestCase {
         t.join();
         assertTrue(notCalledInConcurrent.get());
     }
-    
-    public void testPerformScanExclusiveToRunWhenScanFinished2() throws Exception {
-        final AtomicBoolean notCalledInConcurrent = new AtomicBoolean();
-        final Runnable scan = new ScanTask(null, -1, null);
-        final CountDownLatch scannerRunning = handler.condition("performScan:entry", scan); //NOI18N        
-        final TestTask task = new TestTask("task",scannerRunning,NEGATIVE_TIME,notCalledInConcurrent);    //NOI18N        
-        final CountDownLatch taskRunning = handler.condition("runWhenScanFinished:entry", task);    //NOI18N
-        
-        final Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    RunWhenScanFinishedSupport.runWhenScanFinished(task, Collections.singleton(src));
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        });
-        t.start();
-        taskRunning.await();
-        RunWhenScanFinishedSupport.performScan(scan);
-        t.join();
-        assertTrue(notCalledInConcurrent.get());
-    }
-    
-    
     
     private static final class TestTask implements Mutex.ExceptionAction<Void> {
         

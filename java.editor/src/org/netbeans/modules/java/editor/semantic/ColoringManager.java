@@ -62,7 +62,8 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import static org.netbeans.modules.java.editor.semantic.ColoringAttributes.*;
+import org.netbeans.modules.java.editor.base.semantic.ColoringAttributes;
+import static org.netbeans.modules.java.editor.base.semantic.ColoringAttributes.*;
 
 /**
  *

@@ -44,28 +44,26 @@
 
 package org.netbeans.api.project.libraries;
 
-import org.openide.util.lookup.Lookups;
-import org.openide.util.test.MockLookup;
-import static org.netbeans.modules.project.libraries.TestUtil.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.StringTokenizer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.project.libraries.ui.LibrariesModel;
-import org.netbeans.modules.settings.RecognizeInstanceObjects;
+import org.netbeans.modules.project.libraries.LibrariesTestUtil;
+import static org.netbeans.modules.project.libraries.LibrariesTestUtil.*;
+import org.netbeans.modules.project.libraries.LibrariesTestUtil.ALP;
+import org.netbeans.modules.project.libraries.LibrariesTestUtil.Area;
+import org.netbeans.modules.project.libraries.LibrariesTestUtil.WLP;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.InstanceDataObject;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 import org.openide.util.test.MockPropertyChangeListener;
 
 public class LibraryManagerTest extends NbTestCase {
@@ -86,24 +84,11 @@ public class LibraryManagerTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         lp = new WLP();
-        MockLookup.setLookup(Lookups.fixed(lp, new RecognizeInstanceObjects()));
-        registerLibraryTypeProvider();
-    }
-
-    private static void registerLibraryTypeProvider () throws Exception {
-        StringTokenizer tk = new StringTokenizer("org-netbeans-api-project-libraries/LibraryTypeProviders","/");
-        FileObject root = FileUtil.getConfigRoot();
-        while (tk.hasMoreElements()) {
-            String pathElement = tk.nextToken();
-            FileObject tmp = root.getFileObject(pathElement);
-            if (tmp == null) {
-                tmp = root.createFolder(pathElement);
-            }
-            root = tmp;
-        }
-        if (root.getChildren().length == 0) {
-            InstanceDataObject.create (DataFolder.findFolder(root),"TestLibraryTypeProvider",TestLibraryTypeProvider.class);
-        }
+        MockLookup.setLookup(Lookups.fixed(
+            lp,
+            new LibrariesTestUtil.MockLibraryTypeRegistry(),
+            new LibrariesTestUtil.MockProjectManager()));
+        LibrariesTestUtil.registerLibraryTypeProvider(TestLibraryTypeProvider.class);
     }
 
     public void testGetLibraries () throws Exception {
@@ -181,8 +166,15 @@ public class LibraryManagerTest extends NbTestCase {
 
     public void testArealLibraryManagers() throws Exception {
         ALP alp = new ALP();
-        MockLookup.setLookup(Lookups.fixed(lp, alp, new RecognizeInstanceObjects()));
-        new LibrariesModel().createArea();
+        MockLookup.setLookup(Lookups.fixed(
+             lp,
+             alp,
+             new LibrariesTestUtil.MockProjectManager(),
+             new LibrariesTestUtil.MockLibraryTypeRegistry(),
+             new LibrariesTestUtil.MockLibraryStorageAreaCache()));
+        LibrariesTestUtil.registerLibraryTypeProvider(TestLibraryTypeProvider.class);
+        final Area newArea = alp.createArea();
+        Lookup.getDefault().lookup(LibrariesTestUtil.MockLibraryStorageAreaCache.class).addToCache(newArea.getLocation());
         Area home = new Area("home");
         Area away = new Area("away");
         alp.setOpen(home, away);
@@ -248,8 +240,16 @@ public class LibraryManagerTest extends NbTestCase {
 
     public void testCreateLibraryWithPropertiesInAreaLM() throws Exception {
         ALP alp = new ALP();
-        MockLookup.setLookup(Lookups.fixed(lp, alp, new RecognizeInstanceObjects()));
-        new LibrariesModel().createArea();
+        MockLookup.setLookup(Lookups.fixed(
+            lp,
+            alp,
+            new LibrariesTestUtil.MockProjectManager(),
+            new LibrariesTestUtil.MockLibraryTypeRegistry(),
+            new LibrariesTestUtil.MockLibraryStorageAreaCache()
+            ));
+        LibrariesTestUtil.registerLibraryTypeProvider(TestLibraryTypeProvider.class);
+        final Area newArea = alp.createArea();
+        Lookup.getDefault().lookup(LibrariesTestUtil.MockLibraryStorageAreaCache.class).addToCache(newArea.getLocation());
         Area space = new Area("space");  //NOI18N
         LibraryManager mgr = LibraryManager.forLocation(space.getLocation());
         assertNotNull(mgr);

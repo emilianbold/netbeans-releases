@@ -85,10 +85,10 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
@@ -115,7 +115,9 @@ public class Lambda {
     public static ErrorDescription lambda2Class(HintContext ctx) {
         TypeMirror samType = ctx.getInfo().getTrees().getTypeMirror(ctx.getPath());
         
-        if (samType == null || samType.getKind() != TypeKind.DECLARED) return null;
+        if (samType == null || samType.getKind() != TypeKind.DECLARED) {
+            return null;
+        }
         
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.ERR_lambda2Class(), new Lambda2Anonymous(ctx.getInfo(), ctx.getPath()).toEditorFix());
     }
@@ -192,7 +194,9 @@ public class Lambda {
     })
     @TriggerPattern("($args$) -> $lambdaExpression")
     public static ErrorDescription expression2Return(HintContext ctx) {
-        if (((LambdaExpressionTree) ctx.getPath().getLeaf()).getBodyKind() != BodyKind.EXPRESSION) return null;
+        if (((LambdaExpressionTree) ctx.getPath().getLeaf()).getBodyKind() != BodyKind.EXPRESSION) {
+            return null;
+        }
         
         TypeMirror lambdaExpressionType = ctx.getInfo().getTrees().getTypeMirror(ctx.getVariables().get("$lambdaExpression"));
         String target =   lambdaExpressionType == null || lambdaExpressionType.getKind() != TypeKind.VOID
@@ -213,8 +217,9 @@ public class Lambda {
     public static ErrorDescription reference2Lambda(HintContext ctx) {
         Element refered = ctx.getInfo().getTrees().getElement(ctx.getPath());
         
-        if (refered == null || refered.getKind() != ElementKind.METHOD) return null;//XXX: constructors!
-        
+        if (refered == null || refered.getKind() != ElementKind.METHOD) {
+            return null;//XXX: constructors!
+        }        
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.ERR_memberReference2Lambda(), new MemberReference2Lambda(ctx.getInfo(), ctx.getPath()).toEditorFix());
     }
     
@@ -234,26 +239,36 @@ public class Lambda {
             hasSyntheticParameterName |= var.getType() == null || ctx.getInfo().getTreeUtilities().isSynthetic(TreePath.getPath(ctx.getPath(), var.getType()));
         }
         
-        if (!hasSyntheticParameterName) return null;
+        if (!hasSyntheticParameterName) {
+            return null;
+        }
         
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_addExplicitLambdaParameters(), new AddExplicitLambdaParameterTypes(ctx.getInfo(), ctx.getPath()).toEditorFix());
     }
     
     private static ExecutableElement findAbstractMethod(CompilationInfo info, TypeMirror type) {
-        if (type.getKind() != TypeKind.DECLARED) return null;
+        if (type.getKind() != TypeKind.DECLARED) {
+            return null;
+        }
         
         TypeElement clazz = (TypeElement) ((DeclaredType) type).asElement();
         
-        if (!clazz.getKind().isInterface()) return null;
+        if (!clazz.getKind().isInterface()) {
+            return null;
+        }
         
         for (ExecutableElement ee : ElementFilter.methodsIn(clazz.getEnclosedElements())) {
-            if (ee.getModifiers().contains(Modifier.ABSTRACT)) return ee;
+            if (ee.getModifiers().contains(Modifier.ABSTRACT)) {
+                return ee;
+            }
         }
         
         for (TypeMirror tm : info.getTypes().directSupertypes(type)) {
             ExecutableElement ee = findAbstractMethod(info, tm);
             
-            if (ee != null) return ee;
+            if (ee != null) {
+                return ee;
+            }
         }
         
         return null;
@@ -296,7 +311,7 @@ public class Lambda {
                 
                 //XXX: should handle anonymous lambda parameters ('_')
                 if (p.getType() == null || copy.getTreeUtilities().isSynthetic(new TreePath(ctx.getPath(), p.getType()))) {
-                    methodParams.add(make.Variable(p.getModifiers(), p.getName(), make.Type(Utilities.resolveCapturedType(copy, resolvedType)), null));
+                    methodParams.add(make.Variable(p.getModifiers(), p.getName(), make.Type(SourceUtils.resolveCapturedType(copy, resolvedType)), null));
                 } else {
                     methodParams.add(p);
                 }
@@ -349,7 +364,7 @@ public class Lambda {
             } else {
                 List<Tree> typeArguments = new ArrayList<>();
                 for (TypeMirror ta : ((DeclaredType) samType).getTypeArguments()) {
-                    typeArguments.add(make.Type(Utilities.resolveCapturedType(copy, ta)));
+                    typeArguments.add(make.Type(SourceUtils.resolveCapturedType(copy, ta)));
                 }
                 targetTypeTree = (ExpressionTree) make.ParameterizedType(make.QualIdent(samTypeElement), typeArguments);
             }
@@ -475,7 +490,7 @@ public class Lambda {
             List<VariableTree> formals = new ArrayList<>();
             List<IdentifierTree> actuals = new ArrayList<>();
             Scope scope = ctx.getWorkingCopy().getTrees().getScope(reference);
-            Set<String> usedNames = new HashSet<String>();
+            Set<String> usedNames = new HashSet<>();
             TreeMaker make = ctx.getWorkingCopy().getTreeMaker();
             
             if (on != null && (on.getKind().isClass() || on.getKind().isInterface()) && !refered.getModifiers().contains(Modifier.STATIC)) {

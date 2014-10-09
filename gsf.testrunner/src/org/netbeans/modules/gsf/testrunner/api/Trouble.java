@@ -58,7 +58,9 @@ public final class Trouble {
         this.error = error;
     }
 
-    /** returns true if error, false if failure */
+    /** 
+     * @return  {@code true} if error, {@code false} if failure
+     */
     public boolean isError() {
         return error;
     }

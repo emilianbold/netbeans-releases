@@ -48,6 +48,8 @@ import java.lang.ref.WeakReference;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.editor.base.javadoc.JavadocCompletionUtils;
+import org.netbeans.modules.java.editor.base.javadoc.JavadocTestSupport;
 
 /**
  *

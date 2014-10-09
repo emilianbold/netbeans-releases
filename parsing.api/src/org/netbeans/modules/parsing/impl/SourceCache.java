@@ -76,6 +76,7 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Pair;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -213,6 +214,11 @@ public final class SourceCache {
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             if (!parserInitialized) {                                                                                
                 parser = _parser;
+                if (parser != null) {
+                    parser.addChangeListener(WeakListeners.change(
+                        SourceAccessor.getINSTANCE().getParserEventForward(source),
+                        parser));
+                }
                 parserInitialized = true;
             }
             return parser;
@@ -535,6 +541,7 @@ retry:  while (true) {
             }
         }        
         if (!add.isEmpty ()) {
+            LOG.fine("Change tasks for source " + source + " - add: " + add + ", remove " + remove);
             TaskProcessor.updatePhaseCompletionTask(add, remove, source, this);
         }
     }
@@ -565,7 +572,8 @@ retry:  while (true) {
         if (sourceModificationEvent == null)
             return;
         final Map<Class<? extends Scheduler>,? extends SchedulerEvent> schedulerEvents =
-                SourceAccessor.getINSTANCE ().createSchedulerEvents (source, Schedulers.getSchedulers (), sourceModificationEvent);
+                SourceAccessor.getINSTANCE ().createSchedulerEvents (source, 
+                        Utilities.getEnvFactory().getSchedulers(source.getLookup()), sourceModificationEvent);
         if (schedulerEvents.isEmpty ()) {
             return;
         }

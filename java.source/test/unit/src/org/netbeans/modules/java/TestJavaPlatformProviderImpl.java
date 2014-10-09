@@ -54,9 +54,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.modules.java.platform.JavaPlatformProvider;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -68,7 +67,7 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Lahoda
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.platform.JavaPlatformProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.platform.implspi.JavaPlatformProvider.class)
 public class TestJavaPlatformProviderImpl implements JavaPlatformProvider {
 
     public static volatile boolean ALLOW_INSTALL_FOLDERS;

@@ -215,7 +215,7 @@ public class ServersNodeActionsCheck extends NbTestCase {
     }
 
     private static String getDisplayName(FileObject f) throws FileStateInvalidException {
-        return f.getFileSystem().getStatus().annotateName(
+        return f.getFileSystem().getDecorator().annotateName(
             f.getNameExt(), Collections.<FileObject>singleton(f)
         );
     }

@@ -107,7 +107,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-
+        <change id="editor-document-split">
+            <summary>Document handling split</summary>
+            <version major="2" minor="0"/>
+            <date day="20" month="5" year="2013"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" semantic="compatible" source="incompatible" addition="no" deprecation="no" deletion="no"/>
+            <description>
+                <p>
+                    Document data handling and implementation was separated into <code>editor.document</code> module
+                </p>
+            </description>
+            <issue number="244679"/>
+        </change>
         <change id="typinghooks-CamelCase-spi-added">
             <summary>Typing Hooks Camel Case SPI added</summary>
             <version major="1" minor="79"/>

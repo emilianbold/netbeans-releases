@@ -139,6 +139,11 @@ final class BadgingSupport implements SynchronousStatus, FileChangeListener {
             l.annotationChanged(e);
         }
     }
+
+    @Override
+    public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+        return null;
+    }
     
     public String annotateName(final String name, final Set<? extends FileObject> files) {
         synchronized (names) {

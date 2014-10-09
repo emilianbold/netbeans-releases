@@ -62,7 +62,6 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.SideEffectVisitor;
 import org.netbeans.modules.java.hints.StopProcessing;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -118,7 +117,7 @@ public class SuspiciousToArray {
             return null;
         }
         // possible method call result ?
-        arrType = Utilities.resolveCapturedType(ci, arrType);
+        arrType = SourceUtils.resolveCapturedType(ci, arrType);
         TypeMirror compType = ((ArrayType)arrType).getComponentType();
         
         DeclaredType declColType = (DeclaredType)colType;
@@ -157,7 +156,7 @@ public class SuspiciousToArray {
         if (resType == null || resType.getKind() == TypeKind.ERROR || resType.getKind() == TypeKind.OTHER) {
             return null;
         }
-        resType = Utilities.resolveCapturedType(ci, resType);
+        resType = SourceUtils.resolveCapturedType(ci, resType);
         String msg = argType == null ? Bundle.TEXT_SuspiciousToArrayCast(compType, resType) : 
                 Bundle.TEXT_SuspiciousToArrayCol(compType, argType);
         Fix fix;
@@ -223,7 +222,7 @@ public class SuspiciousToArray {
                 copy.rewrite(nat.getType(), mk.Type(compType));
                 return;
             }
-            List<ExpressionTree> l = new ArrayList<ExpressionTree>(nat.getDimensions().subList(
+            List<ExpressionTree> l = new ArrayList<>(nat.getDimensions().subList(
                     0, Math.min(newDim + 1, nat.getDimensions().size())));
             Tree replacement = mk.NewArray(mk.Type(compType), l, null);
             GeneratorUtilities.get(copy).copyComments(nat, replacement, true);

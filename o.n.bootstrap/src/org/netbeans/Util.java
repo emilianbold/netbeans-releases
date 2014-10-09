@@ -259,6 +259,11 @@ public final class Util {
      * JST-PENDING needed from tests
      */
     public static Map<Module,List<Module>> moduleDependencies(Collection<Module> modules, Map<String,Module> modulesByName, Map<String,Set<Module>> _providersOf) {
+        return moduleDependencies(modules, modulesByName, _providersOf, Collections.<String, Collection<Module>>emptyMap());
+    }
+    
+    static Map<Module,List<Module>> moduleDependencies(Collection<Module> modules, Map<String,Module> modulesByName, Map<String,Set<Module>> _providersOf,
+            Map<String, Collection<Module>> fragments) {
         Set<Module> modulesSet = (modules instanceof Set) ? (Set<Module>)modules : new HashSet<Module>(modules);
         Map<String,List<Module>> providersOf = new HashMap<String,List<Module>>(_providersOf.size() * 2 + 1);
         for (Map.Entry<String, Set<Module>> entry: _providersOf.entrySet()) {
@@ -296,6 +301,41 @@ public final class Util {
                         l.add(m2);
                     }
                 }
+            }
+            // include module fragment _contents_ into the module dependencies,
+            // so the dependent modules are enabled before the host+fragment merged
+            // classloader will activate
+            Collection<Module> frags = fragments.get(m1.getCodeNameBase());
+            if (frags != null) {
+                frags = new HashSet<>(frags);
+                frags.retainAll(modules);
+            
+                for (Module f : frags) {
+                    for (Dependency dep : f.getDependenciesArray()) {
+                        if (dep.getType() == Dependency.TYPE_REQUIRES) {
+                            List<Module> providers = providersOf.get(dep.getName());
+
+                            if (providers != null) {
+                                if (l == null) {
+                                    l = new LinkedList<Module>();
+                                }
+                                l.addAll(providers);
+                            }
+                        }
+                        else if (dep.getType() == Dependency.TYPE_MODULE) {
+                            String cnb = (String) parseCodeName(dep.getName())[0];
+                            Module m2 = modulesByName.get(cnb);
+
+                            if (m2 != null && modulesSet.contains(m2)) {
+                                if (l == null) {
+                                    l = new LinkedList<Module>();
+                                }
+                                l.add(m2);
+                            }
+                        }
+                    }
+                }
+                l.remove(m1);
             }
             if (l != null) {
                 m.put(m1, l);

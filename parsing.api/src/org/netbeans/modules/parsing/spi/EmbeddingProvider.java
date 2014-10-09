@@ -49,7 +49,6 @@ import java.lang.annotation.Target;
 import java.util.List;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 
 /**
@@ -93,7 +92,7 @@ public abstract class EmbeddingProvider extends SchedulerTask {
      * Registration of the {@link EmbeddingProvider}.
      * Creates a mime lookup registration of the {@link TaskFactory} for
      * annotated {@link EmbeddingProvider}. It also provides the target
-     * mime type of the created embedding which allows the {@link QuerySupport}
+     * mime type of the created embedding which allows the indexing QuerySupport
      * to correctly mark dirty embedded indexers.
      *
      * @since 1.57

@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -70,6 +71,7 @@ public class ModuleMixedOnClasspathTest extends SetupHid {
         public L() {
             super(new Lookup[] {
                 Lookups.fixed(new Object[] {
+                    new NbMutexEventProvider()
 //                    new MyModuleFactory()
                 }),
             });

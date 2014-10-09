@@ -49,7 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -529,7 +529,7 @@ final class FileElement {
         /** #26521, 114976 - ignore not readable and windows' locked files. */
         private static void handleIOException(FileObject fo, IOException ioe) throws IOException {
             if (fo.canRead()) {
-                if (!Utilities.isWindows() || !(ioe instanceof FileNotFoundException) || !fo.isValid() || !fo.getName().toLowerCase().contains("ntuser")) {//NOI18N
+                if (!BaseUtilities.isWindows() || !(ioe instanceof FileNotFoundException) || !fo.isValid() || !fo.getName().toLowerCase().contains("ntuser")) {//NOI18N
                     throw ioe;
                 }
             }

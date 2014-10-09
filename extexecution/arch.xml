@@ -47,33 +47,52 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
+   <i>The major parts of this API has been refactored to External Execution Base API
+   in version 1.43.</i> This API is now to be used in situations where the base
+   support is not sufficient such as when you need progress and output window
+   integration.
+  </p>
+  <p>
+   <b>To see the simplest usage of this API to handle external process
+   including input and output integration see documentation of
+   <a href="@TOP@org/netbeans/api/extexecution/ExecutionService.html">ExecutionService</a></b>
+  </p>
+  <p>
    The External Execution module provides the
    <api group="java" name="ExternalExecutionAPI" type="export" category="stable" url="@TOP@org/netbeans/api/extexecution/package-summary.html"/>
    that contains support for execution of external processes in the IDE. It also
    provide support class for the actual creation of the external process
-   and support for destroying the process tree. There is also abstraction of
-   process builder.
+   and support for destroying the process tree.
+   <span style="text-decoration:line-through;">There is also abstraction of
+   process builder.</span> The builder is now deprecated and replaced by one in
+   External Execution Base API.
   </p>
   <p>
-   Another exported API
+   <span style="text-decoration:line-through;">Another exported API
    <api group="java" name="ExternalExecutionInputAPI" type="export" category="stable" url="@TOP@org/netbeans/api/extexecution/input/package-summary.html"/>
    define interfaces for input processing (character or line based)
-   and provides common implementations of these with factory methods.
+   and provides common implementations of these with factory methods.</span>
+   This API is now deprecated in favor of External Execution Base API.
   </p>
   <p>
    Natural extension to input processing API is printing API
    <api group="java" name="ExternalExecutionInputPrintingAPI" type="export" category="stable" url="@TOP@org/netbeans/api/extexecution/print/package-summary.html"/>
    that defines interfaces transforming lines to lines printed to
-   <code>org.openide.windows.OutputWriter</code>. API provides common implementations too.
+   <code>org.openide.windows.OutputWriter</code>. API provides common implementations too
+   and provides processor for <code>org.openide.windows.OutputWriter</code> printing.
   </p>
   <p>
-   The SPI
+   <span style="text-decoration:line-through;">The SPI
    <api group="java" name="ExternalExecutionSPI" type="export" category="stable" url="@TOP@org/netbeans/spi/extexecution/package-summary.html"/>
-   allows different implementations of process builder.
+   allows different implementations of process builder.</span>
+   This API is now deprecated in favor of External Execution Base API.
   </p>
   <p>
-   There is also SPI allowing to register support for destroying the process tree
-   <api group="java" name="ExternalExecutionDestroySPI" type="export" category="stable" url="@TOP@org/netbeans/spi/extexecution/destroy/package-summary.html"/>.
+   <span style="text-decoration:line-through;">There is also SPI allowing to 
+   register support for destroying the process tree
+   <api group="java" name="ExternalExecutionDestroySPI" type="export" category="stable" url="@TOP@org/netbeans/spi/extexecution/destroy/package-summary.html"/>.</span>
+   This API is now deprecated in favor of <code>org.netbeans.spi.extexecution.base.ProcessesImplementation</code>
+   from External Execution Base API.
   </p>
   <p>
    The <api group="java" name="ExternalExecutionOpenSPI" type="export" category="stable" url="@TOP@org/netbeans/spi/extexecution/open/package-summary.html"/>
@@ -175,8 +194,9 @@ Microsystems, Inc. All Rights Reserved.
   </usecase>
   <usecase id="handle-input" name="Processing the input">
    <p>
-    Client needs to process character data coming from stream, file or other
-    source.
+    <span style="text-decoration:line-through;">Client needs to process character
+    data coming from stream, file or other source.</span> This usecase should 
+    be solved by External Execution Base API.
    </p>
    <p>
     To abstract the source of the data client must implement
@@ -214,10 +234,10 @@ Microsystems, Inc. All Rights Reserved.
     The both default printing processors provide factory method accepting
     <a href="@TOP@org/netbeans/api/extexecution/print/LineConvertor.html">LineConvertor</a>.
     Namely
-    <a href="@TOP@org/netbeans/api/extexecution/input/InputProcessors.html#printing(org.openide.windows.OutputWriter,%20org.netbeans.api.extexecution.print.LineConvertor,%20boolean)">
+    <a href="@TOP@org/netbeans/api/extexecution/print/InputProcessors.html#printing(org.openide.windows.OutputWriter,%20org.netbeans.api.extexecution.print.LineConvertor,%20boolean)">
      InputProcessors.printing(org.openide.windows.OutputWriter out, LineConvertor convertor, boolean resetEnabled)</a>
     and
-    <a href="@TOP@org/netbeans/api/extexecution/input/LineProcessors.html#printing(org.openide.windows.OutputWriter,%20org.netbeans.api.extexecution.print.LineConvertor,%20boolean)">
+    <a href="@TOP@org/netbeans/api/extexecution/print/LineProcessors.html#printing(org.openide.windows.OutputWriter,%20org.netbeans.api.extexecution.print.LineConvertor,%20boolean)">
      LineProcessors.printing(org.openide.windows.OutputWriter out, LineConvertor convertor, boolean resetEnabled)</a>.
 
     Convertor is then used to convert received lines to printed ones.
@@ -227,8 +247,9 @@ Microsystems, Inc. All Rights Reserved.
   </usecase>
   <usecase id="process-builder" name="Custom process builder">
     <p>
-      Third party wants to implement custom process builder to provide
-      additional functionality, such as remote execution.
+      <span style="text-decoration:line-through;">Third party wants to implement custom process builder to provide
+      additional functionality, such as remote execution.</span>
+      This usecase should be solved by External Execution Base API.
     </p>
     <p>
       In order to do so it will implement
@@ -242,7 +263,8 @@ Microsystems, Inc. All Rights Reserved.
   </usecase>
   <usecase id="destroy-process" name="Destroying a process">
     <p>
-      Client wants to destroy the process, trying to kill whole process tree.
+      <span style="text-decoration:line-through;">Client wants to destroy the process, trying to kill whole process tree.</span>
+      This usecase should be solved by External Execution Base API.
       Method
       <a href="@TOP@org/netbeans/api/extexecution/ExternalProcessSupport.html#destroy(java.lang.Process,%20java.util.Map)">
        ExternalProcessSupport.destroy(java.lang.Process process, Map&lt;String,String&gt; env)</a>
@@ -510,9 +532,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-platform">
   <p>
-   No known platform dependencies. In future there could be need for native code
-   in order to terminate the whole process tree created by execution of external
-   process.
+   No known platform dependencies.
   </p>
  </answer>
 
@@ -921,6 +941,23 @@ Microsystems, Inc. All Rights Reserved.
    are trying to lookup
    <a href="@TOP@org/netbeans/spi/extexecution/destroy/ProcessDestroyPerformer.html">ProcessDestroyPerformer</a>
    as a tool for killing the whole process tree.
+  </p>
+  <p>
+      Implementations of <a href="@TOP@org/netbeans/spi/extexecution/open/FileOpenHandler.html">FileOpenHandler</a>
+      and <a href="@TOP@org/netbeans/spi/extexecution/open/HttpOpenHandler.html">HttpOpenHandler</a>
+      are looked up to provide support for file and url opening by default line
+      convertors created by <a href="@TOP@org/netbeans/api/extexecution/print/LineConvertors.html">LineConvertors</a>.
+  </p>
+  <p>
+      Implementation of <a href="@TOP@org/netbeans/spi/extexecution/open/OptionOpenHandler.html">OptionOpenHandler</a>
+      is looked up to provide support for options opening from output window
+      when configured by <a href="@TOP@org/netbeans/api/extexecution/ExecutionDescriptor.html">ExecutionDescriptor</a>.
+  </p>
+  <p>
+      The <a href="@TOP@org/netbeans/spi/extexecution/startup/StartupExtenderImplementation.html">StartupExtenderImplementation</a>s
+      at path <code>StartupExtender</code> are looked up when the API
+      <a href="@TOP@org/netbeans/api/extexecution/startup/StartupExtender.html">StartupExtender</a>
+      needs to know all such extenders.
   </p>
  </answer>
 

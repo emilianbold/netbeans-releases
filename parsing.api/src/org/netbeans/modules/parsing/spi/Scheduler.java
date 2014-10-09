@@ -42,25 +42,17 @@
 
 package org.netbeans.modules.parsing.spi;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.CurrentDocumentScheduler;
-import org.netbeans.modules.parsing.impl.CursorSensitiveScheduler;
 import org.netbeans.modules.parsing.impl.SchedulerAccessor;
-import org.netbeans.modules.parsing.impl.SelectedNodesScheduler;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-
+import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.implspi.SchedulerControl;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
-import org.openide.util.WeakListeners;
 
 
 /**
@@ -85,23 +77,6 @@ public abstract class Scheduler {
 
     private static final Logger LOG = Logger.getLogger(Scheduler.class.getName());
 
-    private final PropertyChangeListener listener = new PropertyChangeListener() {
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
-                final DataObject dobj = (DataObject) evt.getSource();
-                final Source newSource = Source.create(dobj.getPrimaryFile());
-                if (newSource != null) {
-                    LOG.log(
-                        Level.FINE,
-                        "Rescheduling {0} due to change of primary file.",  //NOI18N
-                        dobj.getPrimaryFile());
-                    schedule(newSource, new SchedulerEvent(newSource));
-                }
-            }
-        }
-    };
-    
     /**
      * May be changed by unit test
      */
@@ -121,7 +96,7 @@ public abstract class Scheduler {
      * </ol>
      */
     public static final Class<? extends Scheduler>
-                            CURSOR_SENSITIVE_TASK_SCHEDULER = CursorSensitiveScheduler.class;
+                            CURSOR_SENSITIVE_TASK_SCHEDULER;
     
     /**
      * This implementations of {@link Scheduler} reschedules all tasks when:
@@ -131,15 +106,21 @@ public abstract class Scheduler {
      * </ol>
      */
     public static final Class<? extends Scheduler>
-                            EDITOR_SENSITIVE_TASK_SCHEDULER = CurrentDocumentScheduler.class;
+                            EDITOR_SENSITIVE_TASK_SCHEDULER;
     
     /**
      * This implementations of {@link Scheduler} reschedules all tasks when
      * nodes selected in editor are changed.
      */
     public static final Class<? extends Scheduler>
-                            SELECTED_NODES_SENSITIVE_TASK_SCHEDULER = SelectedNodesScheduler.class;
+                            SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
 
+    static {
+        CURSOR_SENSITIVE_TASK_SCHEDULER = Utilities.findDefaultScheduler("CURSOR_SENSITIVE_TASK_SCHEDULER");
+        EDITOR_SENSITIVE_TASK_SCHEDULER = Utilities.findDefaultScheduler("EDITOR_SENSITIVE_TASK_SCHEDULER");
+        SELECTED_NODES_SENSITIVE_TASK_SCHEDULER = Utilities.findDefaultScheduler("SELECTED_NODES_SENSITIVE_TASK_SCHEDULER");
+    }
+    
     /**
      * Reschedule all tasks registered for <code>this</code> Scheduler (see
      * {@link ParserResultTask#getSchedulerClass()}.
@@ -154,6 +135,8 @@ public abstract class Scheduler {
     private RequestProcessor 
                             requestProcessor;
     private Task            task;
+    
+    private final SchedulerControl         ctrl = new Control(this);
     
     /**
      * Reschedule all tasks registered for <code>this</code> Scheduler (see
@@ -177,38 +160,21 @@ public abstract class Scheduler {
                     false,
                     false);
         }        
-        if (this.source != source) {
+        boolean different = this.source != source;
+        
+        if (different) {
             if (this.source != null) {
                 final SourceCache cache = SourceAccessor.getINSTANCE().getCache(this.source);
                 cache.unscheduleTasks(Scheduler.this.getClass());
-                if (wlistener != null) {
-                    final FileObject fo = this.source.getFileObject();
-                    if (fo != null) {
-                        try {
-                            final DataObject dobj = DataObject.find(fo);
-                            dobj.removePropertyChangeListener(wlistener);
-                        } catch (DataObjectNotFoundException nfe) {
-                            //No DataObject for file - ignore
-                        }
-                    }
-                }
+                SourceAccessor.getINSTANCE().attachScheduler(this.source, ctrl, false);
             }
             this.source = source;
-            if (source != null) {
-                final FileObject fo = source.getFileObject();
-                if (fo != null) {
-                    try {
-                        final DataObject dobj = DataObject.find(fo);
-                        wlistener = WeakListeners.propertyChange(listener, dobj);
-                        dobj.addPropertyChangeListener(wlistener);
-                    } catch (DataObjectNotFoundException ex) {
-                        //No DataObject for file - ignore
-                    }
-                }
-            }
         }
         if (source == null) {
             return;
+        }
+        if (different) {
+            SourceAccessor.getINSTANCE().attachScheduler(source, ctrl, true);
         }
         task = requestProcessor.create (new Runnable () {
             @Override
@@ -216,6 +182,7 @@ public abstract class Scheduler {
                 SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);                
                 SourceAccessor.getINSTANCE ().setSchedulerEvent (source, Scheduler.this, event);
                 //S ystem.out.println ("\nSchedule tasks (" + Scheduler.this + "):");
+                LOG.fine("Scheduling tasks for :" + source + " and scheduler " + this);
                 cache.scheduleTasks (Scheduler.this.getClass ());
             }
         });
@@ -247,10 +214,35 @@ public abstract class Scheduler {
             return scheduler.createSchedulerEvent (event);
         }
     }
+    
+    /**
+     * Allows to control the scheduler and schedule tasks. An instance of Control
+     * is passed to the {@link SourceEnvironment#attachScheduler} method when the
+     * Source is bound to a Scheduler.
+     * <p/>
+     * The client is NOT expected to create instances of this class;
+     */
+    private static final class Control implements SchedulerControl {
+        private final Scheduler scheduler;
+
+        /**
+         *
+         * @param scheduler
+         */
+        public Control(final Scheduler scheduler) {
+            super();
+            this.scheduler = scheduler;
+        }
+
+        public Scheduler getScheduler() {
+            return scheduler;
+        }
+
+        @Override
+        public void sourceChanged(Source newSource) {
+            scheduler.schedule(newSource, new SchedulerEvent(newSource));
+        }
+    }
+    
 }
-
-
-
-
-
 

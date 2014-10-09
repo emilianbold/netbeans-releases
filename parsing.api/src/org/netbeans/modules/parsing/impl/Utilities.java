@@ -43,18 +43,24 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.util.Collections;
-import java.util.Set;
 import java.util.concurrent.Callable;
-import org.netbeans.api.annotations.common.NonNull;
+
+import javax.swing.text.Document;
+
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.netbeans.api.editor.document.EditorDocumentUtils;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.event.EventSupport;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
+import org.netbeans.modules.parsing.implspi.EnvironmentFactory;
+import org.netbeans.modules.parsing.implspi.SourceControl;
+import org.netbeans.modules.parsing.implspi.SourceEnvironment;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
@@ -66,12 +72,19 @@ public class Utilities {
 
     private static final ThreadLocal<Parser.CancelReason> cancelReason = new ThreadLocal<Parser.CancelReason>();
     
+    private static final int DEFAULT_MAX_FILE_SIZE = 50*(1<<20);
+
+    public static final int getMaxFileSize() {
+        return Integer.getInteger(
+            "parse.max.file.size",  //NOI18N
+            DEFAULT_MAX_FILE_SIZE);
+    }
+
     private Utilities () {}
 
     //MasterFS bridge
     public static <T> T runPriorityIO (final Callable<T> r) throws Exception {
-        assert r != null;
-        return ProvidedExtensions.priorityIO(r);
+        return getEnvFactory().runPriorityIO(r);
     }
 
     //Helpers for java reformatter, may be removed when new reformat api will be done
@@ -105,50 +118,11 @@ public class Utilities {
         TaskProcessor.scheduleSpecialTask(runnable, priority);
     }
     
-    public static void runAsScanWork(@NonNull Runnable work) {
-        Parameters.notNull("work", work);   //NOI18N
-        RepositoryUpdater.getDefault().runAsWork(work);
-    }
+    private static final int DEFAULT_REPARSE_DELAY = 500;
     
-    /**
-     * Sets the {@link IndexingStatus}
-     * @param st an {@link IndexingStatus}
-     */
-    public static void setIndexingStatus (@NullAllowed final IndexingStatus st) {
-        assert st != null ? status == null : status != null;
-        status = st;        
-    }
-
-    public static Set<? extends RepositoryUpdater.IndexingState> getIndexingState() {
-        if (status == null) {
-            return RepositoryUpdater.getDefault().getIndexingState();
-        } else {
-            return status.getIndexingState();
-        }
-    }
-
-    /**
-     * Asks the {@link IndexingStatus} about state of indexing
-     * @return true when indexing is active
-     */
-    public static boolean isScanInProgress () {
-        return !getIndexingState().isEmpty();        
-    }
-    //where
-    private static volatile IndexingStatus status;
-
-    /**
-     * Provides state of indexing
-     */
-    public static interface IndexingStatus {
-        Set<? extends RepositoryUpdater.IndexingState> getIndexingState ();
-    }
-
     //Helpers to bridge java.source factories into parsing.api
     public static void revalidate (final Source source) {
-        final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
-        assert support != null;
-        support.resetState(true, false, -1, -1, false);
+        SourceAccessor.getINSTANCE().revalidate(source, DEFAULT_REPARSE_DELAY);
     }
     
     public static void addParserResultTask (final ParserResultTask<?> task, final Source source) {
@@ -186,6 +160,75 @@ public class Utilities {
             cancelReason.remove();
         } else {
             cancelReason.set(reason);
+        }
+    }
+
+    public static FileObject getFileObject(Document doc) {
+        return EditorDocumentUtils.getFileObject(doc);
+    }
+
+    /**
+     * Finds the nearest caller outside the parsing API.
+     * Some additional classes can be also excluded.
+     * 
+     * Note: this method is copied from Indexing API (parsing.impl.indexing.IndexingUtils). Perhaps
+     * a common implementation should be created
+     * 
+     * @param elements
+     * @param classesToFilterOut
+     * @return 
+     */
+    public static StackTraceElement findCaller(StackTraceElement[] elements, Object... classesToFilterOut) {
+        loop: for (StackTraceElement e : elements) {
+            if (e.getClassName().equals(Utilities.class.getName()) || e.getClassName().startsWith("java.lang.")) { //NOI18N
+                continue;
+            }
+
+            if (classesToFilterOut != null && classesToFilterOut.length > 0) {
+                for(Object c : classesToFilterOut) {
+                    if (c instanceof Class && e.getClassName().startsWith(((Class) c).getName())) {
+                        continue loop;
+                    } else if (c instanceof String && e.getClassName().startsWith((String) c)) {
+                        continue loop;
+                    }
+                }
+            } else {
+                if (e.getClassName().startsWith("org.netbeans.modules.parsing.")) { //NOI18N
+                    continue;
+                }
+            }
+
+            return e;
+        }
+        return null;
+    }
+
+    private static volatile EnvironmentFactory   envFactory;
+    
+    public static synchronized EnvironmentFactory getEnvFactory() {
+        EnvironmentFactory f = envFactory;
+        if (f == null) {
+            f = envFactory = Lookup.getDefault().lookup(EnvironmentFactory.class);
+            if (f == null) {
+                throw new UnsupportedOperationException("EnvironmentFactory missing");
+            }
+        }
+        return f;
+    }
+    
+    public static SourceEnvironment createEnvironment(Source src, SourceControl ctrl) {
+        return getEnvFactory().createEnvironment(src, ctrl);
+    }
+
+    public static Class<? extends Scheduler> findDefaultScheduler(String type) {
+        EnvironmentFactory f = getEnvFactory();
+        return f.findStandardScheduler(type);
+    }
+    
+    public static final class NopScheduler extends Scheduler {
+        @Override
+        protected SchedulerEvent createSchedulerEvent(SourceModificationEvent event) {
+            return null;
         }
     }
 }

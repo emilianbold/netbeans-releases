@@ -222,6 +222,15 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-maven-util}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-modules-maven-util"/>
 <link href="${javadoc.docs.org-netbeans-modules-bugtracking}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-bugtracking"/>
 <link href="${javadoc.docs.org-netbeans-core-multitabs}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-core-multitabs"/>
+<link href="${javadoc.docs.org-openide-util-base}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-util-base"/>
 <link href="${javadoc.docs.org-netbeans-api-maven}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-maven"/>
-<link href="${javadoc.docs.org-netbeans-api-html4j}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-html4j"/>
-<link href="http://bits.netbeans.org/html4j/0.9/" offline="false" />
+<link href="${javadoc.docs.org-openide-filesystems-compat8}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-filesystems-compat8"/>
+<link href="${javadoc.docs.org-netbeans-modules-parsing-indexing}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-parsing-indexing"/>
+<link href="${javadoc.docs.org-netbeans-modules-extexecution-base}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-extexecution-base"/>
+<link href="${javadoc.docs.org-netbeans-modules-java-platform-ui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-platform-ui"/>
+<link href="${javadoc.docs.org-netbeans-modules-projectuiapi-base}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-projectuiapi-base"/>
+<link href="${javadoc.docs.org-netbeans-modules-editor-document}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-editor-document"/>
+<link href="${javadoc.docs.org-netbeans-modules-java-source-base}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-source-base"/>
+<link href="${javadoc.docs.org-netbeans-modules-project-ant-ui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-project-ant-ui"/>
+<link href="${javadoc.docs.org-netbeans-modules-java-project-ui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-project-ui"/>
+<link href="${javadoc.docs.org-netbeans-modules-xml-catalog-ui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-xml-catalog-ui"/>

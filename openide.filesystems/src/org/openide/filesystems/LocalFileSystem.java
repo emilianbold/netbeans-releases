@@ -61,7 +61,7 @@ import java.util.Random;
 import java.util.logging.Level;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /** Local filesystem. Provides access to files on local disk.
 * <p>For historical reasons many AbstractFileSystem.* methods are implemented
@@ -101,17 +101,6 @@ public class LocalFileSystem extends AbstractFileSystem {
         attr = a;
         list = a;
         setRefreshTime(REFRESH_TIME);
-    }
-
-    /** Constructor. Allows user to provide own capabilities
-    * for this filesystem.
-    * @param cap capabilities for this filesystem
-     * @deprecated Useless.
-    */
-    @Deprecated
-    public LocalFileSystem(FileSystemCapability cap) {
-        this();
-        setCapability(cap);
     }
 
     /* Human presentable name */
@@ -170,16 +159,6 @@ public class LocalFileSystem extends AbstractFileSystem {
         return readOnly;
     }
 
-    /** Prepare environment by adding the root directory of the filesystem to the class path.
-    * @param environment the environment to add to
-     * @deprecated Useless.
-    */
-    @Deprecated
-    @Override
-    public void prepareEnvironment(FileSystem.Environment environment) {
-        environment.addClassPath(rootFile.getAbsolutePath());
-    }
-
     /** Compute the system name of this filesystem for a given root directory.
     * <P>
     * The default implementation simply returns the filename separated by slashes.
@@ -190,7 +169,7 @@ public class LocalFileSystem extends AbstractFileSystem {
     protected String computeSystemName(File rootFile) {
         String retVal = rootFile.getAbsolutePath().replace(File.separatorChar, '/');
 
-        return ((Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))) ? retVal.toLowerCase()
+        return ((BaseUtilities.isWindows() || (BaseUtilities.getOperatingSystem() == BaseUtilities.OS_OS2))) ? retVal.toLowerCase()
                                                                                                  : retVal;
     }
 
@@ -301,7 +280,7 @@ public class LocalFileSystem extends AbstractFileSystem {
             // #7086 - (nf.exists() && !nf.equals(of)) instead of nf.exists() - fix for Win32
             boolean existsNF = nf.exists();
             boolean equalsOF = nf.equals(of);
-            if (Utilities.isMac()) {
+            if (BaseUtilities.isMac()) {
                 // File.equal on mac is not case insensitive (which it should be), 
                 // so try harder
                 equalsOF = of.getCanonicalFile().equals(nf.getCanonicalFile());
@@ -465,7 +444,7 @@ public class LocalFileSystem extends AbstractFileSystem {
         OutputStream retVal = new BufferedOutputStream(new FileOutputStream(f));
 
         // workaround for #42624
-        if (Utilities.isMac()) {
+        if (BaseUtilities.isMac()) {
             retVal = getOutputStreamForMac42624(retVal, name);
         }
 

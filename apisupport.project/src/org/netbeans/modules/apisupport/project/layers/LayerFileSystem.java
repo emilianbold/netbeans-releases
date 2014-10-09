@@ -44,6 +44,7 @@ import org.netbeans.modules.apisupport.project.spi.LayerUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.StatusDecorator;
 
 public class LayerFileSystem extends MultiFileSystem {
 
@@ -57,7 +58,7 @@ public class LayerFileSystem extends MultiFileSystem {
     }
 
     @Override
-    public FileSystem.Status getStatus() {
+    public StatusDecorator getDecorator() {
         return status;
     }
 

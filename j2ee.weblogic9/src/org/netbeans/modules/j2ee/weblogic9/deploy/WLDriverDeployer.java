@@ -107,7 +107,7 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
 
     @Override
     public boolean supportsDeployJDBCDrivers(Target target) {
-        return true;
+        return !manager.isRemote();
     }
 
     @Override

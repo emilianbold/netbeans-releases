@@ -43,7 +43,7 @@
 package org.netbeans.modules.javascript.karma.run;
 
 import javax.swing.Action;
-import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
+import org.netbeans.modules.gsf.testrunner.ui.api.CallstackFrameNode;
 
 public class KarmaCallstackFrameNode extends CallstackFrameNode {
 

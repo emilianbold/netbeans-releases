@@ -69,11 +69,10 @@ import org.openide.util.Utilities;
  * Builder handle command, working directory, <code>PATH</code> variable and HTTP proxy.
  * <p>
  * This class is <i>immutable</i>.
- * <p>
- * Also see {@link ProcessBuilder#getLocal()}.
  *
  * @author Petr Hejl
  * @see #call()
+ * @deprecated use {@link org.netbeans.api.extexecution.base.ProcessBuilder#getLocal()}
  */
 public final class ExternalProcessBuilder implements Callable<Process> {
 

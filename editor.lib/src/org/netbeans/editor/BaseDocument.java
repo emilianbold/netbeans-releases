@@ -45,17 +45,18 @@
 package org.netbeans.editor;
 
 import java.awt.Font;
-import java.beans.VetoableChangeListener;
-import java.util.Hashtable;
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.io.Reader;
-import java.io.Writer;
-import java.io.IOException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
+import java.beans.VetoableChangeListener;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.Collection;
+import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.EventListener;
+import java.util.Hashtable;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -64,46 +65,46 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
-import javax.swing.text.Position;
-import javax.swing.text.Element;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.StyleConstants;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.UndoableEditEvent;
 import javax.swing.text.EditorKit;
+import javax.swing.text.Element;
+import javax.swing.text.Position;
 import javax.swing.text.Segment;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.WrappedPlainView;
-import javax.swing.undo.UndoableEdit;
-import javax.swing.undo.CompoundEdit;
-import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
+import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
+import org.netbeans.modules.editor.document.implspi.CharClassifier;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
 import org.netbeans.modules.editor.lib.BeforeSaveTasks;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
-import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
-import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib.drawing.DrawEngine;
 import org.netbeans.modules.editor.lib.drawing.DrawGraphics;
 import org.netbeans.modules.editor.lib.impl.MarkVector;
 import org.netbeans.modules.editor.lib.impl.MultiMark;
+import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib2.document.ContentEdit;
 import org.netbeans.modules.editor.lib2.document.EditorDocumentContent;
 import org.netbeans.modules.editor.lib2.document.EditorDocumentHandler;
@@ -128,7 +129,7 @@ import org.openide.util.WeakListeners;
 */
 
 @SuppressWarnings("ClassWithMultipleLoggers")
-public class BaseDocument extends AbstractDocument implements AtomicLockDocument {
+public class BaseDocument extends AbstractDocument implements AtomicLockDocument, LineDocument {
 
     static {
         EditorPackageAccessor.register(new Accessor());
@@ -581,7 +582,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 //            System.out.println("~~~ init: " + s2s(prefs) + " adding " + s2s(weakPrefsListener));
         }
     }
-
+    
     public CharSeq getText() {
         return new CharSeq() {
             @Override
@@ -1086,12 +1087,13 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     protected @Override void insertUpdate(DefaultDocumentEvent chng, AttributeSet attr) {
         super.insertUpdate(chng, attr);
 
+        BaseDocumentEvent baseE = (BaseDocumentEvent)chng;
         // Store modification text as an event's property
         org.netbeans.lib.editor.util.swing.DocumentUtilities.addEventPropertyStorage(chng);
         org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(chng, String.class,
-                ((BaseDocumentEvent)chng).getText());
+                baseE.getText());
 
-        lineRootElement.insertUpdate(chng, attr);
+        lineRootElement.insertUpdate(baseE, baseE, attr);
 
         fixLineSyntaxState.update(false);
         chng.addEdit(fixLineSyntaxState.createAfterLineUndo());
@@ -1804,27 +1806,84 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         breakAtomicLock();
     }
 
-    public @Override void addAtomicLockListener(AtomicLockListener l) {
-        listenerList.add(AtomicLockListener.class, l);
+    /**
+     * Adapts old AtomicLockListener to the new API; wraps the old listener into a new interface
+     */
+    private static class OldListenerAdapter implements org.netbeans.api.editor.document.AtomicLockListener {
+        private final AtomicLockListener delegate;
+
+        public OldListenerAdapter(AtomicLockListener delegate) {
+            this.delegate = delegate;
+        }
+
+        public void atomicLock(org.netbeans.api.editor.document.AtomicLockEvent evt) {
+            delegate.atomicLock((AtomicLockEvent)evt);
+        }
+
+        public void atomicUnlock(org.netbeans.api.editor.document.AtomicLockEvent evt) {
+            delegate.atomicUnlock((AtomicLockEvent)evt);
+        }
+
+        @Override
+        public int hashCode() {
+            return delegate.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final OldListenerAdapter other = (OldListenerAdapter) obj;
+            if (!Objects.equals(this.delegate, other.delegate)) {
+                return false;
+            }
+            return true;
+        }
     }
 
+    public void addAtomicLockListener(org.netbeans.api.editor.document.AtomicLockListener l) {
+        listenerList.add(org.netbeans.api.editor.document.AtomicLockListener.class, l);
+    }
+
+    public void removeAtomicLockListener(org.netbeans.api.editor.document.AtomicLockListener l) {
+        listenerList.remove(org.netbeans.api.editor.document.AtomicLockListener.class, l);
+    }
+
+    /**
+     * @param l 
+     * @deprecated use LineDocumentUtils.as(doc, AtomicLockDocument.class).addAtomicLockListener(l);
+     */
+    @Deprecated
+    public @Override void addAtomicLockListener(AtomicLockListener l) {
+        addAtomicLockListener(new OldListenerAdapter(l));
+    }
+
+    /**
+     * @param l 
+     * @deprecated use LineDocumentUtils.as(doc, AtomicLockDocument.class).removeAtomicLockListener(l);
+     */
+    @Deprecated
     public @Override void removeAtomicLockListener(AtomicLockListener l) {
-        listenerList.remove(AtomicLockListener.class, l);
+        removeAtomicLockListener(new OldListenerAdapter(l));
     }
 
     private void fireAtomicLock(AtomicLockEvent evt) {
-        EventListener[] listeners = listenerList.getListeners(AtomicLockListener.class);
+        EventListener[] listeners = listenerList.getListeners(org.netbeans.api.editor.document.AtomicLockListener.class);
         int cnt = listeners.length;
         for (int i = 0; i < cnt; i++) {
-            ((AtomicLockListener)listeners[i]).atomicLock(evt);
+            ((org.netbeans.api.editor.document.AtomicLockListener)listeners[i]).atomicLock(evt);
         }
     }
 
     private void fireAtomicUnlock(AtomicLockEvent evt) {
-        EventListener[] listeners = listenerList.getListeners(AtomicLockListener.class);
+        EventListener[] listeners = listenerList.getListeners(org.netbeans.api.editor.document.AtomicLockListener.class);
         int cnt = listeners.length;
         for (int i = 0; i < cnt; i++) {
-            ((AtomicLockListener)listeners[i]).atomicUnlock(evt);
+            ((org.netbeans.api.editor.document.AtomicLockListener)listeners[i]).atomicUnlock(evt);
         }
     }
 
@@ -2400,8 +2459,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
               if (key != null) {
                   Object val = super.get(key);
                   if (val instanceof BaseDocument_PropertyHandler) {
-                     old = ((BaseDocument_PropertyHandler) val).setValue(value);
-                     usePlainPut = false;
+                      old = ((BaseDocument_PropertyHandler) val).setValue(value);
+                      usePlainPut = false;
                   }
               }
 
@@ -2449,6 +2508,17 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         @Override
         public void ActionFactory_reformat(Reformat formatter, Document doc, int startPos, int endPos, AtomicBoolean canceled) throws BadLocationException {
             ActionFactory.reformat(formatter, doc, startPos, endPos, canceled);
+        }
+
+        @Override
+        public Object BaseDocument_newServices(BaseDocument doc) {
+            return new ServicesImpl(doc);
+        }
+
+        @Override
+        public int MarkBlockChain_adjustPos(MarkBlockChain chain, int pos, boolean thisBlock) {
+            return thisBlock ?
+                    chain.adjustToBlockHead(pos) : chain.adjustToPrevBlockEnd(pos);
         }
     }
 
@@ -2536,6 +2606,70 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             bDoc.endOnSaveTasks(success);
         }
 
+    }
+
+    static final class ServicesImpl implements CharClassifier, 
+            org.netbeans.api.editor.document.AtomicLockDocument {
+        private final BaseDocument doc;
+
+        public ServicesImpl(BaseDocument doc) {
+            this.doc = doc;
+        }
+        
+        @Override
+        public boolean isIdentifierPart(char ch) {
+            return doc.isIdentifierPart(ch);
+        }
+
+        @Override
+        public boolean isWhitespace(char ch) {
+            return doc.isWhitespace(ch);
+        }
+
+        public void atomicLock() {
+            doc.atomicLockImpl();
+        }
+
+        public void atomicUnlock() {
+            doc.atomicUnlockImpl();
+        }
+
+        @Override
+        public void atomicUndo() {
+            doc.atomicUndo();
+        }
+
+        @Override
+        public void runAtomic(Runnable r) {
+            doc.runAtomic(r);
+        }
+        
+        @Override
+        public void runAtomicAsUser(Runnable r) {
+            doc.runAtomicAsUser(r);
+        }
+
+        @Override
+        public void addAtomicLockListener(org.netbeans.api.editor.document.AtomicLockListener l) {
+            doc.addAtomicLockListener(l);
+        }
+
+        @Override
+        public void removeAtomicLockListener(org.netbeans.api.editor.document.AtomicLockListener l) {
+            doc.removeAtomicLockListener(l);
+        }
+
+        @Override
+        public Document getDocument() {
+            return doc;
+        }
+
+        /*
+        @Override
+        public int find(org.netbeans.api.editor.document.Finder f, int from, int limit) throws BadLocationException {
+            return doc.find2(f, from, limit);
+        }
+        */
     }
 
 }

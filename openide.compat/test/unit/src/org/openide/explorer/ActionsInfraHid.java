@@ -63,6 +63,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeSupport;
 import org.openide.util.Lookup;
 import java.util.ArrayList;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 
 /** Utilities for actions tests.
  * @author Jesse Glick
@@ -97,7 +98,7 @@ public abstract class ActionsInfraHid {
             InstanceContent c = new InstanceContent();
             c.add(UT);
             c.add(ActionsInfraHid.class.getClassLoader());
-            
+            c.add(new NbMutexEventProvider());
             return c;
         }
     }

@@ -52,15 +52,14 @@ import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -352,8 +351,8 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
             final @NonNull LibraryImplementation library,
             final @NonNull LibraryTypeProvider libraryTypeProvider) throws IOException {
         validateLibraryContent(library, libraryTypeProvider);
-        final Document doc = Util.supportsDisplayName(library) ?
-                (Util.supportsProperties(library) ?
+        final Document doc = LibrariesSupport.supportsDisplayName(library) ?
+                (LibrariesSupport.supportsProperties(library) ?
                     createLibraryDefinition3(library, libraryTypeProvider) :
                     createLibraryDefinition2(library, libraryTypeProvider)) :
                 createLibraryDefinition1(library, libraryTypeProvider);
@@ -376,7 +375,9 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
             @NonNull final LibraryImplementation library,
             @NonNull final LibraryTypeProvider libraryTypeProvider) {
         for (String vtype : libraryTypeProvider.getSupportedVolumeTypes()) {
-            LibrariesModel.convertURLsToURIs(library.getContent(vtype));
+            LibrariesSupport.convertURLsToURIs(
+                library.getContent(vtype),
+                LibrariesSupport.ConversionMode.FAIL);
         }
     }
 
@@ -398,7 +399,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
         if (localizingBundle != null && localizingBundle.length() > 0) {
             libraryE.appendChild(doc.createElement(BUNDLE)).appendChild(doc.createTextNode(localizingBundle)); // NOI18N
         }
-        String displayname = Util.getDisplayName(library);
+        String displayname = LibrariesSupport.getDisplayName(library);
         if (displayname != null) {
             libraryE.appendChild(doc.createElement(DISPLAY_NAME)).appendChild(doc.createTextNode(displayname)); // NOI18N
         }
@@ -432,7 +433,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
         if (localizingBundle != null && localizingBundle.length() > 0) {
             libraryE.appendChild(doc.createElementNS(LIBRARY_NS2, BUNDLE)).appendChild(doc.createTextNode(localizingBundle)); // NOI18N
         }
-        String displayname = Util.getDisplayName(library);
+        String displayname = LibrariesSupport.getDisplayName(library);
         if (displayname != null) {
             libraryE.appendChild(doc.createElementNS(LIBRARY_NS2, DISPLAY_NAME)).appendChild(doc.createTextNode(displayname)); // NOI18N
         }
@@ -465,7 +466,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
         if (localizingBundle != null && localizingBundle.length() > 0) {
             libraryE.appendChild(doc.createElementNS(LIBRARY_NS3, BUNDLE)).appendChild(doc.createTextNode(localizingBundle)); // NOI18N
         }
-        String displayname = Util.getDisplayName(library);
+        String displayname = LibrariesSupport.getDisplayName(library);
         if (displayname != null) {
             libraryE.appendChild(doc.createElementNS(LIBRARY_NS3, DISPLAY_NAME)).appendChild(doc.createTextNode(displayname)); // NOI18N
         }
@@ -479,7 +480,7 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
                 }
             }
         }
-        final Map<String,String> properties = Util.getProperties(library);
+        final Map<String,String> properties = LibrariesSupport.getProperties(library);
         assert properties != null : "LibraryImplementation: " + library + " returned null properties."; //NOI18N
         final Element propertiesNode = (Element) libraryE.appendChild(doc.createElementNS(LIBRARY_NS3, PROPERTIES));
         for (Map.Entry<String,String> e : properties.entrySet()) {

@@ -64,7 +64,7 @@ import java.util.Map;
 import java.util.Set;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /** Implementation of the file object that simplyfies common
 * tasks with hierarchy of objects for AbstractFileObject and MultiFileObject.
@@ -348,7 +348,7 @@ abstract class AbstractFolder extends FileObject {
             //On OpenVMS, see if the name is stored in a different case
             //to work around a JVM bug.
             //
-            if (Utilities.getOperatingSystem() == Utilities.OS_VMS) {
+            if (BaseUtilities.getOperatingSystem() == BaseUtilities.OS_VMS) {
                 if (Character.isLowerCase(name.charAt(0))) {
                     r = map.get(name.toUpperCase());
                 } else {

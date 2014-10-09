@@ -254,39 +254,8 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="Editors">
-        <file name="JavaBinaryIndexer.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.indexing.JavaBinaryIndexer$Factory"/>
-        </file>
-        <file name="COSSynchronizingIndexer.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.indexing.COSSynchronizingIndexer$Factory"/>
-        </file>
         <folder name="text">
             <folder name="x-java">
-                <file name="Reformatter.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.save.Reformatter$Factory"/>
-                </file>
-                <file name="Reindenter.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.save.Reindenter$Factory"/>
-                </file>                
-                <file name="JavaIndexer.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.indexing.JavaCustomIndexer$Factory"/>
-                    <!--attr name="position" intvalue="1000"/-->
-                </file>
-                <file name="SourcePathCheck.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.classpath.SourcePathCheck$Factory"/>
-                </file>
-                <file name="AutoIndenter.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$Factory"/>
-                    <attr name="instanceCreate"
-                          methodvalue="org.netbeans.modules.editor.indent.spi.support.AutomatedIndenting.createHotCharsIndenter"/>
-                    <attr name="regex1" stringvalue="\s*\{"/>
-                    <attr name="regex2" stringvalue="\s*\}"/>
-                    <attr name="regex3" stringvalue="\s*case\s"/>
-                    <attr name="regex4" stringvalue="\s*default[:\s]"/>
-                    <attr name="regex5" stringvalue="\s*else[\s\{]"/>
-                    <attr name="regex6" stringvalue="\s*\w*\s*:"/>
-                    <attr name="regex7" stringvalue="\s*\)"/>
-                </file>
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-java-classfile-SideBarFactoryImpl.instance">
                         <attr name="location" stringvalue="North" />
@@ -295,7 +264,7 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>
-        </folder>        
+        </folder>
     </folder>
 
     <folder name="OptionsExport">

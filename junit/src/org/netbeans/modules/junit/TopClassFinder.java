@@ -74,7 +74,7 @@ import org.openide.filesystems.FileObject;
  * 
  * @author  Marian Petras
  */
-final class TopClassFinder {
+public final class TopClassFinder {
 
     interface Filter {
         boolean passes(TypeElement topClass,
@@ -183,7 +183,7 @@ final class TopClassFinder {
      * Finds main top classes, i.e. those whose name matches with the name
      * of the file they reside in.
      */
-    static List<ElementHandle<TypeElement>> findMainTopClasses(
+    public static List<ElementHandle<TypeElement>> findMainTopClasses(
                                                     JavaSource javaSource)
                                                         throws IOException {
         TopClassFinderTask analyzer = new TopClassFinderTask(new MainClassOnly());

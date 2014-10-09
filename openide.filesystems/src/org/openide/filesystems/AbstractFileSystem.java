@@ -57,11 +57,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
-import org.openide.util.Enumerations;
-import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
-import org.openide.util.SharedClassObject;
-import org.openide.util.actions.SystemAction;
 
 /**
  * This convenience implementation does much of the hard work of
@@ -126,12 +122,6 @@ public abstract class AbstractFileSystem extends FileSystem {
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -3345098214331282438L;
 
-    /** system actions for this FS if it has refreshTime != 0 */
-    private static SystemAction[] SYSTEM_ACTIONS;
-
-    /** system actions for this FS */
-    private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[] {  };
-
     /** cached last value of Enumeration which holds resource name (enumeration like StringTokenizer)*/
     static transient private PathElements lastEnum;
 
@@ -179,38 +169,6 @@ public abstract class AbstractFileSystem extends FileSystem {
     */
     public FileObject getRoot() {
         return getAbstractRoot();
-    }
-
-    /* Finds file when its name is provided.
-    *
-    * @param aPackage package name where each package is separated by a dot
-    * @param name name of the file (without dots) or <CODE>null</CODE> if
-    *    one want to obtain name of package and not file in it
-    * @param ext extension of the file or <CODE>null</CODE> if one needs
-    *    package and not file name
-    *
-    * @warning when one of name or ext is <CODE>null</CODE> then name and
-    *    ext should be ignored and scan should look only for a package
-    *
-    * @return FileObject that represents file with given name or
-    *   <CODE>null</CODE> if the file does not exist
-    */
-    @Deprecated
-    public FileObject find(String aPackage, String name, String ext) {
-        // create enumeration of name to look for
-        Enumeration<String> st = NbCollections.checkedEnumerationByFilter(new StringTokenizer(aPackage, "."), String.class, true); // NOI18N
-
-        if ((name == null) || (ext == null)) {
-            // search for folder, return the object only if it is folder
-            FileObject fo = getAbstractRoot().find(st);
-
-            return ((fo != null) && fo.isFolder()) ? fo : null;
-        } else {
-            Enumeration<String> en = Enumerations.concat(st, Enumerations.singleton(name + '.' + ext));
-
-            // tries to find it (can return null)
-            return getAbstractRoot().find(en);
-        }
     }
 
     /* Finds file when its resource name is given.
@@ -268,41 +226,6 @@ public abstract class AbstractFileSystem extends FileSystem {
     */
     boolean isEnabledRefreshFolder() {
         return (refresher != null);
-    }
-
-    /* Action for this filesystem.
-    *
-    * @return refresh action
-    * @deprecated actions should be provided by higher level parts of the
-    *   system, not something as low level as filesystems
-    */
-    @Deprecated public SystemAction[] getActions() {
-        if (!isEnabledRefreshFolder()) {
-            return NO_SYSTEM_ACTIONS;
-        } else {
-            if (SYSTEM_ACTIONS == null) {
-                try {
-                    ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
-
-                    if (l == null) {
-                        l = getClass().getClassLoader();
-                    }
-
-                    Class<?> c = Class.forName("org.openide.actions.FileSystemRefreshAction", true, l); // NOI18N
-                    SystemAction ra = SharedClassObject.findObject(c.asSubclass(SystemAction.class), true);
-
-                    // initialize the SYSTEM_ACTIONS
-                    SYSTEM_ACTIONS = new SystemAction[] { ra };
-                } catch (Exception ex) {
-                    // ok, we are probably running in standalone mode and
-                    // classes needed to initialize the RefreshAction are
-                    // not available
-                    SYSTEM_ACTIONS = NO_SYSTEM_ACTIONS;
-                }
-            }
-
-            return SYSTEM_ACTIONS;
-        }
     }
 
     /** Set the number of milliseconds between automatic

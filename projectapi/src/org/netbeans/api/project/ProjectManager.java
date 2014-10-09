@@ -44,82 +44,52 @@
 
 package org.netbeans.api.project;
 
-import java.awt.EventQueue;
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
-import org.netbeans.modules.projectapi.TimedWeakReference;
-import org.netbeans.spi.project.FileOwnerQueryImplementation;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.projectapi.SPIAccessor;
 import org.netbeans.spi.project.ProjectFactory;
-import org.netbeans.spi.project.ProjectFactory2;
-import org.netbeans.spi.project.ProjectState;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
+import org.netbeans.spi.project.ProjectManagerImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
-import org.openide.util.MutexException;
-import org.openide.util.Union2;
-import org.openide.util.WeakSet;
+import org.openide.util.Parameters;
 
 /**
  * Manages loaded projects.
  * @author Jesse Glick
+ * @author Tomas Zezula
  */
 public final class ProjectManager {
-    
-    // XXX need to figure out how to convince the system that a Project object is modified
-    // so that Save All and the exit dialog work... could temporarily use a DataLoader
-    // which recognizes project dirs and gives them a SaveCookie, perhaps
-    // see also #36280
-    // (but currently customizers always save the project on exit, so not so high priority)
-    
-    // XXX change listeners?
-    
+
     private static final Logger LOG = Logger.getLogger(ProjectManager.class.getName());
-    /** logger for timers/counters */
-    private static final Logger TIMERS = Logger.getLogger("TIMER.projects"); // NOI18N
-    
-    private static final Lookup.Result<ProjectFactory> factories =
-        Lookup.getDefault().lookupResult(ProjectFactory.class);
+    private static final ProjectManager DEFAULT = new ProjectManager();
+    private final ProjectManagerImplementation impl;
     
     private ProjectManager() {
-        factories.addLookupListener(new LookupListener() {
-            @Override
-            public void resultChanged(LookupEvent e) {
-                clearNonProjectCache();
-            }
-        });
+        this.impl = Lookup.getDefault().lookup(ProjectManagerImplementation.class);
+        if (this.impl == null) {
+            throw new IllegalStateException("No ProjectManagerImplementation found in global Lookup."); //NOI18N
+        }
+        this.impl.init(SPIAccessor.getInstance().createProjectManagerCallBack());
+        LOG.log(
+            Level.FINE,
+            "ProjectManager created with implementation: {0}", //NOI18N
+            this.impl);
     }
-    
-    private static final ProjectManager DEFAULT = new ProjectManager();
 
     /**
      * Returns the singleton project manager instance.
      * @return the default instance
      */
+    @NonNull
     public static ProjectManager getDefault() {
         return DEFAULT;
-    }
-    
-    private static final Mutex MUTEX = new Mutex();
+    }    
 
     /**
      * Get a read/write lock to be used for all project metadata accesses.
@@ -133,73 +103,32 @@ public final class ProjectManager {
      * that a write is not clobbering an unrelated write, etc.
      * @return a general read/write lock for project metadata operations of all sorts
      */
+    @NonNull
     public static Mutex mutex() {
-        return MUTEX;
+        return getDefault().impl.getMutex();
     }
-    
-    private static enum LoadStatus {
-        /**
-         * Marker for a directory which is known to not be a project.
-         */
-        NO_SUCH_PROJECT,
-        /**
-         * Marker for a directory which is known to (probably) be a project but is not loaded.
-         */
-        SOME_SUCH_PROJECT,
-        /**
-         * Marker for a directory which may currently be being loaded as a project.
-         * When this is the value, other reader threads should wait for the result.
-         */
-        LOADING_PROJECT;
+
+    /**
+     * Get a read/write lock to be used for project metadata accesses.
+     * The returned lock may be optimized to limit contention only on given
+     * project(s).
+     * @param autoSave if true the other most write operation automatically saves
+     * the passed project(s)
+     * @param project the project to lock
+     * @param otherProjects other projects to lock
+     * @return a general read/write lock for project metadata operations
+     * @since 1.59
+     */
+    @NonNull
+    public static Mutex mutex(
+        final boolean autoSave,
+        @NonNull Project project,
+        @NonNull Project... otherProjects) {
+        Parameters.notNull("project", project); //NOI18N
+        Parameters.notNull("otherProjects", otherProjects); //NOI18N
+        return getDefault().impl.getMutex(autoSave, project, otherProjects);
+    }
         
-        public boolean is(Union2<Reference<Project>,LoadStatus> o) {
-            return o != null && o.hasSecond() && o.second() == this;
-        }
-        
-        public Union2<Reference<Project>,LoadStatus> wrap() {
-            return Union2.createSecond(this);
-        }
-    }
-    
-    /**
-     * Cache of loaded projects (modified or not).
-     * Also caches a dir which is <em>not</em> a project.
-     */
-    private final Map<FileObject,Union2<Reference<Project>,LoadStatus>> dir2Proj = new WeakHashMap<FileObject,Union2<Reference<Project>,LoadStatus>>();
-    
-    /**
-     * Set of modified projects (subset of loaded projects).
-     */
-    private final Set<Project> modifiedProjects = new HashSet<Project>();
-    
-    private final Set<Project> removedProjects = Collections.synchronizedSet(new WeakSet<Project>());
-    
-    /**
-     * Mapping from projects to the factories that created them.
-     */
-    private final Map<Project,ProjectFactory> proj2Factory = Collections.synchronizedMap(new WeakHashMap<Project,ProjectFactory>());
-    
-    /**
-     * Checks for deleted projects.
-     */
-    private final FileChangeListener projectDeletionListener = new ProjectDeletionListener();
-    
-    /**
-     * Whether this thread is currently loading a project.
-     */
-    private ThreadLocal<Set<FileObject>> loadingThread = new ThreadLocal<Set<FileObject>>();
-    
-    /**
-     * Clear internal state.
-     * Useful from unit tests.
-     */
-    void reset() {
-        dir2Proj.clear();
-        modifiedProjects.clear();
-        proj2Factory.clear();
-        removedProjects.clear();
-    }
-    
     /**
      * Find an open project corresponding to a given project directory.
      * Will be created in memory if necessary.
@@ -224,186 +153,17 @@ public final class ProjectManager {
      * @throws IOException if the project was recognized but could not be loaded
      * @throws IllegalArgumentException if the supplied file object is null or not a folder
      */
-    public Project findProject(final FileObject projectDirectory) throws IOException, IllegalArgumentException {
+    @CheckForNull
+    public Project findProject(@NonNull final FileObject projectDirectory) throws IOException, IllegalArgumentException {
         if (projectDirectory == null) {
             throw new IllegalArgumentException("Attempted to pass a null directory to findProject"); // NOI18N
         }
         if (!projectDirectory.isFolder()) {
             throw new IllegalArgumentException("Attempted to pass a non-directory to findProject: " + projectDirectory); // NOI18N
         }
-        try {
-            return mutex().readAccess(new Mutex.ExceptionAction<Project>() {
-                @Override
-                public Project run() throws IOException {
-                    // Read access, but still needs to synch on the cache since there
-                    // may be >1 reader.
-                    try {
-                        boolean wasSomeSuchProject;
-                    synchronized (dir2Proj) {
-                        Union2<Reference<Project>,LoadStatus> o;
-                        do {
-                            o = dir2Proj.get(projectDirectory);
-                            if (LoadStatus.LOADING_PROJECT.is(o)) {
-                                try {
-                                    Set<FileObject> ldng = loadingThread.get();
-                                    if (ldng != null && ldng.contains(projectDirectory)) {
-                                        throw new IllegalStateException("Attempt to call ProjectManager.findProject within the body of ProjectFactory.loadProject (hint: try using ProjectManager.mutex().postWriteRequest(...) within the body of your Project's constructor to prevent this)"); // NOI18N
-                                    }
-                                    if (LOG.isLoggable(Level.FINE)) {
-                                        LOG.log(Level.FINE, "findProject({0}) in {1}: waiting for LOADING_PROJECT...", new Object[] {projectDirectory, Thread.currentThread().getName()});
-                                    }
-                                    if (LOG.isLoggable(Level.FINE) && EventQueue.isDispatchThread()) {
-                                        LOG.log(Level.WARNING, "loading " + projectDirectory, new IllegalStateException("trying to load a prpject from EQ"));
-                                    }
-                                    dir2Proj.wait();
-                                    if (LOG.isLoggable(Level.FINE)) {
-                                        LOG.log(Level.FINE, "findProject({0}) in {1}: ...done waiting for LOADING_PROJECT", new Object[] {projectDirectory, Thread.currentThread().getName()});
-                                    }
-                                } catch (InterruptedException e) {
-                                    LOG.log(Level.INFO, null, e);
-                                    return null;
-                                }
-                            }
-                        } while (LoadStatus.LOADING_PROJECT.is(o));
-                        assert !LoadStatus.LOADING_PROJECT.is(o);
-                        wasSomeSuchProject = LoadStatus.SOME_SUCH_PROJECT.is(o);
-                        if (LoadStatus.NO_SUCH_PROJECT.is(o)) {
-                            if (LOG.isLoggable(Level.FINE)) {
-                                LOG.log(Level.FINE, "findProject({0}) in {1}: NO_SUCH_PROJECT", new Object[] {projectDirectory, Thread.currentThread().getName()});
-                            }
-                            return null;
-                        } else if (o != null && !LoadStatus.SOME_SUCH_PROJECT.is(o)) {
-                            Project p = o.first().get();
-                            if (p != null) {
-                                if (LOG.isLoggable(Level.FINE)) {
-                                    LOG.log(Level.FINE, "findProject({0}) in {1}: cached project @{2}", new Object[] {projectDirectory, Thread.currentThread().getName(), p.hashCode()});
-                                }
-                                return p;
-                            } else {
-                                if (LOG.isLoggable(Level.FINE)) {
-                                    LOG.log(Level.FINE, "findProject({0}) in {1}: null project reference", new Object[] {projectDirectory, Thread.currentThread().getName()});
-                                }
-                            }
-                        } else {
-                            if (LOG.isLoggable(Level.FINE)) {
-                                LOG.log(Level.FINE, "findProject({0} in {1}: no entries among {2}", new Object[] {projectDirectory, Thread.currentThread().getName(), dir2Proj});
-                            }
-                        }
-                        // not in cache
-                        dir2Proj.put(projectDirectory, LoadStatus.LOADING_PROJECT.wrap());
-                        Set<FileObject> ldng = loadingThread.get();
-                        if (ldng == null) {
-                            ldng = new HashSet<FileObject>();
-                            loadingThread.set(ldng);
-                        }
-                        ldng.add(projectDirectory);
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.log(Level.FINE, "findProject({0}) in {1}: may load new project...", new Object[] {projectDirectory, Thread.currentThread().getName()});
-                        }
-                    }
-                    boolean resetLP = false;
-                    try {
-                        Project p = createProject(projectDirectory);
-                        //Thread.dumpStack();
-                        synchronized (dir2Proj) {
-                            dir2Proj.notifyAll();
-                            if (p != null) {
-                                if (LOG.isLoggable(Level.FINE)) {
-                                    LOG.log(Level.FINE, "findProject({0}) in {1}: created new project @{2}", new Object[] {projectDirectory, Thread.currentThread().getName(), p.hashCode()});
-                                }
-                                projectDirectory.addFileChangeListener(projectDeletionListener);
-                                dir2Proj.put(projectDirectory, Union2.<Reference<Project>,LoadStatus>createFirst(new TimedWeakReference<Project>(p)));
-                                resetLP = true;
-                                return p;
-                            } else {
-                                dir2Proj.put(projectDirectory, LoadStatus.NO_SUCH_PROJECT.wrap());
-                                resetLP = true;
-                                if (wasSomeSuchProject) {
-                                    if (LOG.isLoggable(Level.FINE)) {
-                                        LOG.log(Level.FINE, "Directory {0} was initially claimed to be a project folder but really was not", FileUtil.getFileDisplayName(projectDirectory));
-                                    }
-                                }
-                                return null;
-                            }
-                        }
-                    } catch (IOException e) {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.log(Level.FINE, "findProject({0}) in {1}: error loading project: {2}", new Object[] {projectDirectory, Thread.currentThread().getName(), e});
-                        }
-                        // Do not cache the exception. Might be useful in some cases
-                        // but would also cause problems if there were a project that was
-                        // temporarily corrupted, fP is called, then it is fixed, then fP is
-                        // called again (without anything being GC'd)
-                        throw e;
-                    } finally {
-                        loadingThread.get().remove(projectDirectory);
-                        if (!resetLP) {
-                            // IOException or a runtime exception interrupted.
-                            if (LOG.isLoggable(Level.FINE)) {
-                                LOG.log(Level.FINE, "findProject({0}) in {1}: cleaning up after error", new Object[] {projectDirectory, Thread.currentThread().getName()});
-                            }
-                            synchronized (dir2Proj) {
-                                assert LoadStatus.LOADING_PROJECT.is(dir2Proj.get(projectDirectory)) : dir2Proj.get(projectDirectory);
-                                dir2Proj.remove(projectDirectory);
-                                dir2Proj.notifyAll(); // make sure other threads can continue
-                            }
-                        }
-                    }
-    // Workaround for issue #51911:
-    // Log project creation exception here otherwise it can get lost
-    // in following scenario:
-    // If project creation calls ProjectManager.postWriteRequest() (what for 
-    // example FreeformSources.initSources does) and then it throws an 
-    // exception then this exception can get lost because leaving read mutex
-    // will immediately execute the runnable posted by 
-    // ProjectManager.postWriteRequest() and if this runnable fails (what
-    // for FreeformSources.initSources will happen because
-    // AntBasedProjectFactorySingleton.getProjectFor() will not find project in
-    // its helperRef cache) then only this second fail is logged, but the cause - 
-    // the failure to create project - is never logged. So, better log it here:
-                    } catch (Error e) {
-                        LOG.log(Level.FINE, null, e);
-                        throw e;
-                    } catch (RuntimeException e) {
-                        LOG.log(Level.FINE, null, e);
-                        throw e;
-                    } catch (IOException e) {
-                        LOG.log(Level.FINE, null, e);
-                        throw e;
-                    }
-                }
-            });
-        } catch (MutexException e) {
-            throw (IOException)e.getException();
-        }
+        return impl.findProject(projectDirectory);
     }
-    
-    /**
-     * Create a project from a given directory.
-     * @param dir the project dir
-     * @return a project made from it, or null if it is not recognized
-     * @throws IOException if there was a problem loading the project
-     */
-    private Project createProject(FileObject dir) throws IOException {
-        assert dir != null;
-        assert dir.isFolder();
-        assert mutex().isReadAccess();
-        ProjectStateImpl state = new ProjectStateImpl();
-        for (ProjectFactory factory : factories.allInstances()) {
-            Project p = factory.loadProject(dir, state);
-            if (p != null) {
-                if (TIMERS.isLoggable(Level.FINE)) {
-                    LogRecord rec = new LogRecord(Level.FINE, "Project"); // NOI18N
-                    rec.setParameters(new Object[] { p });
-                    TIMERS.log(rec);
-                }
-                proj2Factory.put(p, factory);
-                state.attach(p);
-                return p;
-            }
-        }
-        return null;
-    }
+        
     
     /**
      * Check whether a given directory is likely to contain a project without
@@ -426,8 +186,8 @@ public final class ProjectManager {
      *              some registered {@link ProjectFactory}
      * @throws IllegalArgumentException if the supplied file object is null or not a folder
      */
-    public boolean isProject(final FileObject projectDirectory) throws IllegalArgumentException {
-        return isProject2(projectDirectory, false) != null;
+    public boolean isProject(@NonNull final FileObject projectDirectory) throws IllegalArgumentException {
+        return isProject2(projectDirectory) != null;
     }
 
     /**
@@ -453,16 +213,13 @@ public final class ProjectManager {
      * @throws IllegalArgumentException if the supplied file object is null or not a folder
      * @since org.netbeans.modules.projectapi 1.22
      */
-    public Result isProject2(final FileObject projectDirectory) throws IllegalArgumentException {
-        return isProject2(projectDirectory, true);
-    }
-
-    private Result isProject2(final FileObject projectDirectory, final boolean preferResult) throws IllegalArgumentException {
+    @CheckForNull
+    public Result isProject2(@NonNull final FileObject projectDirectory) throws IllegalArgumentException {
         if (projectDirectory == null) {
             throw new IllegalArgumentException("Attempted to pass a null directory to isProject"); // NOI18N
         }
         if (!projectDirectory.isFolder() ) {
-            //#78215 it can happen that a no longer existing folder is queried. throw 
+            //#78215 it can happen that a no longer existing folder is queried. throw
             // exception only for real wrong usage..
             if (projectDirectory.isValid()) {
                 throw new IllegalArgumentException("Attempted to pass a non-directory to isProject: " + projectDirectory); // NOI18N
@@ -470,92 +227,9 @@ public final class ProjectManager {
                 return null;
             }
         }
-        return mutex().readAccess(new Mutex.Action<Result>() {
-            @Override
-            public Result run() {
-                synchronized (dir2Proj) {
-                    Union2<Reference<Project>,LoadStatus> o;
-                    do {
-                        o = dir2Proj.get(projectDirectory);
-                        if (LoadStatus.LOADING_PROJECT.is(o)) {
-                            if (EventQueue.isDispatchThread()) {
-                                // #183192: permitted false positive; better than blocking EQ
-                                return new Result(null);
-                            }
-                            try {
-                                dir2Proj.wait();
-                            } catch (InterruptedException e) {
-                                LOG.log(Level.INFO, null, e);
-                                return null;
-                            }
-                        }
-                    } while (LoadStatus.LOADING_PROJECT.is(o));
-                    assert !LoadStatus.LOADING_PROJECT.is(o);
-                    if (LoadStatus.NO_SUCH_PROJECT.is(o)) {
-                        return null;
-                    } else if (o != null) {
-                        // Reference<Project> or SOME_SUCH_PROJECT
-                        // rather check for result than load project and lookup projectInformation for icon.
-                        return checkForProject(projectDirectory, preferResult);
-                    }
-                    // Not in cache.
-                    dir2Proj.put(projectDirectory, LoadStatus.LOADING_PROJECT.wrap());
-                }
-                boolean resetLP = false;
-                try {
-                    Result p = checkForProject(projectDirectory, preferResult);
-                    synchronized (dir2Proj) {
-                        resetLP = true;
-                        dir2Proj.notifyAll();
-                        if (p != null) {
-                            dir2Proj.put(projectDirectory, LoadStatus.SOME_SUCH_PROJECT.wrap());
-                            return p;
-                        } else {
-                            dir2Proj.put(projectDirectory, LoadStatus.NO_SUCH_PROJECT.wrap());
-                            return null;
-                        }
-                    }
-                } finally {
-                    if (!resetLP) {
-                        // some runtime exception interrupted.
-                        synchronized (dir2Proj) {
-                            assert LoadStatus.LOADING_PROJECT.is(dir2Proj.get(projectDirectory));
-                            dir2Proj.remove(projectDirectory);
-                        }
-                    }
-                }
-            }
-        });
+        return impl.isProject(projectDirectory);
     }
-
-    /**
-     *
-     * @param dir
-     * @param preferResult, if false will not actually call the factory methods with populated Results, but
-     *                      create dummy ones and use the Result as boolean flag only.
-     * @return
-     */
-    private Result checkForProject(FileObject dir, boolean preferResult) {
-        assert dir != null;
-        assert dir.isFolder() : dir;
-        assert mutex().isReadAccess();
-        Iterator<? extends ProjectFactory> it = factories.allInstances().iterator();
-        while (it.hasNext()) {
-            ProjectFactory factory = it.next();
-            if (factory instanceof ProjectFactory2 && preferResult) {
-                Result res = ((ProjectFactory2)factory).isProject2(dir);
-                if (res != null) {
-                    return res;
-                }
-            } else {
-                if (factory.isProject(dir)) {
-                    return new Result((Icon)null);
-                }
-            }
-        }
-        return null;
-    }
-    
+        
     /**
      * Clear the cached list of folders thought <em>not</em> to be projects.
      * This may be useful after creating project metadata in a folder, etc.
@@ -563,83 +237,7 @@ public final class ProjectManager {
      * projects, are not affected.
      */
     public void clearNonProjectCache() {
-        synchronized (dir2Proj) {
-            dir2Proj.values().removeAll(Arrays.asList(new Object[] {
-                LoadStatus.NO_SUCH_PROJECT.wrap(),
-                LoadStatus.SOME_SUCH_PROJECT.wrap(),
-            }));
-            // XXX remove everything too? but then e.g. AntProjectFactorySingleton
-            // will stay while its delegates are changed, which does no good
-            // XXX should there be any way to signal that a particular
-            // folder should be "reloaded" by a new factory?
-        }
-    }
-    
-    private final class ProjectStateImpl implements ProjectState {
-        
-        private Project p;
-        
-        void attach(Project p) {
-            assert p != null;
-            assert this.p == null;
-            this.p = p;
-        }
-        
-        @Override
-        public void markModified() {
-            assert p != null;
-            LOG.log(Level.FINE, "markModified({0})", p.getProjectDirectory());
-            mutex().writeAccess(new Mutex.Action<Void>() {
-                @Override
-                public Void run() {
-                    if (proj2Factory.containsKey(p)) {
-                        modifiedProjects.add(p);
-                    } else {
-                        LOG.log(Level.WARNING, "An attempt to call ProjectState.markModified on an unknown project: {0}", p.getProjectDirectory());
-                    }
-                    return null;
-                }
-            });
-        }
-
-        @Override
-        public void notifyDeleted() throws IllegalStateException {
-            assert p != null;
-            final FileObject dir = p.getProjectDirectory();
-            LOG.log(Level.FINE, "notifyDeleted: {0}", dir);
-            mutex().writeAccess(new Mutex.Action<Void>() {
-                @Override
-                public Void run() {
-                    synchronized (dir2Proj) {
-                        Union2<Reference<Project>,LoadStatus> o = dir2Proj.get(dir);
-                        if (o != null && o.hasFirst() && o.first().get() == p) {
-                            dir2Proj.remove(dir);
-                        } else {
-                            // #194046: project folder was moved, so now points to new project
-                            LOG.log(Level.FINE, "notifyDeleted skipping dir2Proj update since {0} @{1} != {2}", new Object[] {p, p.hashCode(), o});
-                        }
-                    }
-                    proj2Factory.remove(p);
-                    modifiedProjects.remove(p);
-                    if (!removedProjects.add(p)) {
-                        LOG.log(Level.WARNING, "An attempt to call notifyDeleted more than once. Project: {0}", dir);
-                    }
-                    resetSimpleFileOwnerQuery();
-                    return null;
-                }
-            });
-        }
-
-    }
-
-    private void resetSimpleFileOwnerQuery() {
-        //#111892
-        Collection<? extends FileOwnerQueryImplementation> col = Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
-        for (FileOwnerQueryImplementation impl : col) {
-            if (impl instanceof SimpleFileOwnerQueryImplementation) {
-                ((SimpleFileOwnerQueryImplementation)impl).resetLastFoundReferences();
-            }
-        }
+        impl.clearNonProjectCache();
     }
     
     /**
@@ -647,13 +245,9 @@ public final class ProjectManager {
      * <p>Acquires read access.
      * @return an immutable set of projects
      */
+    @NonNull
     public Set<Project> getModifiedProjects() {
-        return mutex().readAccess(new Mutex.Action<Set<Project>>() {
-            @Override
-            public Set<Project> run() {
-                return new HashSet<Project>(modifiedProjects);
-            }
-        });
+        return impl.getModifiedProjects();
     }
     
     /**
@@ -662,18 +256,8 @@ public final class ProjectManager {
      * @param p a project loaded by this manager
      * @return true if it is modified, false if has been saved since the last modification
      */
-    public boolean isModified(final Project p) {
-        return mutex().readAccess(new Mutex.Action<Boolean>() {
-            @Override
-            public Boolean run() {
-                synchronized (dir2Proj) {
-                    if (!proj2Factory.containsKey(p)) {
-                        LOG.log(Level.WARNING, "Project {0} was already deleted", p);
-                    }
-                }
-                return modifiedProjects.contains(p);
-            }
-        });
+    public boolean isModified(@NonNull final Project p) {
+        return impl.isModified(p);
     }
     
     /**
@@ -692,36 +276,9 @@ public final class ProjectManager {
      * @throws IOException if it cannot be saved
      * @see ProjectFactory#saveProject
      */
-    public void saveProject(final Project p) throws IOException {
-        try {
-            mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                @Override
-                public Void run() throws IOException {
-                    //removed projects are the ones that cannot be mapped to an existing project type anymore.
-                    if (removedProjects.contains(p)) {
-                        return null;
-                    }
-                    if (modifiedProjects.contains(p)) {
-                        ProjectFactory f = proj2Factory.get(p);
-                        if (f != null) {
-                            f.saveProject(p);
-                            LOG.log(Level.FINE, "saveProject({0})", p.getProjectDirectory());
-                        } else {
-                            LOG.log(Level.WARNING, "Project {0} was already deleted", p);
-                        }
-                        modifiedProjects.remove(p);
-                    }
-                    return null;
-                }
-            });
-        } catch (MutexException e) {
-            //##91398 have a more descriptive error message, in case of RO folders.
-            // the correct reporting still up to the specific project type.
-            if (!p.getProjectDirectory().canWrite()) {
-                throw new IOException("Project folder is not writeable.");
-            }
-            throw (IOException)e.getException();
-        }
+    public void saveProject(@NonNull final Project p) throws IOException {
+        Parameters.notNull("p", p); //NOI18N
+        impl.saveProject(p);
     }
     
     /**
@@ -731,28 +288,7 @@ public final class ProjectManager {
      * @see ProjectFactory#saveProject
      */
     public void saveAllProjects() throws IOException {
-        try {
-            mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                @Override
-                public Void run() throws IOException {
-                    Iterator<Project> it = modifiedProjects.iterator();
-                    while (it.hasNext()) {
-                        Project p = it.next();
-                        ProjectFactory f = proj2Factory.get(p);
-                        if (f != null) {
-                            f.saveProject(p);
-                            LOG.log(Level.FINE, "saveProject({0})", p.getProjectDirectory());
-                        } else {
-                            LOG.log(Level.WARNING, "Project {0} was already deleted", p);
-                        }
-                        it.remove();
-                    }
-                    return null;
-                }
-            });
-        } catch (MutexException e) {
-            throw (IOException)e.getException();
-        }
+        impl.saveAllProjects();
     }
     
     /**
@@ -764,52 +300,18 @@ public final class ProjectManager {
      * @param p a project
      * @return true if the project is still valid, false if it has been deleted
      */
-    public boolean isValid(final Project p) {
-        return mutex().readAccess(new Mutex.Action<Boolean>() {
-            @Override
-            public Boolean run() {
-                synchronized (dir2Proj) {
-                    return proj2Factory.containsKey(p);
-                }
-            }
-        });
+    public boolean isValid(@NonNull final Project p) {
+        Parameters.notNull("p", p); //NOI18N
+        return impl.isValid(p);
     }
     
-    /**
-     * Removes cache entries for deleted projects.
-     */
-    private final class ProjectDeletionListener extends FileChangeAdapter {
-        
-        public ProjectDeletionListener() {}
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            synchronized (dir2Proj) {
-                LOG.log(Level.FINE, "deleted: {0}", fe.getFile());
-                dir2Proj.remove(fe.getFile());
-                resetSimpleFileOwnerQuery();            
-            }
-        }
-
-        @Override
-        public void fileRenamed(FileRenameEvent fe) {
-            synchronized (dir2Proj) {
-                LOG.log(Level.FINE, "renamed: {0}", fe.getFile());
-                dir2Proj.remove(fe.getFile());
-                resetSimpleFileOwnerQuery();            
-                
-            }
-        }
-        
-    }
-
     /**
      *  A result (immutable) object returned from {@link org.netbeans.api.project.ProjectManager#isProject2} method.
      *  To be created by {@link org.netbeans.spi.project.ProjectFactory2} project factories.
      *  @since org.netbeans.modules.projectapi 1.22
      */
     public static final class Result {
-        private Icon icon;
+        private final Icon icon;
         private final String displayName;
         private final String projectType;
 
@@ -857,6 +359,4 @@ public final class ProjectManager {
             return icon;
         }
     }
-
-    
 }
