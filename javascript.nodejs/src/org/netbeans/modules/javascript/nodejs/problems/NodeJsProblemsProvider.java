@@ -48,8 +48,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
@@ -75,6 +78,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
     final Project project;
     final PreferenceChangeListener optionsListener = new OptionsListener();
     final PreferenceChangeListener preferencesListener = new PreferencesListener();
+    final ChangeListener sourcesListener = new SourcesListener();
 
     // @GuardedBy("this")
     private NodeJsSupport nodeJsSupport;
@@ -120,11 +124,21 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
     synchronized NodeJsSupport getNodeJsSupport() {
         if (nodeJsSupport == null) {
             nodeJsSupport = NodeJsSupport.forProject(project);
-            nodeJsSupport.getPreferences().addPreferenceChangeListener(preferencesListener);
-            NodeJsOptions options = NodeJsOptions.getInstance();
-            options.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, optionsListener, options));
+            addListeners();
         }
         return nodeJsSupport;
+    }
+
+    private void addListeners() {
+        assert nodeJsSupport != null;
+        // preferences
+        nodeJsSupport.getPreferences().addPreferenceChangeListener(preferencesListener);
+        // options
+        NodeJsOptions options = NodeJsOptions.getInstance();
+        options.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, optionsListener, options));
+        // sources
+        Sources sources = ProjectUtils.getSources(project);
+        sources.addChangeListener(WeakListeners.change(sourcesListener, sources));
     }
 
     @NbBundle.Messages({
@@ -246,9 +260,6 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
 
         @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
-            if (!getNodeJsSupport().getPreferences().isEnabled()) {
-                return;
-            }
             fireProblemsChanged();
         }
 
@@ -258,12 +269,19 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
 
         @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
-            if (!getNodeJsSupport().getPreferences().isEnabled()) {
-                return;
-            }
             fireProblemsChanged();
         }
 
     }
+
+    private final class SourcesListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            fireProblemsChanged();
+        }
+
+    }
+
 
 }
