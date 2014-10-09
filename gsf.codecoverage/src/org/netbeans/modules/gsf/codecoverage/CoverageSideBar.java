@@ -124,11 +124,13 @@ public class CoverageSideBar extends javax.swing.JPanel {
         };
         target.getInputMap().put(KeyStroke.getKeyStroke(FOCUS_KEY_BINDING), COVERAGE_SIDEBAR_FOCUS);
         target.getActionMap().put(COVERAGE_SIDEBAR_FOCUS, focus);
-        document.putProperty(COVERAGE_SIDEBAR_PROP, this);
+        // Since CoverageSideBar is a component storing its instance in target rather than document
+        // to btw allow GC of cloned editor components.
+        target.putClientProperty(COVERAGE_SIDEBAR_PROP, this);
     }
 
-    public static CoverageSideBar getSideBar(Document document) {
-        return (CoverageSideBar)document.getProperty(COVERAGE_SIDEBAR_PROP);
+    public static CoverageSideBar getSideBar(JTextComponent target) {
+        return (CoverageSideBar)target.getClientProperty(COVERAGE_SIDEBAR_PROP);
     }
 
     public void setCoverage(FileCoverageDetails details) {

@@ -46,6 +46,8 @@ package org.netbeans.modules.editor.errorstripe;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -83,6 +85,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbCollections;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -96,11 +99,14 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     private static final String TEXT_BASE_PATH = "Editors/text/base/"; //NOI18N
 
     private AnnotationView view;
-    private JTextComponent pane;
+    private Reference<JTextComponent> paneRef;
     private BaseDocument document;
     
     private List<MarkProvider> markProviders = new ArrayList<MarkProvider>();
     private List<UpToDateStatusProvider> statusProviders = new ArrayList<UpToDateStatusProvider>();
+
+    private List<PropertyChangeListener> markProvidersWeakLs = new ArrayList();
+    private List<PropertyChangeListener> statusProvidersWeakLs = new ArrayList();
     
     private Collection<Mark> currentMarks = null;
     private SortedMap<Integer, List<Mark>> marksMap = null;
@@ -110,32 +116,41 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
 
     private static LegacyCrapProvider legacyCrap;
     
+    private Annotations.AnnotationsListener weakL;
+    
     /** Creates a new instance of AnnotationViewData */
     public AnnotationViewDataImpl(AnnotationView view, JTextComponent pane) {
         this.view = view;
-        this.pane = pane;
+        this.paneRef = new WeakReference<>(pane);
         this.document = null;
     }
     
     public void register(BaseDocument document) {
         this.document = document;
         
-        gatherProviders(pane);
-        addListenersToProviders();
+        JTextComponent pane = paneRef.get();
+        if (pane != null) {
+            gatherProviders(pane);
+        }
         
         if (document != null) {
-            document.getAnnotations().addAnnotationsListener(this);
+            if (weakL == null) {
+                weakL = WeakListeners.create(Annotations.AnnotationsListener.class, this, document.getAnnotations());
+                document.getAnnotations().addAnnotationsListener(weakL);
+            }
         }
         
         clear();
     }
     
     public void unregister() {
-        if (document != null) {
-            document.getAnnotations().removeAnnotationsListener(this);
+        if (document != null && weakL != null) {
+            document.getAnnotations().removeAnnotationsListener(weakL);
+            weakL = null;
         }
         
-        removeListenersFromProviders();
+        removeListenersFromStatusProviders();
+        removeListenersFromMarkProviders();
         
         document = null;
     }
@@ -181,7 +196,9 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
 
         createMarkProviders(creators, newMarkProviders, pane);
 
+        removeListenersFromMarkProviders();
         this.markProviders = newMarkProviders;
+        addListenersToMarkProviders();
 
         
         // Collect legacy status providers
@@ -201,7 +218,9 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
             }
         }
 
+        removeListenersFromStatusProviders();
         this.statusProviders = newStatusProviders;
+        addListenersToStatusProviders();
         
         
         long end = System.currentTimeMillis();
@@ -236,32 +255,45 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         }
     }
     
-    private void addListenersToProviders() {
+    private void addListenersToStatusProviders() {
         for (Iterator p = statusProviders.iterator(); p.hasNext(); ) {
             UpToDateStatusProvider provider = (UpToDateStatusProvider) p.next();
             
-            SPIAccessor.getDefault().addPropertyChangeListener(provider, this);
+            // removePropertyChangeListener() is non-public but present in UpToDateStatusProvider - will the weak listener removal work??
+            PropertyChangeListener weakL = WeakListeners.propertyChange(this, provider);
+            SPIAccessor.getDefault().addPropertyChangeListener(provider, weakL);
+            markProvidersWeakLs.add(weakL);
         }
+    }
         
+    private void addListenersToMarkProviders() {
         for (Iterator p = markProviders.iterator(); p.hasNext(); ) {
             MarkProvider provider = (MarkProvider) p.next();
             
-            provider.addPropertyChangeListener(this);
+            PropertyChangeListener weakL = WeakListeners.propertyChange(this, provider);
+            provider.addPropertyChangeListener(weakL);
+            statusProvidersWeakLs.add(weakL);
         }
     }
 
-    private void removeListenersFromProviders() {
-        for (Iterator p = statusProviders.iterator(); p.hasNext(); ) {
-            UpToDateStatusProvider provider = (UpToDateStatusProvider) p.next();
-            
-            SPIAccessor.getDefault().removePropertyChangeListener(provider, this);
+    private void removeListenersFromStatusProviders() {
+        if (statusProvidersWeakLs.size() == statusProviders.size()) { // Check if the listeners were not removed already
+            int lIndex = 0;
+            for (UpToDateStatusProvider statusProvider : statusProviders) {
+                SPIAccessor.getDefault().removePropertyChangeListener(statusProvider, statusProvidersWeakLs.get(lIndex));
+            }
         }
+        statusProvidersWeakLs.clear();
+    }
         
-        for (Iterator p = markProviders.iterator(); p.hasNext(); ) {
-            MarkProvider provider = (MarkProvider) p.next();
-            
-            provider.removePropertyChangeListener(this);
+    private void removeListenersFromMarkProviders() {
+        if (markProvidersWeakLs.size() == markProviders.size()) { // Check if the listeners were not removed already
+            int lIndex = 0;
+            for (MarkProvider markProvider : markProviders) {
+                markProvider.removePropertyChangeListener(markProvidersWeakLs.get(lIndex));
+            }
         }
+        markProvidersWeakLs.clear();
     }
     
     /*package private*/ static Collection<Mark> createMergedMarks(List<MarkProvider> providers) {

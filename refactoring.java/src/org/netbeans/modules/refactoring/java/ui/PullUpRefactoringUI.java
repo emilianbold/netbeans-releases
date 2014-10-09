@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -79,6 +80,7 @@ public class PullUpRefactoringUI implements RefactoringUI, JavaRefactoringUIFact
     private PullUpPanel panel;
 
     private String description;
+    private ElementKind sourceKind;
     
     /** Creates a new instance of PullUpRefactoringUI
      * @param selectedElements Elements the refactoring action was invoked on.
@@ -89,6 +91,7 @@ public class PullUpRefactoringUI implements RefactoringUI, JavaRefactoringUIFact
 
         if (selectedPath != null) {
             Element selected = selectedPath.resolveElement(info);
+            sourceKind = selected.getKind();
             initialMembers.add(MemberInfo.create(selected, info));
             // compute source type and members that should be pre-selected from the
             // set of elements the action was invoked on
@@ -123,7 +126,7 @@ public class PullUpRefactoringUI implements RefactoringUI, JavaRefactoringUIFact
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new PullUpPanel(refactoring, initialMembers, parent);
+            panel = new PullUpPanel(refactoring, initialMembers, sourceKind, parent);
         }
         return panel;
     }

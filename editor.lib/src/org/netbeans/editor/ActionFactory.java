@@ -53,6 +53,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -545,7 +547,6 @@ public class ActionFactory {
                                     // get line text
                                     Element startLineElement = rootElement.getElement(zeroBaseStartLineNumber);
                                     int startLineStartOffset = startLineElement.getStartOffset();
-                                    
 
                                     Element endLineElement = rootElement.getElement(zeroBaseEndLineNumber);
                                     int endLineEndOffset = endLineElement.getEndOffset();
@@ -572,8 +573,13 @@ public class ActionFactory {
                                     if (selection) {
                                         // select moved lines
                                         if (backwardSelection) {
-                                            caret.setDot(nextLineEndOffset  - (endLineEndOffset - startLineStartOffset) + column);
-                                            caret.moveDot(nextLineEndOffset - (endLineEndOffset - end - 1));
+                                            if (doc.getLength() <  nextLineEndOffset) {
+                                                caret.setDot(doc.getLength()  - (endLineEndOffset - startLineStartOffset) + column + 1);
+                                                caret.moveDot(doc.getLength());
+                                            } else {
+                                                caret.setDot(nextLineEndOffset - (endLineEndOffset - startLineStartOffset) + column);
+                                                caret.moveDot(nextLineEndOffset - (endLineEndOffset - end - 1));
+                                            }
                                         } else {
                                             caret.setDot(nextLineEndOffset - (endLineEndOffset - end - 1));
                                             caret.moveDot(nextLineEndOffset  - (endLineEndOffset - startLineStartOffset) + column);
@@ -1170,9 +1176,9 @@ public class ActionFactory {
 
         static final long serialVersionUID = 0L;
         
-        private JEditorPane pane;
+        private Reference<JEditorPane> paneRef;
         
-        private JToggleButton toggleButton;
+        private Reference<JToggleButton> toggleButtonRef;
 
         public ToggleRectangularSelectionAction() {
             super(EditorActionNames.toggleRectangularSelection);
@@ -1181,16 +1187,31 @@ public class ActionFactory {
         }
         
         void setPane(JEditorPane pane) {
+            JEditorPane origPane = getPane();
+            if (origPane != null) {
+                origPane.removePropertyChangeListener(this);
+                origPane.getDocument().removeDocumentListener(this);
+            }
             assert (pane != null);
-            this.pane = pane;
+            this.paneRef = new WeakReference<>(pane);
             pane.addPropertyChangeListener(this);
             pane.getDocument().addDocumentListener(this);
             updateState();
         }
         
+        JEditorPane getPane() {
+            return (paneRef != null ? paneRef.get() : null);
+        }
+        
+        JToggleButton getToggleButton() {
+            return (toggleButtonRef != null ? toggleButtonRef.get() : null);
+        }
+        
         void updateState() {
+            JEditorPane pane = getPane();
             if (pane != null) {
                 boolean rectangleSelection = RectangularSelectionUtils.isRectangularSelection(pane);
+                JToggleButton toggleButton = getToggleButton();
                 if (toggleButton != null) {
                     toggleButton.setSelected(rectangleSelection);
                     toggleButton.setContentAreaFilled(rectangleSelection);
@@ -1209,7 +1230,8 @@ public class ActionFactory {
 
         @Override
         public Component getToolbarPresenter() {
-            toggleButton = new JToggleButton();
+            JToggleButton toggleButton = new JToggleButton();
+            toggleButtonRef = new WeakReference<>(toggleButton);
             toggleButton.putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
             toggleButton.setIcon((Icon) getValue(SMALL_ICON));
             toggleButton.setAction(this); // this will make hard ref to button => check GC
@@ -1229,6 +1251,7 @@ public class ActionFactory {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
+            JEditorPane pane = getPane();
             if (pane == evt.getSource()) { // Event from pane
                 if (RectangularSelectionUtils.getRectangularSelectionProperty().equals(evt.getPropertyName())) {
                     updateState();
@@ -1237,7 +1260,8 @@ public class ActionFactory {
         }
 
         private void documentUpdate(DocumentEvent e) {
-            if (RectangularSelectionUtils.isRectangularSelection(pane) && !Boolean.TRUE.equals(e.getDocument().getProperty(RectangularSelectionUtils.RECTANGULAR_DO_NOT_RESET_AFTER_DOCUMENT_CHANGE))) {
+            JEditorPane pane = getPane();
+            if (pane != null && RectangularSelectionUtils.isRectangularSelection(pane) && !Boolean.TRUE.equals(e.getDocument().getProperty(RectangularSelectionUtils.RECTANGULAR_DO_NOT_RESET_AFTER_DOCUMENT_CHANGE))) {
                 RectangularSelectionUtils.resetRectangularSelection(pane);
                 e.getDocument().putProperty(RectangularSelectionUtils.RECTANGULAR_DO_NOT_RESET_AFTER_DOCUMENT_CHANGE, Boolean.FALSE);
             }
