@@ -39,53 +39,51 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.javascript2.nodejs.editor;
 
-import java.util.Arrays;
-import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 
 /**
  *
  * @author Petr Pisl
  */
-public enum NodeJsContext {
+public class NodeJsContextTest extends JsTestBase {
 
-    MODULE_PATH,
-    ASSIGN_LISTENER,
-    AFTER_ASSIGNMENT,
-    UNKNOWN;
-
-    public static NodeJsContext findContext(TokenSequence<? extends JsTokenId> ts, final int offset) {
-        ts.move(offset);
-        if (ts.moveNext() || ts.movePrevious()) {
-            Token<? extends JsTokenId> token = ts.token();
-            JsTokenId tokenId = token.id();
-            if (tokenId == JsTokenId.STRING || tokenId == JsTokenId.STRING_END) {
-                token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
-                        JsTokenId.STRING_BEGIN, JsTokenId.STRING, JsTokenId.STRING_END, JsTokenId.OPERATOR_COMMA));
-                tokenId = token.id();
-                if (tokenId == JsTokenId.BRACKET_LEFT_PAREN && ts.movePrevious()) {
-                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
-                    tokenId = token.id();
-                    if (tokenId == JsTokenId.IDENTIFIER && NodeJsUtils.REQUIRE_METHOD_NAME.equals(token.text().toString())) {
-                        return MODULE_PATH;
-                    }
-                }
-            } else {
-                if ((tokenId == JsTokenId.OPERATOR_ASSIGNMENT || tokenId == JsTokenId.WHITESPACE || tokenId == JsTokenId.IDENTIFIER) && ts.movePrevious()) {
-                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
-                    tokenId = token.id();
-                }
-                if (tokenId == JsTokenId.OPERATOR_ASSIGNMENT) {
-                    // offer require()
-                    return AFTER_ASSIGNMENT;
-                }
+    public NodeJsContextTest(String testName) {
+        super(testName);
+    }
+    
+    public void testContext01() throws Exception {
+        checkCompletionContext("testfiles/context/context01.js");
+    }
+    
+    public void testSimpleServer() throws Exception {
+        checkCompletionContext("testfiles/context/simpleServer.js");
+    }
+    
+    private void checkCompletionContext(final String filePath) throws Exception {
+        Source testSource = getTestSource(getTestFile(filePath));
+        Snapshot snapshot = testSource.createSnapshot();
+        CharSequence text = snapshot.getText();
+        StringBuilder sb = new StringBuilder();
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, 0);
+        NodeJsContext contextPrevious = null;
+        for (int offset = 0; offset < text.length(); offset++) {
+            NodeJsContext context = NodeJsContext.findContext(ts , offset);
+            if (!context.equals(contextPrevious)) {
+                sb.append('[').append(context).append(']');
+                contextPrevious = context;
             }
+            sb.append(text.charAt(offset));
         }
-        return UNKNOWN;
+        assertDescriptionMatches(filePath, sb.toString(), false, ".context");
     }
 }
