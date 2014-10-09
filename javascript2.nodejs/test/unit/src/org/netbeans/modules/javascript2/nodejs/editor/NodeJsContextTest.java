@@ -68,6 +68,10 @@ public class NodeJsContextTest extends JsTestBase {
         checkCompletionContext("testfiles/context/simpleServer.js");
     }
     
+    public void testOnEvents() throws Exception {
+        checkCompletionContext("testfiles/context/eventer.js");
+    }
+    
     private void checkCompletionContext(final String filePath) throws Exception {
         Source testSource = getTestSource(getTestFile(filePath));
         Snapshot snapshot = testSource.createSnapshot();

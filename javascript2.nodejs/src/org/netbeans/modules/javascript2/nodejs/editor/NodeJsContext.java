@@ -71,8 +71,13 @@ public enum NodeJsContext {
                 if (tokenId == JsTokenId.BRACKET_LEFT_PAREN && ts.movePrevious()) {
                     token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
                     tokenId = token.id();
-                    if (tokenId == JsTokenId.IDENTIFIER && NodeJsUtils.REQUIRE_METHOD_NAME.equals(token.text().toString())) {
-                        return MODULE_PATH;
+                    if (tokenId == JsTokenId.IDENTIFIER) {
+                        if (NodeJsUtils.REQUIRE_METHOD_NAME.equals(token.text().toString())) {
+                            return MODULE_PATH;
+                        }
+                        if (NodeJsUtils.ON_METHOD_NAME.equals(token.text().toString())) {
+                            return ASSIGN_LISTENER;
+                        }
                     }
                 }
             } else {
