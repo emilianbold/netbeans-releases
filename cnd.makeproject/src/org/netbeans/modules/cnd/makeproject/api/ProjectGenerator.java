@@ -82,7 +82,7 @@ public class ProjectGenerator {
         private Iterator<String> importantFileItems;
         private Iterator<LogicalFolderItemsInfo> logicalFolderItems;
         private Iterator<LogicalFoldersInfo> logicalFolders;
-        private Iterator<SourceFolderInfo> testFolders;
+        private Iterator<? extends SourceFolderInfo> testFolders;
         private String mainFile;
         private String hostUID;
         private ExecutionEnvironment sourceEnv;
@@ -154,7 +154,7 @@ public class ProjectGenerator {
             return this;
         }
 
-        public ProjectParameters setTestFolders(Iterator<SourceFolderInfo> testFolders) {
+        public ProjectParameters setTestFolders(Iterator<? extends SourceFolderInfo> testFolders) {
             this.testFolders = testFolders;
             return this;
         }
@@ -232,7 +232,7 @@ public class ProjectGenerator {
             return this.sourceFoldersFilter;
         }
 
-        public Iterator<SourceFolderInfo> getTestFolders() {
+        public Iterator<? extends SourceFolderInfo> getTestFolders() {
             return this.testFolders;
         }
 

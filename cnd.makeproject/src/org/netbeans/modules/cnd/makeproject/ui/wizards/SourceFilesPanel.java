@@ -416,7 +416,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             } else if (baseDir != null) {
                 seed = baseDir;
             } else if (controller != null) {
-                seed = (String) controller.getWizardDescriptor().getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);
+                seed = WizardConstants.PROPERTY_NATIVE_PROJ_DIR.get(controller.getWizardDescriptor());
             }
         }
         //FileChooser fileChooser = new FileChooser(title, buttonText, FileChooser.DIRECTORIES_ONLY, null, seed, true);

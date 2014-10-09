@@ -120,7 +120,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     
     private void makefileFieldChanged() {
         if (makefileName == null || makefileName.isEmpty()) {
-            String root = (String) controller.getWizardDescriptor().getProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER);
+            String root = WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER.get(controller.getWizardDescriptor());
             buildCommandWorkingDirTextField.setText(CndPathUtilities.normalizeSlashes(root));
             buildCommandTextField.setText(DEF_COMMAND_BUILD_COMMAND);
             cleanCommandTextField.setText(DEF_COMMAND_CLEAN_COMMAND);
@@ -176,20 +176,20 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     
     private String initMakeFile(WizardDescriptor wizardDescriptor) {
         String res = null;
-        String path = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER);
+        String path = WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER.get(wizardDescriptor);
         if (path != null) {
-            if (Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_RUN_CONFIGURE))) {
-                String folder = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER);
+            if (Boolean.TRUE.equals(WizardConstants.PROPERTY_RUN_CONFIGURE.get(wizardDescriptor))) {
+                String folder = WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER.get(wizardDescriptor);
                 res = folder+"/Makefile"; //NOI18N
-                ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+                ExecutionEnvironment env = WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizardDescriptor);
                 if (env != null) {
                     res = RemoteFileUtil.normalizeAbsolutePath(res, env);
                 }
             }
             if (res == null) {
                 ExecutionEnvironment ee = NewProjectWizardUtils.getExecutionEnvironment(wizardDescriptor);
-                CompilerSet cs = (CompilerSet) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
-                BuildSupport.BuildFile buildFile = BuildSupport.findBuildFileInFolder((FileObject) wizardDescriptor.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO), ee, cs);
+                CompilerSet cs = WizardConstants.PROPERTY_TOOLCHAIN.get(wizardDescriptor);
+                BuildSupport.BuildFile buildFile = BuildSupport.findBuildFileInFolder(WizardConstants.PROPERTY_NATIVE_PROJ_FO.get(wizardDescriptor), ee, cs);
                 if (buildFile != null) {
                     res = buildFile.getFile();
                 }
@@ -199,13 +199,13 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     }
     
     void store(WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_WORKING_DIR, buildCommandWorkingDirTextField.getText()); 
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_COMMAND, buildCommandTextField.getText()); 
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_CLEAN_COMMAND, cleanCommandTextField.getText()); 
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_RESULT, outputTextField.getText());
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_LOG, buildLogTextField.getText());
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_RUN_REBUILD, makeCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE);
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH, makefileName);
+        WizardConstants.PROPERTY_WORKING_DIR.put(wizardDescriptor, buildCommandWorkingDirTextField.getText()); 
+        WizardConstants.PROPERTY_BUILD_COMMAND.put(wizardDescriptor, buildCommandTextField.getText()); 
+        WizardConstants.PROPERTY_CLEAN_COMMAND.put(wizardDescriptor, cleanCommandTextField.getText()); 
+        WizardConstants.PROPERTY_BUILD_RESULT.put(wizardDescriptor, outputTextField.getText());
+        WizardConstants.PROPERTY_BUILD_LOG.put(wizardDescriptor, buildLogTextField.getText());
+        WizardConstants.PROPERTY_RUN_REBUILD.put(wizardDescriptor, makeCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE);
+        WizardConstants.PROPERTY_USER_MAKEFILE_PATH.put(wizardDescriptor, makefileName);
     }
     
     boolean valid(WizardDescriptor settings) {

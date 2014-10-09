@@ -277,12 +277,12 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                 if (env.isLocal()) {
                     CompilerSet compiler = detectCompilerSet((String) map.get("DW:compiler")); // NOI18N
                     if (compiler != null) {
-                        controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_TOOLCHAIN, compiler);
-                        controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.getLocal().getHost());
+                        WizardConstants.PROPERTY_TOOLCHAIN.put(controller.getWizardDescriptor(), compiler);
+                        WizardConstants.PROPERTY_HOST_UID.put(controller.getWizardDescriptor(), ExecutionEnvironmentFactory.getLocal().getHost());
                         // allow user to select right tool collection if discovery detected wrong one
-                        controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.FALSE);
+                        WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN.put(controller.getWizardDescriptor(), Boolean.FALSE);
                     } else {
-                        controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.FALSE);
+                        WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN.put(controller.getWizardDescriptor(), Boolean.FALSE);
                     }
                     sourcesField.setText(root);
                     int i = checking.decrementAndGet();
@@ -823,16 +823,16 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }//GEN-LAST:event_sourcesButtonActionPerformed
 
     void read(WizardDescriptor wizardDescriptor) {
-        env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+        env = WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizardDescriptor);
         if (env == null) {
             env = ExecutionEnvironmentFactory.getLocal();
         } else {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(env));
+            WizardConstants.PROPERTY_HOST_UID.put(wizardDescriptor, ExecutionEnvironmentFactory.toUniqueID(env));
         }
         fileSystem = FileSystemProvider.getFileSystem(env);
 
         ((EditableComboBox)binaryField).setStorage(BINARY_FILE_KEY, NbPreferences.forModule(SelectBinaryPanelVisual.class));
-        String binary = (String)wizardDescriptor.getProperty(WizardConstants.PROPERTY_BUILD_RESULT);
+        String binary = WizardConstants.PROPERTY_BUILD_RESULT.get(wizardDescriptor);
         if (binary == null) {
             binary = ""; // NOI18N
         }
@@ -841,21 +841,21 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
 
     void store(WizardDescriptor wizardDescriptor) {
         cancelSearch();
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_RESULT,  ((EditableComboBox)binaryField).getText().trim());
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_PREFERED_PROJECT_NAME,   new File(((EditableComboBox)binaryField).getText().trim()).getName());
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH,  sourcesField.getText().trim());
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_DEPENDENCY_KIND,  ((ProjectKindItem)dependeciesComboBox.getSelectedItem()).kind);
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_DEPENDENCIES,  getDlls());
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_TRUE_SOURCE_ROOT,  ((ProjectView)viewComboBox.getSelectedItem()).isSourceRoot);
+        WizardConstants.PROPERTY_BUILD_RESULT.put(wizardDescriptor, ((EditableComboBox)binaryField).getText().trim());
+        WizardConstants.PROPERTY_PREFERED_PROJECT_NAME.put(wizardDescriptor, new File(((EditableComboBox)binaryField).getText().trim()).getName());
+        WizardConstants.PROPERTY_SOURCE_FOLDER_PATH.put(wizardDescriptor,  sourcesField.getText().trim());
+        WizardConstants.PROPERTY_DEPENDENCY_KIND.put(wizardDescriptor, ((ProjectKindItem)dependeciesComboBox.getSelectedItem()).kind);
+        WizardConstants.PROPERTY_DEPENDENCIES.put(wizardDescriptor,  getDlls());
+        WizardConstants.PROPERTY_TRUE_SOURCE_ROOT.put(wizardDescriptor,  ((ProjectView)viewComboBox.getSelectedItem()).isSourceRoot);
         ((EditableComboBox)binaryField).setStorage(BINARY_FILE_KEY, NbPreferences.forModule(SelectBinaryPanelVisual.class));
         ((EditableComboBox)binaryField).store();
-        if (wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV) != null) {
+        if (WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizardDescriptor) != null) {
             // forbid tool collection selection
             // project creator detect real tool collection
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
+            WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN.put(wizardDescriptor, Boolean.TRUE);
         }
         // TODO should be inited
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH,  ""); // NOI18N
+        WizardConstants.PROPERTY_USER_MAKEFILE_PATH.put(wizardDescriptor,  ""); // NOI18N
     }
 
     private ArrayList<String> getDlls(){

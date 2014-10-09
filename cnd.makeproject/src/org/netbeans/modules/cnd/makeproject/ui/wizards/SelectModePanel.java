@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.MakeBasedProjectFactorySingleton;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
@@ -369,9 +368,9 @@ public class SelectModePanel extends javax.swing.JPanel {
     
     void read(WizardDescriptor wizardDescriptor) {
         initialized = false;
-        env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+        env = WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizardDescriptor);
         if (env != null) {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(env));
+            WizardConstants.PROPERTY_HOST_UID.put(wizardDescriptor, ExecutionEnvironmentFactory.toUniqueID(env));
         } else {
             env = ExecutionEnvironmentFactory.getLocal();
         }
@@ -383,11 +382,11 @@ public class SelectModePanel extends javax.swing.JPanel {
         refreshInstruction(false);
         firstTime = false;
         
-        String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
-        CompilerSet cs = (CompilerSet) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
-        boolean isDefaultCompilerSet = Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
+        String hostUID = WizardConstants.PROPERTY_HOST_UID.get(wizardDescriptor);
+        CompilerSet cs = WizardConstants.PROPERTY_TOOLCHAIN.get(wizardDescriptor);
+        boolean isDefaultCompilerSet = Boolean.TRUE.equals(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.get(wizardDescriptor));
         RP.post(new DevHostsInitializer(hostUID, cs, isDefaultCompilerSet, false,
-                (ToolsCacheManager) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER)) { // NOI18N
+                WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER.get(wizardDescriptor)) {
             @Override
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean isDefaultCompilerSet, boolean enabled) {
                 boolean enableHost = enabled;
@@ -409,13 +408,9 @@ public class SelectModePanel extends javax.swing.JPanel {
     }
 
     void store(WizardDescriptor wizardDescriptor) {
-        if (simpleMode.isSelected()) {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
-        } else {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
-        }
-        controller.getWizardStorage().setFullRemoteEnv((ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV));
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER, ((EditableComboBox)sourceFolder).getText().trim());
+        WizardConstants.PROPERTY_SIMPLE_MODE.put(wizardDescriptor, simpleMode.isSelected());
+        controller.getWizardStorage().setFullRemoteEnv(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizardDescriptor));
+        WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER.put(wizardDescriptor, ((EditableComboBox)sourceFolder).getText().trim());
         ((EditableComboBox)sourceFolder).setStorage(SOURCES_FILE_KEY, NbPreferences.forModule(SelectModePanel.class));
         ((EditableComboBox)sourceFolder).store();
         String folderPath = ((EditableComboBox)sourceFolder).getText().trim();
@@ -425,25 +420,25 @@ public class SelectModePanel extends javax.swing.JPanel {
         if (CndPathUtilities.isPathAbsolute(folderPath)) {
             String normalizeAbsolutePath = RemoteFileUtil.normalizeAbsolutePath(folderPath, env);
             FSPath path = new FSPath(fileSystem, normalizeAbsolutePath);
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, path);
+            WizardConstants.PROPERTY_PROJECT_FOLDER.put(wizardDescriptor, path);
         }
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
+        WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN.put(wizardDescriptor, Boolean.TRUE);
 
         ExecutionEnvironment ee = getSelectedExecutionEnvironment();
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(ee));
+        WizardConstants.PROPERTY_HOST_UID.put(wizardDescriptor, ExecutionEnvironmentFactory.toUniqueID(ee));
         controller.getWizardStorage().setExecutionEnvironment(ee);
 
         Object tc = toolchainComboBox.getSelectedItem();
         if (tc != null && tc instanceof ToolCollectionItem) {
             ToolCollectionItem item = (ToolCollectionItem) tc;
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_TOOLCHAIN, item.getCompilerSet());
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT, item.isDefaultCompilerSet());
+            WizardConstants.PROPERTY_TOOLCHAIN.put(wizardDescriptor, item.getCompilerSet());
+            WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.put(wizardDescriptor, item.isDefaultCompilerSet());
             controller.getWizardStorage().setCompilerSet(item.getCompilerSet());
             controller.getWizardStorage().setDefaultCompilerSet(item.isDefaultCompilerSet());
         }
         FileObject fo = controller.getWizardStorage().getSourcesFileObject();
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO, fo);
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR, (fo == null) ? null : fo.getPath()); 
+        WizardConstants.PROPERTY_NATIVE_PROJ_FO.put(wizardDescriptor, fo);
+        WizardConstants.PROPERTY_NATIVE_PROJ_DIR.put(wizardDescriptor, (fo == null) ? null : fo.getPath()); 
         initialized = false;
     }
 

@@ -43,34 +43,20 @@
 package org.netbeans.modules.cnd.discovery.project.cases;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.junit.Test;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.model.CsmModel;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
-import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -82,155 +68,47 @@ public class SimpleScriptTestCase extends MakeProjectTestBase {
         super("SimpleTestCase");
     }
 
-    @Override
-    protected boolean optimizeSimpleProjects() {
-        return false;
-    }
-
     @Test
     public void testSimple() throws Exception {
         File dataDir = getDataDir();
         String zip = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/discovery/project/DiscoveryTestApplication.tar.gz";
         assert new File(zip).exists() : "Not  found file "+zip;
-        performTestProject(zip, null, false, "/src");
+        performTestProject(zip, null, false, "");
     }
-    
+
     @Override
-    public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder) throws Exception {
-        Map<String, String> tools = findTools();
-        CompilerSet def = CompilerSetManager.get(getEE()).getDefaultCompilerSet();
-        if (useSunCompilers) {
-            if (def != null && def.getCompilerFlavor().isGnuCompiler()) {
-                for(CompilerSet set : CompilerSetManager.get(getEE()).getCompilerSets()){
-                    if (set.getCompilerFlavor().isSunStudioCompiler()) {
-                        CompilerSetManager.get(getEE()).setDefault(set);
-                        break;
-                    }
-                }
-            }
-        } else {
-            if (def != null && def.getCompilerFlavor().isSunStudioCompiler()) {
-                for(CompilerSet set : CompilerSetManager.get(getEE()).getCompilerSets()){
-                    if (set.getCompilerFlavor().isGnuCompiler()) {
-                        CompilerSetManager.get(getEE()).setDefault(set);
-                        break;
-                    }
-                }
-            }
-        }
-        def = CompilerSetManager.get(getEE()).getDefaultCompilerSet();
-        final boolean isSUN = def != null ? def.getCompilerFlavor().isSunStudioCompiler() : false;
-        if (tools == null) {
-            assertTrue("Please install required tools.", false);
-            System.err.println("Test did not run because required tools do not found");
-            return;
-        }
-        try {
-            String aPath = download(URL, additionalScripts, tools);
+    protected void setupWizard(WizardDescriptor wizard) {
+        final String path = WizardConstants.PROPERTY_NATIVE_PROJ_DIR.get(wizard);
+        final ExecutionEnvironment fs = WizardConstants.PROPERTY_SOURCE_HOST_ENV.get(wizard);
+        final FSPath fsPath = new FSPath(FileSystemProvider.getFileSystem(fs), RemoteFileUtil.normalizeAbsolutePath(path, fs));
+        WizardConstants.PROPERTY_RUN_CONFIGURE.put(wizard, false);
+        WizardConstants.PROPERTY_SIMPLE_MODE.put(wizard, Boolean.FALSE);
+        WizardConstants.PROPERTY_WORKING_DIR.put(wizard, path);
+        WizardConstants.PROPERTY_BUILD_COMMAND.put(wizard, "./build.bash");
+        WizardConstants.PROPERTY_CLEAN_COMMAND.put(wizard, "./clean.bash");
+        WizardConstants.PROPERTY_RUN_REBUILD.put(wizard, true);
+        WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER.put(wizard, MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT);
+        WizardConstants.PROPERTY_NAME.put(wizard, CndPathUtilities.getBaseName(path));
 
-            final File configure = detectConfigure(aPath+subFolder);
-            final String path = aPath;
-            if (Utilities.isWindows()){
-                // cygwin does not allow test discovery in real time, so disable tests on windows
-                //return;
+        final
+        List<SourceFolderInfo> list = new ArrayList<>();
+        list.add(new SourceFolderInfo() {
+
+            @Override
+            public FileObject getFileObject() {
+                return fsPath.getFileObject();
             }
 
-            WizardDescriptor wizard = new WizardDescriptor() {
-                @Override
-                public synchronized Object getProperty(String name) {
-                    if (WizardConstants.PROPERTY_SIMPLE_MODE.equals(name)) {
-                        return Boolean.FALSE;
-                    } else if (WizardConstants.PROPERTY_NATIVE_PROJ_DIR.equals(name)) {
-                        return path;
-                    } else if (WizardConstants.PROPERTY_NATIVE_PROJ_FO.equals(name)) {
-                        return CndFileUtils.toFileObject(path);
-                    } else if (WizardConstants.PROPERTY_PROJECT_FOLDER.equals(name)) {
-                        ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
-                        return new FSPath(FileSystemProvider.getFileSystem(ee), RemoteFileUtil.normalizeAbsolutePath(path, ee));
-                    } else if (WizardConstants.PROPERTY_TOOLCHAIN.equals(name)) {
-                        return CompilerSetManager.get(getEE()).getDefaultCompilerSet();
-                    } else if (WizardConstants.PROPERTY_HOST_UID.equals(name)) {
-                        return ExecutionEnvironmentFactory.toUniqueID(getEE());
-                    } else if (WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.equals(name)) {
-                        return configure.getAbsolutePath();
-                    } else if (WizardConstants.PROPERTY_NAME.equals(name)) {
-                        return new File(path).getName();
-                    } else if (WizardConstants.PROPERTY_WORKING_DIR.equals(name)) {
-                        return path;
-                    } else if (WizardConstants.PROPERTY_BUILD_COMMAND.equals(name)) {
-                        return "./build.bash";
-                    } else if (WizardConstants.PROPERTY_CLEAN_COMMAND.equals(name)) {
-                        return "./clean.bash";
-                    } else if (WizardConstants.PROPERTY_RUN_CONFIGURE.equals(name)) {
-                        return Boolean.TRUE;
-                    } else if (WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER.equals(name)) {
-                        return MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT;
-                    } else if (WizardConstants.PROPERTY_SOURCE_FOLDERS.equals(name)) {
-                        List<SourceFolderInfo> list = new ArrayList<>();
-                        list.add(new SourceFolderInfo() {
-
-                            @Override
-                            public FileObject getFileObject() {
-                                return CndFileUtils.toFileObject(path);
-                            }
-
-                            @Override
-                            public String getFolderName() {
-                                return CndFileUtils.toFileObject(path).getNameExt();
-                            }
-
-                            @Override
-                            public boolean isAddSubfoldersSelected() {
-                                return true;
-                            }
-                        });
-                        return list.iterator();
-                    } else if ("realFlags".equals(name)) {
-                        if (isSUN) {
-                            return "CC=cc CXX=CC CFLAGS=-g CXXFLAGS=-g";
-                        } else {
-                            return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\"";
-                        }
-                    } else if ("buildProject".equals(name)) {
-                        return Boolean.TRUE;
-                    }
-                    return null;
-                }
-            };
-
-            ImportProject importer = new ImportProject(wizard);
-            importer.setUILessMode();
-            importer.create();
-            OpenProjects.getDefault().open(new Project[]{importer.getProject()}, false);
-            int i = 0;
-            while(!importer.isFinished()) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                if (i > 10 && !OpenProjects.getDefault().isProjectOpen(importer.getProject())){
-                    break;
-                }
-                i++;
+            @Override
+            public String getFolderName() {
+                return CndPathUtilities.getBaseName(path);
             }
 
-            assertEquals("Failed configure", ImportProject.State.Successful, importer.getState().get(ImportProject.Step.Configure));
-            assertEquals("Failed build", ImportProject.State.Successful, importer.getState().get(ImportProject.Step.Make));
-            CsmModel model = CsmModelAccessor.getModel();
-            Project makeProject = importer.getProject();
-            assertTrue("Not found model", model != null);
-            assertTrue("Not found make project", makeProject != null);
-            NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
-            assertTrue("Not found native project", np != null);
-            CsmProject csmProject = model.getProject(np);
-            assertTrue("Not found model project", csmProject != null);
-            csmProject.waitParse();
-            perform(csmProject);
-            OpenProjects.getDefault().close(new Project[]{makeProject});
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            assertTrue(ex.getMessage(), false);
-        }
-    }
+            @Override
+            public boolean isAddSubfoldersSelected() {
+                return true;
+            }
+        });
+        WizardConstants.PROPERTY_SOURCE_FOLDERS.put(wizard, list.iterator());
+    }  
 }

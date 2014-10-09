@@ -125,7 +125,7 @@ public class NewRemoteProjectPerformer extends RemoteActionPerformer {
 
         wizard.putProperty(ProjectTemplatePanel.PRESELECT_TEMPLATE, null);
         
-        wizard.putProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV, env);
+        WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.put(wizard, env);
         
         FileObject folder = (FileObject) presenter.getValue(CommonProjectActions.EXISTING_SOURCES_FOLDER);
         if (folder != null) {
