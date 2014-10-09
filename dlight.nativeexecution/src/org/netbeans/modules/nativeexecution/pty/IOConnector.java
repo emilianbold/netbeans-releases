@@ -148,9 +148,12 @@ public final class IOConnector {
                 // duplication, which is more important...
 
                 String version = hinfo.getOS().getVersion();
-                if (version.contains("Solaris 11.1")) { // NOI18N
+                if (version.contains("Solaris 11.")) { // NOI18N
                     // update for IZ 236261: in Solaris 11+ this seems to work, so
                     // will not disable listener for it...
+
+                    // update: the same is valid for 11.2
+                    // assuming it was fixed in 11 - disabling this fix for 11.*
                 } else if (version.contains("OpenSolaris") || version.contains("Solaris 11")) { // NOI18N
                     return;
                 }
