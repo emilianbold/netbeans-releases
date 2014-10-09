@@ -152,7 +152,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.NodeJsProblemProvider_sources_none_title(),
                     Bundle.NodeJsProblemProvider_sources_none_description(ProjectUtils.getInformation(project).getDisplayName()),
-                    new CustomizerProblemResolver(project, WebClientProjectConstants.CUSTOMIZER_SOURCES_IDENT));
+                    new CustomizerProblemResolver(project, "NO_SOURCES", WebClientProjectConstants.CUSTOMIZER_SOURCES_IDENT)); // NOI18N
             currentProblems.add(problem);
         }
     }
@@ -193,7 +193,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         ProjectProblem problem = ProjectProblem.createError(
                 message,
                 message,
-                new CustomizerProblemResolver(project, validationResult));
+                new CustomizerProblemResolver(project, "INVALID_PREFERENCES", validationResult)); // NOI18N
         currentProblems.add(problem);
     }
 
@@ -247,7 +247,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         // pretend invalid node path
         ValidationResult result = new ValidationResult();
         ValidationUtils.validateNode(result, null);
-        return new CustomizerProblemResolver(project, result);
+        return new CustomizerProblemResolver(project, "INVALID_NODE", result); // NOI18N
     }
 
     void fireProblemsChanged() {

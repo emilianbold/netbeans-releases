@@ -52,21 +52,24 @@ import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 public class CustomizerProblemResolver implements ProjectProblemResolver {
 
     private final Project project;
+    private final String ident;
     private final ValidationResult result;
     private final String category;
 
 
-    CustomizerProblemResolver(Project project, ValidationResult result) {
-        this(project, result, null);
+    CustomizerProblemResolver(Project project, String ident, ValidationResult result) {
+        this(project, ident, result, null);
     }
 
-    CustomizerProblemResolver(Project project, String category) {
-        this(project, null, category);
+    CustomizerProblemResolver(Project project, String ident, String category) {
+        this(project, ident, null, category);
     }
 
-    private CustomizerProblemResolver(Project project, ValidationResult result, String category) {
+    private CustomizerProblemResolver(Project project, String ident, ValidationResult result, String category) {
         assert project != null;
+        assert ident != null;
         this.project = project;
+        this.ident = ident;
         this.result = result;
         this.category = category;
     }
@@ -86,8 +89,7 @@ public class CustomizerProblemResolver implements ProjectProblemResolver {
     public int hashCode() {
         int hash = 5;
         hash = 83 * hash + Objects.hashCode(this.project);
-        hash = 83 * hash + Objects.hashCode(this.result);
-        hash = 83 * hash + Objects.hashCode(this.category);
+        hash = 83 * hash + Objects.hashCode(this.ident);
         return hash;
     }
 
@@ -103,10 +105,7 @@ public class CustomizerProblemResolver implements ProjectProblemResolver {
         if (!Objects.equals(this.project, other.project)) {
             return false;
         }
-        if (!Objects.equals(this.result, other.result)) {
-            return false;
-        }
-        if (!Objects.equals(this.category, other.category)) {
+        if (!Objects.equals(this.ident, other.ident)) {
             return false;
         }
         return true;
