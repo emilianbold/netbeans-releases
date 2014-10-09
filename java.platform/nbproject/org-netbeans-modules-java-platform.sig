@@ -52,10 +52,6 @@ meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
 hfds cachedPlatforms,instance,lastProviders,pListener,pcs,providers,providersValid
 
-CLSS public final org.netbeans.api.java.platform.PlatformsCustomizer
-meth public static boolean showCustomizer(org.netbeans.api.java.platform.JavaPlatform)
-supr java.lang.Object
-
 CLSS public org.netbeans.api.java.platform.Profile
 cons public init(java.lang.String,org.openide.modules.SpecificationVersion)
 meth public boolean equals(java.lang.Object)
