@@ -341,6 +341,10 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String DICTIONARY_ELEMENT = "element"; // NOI18N
     protected final static String DICTIONARY_ELEMENT_ATR_ID = "flagsID"; // NOI18N
     protected final static String DICTIONARY_ELEMENT_ATR_VALUE = "commonFlags"; // NOI18N
+    //PreBuild
+    protected final static String PRE_BUILD_ELEMENT = "preBuild"; // NOI18N
+    protected final static String PRE_BUILD_WORKING_DIR_ELEMENT = "preBuildCommandWorkingDir"; // NOI18N
+    protected final static String PRE_BUILD_COMMAND_ELEMENT = "preBuildCommand"; // NOI18N
     // Compile
     protected static final String COMPILE_ID = "compile"; // NOI18N
     protected final static String COMPILE_DIR_ELEMENT = "compiledir"; // NOI18N
@@ -719,6 +723,10 @@ public abstract class CommonConfigurationXMLCodec
         //if (makeConfiguration.getLinkerConfiguration() != null)
         //    writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
         xes.elementClose(MAKETOOL_ELEMENT);
+        xes.elementOpen(PRE_BUILD_ELEMENT);
+        xes.element(PRE_BUILD_WORKING_DIR_ELEMENT, makeConfiguration.getPreBuildConfiguration().getPreBuildCommandWorkingDir().getValue());
+        xes.element(PRE_BUILD_COMMAND_ELEMENT, makeConfiguration.getPreBuildConfiguration().getPreBuildCommand().getValue());
+        xes.elementClose(PRE_BUILD_ELEMENT);
         writeRequiredProjects(xes, makeConfiguration.getRequiredProjectsConfiguration());
         xes.elementClose(MAKEFILE_TYPE_ELEMENT);
     }

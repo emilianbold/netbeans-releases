@@ -45,6 +45,7 @@ package org.netbeans.modules.php.dbgp.breakpoints;
 
 import java.util.Collections;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -158,6 +159,8 @@ public class LineBreakpoint extends AbstractBreakpoint {
             result = true;
             isValidFuture.cancel(true);
             LOGGER.log(Level.FINE, null, ex);
+        } catch (CancellationException ex) {
+            //noop
         }
         return result;
     }

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -49,7 +50,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -79,7 +79,7 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
 
     @Override
     public boolean isFinishPanel() {
-        return  Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE));
+        return  Boolean.TRUE.equals(WizardConstants.PROPERTY_SIMPLE_MODE.get(wizardDescriptor));
     }
 
     @Override
@@ -87,7 +87,7 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
         String[] res;
         Object o = component.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
         String[] names = (String[]) o;
-        if (Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE))){
+        if (Boolean.TRUE.equals(WizardConstants.PROPERTY_SIMPLE_MODE.get(wizardDescriptor))){
             res = new String[]{names[0]};
         } else {
             res = new String[]{names[0], "..."}; // NOI18N

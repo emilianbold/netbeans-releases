@@ -233,6 +233,10 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
     private static final class ClientSideProjectNode extends AbstractNode implements ChangeListener, PropertyChangeListener {
 
         @StaticResource
+        private static final String HTML5_BADGE_ICON = "org/netbeans/modules/web/clientproject/ui/resources/html5-badge.png"; // NOI18N
+        @StaticResource
+        private static final String JS_LIBRARY_BADGE_ICON = "org/netbeans/modules/web/clientproject/ui/resources/js-library-badge.png"; // NOI18N
+        @StaticResource
         private static final String PLACEHOLDER_BADGE_ICON = "org/netbeans/modules/web/clientproject/ui/resources/placeholder-badge.png"; // NOI18N
         private static final URL PLACEHOLDER_BADGE_URL = ClientSideProjectNode.class.getResource(PLACEHOLDER_BADGE_ICON);
         private static final String ICON_TOOLTIP = "<img src=\"%s\">&nbsp;%s"; // NOI18N
@@ -340,21 +344,27 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         private Image annotateImage(Image image) {
-            Image badged = image;
-            boolean first = true;
+            Image icon = image;
+            boolean badged = false;
+            // platform providers
             for (PlatformProvider provider : project.getPlatformProviders()) {
                 BadgeIcon badgeIcon = provider.getBadgeIcon();
                 if (badgeIcon != null) {
-                    badged = ImageUtilities.addToolTipToImage(badged, String.format(ICON_TOOLTIP, badgeIcon.getUrl(), provider.getDisplayName()));
-                    if (first) {
-                        badged = ImageUtilities.mergeImages(badged, badgeIcon.getImage(), 15, 0);
-                        first = false;
+                    icon = ImageUtilities.addToolTipToImage(icon, String.format(ICON_TOOLTIP, badgeIcon.getUrl(), provider.getDisplayName()));
+                    if (!badged) {
+                        icon = ImageUtilities.mergeImages(icon, badgeIcon.getImage(), 0, 0);
+                        badged = true;
                     }
                 } else {
-                    badged = ImageUtilities.addToolTipToImage(badged, String.format(ICON_TOOLTIP, PLACEHOLDER_BADGE_URL, provider.getDisplayName()));
+                    icon = ImageUtilities.addToolTipToImage(icon, String.format(ICON_TOOLTIP, PLACEHOLDER_BADGE_URL, provider.getDisplayName()));
                 }
             }
-            return badged;
+            // project type, only if no platform
+            if (!badged) {
+                Image projectBadge = ImageUtilities.loadImage(project.isJsLibrary() ? JS_LIBRARY_BADGE_ICON : HTML5_BADGE_ICON);
+                icon = ImageUtilities.mergeImages(icon, projectBadge, 0, 0);
+            }
+            return icon;
         }
 
         @Override

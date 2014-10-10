@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.knockout.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -78,11 +79,11 @@ public class KnockoutApplyBindingsInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public void intercept(String functionName, JsObject globalObject, DeclarationScope scope,
+    public Collection<TypeUsage> intercept(String functionName, JsObject globalObject, DeclarationScope scope,
             ModelElementFactory factory, Collection<FunctionArgument> args) {
 
         if (args.size() < 1 || args.size() > 2) {
-            return;
+            return Collections.emptyList();
         }
 
         Iterator<FunctionArgument> iterator = args.iterator();
@@ -129,6 +130,7 @@ public class KnockoutApplyBindingsInterceptor implements FunctionInterceptor {
                 }
             }
         }
+        return Collections.emptyList();
     }
 
     private static JsObject getReference(DeclarationScope scope,

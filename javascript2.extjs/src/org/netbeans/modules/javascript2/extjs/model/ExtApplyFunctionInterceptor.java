@@ -42,12 +42,14 @@
 package org.netbeans.modules.javascript2.extjs.model;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
@@ -65,7 +67,7 @@ public class ExtApplyFunctionInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public void intercept(String functionName, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(String functionName, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (args.size() == 2) {
             Iterator<FunctionArgument> iterator = args.iterator();
             FunctionArgument arg1 = iterator.next();
@@ -112,5 +114,6 @@ public class ExtApplyFunctionInterceptor implements FunctionInterceptor {
                 }
             }
         }
+        return Collections.emptyList();
     }
 }

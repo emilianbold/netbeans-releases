@@ -138,6 +138,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     
     // Configurations
     private IntConfiguration configurationType;
+    private PreBuildConfiguration preBuildConfiguration;
     private MakefileConfiguration makefileConfiguration;
     private CompileConfiguration compileConfiguration;
     private CompilerSet2Configuration compilerSet;
@@ -223,6 +224,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         cppRequired = new LanguageBooleanConfiguration();
         fortranRequired = new LanguageBooleanConfiguration();
         assemblerRequired = new LanguageBooleanConfiguration();
+        preBuildConfiguration = new PreBuildConfiguration(this);
         makefileConfiguration = new MakefileConfiguration(this);
         compileConfiguration = new CompileConfiguration(this);
         if (isMakefileConfiguration()) {
@@ -282,6 +284,15 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         return new MakeConfiguration(baseDir, 
                 name, configurationType, customizerID, hostID, hostCS, defaultToolCollection);
     }        
+
+    public void setPreBuildConfiguration(PreBuildConfiguration makefileConfiguration) {
+        this.preBuildConfiguration = makefileConfiguration;
+        this.preBuildConfiguration.setMakeConfiguration(this);
+    }
+
+    public PreBuildConfiguration getPreBuildConfiguration() {
+        return preBuildConfiguration;
+    }
 
     public void setMakefileConfiguration(MakefileConfiguration makefileConfiguration) {
         this.makefileConfiguration = makefileConfiguration;
@@ -601,6 +612,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         getDependencyChecking().assign(makeConf.getDependencyChecking());
         getRebuildPropChanged().assign(makeConf.getRebuildPropChanged());
 
+        getPreBuildConfiguration().assign(makeConf.getPreBuildConfiguration());
         getMakefileConfiguration().assign(makeConf.getMakefileConfiguration());
         getCompileConfiguration().assign(makeConf.getCompileConfiguration());
         getCCompilerConfiguration().assign(makeConf.getCCompilerConfiguration());
@@ -689,6 +701,9 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
             return; // IZ 172628 (basedir is a valid directory but doesn't contain a project!)
         }
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (!pdp.gotDescriptor()) {
+            return;
+        }
         MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
 
         Folder root = makeConfigurationDescriptor.getLogicalFolders();
@@ -748,6 +763,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         clone.setCppRequired(getCppRequired().clone());
         clone.setFortranRequired(getFortranRequired().clone());
         clone.setAssemblerRequired(getAssemblerRequired().clone());
+        clone.setPreBuildConfiguration(getPreBuildConfiguration().clone());
         clone.setMakefileConfiguration(getMakefileConfiguration().clone());
         clone.setCompileConfiguration(getCompileConfiguration().clone());
         clone.setDependencyChecking(getDependencyChecking().clone());

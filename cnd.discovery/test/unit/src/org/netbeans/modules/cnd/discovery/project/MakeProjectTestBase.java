@@ -73,20 +73,23 @@ import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
+import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
+import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelBasedTestCase;
 import org.netbeans.modules.cnd.repository.support.RepositoryTestUtils;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -119,14 +122,6 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
         //System.setProperty("org.netbeans.modules.cnd.apt.level","WARNING"); // NOI18N
         //Logger.getLogger("org.netbeans.modules.cnd.apt").setLevel(Level.WARNING);
         //MockServices.setServices(MakeProjectType.class);
-    }
-
-    protected boolean optimizeNativeExecutions() {
-        return false;
-    }
-
-    protected boolean optimizeSimpleProjects() {
-        return false;
     }
 
     @Override
@@ -206,6 +201,10 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
     protected ExecutionEnvironment getEE(){
         return ExecutionEnvironmentFactory.getLocal();
     }
+    
+    protected void setupWizard(WizardDescriptor wizard) {
+        
+    }
 
     public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder) throws Exception {
         Map<String, String> tools = findTools();
@@ -246,115 +245,12 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
             return;
         }
         try {
-            String aPath = download(URL, additionalScripts, tools)+subFolder;
-
-            final File configure = detectConfigure(aPath);
-            final String path;
-            if (configure.exists()) {
-                path = configure.getParent();
-            } else {
-                path = aPath;
-            }
-            final File makeFile = new File(path, "Makefile");
-            if (!configure.exists()) {
-                if (!makeFile.exists()){
-                    assertTrue("Cannot find configure or Makefile in folder "+path, false);
-                }
-            }
-            if (Utilities.isWindows()){
-                // cygwin does not allow test discovery in real time, so disable tests on windows
-                //return;
-            }
-
-            // For simple configure-make projects store logs for reuse
-            boolean generateLogs = false;
-            if (optimizeSimpleProjects() && "configure".equals(configure.getName())) {
-                generateLogs = !hasLogs(new File(path));
-            }
-            
-            WizardDescriptor wizard = new WizardDescriptor() {
-                @Override
-                public synchronized Object getProperty(String name) {
-                    if (WizardConstants.PROPERTY_SIMPLE_MODE.equals(name)) {
-                        return Boolean.TRUE;
-                    } else if (WizardConstants.PROPERTY_NATIVE_PROJ_DIR.equals(name)) {
-                        return path;
-                    } else if (WizardConstants.PROPERTY_NATIVE_PROJ_FO.equals(name)) {
-                        return CndFileUtils.toFileObject(path);
-                    } else if (WizardConstants.PROPERTY_PROJECT_FOLDER.equals(name)) {
-                        ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
-                        return new FSPath(FileSystemProvider.getFileSystem(ee), RemoteFileUtil.normalizeAbsolutePath(path, ee));
-                    } else if (WizardConstants.PROPERTY_TOOLCHAIN.equals(name)) {
-                        return CompilerSetManager.get(ee).getDefaultCompilerSet();
-                    } else if (WizardConstants.PROPERTY_HOST_UID.equals(name)) {
-                        return ExecutionEnvironmentFactory.toUniqueID(ee);
-                    } else if (WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.equals(name)) {
-                        if (optimizeNativeExecutions() && makeFile.exists()){// && !configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
-                            // optimization on developer computer:
-                            // run configure only once
-                            return null;
-                        } else {
-                            return configure.getAbsolutePath();
-                        }
-                    } else if ("realFlags".equals(name)) {
-                        if (path.indexOf("cmake-")>0 && subFolder.isEmpty()) {
-                            if (isSUN) {
-                                return "CMAKE_C_COMPILER=cc CMAKE_CXX_COMPILER=CC CFLAGS=-g CXXFLAGS=-g CMAKE_BUILD_TYPE=Debug CMAKE_CXX_FLAGS_DEBUG=-g CMAKE_C_FLAGS_DEBUG=-g";
-                            } else {
-                                return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\" CMAKE_BUILD_TYPE=Debug CMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" CMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\"";
-                            }
-                        } else {
-                            if (configure.getAbsolutePath().endsWith("configure")) {
-                                if (isSUN) {
-                                    return "CC=cc CXX=CC CFLAGS=-g CXXFLAGS=-g";
-                                } else {
-                                    return "CFLAGS=\"-g3 -gdwarf-2\" CXXFLAGS=\"-g3 -gdwarf-2\"";
-                                }
-                            } else if (configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
-                                if (isSUN) {
-                                    return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=cc -DCMAKE_CXX_COMPILER=CC -DCMAKE_CXX_FLAGS_DEBUG=-g -DCMAKE_C_FLAGS_DEBUG=-g -DCMAKE_EXPORT_COMPILE_COMMANDS=ON";
-                                } else {
-                                    return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON";
-                                }
-                            } else if (configure.getAbsolutePath().endsWith(".pro")) {
-                                if (isSUN) {
-                                    return "-spec solaris-cc QMAKE_CC=cc QMAKE_CXX=CC QMAKE_CFLAGS=-g QMAKE_CXXFLAGS=-g";
-                                } else {
-                                    if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                                        return "-spec macx-g++ QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
-                                    } else {
-                                        if (Utilities.isWindows()) {
-                                            for (CompilerSet set : CompilerSetManager.get(ee).getCompilerSets()){
-                                                if (set.getCompilerFlavor().isMinGWCompiler()) {
-                                                    CompilerSetManager.get(ee).setDefault(set);
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
-                                    }
-                                }
-                            }
-                        }
-                    } else if ("buildProject".equals(name)) {
-                        if (optimizeNativeExecutions() && makeFile.exists() && findObjectFiles(path)) {
-                            // optimization on developer computer:
-                            // make only once
-                            return Boolean.FALSE;
-                        } else {
-                            return Boolean.TRUE;
-                        }
-                    }
-                    return null;
-                }
-            };
-
+            String path = download(URL, additionalScripts, tools)+subFolder;
+            MyWizardDescriptor wizard = new MyWizardDescriptor(path, ExecutionEnvironmentFactory.getLocal(), ee, def);
+            wizard.init();
+            setupWizard(wizard);
             ImportProject importer = new ImportProject(wizard);
             importer.setUILessMode();
-            if (generateLogs) {
-                importer.setConfigureLog(new File(path, "configure" + LOG_POSTFIX));
-                importer.setMakeLog(new File(path, "Makefile" + LOG_POSTFIX));
-            }
             importer.create();
             OpenProjects.getDefault().open(new Project[]{importer.getProject()}, false);
             int i = 0;
@@ -369,13 +265,10 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
                 }
                 i++;
             }
-
-            if (generateLogs) {
-                hackConfigure(configure);
-                hackMakefile(makeFile);
+            final ImportProject.State configureStep = importer.getState().get(ImportProject.Step.Configure);
+            if (configureStep != null) {
+                assertEquals("Failed configure", ImportProject.State.Successful, configureStep);
             }
-
-            assertEquals("Failed configure", ImportProject.State.Successful, importer.getState().get(ImportProject.Step.Configure));
             assertEquals("Failed build", ImportProject.State.Successful, importer.getState().get(ImportProject.Step.Make));
             CsmModel model = CsmModelAccessor.getModel();
             Project makeProject = importer.getProject();
@@ -524,11 +417,8 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
         if (!fileCreatedFolder.exists()){
             fileCreatedFolder.mkdirs();
         } else {
-            if (!optimizeNativeExecutions() &&
-                    (!optimizeSimpleProjects() || !hasLogs(fileCreatedFolder))) {
-                execute(tools, "rm", dataPath, "-rf", packageName);
-                fileCreatedFolder.mkdirs();
-            }
+            execute(tools, "rm", dataPath, "-rf", packageName);
+            fileCreatedFolder.mkdirs();
         }
         if (fileCreatedFolder.list().length == 0){
             if (!new File(fileDataPath, tarName).exists()) {
@@ -689,6 +579,58 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
             out.write("\tcat \"" + file.getAbsolutePath() + LOG_POSTFIX + "\"");
             out.close();
         } catch (IOException e) {
+        }
+    }
+    
+    private static final class MyWizardDescriptor extends WizardDescriptor {
+        private final String path;
+        private final ExecutionEnvironment fs;
+        private final ExecutionEnvironment ee;
+        private final CompilerSet def;
+        private MyWizardDescriptor(String path, ExecutionEnvironment fs, ExecutionEnvironment ee, CompilerSet def) {
+            this.path = path;
+            this.fs = fs;
+            this.ee = ee; //ExecutionEnvironmentFactory.getLocal();
+            this.def = def; //CompilerSetManager.get(ee).getDefaultCompilerSet();
+        }
+        
+        private void init() {
+            WizardConstants.PROPERTY_SIMPLE_MODE.put(this, Boolean.TRUE);
+            WizardConstants.PROPERTY_NATIVE_PROJ_DIR.put(this, path);
+            final FSPath fsPath = new FSPath(FileSystemProvider.getFileSystem(fs), RemoteFileUtil.normalizeAbsolutePath(path, fs));
+            WizardConstants.PROPERTY_NATIVE_PROJ_FO.put(this, fsPath.getFileObject());
+            WizardConstants.PROPERTY_PROJECT_FOLDER.put(this, fsPath);
+            WizardConstants.PROPERTY_TOOLCHAIN.put(this, def);
+
+            WizardConstants.PROPERTY_HOST_UID.put(this, ExecutionEnvironmentFactory.toUniqueID(ee));
+            WizardConstants.PROPERTY_SOURCE_HOST_ENV.put(this, fs);
+            WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.put(this, true);
+            PreBuildSupport.PreBuildArtifact scriptArtifact = PreBuildSupport.findArtifactInFolder(fsPath.getFileObject(), fs, def);
+            BuildSupport.BuildFile makeArtifact = null;
+            if (scriptArtifact != null) {
+                WizardConstants.PROPERTY_RUN_CONFIGURE.put(this, Boolean.TRUE);
+                FileObject script = scriptArtifact.getScript();
+                WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER.put(this, script.getParent().getPath());
+                WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.put(this, script.getPath());
+                String args = scriptArtifact.getArguments(ee, def, "");
+                WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS.put(this, args);
+                String command = scriptArtifact.getCommandLine(args, script.getParent().getPath());
+                WizardConstants.PROPERTY_CONFIGURE_COMMAND.put(this, command);
+                
+                String makefile = script.getParent().getPath()+"/Makefile"; //NOI18N
+                makefile = RemoteFileUtil.normalizeAbsolutePath(makefile, fs);
+                makeArtifact = BuildSupport.scriptToBuildFile(makefile);
+            }
+            if (makeArtifact == null) {
+                makeArtifact = BuildSupport.findBuildFileInFolder(fsPath.getFileObject(), fs, def);
+            }
+            if (makeArtifact != null) {
+                WizardConstants.PROPERTY_RUN_REBUILD.put(this, Boolean.TRUE);
+                WizardConstants.PROPERTY_USER_MAKEFILE_PATH.put(this, makeArtifact.getFile());
+                WizardConstants.PROPERTY_WORKING_DIR.put(this, CndPathUtilities.getDirName(makeArtifact.getFile()));
+                WizardConstants.PROPERTY_BUILD_COMMAND.put(this, makeArtifact.getBuildCommandLine(null, CndPathUtilities.getDirName(makeArtifact.getFile())));
+                WizardConstants.PROPERTY_CLEAN_COMMAND.put(this, makeArtifact.getCleanCommandLine(null, CndPathUtilities.getDirName(makeArtifact.getFile())));
+            }
         }
     }
 }

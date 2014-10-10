@@ -64,11 +64,6 @@ public class RemotePkgConfigTestCase extends MakeProjectTestBase {
     }
 
     @Override
-    protected boolean optimizeSimpleProjects() {
-        return false;
-    }
-
-    @Override
     protected void setUp() throws Exception {
         super.setUp();
         env = NativeExecutionTestSupport.getTestExecutionEnvironment("intel-S2");

@@ -1,7 +1,7 @@
 Name: Jackson Core
 Version: 1.7.4
 License: Apache-2.0
-OSR: XXX
+OSR: 6533
 Origin: http://jackson.codehaus.org/
 Description: Jackson Java JSON-processor - streaming JSON parser and generator interfaces and implementations
 

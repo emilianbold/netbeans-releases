@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -68,21 +69,18 @@ import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 
@@ -247,9 +245,9 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
                 TemplateWizard wiz = new TemplateWizard();
                 wiz.setTemplate(templateDO);
                 projectCreator.initialize(wiz);
-                wiz.putProperty(WizardConstants.PROPERTY_NAME, destdir.getName());
+                WizardConstants.PROPERTY_NAME.put(wiz, destdir.getName());
                 ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
-                wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, 
+                WizardConstants.PROPERTY_PROJECT_FOLDER.put(wiz, 
                     new FSPath(FileSystemProvider.getFileSystem(ee), RemoteFileUtil.normalizeAbsolutePath(destdir.getAbsolutePath(), ee)));
                 try {
                     setRef.set(projectCreator.instantiate());

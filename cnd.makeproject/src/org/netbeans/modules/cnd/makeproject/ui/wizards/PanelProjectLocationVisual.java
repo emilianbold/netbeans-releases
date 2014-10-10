@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.io.File;
@@ -75,7 +76,6 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
@@ -611,13 +611,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             if (CndPathUtilities.isPathAbsolute(folder)) {
                 String normalizeAbsolutePath = RemoteFileUtil.normalizeAbsolutePath(folder, env);
                 FSPath path = new FSPath(fileSystem, normalizeAbsolutePath);
-                d.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, path);
+                WizardConstants.PROPERTY_PROJECT_FOLDER.put(d, path);
             }
         } else {
-            d.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER_STRING_VALUE, projectLocationTextField.getText().trim());
+            WizardConstants.PROPERTY_PROJECT_FOLDER_STRING_VALUE.put(d, projectLocationTextField.getText().trim());
         }
-        d.putProperty(WizardConstants.PROPERTY_NAME, projectName);
-        d.putProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME, makefileTextField.getText());
+        WizardConstants.PROPERTY_NAME.put(d, projectName);
+        WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME.put(d, makefileTextField.getText());
         if (valid) {
             if (CndPathUtilities.isPathAbsolute(projectLocationTextField.getText())) {
                 if (env.isLocal()) {
@@ -631,7 +631,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             }
         }
 
-        d.putProperty(WizardConstants.MAIN_CLASS, null); // NOI18N
+        WizardConstants.MAIN_CLASS.put(d, null);
 
         MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
         MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
@@ -667,23 +667,23 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         Object obj = hostComboBox.getSelectedItem();
         if (obj != null && obj instanceof ServerRecord) {
             ServerRecord sr = (ServerRecord) obj;
-            d.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(sr.getExecutionEnvironment()));
+            WizardConstants.PROPERTY_HOST_UID.put(d, ExecutionEnvironmentFactory.toUniqueID(sr.getExecutionEnvironment()));
         }
         Object selectedItem = toolchainComboBox.getSelectedItem();
         if (selectedItem instanceof ToolCollectionItem) {
             ToolCollectionItem item = (ToolCollectionItem) selectedItem;
-            d.putProperty(WizardConstants.PROPERTY_TOOLCHAIN, item.getCompilerSet());
-            d.putProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT, item.isDefaultCompilerSet());
+            WizardConstants.PROPERTY_TOOLCHAIN.put(d, item.getCompilerSet());
+            WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.put(d, item.isDefaultCompilerSet());
         }
     }
 
     @Override
     void read(final WizardDescriptor settings) {
         initialized.set(false);
-        env = (ExecutionEnvironment) settings.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
-        final boolean enabledHost;
+        env = WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(settings);
+        boolean enabledHost;
         if (env != null) {
-            settings.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(env));
+            WizardConstants.PROPERTY_HOST_UID.put(settings, ExecutionEnvironmentFactory.toUniqueID(env));
             enabledHost = false;
         } else {
             env = ExecutionEnvironmentFactory.getLocal();
@@ -693,11 +693,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         fileSystem = FileSystemProvider.getFileSystem(env);
         fsFileSeparator = FileSystemProvider.getFileSeparatorChar(fileSystem);
 
-        FSPath projectLocationFSPath = (FSPath) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER); // File - SIC! for projects always local
+        FSPath projectLocationFSPath = WizardConstants.PROPERTY_PROJECT_FOLDER.get(settings); // File - SIC! for projects always local
         String projectName = null;
         String projectLocation;
         if (projectLocationFSPath == null) {
-            String projectLocationStringValue = (String)settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER_STRING_VALUE);
+            String projectLocationStringValue = WizardConstants.PROPERTY_PROJECT_FOLDER_STRING_VALUE.get(settings);
             if (projectLocationStringValue != null && !projectLocationStringValue.trim().isEmpty()) {
                 projectLocation = projectLocationStringValue;
             } else {
@@ -722,33 +722,37 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             projectNameTextField.setText(projectNameText);
             projectNameTextField.selectAll();
         }
-        String hostUID = (String) settings.getProperty(WizardConstants.PROPERTY_HOST_UID);
-        CompilerSet cs = (CompilerSet) settings.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
-        boolean isDefaultCompilerSet = Boolean.TRUE.equals(settings.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
-        Boolean readOnlyToolchain = (Boolean) settings.getProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN);
+        String hostUID = WizardConstants.PROPERTY_HOST_UID.get(settings);
+        CompilerSet cs = WizardConstants.PROPERTY_TOOLCHAIN.get(settings);
+        boolean isDefaultCompilerSet = Boolean.TRUE.equals(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.get(settings));
+        Boolean readOnlyToolchain = WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN.get(settings);
+        if (Boolean.TRUE.equals(readOnlyToolchain)) {
+            enabledHost = false;
+        }
+        final boolean enabledHostFinal = enabledHost;
         RP.post(new DevHostsInitializer(hostUID, cs, isDefaultCompilerSet,
-                readOnlyToolchain, (ToolsCacheManager) settings.getProperty(WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER)) {
+                readOnlyToolchain, WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER.get(settings)) {
             @Override
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean isDefaultCompilerSet, boolean enabled) {
-                updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, isDefaultCompilerSet, enabledHost, enabled);
+                updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, isDefaultCompilerSet, enabledHostFinal, enabled);
                 initialized.set(true);
                 controller.fireChangeEvent(); // Notify that the panel changed
             }
         });
-        String prefferedName = (String) settings.getProperty(WizardConstants.PROPERTY_PREFERED_PROJECT_NAME); //NOI18N
+        String prefferedName = WizardConstants.PROPERTY_PREFERED_PROJECT_NAME.get(settings); //NOI18N
         if (prefferedName != null && prefferedName.length() > 0) {
             name = prefferedName;
         }
         String project = projectNameText;
         if (project == null) {
             if (name == null) {
-                String workingDir = (String) settings.getProperty(WizardConstants.PROPERTY_WORKING_DIR); //NOI18N
+                String workingDir = WizardConstants.PROPERTY_WORKING_DIR.get(settings);
                 if (workingDir != null && workingDir.length() > 0
                         && (templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME)
                         || templateName.equals(NewMakeProjectWizardIterator.FULL_REMOTE_PROJECT_NAME))) {
                     name = CndPathUtilities.getBaseName(workingDir);
                 } else {
-                    String sourcesPath = (String) settings.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); // NOI18N
+                    String sourcesPath = WizardConstants.PROPERTY_SOURCE_FOLDER_PATH.get(settings);
                     if (sourcesPath != null && sourcesPath.length() > 0) {
                         name = CndPathUtilities.getBaseName(sourcesPath);
                     }

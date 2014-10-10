@@ -59,6 +59,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.js.vars.DebuggerSupport;
+import org.netbeans.modules.javascript2.debug.sources.SourceFilesCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -70,8 +71,6 @@ import org.openide.util.Exceptions;
 public final class Source {
     
     private static final Logger LOG = Logger.getLogger(Source.class.getName());
-    
-    public static final String URL_PROTOCOL = "js-scripts"; // NOI18N
     
     private static final String SOURCE_CLASS = "jdk.nashorn.internal.runtime.Source";   // NOI18N
     private static final String SOURCE_FIELD = "source";    // NOI18N
@@ -103,19 +102,11 @@ public final class Source {
         int lineShift = 0;
         if (url == null || !("file".equalsIgnoreCase(url.getProtocol()) ||
                              "jar".equalsIgnoreCase(url.getProtocol()))) {
-            try {
-                url = SourceFilesCache.getDefault().getSourceFile(name, hash, content);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            url = SourceFilesCache.getDefault().getSourceFile(name, hash, content);
         } else if (compareContent) {
             lineShift = getContentLineShift(url, content);
             if (lineShift > 0) {
-                try {
-                    rURL = SourceFilesCache.getDefault().getSourceFile(name, hash, content);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                rURL = SourceFilesCache.getDefault().getSourceFile(name, hash, content);
             } else {
                 lineShift = 0;
             }

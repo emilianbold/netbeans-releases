@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MutableObject;
 
 /**
@@ -214,11 +215,13 @@ public class CsmOffsetResolver {
             }
         } else if (CsmKindUtilities.isVariable(lastObj)) {
             CsmType type = ((CsmVariable)lastObj).getType();
-            // Function pointer type contains the whole declaration (except initilizer)
-            // and will be handled later.
-            if (!CsmKindUtilities.isFunctionPointerType(type) && !CsmOffsetUtilities.sameOffsets(lastObj, type) && CsmOffsetUtilities.isInObject(type, offset)) {
-                context.setLastObject(type);
-                last = type;
+            if (!CsmOffsetUtilities.sameOffsets(lastObj, type) && CsmOffsetUtilities.isInObject(type, offset)) {
+                // Function pointer type contains the whole declaration (except initilizer)
+                // and will be handled later.
+                if (!CsmKindUtilities.isFunctionPointerType(type) && !CsmUtilities.isAutoType(type)) {
+                    context.setLastObject(type);
+                    last = type;
+                }
             }
             MutableObject<CsmObject> innerObj = new MutableObject<CsmObject>();
             if (findInExpression(((CsmVariable)lastObj).getInitialValue(), lastObj, offset, context, innerObj)) {

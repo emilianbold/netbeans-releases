@@ -129,23 +129,22 @@ public class ODCSRepository implements PropertyChangeListener {
         this(createInfo(project.getDisplayName(), project.getFeatureLocation(), project)); // use name as id - can'npe be changed anyway
         assert project != null;
         this.project = project;
-        
-        TeamAccessor teamAccessor = TeamAccessorUtils.getTeamAccessor(project.getFeatureLocation());
-        assert teamAccessor != null;
-        if(teamAccessor != null) {
-            URL webLocation = project.getWebLocation();
-            assert webLocation != null;
-            if(webLocation != null) {
-                teamAccessor.addPropertyChangeListener(this, webLocation.toString());
+
+        String projectHost = project.getHost();
+        if (projectHost != null) {
+            TeamAccessor teamAccessor = TeamAccessorUtils.getTeamAccessor(projectHost);
+            if (teamAccessor != null) {
+                teamAccessor.addPropertyChangeListener(this, projectHost);
             } else {
-                ODCS.LOG.log(Level.WARNING, "no WebLocation available for {0}", project.getName());
+                ODCS.LOG.log(Level.WARNING, "No TeamAccessor available for {0} project from {1}.", new Object[] {project.getName(), project.getWebLocation()}); // NOI18N
+                assert false : "Missing server entry"; // NOI18N
             }
         } else {
-            ODCS.LOG.log(Level.WARNING, "no TeamAccessor available for {0} {1}", new Object[]{project.getName(), project.getWebLocation()});
+            ODCS.LOG.log(Level.WARNING, "Project {0} from unknown host.", project.getName()); // NOI18N
+            assert false : "Project with unknown host"; // NOI18N
         }
-        
     }
-    
+
     public ODCSRepository() {
         this.icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.support = new PropertyChangeSupport(this);

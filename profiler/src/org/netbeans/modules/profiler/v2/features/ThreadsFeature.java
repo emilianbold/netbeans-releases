@@ -43,28 +43,16 @@
 
 package org.netbeans.modules.profiler.v2.features;
 
-import org.netbeans.modules.profiler.v2.ProfilerFeature;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.SwingUtilities;
+import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.ui.components.ProfilerToolbar;
-import org.netbeans.lib.profiler.ui.threads.ThreadsPanel;
-import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.actions.HeapDumpAction;
-import org.netbeans.modules.profiler.actions.RunGCAction;
-import org.netbeans.modules.profiler.actions.TakeThreadDumpAction;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.ProfilerIcons;
+import org.netbeans.modules.profiler.v2.ProfilerFeature;
 import org.netbeans.modules.profiler.v2.ProfilerSession;
-import org.netbeans.modules.profiler.v2.ui.GrayLabel;
-import org.netbeans.modules.profiler.v2.ui.PopupButton;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -72,210 +60,75 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({
     "ThreadsFeature_name=Threads",
-    "ThreadsFeature_description=Monitor thread states and times",
-    "ThreadsFeature_show=Show:",
-    "ThreadsFeature_filterAll=All threads",
-    "ThreadsFeature_filterLive=Live threads",
-    "ThreadsFeature_filterFinished=Finished threads",
-    "ThreadsFeature_timeline=Timeline:",
-    "ThreadsFeature_application=Application:",
-    "ThreadsFeature_threadDump=Thread Dump",
-    "ThreadsFeature_heapDump=Heap Dump",
-    "ThreadsFeature_gc=GC"
+    "ThreadsFeature_description=Monitor thread states and times"
 })
 final class ThreadsFeature extends ProfilerFeature.Basic {
     
-    private JLabel shLabel;
-    private PopupButton shFilter;
-    
-    private JLabel tlLabel;
-    private Component tlZoomInButton;
-    private Component tlZoomOutButton;
-    private Component tlFitWidthButton;
-    
-    private JLabel apLabel;
-    private JButton apThreadDumpButton;
-    private JButton apHeapDumpButton;
-    private JButton apGCButton;
-    
-    private ProfilerToolbar toolbar;
-    
-    private ThreadsPanel threadsPanel;
-    
-    
-    ThreadsFeature() {
+    private ThreadsFeature(ProfilerSession session) {
         super(Icons.getIcon(ProfilerIcons.WINDOW_THREADS), Bundle.ThreadsFeature_name(),
-              Bundle.ThreadsFeature_description(), 15);
+              Bundle.ThreadsFeature_description(), 15, session);
     }
     
     
-    public JPanel getResultsUI() {
-        if (threadsPanel == null) initResultsUI();
-        return threadsPanel;
-    }
-    
-    public ProfilerToolbar getToolbar() {
-        if (toolbar == null) {
-            getResultsUI(); // threadsPanel must be ready for toolbar actions
-            
-            shLabel = new GrayLabel(Bundle.ThreadsFeature_show());
-            
-            shFilter = new PopupButton(Bundle.ThreadsFeature_filterAll()) {
-                protected void populatePopup(JPopupMenu popup) { populateFilters(popup); }
-            };
-            
-            tlLabel = new GrayLabel(Bundle.ThreadsFeature_timeline());
-            
-            
-            tlZoomInButton = threadsPanel.getZoomIn();
-            tlZoomOutButton = threadsPanel.getZoomOut();
-            tlFitWidthButton = threadsPanel.getFitWidth();
-            
-            apLabel = new GrayLabel(Bundle.ThreadsFeature_application());
-            
-            apThreadDumpButton = new JButton(TakeThreadDumpAction.getInstance());
-            apThreadDumpButton.setHideActionText(true);
-            apThreadDumpButton.setText(Bundle.ThreadsFeature_threadDump());
-            
-            apHeapDumpButton = new JButton(HeapDumpAction.getInstance());
-            apHeapDumpButton.setHideActionText(true);
-            apHeapDumpButton.setText(Bundle.MemoryFeature_heapDump());
-            
-            apGCButton = new JButton(RunGCAction.getInstance());
-            apGCButton.setHideActionText(true);
-            apGCButton.setText(Bundle.MemoryFeature_gc());
-            
-            toolbar = ProfilerToolbar.create(true);
-            
-            toolbar.addSpace(2);
-            toolbar.addSeparator();
-            toolbar.addSpace(5);
-            
-            toolbar.add(shLabel);
-            toolbar.addSpace(2);
-            toolbar.add(shFilter);
-            
-            toolbar.addSpace(2);
-            toolbar.addSeparator();
-            toolbar.addSpace(5);
-            
-            toolbar.add(tlLabel);
-            toolbar.addSpace(2);
-            toolbar.add(tlZoomInButton);
-            toolbar.add(tlZoomOutButton);
-            toolbar.add(tlFitWidthButton);
-            
-            toolbar.addSpace(2);
-            toolbar.addSeparator();
-            toolbar.addSpace(5);
-            
-            toolbar.add(apLabel);
-            toolbar.addSpace(2);
-            toolbar.add(apThreadDumpButton);
-            toolbar.add(apHeapDumpButton);
-            toolbar.add(apGCButton);
-            
-            setFilter(ThreadsPanel.Filter.ALL);
-            
-            refreshToolbar(getSessionState());
-        }
-        
-        return toolbar;
-    }
-    
-    public boolean supportsSettings(ProfilingSettings settings) {
-        return true;
-    }
+    // --- Settings ------------------------------------------------------------
     
     public void configureSettings(ProfilingSettings settings) {
         settings.setThreadsMonitoringEnabled(true);
         settings.setThreadsSamplingEnabled(false);
     }
     
-    private void populateFilters(JPopupMenu popup) {
-        ThreadsPanel.Filter f = threadsPanel.getFilter();
-        
-        popup.add(new JRadioButtonMenuItem(Bundle.ThreadsFeature_filterAll(), f == ThreadsPanel.Filter.ALL) {
-            protected void fireActionPerformed(ActionEvent e) { setFilter(ThreadsPanel.Filter.ALL); }
-        });
-        
-        popup.add(new JRadioButtonMenuItem(Bundle.ThreadsFeature_filterLive(), f == ThreadsPanel.Filter.LIVE) {
-            protected void fireActionPerformed(ActionEvent e) { setFilter(ThreadsPanel.Filter.LIVE); }
-        });
-        
-        popup.add(new JRadioButtonMenuItem(Bundle.ThreadsFeature_filterFinished(), f == ThreadsPanel.Filter.FINISHED) {
-            protected void fireActionPerformed(ActionEvent e) { setFilter(ThreadsPanel.Filter.FINISHED); }
-        });
-    }
-
-    private void setFilter(ThreadsPanel.Filter filter) {
-        threadsPanel.setFilter(filter);
-        
-        switch (filter) {
-            case ALL:
-                shFilter.setText(Bundle.ThreadsFeature_filterAll());
-                break;
-            case LIVE:
-                shFilter.setText(Bundle.ThreadsFeature_filterLive());
-                break;
-            case FINISHED:
-                shFilter.setText(Bundle.ThreadsFeature_filterFinished());
-                break;
-        }
+    
+    // --- Toolbar & Results UI ------------------------------------------------
+    
+    private ThreadsFeatureUI ui;
+    
+    public JPanel getResultsUI() {
+        return getUI().getResultsUI();
     }
     
-    private void initResultsUI() {
-        threadsPanel = new ThreadsPanel(getSession().getProfiler().getThreadsManager(), null);
-        threadsPanel.threadsMonitoringEnabled();
-        profilingStateChanged(-1, getSessionState());
+    public ProfilerToolbar getToolbar() {
+        return getUI().getToolbar();
     }
     
-//    private void refreshToolbar() {
-//        ProjectSession session = getSession();
-//        refreshToolbar(session == null ? null : session.getState());
-//    }
-    
-    private void refreshToolbar(int state) {
-        final boolean inactive = state == NetBeansProfiler.PROFILING_INACTIVE;
-        if (toolbar != null) SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-//                boolean running = state == ProjectSession.State.RUNNING;
-//                lrPauseButton.setEnabled(running);
-//                lrRefreshButton.setEnabled(running && lrPauseButton.isSelected());
-                
-                shLabel.setEnabled(!inactive);
-                tlLabel.setEnabled(!inactive);
-                apLabel.setEnabled(!inactive);
+    private ThreadsFeatureUI getUI() {
+        if (ui == null) ui = new ThreadsFeatureUI() {
+            int getSessionState() {
+                return ThreadsFeature.this.getSessionState();
             }
-        });
+            Profiler getProfiler() {
+                return ThreadsFeature.this.getSession().getProfiler();
+            }
+        };
+        return ui;
     }
+    
+    
+    // --- Session lifecycle ---------------------------------------------------
+    
+    public void notifyActivated() {
+        getSession().getProfiler().getThreadsManager().resetStates();
+    }
+    
+    public void notifyDeactivated() {
+        getSession().getProfiler().getThreadsManager().resetStates();
+    }
+    
     
     protected void profilingStateChanged(int oldState, int newState) {
-        if (newState == NetBeansProfiler.PROFILING_INACTIVE) {
-            if (threadsPanel != null) threadsPanel.profilingSessionFinished();
-        } else if (newState == NetBeansProfiler.PROFILING_RUNNING) {
-            if (threadsPanel != null) threadsPanel.profilingSessionStarted();
+        if (newState == Profiler.PROFILING_STARTED)
+            getSession().getProfiler().getThreadsManager().reset();
+        
+        if (ui != null) ui.sessionStateChanged(getSessionState());
+    }
+    
+    
+    // --- Provider ------------------------------------------------------------
+    
+    @ServiceProvider(service=ProfilerFeature.Provider.class)
+    public static final class Provider extends ProfilerFeature.Provider {
+        public ProfilerFeature getFeature(ProfilerSession session) {
+            return new ThreadsFeature(session);
         }
-        refreshToolbar(newState);
-    }
-    
-    public void attachedToSession(final ProfilerSession session) {
-        super.attachedToSession(session);
-        profilingStateChanged(-1, getSessionState());
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                session.getProfiler().getThreadsManager().resetStates();
-            }
-        });
-    }
-    
-    public void detachedFromSession(final ProfilerSession session) {
-        super.detachedFromSession(session);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                session.getProfiler().getThreadsManager().resetStates();
-            }
-        });
     }
     
 }

@@ -95,6 +95,26 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
     public void testBasicExport02() throws Exception {
         checkCompletion("TestNavigation/public_html/js/testAddress.js", "as.^print();", false);
     }
+    
+    public void testExport01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "var mess = require('./simpleModule').^message;", false);
+    }
+    
+    public void testExport02() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "simple.^message.setCode(23);", false);
+    }
+    
+    public void testExport03() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "simple.message.se^tCode(23);", false);
+    }
+    
+    public void testExport04() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "mess.set^Code(25);", false);
+    }
+    
+    public void testExport05() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "mOut.o^utput = 'bug';", false);
+    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {

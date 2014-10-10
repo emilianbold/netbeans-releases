@@ -12,6 +12,6 @@ METHOD     getRace()                       [PROTECTE  person.js
 METHOD     muchTimePasses(): undefined     [PROTECTE  person.js
 METHOD     toString(): String              [PROTECTE  person.js
 METHOD     weigh(): Number                 [PROTECTE  person.js
-FIELD      clothing                        [PUBLIC]   person.js
-FIELD      dirtFactor                      [PUBLIC]   person.js
-FIELD      population                      [PUBLIC,   person.js
+FIELD      clothing: String                [PUBLIC]   person.js
+FIELD      dirtFactor: Number              [PUBLIC]   person.js
+FIELD      population: Number              [PUBLIC,   person.js

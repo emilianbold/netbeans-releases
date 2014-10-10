@@ -44,12 +44,15 @@ package org.netbeans.modules.javascript.nodejs.platform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.PlatformProviderImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.PlatformProviderImplementationListener;
 import org.netbeans.spi.project.ActionProvider;
@@ -111,6 +114,11 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
     }
 
     @Override
+    public List<CustomizerPanelImplementation> getRunCustomizerPanels(Project project) {
+        return Collections.<CustomizerPanelImplementation>singletonList(new NodeJsRunPanel(project));
+    }
+
+    @Override
     public void projectOpened(Project project) {
         assert project != null;
         NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
@@ -128,8 +136,21 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
     }
 
     @Override
-    public void notifyEnabled(Project project, boolean enabled) {
-        NodeJsSupport.forProject(project).getPreferences().setEnabled(enabled);
+    public void notifyPropertyChanged(Project project, PropertyChangeEvent event) {
+        String propertyName = event.getPropertyName();
+        if (PROP_ENABLED.equals(propertyName)) {
+            NodeJsSupport.forProject(project).getPreferences().setEnabled((boolean) event.getNewValue());
+        } else if (PROP_RUN_CONFIGURATION.equals(propertyName)) {
+            Object activeRunConfig = event.getNewValue();
+            boolean runEnabled = false;
+            for (CustomizerPanelImplementation panel : getRunCustomizerPanels(project)) {
+                if (panel.getIdentifier().equals(activeRunConfig)) {
+                    runEnabled = true;
+                    break;
+                }
+            }
+            NodeJsSupport.forProject(project).getPreferences().setRunEnabled(runEnabled);
+        }
     }
 
     @Override

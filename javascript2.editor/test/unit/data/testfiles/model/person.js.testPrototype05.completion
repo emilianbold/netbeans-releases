@@ -18,5 +18,5 @@ METHOD     toString(): String              [PROTECTE  person.js
 METHOD     weigh(): Number                 [PROTECTE  person.js
 FIELD      clothing: String                [PUBLIC]   person.js
 FIELD      dirtFactor: Number              [PUBLIC]   person.js
-FIELD      legs                            [PUBLIC]   person.js
-FIELD      population                      [PUBLIC,   person.js
+FIELD      legs: Number                    [PUBLIC]   person.js
+FIELD      population: Number              [PUBLIC,   person.js

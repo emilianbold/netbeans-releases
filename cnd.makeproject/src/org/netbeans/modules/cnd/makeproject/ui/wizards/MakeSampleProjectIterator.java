@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
@@ -54,7 +55,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.MakeSamplePanel;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
@@ -107,7 +107,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstant
         if (name != null) {
             name = name.replaceAll(" ", ""); // NOI18N
         }
-        wiz.putProperty(WizardConstants.PROPERTY_NAME, name);
+        WizardConstants.PROPERTY_NAME.put(wiz, name);
         String wizardTitle = getString("SAMPLE_PROJECT") + name; // NOI18N
         String wizardTitleACSD = getString("SAMPLE_PROJECT_ACSD"); // NOI18N
 
@@ -131,8 +131,8 @@ public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstant
     public void uninitialize(WizardDescriptor templateWizard) {
         panel = null;
         index = -1;
-        this.wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, null);
-        this.wiz.putProperty(WizardConstants.PROPERTY_NAME, null);
+        WizardConstants.PROPERTY_PROJECT_FOLDER.put(wiz, null);
+        WizardConstants.PROPERTY_NAME.put(wiz, null);
     }
 
     @Override
@@ -147,14 +147,14 @@ public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstant
     
     @Override
     public Set<DataObject> instantiate() throws IOException {
-        FSPath projectLocation = (FSPath) wiz.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
-        String name = (String) wiz.getProperty(WizardConstants.PROPERTY_NAME);
-        String hostUID = (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
-        if (wiz.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV) != null) {
+        FSPath projectLocation = WizardConstants.PROPERTY_PROJECT_FOLDER.get(wiz);
+        String name = WizardConstants.PROPERTY_NAME.get(wiz);
+        String hostUID = WizardConstants.PROPERTY_HOST_UID.get(wiz);
+        if (WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wiz) != null) {
             hostUID = ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal());
         }
-        CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
-        boolean defaultToolchain = Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
+        CompilerSet toolchain = WizardConstants.PROPERTY_TOOLCHAIN.get(wiz);
+        boolean defaultToolchain = Boolean.TRUE.equals(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.get(wiz));
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(name, projectLocation);
         prjParams.setHostToolchain(hostUID, toolchain, defaultToolchain);
         return ProjectGenerator.createProjectFromTemplate(wiz.getTemplate().getPrimaryFile(), prjParams);

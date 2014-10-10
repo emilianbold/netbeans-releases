@@ -42,31 +42,37 @@
 package org.netbeans.modules.javascript.nodejs.problems;
 
 import java.awt.EventQueue;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
+import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
+import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
 import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 @ProjectServiceProvider(service = ProjectProblemsProvider.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
 public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
 
-    final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
+    private final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
     final Project project;
-    private final PropertyChangeListener nodeJsSupportListener = new NodeJsSupportListener();
+    final PreferenceChangeListener optionsListener = new OptionsListener();
+    final PreferenceChangeListener preferencesListener = new PreferencesListener();
 
     // @GuardedBy("this")
     private NodeJsSupport nodeJsSupport;
@@ -111,7 +117,9 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
     synchronized NodeJsSupport getNodeJsSupport() {
         if (nodeJsSupport == null) {
             nodeJsSupport = NodeJsSupport.forProject(project);
-            nodeJsSupport.addPropertyChangeListener(nodeJsSupportListener);
+            nodeJsSupport.getPreferences().addPreferenceChangeListener(preferencesListener);
+            NodeJsOptions options = NodeJsOptions.getInstance();
+            options.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, optionsListener, options));
         }
         return nodeJsSupport;
     }
@@ -152,7 +160,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         ProjectProblem problem = ProjectProblem.createError(
                 message,
                 message,
-                new CustomizerProblemResolver(project));
+                new CustomizerProblemResolver(project, validationResult));
         currentProblems.add(problem);
     }
 
@@ -162,14 +170,21 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         "NodeJsProblemProvider.node.sources=Missing sources for version {0}",
     })
     void checkNode(Collection<ProjectProblem> currentProblems) {
-        NodeExecutable node = NodeExecutable.forProject(project, false);
+        final NodeExecutable node = NodeExecutable.forProject(project, false);
         if (node == null) {
             // already handled
             return;
         }
         if (EventQueue.isDispatchThread()
-                && !node.hasVersion()) {
+                && !node.versionDetected()) {
             // avoid ui flickering
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    node.getVersion();
+                    fireProblemsChanged();
+                }
+            });
             return;
         }
         Version version = node.getVersion();
@@ -196,16 +211,38 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         if (getNodeJsSupport().getPreferences().isDefaultNode()) {
             return new OptionsProblemResolver();
         }
-        return new CustomizerProblemResolver(project);
+        // pretend invalid node path
+        ValidationResult result = new ValidationResult();
+        ValidationUtils.validateNode(result, null);
+        return new CustomizerProblemResolver(project, result);
+    }
+
+    void fireProblemsChanged() {
+        problemsProviderSupport.fireProblemsChange();
     }
 
     //~ Inner classes
 
-    private final class NodeJsSupportListener implements PropertyChangeListener {
+    private final class OptionsListener implements PreferenceChangeListener {
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            problemsProviderSupport.fireProblemsChange();
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            if (!getNodeJsSupport().getPreferences().isEnabled()) {
+                return;
+            }
+            fireProblemsChanged();
+        }
+
+    }
+
+    private final class PreferencesListener implements PreferenceChangeListener {
+
+        @Override
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            if (!getNodeJsSupport().getPreferences().isEnabled()) {
+                return;
+            }
+            fireProblemsChanged();
         }
 
     }

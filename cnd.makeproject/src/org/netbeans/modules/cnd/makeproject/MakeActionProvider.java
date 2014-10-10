@@ -64,7 +64,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
@@ -137,7 +136,6 @@ import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport.Shel
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
@@ -153,7 +151,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
@@ -164,11 +161,13 @@ public final class MakeActionProvider implements ActionProvider {
 
     // Commands available from Make project
     public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N
+    public static final String COMMAND_PRE_BUILD = "pre_build"; // NOI18N
     public static final String COMMAND_BUILD_PACKAGE = "build_packages"; // NOI18N
     public static final String COMMAND_CUSTOM_ACTION = "custom.action"; // NOI18N
     public static final String COMMAND_DEBUG_TEST = "debug.test"; // NOI18N
     public static final String COMMAND_DEBUG_STEP_INTO_TEST = "debug.stepinto.test"; // NOI18N
     private static final String[] supportedActions = {
+        COMMAND_PRE_BUILD,
         COMMAND_BUILD,
         COMMAND_CLEAN,
         COMMAND_REBUILD,
@@ -199,6 +198,7 @@ public final class MakeActionProvider implements ActionProvider {
     private final Map<String, String[]> commandsNoBuild;
     private boolean lastValidation = false;
     private static final String SAVE_STEP = "save"; // NOI18N
+    private static final String PRE_BUILD_STEP = "pre-build"; // NOI18N
     private static final String BUILD_STEP = "build"; // NOI18N
     private static final String BUILD_PACKAGE_STEP = "build-package"; // NOI18N
     private static final String CLEAN_STEP = "clean"; // NOI18N
@@ -478,6 +478,8 @@ public final class MakeActionProvider implements ActionProvider {
             return onSaveStep();
         } else if (targetName.equals(VALIDATE_TOOLCHAIN)) {
             return onValidateToolchainStep(pd, conf, cancelled, validated);
+        } else if (targetName.equals(PRE_BUILD_STEP)) {
+            return onPreBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.PRE_BUILD);
         } else if (targetName.equals(BUILD_STEP)) {
             return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(BUILD_TESTS_STEP)) {
@@ -800,6 +802,26 @@ public final class MakeActionProvider implements ActionProvider {
         } else {
             assert false;
         }
+        return true;
+    }
+
+    private boolean onPreBuildStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Type actionEvent) {
+//        if (conf.isCompileConfiguration() && !validateProject(conf)) {
+//            return true;
+//        }
+        Lookup lookup =  Lookup.EMPTY;
+        String workingDir = conf.getPreBuildConfiguration().getAbsPreBuildCommandWorkingDir();
+        String buildCommand = conf.getPreBuildConfiguration().getPreBuildCommand().getValue();
+        String args = "";
+        int index = getArgsIndex(buildCommand);
+        if (index > 0) {
+            args = buildCommand.substring(index + 1);
+            buildCommand = removeQuotes(buildCommand.substring(0, index));
+        }
+        RunProfile profile = new RunProfile(workingDir, conf.getDevelopmentHost().getBuildPlatform(), conf);
+        profile.setArgs(args);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, lookup);
+        actionEvents.add(projectActionEvent);
         return true;
     }
 
@@ -1370,6 +1392,8 @@ public final class MakeActionProvider implements ActionProvider {
         }
         if (command.equals(COMMAND_CLEAN)) {
             return true;
+        } else if (command.equals(COMMAND_PRE_BUILD)) {
+            return conf.isMakefileConfiguration() && !conf.getPreBuildConfiguration().getPreBuildCommand().getValue().isEmpty();
         } else if (command.equals(COMMAND_BUILD)) {
             return true;
         } else if (command.equals(COMMAND_BUILD_PACKAGE)) {

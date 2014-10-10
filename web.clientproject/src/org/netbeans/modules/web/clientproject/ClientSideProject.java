@@ -91,6 +91,7 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhanced
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
+import org.netbeans.modules.web.clientproject.ui.action.ClientSideProjectActionProvider;
 import org.netbeans.modules.web.clientproject.ui.action.ProjectOperations;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
@@ -129,6 +130,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
@@ -151,8 +153,6 @@ public class ClientSideProject implements Project {
 
     @StaticResource
     public static final String HTML5_PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/html5-project.png"; // NOI18N
-    @StaticResource
-    public static final String JS_LIBRARY_PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/js-library-project.png"; // NOI18N
 
     final UsageLogger projectBrowserUsageLogger = UsageLogger.projectBrowserUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
 
@@ -214,6 +214,16 @@ public class ClientSideProject implements Project {
                     if (pathImpl != null) {
                         pathImpl.fireRootsChanged();
                     }
+                } else if (PlatformProvider.PROP_RUN_CONFIGURATION.equals(propertyName)) {
+                    final String runAs = (String) event.getNewValue();
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            ClientSideProjectProperties properties = new ClientSideProjectProperties(ClientSideProject.this);
+                            properties.setRunAs(runAs);
+                            properties.save();
+                        }
+                    });
                 }
             }
         }
@@ -430,6 +440,19 @@ public class ClientSideProject implements Project {
         return ctx;
     }
 
+    @CheckForNull
+    public String getRunAs() {
+        return getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_RUN_AS);
+    }
+
+    public boolean isRunBrowser() {
+        String property = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_RUN_BROWSER);
+        if (property == null) {
+            return true;
+        }
+        return Boolean.parseBoolean(property);
+    }
+
     public AntProjectHelper getProjectHelper() {
         return projectHelper;
     }
@@ -457,6 +480,9 @@ public class ClientSideProject implements Project {
         return JsTestingProviders.getDefault().getJsTestingProvider(this, showSelectionPanel);
     }
 
+    /**
+     * @return list of <b>enabled</b> platform providers in this project
+     */
     public List<PlatformProvider> getPlatformProviders() {
         List<PlatformProvider> allProviders = PlatformProviders.getDefault().getPlatformProviders();
         List<PlatformProvider> enabledProviders = new ArrayList<>(allProviders.size());
@@ -586,8 +612,7 @@ public class ClientSideProject implements Project {
 
         @Override
         public Icon getIcon() {
-            String icon = isJsLibrary() ? ClientSideProject.JS_LIBRARY_PROJECT_ICON : ClientSideProject.HTML5_PROJECT_ICON;
-            return new ImageIcon(ImageUtilities.loadImage(icon));
+            return new ImageIcon(ImageUtilities.loadImage(ClientSideProject.HTML5_PROJECT_ICON));
         }
 
         @Override

@@ -49,13 +49,8 @@ import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.Revision;
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -160,15 +155,7 @@ public class LogUtils {
 
         @Override
         public void outputLineAction (OutputEvent ev) {
-            Node node = new AbstractNode(Children.LEAF, Lookups.fixed(repository)) {
-
-                @Override
-                public String getName () {
-                    return repository.getName();
-                }
-                
-            };
-            SystemAction.get(DiffAction.class).diff(VCSContext.forNodes(new Node[] { node }),
+            SystemAction.get(DiffAction.class).diff(GitUtils.getContextForFile(repository),
                     new Revision(from, Bundle.MSG_LogUtils_updateBranch_actions_diff_previous(branchName, from)),
                     new Revision(to, Bundle.MSG_LogUtils_updateBranch_actions_diff_previous(branchName, to)));
         }

@@ -150,6 +150,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.oracle.netbeans.bugdb</friend>
                 <friend>oracle.jdevimpl.nbteam.ide</friend>
                 <friend>org.netbeans.modules.bugtracking</friend>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>

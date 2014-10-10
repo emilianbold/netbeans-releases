@@ -43,6 +43,7 @@ package org.netbeans.modules.html.angular.model;
 
 import org.netbeans.modules.html.angular.index.AngularJsIndexer;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.modules.html.angular.index.AngularJsController;
@@ -72,9 +73,9 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
     }
 
     @Override
-    public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (!AngularJsIndexer.isScannerThread()) {
-            return;
+            return Collections.emptyList();
         }
         String controllerName = null;
         String functionName = null;
@@ -127,6 +128,7 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
             }
             
         }
+        return Collections.emptyList();
     }
     
 }

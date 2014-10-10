@@ -44,25 +44,26 @@ package org.netbeans.modules.javascript.nodejs.problems;
 import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
-import org.netbeans.spi.project.ui.CustomizerProvider2;
+import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 
 public class CustomizerProblemResolver implements ProjectProblemResolver {
 
     private final Project project;
+    private final ValidationResult result;
 
 
-    CustomizerProblemResolver(Project project) {
+    CustomizerProblemResolver(Project project, ValidationResult result) {
         assert project != null;
+        assert result != null;
         this.project = project;
+        this.result = result;
     }
 
     @Override
     public Future<ProjectProblemsProvider.Result> resolve() {
-        CustomizerProvider2 customizerProvider = project.getLookup().lookup(CustomizerProvider2.class);
-        assert customizerProvider != null : "CustomizerProvider2 must be found in lookup of " + project.getClass().getName();
-        customizerProvider.showCustomizer(NodeJsCustomizerProvider.CUSTOMIZER_IDENT, null);
+        NodeJsCustomizerProvider.openCustomizer(project, result);
         return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
     }
 

@@ -46,28 +46,10 @@ Contributor(s):
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction"/>
             </file>
         </folder>
-        <folder name="Build">
-            <file name="org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProjectAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.discovery.projectimport.ReconfigureAction.getReconfigureAction"/>
-            </file>
-        </folder>    
         <folder name="NativeProjectCodeAssistance">
             <file name="PerformanceStatisticAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.discovery.performance.PerformanceStatisticAction"/>
             </file>
-        </folder>
-    </folder>
-
-    <folder name="CND">
-        <folder name="Actions">
-            <folder name="MoreBuildCommands">
-                <folder name="DiskFolder">
-                    <file name="org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProjectAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Build/org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProjectAction.instance"/>
-                        <attr name="position" intvalue="2500"/>
-                    </file>
-                </folder>
-            </folder>
         </folder>
     </folder>
 

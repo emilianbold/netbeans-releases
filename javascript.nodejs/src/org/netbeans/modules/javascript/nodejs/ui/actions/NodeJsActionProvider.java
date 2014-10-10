@@ -67,9 +67,16 @@ public final class NodeJsActionProvider implements ActionProvider {
     }
 
     private void fillCommands() {
-        commands.put(COMMAND_RUN, new Command.RunProjectCommand(project));
-        commands.put(COMMAND_RUN_SINGLE, new Command.RunFileCommand(project));
-        // XXX debug?
+        Command[] allCommands = new Command[] {
+            new RunProjectCommand(project),
+            new RunFileCommand(project),
+            new DebugProjectCommand(project),
+            new DebugFileCommand(project),
+        };
+        for (Command command : allCommands) {
+            Command old = commands.put(command.getCommandId(), command);
+            assert old == null : "Command already set for " + command.getCommandId();
+        }
     }
 
     @Override

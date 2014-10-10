@@ -56,16 +56,11 @@ public class SimpleTestCase extends MakeProjectTestBase {
         super("SimpleTestCase");
     }
 
-    @Override
-    protected boolean optimizeSimpleProjects() {
-        return false;
-    }
-
     @Test
     public void testSimple() throws Exception {
         File dataDir = getDataDir();
         String zip = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/discovery/project/DiscoveryTestApplication.tar.gz";
         assert new File(zip).exists() : "Not  found file "+zip;
-        performTestProject(zip, null, false, "");
+        performTestProject(zip, null, false, "/src");
     }
 }

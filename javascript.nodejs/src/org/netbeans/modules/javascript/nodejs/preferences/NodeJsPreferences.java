@@ -45,8 +45,10 @@ package org.netbeans.modules.javascript.nodejs.preferences;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 
 /**
@@ -57,6 +59,11 @@ public final class NodeJsPreferences {
     public static final String ENABLED = "enabled"; // NOI18N
     public static final String NODE_PATH = "node.path"; // NOI18N
     public static final String NODE_DEFAULT = "node.default"; // NOI18N
+    public static final String START_FILE = "start.file"; // NOI18N
+    public static final String START_ARGS = "start.args"; // NOI18N
+    public static final String RUN_ENABLED = "run.enabled"; // NOI18N
+    public static final String DEBUG_PORT = "debug.port"; // NOI18N
+    public static final String ASK_RUN_CONFIGURATION = "ask.run.enabled"; // NOI18N
 
     private final Project project;
 
@@ -100,6 +107,56 @@ public final class NodeJsPreferences {
 
     public void setDefaultNode(boolean defaultNode) {
         getPreferences().putBoolean(NODE_DEFAULT, defaultNode);
+    }
+
+    @CheckForNull
+    public String getStartFile() {
+        return FileUtils.resolvePath(project, getPreferences().get(START_FILE, null));
+    }
+
+    public void setStartFile(@NullAllowed String startFile) {
+        if (startFile == null) {
+            getPreferences().remove(START_FILE);
+        } else {
+            getPreferences().put(START_FILE, FileUtils.relativizePath(project, startFile));
+        }
+    }
+
+    @CheckForNull
+    public String getStartArgs() {
+        return getPreferences().get(START_ARGS, null);
+    }
+
+    public void setStartArgs(@NullAllowed String startArgs) {
+        if (startArgs == null) {
+            getPreferences().remove(START_ARGS);
+        } else {
+            getPreferences().put(START_ARGS, startArgs);
+        }
+    }
+
+    public boolean isRunEnabled() {
+        return getPreferences().getBoolean(RUN_ENABLED, false);
+    }
+
+    public void setRunEnabled(boolean enabled) {
+        getPreferences().putBoolean(RUN_ENABLED, enabled);
+    }
+
+    public int getDebugPort() {
+        return getPreferences().getInt(DEBUG_PORT, NodeExecutable.DEFAULT_DEBUG_PORT);
+    }
+
+    public void setDebugPort(int debugPort) {
+        getPreferences().putInt(DEBUG_PORT, debugPort);
+    }
+
+    public boolean isAskRunEnabled() {
+        boolean ask = getPreferences().getBoolean(ASK_RUN_CONFIGURATION, true);
+        if (ask) {
+            getPreferences().putBoolean(ASK_RUN_CONFIGURATION, false);
+        }
+        return ask;
     }
 
     private synchronized Preferences getPreferences() {

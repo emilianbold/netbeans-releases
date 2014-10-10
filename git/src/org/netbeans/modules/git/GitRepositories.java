@@ -55,7 +55,8 @@ import org.netbeans.modules.versioning.util.Utils;
  */
 public class GitRepositories {
     private static GitRepositories instance;
-    private final Set<File> repositories = new HashSet<File>();
+    private final Set<File> repositories = new HashSet<>();
+    private final Set<File> closed = new HashSet<>(5);
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     public static final String PROP_REPOSITORIES = "GitRepositories.repositories"; //NOI18N
 
@@ -66,8 +67,12 @@ public class GitRepositories {
         return instance;
     }
 
-    void add (File repository) {
+    public void add (File repository, boolean byUser) {
         boolean added;
+        if (!byUser && closed.contains(repository)) {
+            // closed by user, so he must open it manually
+            return;
+        }
         if (Utils.isAncestorOrEqual(new File(System.getProperty("java.io.tmpdir")), repository)) { //NOI18N
             // skip repositories in temp folder
             return;
@@ -81,13 +86,14 @@ public class GitRepositories {
             }
         }
         if (added) {
+            closed.remove(repository);
             oldValues = new HashSet<File>(newValues);
             oldValues.remove(repository);
             support.firePropertyChange(PROP_REPOSITORIES, oldValues, newValues);
         }
     }
 
-    void remove (File repository) {
+    public void remove (File repository, boolean byUser) {
         boolean removed;
         Set<File> oldValues = null;
         Set<File> newValues = null;
@@ -95,6 +101,9 @@ public class GitRepositories {
             removed = repositories.remove(repository);
             if (removed) {
                 newValues = new HashSet<File>(repositories);
+                if (byUser) {
+                    closed.add(repository);
+                }
             }
         }
         if (removed) {

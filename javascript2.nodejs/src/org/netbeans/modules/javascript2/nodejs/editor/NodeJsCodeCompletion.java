@@ -118,7 +118,8 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                                 }
                             }
                         }
-                        result.addAll((new NodeJsCompletionItem.FilenameSupport()).getItems(ccContext.getParserResult().getSnapshot().getSource().getFileObject(), eOffset, ".." + prefix));
+                        int prefixLength = (".".equals(wholePrefix) || "..".equals(wholePrefix) || "../".equals(wholePrefix)) ? wholePrefix.length() : prefix.length();
+                        result.addAll((new NodeJsCompletionItem.FilenameSupport()).getItems(ccContext.getParserResult().getSnapshot().getSource().getFileObject(), eOffset - prefixLength, ".." + prefix));
                     }
                 } else {
                     if (tokenId == JsTokenId.IDENTIFIER && ts.movePrevious()) {

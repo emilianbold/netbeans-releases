@@ -42,12 +42,9 @@
 package org.netbeans.modules.cnd.makeproject.api.wizards;
 
 import java.util.List;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -86,61 +83,9 @@ public final class ProjectWizardPanels {
     }
 
     public interface MakeModePanel<T> extends MakeSamplePanel<T> {
-        WizardStorage getWizardStorage();
     }
 
     public interface NamedPanel {
         String getName();
-    }
-
-    public interface WizardStorage {
-        
-        WizardDescriptor getAdapter();
-        
-        void setMode(boolean isSimple);
-
-        String getProjectPath();
-
-        FileObject getSourcesFileObject();
-
-        void setProjectPath(String path);
-
-        void setSourcesFileObject(FileObject fileObject);
-
-        String getConfigure();
-
-        String getMake();
-
-        void setMake(FileObject makefileFO);
-
-        String getFlags();
-
-        String getRealFlags();
-
-        void setFlags(String flags);
-
-        boolean isSetMain();
-
-        void setSetMain(boolean setMain);
-
-        boolean isBuildProject();
-
-        void setBuildProject(boolean buildProject);
-
-        void setCompilerSet(CompilerSet cs);
-
-        CompilerSet getCompilerSet();
-
-        void setExecutionEnvironment(ExecutionEnvironment ee);
-
-        ExecutionEnvironment getExecutionEnvironment();
-
-        void setSourceExecutionEnvironment(ExecutionEnvironment sourceEnv);
-
-        ExecutionEnvironment getSourceExecutionEnvironment();
-
-        void setDefaultCompilerSet(boolean defaultCompilerSet);
-
-        boolean isDefaultCompilerSet();
     }
 }

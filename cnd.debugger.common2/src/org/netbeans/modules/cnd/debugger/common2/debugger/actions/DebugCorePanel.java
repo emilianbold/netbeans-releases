@@ -891,7 +891,11 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	if (bundle == null) {
 	    bundle = NbBundle.getBundle(DebugCorePanel.class);
 	}
-	return bundle.getString(s);
+        try{
+            return bundle.getString(s);
+        }catch (Exception e) {
+            return s;
+        }
     }
 
     public boolean asynchronous() {

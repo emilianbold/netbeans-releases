@@ -61,6 +61,8 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.discovery.api.BuildTraceSupport;
+import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
+import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -71,7 +73,6 @@ import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.netbeans.modules.nativeexecution.api.util.*;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -85,6 +86,8 @@ public class ExecuteCommand {
     private String command;
     private final Project project;
     private final ExecutionEnvironment execEnv;
+    private String name;
+    private String displayName;
 
     public ExecuteCommand(Project project, String runDir, String command) {
         this.runDir = runDir;
@@ -92,6 +95,11 @@ public class ExecuteCommand {
         this.project = project;
         this.execEnv = getExecutionEnvironment();
 
+    }
+    
+    public void setName(String name, String displayName) {
+        this.name = name;
+        this.displayName = displayName;
     }
     
     public Future<Integer> performAction(ExecutionListener listener, Writer outputListener, List<String> additionalEnvironment) {
@@ -115,29 +123,15 @@ public class ExecuteCommand {
         }
         // Executable
         String executable = hostInfo.getShell();
-        if (command.contains("${MAKE}")) { //NOI18N
-            String make = "make"; //NOI18N
-            CompilerSet compilerSet = getCompilerSet();
-            if (compilerSet != null) {
-                Tool findTool = compilerSet.findTool(PredefinedToolKind.MakeTool);
-                if (findTool != null && findTool.getPath() != null && findTool.getPath().length() > 0) {
-                    make = findTool.getPath();
-                    if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
-                        String aMake = WindowsSupport.getInstance().convertToShellPath(make);
-                        if (aMake != null && aMake.length() > 0) {
-                            make = aMake;
-                        }
-                    }
-                }
-            }
-            command = command.replace("${MAKE}", make); //NOI18N
-        }
+        expandMacros(hostInfo, BuildSupport.MAKE_MACRO, PredefinedToolKind.MakeTool, "make"); //NOI18N
+        expandMacros(hostInfo, PreBuildSupport.C_COMPILER_MACRO, PredefinedToolKind.CCompiler, "gcc"); //NOI18N
+        expandMacros(hostInfo, PreBuildSupport.CPP_COMPILER_MACRO, PredefinedToolKind.CCCompiler, "g++"); //NOI18N
         // Arguments
         String[] args = new String[]{"-c", command}; // NOI18N
         // Build directory
         String buildDir = convertToRemoteIfNeeded(runDir);
         if (buildDir == null) {
-            ImportProject.logger.log(Level.INFO, "Run folder folder is null"); //NOI18N
+            ImportProject.logger.log(Level.INFO, "Run folder is null"); //NOI18N
             return null;
         }
         Map<String, String> envMap = getEnv(additionalEnvironment);
@@ -146,12 +140,9 @@ public class ExecuteCommand {
         }
         InputOutput inputOutput = null;
         if (inputOutput == null) {
-            // Tab Name
-            String tabName = execEnv.isLocal() ? NbBundle.getMessage(ExecuteCommand.class, "MAKE_LABEL", command) : // NOI18N
-                                                 NbBundle.getMessage(ExecuteCommand.class, "MAKE_REMOTE_LABEL", command, execEnv.getDisplayName()); // NOI18N
-            InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
+            InputOutput _tab = IOProvider.getDefault().getIO(displayName, false); // This will (sometimes!) find an existing one.
             _tab.closeInputOutput(); // Close it...
-            InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
+            InputOutput tab = IOProvider.getDefault().getIO(displayName, true); // Create a new ...
             try {
                 tab.getOut().reset();
             } catch (IOException ioe) {
@@ -211,11 +202,34 @@ public class ExecuteCommand {
                 inputOutput(inputOutput).
                 outLineBased(true).
                 postExecution(processChangeListener).
-                postMessageDisplayer(new PostMessageDisplayer.Default("Make")). // NOI18N
+                postMessageDisplayer(new PostMessageDisplayer.Default(name)).
                 errConvertorFactory(processChangeListener).
                 outConvertorFactory(processChangeListener);
 
-        return NativeExecutionService.newService(npb, descr, "make"); // NOI18N
+        descr.noReset(true);
+        inputOutput.getOut().println(command);       
+
+        return NativeExecutionService.newService(npb, descr, name);
+    }
+
+    private void expandMacros(HostInfo hostInfo, String macro, PredefinedToolKind tool, String defaultValue) {
+        if (command.contains(macro)) {
+            String path = defaultValue;
+            CompilerSet compilerSet = getCompilerSet();
+            if (compilerSet != null) {
+                Tool findTool = compilerSet.findTool(tool);
+                if (findTool != null && findTool.getPath() != null && findTool.getPath().length() > 0) {
+                    path = findTool.getPath();
+                    if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                        String aPath = WindowsSupport.getInstance().convertToShellPath(path);
+                        if (aPath != null && aPath.length() > 0) {
+                            path = aPath;
+                        }
+                    }
+                }
+            }
+            command = command.replace(macro, path);
+        }
     }
     
     private CompilerSet getCompilerSet() {
@@ -247,7 +261,7 @@ public class ExecuteCommand {
         }
     }
 
-    private ExecutionEnvironment getExecutionEnvironment() {
+    public final ExecutionEnvironment getExecutionEnvironment() {
         RemoteProject info = project.getLookup().lookup(RemoteProject.class);
         if (info != null) {
             return info.getDevelopmentHost();

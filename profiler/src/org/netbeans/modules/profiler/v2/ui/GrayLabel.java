@@ -43,6 +43,7 @@
 
 package org.netbeans.modules.profiler.v2.ui;
 
+import java.awt.Color;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import org.netbeans.lib.profiler.ui.UIUtils;
@@ -52,9 +53,6 @@ import org.netbeans.lib.profiler.ui.UIUtils;
  * @author Jiri Sedlacek
  */
 public class GrayLabel extends JLabel {
-    
-//    private static Color ENABLED_FOREGROUND;
-    
     
     public GrayLabel() { super(); }
     
@@ -69,10 +67,13 @@ public class GrayLabel extends JLabel {
     public GrayLabel(String text, Icon icon, int alignment) { super(text, icon, alignment); }
     
     
+    public Color getForeground() {
+        return UIUtils.getDisabledLineColor();
+    }
+    
+    
     public void setEnabled(boolean enabled) {
-        setForeground(UIUtils.getDisabledLineColor());
-//        if (ENABLED_FOREGROUND == null) ENABLED_FOREGROUND = getForeground();
-//        setForeground(enabled ? ENABLED_FOREGROUND : UIUtils.getDisabledLineColor());
+        super.setEnabled(true); // To workaround the 3D look on some LaFs
     }
     
 }

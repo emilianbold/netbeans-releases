@@ -67,6 +67,8 @@ ovu:CLASS:[PUBLIC]:ESCAPED{ovu}:
         textBaseline:FIELD:[PUBLIC]:ESCAPED{textBaseline}<font color="#999999">ESCAPED{ : }String</font>:
       drawBubble:METHOD:[PUBLIC]:ESCAPED{drawBubble}ESCAPED{(}ESCAPED{x}ESCAPED{, }ESCAPED{y}ESCAPED{, }ESCAPED{w}ESCAPED{, }ESCAPED{h}ESCAPED{, }ESCAPED{radius}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
       getMousePos:METHOD:[PUBLIC]:ESCAPED{getMousePos}ESCAPED{(}ESCAPED{c}ESCAPED{, }ESCAPED{e}ESCAPED{)}:
+        x:FIELD:[PUBLIC]:ESCAPED{x}:
+        y:FIELD:[PUBLIC]:ESCAPED{y}:
       id:FIELD:[PUBLIC]:ESCAPED{id}:
       json:CLASS:[PUBLIC]:ESCAPED{json}:
       layer:CLASS:[PUBLIC]:ESCAPED{layer}:

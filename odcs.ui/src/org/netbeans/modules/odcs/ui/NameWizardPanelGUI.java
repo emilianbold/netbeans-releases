@@ -92,7 +92,6 @@ import org.openide.util.WeakListeners;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
 import org.netbeans.modules.odcs.ui.api.OdcsUIUtil;
-import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.team.ide.spi.SettingsServices;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -155,7 +154,7 @@ public class NameWizardPanelGUI extends JPanel {
 
 
         setupLicensesListModel();
-        setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
+        setPreferredSize(new Dimension(Math.max(656, getPreferredSize().width), 344));
 
         serverListener = new PropertyChangeListener() {
             @Override
@@ -222,7 +221,6 @@ public class NameWizardPanelGUI extends JPanel {
         projectDescTextField = new JTextArea();
         projectPrivacyLabel = new JLabel();
         btnPrivacyPrivate = new JRadioButton();
-        btnPrivacyPublic = new JRadioButton();
         btnPrivacyOrganizationPrivate = new JRadioButton();
         serverLabel = new JLabel();
 
@@ -231,19 +229,19 @@ public class NameWizardPanelGUI extends JPanel {
         Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.loggedInLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 0, 5, 0);
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new Insets(0, 0, 0, 6);
         add(loggedInLabel, gridBagConstraints);
         loggedInLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.loggedInLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         Mnemonics.setLocalizedText(usernameLabel, NbBundle.getMessage(NameWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.notLoggedIn")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = GridBagConstraints.EAST;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = GridBagConstraints.BASELINE_TRAILING;
         gridBagConstraints.weightx = 0.4;
-        gridBagConstraints.insets = new Insets(0, 4, 5, 0);
+        gridBagConstraints.insets = new Insets(0, 0, 0, 4);
         add(usernameLabel, gridBagConstraints);
         usernameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.usernameLabel.AccessibleContext.accessibleName")); // NOI18N
         usernameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.usernameLabel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -256,9 +254,8 @@ public class NameWizardPanelGUI extends JPanel {
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 4, 5, 0);
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = GridBagConstraints.BASELINE_LEADING;
         add(loginButton, gridBagConstraints);
         loginButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.loginButton.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -266,9 +263,9 @@ public class NameWizardPanelGUI extends JPanel {
         Mnemonics.setLocalizedText(projectNameLabel, NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.projectNameLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 0, 0, 5);
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new Insets(0, 0, 0, 6);
         add(projectNameLabel, gridBagConstraints);
         projectNameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.projectNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -285,10 +282,11 @@ public class NameWizardPanelGUI extends JPanel {
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.anchor = GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new Insets(8, 0, 0, 0);
         add(projectNameTextField, gridBagConstraints);
         projectNameTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.projectNameTextField.AccessibleContext.accessibleName")); // NOI18N
         projectNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.projectNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
@@ -297,9 +295,9 @@ public class NameWizardPanelGUI extends JPanel {
         Mnemonics.setLocalizedText(projectDescLabel, NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.projectDescLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = GridBagConstraints.PAGE_START;
-        gridBagConstraints.insets = new Insets(4, 0, 0, 4);
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new Insets(0, 0, 0, 6);
         add(projectDescLabel, gridBagConstraints);
         projectDescLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.projectDescLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -307,9 +305,9 @@ public class NameWizardPanelGUI extends JPanel {
         Mnemonics.setLocalizedText(projectWikiLabel, NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.projectWikiLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(4, 0, 0, 4);
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new Insets(0, 0, 0, 6);
         add(projectWikiLabel, gridBagConstraints);
         projectWikiLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.projectWikiLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -320,10 +318,10 @@ public class NameWizardPanelGUI extends JPanel {
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.anchor = GridBagConstraints.BASELINE;
         gridBagConstraints.insets = new Insets(4, 0, 0, 0);
         add(projectWikiComboBox, gridBagConstraints);
         projectWikiComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.projectWikiComboBox.AccessibleContext.accessibleName")); // NOI18N
@@ -337,10 +335,11 @@ public class NameWizardPanelGUI extends JPanel {
         });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new Insets(10, 0, 0, 0);
         add(proxyConfigButton, gridBagConstraints);
         proxyConfigButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.proxyConfigButton.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -353,42 +352,33 @@ public class NameWizardPanelGUI extends JPanel {
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.anchor = GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new Insets(4, 0, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
         Mnemonics.setLocalizedText(projectPrivacyLabel, NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.projectPrivacyLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new Insets(0, 0, 0, 6);
         add(projectPrivacyLabel, gridBagConstraints);
         projectPrivacyLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.projectPrivacyLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         btnGrpPrivacy.add(btnPrivacyPrivate);
+        btnPrivacyPrivate.setSelected(true);
         Mnemonics.setLocalizedText(btnPrivacyPrivate, NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.btnPrivacyPrivate.text")); // NOI18N
         btnPrivacyPrivate.setToolTipText(NbBundle.getMessage(NameWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.btnPrivacyPrivate.TTtext")); // NOI18N
         btnPrivacyPrivate.setActionCommand(ProjectAccessibility.PRIVATE.name());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        add(btnPrivacyPrivate, gridBagConstraints);
-
-        btnGrpPrivacy.add(btnPrivacyPublic);
-        btnPrivacyPublic.setSelected(true);
-        Mnemonics.setLocalizedText(btnPrivacyPublic, NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.btnPrivacyPublic.text")); // NOI18N
-        btnPrivacyPublic.setToolTipText(NbBundle.getMessage(NameWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.btnPrivacyPublic.TTtext")); // NOI18N
-        btnPrivacyPublic.setActionCommand(ProjectAccessibility.PUBLIC.name());
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new Insets(4, 0, 0, 0);
-        add(btnPrivacyPublic, gridBagConstraints);
+        add(btnPrivacyPrivate, gridBagConstraints);
 
         btnGrpPrivacy.add(btnPrivacyOrganizationPrivate);
         Mnemonics.setLocalizedText(btnPrivacyOrganizationPrivate, NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.btnPrivacyOrganizationPrivate.text")); // NOI18N
@@ -396,15 +386,15 @@ public class NameWizardPanelGUI extends JPanel {
         btnPrivacyOrganizationPrivate.setActionCommand(ProjectAccessibility.ORGANIZATION_PRIVATE.name());
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         add(btnPrivacyOrganizationPrivate, gridBagConstraints);
 
         Mnemonics.setLocalizedText(serverLabel, NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.serverLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = GridBagConstraints.BASELINE_LEADING;
         add(serverLabel, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.AccessibleContext.accessibleName")); // NOI18N
@@ -476,7 +466,6 @@ public class NameWizardPanelGUI extends JPanel {
     private ButtonGroup btnGrpPrivacy;
     private JRadioButton btnPrivacyOrganizationPrivate;
     private JRadioButton btnPrivacyPrivate;
-    private JRadioButton btnPrivacyPublic;
     private JScrollPane jScrollPane1;
     private JLabel loggedInLabel;
     private JButton loginButton;
@@ -582,7 +571,7 @@ public class NameWizardPanelGUI extends JPanel {
         String prjWikiStyle = (String) this.settings.getProperty(NewProjectWizardIterator.PROP_PRJ_WIKI);
         setProjectWiki(prjWikiStyle);
         String prjPrivacy = (String) this.settings.getProperty(NewProjectWizardIterator.PROP_PRJ_ACCESSIBILITY);
-        setProjectAccessibility(prjWikiStyle);
+        setProjectAccessibility(prjPrivacy);
     }
 
     public void store (WizardDescriptor settings) {
@@ -661,8 +650,7 @@ public class NameWizardPanelGUI extends JPanel {
     private void setProjectAccessibility (String acc) {
         for (JRadioButton btn : new JRadioButton[] { 
             btnPrivacyOrganizationPrivate,
-            btnPrivacyPrivate,
-            btnPrivacyPublic
+            btnPrivacyPrivate
         }) {
             if (btn.getActionCommand().equals(acc)) {
                 btn.setSelected(true);

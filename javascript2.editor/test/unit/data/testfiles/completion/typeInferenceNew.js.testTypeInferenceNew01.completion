@@ -6,7 +6,7 @@ CONSTRUCTO Address                         [PUBLIC]   typeInferenceNew.js
 CONSTRUCTO Car                             [PUBLIC]   typeInferenceNew.js
 CLASS      Context                         [PUBLIC]   typeInferenceNew.js
 CLASS      formatter                       [PUBLIC]   typeInferenceNew.js
-VARIABLE   object: Car                     [PUBLIC]   typeInferenceNew.js
+VARIABLE   object: Car|Address             [PUBLIC]   typeInferenceNew.js
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null

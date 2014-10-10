@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.spi.platform;
 
+import java.beans.PropertyChangeEvent;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -48,6 +49,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
 import org.netbeans.spi.project.ActionProvider;
 
 /**
@@ -74,6 +76,12 @@ public interface PlatformProviderImplementation {
      * @since 1.70
      */
     String PROP_START_FILE = "START_FILE"; // NOI18N
+    /**
+     * Property name for changes in run configuration.
+     * @since 1.72
+     */
+    String PROP_RUN_CONFIGURATION = "RUN_CONFIGURATION"; // NOI18N
+
 
     /**
      * Returns the <b>non-localized (usually english)</b> identifier of this provider.
@@ -120,6 +128,17 @@ public interface PlatformProviderImplementation {
     ActionProvider getActionProvider(@NonNull Project project);
 
     /**
+     * Get list of panels for run customization.
+     * <p>
+     * These panels can be used to configure properties needed for running this platform provider,
+     * like e.g. debugger port, default/index file etc.
+     * @param project project to be source of the customization
+     * @return list of panels for run customization, can be empty but never {@code null}
+     * @since 1.71
+     */
+    List<CustomizerPanelImplementation> getRunCustomizerPanels(@NonNull Project project);
+
+    /**
      * Notifies provider that the given project is being opened.
      * <p>
      * Provider is notified even if it is not {@link #isEnabled(Project) enabled} in the given project.
@@ -136,12 +155,16 @@ public interface PlatformProviderImplementation {
     void projectClosed(@NonNull Project project);
 
     /**
-     * Notifies provider that it has been enabled/disabled in the given project (so
+     * Notifies provider that some property has been changed in the given project (so
      * the provider can, if necessary, adjust UI etc.).
+     * <p>
+     * Please note that provider can be notified even if it is not {@link #isEnabled(Project) enabled}
+     * in the given project.
      * @param project the project, never {@code null}
-     * @param enabled {@code true} if enabled, {@code false} otherwise
+     * @param event information about property change
+     * @since 1.71
      */
-    void notifyEnabled(@NonNull Project project, boolean enabled);
+    void notifyPropertyChanged(@NonNull Project project, @NonNull PropertyChangeEvent event);
 
     /**
      * Attach a listener that is to be notified of changes

@@ -50,7 +50,10 @@ import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.explorer.ExplorerUtils;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -82,6 +85,8 @@ import org.openide.windows.TopComponent;
 public final class KnockoutTC extends TopComponent {
     /** TopComponent ID. */
     public static final String ID = "KnockoutTC"; // NOI18N
+    /** Panel shown in this {@code TopComponent}. */
+    private KnockoutPanel currentPanel;
 
     /**
      * Creates a new {@code KnockoutTC}.
@@ -90,6 +95,7 @@ public final class KnockoutTC extends TopComponent {
         setName(Bundle.CTL_KnockoutTC());
         setToolTipText(Bundle.HINT_KnockoutTC());
         setLayout(new BorderLayout());
+        associateLookup(new KnockoutTCLookup());
         PageInspectorImpl.getDefault().addPropertyChangeListener(createInspectorListener());
         update();
     }
@@ -97,12 +103,18 @@ public final class KnockoutTC extends TopComponent {
     /**
      * Updates the content of this {@code TopComponent}.
      */
-    private void update() {
+    final void update() {
         if (EventQueue.isDispatchThread()) {
-            PageModel pageModel = PageInspectorImpl.getDefault().getPage();
+            PageModel pageModel = isOpened() ? PageInspectorImpl.getDefault().getPage() : null;
             removeAll();
-            KnockoutPanel panel = new KnockoutPanel((WebKitPageModel)pageModel);
-            add(panel);
+            if (currentPanel != null) {
+                currentPanel.dispose();
+            }
+            currentPanel = new KnockoutPanel((WebKitPageModel)pageModel);
+            add(currentPanel);
+            ((KnockoutTCLookup)getLookup()).setPanel(currentPanel);
+            revalidate();
+            repaint();
         } else {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -111,6 +123,18 @@ public final class KnockoutTC extends TopComponent {
                 }
             });
         }
+    }
+
+    @Override
+    protected void componentOpened() {
+        super.componentOpened();
+        update();
+    }
+
+    @Override
+    protected void componentClosed() {
+        super.componentClosed();
+        update();
     }
 
     /**
@@ -128,6 +152,23 @@ public final class KnockoutTC extends TopComponent {
                 }
             }
         };
+    }
+
+    /**
+     * Lookup of {@code KnockoutTC}.
+     */
+    private class KnockoutTCLookup extends ProxyLookup {
+
+        /**
+         * Updates the content of this lookup according to the given panel.
+         * 
+         * @param panel new panel to display in {@code KnockoutTC}.
+         */
+        void setPanel(KnockoutPanel panel) {
+            Lookup lookup = ExplorerUtils.createLookup(panel.getExplorerManager(), getActionMap());
+            setLookups(lookup);
+        }
+
     }
 
 }

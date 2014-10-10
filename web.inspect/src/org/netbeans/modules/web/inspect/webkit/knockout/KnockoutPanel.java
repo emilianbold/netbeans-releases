@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.inspect.webkit.knockout;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.dnd.DnDConstants;
 import java.beans.PropertyChangeEvent;
@@ -56,6 +57,7 @@ import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
@@ -63,6 +65,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * A panel for Knockout-related information about the inspected page.
@@ -70,12 +73,20 @@ import org.openide.util.NbBundle;
  * @author Jan Stola
  */
 public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
+    /** Request processor used by this class. */
+    private static final RequestProcessor RP = new RequestProcessor(KnockoutPanel.class);
     /** Explorer manager provided by this panel. */
     private final ExplorerManager manager = new ExplorerManager();
     /** Page model for this panel. */
     private final WebKitPageModel pageModel;
     /** View that displays Knockout context of the selected node. */
     private OutlineView contextView;
+    /** Page model listener. */
+    private Listener pageModelListener;
+    /** Determines whether we found Knockout in the current page already. */
+    boolean knockoutFound;
+    /** The current selected node. */
+    Node selectedNode;
 
     /**
      * Creates a new {@code KnockoutPanel}.
@@ -89,8 +100,9 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
             messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.noInspection")); // NOI18N
             add(messageLabel);
         } else {
-            pageModel.addPropertyChangeListener(new Listener());
-            update();
+            pageModelListener = new Listener();
+            pageModel.addPropertyChangeListener(pageModelListener);
+            update(true);
         }
     }
 
@@ -100,7 +112,6 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
     private void initContextView() {
         contextView = new OutlineView(
                 NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.contextView.name")); // NOI18N
-        contextView.setPopupAllowed(false);
         contextView.setAllowedDragActions(DnDConstants.ACTION_NONE);
         contextView.setAllowedDropActions(DnDConstants.ACTION_NONE);
         contextView.addPropertyColumn(
@@ -115,6 +126,16 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
         }
     }
 
+    /**
+     * Disposes this panel.
+     */
+    void dispose() {
+        if (pageModelListener != null) {
+            pageModel.removePropertyChangeListener(pageModelListener);
+            pageModelListener = null;
+        }
+    }
+
     @Override
     public ExplorerManager getExplorerManager() {
         return manager;
@@ -122,8 +143,24 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
 
     /**
      * Updates the panel (according to the current selection).
+     * 
+     * @param documentUpdated {@code true} when the document was updated,
+     * {@code false} otherwise.
      */
-    final void update() {
+    final void update(final boolean documentUpdated) {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    update(documentUpdated);
+                }
+            });
+            return;
+        }
+        selectedNode = null;
+        if (documentUpdated) {
+            knockoutFound = false;
+        }
         List<? extends Node> selection = pageModel.getSelectedNodes();
         JComponent componentToShow;
         if (selection.isEmpty()) {
@@ -133,19 +170,80 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
             messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.noSingleSelection")); // NOI18N
             componentToShow = messageLabel;
         } else {
-            Node selectedNode = selection.get(0);
+            selectedNode = selection.get(0);
             org.netbeans.modules.web.webkit.debugging.api.dom.Node webKitNode =
                 selectedNode.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
             WebKitDebugging webKit = pageModel.getWebKit();
             Node rootNode = new AbstractNode(Children.create(new KnockoutChildFactory(webKit, webKitNode), true));
             getExplorerManager().setRootContext(rootNode);
-            componentToShow = contextView;
+            if (knockoutFound) {
+                componentToShow = contextView;
+                expandDataNode();
+            } else {
+                messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.checkingKnockout")); // NOI18N
+                componentToShow = messageLabel;
+                checkKnockout(selectedNode);
+            }
         }
         if (componentToShow.getParent() == null) {
             removeAll();
             add(componentToShow);
         }
+        revalidate();
         repaint();
+    }
+
+    /**
+     * Checks if the page uses Knockout. 
+     * 
+     * @param node node whose selection triggered this check.
+     */
+    private void checkKnockout(final Node node) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                RemoteObject remoteObject = pageModel.getWebKit().getRuntime().evaluate("window.ko"); // NOI18N
+                final boolean found = (remoteObject != null && remoteObject.getType() == RemoteObject.Type.OBJECT);
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (node == selectedNode) {
+                            knockoutFound = found;
+                            if (found) {
+                                removeAll();
+                                add(contextView);
+                                expandDataNode();
+                                revalidate();
+                                repaint();
+                            } else {
+                                messageLabel.setText(NbBundle.getMessage(KnockoutPanel.class, "KnockoutPanel.messageLabel.noKnockout")); // NOI18N
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Expands the {@code $data} node of the binding context.
+     */
+    private void expandDataNode() {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                for (final Node node : manager.getRootContext().getChildren().getNodes(true)) {
+                    if ("$data".equals(node.getName())) { // NOI18N
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                contextView.expandNode(node);
+                            }
+                        });
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -179,8 +277,11 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (PageModel.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                update();
+            String propName = evt.getPropertyName();
+            if (PageModel.PROP_SELECTED_NODES.equals(propName)) {
+                update(false);
+            } else if (PageModel.PROP_DOCUMENT.equals(propName)) {
+                update(true);
             }
         }
         

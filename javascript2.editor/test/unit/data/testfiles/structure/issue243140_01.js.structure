@@ -6,3 +6,6 @@ myModule:METHOD:[PUBLIC]:ESCAPED{myModule}ESCAPED{(}ESCAPED{)}:
   bar:FIELD:[PUBLIC]:ESCAPED{bar}:
   foo:METHOD:[PUBLIC]:ESCAPED{foo}:
 yourModule:VARIABLE:[PUBLIC]:ESCAPED{yourModule}:
+  address:CLASS:[PUBLIC]:ESCAPED{address}:
+  bar:FIELD:[PUBLIC]:ESCAPED{bar}:
+  foo:METHOD:[PUBLIC]:ESCAPED{foo}:

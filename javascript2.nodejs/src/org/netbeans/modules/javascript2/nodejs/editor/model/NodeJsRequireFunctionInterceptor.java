@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.nodejs.editor.model;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.regex.Pattern;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -50,6 +51,7 @@ import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
@@ -72,11 +74,11 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         FileObject fo = globalObject.getFileObject();
         if (fo == null) {
             // no action
-            return;
+            return Collections.emptyList();
         }
 
         if (args.size() == 1) {
@@ -86,7 +88,7 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
                 Source source = Source.create(fo);
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), theFirst.getOffset());
                 if (ts == null) {
-                    return;
+                    return Collections.emptyList();
                 }
                 ts.move(theFirst.getOffset());
                 if (ts.moveNext()) {
@@ -102,7 +104,23 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
                                 JsObject jsObject = ((JsObject)scope).getProperty(objectName);
                                 if (jsObject != null) {
                                     int assignmentOffset =  ts.offset() + token.length();
-                                    jsObject.addAssignment(new NodeJsType(NodeJsUtils.getModuleName(module), assignmentOffset) , assignmentOffset);
+                                    TypeUsage modelType = new NodeJsType(NodeJsUtils.getModuleName(module), assignmentOffset);
+                                    ts.move(theFirst.getOffset());
+                                    int balance = 1;
+                                    while (ts.moveNext() && balance > 0) {
+                                        token = ts.token();
+                                        if (token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
+                                            balance++;
+                                        } else if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
+                                            balance--;
+                                        }
+                                    }
+                                    ts.movePrevious();
+                                    token = LexUtilities.findNextIncluding(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.OPERATOR_SEMICOLON, JsTokenId.OPERATOR_DOT));
+                                    if (token != null && token.id() != JsTokenId.OPERATOR_DOT) {
+                                        jsObject.addAssignment( modelType, assignmentOffset);
+                                    }
+                                    return Collections.singletonList(modelType);
                                 }
                             }
                         }
@@ -110,6 +128,7 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
                 }
             }
         }
+        return Collections.emptyList();
     }
 
 }

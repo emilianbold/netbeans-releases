@@ -75,6 +75,7 @@ ATTRIBUTE  onvolumechange                             null
 ATTRIBUTE  onwaiting                                  null
 ATTRIBUTE  ping                                       null
 ATTRIBUTE  rel                                        null
+ATTRIBUTE  role                                       null
 ATTRIBUTE  spellcheck                                 null
 ATTRIBUTE  style                                      null
 ATTRIBUTE  tabindex                                   null

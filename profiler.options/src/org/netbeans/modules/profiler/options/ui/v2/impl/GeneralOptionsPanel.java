@@ -68,6 +68,9 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider( service = ProfilerOptionsPanel.class, position = 10 )
 public final class GeneralOptionsPanel extends ProfilerOptionsPanel {
     
+    private JButton resetDNSAButton;
+    
+    
     public GeneralOptionsPanel() {
         initUI();
     }
@@ -80,6 +83,7 @@ public final class GeneralOptionsPanel extends ProfilerOptionsPanel {
     }
 
     public void loadFrom(ProfilerIDESettings settings) {
+        resetDNSAButton.setEnabled(true);
     }
 
     public boolean equalsTo(ProfilerIDESettings settings) {
@@ -202,7 +206,13 @@ public final class GeneralOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(0, htab, vgap, 0);
         add(resetDNSALabel, c);
         
-        JButton resetDNSAButton = new JButton("Reset");
+        resetDNSAButton = new JButton("Reset") {
+            protected void fireActionPerformed(ActionEvent e) {
+                super.fireActionPerformed(e);
+                ProfilerIDESettings.getInstance().clearDoNotShowAgainMap();
+                setEnabled(false);
+            }
+        };
         c = new GridBagConstraints();
         c.gridx = 1;
         c.gridy = y++;

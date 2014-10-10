@@ -75,12 +75,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -346,15 +342,7 @@ public class CherryPickAction extends SingleRepositoryAction {
                     Bundle.LBL_CherryPickResultProcessor_commit(),
                     NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
                     new Object[] { commit, review, NotifyDescriptor.CANCEL_OPTION }, commit));
-            VCSContext context = VCSContext.forNodes(new Node[] {
-                new AbstractNode(Children.LEAF, Lookups.fixed(repository)) {
-
-                    @Override
-                    public String getName () {
-                        return repository.getName();
-                    }
-                }
-            });
+            VCSContext context = GitUtils.getContextForFile(repository);
             if (o == commit) {
                 SystemAction.get(CommitAction.class).performAction(context);
             } else if (o == review) {

@@ -148,13 +148,24 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.debugger.jpda.js</friend>
                 <friend>org.netbeans.modules.debugger.jpda.truffle</friend>
+                <friend>org.netbeans.modules.javascript.v8debug</friend>
                 <friend>org.netbeans.modules.web.javascript.debugger</friend>
                 <package>org.netbeans.modules.javascript2.debug</package>
                 <package>org.netbeans.modules.javascript2.debug.breakpoints</package>
                 <package>org.netbeans.modules.javascript2.debug.breakpoints.io</package>
+                <package>org.netbeans.modules.javascript2.debug.sources</package>
             </friend-packages>
             <!--public-packages>
                 <package>org.netbeans.modules.javascript2.debug</package>

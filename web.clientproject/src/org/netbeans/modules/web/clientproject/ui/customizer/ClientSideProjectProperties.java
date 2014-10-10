@@ -42,10 +42,10 @@
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -57,6 +57,8 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel.SelectedLibrary;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
+import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -82,6 +84,8 @@ public final class ClientSideProjectProperties {
     private volatile AtomicReference<String> testFolder = null;
     private volatile String jsLibFolder = null;
     private volatile String encoding = null;
+    private volatile Boolean runBrowser = null;
+    private volatile AtomicReference<String> runAs = null;
     private volatile String startFile = null;
     private volatile String selectedBrowser = null;
     private volatile String webRoot = null;
@@ -94,46 +98,6 @@ public final class ClientSideProjectProperties {
 
     public ClientSideProjectProperties(ClientSideProject project) {
         this.project = project;
-    }
-
-    /**
-     * Add or replace project and/or private properties.
-     * <p>
-     * This method cannot be called in the UI thread.
-     * @param projectProperties project properties to be added to (replaced in) the current project properties
-     * @param privateProperties private properties to be added to (replaced in) the current private properties
-     */
-    public void save(final Map<String, String> projectProperties, final Map<String, String> privateProperties) {
-        assert !EventQueue.isDispatchThread();
-        assert !projectProperties.isEmpty() || !privateProperties.isEmpty() : "Neither project nor private properties to be saved";
-        try {
-            // store properties
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                @Override
-                public Void run() throws IOException {
-                    AntProjectHelper helper = project.getProjectHelper();
-
-                    mergeProperties(helper, AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-                    mergeProperties(helper, AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
-
-                    ProjectManager.getDefault().saveProject(project);
-                    return null;
-                }
-
-                private void mergeProperties(AntProjectHelper helper, String path, Map<String, String> properties) {
-                    if (properties.isEmpty()) {
-                        return;
-                    }
-                    EditableProperties currentProperties = helper.getProperties(path);
-                    for (Map.Entry<String, String> entry : properties.entrySet()) {
-                        currentProperties.put(entry.getKey(), entry.getValue());
-                    }
-                    helper.putProperties(path, currentProperties);
-                }
-            });
-        } catch (MutexException e) {
-            LOGGER.log(Level.WARNING, null, e.getException());
-        }
     }
 
     public void save() {
@@ -150,6 +114,7 @@ public final class ClientSideProjectProperties {
                     return null;
                 }
             });
+            firePropertyChanges();
         } catch (MutexException | IOException e) {
             LOGGER.log(Level.WARNING, null, e);
         }
@@ -189,6 +154,15 @@ public final class ClientSideProjectProperties {
             }
         }
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_ENCODING, encoding);
+        if (runAs != null) {
+            String runAsValue = runAs.get();
+            if (runAsValue != null) {
+                putProperty(projectProperties, ClientSideProjectConstants.PROJECT_RUN_AS, runAsValue);
+            } else {
+                projectProperties.remove(ClientSideProjectConstants.PROJECT_RUN_AS);
+            }
+        }
+        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_RUN_BROWSER, runBrowser);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_START_FILE, startFile);
         // #227995: store PROJECT_SELECTED_BROWSER in private.properties:
         projectProperties.remove(ClientSideProjectConstants.PROJECT_SELECTED_BROWSER);
@@ -211,6 +185,14 @@ public final class ClientSideProjectProperties {
         assert ProjectManager.mutex().isWriteAccess() : "Write mutex required"; //NOI18N
         if (enhancedBrowserSettings != null) {
             enhancedBrowserSettings.save();
+        }
+    }
+
+    void firePropertyChanges() {
+        if (runAs != null) {
+            String runAsValue = runAs.get();
+            PlatformProviders.getDefault().notifyPropertyChanged(project,
+                    new PropertyChangeEvent(project, PlatformProvider.PROP_RUN_CONFIGURATION, null, runAsValue));
         }
     }
 
@@ -266,6 +248,28 @@ public final class ClientSideProjectProperties {
 
     public void setEncoding(String encoding) {
         this.encoding = encoding;
+    }
+
+    public AtomicReference<String> getRunAs() {
+        if (runAs == null) {
+            runAs = new AtomicReference(getProjectProperty(ClientSideProjectConstants.PROJECT_RUN_AS, null));
+        }
+        return runAs;
+    }
+
+    public void setRunAs(String runAs) {
+        this.runAs = new AtomicReference<>(runAs);
+    }
+
+    public boolean isRunBrowser() {
+        if (runBrowser == null) {
+            runBrowser = project.isRunBrowser();
+        }
+        return runBrowser;
+    }
+
+    public void setRunBrowser(boolean runBrowser) {
+        this.runBrowser = runBrowser;
     }
 
     public String getStartFile() {
@@ -403,6 +407,12 @@ public final class ClientSideProjectProperties {
     private void putProperty(EditableProperties properties, String property, String value) {
         if (value != null) {
             properties.put(property, value);
+        }
+    }
+
+    private void putProperty(EditableProperties properties, String property, Boolean value) {
+        if (value != null) {
+            properties.put(property, value.toString());
         }
     }
 

@@ -43,11 +43,11 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
 
     void read(WizardDescriptor settings) {
         if (firstTime) {
-            FSPath wd = (FSPath) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
+            FSPath wd = WizardConstants.PROPERTY_PROJECT_FOLDER.get(settings);
             //sourceFilesPanel.setSeed(workingdir, workingdir);
             sourceFilesPanel.getSourceListData().add(new FolderEntry(wd, wd.getPath()));
             sourceFilesPanel.setFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT);
@@ -90,16 +90,16 @@ import org.openide.util.NbBundle;
     }
 
     void store(WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS, sourceFilesPanel.getSourceListData().iterator()); // NOI18N
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_LIST, new ArrayList<>(sourceFilesPanel.getSourceListData())); // NOI18N
+        WizardConstants.PROPERTY_SOURCE_FOLDERS.put(wizardDescriptor, sourceFilesPanel.getSourceListData().iterator()); // NOI18N
+        WizardConstants.PROPERTY_SOURCE_FOLDERS_LIST.put(wizardDescriptor, new ArrayList<>(sourceFilesPanel.getSourceListData())); // NOI18N
         if (sourceFilesPanel.getFoldersFilter().trim().length() == 0) {
             // change empty pattern on "no ignore folder pattern"
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER, MakeConfigurationDescriptor.DEFAULT_NO_IGNORE_FOLDERS_PATTERN); // NOI18N
+            WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER.put(wizardDescriptor, MakeConfigurationDescriptor.DEFAULT_NO_IGNORE_FOLDERS_PATTERN); // NOI18N
         } else {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER, sourceFilesPanel.getFoldersFilter()); // NOI18N
+            WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER.put(wizardDescriptor, sourceFilesPanel.getFoldersFilter()); // NOI18N
         }
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_TEST_FOLDERS, sourceFilesPanel.getTestListData().iterator()); // NOI18N
-        wizardDescriptor.putProperty("testFoldersList", new ArrayList<>(sourceFilesPanel.getTestListData())); // NOI18N
+        WizardConstants.PROPERTY_TEST_FOLDERS.put(wizardDescriptor, sourceFilesPanel.getTestListData().iterator()); // NOI18N
+        WizardConstants.PROPERTY_TEST_FOLDERS_LIST.put(wizardDescriptor, new ArrayList<>(sourceFilesPanel.getTestListData())); // NOI18N
     }
 
     boolean valid(WizardDescriptor settings) {

@@ -137,11 +137,11 @@ public final class PlatformProviders {
     public void setPlatformProvider(@NonNull Project project, @NonNull PlatformProvider platformProvider) {
         Parameters.notNull("project", project); // NOI18N
         Parameters.notNull("platformProvider", platformProvider); // NOI18N
-        platformProvider.notifyEnabled(project, true);
+        platformProvider.notifyPropertyChanged(project, new PropertyChangeEvent(project, PlatformProvider.PROP_ENABLED, null, true));
     }
 
     /**
-     * Notifies provider that the given project is being opened.
+     * Notifies providers that the given project is being opened.
      * <p>
      * Provider is notified even if it is not {@link PlatformProvider#isEnabled(Project) enabled} in the given project.
      * @param project project being opened
@@ -154,7 +154,7 @@ public final class PlatformProviders {
     }
 
     /**
-     * Notifies provider that the given project is being closed.
+     * Notifies providers that the given project is being closed.
      * <p>
      * Provider is notified even if it is not {@link PlatformProvider#isEnabled(Project) enabled} in the given project.
      * @param project project being closed
@@ -163,6 +163,40 @@ public final class PlatformProviders {
         Parameters.notNull("project", project); // NOI18N
         for (PlatformProvider platformProvider : platformProviders) {
             platformProvider.projectClosed(project);
+        }
+    }
+
+    /**
+     * Notifies provider that some property has been changed in the given project (so
+     * the provider can, if necessary, adjust UI etc.).
+     * <p>
+     * Provider is notified even if it is not {@link PlatformProvider#isEnabled(Project) enabled} in the given project.
+     * @param project the project, never {@code null}
+     * @param platformProvider platform provider to be notified
+     * @param event information about property change
+     * @since 1.71
+     */
+    public void notifyPropertyChanged(@NonNull Project project, @NonNull PlatformProvider platformProvider, @NonNull PropertyChangeEvent event) {
+        Parameters.notNull("project", project); // NOI18N
+        Parameters.notNull("platformProvider", platformProvider); // NOI18N
+        Parameters.notNull("event", event); // NOI18N
+        platformProvider.notifyPropertyChanged(project, event);
+    }
+
+    /**
+     * Notifies all providers that some property has been changed in the given project (so
+     * the provider can, if necessary, adjust UI etc.).
+     * <p>
+     * Provider is notified even if it is not {@link PlatformProvider#isEnabled(Project) enabled} in the given project.
+     * @param project the project, never {@code null}
+     * @param event information about property change
+     * @since 1.71
+     */
+    public void notifyPropertyChanged(@NonNull Project project, @NonNull PropertyChangeEvent event) {
+        Parameters.notNull("project", project); // NOI18N
+        Parameters.notNull("event", event); // NOI18N
+        for (PlatformProvider platformProvider : platformProviders) {
+            platformProvider.notifyPropertyChanged(project, event);
         }
     }
 

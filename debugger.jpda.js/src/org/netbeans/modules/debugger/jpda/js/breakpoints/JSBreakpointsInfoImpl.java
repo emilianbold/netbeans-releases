@@ -53,6 +53,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.js.source.Source;
 import org.netbeans.modules.javascript2.debug.JSUtils;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfo;
+import org.netbeans.modules.javascript2.debug.sources.SourceFilesCache;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
@@ -90,7 +91,7 @@ public class JSBreakpointsInfoImpl implements JSBreakpointsInfo {
 
     @Override
     public boolean isTransientURL(URL url) {
-        return Source.URL_PROTOCOL.equals(url.getProtocol());
+        return SourceFilesCache.URL_PROTOCOL.equals(url.getProtocol());
     }
 
     @Override

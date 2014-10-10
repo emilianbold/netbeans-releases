@@ -41,6 +41,10 @@
  */
 package org.netbeans.lib.v8debug;
 
+import java.util.Map;
+import org.netbeans.lib.v8debug.vars.ReferencedValue;
+import org.netbeans.lib.v8debug.vars.V8Value;
+
 /**
  *
  * @author Martin Entlicher
@@ -67,11 +71,17 @@ public final class V8Event extends V8Packet {
     
     private final Kind eventKind;
     private final V8Body body;
+    private final ReferencedValue[] referencedValues;
+    private Map<Long, V8Value> valuesByReferences;
+    private final PropertyBoolean running;
     
-    V8Event(long sequence, Kind eventKind, V8Body body) {
+    V8Event(long sequence, Kind eventKind, V8Body body,
+            ReferencedValue[] referencedValues, Boolean running) {
         super(sequence, V8Type.event);
         this.eventKind = eventKind;
         this.body = body;
+        this.referencedValues = referencedValues;
+        this.running = new PropertyBoolean(running);
     }
 
     public Kind getKind() {
@@ -82,4 +92,24 @@ public final class V8Event extends V8Packet {
         return body;
     }
     
+    public ReferencedValue[] getReferencedValues() {
+        return referencedValues;
+    }
+    
+    public V8Value getReferencedValue(long reference) {
+        if (referencedValues == null || referencedValues.length == 0) {
+            return null;
+        }
+        synchronized (this) {
+            if (valuesByReferences == null) {
+                valuesByReferences = V8Response.createValuesByReference(referencedValues);
+            }
+            return valuesByReferences.get(reference);
+        }
+    }
+
+    public PropertyBoolean isRunning() {
+        return running;
+    }
+
 }

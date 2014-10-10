@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
@@ -60,7 +61,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -416,7 +416,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             } else if (baseDir != null) {
                 seed = baseDir;
             } else if (controller != null) {
-                seed = (String) controller.getWizardDescriptor().getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);
+                seed = WizardConstants.PROPERTY_NATIVE_PROJ_DIR.get(controller.getWizardDescriptor());
             }
         }
         //FileChooser fileChooser = new FileChooser(title, buttonText, FileChooser.DIRECTORIES_ONLY, null, seed, true);

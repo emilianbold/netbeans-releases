@@ -1,5 +1,5 @@
 (function () {
-$scope = Ctrl.$scope;
+var $scope = Ctrl.$scope;
 Ctrl;
 with ($scope) { 
 printAttempt.;

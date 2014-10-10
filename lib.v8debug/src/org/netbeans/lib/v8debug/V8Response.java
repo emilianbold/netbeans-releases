@@ -96,13 +96,17 @@ public final class V8Response extends V8Packet {
         }
         synchronized (this) {
             if (valuesByReferences == null) {
-                valuesByReferences = new HashMap<>();
-                for (int i = 0; i < referencedValues.length; i++) {
-                    valuesByReferences.put(referencedValues[i].getReference(), referencedValues[i].getValue());
-                }
+                valuesByReferences = createValuesByReference(referencedValues);
             }
             return valuesByReferences.get(reference);
         }
+    }
+    static Map<Long, V8Value> createValuesByReference(ReferencedValue[] referencedValues) {
+        Map<Long, V8Value> valuesByReferences = new HashMap<>();
+        for (int i = 0; i < referencedValues.length; i++) {
+            valuesByReferences.put(referencedValues[i].getReference(), referencedValues[i].getValue());
+        }
+        return valuesByReferences;
     }
 
     public boolean isRunning() {

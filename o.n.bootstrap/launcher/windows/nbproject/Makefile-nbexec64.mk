@@ -70,12 +70,12 @@ nbexec64.dll: ${OBJECTFILES}
 ${OBJECTDIR}/jvmlauncher.o: jvmlauncher.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"nbexec64.dll\" -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_45/include -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_45/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/jvmlauncher.o jvmlauncher.cpp
+	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"nbexec64.dll\" -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_67/include -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_67/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/jvmlauncher.o jvmlauncher.cpp
 
 ${OBJECTDIR}/nbexec.o: nbexec.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"nbexec64.dll\" -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_45/include -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_45/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbexec.o nbexec.cpp
+	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"nbexec64.dll\" -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_67/include -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_67/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbexec.o nbexec.cpp
 
 ${OBJECTDIR}/nbexec64.res: nbexec.rc version.h
 	${MKDIR} -p ${OBJECTDIR}
@@ -89,17 +89,17 @@ ${OBJECTDIR}/nbexec64.res: nbexec.rc version.h
 ${OBJECTDIR}/nbexecexe.o: nbexecexe.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"nbexec64.dll\" -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_45/include -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_45/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbexecexe.o nbexecexe.cpp
+	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"nbexec64.dll\" -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_67/include -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_67/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbexecexe.o nbexecexe.cpp
 
 ${OBJECTDIR}/platformlauncher.o: platformlauncher.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"nbexec64.dll\" -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_45/include -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_45/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/platformlauncher.o platformlauncher.cpp
+	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"nbexec64.dll\" -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_67/include -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_67/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/platformlauncher.o platformlauncher.cpp
 
 ${OBJECTDIR}/utilsfuncs.o: utilsfuncs.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"nbexec64.dll\" -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_45/include -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_45/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utilsfuncs.o utilsfuncs.cpp
+	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"nbexec64.dll\" -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_67/include -I/cygdrive/C/Program\ Files/Java/jdk1.7.0_67/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/utilsfuncs.o utilsfuncs.cpp
 
 # Subprojects
 .build-subprojects:

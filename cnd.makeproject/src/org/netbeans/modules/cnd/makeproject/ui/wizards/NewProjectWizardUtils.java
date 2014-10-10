@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -49,7 +50,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -66,12 +66,12 @@ import org.openide.filesystems.FileSystem;
 public class NewProjectWizardUtils {
 
     public static boolean isFullRemote(WizardDescriptor wizardDescriptor) {
-        return wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV) != null;
+        return WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizardDescriptor) != null;
     }
 
     public static FileSystem getFileSystem(WizardDescriptor wizardDescriptor) {
         if (isFullRemote(wizardDescriptor)) {
-            String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
+            String hostUID = WizardConstants.PROPERTY_HOST_UID.get(wizardDescriptor);
             CndUtils.assertNotNull(hostUID, "Null host UID"); //NOI18N
             ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
             return FileSystemProvider.getFileSystem(env);
@@ -82,7 +82,7 @@ public class NewProjectWizardUtils {
 
     public static FileObject getFileObject(String path, WizardDescriptor wizardDescriptor) {
         if (isFullRemote(wizardDescriptor)) {
-            String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
+            String hostUID = WizardConstants.PROPERTY_HOST_UID.get(wizardDescriptor);
             CndUtils.assertNotNull(hostUID, "Null host UID"); //NOI18N
             ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
             return RemoteFileUtil.getFileObject(path, env);
@@ -92,7 +92,7 @@ public class NewProjectWizardUtils {
     }
 
     public static ExecutionEnvironment getExecutionEnvironment(WizardDescriptor wizardDescriptor) {
-        String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
+        String hostUID = WizardConstants.PROPERTY_HOST_UID.get(wizardDescriptor);
         return (hostUID == null) ?
             ServerList.getDefaultRecord().getExecutionEnvironment() :
             ExecutionEnvironmentFactory.fromUniqueID(hostUID);
@@ -146,7 +146,7 @@ public class NewProjectWizardUtils {
 
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
         if (isFullRemote(wd)) {
-            String hostUID = (String) wd.getProperty(WizardConstants.PROPERTY_HOST_UID);
+            String hostUID = WizardConstants.PROPERTY_HOST_UID.get(wd);
             if (hostUID != null) {
                 execEnv = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
             }

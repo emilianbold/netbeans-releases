@@ -129,34 +129,36 @@ public class JSONReader {
         String eventName = (String) obj.get(EVENT);
         V8Event.Kind eventKind = V8Event.Kind.fromString(eventName);
         V8Body body = null;
-        obj = (JSONObject) obj.get(BODY);
+        JSONObject bodyObj = (JSONObject) obj.get(BODY);
         switch (eventKind) {
             case AfterCompile:
-                V8Script script = getScript((JSONObject) obj.get(EVT_SCRIPT));
+                V8Script script = getScript((JSONObject) bodyObj.get(EVT_SCRIPT));
                 body = new AfterCompileEventBody(script);
                 break;
             case Break:
-                String invocationText = (String) obj.get(EVT_INVOCATION_TEXT);
-                long sourceLine = getLong(obj, EVT_SOURCE_LINE);
-                long sourceColumn = getLong(obj, EVT_SOURCE_COLUMN);
-                String sourceLineText = (String) obj.get(EVT_SOURCE_LINE_TEXT);
-                V8ScriptLocation scriptLocation = getScriptLocation((JSONObject) obj.get(EVT_SCRIPT));
-                long[] breakpoints = getLongArray((JSONArray) obj.get(EVT_BREAKPOINTS));
+                String invocationText = (String) bodyObj.get(EVT_INVOCATION_TEXT);
+                long sourceLine = getLong(bodyObj, EVT_SOURCE_LINE);
+                long sourceColumn = getLong(bodyObj, EVT_SOURCE_COLUMN);
+                String sourceLineText = (String) bodyObj.get(EVT_SOURCE_LINE_TEXT);
+                V8ScriptLocation scriptLocation = getScriptLocation((JSONObject) bodyObj.get(EVT_SCRIPT));
+                long[] breakpoints = getLongArray((JSONArray) bodyObj.get(EVT_BREAKPOINTS));
                 body = new BreakEventBody(invocationText, sourceLine, sourceColumn, sourceLineText, scriptLocation, breakpoints);
                 break;
             case Exception:
-                boolean uncaught = (boolean) obj.get(EVT_UNCAUGHT);
-                V8Value exception = getValue((JSONObject) obj.get(EVT_EXCEPTION));
-                sourceLine = getLong(obj, EVT_SOURCE_LINE);
-                sourceColumn = getLong(obj, EVT_SOURCE_COLUMN);
-                sourceLineText = (String) obj.get(EVT_SOURCE_LINE_TEXT);
-                script = getScript((JSONObject) obj.get(EVT_SCRIPT));
+                boolean uncaught = (boolean) bodyObj.get(EVT_UNCAUGHT);
+                V8Value exception = getValue((JSONObject) bodyObj.get(EVT_EXCEPTION));
+                sourceLine = getLong(bodyObj, EVT_SOURCE_LINE);
+                sourceColumn = getLong(bodyObj, EVT_SOURCE_COLUMN);
+                sourceLineText = (String) bodyObj.get(EVT_SOURCE_LINE_TEXT);
+                script = getScript((JSONObject) bodyObj.get(EVT_SCRIPT));
                 body = new ExceptionEventBody(uncaught, exception, sourceLine, sourceColumn, sourceLineText, script);
                 break;
             default:
                 new IllegalArgumentException("Unknown event "+eventName+" in "+obj.toJSONString()).printStackTrace();
         }
-        return new V8Event(sequence, eventKind, body);
+        ReferencedValue[] refs = getRefs((JSONArray) obj.get(REFS));
+        Boolean running = (Boolean) obj.get(RUNNING);
+        return new V8Event(sequence, eventKind, body, refs, running);
     }
 
     private static V8Body getBody(V8Command command, JSONObject obj) {

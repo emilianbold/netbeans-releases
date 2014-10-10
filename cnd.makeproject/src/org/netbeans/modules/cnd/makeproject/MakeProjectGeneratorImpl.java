@@ -194,9 +194,9 @@ public class MakeProjectGeneratorImpl {
         if (prjParams.getCustomizerId() != null) {
             dirFO.createData("cndcustomizerid." + prjParams.getCustomizerId()); // NOI18N
         }
-        final Iterator<SourceFolderInfo> sourceFolders = prjParams.getSourceFolders();
+        final Iterator<? extends SourceFolderInfo> sourceFolders = prjParams.getSourceFolders();
         final String sourceFoldersFilter = prjParams.getSourceFoldersFilter();
-        final Iterator<SourceFolderInfo> testFolders = prjParams.getTestFolders();
+        final Iterator<? extends SourceFolderInfo> testFolders = prjParams.getTestFolders();
         final Iterator<String> importantItems = prjParams.getImportantFiles();
         final Iterator<LogicalFolderItemsInfo> logicalFolderItems = prjParams.getLogicalFolderItems();
         final Iterator<LogicalFoldersInfo> logicalFolders = prjParams.getLogicalFolders();

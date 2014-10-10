@@ -55,7 +55,6 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.remote.actions.base.RemoteActionPerformer;
 import org.netbeans.modules.cnd.remote.projectui.wizard.ide.NewProjectWizard;
@@ -126,7 +125,7 @@ public class NewRemoteProjectPerformer extends RemoteActionPerformer {
 
         wizard.putProperty(ProjectTemplatePanel.PRESELECT_TEMPLATE, null);
         
-        wizard.putProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV, env);
+        WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.put(wizard, env);
         
         FileObject folder = (FileObject) presenter.getValue(CommonProjectActions.EXISTING_SOURCES_FOLDER);
         if (folder != null) {

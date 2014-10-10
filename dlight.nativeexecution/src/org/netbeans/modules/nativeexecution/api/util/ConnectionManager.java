@@ -700,32 +700,41 @@ public final class ConnectionManager {
         @Override
         public void setPortForwardingR(String bind_address, int rport, String host, int lport) throws JSchException {
             synchronized (channelsSupportLock) {
-                JSchChannelsSupport cs = channelsSupport.get(env);
-                cs.setPortForwardingR(bind_address, rport, host, lport);
+                if (channelsSupport.containsKey(env)) {
+                    JSchChannelsSupport cs = channelsSupport.get(env);
+                    cs.setPortForwardingR(bind_address, rport, host, lport);
+                }
             }
         }
 
         @Override
         public int setPortForwardingL(int lport, String host, int rport) throws JSchException {
             synchronized (channelsSupportLock) {
-                JSchChannelsSupport cs = channelsSupport.get(env);
-                return cs.setPortForwardingL(lport, host, rport);
+                if (channelsSupport.containsKey(env)) {
+                    JSchChannelsSupport cs = channelsSupport.get(env);
+                    return cs.setPortForwardingL(lport, host, rport);
+                }
             }
+            return -1;
         }
 
         @Override
         public void delPortForwardingR(int rport) throws JSchException {
             synchronized (channelsSupportLock) {
-                JSchChannelsSupport cs = channelsSupport.get(env);
-                cs.delPortForwardingR(rport);
+                if (channelsSupport.containsKey(env)) {
+                    JSchChannelsSupport cs = channelsSupport.get(env);
+                    cs.delPortForwardingR(rport);
+                }
             }
         }
 
         @Override
         public void delPortForwardingL(int lport) throws JSchException {
             synchronized (channelsSupportLock) {
-                JSchChannelsSupport cs = channelsSupport.get(env);
-                cs.delPortForwardingL(lport);
+                if (channelsSupport.containsKey(env)) {
+                    JSchChannelsSupport cs = channelsSupport.get(env);
+                    cs.delPortForwardingL(lport);
+                }
             }
         }
 

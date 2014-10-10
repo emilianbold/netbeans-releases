@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.utils.filters;
 
+import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

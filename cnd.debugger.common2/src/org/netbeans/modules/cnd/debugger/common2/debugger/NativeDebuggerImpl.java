@@ -61,6 +61,7 @@ import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 
@@ -1261,8 +1262,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     protected class DisModelSupport implements DisFragModel {
 
-        private ArrayList<Line> current_addrs = new ArrayList<Line>();
-        private ArrayList<Listener> listeners = new ArrayList<Listener>();
+        private List<Line> current_addrs = new CopyOnWriteArrayList<Line>();
+        private List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
 
         // implement DisFragModel
         public void clear() {
@@ -1419,8 +1420,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                 bpt = b;
             }
         }
-        private ArrayList<Bpt> breakpoints_List = new ArrayList<Bpt>();
-        private ArrayList<Listener> listeners = new ArrayList<Listener>();
+        private List<Bpt> breakpoints_List = new CopyOnWriteArrayList<Bpt>();
+        private List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
 
 	public InstBreakpointModel() {
 	}
@@ -1517,7 +1518,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
         private HashMap<Long, Integer> addrHashMap;
 
-        private final ArrayList<Listener> listeners = new ArrayList<Listener>();
+        private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
 
 	public StateModelAdaptor() {
 	}

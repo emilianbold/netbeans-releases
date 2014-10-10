@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -201,7 +202,14 @@ class DependencyChecker extends Object {
     }
     
     public static boolean matchPackageDependency (Dependency dep) {
-        return Util.checkPackageDependency (dep, Util.class.getClassLoader());
+        if (dep.getName().equals("javafx.application[Application]")) {
+            File javaHome = new File(System.getProperty("java.home"));
+            return 
+                new File(new File(javaHome, "lib"), "jfxrt.jar").exists() || 
+                new File(new File(new File(javaHome, "lib"), "ext"), "jfxrt.jar").exists();
+        } else {
+            return Util.checkPackageDependency (dep, Util.class.getClassLoader());
+        }        
     }
     
     static boolean checkDependencyModuleAllowEqual (Dependency dep, ModuleInfo module) {

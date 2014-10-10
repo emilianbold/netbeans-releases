@@ -75,6 +75,7 @@ import org.openide.util.Utilities;
  */
 public class ModelSource implements SourceFileProperties {
     private static final boolean TRACE_AMBIGUOUS = Boolean.getBoolean("cnd.modeldiscovery.trace.ambiguous"); // NOI18N
+    private static final int MAX_DEPTH = 4;
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.modeldiscovery.provider.SourceFileProperties"); // NOI18N
     {
         if (TRACE_AMBIGUOUS){logger.setLevel(Level.ALL);}
@@ -203,7 +204,7 @@ public class ModelSource implements SourceFileProperties {
                     }
                     path = getRelativepath(path);
                     res.add(path);
-                    if (level < 5 && resolved != null) {
+                    if (level < MAX_DEPTH && resolved != null) {
                         analyzeUnresolved(res, resolved, level+1);
                     }
                 } else {
@@ -264,7 +265,7 @@ public class ModelSource implements SourceFileProperties {
                 if (!reResolve) {
                     includedFiles.add(resolved.getAbsolutePath());
                 }
-                if (level < 5 && resolved != null) {
+                if (level < MAX_DEPTH && resolved != null) {
                     analyzeUnresolved(res, resolved, level+1);
                 }
             }

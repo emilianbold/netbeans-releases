@@ -574,7 +574,7 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
         }
 
         private void repairEntries (File file) {
-            SystemAction.get(MarkResolvedAction.class).performAction(VCSContext.forNodes(new AbstractNode[] { new AbstractNode(Children.LEAF, Lookups.fixed(file)) }));
+            SystemAction.get(MarkResolvedAction.class).performAction(GitUtils.getContextForFile(file));
         }
     }
     

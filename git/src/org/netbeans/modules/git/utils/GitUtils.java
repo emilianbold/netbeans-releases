@@ -1116,6 +1116,25 @@ public final class GitUtils {
         return isValidRefName(PREFIX_R_HEADS + branchName);
     }
 
+    public static VCSContext getContextForFile (final File root) {
+        return getContextForFiles(new File[] { root });
+    }
+
+    public static VCSContext getContextForFiles (final File[] roots) {
+        Node[] nodes = new Node[roots.length];
+        for (int i = 0; i < roots.length; ++i) {
+            final File root = roots[i];
+            nodes[i] = new AbstractNode(Children.LEAF, Lookups.fixed(root)) {
+
+                @Override
+                public String getName () {
+                    return root.getName();
+                }
+            };
+        }
+        return VCSContext.forNodes(nodes);
+    }
+
     public static interface SearchCallback<T> {
         
         public boolean contains (T item, String needle);

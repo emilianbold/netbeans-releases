@@ -148,7 +148,7 @@ public class ProjectActionSupport {
 
     private static boolean isFileOperationsIntensive(ProjectActionEvent pae) {
         Type type = pae.getType();
-        if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS) {
+        if (type == PredefinedType.PRE_BUILD || type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS) {
             return true;
         }
         return false;

@@ -8,8 +8,8 @@ CLASS      synergy                         [PUBLIC]   issue232178.js
 CLASS      util                            [PUBLIC]   issue232178.js
 METHOD     Date                            [PUBLIC]   issue232178.js
 VARIABLE   arguments: Arguments            [PRIVATE]  issue232178.js
-VARIABLE   date                            [PRIVATE]  issue232178.js
-VARIABLE   expires                         [PRIVATE]  issue232178.js
+VARIABLE   date: Date                      [PRIVATE]  issue232178.js
+VARIABLE   expires: String                 [PRIVATE]  issue232178.js
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null

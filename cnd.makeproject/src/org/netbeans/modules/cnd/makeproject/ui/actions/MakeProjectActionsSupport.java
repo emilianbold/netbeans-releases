@@ -68,6 +68,10 @@ public class MakeProjectActionsSupport {
         return ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null); // NOI18N        
     }
     
+    public static Action preBuildAction() {
+        return ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_PRE_BUILD, bundle.getString("LBL_PreBuildAction_Name"), null); // NOI18N        
+    }
+    
     public static Action runAction() {
         return ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null); // NOI18N
     }

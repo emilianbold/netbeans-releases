@@ -43,13 +43,20 @@ package org.netbeans.modules.javascript.nodejs.ui.actions;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
+import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.netbeans.modules.javascript.nodejs.util.RunInfo;
+import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 abstract class Command {
 
@@ -61,8 +68,13 @@ abstract class Command {
         this.project = project;
     }
 
+    public abstract String getCommandId();
+
     public abstract boolean isEnabled(Lookup context);
+
     abstract void runInternal(Lookup context);
+
+    abstract ValidationResult validateRunInfo(RunInfo runInfo);
 
     public void run(Lookup context) {
         assert !EventQueue.isDispatchThread();
@@ -72,6 +84,17 @@ abstract class Command {
     @CheckForNull
     protected NodeExecutable getNode() {
         return NodeExecutable.forProject(project, true);
+    }
+
+    @CheckForNull
+    protected RunInfo getRunInfo() {
+        RunInfo runInfo = new RunInfo(project);
+        ValidationResult result = validateRunInfo(runInfo);
+        if (!result.isFaultless()) {
+            NodeJsCustomizerProvider.openCustomizer(project, result);
+            return null;
+        }
+        return runInfo;
     }
 
     @CheckForNull
@@ -90,58 +113,29 @@ abstract class Command {
         return file;
     }
 
-    //~ Inner classes
-
-    static final class RunProjectCommand extends Command {
-
-        public RunProjectCommand(Project project) {
-            super(project);
+    @CheckForNull
+    protected File lookupJavaScriptFile(Lookup context) {
+        FileObject file = lookupFileObject(context);
+        if (file == null) {
+            return null;
         }
-
-        @Override
-        public boolean isEnabled(Lookup context) {
-            return true;
+        if (!FileUtils.isJavaScriptFile(file)) {
+            return null;
         }
-
-        @Override
-        void runInternal(Lookup context) {
-            NodeExecutable node = getNode();
-            if (node != null) {
-                // XXX
-                node.run(new File(FileUtil.toFile(project.getProjectDirectory()), "src/main.js"));
-            }
-        }
-
+        return FileUtil.toFile(file);
     }
 
-    static final class RunFileCommand extends Command {
+    protected void warnUser(String message) {
+        NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notifyLater(descriptor);
+    }
 
-        public RunFileCommand(Project project) {
-            super(project);
-        }
-
-        @Override
-        public boolean isEnabled(Lookup context) {
-            FileObject fo = lookupFileObject(context);
-            if (fo == null) {
-                return false;
-            }
-            return FileUtils.isJavaScriptFile(fo);
-        }
-
-        @Override
-        void runInternal(Lookup context) {
-            File file = lookupFile(context);
-            assert file != null;
-            if (FileUtils.isJavaScriptFile(file)) {
-                NodeExecutable node = getNode();
-                if (node != null) {
-                    node.run(file);
-                }
-            }
-        }
-
+    @NbBundle.Messages({
+        "# {0} - reason",
+        "Command.warn.debug=Cannot run debugger. Reason:\n\n{0}",
+    })
+    protected void warnCannotDebug(IOException ex) {
+        warnUser(Bundle.Command_warn_debug(ex.getLocalizedMessage()));
     }
 
 }
-

@@ -633,6 +633,12 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 val = val.replace("$(MAKE)", "${MAKE}"); // NOI18N
             }
             ((MakeConfiguration) currentConf).getMakefileConfiguration().getCleanCommand().setValue(val);
+        } else if (element.equals(PRE_BUILD_WORKING_DIR_ELEMENT)) {
+            String val = getString(currentText);
+            ((MakeConfiguration) currentConf).getPreBuildConfiguration().getPreBuildCommandWorkingDir().setValue(val);
+        } else if (element.equals(PRE_BUILD_COMMAND_ELEMENT)) {
+            String val = getString(currentText);
+            ((MakeConfiguration) currentConf).getPreBuildConfiguration().getPreBuildCommand().setValue(val);
         } else if (element.equals(EXECUTABLE_PATH_ELEMENT)) {
             String path = currentText;
             path = getString(adjustOffset(path));

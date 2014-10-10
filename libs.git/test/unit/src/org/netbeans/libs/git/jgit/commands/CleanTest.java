@@ -412,26 +412,7 @@ public class CleanTest extends AbstractGitTestCase {
     }
     
     private void assertDirCacheEntry (Collection<File> files) throws IOException {
-        DirCache cache = repository.lockDirCache();
-        for (File f : files) {
-            String relativePath = Utils.getRelativePath(workDir, f);
-            DirCacheEntry e = cache.getEntry(relativePath);
-            assertNotNull(e);
-            assertEquals(relativePath, e.getPathString());
-            assertEquals(f.lastModified(), e.getLastModified());
-            InputStream in = new FileInputStream(f);
-            try {
-                assertEquals(e.getObjectId(), repository.newObjectInserter().idFor(Constants.OBJ_BLOB, f.length(), in));
-            } finally {
-                in.close();
-            }
-            if (e.getLength() == 0 && f.length() != 0) {
-                assertTrue(e.isSmudged());
-            } else {
-                assertEquals(f.length(), e.getLength());
-            }
-        }
-        cache.unlock();
+        assertDirCacheEntry(repository, workDir, files);
     }
    
     private void assertNullDirCacheEntry (Collection<File> files) throws Exception {
