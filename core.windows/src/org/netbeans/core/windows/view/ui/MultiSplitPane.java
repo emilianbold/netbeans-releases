@@ -558,6 +558,7 @@ public class MultiSplitPane extends JPanel
     }
 
     public void startResizing( Component child ) {
+        doLayout();
         MultiSplitDivider divider = findSplitDividerFor( child );
         if( null == divider )
             return;
@@ -565,6 +566,7 @@ public class MultiSplitPane extends JPanel
         MultiSplitDivider parentDivider = null;
         MultiSplitPane parentSplit = ( MultiSplitPane ) SwingUtilities.getAncestorOfClass( MultiSplitPane.class, this );
         if( null != parentSplit ) {
+            parentSplit.doLayout();
             parentDivider = parentSplit.findSplitDividerFor( this );
         }
         ModeResizer.start( resizingCell.getComponent(), divider, parentDivider );
