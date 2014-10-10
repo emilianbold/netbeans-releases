@@ -625,17 +625,17 @@ public final class WebLogicDeployer {
 
     public static class Application {
 
-        private final String id;
+        private final String name;
 
         private final URL url;
 
         private Application(String id, URL url) {
-            this.id = id;
+            this.name = id;
             this.url = url;
         }
 
-        public String getId() {
-            return id;
+        public String getName() {
+            return name;
         }
 
         public URL getUrl() {
