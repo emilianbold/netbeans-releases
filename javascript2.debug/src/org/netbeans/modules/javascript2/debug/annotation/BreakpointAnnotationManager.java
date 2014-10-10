@@ -201,7 +201,8 @@ class BreakpointAnnotationManager implements PropertyChangeListener {
         String propertyName = evt.getPropertyName();
         if (Breakpoint.PROP_ENABLED.equals(propertyName) ||
             JSLineBreakpoint.PROP_LINE.equals(propertyName) ||
-            Breakpoint.PROP_VALIDITY.equals(propertyName)) {
+            Breakpoint.PROP_VALIDITY.equals(propertyName) ||
+            JSLineBreakpoint.PROP_CONDITION.equals(propertyName)) {
             
             JSLineBreakpoint lb = (JSLineBreakpoint) evt.getSource();
             annotationProcessor.post(new AnnotationRefresh(lb, true, true));

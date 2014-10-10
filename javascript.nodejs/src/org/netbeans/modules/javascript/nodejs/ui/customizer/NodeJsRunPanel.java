@@ -50,11 +50,8 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -72,14 +69,14 @@ import org.openide.util.NbBundle;
 
 public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementation {
 
+    public static final String IDENTIFIER = "node.js"; // NOI18N
+
     private final Project project;
     private final NodeJsPreferences preferences;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final SpinnerNumberModel debugPortModel;
 
     private volatile String startFile;
     private volatile String args;
-    private volatile int debugPort;
 
 
     public NodeJsRunPanel(Project project) {
@@ -87,7 +84,6 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
 
         this.project = project;
         preferences = NodeJsSupport.forProject(project).getPreferences();
-        debugPortModel = new SpinnerNumberModel(65534, 1, 65534, 1);
 
         initComponents();
         init();
@@ -98,19 +94,15 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         startFileTextField.setText(startFile);
         args = preferences.getStartArgs();
         argsTextField.setText(args);
-        debugPortSpinner.setModel(debugPortModel);
-        debugPort = preferences.getDebugPort();
-        debugPortModel.setValue(debugPort);
         // listeners
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         startFileTextField.getDocument().addDocumentListener(defaultDocumentListener);
         argsTextField.getDocument().addDocumentListener(defaultDocumentListener);
-        debugPortModel.addChangeListener(new DefaultChangeListener());
     }
 
     @Override
     public String getIdentifier() {
-        return "node.js"; // NOI18N
+        return IDENTIFIER;
     }
 
     @NbBundle.Messages("NodeJsRunPanel.name=Node.js Application")
@@ -149,7 +141,6 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         assert !EventQueue.isDispatchThread();
         preferences.setStartFile(startFile);
         preferences.setStartArgs(args);
-        preferences.setDebugPort(debugPort);
     }
 
     void fireChange() {
@@ -158,7 +149,7 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
 
     private ValidationResult validateData() {
         return new NodeJsPreferencesValidator()
-                .validateRun(startFile, args, debugPort)
+                .validateRun(startFile, args)
                 .getResult();
     }
 
@@ -174,8 +165,6 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         startFileBrowseButton = new JButton();
         argsLabel = new JLabel();
         argsTextField = new JTextField();
-        debugPortLabel = new JLabel();
-        debugPortSpinner = new JSpinner();
 
         startFileLabel.setLabelFor(startFileTextField);
         Mnemonics.setLocalizedText(startFileLabel, NbBundle.getMessage(NodeJsRunPanel.class, "NodeJsRunPanel.startFileLabel.text")); // NOI18N
@@ -190,24 +179,15 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         argsLabel.setLabelFor(argsTextField);
         Mnemonics.setLocalizedText(argsLabel, NbBundle.getMessage(NodeJsRunPanel.class, "NodeJsRunPanel.argsLabel.text")); // NOI18N
 
-        debugPortLabel.setLabelFor(debugPortSpinner);
-        Mnemonics.setLocalizedText(debugPortLabel, NbBundle.getMessage(NodeJsRunPanel.class, "NodeJsRunPanel.debugPortLabel.text")); // NOI18N
-
-        debugPortSpinner.setEditor(new JSpinner.NumberEditor(debugPortSpinner, "#"));
-
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(startFileLabel)
-                    .addComponent(argsLabel)
-                    .addComponent(debugPortLabel))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(argsLabel))
+                .addGap(13, 13, 13)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(debugPortSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(startFileTextField)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -224,10 +204,7 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(argsLabel)
                     .addComponent(argsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(debugPortLabel)
-                    .addComponent(debugPortSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -250,8 +227,6 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel argsLabel;
     private JTextField argsTextField;
-    private JLabel debugPortLabel;
-    private JSpinner debugPortSpinner;
     private JButton startFileBrowseButton;
     private JLabel startFileLabel;
     private JTextField startFileTextField;
@@ -279,16 +254,6 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         private void processChange() {
             startFile = startFileTextField.getText();
             args = argsTextField.getText();
-            fireChange();
-        }
-
-    }
-
-    private final class DefaultChangeListener implements ChangeListener {
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            debugPort = Integer.parseInt(debugPortSpinner.getValue().toString());
             fireChange();
         }
 

@@ -44,6 +44,8 @@ package org.netbeans.modules.javascript.nodejs.ui.actions;
 import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
+import org.netbeans.modules.javascript.nodejs.util.RunInfo;
+import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
 
@@ -61,6 +63,12 @@ final class RunFileCommand extends Command {
     @Override
     public boolean isEnabled(Lookup context) {
         return lookupJavaScriptFile(context) != null;
+    }
+
+    @Override
+    ValidationResult validateRunInfo(RunInfo runInfo) {
+        // no validation needed
+        return new ValidationResult();
     }
 
     @Override

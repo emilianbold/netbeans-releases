@@ -20,14 +20,9 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="startFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="argsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="debugPortLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="debugPortSpinner" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                  </Group>
                   <Group type="102" attributes="0">
                       <Component id="startFileTextField" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -51,11 +46,7 @@
                   <Component id="argsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="argsTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="debugPortLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="debugPortSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
+              <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -94,23 +85,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="argsTextField">
-    </Component>
-    <Component class="javax.swing.JLabel" name="debugPortLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="debugPortSpinner"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/javascript/nodejs/ui/customizer/Bundle.properties" key="NodeJsRunPanel.debugPortLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JSpinner" name="debugPortSpinner">
-      <Properties>
-        <Property name="editor" type="javax.swing.JComponent" editor="org.netbeans.modules.form.editors.SpinnerEditorEditor">
-          <SpinnerEditor format="#" type="3"/>
-        </Property>
-      </Properties>
     </Component>
   </SubComponents>
 </Form>

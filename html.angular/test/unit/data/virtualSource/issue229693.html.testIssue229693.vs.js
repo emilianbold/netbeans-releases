@@ -1,12 +1,12 @@
 (function () {
-$scope = list.$scope;
+var $scope = list.$scope;
 list;
 with ($scope) { 
 for (var item in items) {
 item.celejmeno();
 }
 (function () {
-$scope = $scope;
+var $scope = $scope;
 
 with ($scope) { 
 }
