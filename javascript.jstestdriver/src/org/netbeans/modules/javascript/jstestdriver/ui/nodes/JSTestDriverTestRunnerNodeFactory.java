@@ -39,30 +39,41 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.problems;
+package org.netbeans.modules.javascript.jstestdriver.ui.nodes;
 
-import java.util.concurrent.Future;
-import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController;
-import org.netbeans.spi.project.ui.ProjectProblemResolver;
-import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.api.TestMethodNode;
+import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
+import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
+import org.openide.nodes.Node;
 
-public class OptionsProblemResolver implements ProjectProblemResolver {
+/**
+ *
+ * @author Theofanis Oikonomou
+ */
+public class JSTestDriverTestRunnerNodeFactory extends TestRunnerNodeFactory {
 
-    @Override
-    public Future<ProjectProblemsProvider.Result> resolve() {
-        OptionsDisplayer.getDefault().open(NodeJsOptionsPanelController.OPTIONS_PATH);
-        return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
+    private final JumpToCallStackAction.Callback callback;
+
+
+    public JSTestDriverTestRunnerNodeFactory(JumpToCallStackAction.Callback callback) {
+        this.callback = callback;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        return obj instanceof OptionsProblemResolver;
+    public Node createTestMethodNode(Testcase testcase, Project project) {
+        return new TestMethodNode(testcase, project);
     }
 
     @Override
-    public int hashCode() {
-        return 42;
+    public Node createCallstackFrameNode(String frameInfo, String displayName) {
+        return new JSTestDriverCallstackNode(frameInfo, displayName, callback);
     }
 
+    @Override
+    public TestsuiteNode createTestSuiteNode(String suiteName, boolean filtered) {
+        return new TestsuiteNode(suiteName, filtered);
+    }
+    
 }

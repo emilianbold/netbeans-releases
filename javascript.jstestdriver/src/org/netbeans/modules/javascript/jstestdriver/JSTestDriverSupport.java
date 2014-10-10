@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript.jstestdriver;
 
+import org.netbeans.modules.javascript.jstestdriver.ui.nodes.JSTestDriverTestRunnerNodeFactory;
+import org.netbeans.modules.javascript.jstestdriver.ui.nodes.JumpToCallStackAction;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -56,6 +58,8 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.print.ConvertedLine;
@@ -83,6 +87,7 @@ import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.LifecycleManager;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -90,6 +95,7 @@ import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
@@ -552,7 +558,7 @@ public class JSTestDriverSupport {
             manager = Manager.getInstance();
             testSession = new TestSession(
                     Bundle.JsTestDriverSupport_runner_title(ProjectUtils.getInformation(project).getDisplayName()),
-                    project, TestSession.SessionType.TEST);
+                    project, TestSession.SessionType.TEST, new JSTestDriverTestRunnerNodeFactory(new CallStackCallback(project)));
             testSession.setRerunHandler(rerun);
             manager.testStarted(testSession);
         }
@@ -688,6 +694,42 @@ public class JSTestDriverSupport {
             logRecord.setParameters(params);
         }
         USG_LOGGER.log(logRecord);
+    }
+
+    //~ Inner classes
+
+    private static final class CallStackCallback implements JumpToCallStackAction.Callback {
+
+        private static final Pattern FILE_LINE_PATTERN = Pattern.compile(" [(](?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)[)]"); // NOI18N
+
+        private final File projectDir;
+
+
+        public CallStackCallback(Project project) {
+            assert project != null;
+            projectDir = FileUtil.toFile(project.getProjectDirectory());
+        }
+
+        @Override
+        public Pair<File, int[]> parseLocation(String callStack) {
+            Matcher matcher = FILE_LINE_PATTERN.matcher(callStack);
+            if (matcher.find()) {
+                File path = new File(matcher.group("FILE").replace('/', File.separatorChar)); // NOI18N
+                File file;
+                if (path.isAbsolute()) {
+                    file = path;
+                } else {
+                    file = new File(projectDir, path.getPath());
+                    if (!file.isFile()) {
+                        return null;
+                    }
+                }
+                int[] lineColumn = {Integer.parseInt(matcher.group("LINE")), Integer.parseInt(matcher.group("COLUMN"))};
+                return Pair.of(file, lineColumn); // NOI18N
+            }
+            return null;
+        }
+
     }
 
 }

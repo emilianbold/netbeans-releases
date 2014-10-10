@@ -39,30 +39,19 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.problems;
 
-import java.util.concurrent.Future;
-import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController;
-import org.netbeans.spi.project.ui.ProjectProblemResolver;
-import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+package org.netbeans.lib.v8debug.client;
 
-public class OptionsProblemResolver implements ProjectProblemResolver {
-
-    @Override
-    public Future<ProjectProblemsProvider.Result> resolve() {
-        OptionsDisplayer.getDefault().open(NodeJsOptionsPanelController.OPTIONS_PATH);
-        return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof OptionsProblemResolver;
-    }
-
-    @Override
-    public int hashCode() {
-        return 42;
-    }
-
+/**
+ * I/O communication listener, that can be used for logging.
+ * 
+ * @author Martin Entlicher
+ */
+public interface IOListener {
+    
+    void sent(String str);
+    
+    void received(String str);
+    
+    void closed();
 }

@@ -43,8 +43,12 @@
 package org.netbeans.modules.javascript.v8debug.breakpoints;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -59,15 +63,17 @@ import org.netbeans.lib.v8debug.commands.SetBreakpoint;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
 import org.netbeans.modules.javascript.v8debug.ScriptsHandler;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointStatus;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.WeakSet;
 
 /**
  *
  * @author Martin Entlicher
  */
-public class BreakpointsHandler {
+public class BreakpointsHandler implements V8Debugger.Listener {
     
     private static final Logger LOG = Logger.getLogger(BreakpointsHandler.class.getName());
     
@@ -76,9 +82,11 @@ public class BreakpointsHandler {
     private final Map<V8Arguments, JSLineBreakpoint> submittingBreakpoints = new HashMap<>();
     private final Map<JSLineBreakpoint, SubmittedBreakpoint> submittedBreakpoints = new HashMap<>();
     private final Map<Long, SubmittedBreakpoint> breakpointsById = new HashMap<>();
+    private final Set<JSLineBreakpoint> removeAfterSubmit = new WeakSet<>();
     
     public BreakpointsHandler(V8Debugger dbg) { // TODO pass in initially submitted breakpoints in the debuggee
         this.dbg = dbg;
+        dbg.addListener(this);
     }
     
     public boolean add(JSLineBreakpoint lb) {
@@ -107,11 +115,17 @@ public class BreakpointsHandler {
         SubmittedBreakpoint sb;
         synchronized (submittedBreakpoints) {
             sb = submittedBreakpoints.get(lb);
+            if (sb == null) {
+                removeAfterSubmit.add(lb);
+                return false;
+            }
         }
-        if (sb == null) {
-            return false;
-        }
-        ClearBreakpoint.Arguments cbargs = new ClearBreakpoint.Arguments(sb.getId());
+        sb.notifyDestroyed();
+        return requestRemove(lb, sb.getId());
+    }
+    
+    private boolean requestRemove(JSLineBreakpoint lb, long id) {
+        ClearBreakpoint.Arguments cbargs = new ClearBreakpoint.Arguments(id);
         V8Request request = dbg.sendCommandRequest(V8Command.Clearbreakpoint, cbargs);
         LOG.log(Level.FINE, "Removing {0}, request = {1}", new Object[]{lb, request});
         return request != null;
@@ -147,14 +161,46 @@ public class BreakpointsHandler {
         return new ChangeBreakpoint.Arguments(sb.getId(), b.isEnabled(), condition, null);
     }
     
-    private SubmittedBreakpoint submitted(JSLineBreakpoint b, SetBreakpoint.ResponseBody rb,
-                                         V8Debugger dbg) {
-        return new SubmittedBreakpoint(b, rb.getBreakpoint(), dbg);
+    public void event(BreakEventBody beb) {
+        long[] ids = beb.getBreakpoints();
+        if (ids == null) {
+            return ;
+        }
+        for (long id : ids) {
+            SubmittedBreakpoint sb;
+            synchronized (submittedBreakpoints) {
+                sb = breakpointsById.get(id);
+            }
+            if (sb == null) {
+                continue;
+            }
+            JSLineBreakpoint b = sb.getBreakpoint();
+            JSBreakpointStatus.setActive(b);
+        }
     }
 
-    public void event(BreakEventBody beb) {
-        // TODO
-        beb.getBreakpoints();
+    @Override
+    public void notifySuspended(boolean suspended) {
+        if (!suspended) {
+            JSBreakpointStatus.setActive(null);
+        }
+    }
+
+    @Override
+    public void notifyFinished() {
+        synchronized (submittingBreakpoints) {
+            submittingBreakpoints.clear();
+        }
+        Collection<SubmittedBreakpoint> sbs;
+        synchronized (submittedBreakpoints) {
+            sbs = new ArrayList<>(submittedBreakpoints.values());
+            submittedBreakpoints.clear();
+            breakpointsById.clear();
+        }
+        for (SubmittedBreakpoint sb : sbs) {
+            sb.notifyDestroyed();
+        }
+        JSBreakpointStatus.setActive(null);
     }
     
     private final class BreakpointsCommandsCallback implements V8Debugger.CommandResponseCallback {
@@ -171,10 +217,21 @@ public class BreakpointsHandler {
                 return ;
             }
             if (response != null) {
-                long id = ((SetBreakpoint.ResponseBody) response.getBody()).getBreakpoint();
-                SubmittedBreakpoint sb = new SubmittedBreakpoint(lb, id, dbg);
+                SetBreakpoint.ResponseBody sbrb = (SetBreakpoint.ResponseBody) response.getBody();
+                long id = sbrb.getBreakpoint();
+                SubmittedBreakpoint sb = new SubmittedBreakpoint(lb, id, sbrb.getActualLocations(), dbg);
+                boolean removed;
+                synchronized (submittedBreakpoints) {
+                    submittedBreakpoints.put(lb, sb);
+                    breakpointsById.put(id, sb);
+                    removed = removeAfterSubmit.remove(lb);
+                }
+                if (removed) {
+                    requestRemove(lb, id);
+                    sb.notifyDestroyed();
+                }
             } else {
-                // TODO invalidate lb
+                JSBreakpointStatus.setInvalid(lb, response.getErrorMessage());
             }
         }
         

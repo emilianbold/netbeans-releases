@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.problems;
 
-import java.util.concurrent.Future;
-import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController;
-import org.netbeans.spi.project.ui.ProjectProblemResolver;
-import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+package org.netbeans.modules.javascript.jstestdriver.ui.nodes;
 
-public class OptionsProblemResolver implements ProjectProblemResolver {
+import javax.swing.Action;
+import org.netbeans.modules.gsf.testrunner.api.CallstackFrameNode;
 
-    @Override
-    public Future<ProjectProblemsProvider.Result> resolve() {
-        OptionsDisplayer.getDefault().open(NodeJsOptionsPanelController.OPTIONS_PATH);
-        return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
+public class JSTestDriverCallstackNode extends CallstackFrameNode {
+
+    private final JumpToCallStackAction.Callback callback;
+
+
+    public JSTestDriverCallstackNode(String frameInfo, String displayName, JumpToCallStackAction.Callback callback) {
+        super(frameInfo, displayName);
+        this.callback = callback;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        return obj instanceof OptionsProblemResolver;
+    public Action getPreferredAction() {
+        return new JumpToCallStackAction(frameInfo, callback);
     }
 
     @Override
-    public int hashCode() {
-        return 42;
+    public Action[] getActions(boolean context) {
+        return new Action[] {new JumpToCallStackAction(frameInfo, callback)};
     }
 
 }

@@ -131,9 +131,18 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         return validateData().getFirstErrorMessage();
     }
 
+    @NbBundle.Messages("NodeJsRunPanel.sources.none=Source folder is needed to run project JavaScript files (set it in Sources category).")
     @Override
     public String getWarningMessage() {
-        return validateData().getFirstWarningMessage();
+        String warning = validateData().getFirstWarningMessage();
+        if (warning != null) {
+            return warning;
+        }
+        // #247853
+        if (NodeJsUtils.getSourceRoots(project).isEmpty()) {
+            return Bundle.NodeJsRunPanel_sources_none();
+        }
+        return null;
     }
 
     @Override
@@ -211,14 +220,16 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
     @NbBundle.Messages("NodeJsRunPanel.browse.title=Select start file")
     private void startFileBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startFileBrowseButtonActionPerformed
         assert EventQueue.isDispatchThread();
-        File sourceRoot = NodeJsUtils.getSourceRoot(project);
-        assert sourceRoot != null : project.getProjectDirectory();
-        File file = new FileChooserBuilder(NodeJsRunPanel.class)
+        FileChooserBuilder fileChooserBuilder = new FileChooserBuilder(NodeJsRunPanel.class)
                 .setFilesOnly(true)
-                .setTitle(Bundle.NodeJsRunPanel_browse_title())
+                .setTitle(Bundle.NodeJsRunPanel_browse_title());
+        File sourceRoot = NodeJsUtils.getSourceRoot(project);
+        if (sourceRoot != null) {
+            fileChooserBuilder
                 .setDefaultWorkingDirectory(sourceRoot)
-                .forceUseOfDefaultWorkingDirectory(true)
-                .showOpenDialog();
+                .forceUseOfDefaultWorkingDirectory(true);
+        }
+        File file = fileChooserBuilder.showOpenDialog();
         if (file != null) {
             startFileTextField.setText(file.getAbsolutePath());
         }

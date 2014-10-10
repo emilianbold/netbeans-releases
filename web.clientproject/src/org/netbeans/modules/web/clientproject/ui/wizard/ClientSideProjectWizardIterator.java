@@ -409,7 +409,10 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public static final String LIBRARY_NAMES = "LIBRARY_NAMES"; // NOI18N
         public static final String SITE_ROOT = "SITE_ROOT"; // NOI18N
 
+        private static final String HTML_PROJECT_NAME = "HTML5Application"; // NOI18N
+
         private boolean withExtenders;
+
 
         public NewHtml5ProjectWizard(boolean withExtenders) {
             this.withExtenders = withExtenders;
@@ -433,7 +436,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public Panel<WizardDescriptor>[] createPanels() {
             @SuppressWarnings({"rawtypes", "unchecked"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
-                new NewClientSideProjectPanel(false),
+                new NewClientSideProjectPanel(HTML_PROJECT_NAME),
                 new SiteTemplateWizardPanel(),
                 new JavaScriptLibrarySelectionPanel(),
             };
@@ -650,6 +653,9 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     public static final class NewJsLibraryProjectWizard implements Wizard {
 
+        private static final String LIBRARY_PROJECT_NAME = "JsLibrary"; // NOI18N
+
+
         @Override
         public String getTitle() {
             return Bundle.ClientSideProjectWizardIterator_newLibrary_displayName();
@@ -664,7 +670,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public Panel<WizardDescriptor>[] createPanels() {
             @SuppressWarnings({"rawtypes", "unchecked"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
-                new NewClientSideProjectPanel(true),
+                new NewClientSideProjectPanel(LIBRARY_PROJECT_NAME),
             };
             return panels;
         }

@@ -62,6 +62,7 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 public class JSBreakpointsManager extends DebuggerManagerAdapter {
     
     private final Set<V8Debugger> activeDebuggers = new CopyOnWriteArraySet<>();
+    private ThreadLocal<Boolean> breakpointsAddedDuringInit = new ThreadLocal<Boolean>();
 
     @Override
     public void engineAdded(DebuggerEngine engine) {
@@ -85,6 +86,9 @@ public class JSBreakpointsManager extends DebuggerManagerAdapter {
         if (!(breakpoint instanceof JSLineBreakpoint)) {
             return ;
         }
+        if (breakpointsAddedDuringInit.get() != null) {
+            breakpointsAddedDuringInit.set(true);
+        }
         JSLineBreakpoint lb = (JSLineBreakpoint) breakpoint;
         for (V8Debugger dbg : activeDebuggers) {
             if (dbg.getScriptsHandler().containsLocalFile(lb.getFileObject())) {
@@ -107,7 +111,13 @@ public class JSBreakpointsManager extends DebuggerManagerAdapter {
     }
     
     private void submitExistingBreakpoints(V8Debugger dbg) {
+        breakpointsAddedDuringInit.set(false);
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+        Boolean added = breakpointsAddedDuringInit.get();
+        breakpointsAddedDuringInit.remove();
+        if (added) {
+            return ;
+        }
         ScriptsHandler scriptsHandler = dbg.getScriptsHandler();
         for (Breakpoint b : breakpoints) {
             if (!(b instanceof JSLineBreakpoint)) {

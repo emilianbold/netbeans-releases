@@ -221,6 +221,8 @@ public class ClientSideProject implements Project {
                         public void run() {
                             ClientSideProjectProperties properties = new ClientSideProjectProperties(ClientSideProject.this);
                             properties.setRunAs(runAs);
+                            properties.setProjectServer(runAs != null
+                                    ? ClientSideProjectProperties.ProjectServer.EXTERNAL : ClientSideProjectProperties.ProjectServer.INTERNAL);
                             properties.save();
                         }
                     });

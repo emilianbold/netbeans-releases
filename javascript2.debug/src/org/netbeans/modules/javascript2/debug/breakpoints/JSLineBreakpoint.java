@@ -135,12 +135,13 @@ public class JSLineBreakpoint extends Breakpoint {
             if (lineNumber > lastLineNumber) {
                 lineNumber = lastLineNumber;
             }
-        } else {
-            if (lineNumber > 0) {
-                lineNumber = 0;
-            }
         }
-        Line cline = lineSet.getCurrent(lineNumber);
+        Line cline;
+        try {
+            cline = lineSet.getCurrent(lineNumber);
+        } catch (IndexOutOfBoundsException ioobex) {
+            cline = lineSet.getCurrent(0);
+        }
         setLine(cline);
     }
     
@@ -243,6 +244,11 @@ public class JSLineBreakpoint extends Breakpoint {
     
     final void resetValidity() {
         setValidity(VALIDITY.UNKNOWN, null);
+    }
+
+    @Override
+    public String toString() {
+        return "JSLineBreakpoint{" + "line=" + line + ", isEnabled=" + isEnabled + ", condition=" + condition + '}';
     }
 
     private class FileRemoveListener extends FileChangeAdapter {
