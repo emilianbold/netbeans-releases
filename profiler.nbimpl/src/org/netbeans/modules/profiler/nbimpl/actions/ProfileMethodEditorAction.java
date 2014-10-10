@@ -114,8 +114,7 @@ public final class ProfileMethodEditorAction extends NodeAction {
                     Lookup.Provider project = ProjectUtilities.getProject(dobj.getPrimaryFile());
                     
                     // Let the ProfilerSession handle the root method
-                    Lookup configuration = Lookups.fixed(resolvedMethod, project);
-                    ProfilerSession.findAndConfigure(configuration, getName());
+                    ProfilerSession.findAndConfigure(Lookups.fixed(resolvedMethod), project, getName());
                 } catch (Exception ex) {
                     ProfilerDialogs.displayWarning(Bundle.ProfileMethodEditorAction_ProblemProfilingMethod());
                 }
