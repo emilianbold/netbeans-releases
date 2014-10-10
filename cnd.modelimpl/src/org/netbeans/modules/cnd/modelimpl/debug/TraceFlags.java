@@ -170,6 +170,11 @@ public class TraceFlags {
                                                                 EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER && 
                                                                 EXPRESSION_EVALUATOR_RECURSIVE_CALC && 
                                                                 EXPRESSION_EVALUATOR_EXTRA_SPEC_PARAMS_MATCHING;
+    
+    public static final boolean INSTANTIATION_FULL_FORWARDS_SEARCH = DebugUtils.getBoolean(
+            "cnd.modelimpl.instantiation.full_forwards_search",  // NOI18N
+            false
+    );
 
     /** 
      * swithces off parsing function bodies

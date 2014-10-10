@@ -1269,8 +1269,10 @@ public final class NetworkMonitorTopComponent extends TopComponent
             //   "source":"javascript","line":0,"repeatCount":1,"type":"log","url"
             //   :"http:\/\/localhost:8383\/nb-rest-test\/knockout-approach\/index-ko.html"}}}
 
-            if (message.getText().contains("Access-Control-Allow-Origin") && !visibleRequests.isEmpty()) {
-                ModelItem mi = visibleRequests.get(visibleRequests.size()-1);
+            // #247672
+            List<ModelItem> visibleRequestsCopy = new ArrayList<>(visibleRequests);
+            if (message.getText().contains("Access-Control-Allow-Origin") && !visibleRequestsCopy.isEmpty()) {
+                ModelItem mi = visibleRequestsCopy.get(visibleRequestsCopy.size()-1);
                 // XXX: perhaps I should match requests here with a timestamp???
                 if (mi.request != null) {
                     mi.setFailureCause(message.getText());

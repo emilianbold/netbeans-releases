@@ -55,6 +55,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.actions.Presenter;
 import org.openide.windows.TopComponent;
@@ -191,6 +192,8 @@ public class EditorOnlyDisplayer {
 
         final WindowManagerImpl wmi = WindowManagerImpl.getInstance();
         final JFrame mainWnd = ( JFrame ) wmi.getMainWindow();
+        
+        StatusDisplayer.getDefault().setStatusText(null);
 
         originalContentPane = mainWnd.getContentPane();
 

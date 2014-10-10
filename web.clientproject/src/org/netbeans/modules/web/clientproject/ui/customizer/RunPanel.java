@@ -204,14 +204,18 @@ public class RunPanel extends JPanel implements HelpCtx.Provider, ChangeListener
             selectedPanel.addChangeListener(this);
             platformProviderPanel.add(selectedPanel.getComponent(), BorderLayout.CENTER);
             runBrowserHolder.setVisible(!project.isJsLibrary());
+            browserRunPanel.onlyExternalUrl(true);
         } else {
             // just browser
             platformProviderPanelHolder.setVisible(false);
             runBrowserHolder.setVisible(false);
+            browserRunPanel.onlyExternalUrl(false);
         }
         platformProviderPanelHolder.revalidate();
         platformProviderPanelHolder.repaint();
         browserPanel.setVisible(isRunBrowser());
+        // force validation
+        validateAndStoreData();
     }
 
     void validateAndStoreData() {
@@ -273,8 +277,8 @@ public class RunPanel extends JPanel implements HelpCtx.Provider, ChangeListener
     private void initComponents() {
 
         runAsHolder = new JPanel();
-        runAsComboBox = new JComboBox<CustomizerPanel>();
         runAsLabel = new JLabel();
+        runAsComboBox = new JComboBox<CustomizerPanel>();
         platformProviderPanelHolder = new JPanel();
         platformProviderPanel = new JPanel();
         runBrowserHolder = new JPanel();
@@ -398,8 +402,8 @@ public class RunPanel extends JPanel implements HelpCtx.Provider, ChangeListener
             if (value == null) {
                 label = Bundle.RunAsRenderer_default();
             } else if (value instanceof String) {
-                // ??? happens not sure why...
-                label = "";
+                // see BasicComboBoxUI
+                label = (String) value;
             } else {
                 assert value instanceof CustomizerPanel : value.getClass().getName();
                 label = ((CustomizerPanel) value).getDisplayName();

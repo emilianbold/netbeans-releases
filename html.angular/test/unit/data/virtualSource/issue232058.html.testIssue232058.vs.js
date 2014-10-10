@@ -1,5 +1,5 @@
 (function () {
-$scope = SettingsController.$scope;
+var $scope = SettingsController.$scope;
 SettingsController;
 with ($scope) { 
 checked;

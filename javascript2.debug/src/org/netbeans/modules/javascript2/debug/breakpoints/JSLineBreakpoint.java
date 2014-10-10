@@ -86,7 +86,7 @@ public class JSLineBreakpoint extends Breakpoint {
     
     private Line line;
     private boolean isEnabled = true;
-    private String condition;
+    private volatile String condition;
     private final FileRemoveListener myListener = new FileRemoveListener();
     private FileChangeListener myWeakListener;
     private final LineChangesListener lineChangeslistener = new LineChangesListener();
@@ -220,7 +220,13 @@ public class JSLineBreakpoint extends Breakpoint {
     }
 
     public final void setCondition(String condition) {
+        String oldCondition = this.condition;
+        if (condition != null && condition.equals(oldCondition) ||
+            condition == null && oldCondition == null) {
+            return ;
+        }
         this.condition = condition;
+        firePropertyChange(PROP_CONDITION, oldCondition, condition);
     }
     
     public final boolean isConditional() {

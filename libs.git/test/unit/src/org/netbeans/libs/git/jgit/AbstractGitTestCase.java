@@ -44,15 +44,21 @@ package org.netbeans.libs.git.jgit;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.channels.Channels;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.dircache.DirCacheEntry;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.netbeans.junit.NbTestCase;
@@ -227,6 +233,28 @@ public class AbstractGitTestCase extends NbTestCase {
 
     protected boolean isWindows() {
         return System.getProperty("os.name", "").toLowerCase().contains("windows");
+    }
+
+    protected static void assertDirCacheEntry (Repository repository, File workDir, Collection<File> files) throws IOException {
+        DirCache cache = repository.lockDirCache();
+        for (File f : files) {
+            String relativePath = Utils.getRelativePath(workDir, f);
+            DirCacheEntry e = cache.getEntry(relativePath);
+            assertNotNull(e);
+            assertEquals(relativePath, e.getPathString());
+            if (f.lastModified() != e.getLastModified()) {
+                assertEquals((f.lastModified() / 1000) * 1000, (e.getLastModified() / 1000) * 1000);
+            }
+            try (InputStream in = new FileInputStream(f)) {
+                assertEquals(e.getObjectId(), repository.newObjectInserter().idFor(Constants.OBJ_BLOB, f.length(), in));
+            }
+            if (e.getLength() == 0 && f.length() != 0) {
+                assertTrue(e.isSmudged());
+            } else {
+                assertEquals(f.length(), e.getLength());
+            }
+        }
+        cache.unlock();
     }
 
     protected static class Monitor extends ProgressMonitor.DefaultProgressMonitor implements FileListener {
