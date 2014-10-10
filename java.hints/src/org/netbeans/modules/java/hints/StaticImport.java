@@ -134,7 +134,7 @@ public class StaticImport {
             return null;
         }
         String fqn = null;
-        String fqn1 = getMethodFqn(info, e);
+        String fqn1 = getFqn(info, e);
         if (!isSubTypeOrInnerOfSubType(info, klass, enclosingEl) && !isStaticallyImported(info, fqn1)) {
             if (hasMethodNameClash(info, klass, sn) || hasStaticImportSimpleNameClash(info, sn)) {
                 return null;
@@ -299,11 +299,9 @@ public class StaticImport {
 
     /**
      * @param e
-     * @return the FQN for a METHOD Element
+     * @return the FQN for an Element
      */
-    private static String getMethodFqn(CompilationInfo info, Element e) {
-        // XXX or alternatively, upgrade getElementName to handle METHOD
-        assert e.getKind() == ElementKind.METHOD;
+    private static String getFqn(CompilationInfo info, Element e) {
         return info.getElementUtilities().getElementName(e.getEnclosingElement(), true) + "." + e.getSimpleName();
     }
 
