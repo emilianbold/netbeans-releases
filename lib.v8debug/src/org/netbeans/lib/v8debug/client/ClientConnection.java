@@ -47,10 +47,13 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
@@ -85,6 +88,7 @@ public final class ClientConnection {
     private final OutputStream serverOut;
     private final byte[] buffer = new byte[BUFFER_SIZE];
     private final ContainerFactory containerFactory = new LinkedJSONContainterFactory();
+    private final Set<IOListener> ioListeners = new CopyOnWriteArraySet<>();
     
     public ClientConnection(String serverName, int serverPort) throws IOException {
         server = new Socket(serverName, serverPort);
@@ -200,6 +204,7 @@ public final class ClientConnection {
         JSONObject obj = JSONWriter.store(request);
         String text = obj.toJSONString();
         //System.out.println("SEND: "+text);
+        fireSent(text);
         LOG.log(Level.FINE, "SEND: {0}", text);
         byte[] bytes = text.getBytes(CHAR_SET);
         String contentLength = CONTENT_LENGTH_STR+bytes.length + "\r\n\r\n";
@@ -211,6 +216,7 @@ public final class ClientConnection {
         if (server != null) {
             server.close();
         }
+        fireClosed();
     }
     
     public boolean isClosed() {
@@ -218,6 +224,32 @@ public final class ClientConnection {
             return server.isClosed();
         } else {
             return false;
+        }
+    }
+    
+    public void addIOListener(IOListener iol) {
+        ioListeners.add(iol);
+    }
+    
+    public void removeIOListener(IOListener iol) {
+        ioListeners.remove(iol);
+    }
+    
+    private void fireSent(String str) {
+        for (IOListener iol : ioListeners) {
+            iol.sent(str);
+        }
+    }
+    
+    private void fireReceived(String str) {
+        for (IOListener iol : ioListeners) {
+            iol.received(str);
+        }
+    }
+    
+    private void fireClosed() {
+        for (IOListener iol : ioListeners) {
+            iol.closed();
         }
     }
     
@@ -263,6 +295,7 @@ public final class ClientConnection {
 
     private void received(Listener listener, String tools, String message) throws ParseException {
         //System.out.println("RECEIVED: tools: '"+tools+"', message: '"+message+"'");
+        fireReceived(message);
         LOG.log(Level.FINE, "RECEIVED: {0}, {1}", new Object[]{tools, message});
         if (message.isEmpty()) {
             return ;
