@@ -68,6 +68,10 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -76,10 +80,11 @@ import org.openide.util.WeakListeners;
 public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
 
     private final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
-    final Project project;
-    final PreferenceChangeListener optionsListener = new OptionsListener();
-    final PreferenceChangeListener preferencesListener = new PreferencesListener();
-    final ChangeListener sourcesListener = new SourcesListener();
+    private final Project project;
+    private final PreferenceChangeListener optionsListener = new OptionsListener();
+    private final PreferenceChangeListener preferencesListener = new PreferencesListener();
+    private final ChangeListener projectSourcesListener = new ProjectSourcesListener();
+    private final FileChangeListener nodeSourcesListener = new NodeSourcesListener();
 
     // @GuardedBy("this")
     private NodeJsSupport nodeJsSupport;
@@ -137,9 +142,11 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         // options
         NodeJsOptions options = NodeJsOptions.getInstance();
         options.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, optionsListener, options));
-        // sources
+        // project sources
         Sources sources = ProjectUtils.getSources(project);
-        sources.addChangeListener(WeakListeners.change(sourcesListener, sources));
+        sources.addChangeListener(WeakListeners.change(projectSourcesListener, sources));
+        // node sources
+        FileUtil.addFileChangeListener(nodeSourcesListener, FileUtils.getNodeSources());
     }
 
     @NbBundle.Messages({
@@ -274,7 +281,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
 
     }
 
-    private final class SourcesListener implements ChangeListener {
+    private final class ProjectSourcesListener implements ChangeListener {
 
         @Override
         public void stateChanged(ChangeEvent e) {
@@ -283,5 +290,13 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
 
     }
 
+    private final class NodeSourcesListener extends FileChangeAdapter {
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            fireProblemsChanged();
+        }
+
+    }
 
 }
