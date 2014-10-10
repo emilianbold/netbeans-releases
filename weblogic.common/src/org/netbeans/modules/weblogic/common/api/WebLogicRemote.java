@@ -42,11 +42,13 @@
 
 package org.netbeans.modules.weblogic.common.api;
 
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
+import javax.management.MBeanServerConnection;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.weblogic.common.ProxyUtils;
@@ -102,33 +104,40 @@ public final class WebLogicRemote {
             }
         }
     }
-    
-    // avoid duplicate hosts
-    private static String compactNonProxyHosts (String hosts) {
-        StringTokenizer st = new StringTokenizer(hosts, ","); //NOI18N
-        StringBuilder nonProxyHosts = new StringBuilder();
-        while (st.hasMoreTokens()) {
-            String h = st.nextToken().trim();
-            if (h.length() == 0) {
-                continue;
-            }
-            if (nonProxyHosts.length() > 0) {
-                nonProxyHosts.append("|"); // NOI18N
-            }
-            nonProxyHosts.append(h);
-        }
-        st = new StringTokenizer (nonProxyHosts.toString(), "|"); //NOI18N
-        Set<String> set = new HashSet<String> ();
-        StringBuilder compactedProxyHosts = new StringBuilder();
-        while (st.hasMoreTokens ()) {
-            String t = st.nextToken ();
-            if (set.add (t.toLowerCase (Locale.US))) {
-                if (compactedProxyHosts.length() > 0) {
-                    compactedProxyHosts.append('|');
+
+    public <T> T executeAction(@NonNull final JmxAction<T> action, @NullAllowed Callable<String> nonProxy) throws Exception {
+        return executeAction(new Callable<T>() {
+
+            @Override
+            public T call() throws Exception {
+                JMXServiceURL url = new JMXServiceURL("iiop", config.getHost(), // NOI18N
+                        config.getPort(), "/jndi/weblogic.management.mbeanservers.domainruntime"); // NOI18N
+
+                String username = config.getUsername();
+                String password = config.getPassword();
+
+                Map<String, Object> env = new HashMap<String, Object>();
+                env.put(JMXConnectorFactory.PROTOCOL_PROVIDER_PACKAGES,
+                        "weblogic.management.remote"); // NOI18N
+                env.put(javax.naming.Context.SECURITY_PRINCIPAL, username);
+                env.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
+                env.put("jmx.remote.credentials", // NOI18N
+                        new String[]{username, password});
+
+                JMXConnector jmxConnector = JMXConnectorFactory.newJMXConnector(url, env);
+                jmxConnector.connect();
+                try {
+                    return action.execute(jmxConnector.getMBeanServerConnection());
+                } finally {
+                    jmxConnector.close();
                 }
-                compactedProxyHosts.append(t);
             }
-        }
-        return compactedProxyHosts.toString();
+        }, nonProxy);
+    }
+
+    public static interface JmxAction<T> {
+
+        T execute(MBeanServerConnection connection) throws Exception;
+
     }
 }
