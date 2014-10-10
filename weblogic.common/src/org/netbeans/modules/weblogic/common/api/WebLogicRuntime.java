@@ -86,7 +86,6 @@ import org.netbeans.api.extexecution.base.input.InputReaders;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.modules.weblogic.common.RemoteLogInputReader;
 import org.openide.util.BaseUtilities;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**

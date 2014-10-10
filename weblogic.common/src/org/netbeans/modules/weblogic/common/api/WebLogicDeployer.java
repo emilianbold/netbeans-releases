@@ -52,6 +52,7 @@ import java.net.ProxySelector;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -110,11 +111,11 @@ public final class WebLogicDeployer {
     }
 
     @NonNull
-    public Future<Collection<String>> list() {
-        return DEPLOYMENT_RP.submit(new Callable<Collection<String>>() {
+    public Future<Collection<Application>> list() {
+        return DEPLOYMENT_RP.submit(new Callable<Collection<Application>>() {
 
             @Override
-            public Collection<String> call() throws Exception {
+            public Collection<Application> call() throws Exception {
                 ApplicationLineProcessor processor = new ApplicationLineProcessor();
                 BaseExecutionService service = createService("-listapps", processor); // NOI18N
                 Future<Integer> result = service.run();
@@ -123,7 +124,11 @@ public final class WebLogicDeployer {
                     if (value != 0) {
                         throw new IOException("Command failed");
                     } else {
-                        return processor.getApplications();
+                        List<Application> apps = new ArrayList<>();
+                        for(String app : processor.getApplications()) {
+                            apps.add(new Application(app, null));
+                        }
+                        return apps;
                     }
                 } catch (InterruptedException | TimeoutException ex) {
                     result.cancel(true);
@@ -616,6 +621,27 @@ public final class WebLogicDeployer {
             return javaBinary.getAbsolutePath();
         }
         return BaseUtilities.isWindows() ? "java.exe" : "java"; // NOI18N
+    }
+
+    public static class Application {
+
+        private final String id;
+
+        private final URL url;
+
+        private Application(String id, URL url) {
+            this.id = id;
+            this.url = url;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public URL getUrl() {
+            return url;
+        }
+
     }
 
     private static class ApplicationLineProcessor implements LineProcessor {
