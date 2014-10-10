@@ -73,7 +73,7 @@ ovu:CLASS:[PUBLIC]:ESCAPED{ovu}:
       json:CLASS:[PUBLIC]:ESCAPED{json}:
       layer:CLASS:[PUBLIC]:ESCAPED{layer}:
         height:FIELD:[PUBLIC]:ESCAPED{height}<font color="#999999">ESCAPED{ : }Number</font>:
-        width:FIELD:[PUBLIC]:ESCAPED{width}:
+        width:FIELD:[PUBLIC]:ESCAPED{width}<font color="#999999">ESCAPED{ : }document@call;getElementById.json.width</font>:
       layer_id:FIELD:[PUBLIC]:ESCAPED{layer_id}:
       maxValue:FIELD:[PUBLIC]:ESCAPED{maxValue}:
       minValue:FIELD:[PUBLIC]:ESCAPED{minValue}:

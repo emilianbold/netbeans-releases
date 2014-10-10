@@ -155,7 +155,7 @@ public abstract class SanitizingParser extends Parser {
                     int countedLines = 0;
                     int countChars = 0;
                     while (!isMinified && ts.moveNext() && countedLines < 5) {
-                        LexUtilities.findNext(ts, Arrays.asList(JsTokenId.DOC_COMMENT, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT, JsTokenId.EOL));
+                        LexUtilities.findNext(ts, Arrays.asList(JsTokenId.DOC_COMMENT, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT, JsTokenId.EOL, JsTokenId.WHITESPACE));
                         offset = ts.offset();
                         LexUtilities.findNextToken(ts, Arrays.asList(JsTokenId.EOL));
                         countChars += (ts.offset() - offset);

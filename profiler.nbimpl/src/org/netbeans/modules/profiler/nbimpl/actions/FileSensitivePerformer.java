@@ -66,19 +66,11 @@ public class FileSensitivePerformer implements FileActionPerformer {
     public FileSensitivePerformer(String command) {
         this.command = command;
     }
-
-    @Override
-    public boolean enable(FileObject file) {
-        if (file == null) {
-            return false;
-        }
-
-        Project p = FileOwnerQuery.getOwner(file);
-
-        if (p == null) {
-            return false;
-        }
-
+    
+    static boolean supportsProfileFile(String command, FileObject file) {
+        Project p = file == null ? null : FileOwnerQuery.getOwner(file);
+        if (p == null) return false;
+        
         ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
         try {
             if (ap != null && contains(ap.getSupportedActions(), command)) {
@@ -87,12 +79,17 @@ public class FileSensitivePerformer implements FileActionPerformer {
                     return false;
                 }
                 
-                return ppp.isProfilingSupported() && ap.isActionEnabled(command, getContext(file, p));
+                return ppp.isProfilingSupported() && ap.isActionEnabled(command, getContext(file, p, command));
             }
         } catch (IllegalArgumentException e) {
             // command not supported
         }
         return false;
+    }
+
+    @Override
+    public boolean enable(FileObject file) {
+        return supportsProfileFile(command, file);
     }
 
     @Override
@@ -102,7 +99,7 @@ public class FileSensitivePerformer implements FileActionPerformer {
                 Project p = FileOwnerQuery.getOwner(file);
                 ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
                 if (ap != null) {
-                    Lookup context = getContext(file, p);
+                    Lookup context = getContext(file, p, command);
                     ProfilerSession session = ProfilerSession.forContext(context);
                     if (session != null) session.open();
                 }
@@ -110,7 +107,7 @@ public class FileSensitivePerformer implements FileActionPerformer {
         });
     }
 
-    private Lookup getContext(FileObject file, Project p) {
+    private static Lookup getContext(FileObject file, Project p, String command) {
         ProfilerLauncher.Command _command = new ProfilerLauncher.Command(command);
         try {
             return Lookups.fixed(file, p, DataObject.find(file), _command);

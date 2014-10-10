@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript.nodejs.problems;
 
+import java.util.Objects;
 import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
@@ -51,26 +52,44 @@ import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 public class CustomizerProblemResolver implements ProjectProblemResolver {
 
     private final Project project;
+    private final String ident;
     private final ValidationResult result;
+    private final String category;
 
 
-    CustomizerProblemResolver(Project project, ValidationResult result) {
+    CustomizerProblemResolver(Project project, String ident, ValidationResult result) {
+        this(project, ident, result, null);
+    }
+
+    CustomizerProblemResolver(Project project, String ident, String category) {
+        this(project, ident, null, category);
+    }
+
+    private CustomizerProblemResolver(Project project, String ident, ValidationResult result, String category) {
         assert project != null;
-        assert result != null;
+        assert ident != null;
         this.project = project;
+        this.ident = ident;
         this.result = result;
+        this.category = category;
     }
 
     @Override
     public Future<ProjectProblemsProvider.Result> resolve() {
-        NodeJsCustomizerProvider.openCustomizer(project, result);
+        if (result != null) {
+            NodeJsCustomizerProvider.openCustomizer(project, result);
+        } else {
+            assert category != null;
+            NodeJsCustomizerProvider.openCustomizer(project, category);
+        }
         return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 71 * hash + (this.project != null ? this.project.hashCode() : 0);
+        int hash = 5;
+        hash = 83 * hash + Objects.hashCode(this.project);
+        hash = 83 * hash + Objects.hashCode(this.ident);
         return hash;
     }
 
@@ -83,10 +102,14 @@ public class CustomizerProblemResolver implements ProjectProblemResolver {
             return false;
         }
         final CustomizerProblemResolver other = (CustomizerProblemResolver) obj;
-        if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
+        if (!Objects.equals(this.project, other.project)) {
+            return false;
+        }
+        if (!Objects.equals(this.ident, other.ident)) {
             return false;
         }
         return true;
     }
+
 
 }

@@ -83,7 +83,8 @@ public class GruntCommand extends Command {
     }
 
     @NbBundle.Messages({
-        "GruntCommand.configure=Do you want to configure project actions to call Grunt tasks?"
+        "GruntCommand.notFound=No Gruntfile.js found; create it and rerun the action.",
+        "GruntCommand.configure=Do you want to configure project actions to call Grunt tasks?",
     })
     public boolean tryTask(boolean showCustomizer, boolean waitFinished) {
         FileObject gruntFile = project.getProjectDirectory().getFileObject("Gruntfile.js"); // NOI18N
@@ -107,6 +108,8 @@ public class GruntCommand extends Command {
                 }
                 return true;
             }
+        } else if (showCustomizer) {
+            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.GruntCommand_notFound()));
         }
         return false;
     }

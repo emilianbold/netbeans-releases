@@ -66,4 +66,16 @@ public final class WebClientProjectConstants {
      */
     public static final String SOURCES_TYPE_HTML5_TEST = "HTML5-Tests"; // NOI18N
 
+    /**
+     * Constant for Project Properties > Sources panel.
+     * @since 1.73
+     */
+    public static final String CUSTOMIZER_SOURCES_IDENT = "SOURCES"; // NOI18N
+
+    /**
+     * Constant for Project Properties > Run panel.
+     * @since 1.73
+     */
+    public static final String CUSTOMIZER_RUN_IDENT = "RUN"; // NOI18N
+
 }

@@ -119,9 +119,8 @@ public final class ProfileClassEditorAction extends NodeAction {
                     // Resolve owner project
                     if (project == null) project = ProjectUtilities.getProject(dobj.getPrimaryFile());
                     
-                    // Let the ProfilerSession handle the root method
-                    Lookup configuration = Lookups.fixed(resolvedClass, project);
-                    ProfilerSession.findAndConfigure(configuration, getName());
+                    // Let the ProfilerSession handle the root class
+                    ProfilerSession.findAndConfigure(Lookups.fixed(resolvedClass), project, getName());
                 } catch (Exception ex) {
                     ProfilerDialogs.displayWarning(Bundle.ProfileClassEditorAction_ProblemProfilingClass());
                 }

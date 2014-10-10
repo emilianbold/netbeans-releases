@@ -1,0 +1,6 @@
+[UNKNOWN]var http =[AFTER_ASSIGNMENT] require[UNKNOWN]('[MODULE_PATH]http'[UNKNOWN]);
+var server =[AFTER_ASSIGNMENT] http[UNKNOWN].createServer(function (req, res) {
+    res.writeHead(200);
+    res.end('Hello Http'); 
+});
+server.listen(8080);

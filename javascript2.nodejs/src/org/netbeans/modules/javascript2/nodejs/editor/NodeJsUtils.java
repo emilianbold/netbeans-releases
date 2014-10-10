@@ -65,6 +65,7 @@ import org.openide.util.ImageUtilities;
 public class NodeJsUtils {
 
     public static String REQUIRE_METHOD_NAME = "require"; // NOI18N
+    public static String ON_METHOD_NAME = "on"; // NOI18N
     public static String NODE_MODULES_NAME = "node_modules"; // NOI18N
     public static String PACKAGE_NAME = "package"; //NOI18N
     public static String INDEX_NAME = "index"; //NOI18N

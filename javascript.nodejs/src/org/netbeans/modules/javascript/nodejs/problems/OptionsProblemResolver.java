@@ -55,4 +55,14 @@ public class OptionsProblemResolver implements ProjectProblemResolver {
         return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof OptionsProblemResolver;
+    }
+
+    @Override
+    public int hashCode() {
+        return 42;
+    }
+
 }

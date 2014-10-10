@@ -44,9 +44,13 @@ package org.netbeans.modules.javascript.v8debug.breakpoints;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.lib.v8debug.V8Breakpoint;
 import org.netbeans.lib.v8debug.V8Command;
 import org.netbeans.lib.v8debug.commands.ChangeBreakpoint;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointStatus;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.openide.util.WeakListeners;
 
@@ -56,17 +60,26 @@ import org.openide.util.WeakListeners;
  */
 public final class SubmittedBreakpoint {
     
+    private static final Logger LOG = Logger.getLogger(SubmittedBreakpoint.class.getName());
+    
     private final JSLineBreakpoint breakpoint;
     private final long id;
     private final V8Debugger dbg;
     private final PropertyChangeListener bpChangeListener;
+    private final PropertyChangeListener addedChangeListener;
     
-    SubmittedBreakpoint(JSLineBreakpoint breakpoint, long id, V8Debugger dbg) {
+    SubmittedBreakpoint(JSLineBreakpoint breakpoint, long id,
+                        V8Breakpoint.ActualLocation[] actualLocations,
+                        V8Debugger dbg) {
         this.breakpoint = breakpoint;
         this.id = id;
         this.dbg = dbg;
+        LOG.log(Level.FINE, "SubmittedBreakpoint({0}, {1})", new Object[]{breakpoint, id});
+        adjustLocation(actualLocations);
+        LOG.log(Level.FINE, "  adjusted BP => {0}", breakpoint);
         bpChangeListener = new BPChangeListener();
-        breakpoint.addPropertyChangeListener(WeakListeners.propertyChange(bpChangeListener, breakpoint));
+        addedChangeListener = WeakListeners.propertyChange(bpChangeListener, breakpoint);
+        breakpoint.addPropertyChangeListener(addedChangeListener);
     }
 
     public JSLineBreakpoint getBreakpoint() {
@@ -77,6 +90,18 @@ public final class SubmittedBreakpoint {
         return id;
     }
     
+    private void adjustLocation(V8Breakpoint.ActualLocation[] actualLocations) {
+        if (actualLocations != null && actualLocations.length > 0) {
+            long line = actualLocations[0].getLine();
+            breakpoint.setLine((int) line);
+        }
+    }
+    
+    void notifyDestroyed() {
+        breakpoint.removePropertyChangeListener(addedChangeListener);
+        JSBreakpointStatus.resetValidity(breakpoint);
+    }
+
     private final class BPChangeListener implements PropertyChangeListener {
 
         @Override

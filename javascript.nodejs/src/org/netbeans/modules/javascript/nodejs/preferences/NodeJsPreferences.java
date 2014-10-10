@@ -68,7 +68,9 @@ public final class NodeJsPreferences {
     private final Project project;
 
     // @GuardedBy("this")
-    private Preferences preferences;
+    private Preferences privatePreferences;
+    // @GuardedBy("this")
+    private Preferences sharedPreferences;
 
 
     public NodeJsPreferences(Project project) {
@@ -77,93 +79,102 @@ public final class NodeJsPreferences {
     }
 
     public void addPreferenceChangeListener(PreferenceChangeListener listener) {
-        getPreferences().addPreferenceChangeListener(listener);
+        getPrivatePreferences().addPreferenceChangeListener(listener);
+        getSharedPreferences().addPreferenceChangeListener(listener);
     }
 
     public void removePreferenceChangeListener(PreferenceChangeListener listener) {
-        getPreferences().removePreferenceChangeListener(listener);
+        getPrivatePreferences().removePreferenceChangeListener(listener);
+        getSharedPreferences().removePreferenceChangeListener(listener);
     }
 
     public boolean isEnabled() {
-        return getPreferences().getBoolean(ENABLED, false);
+        return getSharedPreferences().getBoolean(ENABLED, false);
     }
 
     public void setEnabled(boolean enabled) {
-        getPreferences().putBoolean(ENABLED, enabled);
+        getSharedPreferences().putBoolean(ENABLED, enabled);
     }
 
     @CheckForNull
     public String getNode() {
-        return FileUtils.resolvePath(project, getPreferences().get(NODE_PATH, null));
+        return FileUtils.resolvePath(project, getPrivatePreferences().get(NODE_PATH, null));
     }
 
     public void setNode(String node) {
-        getPreferences().put(NODE_PATH, FileUtils.relativizePath(project, node));
+        getPrivatePreferences().put(NODE_PATH, FileUtils.relativizePath(project, node));
     }
 
     public boolean isDefaultNode() {
-        return getPreferences().getBoolean(NODE_DEFAULT, true);
+        return getSharedPreferences().getBoolean(NODE_DEFAULT, true);
     }
 
     public void setDefaultNode(boolean defaultNode) {
-        getPreferences().putBoolean(NODE_DEFAULT, defaultNode);
+        getSharedPreferences().putBoolean(NODE_DEFAULT, defaultNode);
     }
 
     @CheckForNull
     public String getStartFile() {
-        return FileUtils.resolvePath(project, getPreferences().get(START_FILE, null));
+        return FileUtils.resolvePath(project, getSharedPreferences().get(START_FILE, null));
     }
 
     public void setStartFile(@NullAllowed String startFile) {
         if (startFile == null) {
-            getPreferences().remove(START_FILE);
+            getSharedPreferences().remove(START_FILE);
         } else {
-            getPreferences().put(START_FILE, FileUtils.relativizePath(project, startFile));
+            getSharedPreferences().put(START_FILE, FileUtils.relativizePath(project, startFile));
         }
     }
 
     @CheckForNull
     public String getStartArgs() {
-        return getPreferences().get(START_ARGS, null);
+        return getSharedPreferences().get(START_ARGS, null);
     }
 
     public void setStartArgs(@NullAllowed String startArgs) {
         if (startArgs == null) {
-            getPreferences().remove(START_ARGS);
+            getSharedPreferences().remove(START_ARGS);
         } else {
-            getPreferences().put(START_ARGS, startArgs);
+            getSharedPreferences().put(START_ARGS, startArgs);
         }
     }
 
     public boolean isRunEnabled() {
-        return getPreferences().getBoolean(RUN_ENABLED, false);
+        return getSharedPreferences().getBoolean(RUN_ENABLED, false);
     }
 
     public void setRunEnabled(boolean enabled) {
-        getPreferences().putBoolean(RUN_ENABLED, enabled);
+        getSharedPreferences().putBoolean(RUN_ENABLED, enabled);
     }
 
     public int getDebugPort() {
-        return getPreferences().getInt(DEBUG_PORT, NodeExecutable.DEFAULT_DEBUG_PORT);
+        return getPrivatePreferences().getInt(DEBUG_PORT, NodeExecutable.DEFAULT_DEBUG_PORT);
     }
 
     public void setDebugPort(int debugPort) {
-        getPreferences().putInt(DEBUG_PORT, debugPort);
+        getPrivatePreferences().putInt(DEBUG_PORT, debugPort);
     }
 
     public boolean isAskRunEnabled() {
-        boolean ask = getPreferences().getBoolean(ASK_RUN_CONFIGURATION, true);
+        boolean ask = getPrivatePreferences().getBoolean(ASK_RUN_CONFIGURATION, true);
         if (ask) {
-            getPreferences().putBoolean(ASK_RUN_CONFIGURATION, false);
+            getPrivatePreferences().putBoolean(ASK_RUN_CONFIGURATION, false);
         }
         return ask;
     }
 
-    private synchronized Preferences getPreferences() {
-        if (preferences == null) {
-            preferences = ProjectUtils.getPreferences(project, NodeJsPreferences.class, false);
+    private synchronized Preferences getPrivatePreferences() {
+        if (privatePreferences == null) {
+            privatePreferences = ProjectUtils.getPreferences(project, NodeJsPreferences.class, false);
         }
-        return preferences;
+        return privatePreferences;
+    }
+
+    private synchronized Preferences getSharedPreferences() {
+        if (sharedPreferences == null) {
+            sharedPreferences = ProjectUtils.getPreferences(project, NodeJsPreferences.class, true);
+        }
+        return sharedPreferences;
     }
 
 }
