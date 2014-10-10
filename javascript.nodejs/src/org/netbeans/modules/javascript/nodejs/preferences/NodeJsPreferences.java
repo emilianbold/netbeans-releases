@@ -63,6 +63,7 @@ public final class NodeJsPreferences {
     public static final String START_ARGS = "start.args"; // NOI18N
     public static final String RUN_ENABLED = "run.enabled"; // NOI18N
     public static final String DEBUG_PORT = "debug.port"; // NOI18N
+    public static final String ASK_RUN_CONFIGURATION = "ask.run.enabled"; // NOI18N
 
     private final Project project;
 
@@ -148,6 +149,14 @@ public final class NodeJsPreferences {
 
     public void setDebugPort(int debugPort) {
         getPreferences().putInt(DEBUG_PORT, debugPort);
+    }
+
+    public boolean isAskRunEnabled() {
+        boolean ask = getPreferences().getBoolean(ASK_RUN_CONFIGURATION, true);
+        if (ask) {
+            getPreferences().putBoolean(ASK_RUN_CONFIGURATION, false);
+        }
+        return ask;
     }
 
     private synchronized Preferences getPreferences() {

@@ -1,5 +1,5 @@
 (function () {
-$scope = $scope;
+var $scope = $scope;
 
 with ($scope) { 
 }

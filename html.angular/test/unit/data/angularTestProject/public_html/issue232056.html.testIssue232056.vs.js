@@ -1,5 +1,5 @@
 (function () {
-$scope = TestContr.$scope;
+var $scope = TestContr.$scope;
 TestContr;
 with ($scope) { 
 val;

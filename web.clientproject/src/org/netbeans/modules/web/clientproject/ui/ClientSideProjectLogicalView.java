@@ -344,24 +344,27 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         private Image annotateImage(Image image) {
-            // project type
-            Image projectBadge = ImageUtilities.loadImage(project.isJsLibrary() ? JS_LIBRARY_BADGE_ICON : HTML5_BADGE_ICON);
-            Image badged = ImageUtilities.mergeImages(image, projectBadge, 0, 0);
+            Image icon = image;
+            boolean badged = false;
             // platform providers
-            boolean first = true;
             for (PlatformProvider provider : project.getPlatformProviders()) {
                 BadgeIcon badgeIcon = provider.getBadgeIcon();
                 if (badgeIcon != null) {
-                    badged = ImageUtilities.addToolTipToImage(badged, String.format(ICON_TOOLTIP, badgeIcon.getUrl(), provider.getDisplayName()));
-                    if (first) {
-                        badged = ImageUtilities.mergeImages(badged, badgeIcon.getImage(), 15, 0);
-                        first = false;
+                    icon = ImageUtilities.addToolTipToImage(icon, String.format(ICON_TOOLTIP, badgeIcon.getUrl(), provider.getDisplayName()));
+                    if (!badged) {
+                        icon = ImageUtilities.mergeImages(icon, badgeIcon.getImage(), 0, 0);
+                        badged = true;
                     }
                 } else {
-                    badged = ImageUtilities.addToolTipToImage(badged, String.format(ICON_TOOLTIP, PLACEHOLDER_BADGE_URL, provider.getDisplayName()));
+                    icon = ImageUtilities.addToolTipToImage(icon, String.format(ICON_TOOLTIP, PLACEHOLDER_BADGE_URL, provider.getDisplayName()));
                 }
             }
-            return badged;
+            // project type, only if no platform
+            if (!badged) {
+                Image projectBadge = ImageUtilities.loadImage(project.isJsLibrary() ? JS_LIBRARY_BADGE_ICON : HTML5_BADGE_ICON);
+                icon = ImageUtilities.mergeImages(icon, projectBadge, 0, 0);
+            }
+            return icon;
         }
 
         @Override

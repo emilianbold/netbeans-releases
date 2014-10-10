@@ -190,6 +190,10 @@ public class KOHtmlExtension extends HtmlExtension {
                                 case KEY:
                                     //ke|
                                     CharSequence prefix = ediff == 0 ? etoken.text() : etoken.text().subSequence(0, ediff);
+                                    if (ediff == 0 && (etoken.offset(tokenHierarchy) + etoken.length()) != context.getOriginalOffset()) {
+                                        // offer all bindings in case of caret placed before binding: <body data-bind="^attr: ">
+                                        prefix = ""; //NOI18N
+                                    }
                                     return getBindingItems(prefix, embedded.offset());
                                 case COMMA:
                                     //key:value,|

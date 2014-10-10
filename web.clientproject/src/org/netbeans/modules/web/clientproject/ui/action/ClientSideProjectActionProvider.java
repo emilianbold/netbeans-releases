@@ -113,6 +113,11 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         assert old == null : "Command already set for " + COMMAND_RUN_SINGLE;
     }
 
+    private boolean isDebugCommand(String commandId) {
+        return COMMAND_DEBUG.equals(commandId)
+                || COMMAND_DEBUG_SINGLE.equals(commandId);
+    }
+
     @Override
     public String[] getSupportedActions() {
         LinkedHashSet<String> actions = new LinkedHashSet<>();
@@ -132,6 +137,10 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         }
         if (isCommandEnabled(new BrowserCommand(project, commandId), lookup)) {
             return true;
+        }
+        if (isDebugCommand(commandId)) {
+            // debug can be supported only by browser or platform command (but see #addDebugCommands())
+            return false;
         }
         return getCommand(commandId).isActionEnabled(lookup);
     }

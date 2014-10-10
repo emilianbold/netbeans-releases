@@ -130,6 +130,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
@@ -213,6 +214,16 @@ public class ClientSideProject implements Project {
                     if (pathImpl != null) {
                         pathImpl.fireRootsChanged();
                     }
+                } else if (PlatformProvider.PROP_RUN_CONFIGURATION.equals(propertyName)) {
+                    final String runAs = (String) event.getNewValue();
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            ClientSideProjectProperties properties = new ClientSideProjectProperties(ClientSideProject.this);
+                            properties.setRunAs(runAs);
+                            properties.save();
+                        }
+                    });
                 }
             }
         }
