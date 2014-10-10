@@ -222,6 +222,9 @@ public class CsmDisplayUtilities {
         String temp = input.toString().replace("&", "&amp;");// NOI18N
         temp = temp.replace("<", "&lt;"); // NOI18N
         temp = temp.replace(">", "&gt;"); // NOI18N
+        if (temp.indexOf('\n') > 0) {
+            return "<pre>"+temp+"</pre>"; // NOI18N
+        }
         return temp;
     }
 
