@@ -211,14 +211,16 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
     @NbBundle.Messages("NodeJsRunPanel.browse.title=Select start file")
     private void startFileBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_startFileBrowseButtonActionPerformed
         assert EventQueue.isDispatchThread();
-        File sourceRoot = NodeJsUtils.getSourceRoot(project);
-        assert sourceRoot != null : project.getProjectDirectory();
-        File file = new FileChooserBuilder(NodeJsRunPanel.class)
+        FileChooserBuilder fileChooserBuilder = new FileChooserBuilder(NodeJsRunPanel.class)
                 .setFilesOnly(true)
-                .setTitle(Bundle.NodeJsRunPanel_browse_title())
+                .setTitle(Bundle.NodeJsRunPanel_browse_title());
+        File sourceRoot = NodeJsUtils.getSourceRoot(project);
+        if (sourceRoot != null) {
+            fileChooserBuilder
                 .setDefaultWorkingDirectory(sourceRoot)
-                .forceUseOfDefaultWorkingDirectory(true)
-                .showOpenDialog();
+                .forceUseOfDefaultWorkingDirectory(true);
+        }
+        File file = fileChooserBuilder.showOpenDialog();
         if (file != null) {
             startFileTextField.setText(file.getAbsolutePath());
         }
